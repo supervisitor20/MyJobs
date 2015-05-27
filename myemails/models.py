@@ -1,11 +1,15 @@
+from celery.task import task
 from datetime import datetime, timedelta
-from celery.result import AsyncResult
+import operator
 
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
-from django.db import models
+from django.core.mail import send_mail
+from django.db import models, OperationalError
+from django.db.models.signals import pre_save, post_save
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
+from seo.models import CompanyUser
 
 
 class EmailSection(models.Model):
@@ -74,22 +78,63 @@ class Event(models.Model):
     class Meta:
         abstract = True
 
+    def schedule_task(self, for_object):
+        return EmailTask.objects.create(
+            act_on=for_object,
+            related_event=self,
+            scheduled_for=self.schedule_for(for_object)
+        )
+
+    def schedule_for(self, for_object):
+        return datetime.now()
+
     def send_email(self, for_object):
         """
         Sends an email for a for_object.
 
         :param for_object: The object an email is being sent for.
         """
+        subject = ''
+        if self.model.model == 'purchasedjob':
+            # host company to purchaser
+            recipient_company = for_object.owner
+            sending_company = for_object.purchased_product.product.owner
+        elif self.model.model == 'purchasedproduct':
+            # host company to purchaser
+            recipient_company = for_object.owner
+            sending_company = for_object.product.owner
+        elif self.model.model == 'request':
+            # purchaser to host company
+            recipient_company = for_object.owner
+            sending_company = for_object.requesting_company()
+            subject = '%s has submitted a new request' % sending_company.name
+        else:  # self.model.model == 'invoice':
+            # host company to purchaser
+            recipient_company = for_object.purchasedproduct_set.first()\
+                .product.owner
+            sending_company = for_object.owner
+            subject = 'Your invoice from %s' % sending_company.name
+        if not subject:
+            subject = 'An update on your %s' % self.model.name
+
+        recipients = CompanyUser.objects.filter(
+            company=recipient_company).values_list('user__email',
+                                                                flat=True)
+        if hasattr(sending_company, 'companyprofile'):
+            email_domain = sending_company.companyprofile.outgoing_email_domain
+        else:
+            email_domain = 'my.jobs'
+
         body = self.email_template.render(for_object)
+        send_mail(subject, body, '%s@%s' % (self.model.model, email_domain),
+                  recipients)
 
 
 CRON_EVENT_MODELS = ['purchasedjob', 'purchasedproduct']
-TIME_EVENT_MODELS = ['purchasedjob', 'purchasedproduct', 'request']
-# ALL_EVENT_MODELS currently equals TIME_EVENT_MODELS after this operation,
-# but that will not always be the case.
-ALL_EVENT_MODELS = set(CRON_EVENT_MODELS + TIME_EVENT_MODELS)
-
-# TODO: Set up signals using these
+VALUE_EVENT_MODELS = ['purchasedjob', 'purchasedproduct', 'request']
+CREATED_EVENT_MODELS = ['invoice']
+ALL_EVENT_MODELS = set().union(CRON_EVENT_MODELS, VALUE_EVENT_MODELS,
+                               CREATED_EVENT_MODELS)
 
 
 class CronEvent(Event):
@@ -98,7 +143,7 @@ class CronEvent(Event):
                                   'purchasedjob',
                                   'purchasedproduct']})
     field = models.CharField(max_length=255, blank=True)
-    minutes = models.PositiveIntegerField()
+    minutes = models.IntegerField()
 
     def schedule_task(self, for_object):
         """
@@ -111,10 +156,10 @@ class CronEvent(Event):
         return EmailTask.objects.create(
             act_on=for_object,
             related_event=self,
-            scheduled_for=self.scheduled_for(for_object)
+            scheduled_for=self.schedule_for(for_object)
         )
 
-    def scheduled_for(self, for_object):
+    def schedule_for(self, for_object):
         """
         :return: The next valid time this Event would be scheduled for.
 
@@ -127,9 +172,9 @@ class CronEvent(Event):
 
 class ValueEvent(Event):
     COMPARISON_CHOICES = (
-        ('', 'is equal to'),
-        ('__gte', 'is greater than or equal to'),
-        ('__lte', 'is less than or equal to'),
+        ('eq', 'is equal to'),
+        ('ge', 'is greater than or equal to'),
+        ('le', 'is less than or equal to'),
     )
 
     compare_using = models.CharField(_('Comparison Type'),
@@ -142,15 +187,12 @@ class ValueEvent(Event):
     field = models.CharField(max_length=255)
     value = models.PositiveIntegerField()
 
-    def schedule_task(self, for_object):
-        return EmailTask.objects.create(
-            act_on=for_object,
-            related_event=self,
-            scheduled_for=datetime.now()
-        )
 
-    def schedule_for(self, for_object):
-        return datetime.now()
+class CreatedEvent(Event):
+    model = models.ForeignKey(ContentType,
+                              limit_choices_to={'model__in': [
+                                  'invoice'
+                              ]})
 
 
 class EmailTask(models.Model):
@@ -166,7 +208,7 @@ class EmailTask(models.Model):
 
     completed_on = models.DateTimeField(blank=True, null=True)
 
-    scheduled_for = models.DateTimeField()
+    scheduled_for = models.DateTimeField(default=datetime.now)
     scheduled_at = models.DateTimeField(auto_now_add=True)
 
     task_id = models.CharField(max_length=36, blank=True, default='',
@@ -177,9 +219,118 @@ class EmailTask(models.Model):
         return bool(self.completed_on)
 
     def schedule(self):
-        from tasks import send_event_email
-
-        send_event_email.s(self).apply_async()
+        send_event_email.apply_async(args=[self], eta=self.scheduled_for)
 
     def send_email(self):
         self.related_event.send_email(self.act_on)
+
+
+# I don't really like doing it this way (get from database pre save, set
+# attribute, get again post save), but we need to be able to 1) determine what
+# was changed and 2) only send an email if the save is successful. - TP
+def cron_post_save(sender, instance, **kwargs):
+    cron_event_kwargs = {'model': ContentType.objects.get_for_model(sender),
+                         'owner': instance.product.owner if hasattr(
+                             instance, 'product') else instance.owner}
+    events = list(CronEvent.objects.filter(**cron_event_kwargs))
+    tasks = EmailTask.objects.filter(
+        object_id=instance.pk,
+        object_model=ContentType.objects.get_for_model(instance))
+    triggered_events = {task_.related_event for task_ in tasks}
+    for event in triggered_events:
+        if event in events:
+            events.pop(events.index(event))
+    for event in events:
+        EmailTask.objects.create(act_on=instance,
+                                 related_event=event).schedule()
+
+
+def value_pre_save(sender, instance, **kwargs):
+    triggered = []
+    if instance.pk:
+        value_event_kwargs = {'model': ContentType.objects.get_for_model(sender),
+                              'owner': instance.product.owner if hasattr(
+                                  instance, 'product') else instance.owner}
+        events = ValueEvent.objects.filter(**value_event_kwargs)
+        original = sender.objects.get(pk=instance.pk)
+        for event in events:
+            old_val = getattr(original, event.field)
+            new_val = getattr(instance, event.field)
+            compare = getattr(operator, event.compare_using, 'eq')
+            if not compare(old_val, event.value) and \
+                    compare(new_val, event.value):
+                triggered.append(event.pk)
+    instance.triggered = triggered
+
+
+def value_post_save(sender, instance, **kwargs):
+    if instance.triggered:
+        events = ValueEvent.objects.filter(id__in=instance.triggered)
+        for event in events:
+            EmailTask.objects.create(act_on=instance,
+                                     related_event=event).schedule()
+
+
+def pre_add_invoice(sender, instance, **kwargs):
+    invoice_added = hasattr(instance, 'invoice')
+    if instance.pk:
+        original = sender.objects.get(pk=instance.pk)
+        invoice_added = not hasattr(original, 'invoice') and invoice_added
+    instance.invoice_added = invoice_added
+
+
+def post_add_invoice(sender, instance, **kwargs):
+    if instance.invoice_added:
+        content_type = ContentType.objects.get(model='invoice')
+        events = CreatedEvent.objects.filter(model=content_type,
+                                             owner=instance.product.owner)
+        for event in events:
+            EmailTask.objects.create(act_on=instance.invoice,
+                                     related_event=event).schedule()
+
+
+bind_events = lambda type_, sender, pre=None, post=None: [
+    pre_save.connect(pre, sender=sender,
+                     dispatch_uid='pre_save__%s_%s' % (model,
+                                                       type_)) if pre else None,
+    post_save.connect(post, sender=sender,
+                      dispatch_uid='post_save__%s_%s' % (model,
+                                                         type_)) if post else None]
+try:
+    for model in ALL_EVENT_MODELS:
+        Model = ContentType.objects.get(model=model).model_class()
+        if model in CRON_EVENT_MODELS:
+            bind_events('cron', Model, post=cron_post_save)
+        if model in VALUE_EVENT_MODELS:
+            bind_events('value', Model, value_pre_save, value_post_save)
+        if model in CREATED_EVENT_MODELS:
+            if model == 'invoice':
+                PurchasedProduct = ContentType.objects.get(
+                    model='purchasedproduct').model_class()
+                bind_events('created', PurchasedProduct,
+                            pre_add_invoice, post_add_invoice)
+            else:
+                # There are no other valid models for this choice, but there
+                # likely will be in the future. I'm not writing something that
+                # will certainly be wrong, so let's put it off until it's
+                # relevant. - TP
+                raise NotImplementedError('Add some signals for %s!' % model)
+except OperationalError:
+    # We're running syncdb and the ContentType table doesn't exist yet
+    pass
+
+
+@task(name="tasks.send_event_email", ignore_result=True)
+def send_event_email(email_task):
+    """
+    Send an appropriate email given an EmailTask instance.
+
+    :param email_task: EmailTask we are using to generate this email
+    """
+    email_task.task_id = send_event_email.request.id
+    email_task.save()
+
+    email_task.send_email()
+
+    email_task.completed_on = datetime.now()
+    email_task.save()
