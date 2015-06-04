@@ -1080,7 +1080,7 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a, .fa-eye, .view-report", function() {
+  subpage.on("click", ".report > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report").data("report"),
         model = $(this).parents("tr, .report").data("model"),
         callback = function() {
@@ -1186,9 +1186,9 @@ $(document).ready(function() {
         $icon.removeClass("fa-spin");
 
         if (archive) {
-          $div.parents('tr').find('.export-report').removeClass('disabled');
+          $div.parents('tr').find('.export-report, .view-report').removeClass('disabled');
         } else {
-          $icon.next().removeClass('disabled');
+          $icon.parents('div.report').find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
         }
       }
     });
