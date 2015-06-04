@@ -158,7 +158,7 @@ Report.prototype.createCloneReport = function(json) {
         date = this.findField("date");
         $.extend(date.defaultVal, phony);
       } else {
-        this.findField(key === "name" ? "contact" : key).defaultVal = value;
+        this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
       }
     }
   }
@@ -1076,7 +1076,7 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a, .fa-eye, .view-report", function() {
+  subpage.on("click", ".report > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report").data("report"),
         model = $(this).parents("tr, .report").data("model"),
         callback = function() {
@@ -1180,10 +1180,12 @@ $(document).ready(function() {
       },
       success: function() {
         $icon.removeClass("fa-refresh fa-spin").addClass("fa-download");
+        $icon.parents('div.report').find('.report-link, .fa-eye').removeClass('disabled');
 
         if (archive) {
           $div.removeClass("regenerate-report").addClass("export-report");
-          $div.html($icon.prop("outerHTML") + " Export Report");
+          $div.parents('tr').find('.view-report').removeClass('disabled');
+          $div.html('<i class="fa fa-download"></i> Export Report');
         }
       }
     });
