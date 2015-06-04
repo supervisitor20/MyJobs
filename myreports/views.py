@@ -166,9 +166,9 @@ class ReportView(View):
 
         report_id = request.GET.get('id', 0)
         report = Report.objects.get(id=report_id)
-        records = report.queryset
 
         if report.model == "contactrecord":
+            records = report.queryset
             ctx = json.dumps({
                 'emails': records.emails,
                 'calls': records.calls,
@@ -180,11 +180,17 @@ class ReportView(View):
                 'communications': records.communication_activity.count(),
                 'referrals': records.referrals,
                 'contacts': list(records.contacts)})
-        else:
+            status = 200
+        elif report.results:
             ctx = report.json
+            status = 200
+        else:
+            ctx = "Report has no results. Please regenerate."
+            status = 503
 
         return HttpResponse(
             ctx,
+            status=status,
             content_type='application/json; charset=utf-8')
 
     def post(self, request, app='mypartners', model='contactrecords'):
