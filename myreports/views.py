@@ -185,7 +185,7 @@ class ReportView(View):
             ctx = report.json
             status = 200
         else:
-            ctx = "Report has no results. Please regenerate."
+            ctx = "Report %s has no results. Please regenerate." % report.name
             status = 503
 
         return HttpResponse(
