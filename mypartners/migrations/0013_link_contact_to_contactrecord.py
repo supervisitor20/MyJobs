@@ -92,29 +92,10 @@ else:
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        "Create archived contacts and associate them to contact records."
-        db.execute(CREATE_CONTACTS)
-        db.execute(LINK_CONTACTS)
-
-        "Deleting field 'ContactRecord.contact_name'"
-        db.delete_column(u'mypartners_contactrecord', 'contact_name')
+        pass
 
     def backwards(self, orm):
-        "Adding field 'ContactRecord.contact_name'"
-        db.add_column(u'mypartners_contactrecord', 'contact_name',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True),
-                      keep_default=False)
-
-        "Add contact names back to contact records"
-        for record in orm.ContactRecord.objects.all():
-            record.contact_name = record.contact.name
-            record.save()
-
-
-        "Disassociate archived contacts and delete them."
-        orm.ContactRecord.objects.filter(
-            contact__archived_on__isnull=False).update(contact=None)
-        orm.Contact.objects.filter(archived_on__isnull=False).delete()
+        pass
 
 
     models = {
