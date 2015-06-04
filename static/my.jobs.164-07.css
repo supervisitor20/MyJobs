@@ -1820,6 +1820,26 @@ h3.bottom-bordered {
     text-decoration: none;
 }
 
+.export-report.disabled,
+.fa.disabled,
+.report-link.disabled,
+.view-report.disabled,
+.view-report.disabled a {
+    color: #999;
+}
+
+.report-link.disabled:hover,
+.view-report.disabled a {
+    text-decoration: none;
+    cursor: not-allowed;
+}
+
+.export-report.disabled:hover,
+.fa.disabled:hover,
+.view-report.disabled:hover {
+    cursor: not-allowed;
+}
+
 span.small {
     font-size: 0.9em;
     color: #444;

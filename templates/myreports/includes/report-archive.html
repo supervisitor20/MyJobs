@@ -4,12 +4,12 @@
             {% for report in reports %}
             <tr data-report="{{ report.id }}">
                 <td>
-                    <div title="View Report" class="view-report">
+                    <div title="View Report" class="view-report {% if not report.results %}disabled{% endif %}">
                         <a title="View Report">{{ report.name }}</a>
                     </div>
                 </td>
                 <td>
-                    <div title="View Report" class="view-report">
+                    <div title="View Report" class="view-report {% if not report.results %}disabled{% endif %}">
                         <i class="fa fa-eye"></i> View Report
                     </div>
                 </td>
