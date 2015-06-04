@@ -23,7 +23,7 @@
             {% endif %}
 
             <div class="menu-container" role="menu">
-                {% if user.is_authenticated and session_valid %}
+                {% if user.is_authenticated and request.session|length %}
                 <ul class="mobile_hide">
                     <li class="has-drop">
                         <a id="menu-inbox">{{ new_messages.count }}<div class="icon-envelope icon-white"></div></a>

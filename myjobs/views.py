@@ -568,8 +568,7 @@ def topbar(request):
     if not user or user.is_anonymous():
         user = None
 
-    session_valid = bool(request.session.get('_session_expiry', 0))
-    ctx = {'user': user, 'session_valid': session_valid}
+    ctx = {'user': user}
 
     response = HttpResponse(content_type='text/javascript')
 
