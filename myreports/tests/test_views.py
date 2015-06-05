@@ -275,11 +275,17 @@ class TestDownloadReport(MyReportsTestCase):
             'app': 'mypartners', 'model': 'contactrecord'}))
         report_name = response.content
         report = Report.objects.get(name=report_name)
+        python = report.python
 
         # download the report
-        response = self.client.get(data={'id': report.pk})
+        response = self.client.get(data={
+            'id': report.pk,
+            'values': ['contact', 'contact_email', 'contact_phone']})
 
         self.assertEqual(response['Content-Type'], 'text/csv')
+
+        # specifying export values shouldn't modify the underlying report
+        self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
 
 
 class TestRegenerate(MyReportsTestCase):
@@ -298,8 +304,7 @@ class TestRegenerate(MyReportsTestCase):
         # company
         response = self.client.post(
             path=reverse('reports', kwargs={
-                'app': 'mypartners', 'model': 'contactrecord'}),
-            data={'values': ['partner', 'contact__name', 'contact_type']})
+                'app': 'mypartners', 'model': 'contactrecord'}))
 
         report_name = response.content
         report = Report.objects.get(name=report_name)
