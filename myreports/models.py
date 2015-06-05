@@ -38,13 +38,13 @@ class Report(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(Report, self).__init__(*args, **kwargs)
+        self._results = '{}'
+
         if self.results:
             try:
                 self._results = self.results.read()
             except IOError:
                 self.results.delete()
-        else:
-            self._results = '{}'
 
     @property
     def json(self):
