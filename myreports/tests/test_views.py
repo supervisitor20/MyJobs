@@ -250,6 +250,21 @@ class TestDownloads(MyReportsTestCase):
         self.assertEqual(response.context['columns'], {
             'Partner': True, 'Contact Name': True, 'Contact Type': True})
 
+    def test_blacklisted_columns(self):
+        """Test that blacklisted columns aren't visible."""
+        blacklist = ['pk', 'approval_status']
+        response = self.client.post(
+            path=reverse('reports', kwargs={
+                'app': 'mypartners', 'model': 'contactrecord'}),
+            data={'values': ['partner', 'contact__name', 'contact_type']})
+
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+
+        response = self.client.get(data={'id': report.id})
+        self.assertFalse(
+            set(response.context['columns']).intersection(blacklist))
+
 
 class TestDownloadReport(MyReportsTestCase):
     """Tests that reports can be downloaded."""
@@ -287,22 +302,6 @@ class TestDownloadReport(MyReportsTestCase):
 
         # specifying export values shouldn't modify the underlying report
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
-
-    def test_all_columns_available(self):
-        response = self.client.post(path=reverse('reports', kwargs={
-            'app': 'mypartners', 'model': 'contactrecord'}))
-        report_name = response.content
-        report = Report.objects.get(name=report_name)
-
-        response = self.client.get(
-            path=reverse('downloads'), data={'id': report.pk},
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-
-        self.assertEqual(response.status_code, 200)
-
-        # ensure that all contact record values except pk are available
-        self.assertEqual(
-            len(report.python[0].keys()) - 1, len(response.context['columns']))
 
 
 class TestRegenerate(MyReportsTestCase):
