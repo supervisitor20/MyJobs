@@ -1,6 +1,7 @@
 """Tests associated with myreports views."""
 
 import json
+import os
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -275,11 +276,33 @@ class TestDownloadReport(MyReportsTestCase):
             'app': 'mypartners', 'model': 'contactrecord'}))
         report_name = response.content
         report = Report.objects.get(name=report_name)
+        python = report.python
 
         # download the report
-        response = self.client.get(data={'id': report.pk})
+        response = self.client.get(data={
+            'id': report.pk,
+            'values': ['contact', 'contact_email', 'contact_phone']})
 
         self.assertEqual(response['Content-Type'], 'text/csv')
+
+        # specifying export values shouldn't modify the underlying report
+        self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
+
+    def test_all_columns_available(self):
+        response = self.client.post(path=reverse('reports', kwargs={
+            'app': 'mypartners', 'model': 'contactrecord'}))
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+
+        response = self.client.get(
+            path=reverse('downloads'), data={'id': report.pk},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response.status_code, 200)
+
+        # ensure that all contact record values except pk are available
+        self.assertEqual(
+            len(report.python[0].keys()) - 1, len(response.context['columns']))
 
 
 class TestRegenerate(MyReportsTestCase):
@@ -294,12 +317,10 @@ class TestRegenerate(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, partner__owner=self.company)
 
     def test_regenerate(self):
-        # create a report whose results is for all contact records in the
-        # company
+        # create a new report
         response = self.client.post(
             path=reverse('reports', kwargs={
-                'app': 'mypartners', 'model': 'contactrecord'}),
-            data={'values': ['partner', 'contact__name', 'contact_type']})
+                'app': 'mypartners', 'model': 'contactrecord'}))
 
         report_name = response.content
         report = Report.objects.get(name=report_name)
@@ -331,3 +352,28 @@ class TestRegenerate(MyReportsTestCase):
         report = Report.objects.get(name=report_name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(results.name, report.results.name)
+
+    def test_regenerating_missing_file(self):
+        """Tests that a report can be regenerated when file is missing."""
+
+        # create a new report
+        response = self.client.post(
+            path=reverse('reports', kwargs={
+                'app': 'mypartners', 'model': 'contactrecord'}))
+
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+
+        # report should have results
+        self.assertTrue(report.results)
+
+        # delete physical file and ensure that json reflects the missing link
+        os.remove(report.results.file.name)
+        report = Report.objects.get(pk=report.pk)
+        self.assertFalse(report.results)
+        self.assertEqual(report.json, u'{}')
+        self.assertEqual(report.python, {})
+    
+        # regenerate the report even though the file is physically missing
+        report.regenerate()
+        self.assertTrue(report.results)
