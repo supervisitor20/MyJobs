@@ -38,13 +38,13 @@ class Report(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(Report, self).__init__(*args, **kwargs)
+        self._results = '{}'
+
         if self.results:
             try:
                 self._results = self.results.read()
             except IOError:
                 self.results.delete()
-        else:
-            self._results = '{}'
 
     @property
     def json(self):
@@ -66,8 +66,7 @@ class Report(models.Model):
     def regenerate(self):
         """Regenerate the report file if it doesn't already exist on disk."""
         if not self.results:
-            values = json.loads(self.values)
-            contents = serialize('json', self.queryset, values=values)
+            contents = serialize('json', self.queryset)
             results = ContentFile(contents)
 
             self.results.save('%s-%s.json' % (self.name, self.pk), results)
