@@ -287,6 +287,22 @@ class TestDownloadReport(MyReportsTestCase):
         # specifying export values shouldn't modify the underlying report
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
 
+    def test_all_columns_available(self):
+        response = self.client.post(path=reverse('reports', kwargs={
+            'app': 'mypartners', 'model': 'contactrecord'}))
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+
+        response = self.client.get(
+            path=reverse('downloads'), data={'id': report.pk},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response.status_code, 200)
+
+        # ensure that all contact record values except pk are available
+        self.assertEqual(
+            len(report.python[0].keys()) - 1, len(response.context['columns']))
+
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
@@ -300,16 +316,13 @@ class TestRegenerate(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, partner__owner=self.company)
 
     def test_regenerate(self):
-        # create a report whose results is for all contact records in the
-        # company
+        # create a new report
         response = self.client.post(
             path=reverse('reports', kwargs={
                 'app': 'mypartners', 'model': 'contactrecord'}))
 
         report_name = response.content
         report = Report.objects.get(name=report_name)
-        results = report.results
-        python = report.python
 
         response = self.client.get(data={'id': report.id})
         self.assertEqual(response.status_code, 200)
@@ -329,4 +342,3 @@ class TestRegenerate(MyReportsTestCase):
         report = Report.objects.get(name=report_name)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(report.results)
-
