@@ -12,16 +12,15 @@ from seo.tests.factories import CompanyUserFactory
 
 
 class EmailTemplateTests(MyJobsBase):
-    def test_build_context(self):
-        pass
-
     def test_email_template_render(self):
-        email_template = factories.EmailTemplateFactory()
-        # TODO: Update to actually use for_object and context.
-        rendered_email = email_template.render(email_template)
+        product = posting_factories.ProductFactory()
+        email_template = factories.EmailTemplateFactory(
+            header__content="This is a header. {{product_name}}")
+        rendered_email = email_template.render(product)
 
         # Default email content comes from the
-        default_email = 'This is a header.\nThis is a body.\nThis is a footer.'
+        default_email = 'This is a header. %s\nThis is a body.\n' \
+                        'This is a footer.' % product.name
         self.assertEqual(rendered_email, default_email)
 
 

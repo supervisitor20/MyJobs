@@ -48,8 +48,7 @@ class EmailTemplate(models.Model):
         :return: A dictionary of context for the templates to use.
 
         """
-        context = {}
-        # TODO: Build context based on object passed to the function.
+        context = for_object.context()
         return Context(context)
 
     def render(self, for_object):

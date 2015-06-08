@@ -88,5 +88,3 @@ admin.site.register(models.ValueEvent, ValueEventAdmin)
 admin.site.register(models.CreatedEvent)
 admin.site.register(models.EmailTemplate)
 admin.site.register(models.EmailSection)
-# TODO: revert
-admin.site.register(models.EmailTask)
