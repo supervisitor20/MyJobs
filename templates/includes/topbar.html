@@ -2,7 +2,7 @@
 {% load common_tags %}
 <link href="{{ STATIC_URL }}topbar.165-09.css" rel="stylesheet" type="text/css">
 <style type="text/css">
-@media screen and (max-width: {%if request.is_ajax%}800px{%else%}992px{%endif%}) {
+@media screen and (max-width: {%if request.GET.callback%}800px{%else%}992px{%endif%}) {
     .wrapper {
         width: 100%;
         margin: 0 auto;
@@ -174,7 +174,7 @@
         margin-top: -19px;
     }
 }
-@media screen and (min-width: {%if request.is_ajax%}801px{%else%}993px{%endif%}) {
+@media screen and (min-width: {%if request.GET.callback%}801px{%else%}993px{%endif%}) {
     #nav ul#pop-menu {
         right: 0;
     }
