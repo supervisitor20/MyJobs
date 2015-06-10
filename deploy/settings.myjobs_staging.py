@@ -14,6 +14,14 @@ DATABASES = {
         'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
+    'qc-redirect': {
+        'NAME': 'redirect',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'de_dbuser',
+        'PASSWORD': PROD_DB_PASSWD,
+        'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    },
 }
 
 ALLOWED_HOSTS = ['my.jobs', 'localhost']
@@ -23,7 +31,7 @@ _PATH = os.path.abspath(os.path.dirname(__file__))
 
 # Absolute URL used for cross site links, relative during local/staging
 # absolute during production
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'http://staging.secure.my.jobs/'
 
 PROJECT = "myjobs"
 ENVIRONMENT = 'Staging'

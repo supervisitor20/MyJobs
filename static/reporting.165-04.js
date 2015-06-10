@@ -158,7 +158,7 @@ Report.prototype.createCloneReport = function(json) {
         date = this.findField("date");
         $.extend(date.defaultVal, phony);
       } else {
-        this.findField(key === "name" ? "contact" : key).defaultVal = value;
+        this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
       }
     }
   }
@@ -713,7 +713,13 @@ TagField.prototype.bindEvents = function() {
         type: "GET",
         url: "/reports/ajax/mypartners/tag",
         //TODO: New backend changes will fix this monstrocity
-        data: {name: keyword, values: ["name"], order_by: "name"},
+        data: {name: keyword,
+               contact__isnull: true,
+               partner__isnull: true,
+               partnersavedsearch__isnull: true,
+               contactrecord__isnull: false,
+               values: ["name"],
+               order_by: "name"},
         success: function(data) {
           suggestions = data.filter(function(d) {
             // Don't suggest things that are already selected.
@@ -788,13 +794,17 @@ FilteredList.prototype.filter = function() {
       filterData = {},
       $recordCount,
       $listBody,
-      $input;
+      $input,
+      Status = { UNPROCESSED: 0, APPROVED: 1, DENIED: 2 };
 
   filteredList.report.fields.forEach(function(field) {
     if (filteredList.ignore.indexOf(field.id) === -1) {
       $.extend(filterData, field.onSave());
     }
   });
+
+  // only show approved records
+  filterData.approval_status__code=Status.APPROVED;
 
   if (this.id === "partner") {
     // annotate how many records a partner has.
@@ -803,12 +813,12 @@ FilteredList.prototype.filter = function() {
       order_by: "name"
     });
 
-    filterData.contactrecord__tags__name = filterData.tags__name;
-    delete filterData.tags__name;
-
   } else if (this.id === "contact") {
     $.extend(filterData, {values: ["pk", "name", "email"], order_by: "name"});
   }
+
+  filterData.contactrecord__tags__name = filterData.tags__name;
+  delete filterData.tags__name;
 
   $.ajax({
     type: "GET",
@@ -1070,7 +1080,7 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a, .fa-eye, .view-report", function() {
+  subpage.on("click", ".report > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report").data("report"),
         model = $(this).parents("tr, .report").data("model"),
         callback = function() {
@@ -1131,7 +1141,7 @@ $(document).ready(function() {
     renderNavigation();
   });
 
-  subpage.on("click", ".fa-download, .export-report", function() {
+  subpage.on("click", ".fa-download:not(.disabled), .export-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report").data("report");
 
     if (modernBrowser) {
@@ -1173,11 +1183,12 @@ $(document).ready(function() {
         $icon.addClass("fa-spin");
       },
       success: function() {
-        $icon.removeClass("fa-refresh fa-spin").addClass("fa-download");
+        $icon.removeClass("fa-spin");
 
         if (archive) {
-          $div.removeClass("regenerate-report").addClass("export-report");
-          $div.html($icon.prop("outerHTML") + " Export Report");
+          $div.parents('tr').find('.export-report, .view-report').removeClass('disabled');
+        } else {
+          $icon.parents('div.report').find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
         }
       }
     });

@@ -7,13 +7,24 @@ from secrets import PROD_DB_PASSWD, SOLR_AUTH
 
 ALLOWED_HOSTS = ['*', ]
 
-DATABASES = {'default': {'NAME': 'redirect',
-                         'ENGINE': 'django.db.backends.mysql',
-                         'USER': 'db_deuser',
-                         'PASSWORD': PROD_DB_PASSWD,
-                         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
-                         'PORT': '3306', }
-            }
+DATABASES = {
+    'default': {
+        'NAME': 'redirect',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'db_deuser',
+        'PASSWORD': PROD_DB_PASSWD,
+        'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    },
+    'qc-redirect': {
+        'NAME': 'redirect',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'de_dbuser',
+        'PASSWORD': PROD_DB_PASSWD,
+        'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    },
+}
 
 TEMPLATE_DIRS = (
     '/home/web/MyJobs/MyJobs/templates/',
@@ -94,7 +105,7 @@ SOLR = {
     'current': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test_current/',
     }
 
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 PROJECT = "dseo"
 
