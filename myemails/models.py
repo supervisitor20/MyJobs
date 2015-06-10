@@ -1,4 +1,3 @@
-from celery.task import task
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import ContentType
@@ -9,6 +8,8 @@ from django.db.models.signals import pre_save, post_save
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
 
+from myemails.signals import cron_post_save, value_pre_save, value_post_save, \
+    post_add_invoice, pre_add_invoice
 from seo.models import CompanyUser
 import tasks
 
@@ -249,8 +250,6 @@ class EmailTask(models.Model):
 # The receivers used are defined in myemails.signals but bound here. If they
 # were to be bound in myemails.signals as well, we would have a few interesting
 # and infuriating import issues.
-from myemails.signals import cron_post_save, value_pre_save, value_post_save, \
-    post_add_invoice, pre_add_invoice
 bind_events = lambda type_, sender, pre=None, post=None: [
     pre_save.connect(pre, sender=sender,
                      dispatch_uid='pre_save__%s_%s' % (

@@ -12,7 +12,7 @@ from urllib2 import HTTPError, URLError
 import urlparse
 import uuid
 
-from celery import group, current_task
+from celery import group
 from celery.task import task
 
 from django.conf import settings
