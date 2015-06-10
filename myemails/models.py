@@ -1,6 +1,5 @@
 from celery.task import task
 from datetime import datetime, timedelta
-import operator
 
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
@@ -9,7 +8,9 @@ from django.db import models, OperationalError
 from django.db.models.signals import pre_save, post_save
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
+
 from seo.models import CompanyUser
+import tasks
 
 
 class EmailSection(models.Model):
@@ -239,124 +240,17 @@ class EmailTask(models.Model):
         """
         Submits this task to Celery for processing.
         """
-        send_event_email.apply_async(args=[self], eta=self.scheduled_for)
+        tasks.send_event_email.apply_async(args=[self], eta=self.scheduled_for)
 
     def send_email(self):
         self.related_event.send_email(self.act_on)
 
 
-# I don't really like doing it this way (get from database pre save, set
-# attribute, get again post save), but we need to be able to 1) determine what
-# was changed and 2) only send an email if the save is successful. - TP
-def cron_post_save(sender, instance, **kwargs):
-    """
-    Finds and schedules tasks for any CronEvents bound to the given instance.
-
-    Inputs:
-    :sender: Which event type was saved
-    :instance: Specific instance saved
-    """
-    content_type = ContentType.objects.get_for_model(sender)
-    cron_event_kwargs = {'model': content_type,
-                         'owner': instance.product.owner if hasattr(
-                             instance, 'product') else instance.owner}
-    # Gets all CronEvents for this company and model...
-    events = list(CronEvent.objects.filter(**cron_event_kwargs))
-    # ...and all tasks scheduled for this instance.
-    tasks = EmailTask.objects.filter(
-        object_id=instance.pk,
-        object_model=content_type)
-    triggered_events = {task_.related_event for task_ in tasks}
-    for event in triggered_events:
-        if event in events:
-            # If an event is already scheduled, remove it from the list of
-            # events to be scheduled.
-            events.pop(events.index(event))
-    for event in events:
-        # Schedule all remaining events.
-        EmailTask.objects.create(act_on=instance,
-                                 related_event=event).schedule()
-
-
-def value_pre_save(sender, instance, **kwargs):
-    """
-    Determines if a given ValueEvent bound to the provided instance has been
-    triggered.
-
-    Inputs:
-    :sender: Which event type is being saved
-    :instance: Specific instance being saved
-    """
-    triggered = []
-    if instance.pk:
-        value_event_kwargs = {
-            'model': ContentType.objects.get_for_model(sender),
-            'owner': instance.product.owner if hasattr(
-                instance, 'product') else instance.owner}
-        events = ValueEvent.objects.filter(**value_event_kwargs)
-        original = sender.objects.get(pk=instance.pk)
-        for event in events:
-            old_val = getattr(original, event.field)
-            new_val = getattr(instance, event.field)
-            compare = getattr(operator, event.compare_using, 'eq')
-            # This should only be triggered once when the conditions are met
-            # (value <= 3 fires once value reaches 3 and does not fire again
-            # when value reaches 2). Check the pre-save value in addition to
-            # the post-save value to ensure this.
-            if (not compare(old_val, event.value) and
-                    compare(new_val, event.value)):
-                triggered.append(event.pk)
-    instance.triggered = triggered
-
-
-def value_post_save(sender, instance, **kwargs):
-    """
-    Schedules any triggered events found in value_pre_save.
-
-    Inputs:
-    :sender: Which event type is being saved
-    :instance: Specific instance being saved
-    """
-    if instance.triggered:
-        events = ValueEvent.objects.filter(id__in=instance.triggered)
-        for event in events:
-            EmailTask.objects.create(act_on=instance,
-                                     related_event=event).schedule()
-
-
-def pre_add_invoice(sender, instance, **kwargs):
-    """
-    Determines if an invoice has been added to the provided instance.
-
-    Inputs:
-    :sender: Which event type is being saved
-    :instance: Specific instance being saved
-    """
-    invoice_added = hasattr(instance, 'invoice')
-    if instance.pk:
-        original = sender.objects.get(pk=instance.pk)
-        invoice_added = not hasattr(original, 'invoice') and invoice_added
-    instance.invoice_added = invoice_added
-
-
-def post_add_invoice(sender, instance, **kwargs):
-    """
-    Schedules tasks for the instance if pre_add_invoice determined that an
-    invoice was added.
-
-    Inputs:
-    :sender: Which event type is being saved
-    :instance: Specific instance being saved
-    """
-    if instance.invoice_added:
-        content_type = ContentType.objects.get(model='invoice')
-        events = CreatedEvent.objects.filter(model=content_type,
-                                             owner=instance.product.owner)
-        for event in events:
-            EmailTask.objects.create(act_on=instance.invoice,
-                                     related_event=event).schedule()
-
-
+# The receivers used are defined in myemails.signals but bound here. If they
+# were to be bound in myemails.signals as well, we would have a few interesting
+# and infuriating import issues.
+from myemails.signals import cron_post_save, value_pre_save, value_post_save, \
+    post_add_invoice, pre_add_invoice
 bind_events = lambda type_, sender, pre=None, post=None: [
     pre_save.connect(pre, sender=sender,
                      dispatch_uid='pre_save__%s_%s' % (
@@ -398,20 +292,3 @@ try:
 except OperationalError:
     # We're running syncdb and the ContentType table doesn't exist yet
     pass
-
-
-@task(name="tasks.send_event_email", ignore_result=True)
-def send_event_email(email_task):
-    """
-    Send an appropriate email given an EmailTask instance.
-
-    Inputs:
-    :email_task: EmailTask we are using to generate this email
-    """
-    email_task.task_id = send_event_email.request.id
-    email_task.save()
-
-    email_task.send_email()
-
-    email_task.completed_on = datetime.now()
-    email_task.save()
