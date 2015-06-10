@@ -1,9 +1,15 @@
 {% load i18n %}
 {% load common_tags %}
-<link href="{{ STATIC_URL }}topbar.162-6.css" rel="stylesheet" type="text/css">
+
+{% if request.GET.callback %}
+<link href="{{ STATIC_URL }}topbar.directseo.165-10.css" rel="stylesheet" type="text/css">
+{% else %}
+<link href="{{ STATIC_URL }}topbar.myjobs.165-10.css" rel="stylesheet" type="text/css">
+{% endif %}
+
 <div class="topbar" data-dropdown="dropdown" role="menubar">
     <div class="topbar-inner">
-        <div id="de-topbar-content" class="wrapper" {% if from_ajax %}style="margin:0 auto; width:960px; display:block;"{% endif %}>
+        <div id="de-topbar-content" class="wrapper">
             <div id="logo-block" class="de-topbar-item">
                 <a id="anchor-logo" href="http://www.my.jobs/">
                     <h3 id="topbar-logo">My.jobs</h3>
