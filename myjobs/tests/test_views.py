@@ -920,6 +920,20 @@ class MyJobsViewsTests(MyJobsBase):
         p3p = str(response["P3P"])
         self.assertEqual('CP="ALL' in p3p, True)
 
+    def test_topbar_with_invalid_session(self):
+        response = self.client.get(
+            reverse('topbar'), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        # ensure topbar shows logged in options
+        self.assertIn(self.user.email, response.content)
+
+        Session.objects.all().delete()
+        response = self.client.get(
+            reverse('topbar'), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        # ensure topbar shows logged out options
+        self.assertIn("Login", response.content)
+
     def test_referring_site_in_topbar(self):
         self.client.get(
             reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'
