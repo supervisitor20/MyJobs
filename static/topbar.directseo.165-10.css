@@ -345,6 +345,206 @@ ul.submenu > li > a:hover {
     display: none;
 }
 
+@media screen and (max-width: 800px) {
+    .wrapper {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .menu-container > .mobile_hide {
+        display: none;
+    }
+
+    .menu-container > .desktop_hide {
+        display: block;
+    }
+
+    #logo-block {
+        margin-top: 10px;
+    }
+
+    .topbar #last-microsite-name {
+        display: block;
+        margin-top: 2px;
+    }
+
+    .topbar #nav .arrow {
+        display: none;
+    }
+
+    .topbar .gravatar-blank,
+    .topbar #nav img {
+        display: none;
+    }
+
+    #topbar-back {
+        position: absolute;
+        right: 70px;
+        top: 10px;
+        padding: 13px;
+        background-color: #a95051;
+        border: 2px solid #FFF;
+        border-radius: 5px;
+    }
+
+    #topbar-back #prm-arrow-left{
+        width: 0;
+        height: 0;
+        border-bottom: 10px solid transparent;
+        border-top: 10px solid transparent;
+        border-right: 15px solid #2f2f2f;
+        font-size: 0;
+        line-height: 0;
+        display: block;
+    }
+
+    #employer-tools:after,
+    #settings-link:after,
+    #mobile-company-select > a:after{
+        border-bottom: 10px solid transparent;
+        border-left: 15px solid #FFF;
+        border-top: 10px solid transparent;
+        content: "";
+        display: inline-block;
+        float: right;
+        font-size: 0;
+        line-height: 0;
+        margin-bottom: -2px;
+    }
+
+    #topbar-back > #prm-arrow-left {
+        border-right: 15px solid #FFF;
+    }
+
+    #nav .main-nav {
+        background: #a95051 url(//d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/superbutton.png) no-repeat;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        text-indent: -9000px;
+        z-index: 101;
+        border: 2px solid #FFF;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .topbar li a {
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .topbar-inner {
+        background: #444;
+        height: 50px;
+        border-bottom: 20px solid #a95051;
+    }
+
+    #topbar-login form {
+        display: none;
+    }
+
+    .section #nav {
+        display: none;
+    }
+
+    #topbar-login #nav.active + form,
+    #topbar-login #nav:hover + form {
+        background:#444;
+        padding: 10px 0 10px 0;
+        margin: 3px 0 0 0;
+        position:absolute;
+        top: 0;
+        left: 0;
+        display: block;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        width: 100%;
+    }
+
+    .topbar #topbar-login input {
+        height: 30px;
+     }
+
+    .topbar #topbar-login button {
+        margin-right: 70px;
+        padding: 10px 25px 9px 25px;
+    }
+
+    .topbar #nav ul#pop-menu {
+        border-top: 20px solid #a95051;
+        position: fixed;
+        left: 0;
+        width: 100%;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+        margin: 0 -10px 0 0;
+    }
+
+    .topbar #nav ul#pop-menu li {
+        display: block;
+        margin: 0;
+        width: 100%;
+    }
+
+    .topbar #nav ul#pop-menu li.no-show {
+        display: none;
+    }
+
+    .topbar #nav ul#pop-menu li a {
+        -webkit-border-radius: 0;
+        -moz-border-radius: 0;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        font-size: 2em;
+        height: 25px;
+        padding: 10px;
+    }
+
+    #pop-menu {
+        height: 100%;
+    }
+
+    #pop-menu .desktop_hide {
+        display: block;
+    }
+
+    .topbar #last-microsite .arrow {
+        margin-top: -19px;
+    }
+}
+
+@media screen and (min-width: 801px) {
+    #nav ul#pop-menu {
+        right: 0;
+    }
+
+    #profile-link,
+    #savedsearch-link,
+    #candidate-link,
+    #partner-link,
+    #settings-link {
+        display: none !important;
+    }
+
+    #account-link, #logout-link {
+        display: block;
+    }
+
+    .topbar ul {
+        position: relative;
+    }
+
+    #nav li:hover ul#pop-menu {
+        display: block;
+        text-align: left;
+    }
+}
+
 #menu-inbox ~ ul li > p {
     color: white;
     padding-left: 4px;
