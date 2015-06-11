@@ -20,10 +20,11 @@ class Report(models.Model):
                     `referrals` from the `ContactRecord` model).
     """
     name = models.CharField(max_length=50)
-    created_by = models.ForeignKey('myjobs.User')
+    created_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey('seo.Company')
     created_on = models.DateTimeField(auto_now_add=True)
-    order_by = models.CharField(max_length=50, blank=True)
+    order_by = models.CharField(max_length=50, blank=True, default='')
     app = models.CharField(default='mypartners', max_length=50)
     model = models.CharField(default='contactrecord', max_length=50)
     # included columns and sort order
