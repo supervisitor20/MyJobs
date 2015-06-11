@@ -218,11 +218,13 @@ class Breadbox(object):
             location_slugs = location_slug.split('/')
             try:
                 left = slugs.index(location_slugs[0])
+            except ValueError:
+                # location slug isn't part of the path 
+                pass
+            else:
                 right = left + len(location_slugs)
                 new_path = '/'.join(slugs[:left] + location_filters[1:] +
                                     slugs[right:])
-            except ValueError:
-                pass
 
             kwargs = {
                 # This class name is different because of the way we used to
