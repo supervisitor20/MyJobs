@@ -158,3 +158,22 @@ class UserManagerTests(MyJobsBase):
         self.assertEqual(owner_user.pk, user.pk)
         owner_user = User.objects.get_email_owner('secondary@email.test')
         self.assertEqual(owner_user.pk, user.pk)
+
+    def test_deleting_user_does_not_cascade(self):
+        """
+        Deleting a user shouldn't delete related objects such as partner saved
+        searches and reports.
+        """
+        from mysearches.models import PartnerSavedSearch
+        from mysearches.tests.factories import PartnerSavedSearchFactory
+        from myreports.models import Report
+        from seo.tests.factories import CompanyFactory
+
+        user = UserFactory(email="test@test.com")
+        company = CompanyFactory()
+        pss = PartnerSavedSearchFactory(created_by=user)
+        report = Report.objects.create(created_by=user, owner=company)
+
+        user.delete()
+        self.assertIn(pss, PartnerSavedSearch.objects.all())
+        self.assertIn(report, Report.objects.all())
