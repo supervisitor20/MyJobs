@@ -103,7 +103,7 @@ class Event(models.Model):
     def schedule_for(self, for_object):
         """
         Determines what time an event should be scheduled for; Unless
-        overridden, this defaults to right now.
+        overridden in a subclass, this defaults to right now.
 
         Inputs:
         :for_object: Object being scheduled; not used in the default method.
