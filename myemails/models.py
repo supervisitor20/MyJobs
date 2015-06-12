@@ -269,27 +269,30 @@ Inputs:
 :post: Method to be bound to the post_save signal; default: None
 """
 
+model_map = {}
 try:
     for model in ALL_EVENT_MODELS:
-        Model = ContentType.objects.get(model=model).model_class()
+        # Invoice is a foreign key on PurchasedProduct; if we're looking
+        # at an invoice, bind signals on purchased product instead.
+        content_type = model if model != 'invoice' else 'purchasedproduct'
+        model_map[model] = ContentType.objects.get(
+            model=content_type).model_class()
+except OperationalError:
+    # We're running syncdb and the ContentType table doesn't exist yet
+    pass
+else:
+    for model, Model in model_map.items():
         if model in CRON_EVENT_MODELS:
             bind_events('cron', Model, post=cron_post_save)
         if model in VALUE_EVENT_MODELS:
             bind_events('value', Model, value_pre_save, value_post_save)
         if model in CREATED_EVENT_MODELS:
             if model == 'invoice':
-                # Invoice is a foreign key on PurchasedProduct; bind this
-                # signal to PurchasedProduct instead.
-                PurchasedProduct = ContentType.objects.get(
-                    model='purchasedproduct').model_class()
-                bind_events('created', PurchasedProduct,
-                            pre_add_invoice, post_add_invoice)
+                bind_events('created', Model, pre_add_invoice,
+                            post_add_invoice)
             else:
                 # There are no other valid models for this choice, but there
                 # likely will be in the future. I'm not writing something that
                 # will certainly be wrong, so let's put it off until it's
                 # relevant. - TP
                 raise NotImplementedError('Add some signals for %s!' % model)
-except OperationalError:
-    # We're running syncdb and the ContentType table doesn't exist yet
-    pass
