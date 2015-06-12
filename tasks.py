@@ -281,8 +281,8 @@ def process_batch_events():
     # These users have not responded in a month. Send them an email if they
     # own any saved searches
     inactive = User.objects.select_related('savedsearch_set')
-    inactive = inactive.filter(Q(last_response=now-timedelta(days=82)) |
-                               Q(last_response=now-timedelta(days=89)))
+    inactive = inactive.filter(Q(last_response=now-timedelta(days=172)) |
+                               Q(last_response=now-timedelta(days=179)))
 
     category = '{"category": "User Inactivity (%s)"}'
     for user in inactive:
@@ -298,7 +298,7 @@ def process_batch_events():
                             headers=headers)
 
     # These users have not responded in 90 days. Stop sending emails.
-    users = User.objects.filter(last_response__lte=now-timedelta(days=90))
+    users = User.objects.filter(last_response__lte=now-timedelta(days=180))
     users.update(opt_in_myjobs=False)
 
 
