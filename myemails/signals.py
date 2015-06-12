@@ -32,7 +32,7 @@ def cron_post_save(sender, instance, **kwargs):
         if event in events:
             # If an event is already scheduled, remove it from the list of
             # events to be scheduled.
-            events.pop(events.index(event))
+            events.remove(event)
     for event in events:
         # Schedule all remaining events.
         EmailTask.objects.create(act_on=instance,
