@@ -52,7 +52,8 @@ class Status(models.Model):
 
     code = models.PositiveSmallIntegerField(
         default=APPROVED, choices=CODES.items(), verbose_name="Status Code")
-    approved_by = models.ForeignKey('myjobs.User', null=True)
+    approved_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
     last_modified = models.DateTimeField(
         auto_now=True, verbose_name="Last Modified")
 
