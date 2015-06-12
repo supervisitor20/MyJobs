@@ -185,8 +185,7 @@ class Location(models.Model):
                                    blank=True)
 
     def __unicode__(self):
-        return (", ".join([self.city, self.state]) if self.city and self.state
-                else self.city or self.state)
+        return ", ".join(filter(bool, [self.city, self.state]))
 
     natural_key = __unicode__
 
@@ -465,9 +464,17 @@ class Partner(models.Model):
         return logs.order_by('-action_time')[:num_items]
 
     def get_contact_locations(self):
-        return Location.objects.filter(
+        """Return a list of unique contact locations as strings."""
+
+        # Unique city and state pairs attached to contacts belonging to this
+        # partner.
+        locs = Location.objects.filter(
             contacts__in=self.contact_set.all()).exclude(
-                contacts__archived_on__isnull=False).order_by('state', 'city')
+                contacts__archived_on__isnull=False).values(
+                    'city', 'state').distinct().order_by('state', 'city')
+
+        # Convert these city/state pairs into comma separated strings
+        return [", ".join(filter(bool, [l['city'], l['state']])) for l in locs]
 
     # get_contact_records_for_partner
     def get_contact_records(self, contact_name=None, record_type=None,
