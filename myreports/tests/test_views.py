@@ -319,6 +319,7 @@ class TestDownloadReport(MyReportsTestCase):
         # ensure that all contact record values except pk are available
         self.assertEqual(
             len(report.python[0].keys()) - 1, len(response.context['columns']))
+        
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
