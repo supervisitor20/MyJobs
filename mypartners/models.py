@@ -202,7 +202,8 @@ class Contact(models.Model):
     """
     user = models.ForeignKey(User, blank=True, null=True,
                              on_delete=models.SET_NULL)
-    partner = models.ForeignKey('Partner')
+    partner = models.ForeignKey('Partner', 
+                                null=True, on_delete=models.SET_NULL)
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
@@ -382,7 +383,8 @@ class Partner(models.Model):
                                 on_delete=models.SET_NULL)
     tags = models.ManyToManyField('Tag', null=True)
     # owner is the Company that owns this partner.
-    owner = models.ForeignKey('seo.Company')
+    owner = models.ForeignKey('seo.Company', null=True,
+                              on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
@@ -690,8 +692,8 @@ class ContactRecord(models.Model):
 
     created_on = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    partner = models.ForeignKey(Partner)
-    contact = models.ForeignKey(Contact, null=True)
+    partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
+    contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
                                     max_length=50,
                                     verbose_name="Contact Type")
