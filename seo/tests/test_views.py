@@ -1790,6 +1790,12 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 self.assertEqual(count.text.strip(), count_text)
 
     def test_url_for_sort_field(self):
+        """
+        Test that queries with unicode in search terms don't cause an error.
+        The templatetag is being used directly to bypass the possibility of 404
+        errors, thus minimizing external factors related to this particular
+        regression.
+        """
         request = RequestFactory().get(
             '/jobs/?q=Truck+Driver+%E2%80%93+CDL+Class+A%2FTouch+Freight'
             '+%E2%80%93+Penske+Logistics')
