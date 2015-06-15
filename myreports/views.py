@@ -365,3 +365,13 @@ def download_report(request):
     response.write(serialize('csv', records, values=values, order_by=order_by))
 
     return response
+
+
+@company_has_access('prm_access')
+def andor(request):
+    from seo.models import Company
+    from mypartners.models import Tag
+    company = get_company_or_404(request)
+    ctx = {'items': Tag.objects.filter(company=company)}
+    return render_to_response('myreports/includes/andor.html', ctx,
+                              RequestContext(request))

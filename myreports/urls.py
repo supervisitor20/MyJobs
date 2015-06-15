@@ -14,4 +14,5 @@ urlpatterns = patterns(
         name='view_records'),
     url(r'download$', 'download_report', name='download_report'),
     url(r'view/downloads$', 'downloads', name='downloads'),
+    url(r'view/andor$', 'andor', name='andor')
 )

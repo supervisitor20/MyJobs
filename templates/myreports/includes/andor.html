@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block site-title %}
+    <title>My.jobs - Reports - {{ company.name }} (beta)</title>
+    <meta name="title" content="My.jobs - Reports - {{ company.name }}">
+{% endblock %}
+
+{% block meta-extra %}
+<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
+<link rel="stylesheet" href="{{STATIC_URL}}andor.css">
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div id="render" class="span12">
+            <div id="andor-container">
+                <div class="search">
+                    <span class="search-label">Search:</span>
+                    <input class="search-input" type="text"/>
+                    <span class="search-icon">
+                        <i class="fa fa-search"></i>
+                    </span>
+                </div>
+                <div class="item-container">
+                    {% for item in items %}
+                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
+                            {{ item.name }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="new-bucket">
+                    <div class="inside-bucket">
+                        <span class="bucket-text">
+                            Drag for New
+                            <div class="bucket-icon-green">
+                                <i class="fa fa-plus-circle fa-2x"></i>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span8">
+            <div id="andor-container">
+                <div class="search">
+                    <span class="search-label">Search:</span>
+                    <input class="search-input" type="text"/>
+                    <span class="search-icon">
+                        <i class="fa fa-search"></i>
+                    </span>
+                </div>
+                <div class="item-container">
+                    {% for item in items %}
+                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
+                            {{ item.name }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="new-bucket">
+                    <div class="inside-bucket">
+                        <span class="bucket-text">
+                            Drag for New
+                            <div class="bucket-icon-green">
+                                <i class="fa fa-plus-circle fa-2x"></i>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span6">
+            <div id="andor-container">
+                <div class="search">
+                    <span class="search-label">Search:</span>
+                    <input class="search-input" type="text"/>
+                    <span class="search-icon">
+                        <i class="fa fa-search"></i>
+                    </span>
+                </div>
+                <div class="item-container">
+                    {% for item in items %}
+                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
+                            {{ item.name }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span4">
+            <div id="andor-container">
+                <div class="search">
+                    <span class="search-label">Search:</span>
+                    <input class="search-input" type="text"/>
+                    <span class="search-icon">
+                        <i class="fa fa-search"></i>
+                    </span>
+                </div>
+                <div class="item-container">
+                    {% for item in items %}
+                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
+                            {{ item.name }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra-js %}
+    <script type="text/javascript" src="{{STATIC_URL}}andor.js"></script>
+{% endblock %}
