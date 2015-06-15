@@ -36,6 +36,7 @@ from seo.tests.setup import (connection, DirectSEOBase, DirectSEOTestCase,
                              patch_settings)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
                         SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
+from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
 from universal.helpers import build_url
@@ -1787,6 +1788,17 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 if 'indianapolis' in url:
                     count_text += 'polis, IN'
                 self.assertEqual(count.text.strip(), count_text)
+
+    def test_url_for_sort_field(self):
+        request = RequestFactory().get(
+            '/jobs/?q=Truck+Driver+%E2%80%93+CDL+Class+A%2FTouch+Freight'
+            '+%E2%80%93+Penske+Logistics')
+
+        context = {'request': request}
+        try:
+            url_for_sort_field(context, 'relevance')
+        except UnicodeEncodeError as e:
+            self.fail(e)
 
     def test_job_listing_by_slug_tag(self):
         """
