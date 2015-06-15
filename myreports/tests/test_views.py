@@ -304,22 +304,6 @@ class TestDownloadReport(MyReportsTestCase):
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
 
 
-    def test_all_columns_available(self):
-        response = self.client.post(path=reverse('reports', kwargs={
-            'app': 'mypartners', 'model': 'contactrecord'}))
-        report_name = response.content
-        report = Report.objects.get(name=report_name)
-
-        response = self.client.get(
-            path=reverse('downloads'), data={'id': report.pk},
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-
-        self.assertEqual(response.status_code, 200)
-
-        # ensure that all contact record values except pk are available
-        self.assertEqual(
-            len(report.python[0].keys()) - 1, len(response.context['columns']))
-
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
 
