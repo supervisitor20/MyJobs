@@ -81,15 +81,11 @@ def can_send_email(domain):
 
     """
     if not domain_exists(domain):
-        return False
+        return None
 
     DNS.DiscoverNameServers()
     mx_hosts = DNS.mxlookup(domain)
-    can_send = False
-    for _, mx_host in mx_hosts:
-        can_send = mx_host == 'mx.sendgrid.net'
-
-    return can_send
+    return any(mx_host == 'mx.sendgrid.net' for _, mx_host in mx_hosts)
 
 
 def make_mx_record(domain):
