@@ -731,7 +731,7 @@ class Company(models.Model):
                                                     blank=True)
 
     # Permissions
-    prm_access = models.BooleanField(default=True)
+    prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
