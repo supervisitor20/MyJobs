@@ -1710,9 +1710,10 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     fl = list(helpers.search_fields)
     index = fl.index('description')
     fl.pop(index)
-    # Don't bother getting the description if we're not going to
-    # show the description to the user.
-    if query_path:
+    # We use the html_description to show highlighted snippets of the
+    # description that match the search term. If there is no search
+    # term there's no reason to even get the html_description.
+    if q_term:
         fl.append('html_description')
 
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
