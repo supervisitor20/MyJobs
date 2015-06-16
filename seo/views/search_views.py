@@ -1706,8 +1706,17 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
 
+    # Text uses html_description instead of just description.
+    fl = list(helpers.search_fields)
+    index = fl.index('description')
+    fl.pop(index)
+    # Don't bother getting the description if we're not going to
+    # show the description to the user.
+    if query_path:
+        fl.append('html_description')
+
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
-        request, filters, num_jobs)
+        request, filters, num_jobs, fl=fl)
 
     total_featured_jobs = featured_jobs.count()
     total_default_jobs = default_jobs.count()
@@ -1726,8 +1735,9 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     featured_jobs = featured_jobs[:num_featured_jobs]
 
     jobs = list(itertools.chain(featured_jobs, default_jobs))
-    for job in jobs:
-        helpers.add_text_to_job(job)
+    if query_path:
+        for job in jobs:
+            helpers.add_text_to_job(job)
     
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
 
