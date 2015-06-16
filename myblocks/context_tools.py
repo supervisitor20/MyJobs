@@ -151,10 +151,7 @@ def get_jobs_and_counts(request):
     fl = list(helpers.search_fields)
     index = fl.index('description')
     fl.pop(index)
-    # Don't bother getting the description if we're not going to
-    # show the description to the user.
-    if get_query_string(request):
-        fl.append('html_description')
+    fl.append('html_description')
 
     filters = get_filters(request)
     site_config = get_site_config(request)
