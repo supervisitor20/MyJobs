@@ -46,7 +46,7 @@ search_fields = ['apply_info', 'city', 'company', 'company_canonical_microsite',
                  'company_enhanced', 'company_exact', 'company_slab', 'country',
                  'country_short', 'date_new', 'date_updated',
                  'description', 'django_ct', 'django_id', 'guid', 'highlighted',
-                 'html_description', 'id', 'link', 'location',
+                 'html_description', 'id', 'is_posted', 'link', 'location',
                  'location_exact', 'reqid', 'score', 'state',
                  'state_short', 'text', 'title', 'title_exact', 'uid']
 
