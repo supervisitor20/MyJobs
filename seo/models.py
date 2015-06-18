@@ -11,7 +11,8 @@ from django.core.cache import cache
 from django.core.validators import MaxValueValidator, ValidationError
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models.signals import post_delete, pre_delete, post_save
+from django.db.models.signals import (post_delete, pre_delete, post_save,
+                                      pre_save)
 from django.dispatch import receiver
 
 from haystack.inputs import Raw
@@ -731,7 +732,7 @@ class Company(models.Model):
                                                     blank=True)
 
     # Permissions
-    prm_access = models.BooleanField(default=True)
+    prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
@@ -766,6 +767,11 @@ class Company(models.Model):
     def has_packages(self):
         return self.sitepackage_set.filter(
             sites__in=settings.SITE.postajob_site_list()).exists()
+
+
+@receiver(pre_save, sender=Company, dispatch_uid='pre_save_company_signal')
+def update_prm_access(sender, instance, **kwargs):
+    instance.prm_access = instance.member
 
 
 class FeaturedCompany(models.Model):

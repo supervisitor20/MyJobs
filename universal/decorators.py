@@ -129,11 +129,41 @@ not_found_when = partial(
     warn_when,
     exception=Http404)
 
+# TODO: refactor these so that warn_when/not_found_when can be passed in,
+# rather than having a separate function for each one.
 warn_when_inactive = partial(
     warn_when,
-    condition=lambda req: not req.user.is_anonymous() and
-                          (not req.user.is_verified or not req.user.is_active),
+    condition=lambda req:
+        not req.user.is_anonymous() and
+        (not req.user.is_verified or not req.user.is_active),
     message='You have yet to activate your account.',
     link='/accounts/register/resend',
     link_text='Resend Activation')
 
+
+def has_access(feature):
+    """
+    Decorator that signifies which feature permissions are required in order to
+    access the view.
+
+    Inputs:
+        :feature: Name of feature to check permissiosn for.
+
+    Returns:
+        A decorator that raises a 404 if the supplied feature's permission
+        requirements are not met. If no permissions are specified for the given
+        feature, it is assumed that the feature should never be available.
+    """
+
+    # mapping from feature name to a list of conditions to be met.
+    conditions = {
+        'prm': [
+            # not a member company
+            lambda req: not getattr(get_company(req), 'prm_access', False)
+        ]
+    }
+
+    return not_found_when(
+        condition=lambda req: all(c(req) for c in conditions.get(feature, [])),
+        message="Must have %s access to proceed." % feature,
+        feature=feature)
