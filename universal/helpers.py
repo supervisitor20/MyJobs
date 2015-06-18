@@ -8,6 +8,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import EmailMessage
+from django.http import QueryDict
 
 
 def update_url_param(url, param, new_val):
@@ -26,10 +27,9 @@ def update_url_param(url, param, new_val):
 
     url_parts = list(urlparse(url))
     parts = copy(url_parts)
-    query = {k.encode('utf-8'): v.encode('utf-8')
-             for k, v in parse_qsl(parts[4])}
+    query = QueryDict(parts[4], mutable=True)
     query[param] = new_val
-    parts[4] = urllib.urlencode(query)
+    parts[4] = query.urlencode()
 
     return urlunparse(parts)
 
