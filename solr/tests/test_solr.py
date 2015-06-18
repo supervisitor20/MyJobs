@@ -174,6 +174,10 @@ class SolrTests(MyJobsBase):
         self.assertEqual(expected['User_email'], result['User_email'])
         self.assertEqual(expected['SavedSearch_url'], result['SavedSearch_url'])
 
+        search.user = None
+        search.save()
+        self.assertEqual(object_to_dict(SavedSearch, search), None)
+
     def test_address_slabs(self):
         expected = {
             'Address_content_type_id': [26],
