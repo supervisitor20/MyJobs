@@ -533,7 +533,7 @@ class SeoSite(Site):
         Ensures that an MX record exists for a given domain, if possible.
         This allows the domain as an option for email_domain.
         """
-        if mail.outbox:
+        if not hasattr(mail, 'outbox'):
             # This is being run in a testing environment; don't try creating
             # an MX record.
             try:
