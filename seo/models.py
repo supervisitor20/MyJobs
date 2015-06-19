@@ -534,8 +534,7 @@ class SeoSite(Site):
         This allows the domain as an option for email_domain.
         """
         if not hasattr(mail, 'outbox'):
-            # This is being run in a testing environment; don't try creating
-            # an MX record.
+            # Don't try creating MX records when running tests.
             try:
                 can_send = can_send_email(self.domain)
                 if can_send is not None and not can_send:
