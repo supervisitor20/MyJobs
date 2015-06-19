@@ -149,8 +149,7 @@ def get_job(request, job_id):
 def get_jobs_and_counts(request):
     # Text uses html_description instead of just description.
     fl = list(helpers.search_fields)
-    index = fl.index('description')
-    fl.pop(index)
+    fl.remove('description')
     fl.append('html_description')
 
     filters = get_filters(request)
