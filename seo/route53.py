@@ -79,6 +79,14 @@ def can_send_email(domain):
     Confirms that we own the domain and there's an mx record pointing
     to sendgrid for it.
 
+    Inputs:
+    :domain: Domain to be checked
+
+    Outputs:
+    :return: Boolean/None
+        None: we don't control this domain
+        False: we control this domain but no MX record has been created
+        True: we control this domain and an MX record already exists
     """
     if not domain_exists(domain):
         return None
