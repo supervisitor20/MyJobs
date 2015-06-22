@@ -1,4 +1,7 @@
 import operator
+from DNS import DNSError
+from boto.route53.exception import DNSServerError
+from django.core import mail
 from slugify import slugify
 
 from django.conf import settings
@@ -11,7 +14,8 @@ from django.core.cache import cache
 from django.core.validators import MaxValueValidator, ValidationError
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models.signals import post_delete, pre_delete, post_save
+from django.db.models.signals import (post_delete, pre_delete, post_save,
+                                      pre_save)
 from django.dispatch import receiver
 
 from haystack.inputs import Raw
@@ -23,10 +27,11 @@ from taggit.managers import TaggableManager
 from moc_coding import models as moc_models
 from registration.models import Invitation
 from social_links import models as social_models
+from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
 from myjobs.models import User
 from mypartners.models import Tag
-from universal.helpers import get_domain, get_object_or_none, has_mx_record
+from universal.helpers import get_domain, get_object_or_none
 
 
 import decimal
@@ -528,6 +533,23 @@ class SeoSite(Site):
                                           related_name='canonical_company_for')
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
+    def clean_domain(self):
+        """
+        Ensures that an MX record exists for a given domain, if possible.
+        This allows the domain as an option for email_domain.
+        """
+        if not hasattr(mail, 'outbox'):
+            # Don't try creating MX records when running tests.
+            try:
+                can_send = can_send_email(self.domain)
+                if can_send is not None and not can_send:
+                    make_mx_record(self.domain)
+            except (DNSError, DNSServerError):
+                # This will create some false negatives but there's not much
+                # to be done about that aside from multiple retries.
+                pass
+        return self.domain
+
     def clean_email_domain(self):
         # TODO: Finish after MX Records are sorted out
         # Determine if the company actually has permission to use the domain.
@@ -540,7 +562,7 @@ class SeoSite(Site):
                                   'that is associated with your company.')
 
         # Ensure that we have an MX record for the domain.
-        if not has_mx_record(self.email_domain):
+        if not can_send_email(self.email_domain):
             raise ValidationError('You do not currently have the ability '
                                   'to send emails from this domain.')
         return self.email_domain
@@ -566,7 +588,6 @@ class SeoSite(Site):
         buid_cache_keys = ['%s:buids' % key for key in site_cache_keys]
         social_cache_keys = ['%s:social_links' % site.domain for site in sites]
         cache.delete_many(site_cache_keys + buid_cache_keys + social_cache_keys)
-
 
     def email_domain_choices(self,):
         from postajob.models import CompanyProfile
@@ -731,7 +752,7 @@ class Company(models.Model):
                                                     blank=True)
 
     # Permissions
-    prm_access = models.BooleanField(default=True)
+    prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
@@ -766,6 +787,11 @@ class Company(models.Model):
     def has_packages(self):
         return self.sitepackage_set.filter(
             sites__in=settings.SITE.postajob_site_list()).exists()
+
+
+@receiver(pre_save, sender=Company, dispatch_uid='pre_save_company_signal')
+def update_prm_access(sender, instance, **kwargs):
+    instance.prm_access = instance.member
 
 
 class FeaturedCompany(models.Model):

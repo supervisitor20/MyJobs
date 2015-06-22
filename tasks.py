@@ -281,8 +281,8 @@ def process_batch_events():
     # These users have not responded in a month. Send them an email if they
     # own any saved searches
     inactive = User.objects.select_related('savedsearch_set')
-    inactive = inactive.filter(Q(last_response=now-timedelta(days=82)) |
-                               Q(last_response=now-timedelta(days=89)))
+    inactive = inactive.filter(Q(last_response=now-timedelta(days=172)) |
+                               Q(last_response=now-timedelta(days=179)))
 
     category = '{"category": "User Inactivity (%s)"}'
     for user in inactive:
@@ -298,7 +298,7 @@ def process_batch_events():
                             headers=headers)
 
     # These users have not responded in 90 days. Stop sending emails.
-    users = User.objects.filter(last_response__lte=now-timedelta(days=90))
+    users = User.objects.filter(last_response__lte=now-timedelta(days=180))
     users.update(opt_in_myjobs=False)
 
 
@@ -334,7 +334,12 @@ def update_solr_task(solr_location=None):
         content_type, key = obj.uid.split("##")
         model = ContentType.objects.get_for_id(content_type).model_class()
         if model == SavedSearch:
-            updates.append(object_to_dict(model, model.objects.get(pk=key)))
+            search = model.objects.get(pk=key)
+            # Saved search recipients can currently be null; Displaying these
+            # searches may be implemented in the future but will likely require
+            # some template work.
+            if search.user:
+                updates.append(object_to_dict(model, search))
         # If the user is being updated, because the user is stored on the
         # SavedSearch document, every SavedSearch belonging to that user
         # also has to be updated.
@@ -389,7 +394,7 @@ def task_reindex_solr(solr_location=None):
     for x in u:
         l.append(profileunits_to_dict(x))
 
-    s = SavedSearch.objects.all()
+    s = SavedSearch.objects.filter(user__isnull=False)
     for x in s:
         saved_search_dict = object_to_dict(SavedSearch, x)
         saved_search_dict['doc_type'] = 'savedsearch'
@@ -861,6 +866,7 @@ def event_list_to_email_log(event_list):
 
     return events_to_create
 
+
 @task(name="tasks.process_sendgrid_event", ignore_result=True)
 def process_sendgrid_event(events):
     """
@@ -874,3 +880,20 @@ def process_sendgrid_event(events):
     event_list = get_event_list(events)
     events_to_create = event_list_to_email_log(event_list)
     EmailLog.objects.bulk_create(events_to_create)
+
+
+@task(name="tasks.send_event_email", ignore_result=True)
+def send_event_email(email_task):
+    """
+    Send an appropriate email given an EmailTask instance.
+
+    Inputs:
+    :email_task: EmailTask we are using to generate this email
+    """
+    email_task.task_id = send_event_email.request.id
+    email_task.save()
+
+    email_task.send_email()
+
+    email_task.completed_on = datetime.now()
+    email_task.save()
