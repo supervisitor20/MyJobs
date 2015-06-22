@@ -1,4 +1,7 @@
 import operator
+from DNS import DNSError
+from boto.route53.exception import DNSServerError
+from django.core import mail
 from slugify import slugify
 
 from django.conf import settings
@@ -23,7 +26,7 @@ from taggit.managers import TaggableManager
 from moc_coding import models as moc_models
 from registration.models import Invitation
 from social_links import models as social_models
-from seo.route53 import can_send_email
+from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
 from myjobs.models import User
 from mypartners.models import Tag
@@ -524,6 +527,23 @@ class SeoSite(Site):
                                           on_delete=models.SET_NULL,
                                           related_name='canonical_company_for')
     email_domain = models.CharField(max_length=255, default='my.jobs')
+
+    def clean_domain(self):
+        """
+        Ensures that an MX record exists for a given domain, if possible.
+        This allows the domain as an option for email_domain.
+        """
+        if not hasattr(mail, 'outbox'):
+            # Don't try creating MX records when running tests.
+            try:
+                can_send = can_send_email(self.domain)
+                if can_send is not None and not can_send:
+                    make_mx_record(self.domain)
+            except (DNSError, DNSServerError):
+                # This will create some false negatives but there's not much
+                # to be done about that aside from multiple retries.
+                pass
+        return self.domain
 
     def clean_email_domain(self):
         # TODO: Finish after MX Records are sorted out
