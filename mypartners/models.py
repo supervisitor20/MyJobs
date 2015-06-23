@@ -52,7 +52,8 @@ class Status(models.Model):
 
     code = models.PositiveSmallIntegerField(
         default=APPROVED, choices=CODES.items(), verbose_name="Status Code")
-    approved_by = models.ForeignKey('myjobs.User', null=True)
+    approved_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
     last_modified = models.DateTimeField(
         auto_now=True, verbose_name="Last Modified")
 
@@ -185,8 +186,7 @@ class Location(models.Model):
                                    blank=True)
 
     def __unicode__(self):
-        return (", ".join([self.city, self.state]) if self.city and self.state
-                else self.city or self.state)
+        return ", ".join(filter(bool, [self.city, self.state]))
 
     natural_key = __unicode__
 
@@ -202,7 +202,8 @@ class Contact(models.Model):
     """
     user = models.ForeignKey(User, blank=True, null=True,
                              on_delete=models.SET_NULL)
-    partner = models.ForeignKey('Partner')
+    partner = models.ForeignKey('Partner', 
+                                null=True, on_delete=models.SET_NULL)
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
@@ -382,7 +383,8 @@ class Partner(models.Model):
                                 on_delete=models.SET_NULL)
     tags = models.ManyToManyField('Tag', null=True)
     # owner is the Company that owns this partner.
-    owner = models.ForeignKey('seo.Company')
+    owner = models.ForeignKey('seo.Company', null=True,
+                              on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
@@ -465,9 +467,17 @@ class Partner(models.Model):
         return logs.order_by('-action_time')[:num_items]
 
     def get_contact_locations(self):
-        return Location.objects.filter(
+        """Return a list of unique contact locations as strings."""
+
+        # Unique city and state pairs attached to contacts belonging to this
+        # partner.
+        locs = Location.objects.filter(
             contacts__in=self.contact_set.all()).exclude(
-                contacts__archived_on__isnull=False).order_by('state', 'city')
+                contacts__archived_on__isnull=False).values(
+                    'city', 'state').distinct().order_by('state', 'city')
+
+        # Convert these city/state pairs into comma separated strings
+        return [", ".join(filter(bool, [l['city'], l['state']])) for l in locs]
 
     # get_contact_records_for_partner
     def get_contact_records(self, contact_name=None, record_type=None,
@@ -682,8 +692,8 @@ class ContactRecord(models.Model):
 
     created_on = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    partner = models.ForeignKey(Partner)
-    contact = models.ForeignKey(Contact, null=True)
+    partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
+    contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
                                     max_length=50,
                                     verbose_name="Contact Type")

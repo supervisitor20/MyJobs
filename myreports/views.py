@@ -14,10 +14,10 @@ from myreports.helpers import humanize, parse_params, serialize
 from myreports.models import Report
 from postajob import location_data
 from universal.helpers import get_company_or_404
-from universal.decorators import company_has_access
+from universal.decorators import has_access
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def overview(request):
     """The Reports app landing page."""
     company = get_company_or_404(request)
@@ -48,7 +48,7 @@ def overview(request):
                               RequestContext(request))
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def report_archive(request):
     """Archive of previously run reports."""
     if request.is_ajax():
@@ -79,7 +79,7 @@ def get_states(request):
         raise Http404("This view is only reachable via an AJAX request")
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
     Returns records as JSON.
@@ -144,7 +144,7 @@ class ReportView(View):
     app = 'mypartners'
     model = 'contactrecord'
 
-    @method_decorator(company_has_access('prm_access'))
+    @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
 
@@ -242,7 +242,7 @@ class ReportView(View):
         return HttpResponse(name, content_type='text/plain')
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def regenerate(request):
     """
     Regenerates a report. 
@@ -268,7 +268,7 @@ def regenerate(request):
         "This view is only reachable via a GET request.")
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def downloads(request):
     """ Renders a download customization screen.
 
@@ -325,7 +325,7 @@ def downloads(request):
         raise Http404("This view is only reachable via an AJAX request")
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def download_report(request):
     """
     Download report as CSV.

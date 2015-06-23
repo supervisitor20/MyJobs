@@ -302,7 +302,7 @@ class TestDownloadReport(MyReportsTestCase):
 
         # specifying export values shouldn't modify the underlying report
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
-
+        
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
