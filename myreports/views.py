@@ -367,7 +367,7 @@ def download_report(request):
     return response
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def andor(request):
     from seo.models import Company
     from mypartners.models import Tag
