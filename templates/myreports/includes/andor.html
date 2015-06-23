@@ -12,105 +12,105 @@
 
 {% block content %}
     <div class="row">
-        <div id="render" class="span12">
-            <div id="andor-container">
+        <div class="span12">
+            <h1 style="color: #ffff00; text-shadow: 1px 1px 1px #9B9A9A; margin-bottom: 0;">// TODO</h2>
+            <ul style="font-size: 1.5em; margin: 0 0 10px 10px">
+                <li style="color: #666; margin: 3px 0; text-decoration: line-through;">Add ability to remove tag.</li>
+                <li style="color: #666; margin: 3px 0; text-decoration: line-through;">Click AND drag have the input box.</li>
+                <li style="color: #666; margin: 3px 0; text-decoration: line-through;">Scrollable item container.</li>
+                <li style="color: #666; margin: 3px 0; text-decoration: line-through;">Add AND between boxes.</li>
+                <li style="color: #666; margin: 3px 0;">
+                    Add query that is being built to the bottom as 'help text'.
+                    <span style="color: red; font-size: 0.8em;">(a non-prototype feature implementation)</span>
+                </li>
+                <li style="color: #666; margin: 3px 0;">
+                    Make item-container optional.
+                    <span style="color: red; font-size: 0.8em;">(a non-prototype feature implementation)</span>
+                </li>
+                <li style="color: #666; margin: 3px 0;">
+                    If item-container is present make input box use auto complete.
+                    <span style="color: red; font-size: 0.8em;">(a non-prototype feature implementation)</span>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div id="render" class="span8">
+            <div class="andor-container">
                 <div class="search">
                     <span class="search-label">Search:</span>
                     <input class="search-input" type="text"/>
                     <span class="search-icon">
                         <i class="fa fa-search"></i>
+                        <div></div>
                     </span>
                 </div>
                 <div class="item-container">
                     {% for item in items %}
-                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
-                            {{ item.name }}
-                        </div>
+                        <div class="tag-name" style="background-color: #{{item.hex_color}}">{{ item.name }}</div>
                     {% endfor %}
                 </div>
-                <div class="new-bucket">
+                <div class="add-new-bucket">
                     <div class="inside-bucket">
                         <span class="bucket-text">
-                            Drag for New
+                            Drag or Click for New
                             <div class="bucket-icon-green">
                                 <i class="fa fa-plus-circle fa-2x"></i>
                             </div>
                         </span>
                     </div>
                 </div>
+                <div class="clearfix"></div>
             </div>
         </div>
     </div>
+
+    <!--
     <div class="row">
-        <div class="span8">
-            <div id="andor-container">
-                <div class="search">
-                    <span class="search-label">Search:</span>
-                    <input class="search-input" type="text"/>
-                    <span class="search-icon">
-                        <i class="fa fa-search"></i>
-                    </span>
-                </div>
-                <div class="item-container">
-                    {% for item in items %}
-                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
-                            {{ item.name }}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="new-bucket">
-                    <div class="inside-bucket">
-                        <span class="bucket-text">
-                            Drag for New
-                            <div class="bucket-icon-green">
-                                <i class="fa fa-plus-circle fa-2x"></i>
-                            </div>
+        <div class="andor-container span8">
+            <div class="row">
+                <div id="render" class="span4">
+                    <div class="search">
+                        <span class="search-label">Search:</span>
+                        <input class="search-input" type="text"/>
+                        <span class="search-icon">
+                            <i class="fa fa-search"></i>
+                            <div></div>
                         </span>
                     </div>
+                    <div class="item-container">
+                        {% for item in items %}
+                            <div class="tag-name" style="background-color: #{{item.hex_color}}">
+                                {{ item.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="span6">
-            <div id="andor-container">
-                <div class="search">
-                    <span class="search-label">Search:</span>
-                    <input class="search-input" type="text"/>
-                    <span class="search-icon">
-                        <i class="fa fa-search"></i>
-                    </span>
-                </div>
-                <div class="item-container">
-                    {% for item in items %}
-                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
-                            {{ item.name }}
+                <div class="span4">
+                    <div class="add-new-bucket">
+                        <div class="inside-bucket">
+                            <span class="bucket-text">
+                                Drag or Click for New
+                                <div class="bucket-icon-green">
+                                    <i class="fa fa-plus-circle fa-2x"></i>
+                                </div>
+                            </span>
                         </div>
-                    {% endfor %}
+                    </div>
+                    <div class="clearfix"></div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="span4">
-            <div id="andor-container">
-                <div class="search">
-                    <span class="search-label">Search:</span>
-                    <input class="search-input" type="text"/>
-                    <span class="search-icon">
-                        <i class="fa fa-search"></i>
-                    </span>
-                </div>
-                <div class="item-container">
-                    {% for item in items %}
-                        <div class="tag-name" style="background-color: #{{item.hex_color}}">
-                            {{ item.name }}
-                        </div>
-                    {% endfor %}
-                </div>
+        <div class="sidebar span4">
+            <h2 class="top">Sidebar</h2>
+            <div class="navigation">
+                <a class="btn" href="">Button</a>
+                <a class="btn" href="">Another Button</a>
             </div>
         </div>
     </div>
+    -->
 {% endblock %}
 
 {% block extra-js %}

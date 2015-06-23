@@ -1,10 +1,23 @@
-#andor-container {
-    padding: 15px;
+.section {
+    background-color: #F7F7F7 !important;
 }
 
-#andor-container .tag-name {
-    z-index: 100;
+.andor-container {
+    margin-bottom: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.andor-container .tag-name {
     cursor: move;
+    z-index: 100;
+}
+
+.andor-container .tag-name.faded {
+    color: #b5aea3;
+    cursor: pointer;
 }
 
 .search {
@@ -36,7 +49,7 @@
 .search-label,
 .search-icon {
     padding: 6px 10px;
-    background-color: #99D6F1;
+    background-color: #FFE57B;
     text-align: center;
     vertical-align: middle;
     width: 1%;
@@ -52,10 +65,27 @@
     border-top: 1px solid #E5E5E5;
     border-right: 1px solid #E5E5E5;
     border-bottom: 1px solid #E5E5E5;
+    position: relative;
+}
+
+.search-icon div {
+    width: 13px;
+    height: 14px;
+    display: inline-block;
+}
+
+.search-icon .fa {
+    position: absolute;
+    top: 9px;
+    left: 10px;
 }
 
 .search-icon:hover {
     cursor: pointer;
+}
+
+.search-icon:hover .fa {
+    animation: bounce 1s linear infinite;
 }
 
 input[type="text"].search-input {
@@ -77,6 +107,9 @@ input[type="text"].search-input {
     border-right: 1px solid #e5e5e5;
     border-bottom: 1px solid #e5e5e5;
     position: relative;
+    background-color: #FFF;
+    max-height: 125px;
+    overflow-y: scroll;
 }
 
 .item-container div {
@@ -84,15 +117,56 @@ input[type="text"].search-input {
     margin: 3px;
 }
 
-.new-bucket {
+.andBox {
+    border: 1px solid #b5aea3;
+    width: 280px;
+    min-height: 120px;
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 0 5px 10px 0;
+    float: left;
+    background-color: #FFF;
+}
+
+.andBox .tag-name {
+    display: inline-block;
+    margin: 3px;
+}
+
+.andBox input[type="text"] {
+    width: 100%;
+    border-radius: 0;
+    border: 0;
+    box-sizing: border-box;
+    height: 33px;
+    border-bottom: 1px solid #b5aea3;
+}
+
+.andor-container .andBox:last-of-type {
+    margin-right: 0;
+}
+
+.or-spacing {
+    display: inline-block;
+    float: left;
+    margin-top: 50px;
+    margin-right: 5px;
+    font-weight: 700;
+    font-size: 1.3em;
+    color: #9B9A9A;
+    text-shadow: 0 1px 1px #FFF;
+}
+
+.add-new-bucket {
     padding: 10px;
     border: 2px dashed #b5aea3;
     background-color: #FFF;
     position: relative;
     width: 280px;
-    height: 190px;
+    height: 120px;
     box-sizing: border-box;
     display: inline-block;
+    float: left;
 }
 
 .inside-bucket {
@@ -102,13 +176,19 @@ input[type="text"].search-input {
     display: table;
 }
 
-.new-bucket.color .inside-bucket {
-    background-color: #b5aea3;
+.add-new-bucket:hover {
+    cursor: pointer;
+}
+
+.add-new-bucket.color .inside-bucket,
+.add-new-bucket:hover .inside-bucket {
+    background-color: #9B9A9A;
     color: #FFF;
 }
 
-.new-bucket.color .inside-bucket .bucket-icon-green {
-    color: #009900;
+.add-new-bucket.color .inside-bucket .bucket-icon-green,
+.add-new-bucket:hover .inside-bucket .bucket-icon-green {
+    color: #FFF;
 }
 
 .bucket-text {
@@ -119,4 +199,12 @@ input[type="text"].search-input {
 
 .bucket-icon-green {
     color: #009900;
+}
+
+@keyframes bounce {
+    0%   {top: 9px;}
+    25%  {top: 7px;}
+    50%  {top: 9px;}
+    75%  {top: 11px;}
+    100% {top: 9px;}
 }
