@@ -131,6 +131,11 @@ input[type="text"].search-input {
 .andBox .tag-name {
     display: inline-block;
     margin: 3px;
+    max-width: 98%;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 .andBox input[type="text"] {
