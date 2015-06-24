@@ -68,6 +68,12 @@
                     '</div>' +
                   '</div>');
 
+    $.each(checkUnusedBuckets(), function(i, e) {
+      var $e = $(e);
+      $e.next('.or-spacing').remove();
+      $e.remove();
+    });
+
     $(this).before(andBox.append(andInput)).after(newBucket).after(orSpacing).remove();
 
     andInput.on("keypress", function(e) {
@@ -161,7 +167,6 @@
           $(this).before(andBox.append(andInput).append((tagHelper.hasClass('from-container') ? tagClone : tag))).after(newBucket).after(orSpacing).remove();
           bucketDroppable([andBox, newBucket]);
           addBucketDraggable((tagHelper.hasClass('from-container') ? tagClone : tag));
-          andInput.select();
 
           andInput.on("keypress", function(e) {
             var $this = $(this);
@@ -217,8 +222,21 @@
       containment: ".andor-container",
       start: function(event, ui) {
         ui.helper.addClass("from-bucket");
+      },
+      stop: function() {
+        $.each(checkUnusedBuckets(), function(i, e) {
+          var $e = $(e);
+          $e.next('.or-spacing').remove();
+          $e.remove();
+        });
+      },
+      revert: "invalid"
+    });
+  }
 
-      }
+  function checkUnusedBuckets() {
+    return $(".andBox").filter(function(i, e) {
+      return !$(e).find('.tag-name').length;
     });
   }
 })(this);
