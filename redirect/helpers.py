@@ -7,7 +7,7 @@ import urlparse
 import markdown
 
 from jira.client import JIRA
-from jira.exceptions import JIRAError
+from jira import JIRAError
 import pysolr
 import requests
 

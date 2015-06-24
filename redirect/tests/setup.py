@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.conf import settings
 
 import redirect_settings
+import secrets
 
 
 class RedirectBase(TestCase):
@@ -15,6 +16,8 @@ class RedirectBase(TestCase):
         settings.CUSTOM_EXCLUSION_CACHE_KEY = redirect_settings.CUSTOM_EXCLUSION_CACHE_KEY
         settings.MIDDLEWARE_CLASSES = redirect_settings.MIDDLEWARE_CLASSES
         settings.SOLR['default'] = 'http://127.0.0.1:8983/solr/seo/'
+        settings.options = secrets.options
+        settings.my_agent_auth = secrets.my_agent_auth
         clear_url_caches()
 
         call_command("loaddata",

@@ -359,3 +359,8 @@ def update_buid(request):
 def redirect_404(request):
     return HttpResponseNotFound(loader.render_to_string(
         'redirect/404.html', context_instance=RequestContext(request)))
+
+
+def redirect_500(request):
+    return HttpResponseServerError(loader.render_to_string(
+        '500_base.html', context_instance=RequestContext(request)))

@@ -41,3 +41,4 @@ urlpatterns += patterns(
 )
 
 handler404 = 'redirect.views.redirect_404'
+handler500 = 'redirect.views.redirect_500'

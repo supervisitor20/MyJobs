@@ -21,7 +21,7 @@ from django.test.client import Client, RequestFactory
 from django.utils import timezone
 from django.utils.http import urlquote_plus
 
-from myjobs.models import User
+from myjobs.tests.factories import UserFactory
 from redirect.actions import sourcecodetag
 from redirect.models import (DestinationManipulation, ExcludedViewSource,
                              CompanyEmail)
@@ -954,7 +954,7 @@ class EmailForwardTests(RedirectBase):
                                              uuid.UUID(self.redirect_guid))
 
         self.password = 'secret'
-        self.user = User.objects.create(email='accounts@my.jobs')
+        self.user = UserFactory(email='accounts@my.jobs')
         self.user.set_password(self.password)
         self.user.save()
 
