@@ -138,12 +138,13 @@ input[type="text"].search-input {
     box-sizing: border-box;
 }
 
-.tag-name .close {
-    display: none;
+.andBox .tag-name.removable {
+    padding-right: 25px;
 }
 
-.andBox .tag-name:hover .close {
-    display: inline-block;
+.tag-name.removable .close {
+    position: absolute;
+    right: 3px;
 }
 
 .andBox input[type="text"] {
@@ -221,4 +222,14 @@ input[type="text"].search-input {
     50%  {top: 9px;}
     75%  {top: 11px;}
     100% {top: 9px;}
+}
+
+@media screen and (max-width: 500px) {
+    .andBox {
+        width: 93%;
+    }
+
+    .add-new-bucket {
+        width: 100%;
+    }
 }

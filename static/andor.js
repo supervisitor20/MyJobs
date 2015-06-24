@@ -82,7 +82,7 @@
         $this.val('');
       }
       if (e.keyCode === 13 && $this.val().trim() !== '') {
-        var tag = $('<div class="tag-name" style="background-color: #d4d4d4;">' + $this.val() + '</div>'),
+        var tag = $('<div class="tag-name removable" style="background-color: #d4d4d4;">' + $this.val() + '<i class="fa fa-times close"></i></div>'),
             tagFound = $this.parent().siblings(".item-container")
                             .find('.tag-name')
                             // Exact matching
@@ -108,6 +108,19 @@
 
     andInput.select();
     bucketDroppable([andBox, newBucket]);
+  });
+
+  $andorContainer.on("click", ".tag-name .close", function() {
+    var tag = $(this).parent(),
+        $equivalentTag = $('.andor-container')
+                           .find('.tag-name.faded')
+                           // Exact matching
+                           .filter(function() {
+                             return $(this).text().trim() === tag.text().trim();
+                           });
+
+    tag.remove();
+    $equivalentTag.removeClass('faded').css('background-color', $equivalentTag.data('originalRGB'));
   });
 
 
@@ -138,6 +151,15 @@
           // visually update the tag that was dragged & dropped.
           tag.addClass('faded').data('originalRGB', originalRGB)
              .css('background-color', fadeRGB(originalRGB, "0.25"));
+
+          tagClone.addClass('removable').append('<i class="fa fa-times close"></i>');
+        } else {
+          if (!tag.hasClass('removable')) {
+            tag.addClass('removable');
+          }
+          if (!tag.find('.close')) {
+            tag.append('<i class="fa fa-times close"></i>');
+          }
         }
 
         if ($(this).hasClass('add-new-bucket')) {
@@ -174,7 +196,7 @@
               $this.val('');
             }
             if (e.keyCode === 13 && $this.val().trim() !== '') {
-              var tag = $('<div class="tag-name" style="background-color: #d4d4d4;">' + $this.val() + '</div>'),
+              var tag = $('<div class="tag-name removable" style="background-color: #d4d4d4;">' + $this.val() + '<i class="fa fa-times close"></i></div>'),
                   tagFound = $this.parent().siblings(".item-container")
                                   .find('.tag-name')
                                   // Exact matching
