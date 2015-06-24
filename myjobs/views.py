@@ -592,4 +592,3 @@ def topbar(request):
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 
     return response
-

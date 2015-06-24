@@ -125,42 +125,6 @@ def sq_from_terms(terms):
     return retval
 
 
-class Redirect(models.Model):
-    """
-    Contains most of the information required to determine how a url
-    is to be transformed
-    """
-    guid = models.CharField(max_length=38, primary_key=True,
-                            help_text='36-character hex string')
-    buid = models.IntegerField(default=0,
-                               help_text='Business unit ID for a given '
-                                         'job provider')
-    uid = models.IntegerField(unique=True, blank=True, null=True,
-                              help_text="Unique id on partner's ATS or "
-                                        "other job repository")
-    url = models.TextField(help_text='URL being manipulated')
-    new_date = models.DateTimeField(help_text='Date that this job was '
-                                              'added')
-    expired_date = models.DateTimeField(blank=True, null=True,
-                                        help_text='Date that this job was '
-                                                  'marked as expired')
-    job_location = models.CharField(max_length=255, blank=True)
-    job_title = models.CharField(max_length=255, blank=True)
-    company_name = models.TextField(blank=True)
-
-    class Meta:
-        db_table = 'redirect_redirect'
-
-    def __unicode__(self):
-        return u'%s for guid %s' % (self.url, self.guid)
-
-    def make_link(self):
-        """Generates the redirected link for a redirect object."""
-        # Handle the fact that guid is has leading/trailing braces and dashes.
-        # '{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}'
-        return "http://my.jobs/%s" % self.guid[1:-1].replace('-', '') + '10'
-
-
 class CustomFacetQuerySet(QuerySet):
     def prod_facets_for_current_site(self):
         kwargs = {

@@ -331,18 +331,6 @@ class Migration(SchemaMigration):
             'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'db_index': 'True'}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True', 'blank': 'True'})
         },
-        u'seo.redirect': {
-            'Meta': {'object_name': 'Redirect', 'db_table': "'redirect_redirect'"},
-            'buid': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'company_name': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'expired_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'guid': ('django.db.models.fields.CharField', [], {'max_length': '38', 'primary_key': 'True'}),
-            'job_location': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'job_title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'new_date': ('django.db.models.fields.DateTimeField', [], {}),
-            'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.TextField', [], {})
-        },
         u'seo.seosite': {
             'Meta': {'ordering': "(u'domain',)", 'object_name': 'SeoSite', '_ormbases': [u'sites.Site']},
             'ats_source_codes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['seo.ATSSourceCode']", 'null': 'True', 'blank': 'True'}),
