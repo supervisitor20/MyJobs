@@ -4,7 +4,7 @@ import sys
 import urllib
 import datetime
 import logging
-from itertools import izip_longest
+from itertools import izip_longest, islice
 import urllib2
 import base64
 import zipfile
@@ -49,19 +49,57 @@ def update_job_source(guid, buid, name, clear_cache=False):
     zf = get_jobsfs_zipfile(guid)
     jobs = get_jobs_from_zipfile(zf, guid)
     jobs = filter_current_jobs(jobs, bu)
-    jobs = [hr_xml_to_json(job, bu) for job in jobs]
-    for job in jobs:
-        job['link'] = make_redirect(job, bu).make_link()
-    add_jobs(jobs)
-    remove_expired_jobs(buid, jobs)
+    jobs = (hr_xml_to_json(job, bu) for job in jobs)
+    jobs = (add_redirect(job, bu) for job in jobs)
+    
+    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
+    # Therefore, when processing AT&T lower the document chunk size.
+    if int(buid) == 19389:
+        logger.warn("AT&T has large amounts of mapped_mocs, that cause problems.  Reducing chunk size.")
+        upload_chunk_size = 64
+    else:
+        upload_chunk_size = 1024
+
+    # Chunk them
+    job_slices = chunk2(jobs, upload_chunk_size)
+
+    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+    job_ids = set()
+    for job_slice in job_slices:
+        job_slice = list(job_slice)
+        job_ids = job_ids.union(set(j['id'] for j in job_slice))
+        conn.add(job_slice)
+
+    remove_expired_jobs(buid, job_ids)
 
     # Update business information
-    bu.associated_jobs = len(jobs)
+    bu.associated_jobs = len(job_ids)
     bu.date_updated = datetime.datetime.utcnow()
     bu.save()
     if clear_cache:
         # Clear cache in 25 minutes to allow for solr replication
         tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
+
+
+def chunk2(iterable, chunk_size=1024):
+    """
+    Create chunks from a list.
+
+    """
+    while True:
+        result = []
+        try:
+            for _ in range(chunk_size):
+                result.append(iterable.next())
+            yield result
+        except StopIteration:
+            yield result
+            raise StopIteration
+
+
+def add_redirect(job, bu):
+    job['link'] = make_redirect(job, bu).make_link()
+    return job
 
 
 def filter_current_jobs(jobs, bu):
@@ -581,9 +619,9 @@ def chunk(l, chunk_size=1024):
         yield l[i:i + chunk_size]
 
 
-def remove_expired_jobs(buid, active_jobs, upload_chunk_size=1024):
+def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
     """
-    Given a job source id and a list of active jobs for that job source,
+    Given a job source id and a list of active job ids for that job source,
     Remove the jobs on solr that are not among the active jobs.
     """
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
@@ -591,7 +629,6 @@ def remove_expired_jobs(buid, active_jobs, upload_chunk_size=1024):
                                       mlt="false").hits
     old_jobs = conn.search("*:*", fq="buid:%s" % buid, facet="false",
                            rows=count, mlt="false").docs
-    active_ids = set(j['id'] for j in active_jobs)
     old_ids = set(j['id'] for j in old_jobs)
     expired = old_ids - active_ids
     chunks = chunk(list(expired), upload_chunk_size)
@@ -600,33 +637,6 @@ def remove_expired_jobs(buid, active_jobs, upload_chunk_size=1024):
         conn.delete(q=query)
     return expired
 
-
-def add_jobs(jobs, upload_chunk_size=1024):
-    """
-    Loads a solr-ready json list of jobs into solr.
-
-    inputs:
-        :jobs: A list of solr-ready, json-formatted jobs.
-
-    outputs:
-        The number of jobs loaded into solr.
-    """
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    num_jobs = len(jobs)
-    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
-    # Therefore, when processing AT&T lower the document chunk size.
-    for job in jobs:
-        if int(job.get('buid', 0)) == 19389:
-            logger.warn("AT&T has large amounts of mapped_mocs, that cause problems.  Reducing chunk size.")
-            upload_chunk_size = 64
-            break
-            
-    
-    # Chunk them
-    jobs = chunk(jobs, upload_chunk_size)
-    for job_group in jobs:
-        conn.add(list(job_group))
-    return num_jobs
 
 
 def delete_by_guid(guids):
