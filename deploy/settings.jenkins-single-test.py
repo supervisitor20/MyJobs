@@ -31,7 +31,7 @@ DATABASES = {
         'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-        },
+    },
 }
 
 SOLR = {

@@ -1,14 +1,14 @@
 from django.core.management import call_command
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.conf import settings
 
 import redirect_settings
 import secrets
 
 
-class RedirectBase(TestCase):
+class RedirectBase(TransactionTestCase):
     def setUp(self):
         super(RedirectBase, self).setUp()
         self._middleware_classes = settings.MIDDLEWARE_CLASSES

@@ -1,13 +1,17 @@
 from django.core.urlresolvers import reverse
-from django.test import TransactionTestCase
+
 from myjobs.models import User
+
 from redirect.models import DestinationManipulation
+from redirect.tests.setup import RedirectBase
 
 
-class SourceCodeUploadTests(TransactionTestCase):
+class SourceCodeUploadTests(RedirectBase):
     def setUp(self):
+        super(SourceCodeUploadTests, self).setUp()
         self.user = User.objects.create_superuser(email='admin@example.com',
                                                   password='secret')
+        self.user.set_password('secret')
         self.client.login(username=self.user.email,
                           password='secret')
         self.path = 'automation/tests/spreadsheets/%s/%s.xlsx'
@@ -54,9 +58,8 @@ class SourceCodeUploadTests(TransactionTestCase):
 
     def test_non_staff_user(self):
         self.client.logout()
-        user = User(email='random@example.com')
+        user = User.objects.create(email='random@example.com')
         user.set_password('secret')
-        user.save()
         self.client.login(username=user.email, password='secret')
         response = self.client.get(reverse('source_code_upload'))
         self.assertTrue('Log in' in response.content)
