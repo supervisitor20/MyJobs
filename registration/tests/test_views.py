@@ -83,7 +83,7 @@ class RegistrationViewTests(MyJobsBase):
         anchors = bank.findAll('a')
         self.assertEqual(len(anchors), 1)
         self.assertEqual(anchors[0].attrs['href'], '/')
-        self.assertEqual(anchors[0].text, 'Login')
+        self.assertEqual(anchors[0].text, 'Log In')
 
     def test_invalid_activation(self):
         """
