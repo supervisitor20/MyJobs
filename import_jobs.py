@@ -41,7 +41,7 @@ def update_job_source(guid, buid, name, clear_cache=False):
     assert(re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid),
            "%s is not a valid guid" % guid)
     assert(re.match(r'^\d+$', str(buid)),
-           "%s is not a balid buid" % buid)
+           "%s is not a valid buid" % buid)
 
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
