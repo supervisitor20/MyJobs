@@ -4,7 +4,7 @@ import sys
 import urllib
 import datetime
 import logging
-from itertools import izip_longest, islice
+from itertools import izip_longest, islice, chain
 import urllib2
 import base64
 import zipfile
@@ -22,6 +22,7 @@ from seo.helpers import slices, create_businessunit
 from seo.models import BusinessUnit, Company
 import tasks
 from transform import hr_xml_to_json, make_redirect
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,11 @@ FEED_FILE_PREFIX = "dseo_feed_"
 def update_job_source(guid, buid, name, clear_cache=False):
     """Composed method for resopnding to a guid update."""
 
+    assert(re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid),
+           "%s is not a valid guid" % guid)
+    assert(re.match(r'^\d+$', str(buid)),
+           "%s is not a balid buid" % buid)
+
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
     create_businessunit(buid)
@@ -51,7 +57,7 @@ def update_job_source(guid, buid, name, clear_cache=False):
     jobs = filter_current_jobs(jobs, bu)
     jobs = (hr_xml_to_json(job, bu) for job in jobs)
     jobs = (add_redirect(job, bu) for job in jobs)
-    
+
     # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
     # Therefore, when processing AT&T lower the document chunk size.
     if int(buid) == 19389:
@@ -60,16 +66,7 @@ def update_job_source(guid, buid, name, clear_cache=False):
     else:
         upload_chunk_size = 1024
 
-    # Chunk them
-    job_slices = chunk2(jobs, upload_chunk_size)
-
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    job_ids = set()
-    for job_slice in job_slices:
-        job_slice = list(job_slice)
-        job_ids = job_ids.union(set(j['id'] for j in job_slice))
-        conn.add(job_slice)
-
+    job_ids = add_jobs(jobs, upload_chunk_size)
     remove_expired_jobs(buid, job_ids)
 
     # Update business information
@@ -79,22 +76,6 @@ def update_job_source(guid, buid, name, clear_cache=False):
     if clear_cache:
         # Clear cache in 25 minutes to allow for solr replication
         tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
-
-
-def chunk2(iterable, chunk_size=1024):
-    """
-    Create chunks from a list.
-
-    """
-    while True:
-        result = []
-        try:
-            for _ in range(chunk_size):
-                result.append(iterable.next())
-            yield result
-        except StopIteration:
-            yield result
-            raise StopIteration
 
 
 def add_redirect(job, bu):
@@ -610,13 +591,14 @@ def _build_solr_delete_query(old_jobs):
     return delete_query
 
 
-def chunk(l, chunk_size=1024):
+def chunk(iterable, chunk_size=1024):
     """
     Create chunks from a list.
 
     """
-    for i in xrange(0, len(l), chunk_size):
-        yield l[i:i + chunk_size]
+    iterator = iter(iterable)
+    for first in iterator:
+        yield chain([first], islice(iterator, chunk_size - 1))
 
 
 def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
@@ -625,6 +607,9 @@ def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
     Remove the jobs on solr that are not among the active jobs.
     """
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+
+    active_ids = set(active_ids)
+
     count = conn.search("*:*", fq="buid:%s" % buid, facet="false",
                                       mlt="false").hits
     old_jobs = conn.search("*:*", fq="buid:%s" % buid, facet="false",
@@ -637,6 +622,29 @@ def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
         conn.delete(q=query)
     return expired
 
+
+def add_jobs(jobs, upload_chunk_size=1024):
+    """
+    Loads a solr-ready json list of jobs into solr.
+
+    inputs:
+        :jobs: A list of solr-ready, json-formatted jobs.
+
+    outputs:
+        The lids of jobs loaded into solr.
+    """
+    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
+    # Therefore, when processing AT&T lower the document chunk size.
+
+    # Chunk them
+    jobs = chunk(jobs, upload_chunk_size)
+    job_ids = list()
+    for job_group in jobs:
+        job_group = list(job_group)
+        conn.add(job_group)
+        job_ids.extend(j['id'] for j in job_group)
+    return job_ids
 
 
 def delete_by_guid(guids):

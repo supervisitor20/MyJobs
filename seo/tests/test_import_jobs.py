@@ -143,7 +143,7 @@ class ImportJobsTestCase(DirectSEOBase):
             self.solr.add(old_jobs)
             self.solr.commit()
 
-            removed = remove_expired_jobs(buid, active_jobs)
+            removed = remove_expired_jobs(buid, [d['id'] for d in active_jobs])
             self.assertEqual(len(removed), 6, "Removed jobs %s" % removed)
             ids = [d['id'] for d in self.solr.search('*:*').docs]
             self.assertTrue([5, 6, 7, 8, 9, 10] not in ids)
