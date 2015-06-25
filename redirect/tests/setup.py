@@ -1,5 +1,9 @@
+import os
+import sys
+
 from django.core.management import call_command
 from django.core.urlresolvers import clear_url_caches
+from django.db import connections
 from django.test import TransactionTestCase
 from django.conf import settings
 
@@ -25,8 +29,29 @@ class RedirectBase(TransactionTestCase):
         settings.my_agent_auth = secrets.my_agent_auth
         clear_url_caches()
 
-        call_command("loaddata",
-                     "redirect/migrations/excluded_view_sources.json")
+        stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+        try:
+            # This makes lots of output that we don't care about; suppress it.
+            call_command("loaddata",
+                         "redirect/migrations/excluded_view_sources.json")
+        finally:
+            sys.stdout.close()
+            sys.stdout = stdout
+
+        default_backend, archive_backend = (
+            settings.DATABASES['default']['ENGINE'].split('.')[-1],
+            settings.DATABASES['archive']['ENGINE'].split('.')[-1],
+        )
+        for backend, db in [(default_backend, 'default'),
+                            (archive_backend, 'archive')]:
+            if backend == 'mysql':
+                cursor = connections[db].cursor()
+                cursor.execute('alter table redirect_redirect convert to '
+                               'character set utf8 collate utf8_unicode_ci')
+                cursor.execute('alter table redirect_redirectarchive '
+                               'convert to character set utf8 collate '
+                               'utf8_unicode_ci')
 
     def tearDown(self):
         super(RedirectBase, self).tearDown()
