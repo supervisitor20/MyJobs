@@ -7,6 +7,7 @@ from redirect.tests.setup import RedirectBase
 
 class MyJobsMiddlewareTests(RedirectBase):
     def setUp(self):
+        super(MyJobsMiddlewareTests, self).setUp()
         self.middleware = MyJobsRedirectMiddleware()
         self.factory = RequestFactory()
 

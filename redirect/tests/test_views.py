@@ -84,6 +84,7 @@ class ViewSourceViewTests(RedirectBase):
         """
         The cache is not cleared between tests. We need to do it manually.
         """
+        super(ViewSourceViewTests, self).tearDown()
         cache.clear()
 
     def test_get_with_bad_vsid(self):
@@ -982,6 +983,7 @@ class EmailForwardTests(RedirectBase):
         self.r.replace('pysolr.Solr.search', mock_search)
 
     def tearDown(self):
+        super(EmailForwardTests, self).tearDown()
         self.r.restore()
 
     def submit_email(self, use_data=True):
@@ -1163,6 +1165,7 @@ class EmailForwardTests(RedirectBase):
 
 class UpdateBUIDTests(RedirectBase):
     def setUp(self):
+        super(UpdateBUIDTests, self).setUp()
         self.key = settings.BUID_API_KEY
         self.cm = CanonicalMicrositeFactory(buid=1)
         self.dm = DestinationManipulationFactory(buid=1)
@@ -1208,9 +1211,6 @@ class UpdateBUIDTests(RedirectBase):
 
 
 class RedirectViewTests(RedirectBase):
-    def setUp(self):
-        super(RedirectViewTests, self).setUp()
-
     def test_get_redirect(self):
         redirect = RedirectFactory(guid='{%s}' % uuid.uuid4())
         expired_redirect = RedirectArchiveFactory(guid='{%s}' % uuid.uuid4())

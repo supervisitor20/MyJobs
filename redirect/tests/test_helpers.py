@@ -4,6 +4,7 @@ from redirect.tests.setup import RedirectBase
 
 class HelperTests(RedirectBase):
     def setUp(self):
+        super(HelperTests, self).setUp()
         self.params = {'key': 'key',
                        'value': 'value',
                        'separator': ', '}
