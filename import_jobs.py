@@ -634,8 +634,6 @@ def add_jobs(jobs, upload_chunk_size=1024):
         The ids of jobs loaded into solr.
     """
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
-    # Therefore, when processing AT&T lower the document chunk size.
 
     # Chunk them
     jobs = chunk(jobs, upload_chunk_size)
