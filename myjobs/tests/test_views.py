@@ -517,14 +517,14 @@ class MyJobsViewsTests(MyJobsBase):
                                                  user=self.user,
                                                  email=self.user.email)
 
-        eighty_two_days_ago = date.today() - timedelta(days=82)
-        self.user.last_response = eighty_two_days_ago - timedelta(days=1)
+        week_before_expiration = date.today() - timedelta(days=172)
+        self.user.last_response = week_before_expiration - timedelta(days=1)
         self.user.save()
         SavedSearch(user=self.user).save()
 
         # Submit a batch of events created a month ago
         # The owners of these addresses should be sent an email
-        messages = self.make_messages(eighty_two_days_ago)
+        messages = self.make_messages(week_before_expiration)
         response = self.client.post(reverse('batch_message_digest'),
                                     data=messages,
                                     content_type="text/json",
@@ -533,14 +533,14 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(EmailLog.objects.count(), 3)
         self.assertEqual(
             EmailLog.objects.filter(
-                received=eighty_two_days_ago
+                received=week_before_expiration
             ).count(), 3
         )
         process_batch_events()
         self.assertEqual(len(mail.outbox), 1)
 
         user = User.objects.get(pk=self.user.pk)
-        self.assertEqual(user.last_response, eighty_two_days_ago)
+        self.assertEqual(user.last_response, week_before_expiration)
 
     def test_batch_month_old_message_digest_no_searches(self):
         """
@@ -584,13 +584,13 @@ class MyJobsViewsTests(MyJobsBase):
                                                  user=self.user,
                                                  email=self.user.email)
 
-        three_months_ago = date.today() - timedelta(days=90)
-        self.user.last_response = three_months_ago - timedelta(days=1)
+        six_months_ago = date.today() - timedelta(days=180)
+        self.user.last_response = six_months_ago - timedelta(days=1)
         self.user.save()
 
         # Submit a batch of events created a month and a week ago
         # The owners of these addresses should no longer receive email
-        messages = self.make_messages(three_months_ago)
+        messages = self.make_messages(six_months_ago)
         response = self.client.post(reverse('batch_message_digest'),
                                     data=messages,
                                     content_type="text/json",
@@ -599,7 +599,7 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(EmailLog.objects.count(), 3)
         self.assertEqual(
             EmailLog.objects.filter(
-                received__lte=(date.today() - timedelta(days=90))
+                received__lte=(date.today() - timedelta(days=180))
             ).count(), 3
         )
         process_batch_events()
@@ -607,7 +607,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.opt_in_myjobs)
-        self.assertTrue(user.last_response, three_months_ago)
+        self.assertTrue(user.last_response, six_months_ago)
 
     def test_invalid_batch_post(self):
         response = self.client.post(reverse('batch_message_digest'),

@@ -176,3 +176,19 @@ class MyPartnerTests(MyJobsBase):
 
         for instance in (self.contact, self.partner, contactrecord):
             self.assertEqual(instance.approval_status.code, Status.APPROVED)
+
+    def test_contact_locations(self):
+        """
+        Test that `get_contact_locations` returns a properly formatted string.
+        """
+        ny = LocationFactory.create_batch(2, city="Albany", state="NY")
+        il = LocationFactory.create(city="Chicago", state="IL")
+        mo = LocationFactory.create(city="St. Louis", state="MO")
+
+        contacts = ContactFactory.create_batch(4, partner=self.partner)
+        for contact, location in zip(contacts, ny + [il, mo]):
+            contact.locations.add(location)
+
+        self.assertEqual("Chicago, IL; St. Louis, MO; Albany, NY", 
+                         "; ".join(self.partner.get_contact_locations()))
+

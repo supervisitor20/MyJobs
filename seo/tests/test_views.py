@@ -36,6 +36,7 @@ from seo.tests.setup import (connection, DirectSEOBase, DirectSEOTestCase,
                              patch_settings)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
                         SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
+from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
 from universal.helpers import build_url
@@ -1788,6 +1789,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
                     count_text += 'polis, IN'
                 self.assertEqual(count.text.strip(), count_text)
 
+    def test_url_for_sort_field(self):
+        """
+        Test that queries with unicode in search terms don't cause an error.
+        The templatetag is being used directly to bypass the possibility of 404
+        errors, thus minimizing external factors related to this particular
+        regression.
+        """
+        request = RequestFactory().get(
+            '/jobs/?q=Truck+Driver+%E2%80%93+CDL+Class+A%2FTouch+Freight'
+            '+%E2%80%93+Penske+Logistics')
+
+        context = {'request': request}
+        try:
+            url_for_sort_field(context, 'relevance')
+        except UnicodeEncodeError as e:
+            self.fail(e)
+
     def test_job_listing_by_slug_tag(self):
         """
         Test that job listing pages return no server errors and that objects
@@ -1840,7 +1858,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
             '/pasadena/texas/usa/jobs/engineering-jobs/new-jobs/',
             follow=True)
         self.assertEqual(resp.status_code, 200)
-        
+
+    def test_feed_items(self):
+        site = SeoSite.objects.get(id=1)
+        site.business_units = [self.buid_id]
+        site.save()
+        expected_fields = ['country_short', 'city', 'description', 'date_new',
+                           'url', 'country', 'company', 'title', 'reqid',
+                           'state', 'state_short', 'location', 'guid', 'uid']
+
+        response = self.client.get('/feed/json')
+        jobs = json.loads(response.content)
+        job = jobs[0]
+        self.assertItemsEqual(expected_fields, job.keys())
+        for field in expected_fields:
+            self.assertIsNotNone(job[field])
+            self.assertNotEqual(job[field], 'None')
+
     def test_syndicate_feed_paging(self):
         feed_types = {'xml': 'xml', 'indeed': 'xml'}
         # Since the BusinessUnit id for our test XML feed is set to 0 on the
