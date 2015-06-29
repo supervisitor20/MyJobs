@@ -285,14 +285,14 @@ def email_redirect(request):
     # We want to ensure both text and html emails get sent, hence what could
     # be considered a bit of duplication.
     dashes = "----------------------"
-    description = (solr_job.get('description')
+    description = (solr_job.get('description', job.job_title)
                    if solr_job
                    else u"This job ({title}) has expired.".format(
-                       title=job.title))
-    html_description = (solr_job.get('html_description')
+                       title=job.job_title))
+    html_description = (solr_job.get('html_description', job.job_title)
                         if solr_job
                         else u"This job ({title}) has expired.".format(
-                            title=job.title))
+                            title=job.job_title))
     body = "\n".join([body, dashes, description])
     html_body = "<br />".join([html_body, dashes, html_description])
 

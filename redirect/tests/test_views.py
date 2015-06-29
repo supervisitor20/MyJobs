@@ -1114,7 +1114,8 @@ class EmailForwardTests(RedirectBase):
 
     def test_email_with_name(self):
         self.post_dict['to'] = 'User <%s@my.jobs>' % self.redirect_guid
-        self.post_dict['text'] = 'Questions about stuff and things'
+        body = 'Questions about stuff and things'
+        self.post_dict['text'] = self.post_dict['html'] = body
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
