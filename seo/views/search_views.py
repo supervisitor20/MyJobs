@@ -45,6 +45,7 @@ from transform import transform_for_postajob
 from myblocks.views import BlockView
 from myblocks.models import SearchResultBlock, Page
 from myblocks import context_tools
+from redirect.models import Redirect
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.breadbox import Breadbox
 from seo.cache import get_custom_facets, get_site_config, get_total_jobs_count
@@ -377,6 +378,12 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         the_job = DESearchQuerySet().narrow("%s:(%s)" % (search_type,
                                                          job_id))[0]
     except IndexError:
+        try:
+            the_job = Redirect.objects.get(**{search_type: job_id})
+        except Redirect.DoesNotExist:
+            pass
+        else:
+            return HttpResponseRedirect(the_job.url)
         return dseo_404(request)
     else:
         if settings.SITE_BUIDS and the_job.buid not in settings.SITE_BUIDS:

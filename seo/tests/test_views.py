@@ -31,6 +31,7 @@ from myjobs.tests.factories import UserFactory
 from postajob.models import SitePackage
 from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
+from redirect.tests.factories import RedirectFactory
 from seo import helpers
 from seo.tests.setup import (connection, DirectSEOBase, DirectSEOTestCase,
                              patch_settings)
@@ -104,6 +105,15 @@ class FallbackTestCase(DirectSEOTestCase):
         # a Page.
         self.assertIn(self.content, response.content)
         self.assertNotIn(self.job['location'], self.content)
+
+        # When a job is not in solr but is in the database, we should
+        # redirect to that job's apply url.
+        self.conn.delete(q='*:*')
+        redirect = RedirectFactory(guid=self.job['guid'],
+                                   buid=self.job['buid'])
+        response = self.client.get(reverse('job_detail_by_job_id',
+                                           kwargs={'job_id': self.job['guid']}))
+        self.assertEqual(response['Location'], redirect.url)
 
     def test_404_fallback(self):
         error_text = ('If you found this page from a job link, '

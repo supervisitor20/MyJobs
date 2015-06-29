@@ -18,6 +18,7 @@ from myblocks import context_tools
 from myblocks.helpers import success_url
 from myjobs.helpers import expire_login
 from myjobs.models import User
+from redirect.models import Redirect
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
 
@@ -769,6 +770,14 @@ class Page(models.Model):
         job = context_tools.get_job(request, job_id)
 
         if not job:
+            if job_id:
+                search_type = 'guid' if len(job_id) > 31 else 'uid'
+                try:
+                    job = Redirect.objects.get(**{search_type: job_id})
+                except Redirect.DoesNotExist:
+                    pass
+                else:
+                    return HttpResponseRedirect(job.url)
             raise Http404
 
         if settings.SITE_BUIDS and job.buid not in settings.SITE_BUIDS:
