@@ -1747,7 +1747,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
         # check that hte apply links are formatted correctly
-        import ipdb; ipdb.set_trace()
         apply_link = soup.find(id="direct_applyButtonBottom").a
         self.assertNotIn(view_source.view_source, apply_link.get("href"))
 
