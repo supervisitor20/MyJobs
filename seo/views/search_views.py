@@ -476,7 +476,6 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             "campaign_name": "utm_campaign"
         }
 
-
         if gac:
             q_str = "&".join(["%s=%s" % (v, getattr(gac, k))
                               for k, v in gac_data.items()])
@@ -488,7 +487,6 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         if the_job.link:
             the_job.link = urlunparse((url.scheme, url.netloc, path,
                                        '', link_query, ''))
-
 
         # Build the site commitment string
         sitecommit_str = helpers.make_specialcommit_string(
