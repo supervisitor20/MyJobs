@@ -1746,7 +1746,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 break
         self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
-        # check that hte apply links are formatted correctly
+        # Check that the apply links are formatted correctly. This particular
+        # job has a mailto link, so the view source should not be included.
         apply_link = soup.find(id="direct_applyButtonBottom").a
         self.assertNotIn(view_source.view_source, apply_link.get("href"))
 
