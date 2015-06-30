@@ -1747,8 +1747,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
         # check that hte apply links are formatted correctly
+        import ipdb; ipdb.set_trace()
         apply_link = soup.find(id="direct_applyButtonBottom").a
-        self.assertNotIn('88', apply_link.get("href"))
+        self.assertNotIn(view_source.view_source, apply_link.get("href"))
 
 
     def test_job_listing_count(self):
