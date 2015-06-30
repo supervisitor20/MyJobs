@@ -1746,6 +1746,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 break
         self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
+        # check that hte apply links are formatted correctly
+        apply_link = soup.find(id="direct_applyButtonBottom").a
+        self.assertNotIn('88', apply_link.get("href"))
+
+
     def test_job_listing_count(self):
         """
         Test that the job listing header contains the correct job count.
