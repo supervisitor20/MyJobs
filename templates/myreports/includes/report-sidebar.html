@@ -1,7 +1,7 @@
 <div class="sidebar">
     <h2 class="top">Past Reports</h2>
     {% for report in past_reports %}
-        <div class="report" data-report="{{ report.id }}" data-model="{{ report.model }}">
+        <div class="report-row" data-report="{{ report.id }}" data-model="{{ report.model }}">
             <a class="report-link {% if not report.results %}disabled{% endif %}" title="View Report">{{ report.name }}</a>
             <div class="icon-set">
                 <i id="view-{{ report.id }}" class="fa fa-eye {% if not report.results %}disabled{% endif %}" title="View Report"></i>
@@ -14,8 +14,8 @@
         No past reports
     {% endfor %}
     {% if report_count > 0 %}
-     <div class="center-text">
-         <a id="report-archive">View All Reports</a>
-     </div>
+    <div class="navigation">
+        <a id="report-archive" class="btn">View All Reports</a>
+    </div>
      {% endif %}
 </div>

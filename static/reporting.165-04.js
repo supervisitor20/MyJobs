@@ -1080,9 +1080,9 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
-    var report_id = $(this).parents("tr, .report").data("report"),
-        model = $(this).parents("tr, .report").data("model"),
+  subpage.on("click", ".report-row > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+    var report_id = $(this).parents("tr, .report-row").data("report"),
+        model = $(this).parents("tr, .report-row").data("model"),
         callback = function() {
           renderNavigation(true);
         },
@@ -1101,7 +1101,7 @@ $(document).ready(function() {
 
   // Clone Report
   subpage.on("click", ".fa-copy, .clone-report", function() {
-    var data = {id: $(this).parents("tr, .report").data("report"),
+    var data = {id: $(this).parents("tr, .report-row").data("report"),
                 values: ['name', 'model', 'app', 'params']},
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
         cloneReport = function() {
@@ -1142,7 +1142,7 @@ $(document).ready(function() {
   });
 
   subpage.on("click", ".fa-download:not(.disabled), .export-report:not(.disabled)", function() {
-    var report_id = $(this).parents("tr, .report").data("report");
+    var report_id = $(this).parents("tr, .report-row").data("report");
 
     if (modernBrowser) {
       history.pushState({'page': 'report-download', 'report': report_id}, 'Download Report');
@@ -1186,9 +1186,12 @@ $(document).ready(function() {
         $icon.removeClass("fa-spin");
 
         if (archive) {
-          $div.parents('tr').find('.export-report, .view-report').removeClass('disabled');
+          // had to select tds because editing a tr background-color does nothing.
+          $div.parents('tr').children('td').effect("highlight", 600)
+              .find('.export-report, .view-report').removeClass('disabled');
         } else {
-          $icon.parents('div.report').find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
+          $icon.parents('div.report-row').effect("highlight", 600)
+               .find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
         }
       }
     });

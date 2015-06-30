@@ -850,7 +850,8 @@ input.datepicker {
     margin-bottom: 0;
 }
 
-.sidebar a, .report a {
+.sidebar a,
+.report-row a {
     cursor: pointer;
 }
 
@@ -1631,13 +1632,14 @@ h3.bottom-bordered {
     width: 100%;
 }
 
-.sidebar .report {
+.sidebar .report-row {
     box-sizing: border-box;
     padding: 2px 0;
     position: relative;
+    background-color: inherit;
 }
 
-.sidebar .report > a {
+.sidebar .report-row > a {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1645,7 +1647,7 @@ h3.bottom-bordered {
     white-space: nowrap;
 }
 
-.sidebar .report:hover {
+.sidebar .report-row:hover {
     background-color: #D5FACF;
 }
 
@@ -1669,7 +1671,7 @@ h3.bottom-bordered {
     margin-left: 5px;
 }
 
-.report i:hover {
+.report-row i:hover {
     cursor: pointer;
 }
 
