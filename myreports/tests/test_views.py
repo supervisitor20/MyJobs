@@ -9,7 +9,9 @@ from django.core.urlresolvers import reverse
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        LocationFactory, PartnerFactory)
+                                        LocationFactory, PartnerFactory,
+                                        TagFactory)
+from mypartners.models import ContactRecord
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
@@ -167,6 +169,28 @@ class TestViewRecords(MyReportsTestCase):
         output = json.loads(response.content)
 
         self.assertEqual(len(output), 10)
+
+    def test_filter_by_tag(self):
+        """Tests that records can be found by tag."""
+
+        tag = TagFactory(name="Test", company=self.company)
+        ContactRecord.objects.first().tags.add(tag)
+
+        # explicitly add tag to partner to make sure that a tag associated wiht
+        # multiple models doesn't cause issues
+        self.partner.tags.add(tag)
+
+        self.client.path += '/tag'
+        # make a call that mimicks static/reporting:721 (as of 7/1/15)
+        response = self.client.get(data={
+            'name': 'Test',
+            'contactrecord__isnull': 'false',
+            'values': ['name'],
+            'order_by': 'name'})
+        output = json.loads(response.content)
+
+        self.assertEqual(len(output), 1)
+
 
 
 class TestReportView(MyReportsTestCase):
