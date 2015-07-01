@@ -1112,7 +1112,9 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         # Find the corresponding ;
         end = response.content.find(';', begin)
 
-        # this particular bit of data is json.dumps twice
+        # this particular string has been json.dumps twice because
+        # the template tag returns a json dump of companies and when the view
+        # is hit it too returns a json dump of response.content
         jsond = json.loads(response.content[begin:end].replace('\\', ''))
 
         # Pull company names from json and self.companies
