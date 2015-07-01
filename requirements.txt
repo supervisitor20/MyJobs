@@ -44,7 +44,7 @@ pynliner==0.5.1
 pysolr==3.2.0
 python-memcached==1.48
 requests==2.3.0
-selenium==2.42.1
+selenium==2.46.0
 unicodecsv==0.9.4
 bidict==0.3.1
 validate-email==1.2
