@@ -1,9 +1,10 @@
 import base64
+import json
+import time
+import uuid
 from bs4 import BeautifulSoup
 from datetime import timedelta, date
 from importlib import import_module
-import time
-import uuid
 from urllib import urlencode
 
 from django.conf import settings
@@ -21,7 +22,7 @@ from myjobs.models import User, EmailLog, FAQ
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory
 from mysearches.models import PartnerSavedSearch
-from seo.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory, CompanyUserFactory
 from myprofile.models import Name, Education
 from mysearches.models import SavedSearch, SavedSearchLog
 from registration.models import ActivationProfile
@@ -934,6 +935,7 @@ class MyJobsViewsTests(MyJobsBase):
         # ensure topbar shows logged out options
         self.assertIn("Login", response.content)
 
+
     def test_referring_site_in_topbar(self):
         self.client.get(
             reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'
@@ -1077,3 +1079,46 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject,
                          'Account Activation for my.jobs')
+
+
+class MyJobsTopbarViewsTests(MyJobsBase):
+    """
+    Secure topbar employer/user tests.
+    """
+    # TODO: When selenium tests are available create company switching tests.
+    def setUp(self):
+        super(MyJobsTopbarViewsTests, self).setUp()
+        self.user = UserFactory()
+        self.client = TestClient()
+        self.client.login_user(self.user)
+
+        self.companies = CompanyFactory.create_batch(size=3)
+
+        self.company_users = [CompanyUserFactory
+                              (user=self.user, company=company)
+                              for company in self.companies]
+
+    def test_topbar_with_multiple_companies(self):
+        """
+        Simple test that checks to see if the rendered topbar has the correct companies.
+
+        """
+        response = self.client.get(reverse('topbar'),
+                                   HTTP_X_REQUEST_WITH='XMLHttpRequest')
+
+        str_to_find = 'var data = '
+        # Find the index of where json is generated from template tag 'json_companies'
+        begin = response.content.find(str_to_find) + len(str_to_find)
+        # Find the corresponding ;
+        end = response.content.find(';', begin)
+
+        # this particular bit of data is json.dumps twice
+        jsond = json.loads(response.content[begin:end].replace('\\', ''))
+
+        # Pull company names from json and self.companies
+        jsond_company_names = [company['name'] for company in jsond]
+        actual_company_names = [company.name for company in self.companies]
+
+        # Test if the lists of company names match!
+        self.assertEqual(jsond_company_names, actual_company_names)
+
