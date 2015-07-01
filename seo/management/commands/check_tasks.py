@@ -24,8 +24,8 @@ class Command(BaseCommand):
         for queue in queues.split(','):
             # Get the queue data from the rabbit Management API
             uri = "http://%(broker)s:%(port)s/api/queues/dseo-vhost/%(queue)s" % {'broker': settings.BROKER_HOST,
-                                                                                'port': port,
-                                                                                'queue': queue}
+                                                                                  'port': port,
+                                                                                  'queue': queue}
             resp = requests.get(uri, auth=(settings.BROKER_USER, settings.BROKER_PASSWORD))
             data = json.loads(resp.content)
             msg_count += data["messages_ready"]
