@@ -1084,6 +1084,7 @@ class MyJobsViewsTests(MyJobsBase):
 class MyJobsTopbarViewsTests(MyJobsBase):
     """
     Secure topbar employer/user tests.
+
     """
     # TODO: When selenium tests are available create company switching tests.
     def setUp(self):
@@ -1112,7 +1113,7 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         # Find the corresponding ;
         end = response.content.find(';', begin)
 
-        # this particular string has been json.dumps twice because
+        # this particular string has been json dumped twice because
         # the template tag returns a json dump of companies and when the view
         # is hit it too returns a json dump of response.content
         jsond = json.loads(response.content[begin:end].replace('\\', ''))
