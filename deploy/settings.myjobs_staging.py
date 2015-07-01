@@ -22,6 +22,14 @@ DATABASES = {
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
+    'archive': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'redirect',
+        'USER': 'db_deuser',
+        'PASSWORD': PROD_DB_PASSWD,
+        'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }
 }
 
 ALLOWED_HOSTS = ['my.jobs', 'localhost']

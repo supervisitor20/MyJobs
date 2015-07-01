@@ -4,7 +4,8 @@ import logging
 from dateutil.parser import parse as date_parse
 from django.utils.encoding import force_text
 from lxml import etree
-from seo.models import Company, Country, Redirect
+from redirect.models import Redirect
+from seo.models import Company, Country
 from slugify import slugify
 from xmlparse import DEJobFeed, get_strptime, text_fields, get_mapped_mocs
 import uuid
