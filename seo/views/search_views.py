@@ -379,10 +379,14 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
                                                          job_id))[0]
     except IndexError:
         try:
+            # The job was not in solr and may either be expired or has not
+            # been syndicated; search for it in the redirect database.
             the_job = Redirect.objects.get(**{search_type: job_id})
         except Redirect.DoesNotExist:
             pass
         else:
+            # We found the job; we don't have its description, so redirect to
+            # its location on the owner's ATS.
             return HttpResponseRedirect(the_job.url)
         return dseo_404(request)
     else:
@@ -405,7 +409,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
 
         query_path = "%s" % qs.urlencode() if qs.urlencode() else ''
 
-        # Append the query_path to all of the exising urls
+        # Append the query_path to all of the existing urls
         for field in breadbox_path:
             breadbox_path[field]['path'] = (("%s?%s" %
                                              (breadbox_path[field].get(
