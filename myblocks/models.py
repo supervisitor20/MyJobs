@@ -18,7 +18,7 @@ from myblocks import context_tools
 from myblocks.helpers import success_url
 from myjobs.helpers import expire_login
 from myjobs.models import User
-from redirect.models import Redirect
+from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
 
@@ -772,12 +772,12 @@ class Page(models.Model):
         if not job:
             if job_id:
                 search_type = 'guid' if len(job_id) > 31 else 'uid'
-                try:
-                    job = Redirect.objects.get(**{search_type: job_id})
-                except Redirect.DoesNotExist:
-                    pass
-                else:
-                    return HttpResponseRedirect(job.url)
+                # The job was not in solr; find and redirect to its apply url
+                # if it's a new job that hasn't been syndicated, otherwise
+                # return a 404.
+                do_redirect = redirect_if_new(**{search_type: job_id})
+                if do_redirect:
+                    return do_redirect
             raise Http404
 
         if settings.SITE_BUIDS and job.buid not in settings.SITE_BUIDS:

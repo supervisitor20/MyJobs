@@ -35,6 +35,7 @@ from django.views.decorators.csrf import csrf_exempt
 from slugify import slugify
 
 from moc_coding import models as moc_models
+from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
 from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr
@@ -45,7 +46,6 @@ from transform import transform_for_postajob
 from myblocks.views import BlockView
 from myblocks.models import SearchResultBlock, Page
 from myblocks import context_tools
-from redirect.models import Redirect
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.breadbox import Breadbox
 from seo.cache import get_custom_facets, get_site_config, get_total_jobs_count
@@ -378,17 +378,9 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         the_job = DESearchQuerySet().narrow("%s:(%s)" % (search_type,
                                                          job_id))[0]
     except IndexError:
-        try:
-            # The job was not in solr and may either be expired or has not
-            # been syndicated; search for it in the redirect database.
-            the_job = Redirect.objects.get(**{search_type: job_id})
-        except Redirect.DoesNotExist:
-            pass
-        else:
-            # We found the job; we don't have its description, so redirect to
-            # its location on the owner's ATS.
-            return HttpResponseRedirect(the_job.url)
-        return dseo_404(request)
+        # The job was not in solr; find and redirect to its apply url if
+        # it's a new job that hasn't been syndicated, otherwise return a 404.
+        return redirect_if_new(**{search_type: job_id}) or dseo_404(request)
     else:
         if settings.SITE_BUIDS and the_job.buid not in settings.SITE_BUIDS:
             if the_job.on_sites and not (set(settings.SITE_PACKAGES) & set(the_job.on_sites)):
