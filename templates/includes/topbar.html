@@ -160,8 +160,7 @@
                     {# MOBILE VIEW #}
                     <ul class="mobile_hide">
                         <li><a href="http://www.my.jobs/employers/">{% trans "Employers / Post Jobs" %}</a></li>
-                        <li><a href="{{ ABSOLUTE_URL }}">{% trans "Post Resume" %}</a></li>
-                        <li><a href="{{ ABSOLUTE_URL }}">{% trans 'Login' %}</a></li>
+                        <li><a href="{{ ABSOLUTE_URL }}">{% trans 'Create Account / Log In' %}</a></li>
                     </ul>
                     <a id="topbar-back" class="desktop_hide" href="#" onclick="javascript:window.history.back(-1);return false;"><span id="prm-arrow-left"></span></a>
                     <div id="" class="menu-bar desktop_hide" style="text-align: right;">
@@ -170,8 +169,7 @@
                                 <a class="main-nav"></a>
                                 <ul id="pop-menu">
                                     <li><a id="demo-link" class="no-show" href="http://www.my.jobs/employers/">{% trans "Employers / Post Jobs" %}</a></li>
-                                    <li><a id="create-profile" class="no-show" href="{{ ABSOLUTE_URL }}">{% trans "Post Resume" %}</a></li>
-                                    <li><a id="login-link" class="no-show" href="{{ ABSOLUTE_URL }}">{% trans 'Login' %}</a></li>
+                                    <li><a id="login-link" class="no-show" href="{{ ABSOLUTE_URL }}">{% trans 'Create Account / Log In' %}</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -330,27 +328,31 @@
         // Company name used to show user what current company is selected
         var menu_company_name;
 
+        var company_not_found = false;
+
         // Creating li items for "list" (the ul)
         for(var i=0; i<data.length; i++) {
+            var company = data[i];
+
             // Get company name from cid, if cid exists
-            if(!menu_company_name) {
-                if(cid) {
-                    if(data[i].id == cid) {
-                        menu_company_name = data[i].name;
+            if (!menu_company_name) {
+                if (cid) {
+                    if (company.id == cid) {
+                        menu_company_name = company.name;
+                        company_not_found = false;
                     } else {
-                        set_cookie(data[0].id, 14);
-                        menu_company_name = data[0].name;
+                        company_not_found = true;
                     }
-                }
-                else {
+                } else {
                     set_cookie(data[0].id, 14);
                     menu_company_name = data[0].name;
                 }
             }
+            
             var list_item = document.createElement("li");
-            list_item.setAttribute("id", "company_" + String(data[i].id));
+            list_item.setAttribute("id", "company_" + String(company.id));
             list_item.setAttribute("style", "cursor: pointer");
-            list_item.innerHTML = "<a>"+data[i].name+"</a>";
+            list_item.innerHTML = "<a>"+company.name+"</a>";
             list_item.onclick = function() {
                 // this.id Format: company_COMPANYID
                 var item_id = this.id.split("_")[1];
@@ -365,6 +367,12 @@
             };
             list.appendChild(list_item);
         }
+
+        if (company_not_found) {
+            set_cookie(data[0].id, 14);
+            menu_company_name = data[0].name;
+        }
+
         label.innerHTML = "<b>"+ menu_company_name +"</b>";
         parent_list_item.appendChild(label);
         parent_list_item.appendChild(list);
