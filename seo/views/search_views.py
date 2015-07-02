@@ -1863,7 +1863,7 @@ def post_a_job(request):
     if jobs_to_add:
         jobs_to_add = json.loads(jobs_to_add)
         jobs_to_add = [transform_for_postajob(job) for job in jobs_to_add]
-        jobs_added = add_jobs(jobs_to_add)
+        jobs_added = len(add_jobs(jobs_to_add))
     else:
         jobs_added = 0
     resp = {'jobs_added': jobs_added}

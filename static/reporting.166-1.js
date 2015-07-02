@@ -714,9 +714,6 @@ TagField.prototype.bindEvents = function() {
         url: "/reports/ajax/mypartners/tag",
         //TODO: New backend changes will fix this monstrocity
         data: {name: keyword,
-               contact__isnull: true,
-               partner__isnull: true,
-               partnersavedsearch__isnull: true,
                contactrecord__isnull: false,
                values: ["name"],
                order_by: "name"},

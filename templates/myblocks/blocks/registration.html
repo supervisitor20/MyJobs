@@ -1,6 +1,6 @@
 {% if request.user.is_anonymous %}
     <form action="{{ registration_action }}" method="post" id="direct-registration-form">
-        <h3>Sign Up</h3>
+        <h3>Create Account</h3>
         <fieldset>
             {{ registration_form.as_ul }}
         </fieldset>
