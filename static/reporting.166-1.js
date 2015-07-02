@@ -102,6 +102,15 @@ function Report(type, fields) {
   });
 }
 
+Report.prototype.typeVerbose = function() {
+  var verbose= {
+    'contactrecord': "Communication Records",
+    'partner': "Partner",
+    'contact': "Contact"
+  };
+  return verbose[this.type] + " Report";
+};
+
 Report.prototype.renderFields = function(renderAt, fields, clear, btn) {
   var $renderAt = $(renderAt),
       c = typeof clear !== "undefined" ? clear : true,
@@ -113,6 +122,8 @@ Report.prototype.renderFields = function(renderAt, fields, clear, btn) {
   if (c) {
     $renderAt.html("");
   }
+
+  $renderAt.append('<h2 class="report-heading">' + this.typeVerbose() + '</h2>');
 
   // for field in fields render.
   for (i = 0; i < fields.length; i++) {

@@ -1409,6 +1409,11 @@ input[readonly].datepicker {
     margin-top: -1px;
 }
 
+.report-heading {
+    margin-top: 0;
+    border-bottom: 1px solid black;
+}
+
 .list-header {
     box-sizing: border-box;
     background-color: #FFF;
