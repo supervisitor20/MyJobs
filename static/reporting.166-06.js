@@ -1191,8 +1191,11 @@ $(document).ready(function() {
       beforeSend: function() {
         $icon.addClass("fa-spin");
         origTitle = $icon.data('original-title');
+
         // Bootstrap tooltip reads off of the attr instead of data.
         $icon.attr('data-original-title', 'Regenerating...');
+
+        // Refresh tooltip if the user is still hovering over the element.
         if ($icon.is(":hover")) {
           $icon.tooltip('hide').tooltip('show');
         }
