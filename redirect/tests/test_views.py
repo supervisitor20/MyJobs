@@ -43,7 +43,13 @@ JOB = {
     '''Qualifications:
     10+ years prior experience weaving baskets underwater
     BS/MS Underwater Basket Weaving preferable
-    '''
+    ''',
+    'html_description':
+        '''<b>Qualifications:</b><br />
+        <ul><li>10+ years prior experience weaving baskets underwater</li>
+        <li>BS/MS Underwater Basket Weaving preferable</li></ul>
+        ''',
+    'reqid': 'ubw101'
 }
 
 
@@ -974,8 +980,8 @@ class EmailForwardTests(RedirectBase):
                                                          self.password))}
         self.post_dict = {'to': 'to@example.com',
                           'from': 'from@example.com',
-                          'text': 'This address does not contain a valid guid',
-                          'html': '',
+                          'text': 'Questions about stuff',
+                          'html': '<b>Questions about stuff</b>',
                           'subject': 'Bad Email',
                           'attachments': 0}
 
@@ -1070,17 +1076,21 @@ class EmailForwardTests(RedirectBase):
 
     def test_good_guid_email_new_job(self):
         self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
-        self.post_dict['text'] = 'Questions about stuff and things'
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
         self.assert_guid_email_responses_are_correct(self.redirect, JOB)
+        email = mail.outbox.pop()
+        # email.alternatives is a list of sets as follows:
+        # [('html body', 'text/html')]
+        alternatives = dict((part[1], part[0]) for part in email.alternatives)
+        self.assertTrue(JOB['html_description'] in alternatives['text/html'])
+        self.assertTrue(email.subject.startswith('[ReqID: %s]' % JOB['reqid']))
 
     def test_good_guid_email_new_job_no_user(self):
         self.contact.delete()
 
         self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
-        self.post_dict['text'] = 'Questions about stuff and things'
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
@@ -1092,11 +1102,15 @@ class EmailForwardTests(RedirectBase):
                                    buid=self.redirect.buid,
                                    uid=1)
         self.post_dict['to'] = ['%s@my.jobs' % guid]
-        self.post_dict['text'] = 'Questions about stuff and things'
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
         self.assert_guid_email_responses_are_correct(redirect)
+
+        email = mail.outbox.pop()
+        self.assertTrue('This job (%s) has expired.' % (
+            redirect.job_title, ) in email.body)
+        self.assertTrue(email.subject.startswith('[ReqID: Expired]'))
 
     def test_good_guid_email_old_job_no_user(self):
         self.contact.delete()
@@ -1106,7 +1120,6 @@ class EmailForwardTests(RedirectBase):
                                    buid=self.redirect.buid,
                                    uid=1)
         self.post_dict['to'] = ['%s@my.jobs' % guid]
-        self.post_dict['text'] = 'Questions about stuff and things'
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
@@ -1114,7 +1127,6 @@ class EmailForwardTests(RedirectBase):
 
     def test_email_with_name(self):
         self.post_dict['to'] = 'User <%s@my.jobs>' % self.redirect_guid
-        self.post_dict['text'] = 'Questions about stuff and things'
         self.post_dict['subject'] = 'Email forward success'
 
         self.submit_email()
