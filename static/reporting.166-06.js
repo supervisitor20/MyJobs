@@ -1088,7 +1088,7 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report-row > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+  subpage.on("click", ".report-row > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report-row").data("report"),
         model = $(this).parents("tr, .report-row").data("model"),
         callback = function() {
