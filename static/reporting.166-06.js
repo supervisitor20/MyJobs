@@ -36,7 +36,7 @@ window.onpopstate = function(event) {
     };
 
     navigation = true;
-    $sidebar.length > 0 ? historyNew() : renderOverview(historyNew);
+    $sidebar.find('h2:contains("Past Reports")').length > 0 ? historyNew() : renderOverview(historyNew);
   } else if (state.page && state.page === 'view-report') {
     var callback = function() {
           renderNavigation(true);
@@ -64,7 +64,7 @@ window.onpopstate = function(event) {
     };
 
     navigation = true;
-    $sidebar.length > 0 ? historyClone() : renderOverview(historyClone);
+    $sidebar.find('h2:contains("Past Reports")').length > 0 ? historyClone() : renderOverview(historyClone);
   }
 };
 
