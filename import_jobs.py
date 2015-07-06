@@ -408,6 +408,9 @@ def update_solr(buid, download=True, force=True, set_title=False,
             logging.debug("BUID:%s - SOLR - Delete chunk: %s" %
                          (buid, list(solr_del_uids)))
             conn.delete(q=delete_chunk)
+    
+    # delete any jobs that may have been added via etl_to_solr
+    conn.delete(q="buid:%s AND !uid:[0  TO *]" % buid)
 
     #Update business unit information: title, dates, and associated_jobs
     if set_title or not bu.title or (bu.title != jobfeed.job_source_name and
