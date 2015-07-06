@@ -1160,12 +1160,13 @@ $(document).ready(function() {
   });
 
   subpage.on("click", ".fa-refresh:not('.fa-spin'), .regenerate-report", function() {
-    var report_id,
-        data,
-        $icon = $(this),
-        $div,
+    var $icon = $(this),
         archive = false,
-        url = location.protocol + "//" + location.host; // https://secure.my.jobs
+        url = location.protocol + "//" + location.host, // https://secure.my.jobs
+        report_id,
+        data,
+        $div,
+        origTitle;
 
     if (typeof $(this).attr("id") !== "undefined") {
       report_id = $(this).attr("id").split("-")[1];
@@ -1189,6 +1190,11 @@ $(document).ready(function() {
       data: data,
       beforeSend: function() {
         $icon.addClass("fa-spin");
+        origTitle = $icon.data('original-title');
+        $icon.attr('data-original-title', 'Regenerating...');
+        if ($icon.is(":hover")) {
+          $icon.tooltip('hide').tooltip('show');
+        }
       },
       success: function() {
         $icon.removeClass("fa-spin");
@@ -1200,6 +1206,11 @@ $(document).ready(function() {
         } else {
           $icon.parents('div.report-row').effect("highlight", 600)
                .find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
+          $icon.attr('data-original-title', origTitle);
+
+          if ($icon.is(":hover")) {
+            $icon.tooltip('hide').tooltip('show');
+          }
         }
       }
     });
@@ -1214,15 +1225,8 @@ $(document).ready(function() {
     renderArchive(renderNavigation);
   });
 
-  // tooltips, show
-  subpage.on("mouseenter", '.icon-set i, .report-row > .report-link', function(){
-    $(this).tooltip('show');
-  });
-
-  // tooltips, hide
-  subpage.on("mouseleave", '.icon-set i, .report-row > .report-link', function() {
-    $(this).tooltip('hide');
-  });
+  // Show bootstrap tooltips
+  $('[data-toggle="tooltip"]').tooltip();
 });
 
 
@@ -1375,6 +1379,9 @@ function renderOverview(callback) {
     global: false,
     success: function(data) {
       $(".subpage > .wrapper").html(data);
+
+      // Enable bootstrap tooltips
+      $('[data-toggle="tooltip"]').tooltip();
     }
   }).complete(function() {
     if (typeof callback === "function") {
