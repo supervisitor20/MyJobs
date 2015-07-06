@@ -2569,6 +2569,21 @@ class SeoViewsTestCase(DirectSEOTestCase):
             self.assertNotContains(resp,'<div id="direct_savedsearch"', 
                                    status_code=200, msg_prefix='')
 
+    def test_secure_redirect(self):
+        site = SeoSite.objects.get()
+        tag = SiteTag.objects.create(site_tag='network')
+        for path in ['about', 'privacy', 'contact', 'contact_faq', 'terms']:
+            response = self.client.get(reverse(path))
+            print path
+            self.assertEqual(response.status_code, 404)
+
+            site.site_tags.add(tag)
+            response = self.client.get(reverse(path))
+            self.assertEqual(response['Location'],
+                             'https://secure.my.jobs/%s' % (
+                                 path.replace('_', '-'), ))
+            site.site_tags.remove(tag)
+
 
 class FlatpagesTestCase(DirectSEOBase):
     def setUp(self):
