@@ -1213,6 +1213,16 @@ $(document).ready(function() {
     navigation = true;
     renderArchive(renderNavigation);
   });
+
+  // tooltips, show
+  subpage.on("mouseenter", '.icon-set i, .report-row > .report-link', function(){
+    $(this).tooltip('show');
+  });
+
+  // tooltips, hide
+  subpage.on("mouseleave", '.icon-set i, .report-row > .report-link', function() {
+    $(this).tooltip('hide');
+  });
 });
 
 

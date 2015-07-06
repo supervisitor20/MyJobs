@@ -5,7 +5,7 @@
             <a class="report-link {% if not report.results %}disabled{% endif %}" title="View Report">{{ report.name }}</a>
             <div class="icon-set">
                 <i id="view-{{ report.id }}" class="fa fa-eye {% if not report.results %}disabled{% endif %}" title="View Report"></i>
-                <i id="clone-{{ report.id }}" class="fa fa-copy" title="Clone Report"></i>
+                <i id="clone-{{ report.id }}" data-toggle="tooltip" class="fa fa-copy" title="Clone Report"></i>
                 <i id="regen-{{ report.id }}" class="fa fa-refresh" title="Regenerate Report"></i>
                 <i id="export-{{ report.id }}" class="fa fa-download {% if not report.results %}disabled{% endif %}" title="Export Report"></i>
             </div>

@@ -1672,7 +1672,8 @@ h3.bottom-bordered {
 }
 
 .icon-set i + i,
-.icon-set i + a.icon-link {
+.icon-set i + a.icon-link,
+.icon-set .tooltip + i.fa {
     margin-left: 5px;
 }
 
