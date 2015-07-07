@@ -936,6 +936,7 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertIn("Log In", response.content)
 
 
+
     def test_referring_site_in_topbar(self):
         self.client.get(
             reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'

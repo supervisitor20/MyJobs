@@ -16,6 +16,7 @@ from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.utils import text, timezone
 from django.views.decorators.csrf import csrf_exempt
+from redirect.helpers import get_job_from_solr
 
 from redirect.models import (Redirect, CanonicalMicrosite,
                              DestinationManipulation, CompanyEmail,
@@ -258,6 +259,8 @@ def email_redirect(request):
         helpers.send_response_to_sender(**email_dict)
         return HttpResponse(status=200)
 
+    solr_job = get_job_from_solr(hex_guid)
+    email_dict['solr_job'] = solr_job
     email_dict['job'] = job
 
     try:
@@ -274,6 +277,24 @@ def email_redirect(request):
     sg_headers = {
         'X-SMTPAPI': '{"category": "My.jobs email redirect"}'
     }
+
+    reqid = solr_job.get('reqid', 'None') if solr_job else 'Expired'
+    subject = u'[ReqID: {reqid}] - {subject}'.format(
+        reqid=reqid, subject=subject)
+
+    # We want to ensure both text and html emails get sent, hence what could
+    # be considered a bit of duplication.
+    dashes = "----------------------"
+    description = (solr_job.get('description', job.job_title)
+                   if solr_job
+                   else u"This job ({title}) has expired.".format(
+                       title=job.job_title))
+    html_description = (solr_job.get('html_description', job.job_title)
+                        if solr_job
+                        else u"This job ({title}) has expired.".format(
+                            title=job.job_title))
+    body = "\n".join([body, dashes, description])
+    html_body = "<br />".join([html_body, dashes, html_description])
 
     # We reached this point; the data should be good
     email = EmailMultiAlternatives(

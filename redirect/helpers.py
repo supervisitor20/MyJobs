@@ -17,7 +17,8 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.mail import EmailMessage
-from django.http import HttpResponsePermanentRedirect, Http404
+from django.http import HttpResponsePermanentRedirect, Http404, \
+    HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -588,7 +589,8 @@ def get_job_from_solr(guid):
     return None
 
 
-def send_response_to_sender(new_to, old_to, email_type, guid='', job=None):
+def send_response_to_sender(new_to, old_to, email_type, guid='', job=None,
+                            solr_job=None):
     """
     Send response to guid@my.jobs emails
 
@@ -611,7 +613,6 @@ def send_response_to_sender(new_to, old_to, email_type, guid='', job=None):
     else:
         to_parts = getaddresses(new_to)
         to = to_parts[0][0] or to_parts[0][1]
-        solr_job = get_job_from_solr(guid)
         title = ''
         description = ''
         if solr_job is not None:
@@ -752,3 +753,14 @@ def get_redirect_or_404(*args, **kwargs):
         return Redirect.objects.get_any(*args, **kwargs)
     except(ObjectDoesNotExist, MultipleObjectsReturned):
         raise Http404
+
+
+def redirect_if_new(**kwargs):
+    """
+    Redirects to the job's url if new, otherwise returns None.
+    """
+    job = Redirect.objects.filter(**kwargs).first()
+    if job and not job.expired_date:
+        return HttpResponseRedirect(job.url)
+    else:
+        return None
