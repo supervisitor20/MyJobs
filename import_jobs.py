@@ -118,7 +118,7 @@ def get_jobsfs_zipfile(guid):
     authheader = "Basic %s" % base64.encodestring('%s:%s' % ('microsites',
                                                              'di?dsDe4'))
     req.add_header("Authorization", authheader)
-    resp = urllib2.urlopen(req)
+    resp = urllib2.urlopen(req, timeout=30)
     return resp
 
 

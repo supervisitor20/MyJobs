@@ -161,6 +161,7 @@ def transform_for_postajob(job):
     solr_job['country'] = job['country']
     solr_job['company_exact'] = company.name
     solr_job['company_canonical_microsite_exact'] = company.canonical_microsite
+    solr_job['date_added'] = solr_job['date_added_exact'] = datetime.datetime.now()
 
     # Requires city, state_short, state, and country_short to be filled
     # in on solr_job to work.
@@ -317,6 +318,7 @@ def hr_xml_to_json(xml, business_unit):
     job['country'] = country
     job['company_exact'] = company.name
     job['company_canonical_microsite_exact'] = company.canonical_microsite
+    job['date_added'] = job['date_added_exact'] = datetime.datetime.now()
 
     # Requires city, state_short, state, and country_short to be filled
     # in on job to work.
