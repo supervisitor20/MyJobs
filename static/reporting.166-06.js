@@ -1159,7 +1159,7 @@ $(document).ready(function() {
     renderDownload(report_id);
   });
 
-  subpage.on("click", ".fa-refresh:not('.fa-spin'), .regenerate-report", function() {
+  subpage.on("click", ".sidebar .fa-refresh:not('.fa-spin'), .regenerate-report", function() {
     var $icon = $(this),
         archive = false,
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
@@ -1190,14 +1190,22 @@ $(document).ready(function() {
       data: data,
       beforeSend: function() {
         $icon.addClass("fa-spin");
-        origTitle = $icon.data('original-title');
+        if (archive) {
+          origTitle = $div.data('original-title');
+          $div.attr('data-original-title', 'Regenerating...');
+          if ($div.is(":hover")) {
+            $div.tooltip('hide').tooltip('show');
+          }
+        } else {
+          origTitle = $icon.data('original-title');
 
-        // Bootstrap tooltip reads off of the attr instead of data.
-        $icon.attr('data-original-title', 'Regenerating...');
+          // Bootstrap tooltip reads off of the attr instead of data.
+          $icon.attr('data-original-title', 'Regenerating...');
 
-        // Refresh tooltip if the user is still hovering over the element.
-        if ($icon.is(":hover")) {
-          $icon.tooltip('hide').tooltip('show');
+          // Refresh tooltip if the user is still hovering over the element.
+          if ($icon.is(":hover")) {
+            $icon.tooltip('hide').tooltip('show');
+          }
         }
       },
       success: function() {
@@ -1207,6 +1215,11 @@ $(document).ready(function() {
           // had to select tds because editing a tr background-color does nothing.
           $div.parents('tr').children('td').effect("highlight", 600)
               .find('.export-report, .view-report').removeClass('disabled');
+          $div.attr('data-original-title', origTitle);
+
+          if ($div.is(":hover")) {
+            $div.tooltip('hide').tooltip('show');
+          }
         } else {
           $icon.parents('div.report-row').effect("highlight", 600)
                .find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
@@ -1229,8 +1242,7 @@ $(document).ready(function() {
     renderArchive(renderNavigation);
   });
 
-  // Show bootstrap tooltips
-  $('[data-toggle="tooltip"]').tooltip();
+  enableTooltips();
 });
 
 
@@ -1383,9 +1395,7 @@ function renderOverview(callback) {
     global: false,
     success: function(data) {
       $(".subpage > .wrapper").html(data);
-
-      // Enable bootstrap tooltips
-      $('[data-toggle="tooltip"]').tooltip();
+      enableTooltips();
     }
   }).complete(function() {
     if (typeof callback === "function") {
@@ -1772,10 +1782,17 @@ function renderArchive(callback) {
     data: {},
     success: function(data) {
       $("#main-container").html(data);
+      enableTooltips();
     }
   }).complete(function() {
     if (typeof callback === "function") {
       callback();
     }
   });
+}
+
+
+function enableTooltips() {
+  // Enable bootstrap tooltips
+  $('[data-toggle="tooltip"]').tooltip();
 }
