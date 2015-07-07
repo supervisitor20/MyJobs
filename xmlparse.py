@@ -374,6 +374,7 @@ class DEJobFeed(JobFeed):
         job_dict['country_slab'] = country_slab
         job_dict['country_slab_exact'] = country_slab
         job_dict['country_slug'] = slugify(job_node['country'])
+        job_dict['date_added'] = job_dict['date_added_exact'] = datetime.datetime.now()
         job_dict['date_new'] = job_node['date_created']
         job_dict['date_new_exact'] = job_node['date_created']
 
