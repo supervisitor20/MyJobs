@@ -17,7 +17,8 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.mail import EmailMessage
-from django.http import HttpResponsePermanentRedirect, Http404
+from django.http import HttpResponsePermanentRedirect, Http404, \
+    HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -752,3 +753,14 @@ def get_redirect_or_404(*args, **kwargs):
         return Redirect.objects.get_any(*args, **kwargs)
     except(ObjectDoesNotExist, MultipleObjectsReturned):
         raise Http404
+
+
+def redirect_if_new(**kwargs):
+    """
+    Redirects to the job's url if new, otherwise returns None.
+    """
+    job = Redirect.objects.filter(**kwargs).first()
+    if job and not job.expired_date:
+        return HttpResponseRedirect(job.url)
+    else:
+        return None
