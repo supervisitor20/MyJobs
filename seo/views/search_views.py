@@ -461,7 +461,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             url = urlparse(the_job.link)
             path = url.path.replace("/", "")
             # use the override view source
-            if settings.VIEW_SOURCE:
+            if settings.VIEW_SOURCE and url.scheme != "mailto":
                 path = "%s%s" % (path[:32], settings.VIEW_SOURCE.view_source)
 
         # add any ats source code name value pairs
