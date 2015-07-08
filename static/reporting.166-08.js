@@ -303,7 +303,7 @@ Report.prototype = {
 };
 
 
-function Field(obj) {
+function Field(options) {
   var defaultOptions = {
         label: "Default Label",
         id: "DefaultID",
@@ -311,11 +311,10 @@ function Field(obj) {
         defaultVal: '',
         helpText: '',
         errors: []
-      },
-      options;
+      };
 
-  if (typeof obj === 'object') {
-    options = $.extend(defaultOptions, obj);
+  if (typeof options === 'object') {
+    options = $.extend(defaultOptions, options);
   } else {
     options = defaultOptions;
   }
