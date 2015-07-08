@@ -352,23 +352,6 @@ Field.prototype = {
 
     return data;
   },
-  showErrors: function() {
-    var $field = $(this.dom()),
-        $showModal = $("#show-modal");
-
-    if (this.errors.length) {
-      if (!$field.parent("div.required").length) {
-        $field.wrap('<div class="required"></div>');
-      }
-
-      if (!$field.prev(".show-errors").length) {
-        $field.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
-      } else {
-        $field.prev().html(this.errors.join(','));
-      }
-      $showModal.addClass("disabled");
-    }
-  },
   removeErrors: function() {
     var $field = $(this.dom()),
         $showModal = $("#show-modal");
@@ -386,6 +369,23 @@ Field.prototype = {
   },
   renderLabel: function() {
     return '<label class="big-blu" for="' + this.id + '">' + this.label + (this.required ? '<span style="color: #990000;">*</span>' : '') + '</label>';
+  },
+  showErrors: function() {
+    var $field = $(this.dom()),
+        $showModal = $("#show-modal");
+
+    if (this.errors.length) {
+      if (!$field.parent("div.required").length) {
+        $field.wrap('<div class="required"></div>');
+      }
+
+      if (!$field.prev(".show-errors").length) {
+        $field.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
+      } else {
+        $field.prev().html(this.errors.join(','));
+      }
+      $showModal.addClass("disabled");
+    }
   },
   unbind: function(event) {
     $(this.dom()).off(event);
