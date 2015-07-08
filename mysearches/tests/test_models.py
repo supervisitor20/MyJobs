@@ -188,7 +188,9 @@ class SavedSearchModelsTests(MyJobsBase):
         """
 
         tag = TagFactory(name="Test Tag")
-        search = SavedSearchFactory(user=self.user)
+        search = PartnerSavedSearchFactory(
+            user=self.user, created_by=self.user, provider=self.company,
+            partner=self.partner)
         search.tags.add(tag)
 
         search.send_email()
