@@ -30,7 +30,7 @@ window.onpopstate = function(event) {
         form.renderReports(".rpt-container");
       } else {
         report.renderFields(".rpt-container", report.fields, true);
-        report.unbindEvent().bindEvents();
+        report.unbindEvents().bindEvents();
       }
       renderNavigation();
     };
@@ -59,7 +59,7 @@ window.onpopstate = function(event) {
       report.createCloneReport(state.inputs);
       $("#container").addClass("rpt-container");
       report.renderFields(".rpt-container", report.fields, true);
-      report.unbindEvent().bindEvents();
+      report.unbindEvents().bindEvents();
       renderNavigation();
     };
 
@@ -82,10 +82,12 @@ function Form(reports) {
   this.reports = reports;
 }
 
-Form.prototype.renderReports = function(renderAt) {
-  this.reports.forEach(function(report, index, array) {
-    report.renderFields(renderAt, report.fields, index === 0, index + 1 === array.length);
-  });
+Form.prototype = {
+  renderReports: function(renderAt) {
+    this.reports.forEach(function(report, index, array) {
+      report.renderFields(renderAt, report.fields, index === 0, index + 1 === array.length);
+    });
+  }
 };
 
 
@@ -102,924 +104,927 @@ function Report(type, fields) {
   });
 }
 
-Report.prototype.typeVerbose = function() {
-  var verbose= {
-    'contactrecord': "Communication Records",
-    'partner': "Partner",
-    'contact': "Contact"
-  };
-  return verbose[this.type] + " Report";
-};
-
-Report.prototype.renderFields = function(renderAt, fields, clear, btn) {
-  var $renderAt = $(renderAt),
+Report.prototype = {
+  typeVerbose: function() {
+    var verbose = {
+      'contactrecord': "Communication Records",
+      'partner': "Partner",
+      'contact': "Contact"
+    };
+    return verbose[this.type] + " Report";
+  },
+  renderFields: function(renderAt, fields, clear, btn) {
+    var $renderAt = $(renderAt),
       c = typeof clear !== "undefined" ? clear : true,
       b = typeof btn !== "undefined" ? btn : true,
       field,
       i;
 
-  // Clear what is currently in the container.
-  if (c) {
-    $renderAt.html("");
-  }
+    // Clear what is currently in the container.
+    if (c) {
+      $renderAt.html("");
+    }
 
-  $renderAt.append('<h2 class="report-heading">' + this.typeVerbose() + '</h2>');
+    $renderAt.append('<h2 class="report-heading">' + this.typeVerbose() + '</h2>');
 
-  // for field in fields render.
-  for (i = 0; i < fields.length; i++) {
-    field = fields[i];
-    if (!field.dom().length) {
-      $renderAt.append(field.render());
-      if (typeof field.filter !== "undefined" && !field.dependencies.length) {
-        field.filter();
-      }
-      if (typeof field.bindEvents !== "undefined") {
-        field.bindEvents();
+    // for field in fields render.
+    for (i = 0; i < fields.length; i++) {
+      field = fields[i];
+      if (!field.dom().length) {
+        $renderAt.append(field.render());
+        if (typeof field.filter !== "undefined" && !field.dependencies.length) {
+          field.filter();
+        }
+        if (typeof field.bindEvents !== "undefined") {
+          field.bindEvents();
+        }
       }
     }
-  }
 
-  if (b) {
-    $renderAt.append('<div class="show-modal-holder">' +
-                   '<a id="show-modal" class="btn primary">Generate Report</a>' +
-                   '</div>');
-  }
+    if (b) {
+      $renderAt.append('<div class="show-modal-holder">' +
+      '<a id="show-modal" class="btn primary">Generate Report</a>' +
+      '</div>');
+    }
 
-  return this;
-};
-
-Report.prototype.findField = function(fieldID) {
-  return this.fields.filter(function(field) {
-    return (field.id === fieldID ? field : undefined);
-  })[0];
-};
-
-Report.prototype.createCloneReport = function(json) {
-  var phony,
+    return this;
+  },
+  findField: function(fieldID) {
+    return this.fields.filter(function (field) {
+      return (field.id === fieldID ? field : undefined);
+    })[0];
+  },
+  createCloneReport: function(json) {
+    var phony,
       value,
       date,
       key;
 
-  for (key in json) {
-    if (json.hasOwnProperty(key)) {
-      value = json[key];
-      if (key === "start_date" || key === "end_date") {
-        phony = {};
-        phony[key] = value;
-        date = this.findField("date");
-        $.extend(date.defaultVal, phony);
-      } else {
-        this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
+    for (key in json) {
+      if (json.hasOwnProperty(key)) {
+        value = json[key];
+        if (key === "start_date" || key === "end_date") {
+          phony = {};
+          phony[key] = value;
+          date = this.findField("date");
+          $.extend(date.defaultVal, phony);
+        } else {
+          this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
+        }
       }
     }
-  }
-};
-
-Report.prototype.bindEvents = function() {
-  var report = this,
+  },
+  bindEvents: function() {
+    var report = this,
       container = $("#main-container");
 
-  container.on("click", "#show-modal:not('.disabled')", function() {
-    var modal = $("#report-modal"),
+    container.on("click", "#show-modal:not('.disabled')", function () {
+      var modal = $("#report-modal"),
         body = modal.children(".modal-body"),
         footer = modal.children(".modal-footer"),
         saved;
 
-    saved = report.save();
+      saved = report.save();
 
-    if (saved) {
-      body.html(report.readableData());
-      modal.modal("show");
-    }
-  });
+      if (saved) {
+        body.html(report.readableData());
+        modal.modal("show");
+      }
+    });
 
-  $("body").on("click.submit", "#gen-report:not('disabled')", function() {
-    var csrf = read_cookie("csrftoken"),
+    $("body").on("click.submit", "#gen-report:not('disabled')", function () {
+      var csrf = read_cookie("csrftoken"),
         data = {"csrfmiddlewaretoken": csrf},
         url = location.protocol + "//" + location.host + "/reports/view/mypartners/" + report.type,
         newList = [];
-    if (report.data) {
-      $.extend(data, report.data);
-    }
-    if (data.contact) {
-      for (var i = 0; i < data.contact.length; i++) {
-        var value = data.contact[i],
+      if (report.data) {
+        $.extend(data, report.data);
+      }
+      if (data.contact) {
+        for (var i = 0; i < data.contact.length; i++) {
+          var value = data.contact[i],
             name = $("#contact input[data-pk='" + value + "']").parent().text().split('(')[0].trim();
-        newList.push(name);
+          newList.push(name);
+        }
+        delete data.contact;
+        data.contact__name = newList;
       }
-      delete data.contact;
-      data.contact__name = newList;
-    }
 
-    $.ajax({
-      type: 'POST',
-      url: url,
-      data: $.param(data, true),
-      success: function (data) {
-        window.location = location.protocol + '//' + location.host + location.pathname;
-      }
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: $.param(data, true),
+        success: function (data) {
+          window.location = location.protocol + '//' + location.host + location.pathname;
+        }
+      });
     });
-  });
 
-  return this;
-};
+    return this;
+  },
+  unbindEvents: function() {
+    $("body").off(".submit");
+    $("#main-container").off("click");
 
-Report.prototype.unbindEvent = function() {
-  $("body").off(".submit");
-  $("#main-container").off("click");
-
-  return this;
-};
-
-Report.prototype.hasErrors = function() {
-  return this.fields.some(function(field) {
-    return field.errors.length;
-  });
-};
-
-Report.prototype.save = function() {
-  var report = this,
+    return this;
+  },
+  hasErrors: function() {
+    return this.fields.some(function (field) {
+      return field.errors.length;
+    });
+  },
+  save: function() {
+    var report = this,
       errors;
 
-  this.fields.forEach(function(field) {
-    field.validate(false);
-  });
-
-  errors = this.fields.filter(function(field) {
-    return field.errors.length > 0;
-  });
-
-  if (errors.length) {
-    errors.forEach(function(field) {
-      field.showErrors();
+    this.fields.forEach(function (field) {
+      field.validate(false);
     });
-    return false;
-  } else {
-    this.fields.forEach(function(field) {
-      $.extend(report.data, field.onSave());
+
+    errors = this.fields.filter(function (field) {
+      return field.errors.length > 0;
     });
-  }
 
-  return true;
-};
+    if (errors.length) {
+      errors.forEach(function (field) {
+        field.showErrors();
+      });
+      return false;
+    } else {
+      this.fields.forEach(function (field) {
+        $.extend(report.data, field.onSave());
+      });
+    }
 
-Report.prototype.readableData = function(d) {
-  var data = d || this.data,
+    return true;
+  },
+  readableData: function(d) {
+    var data = d || this.data,
       html = '',
       items,
       value,
       key,
       i;
 
-  for (key in data) {
-    if (data.hasOwnProperty(key)) {
-      html += "<div>";
-      value = data[key];
+    for (key in data) {
+      if (data.hasOwnProperty(key)) {
+        html += "<div>";
+        value = data[key];
 
-      // Replace all '_' instances with spaces
-      key = key.replace(/_/g, " ");
+        // Replace all '_' instances with spaces
+        key = key.replace(/_/g, " ");
 
-      if (value && value.length) {
-        html += '<label>' + key.capitalize() + ':</label>';
-      }
-
-      // If value is an object (aka an array).
-      if (typeof value === "object" && value !== null && value.length) {
-        items = [];
-
-        if (key === "partner" || key === "contact") {
-          for (i = 0; i < value.length; i++) {
-            items.push($('#' + key + ' input[data-pk='+ value[i] + ']').parent().text());
-          }
-        } else {
-          for (i = 0; i < value.length; i++) {
-            items.push(value[i]);
-          }
+        if (value && value.length) {
+          html += '<label>' + key.capitalize() + ':</label>';
         }
-        html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
-      } else {
-        html += value;
+
+        // If value is an object (aka an array).
+        if (typeof value === "object" && value !== null && value.length) {
+          items = [];
+
+          if (key === "partner" || key === "contact") {
+            for (i = 0; i < value.length; i++) {
+              items.push($('#' + key + ' input[data-pk=' + value[i] + ']').parent().text());
+            }
+          } else {
+            for (i = 0; i < value.length; i++) {
+              items.push(value[i]);
+            }
+          }
+          html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
+        } else {
+          html += value;
+        }
+        html += '</div>';
       }
-      html += '</div>';
     }
+    return html;
   }
-  return html;
 };
 
 
-function Field(label, id, required, defaultVal, helpText) {
-  this.label = label;
-  this.id = id;
-  this.required = !!required || false;
-  this.defaultVal = defaultVal || '';
-  this.helpText = helpText || '';
-  this.errors = [];
+function Field(obj) {
+  var defaultOptions = {
+        label: "Default Label",
+        id: "DefaultID",
+        required: false,
+        defaultVal: '',
+        helpText: '',
+        errors: []
+      },
+      options;
+
+  if (typeof obj === 'object') {
+    options = $.extend(defaultOptions, obj);
+  } else {
+    options = defaultOptions;
+  }
+
+  this.label = options.label;
+  this.id = options.id;
+  this.required = options.required;
+  this.defaultVal = options.defaultVal;
+  this.helpText = options.helpText;
+  this.errors = options.errors;
 }
 
-Field.prototype.renderLabel = function() {
-  return '<label class="big-blu" for="' + this.id + '">' + this.label + (this.required ? '<span style="color: #990000;">*</span>' : '') + '</label>';
-};
-
-Field.prototype.dom = function() {
-  return $("#" + this.id);
-};
-
-Field.prototype.currentVal = function() {
-  return this.dom().val();
-};
-
-// TODO: Document namespacing for binding events.
-Field.prototype.bind = function(event, selector, callback) {
-  if (arguments.length === 2) {
-    callback = selector;
-    selector = undefined;
-  }
-
-  $(this.dom()).on(event, selector, function(e) {
-    callback(e);
-  });
-
-  return this;
-};
-
-// Unbinds all events of event type on this field.
-Field.prototype.unbind = function(event) {
-  $(this.dom()).off(event);
-
-  return this;
-};
-
-Field.prototype.onSave = function() {
-  var data = {};
-  data[this.id] = this.currentVal();
-
-  return data;
-};
-
-Field.prototype.validate = function(triggerEvent) {
-  triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
-  var $field = $(this.dom()),
-      err = this.label + " is required",
-      index = this.errors.indexOf(err);
-
-  if (this.required && this.currentVal().trim() === "") {
-    if (index === -1) {
-      this.errors.push(err);
-      this.showErrors();
+Field.prototype = {
+  bind: function(event, selector, callback) {
+    if (arguments.length === 2) {
+      callback = selector;
+      selector = undefined;
     }
-  } else {
-    if (index !== -1) {
-      this.errors.splice(index, 1);
-      this.removeErrors();
+
+    $(this.dom()).on(event, selector, function (e) {
+      callback(e);
+    });
+
+    return this;
+  },
+  currentVal: function() {
+    return this.dom().val();
+  },
+  dom: function() {
+    return $("#" + this.id);
+  },
+  onSave: function() {
+    var data = {};
+    data[this.id] = this.currentVal();
+
+    return data;
+  },
+  showErrors: function() {
+    var $field = $(this.dom()),
+      $showModal = $("#show-modal");
+
+    if (this.errors.length) {
+      if (!$field.parent("div.required").length) {
+        $field.wrap('<div class="required"></div>');
+      }
+
+      if (!$field.prev(".show-errors").length) {
+        $field.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
+      } else {
+        $field.prev().html(this.errors.join(','));
+      }
+      $showModal.addClass("disabled");
+    }
+  },
+  removeErrors: function() {
+    var $field = $(this.dom()),
+      $showModal = $("#show-modal");
+
+    if ($field.parent("div.required").length) {
+      $field.prev(".show-errors").remove();
+      $field.unwrap();
+    }
+
+    if (!this.report.hasErrors()) {
+      $showModal.removeClass("disabled");
+    }
+
+    return this;
+  },
+  renderLabel: function() {
+    return '<label class="big-blu" for="' + this.id + '">' + this.label + (this.required ? '<span style="color: #990000;">*</span>' : '') + '</label>';
+  },
+  unbind: function(event) {
+    $(this.dom()).off(event);
+
+    return this;
+  },
+  validate: function(triggerEvent) {
+    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+    var err = this.label + " is required",
+        index = this.errors.indexOf(err);
+
+    if (this.required && this.currentVal().trim() === "") {
+      if (index === -1) {
+        this.errors.push(err);
+        this.showErrors();
+      }
+    } else {
+      if (index !== -1) {
+        this.errors.splice(index, 1);
+        this.removeErrors();
+      }
+
+      if (triggerEvent) {
+        $.event.trigger("dataChanged", [this.onSave()]);
+      }
+    }
+
+    return this;
+  }
+};
+
+
+function TextField(options) {
+  Field.call(this, options);
+}
+
+// TextField prototype inherits Field's prototype with overwrites (or new methods).
+TextField.prototype = $.extend(Object.create(Field.prototype), {
+  bindEvents: function() {
+    var textField = this,
+      $field = $(textField.dom()),
+      trim = function () {
+        var value = $field.val().trim();
+        $field.val(value);
+      };
+
+    this.bind("change.validate", function (e) {
+      textField.validate();
+    });
+
+    this.bind("change.trim", trim);
+  },
+  render: function() {
+    var label = this.renderLabel(),
+      field = '<input id="' + this.id + '" value="' + this.defaultVal +
+        '" type="text" placeholder="' + this.label + '" />',
+      helpText = '<div class="help-text">' + this.helpText + '</div>';
+    return label + field + (this.helpText ? helpText : '');
+  }
+});
+
+
+function CheckBox(options) {
+  this.checked = typeof options.checked === 'undefined' ? true : options.checked;
+  this.name = options.name;
+  this.id = options.name + '_' + options.defaultVal;
+
+  $.extend(options, {id: this.id});
+
+  Field.call(this, options);
+}
+
+CheckBox.prototype = $.extend(Object.create(Field.prototype), {
+  render:  function(createLabel) {
+    createLabel = typeof createLabel === 'undefined' ? true : createLabel;
+
+    var label = this.renderLabel(),
+      field = '<label class="field"><input id="' + this.id + '" name="' + this.name +
+        '" type="checkbox" value="' + this.defaultVal +
+        (this.checked ? '" checked />' : '" />') + this.label + '</label>',
+      helpText = '<div class="help-text">' + this.helpText + '</div>';
+
+    return (createLabel ? label : '') + field + (this.helpText ? helpText : '');
+  }
+});
+
+function CheckList(options) {
+  this.choices = options.choices;
+
+  Field.call(this, options);
+}
+
+CheckList.prototype = $.extend(Object.create(Field.prototype), {
+  bindEvents: function() {
+    var checklist = this;
+
+    this.bind("change", "[value='all']", function (e) {
+      var $all = $(e.currentTarget),
+        $choices = $(checklist.dom()).find(".field input");
+
+      $choices.prop("checked", $all.is(":checked"));
+      $($choices[$choices.length - 1]).change();
+    });
+
+    this.bind("change", ".field input", function () {
+      var choices = $(checklist.dom()).find(".field input").toArray(),
+          $all = $(checklist.dom()).find("[value='all']"),
+          checked;
+
+      checked = choices.every(function (c) {
+        return $(c).is(":checked");
+      });
+      $all.prop("checked", checked);
+
+      checklist.choices.forEach(function (element) {
+        element.checked = $(element.dom()).is(":checked");
+      });
+
+      checklist.validate();
+    });
+  },
+  currentVal: function() {
+    var values = $.map(this.choices, function (c) {
+      if (c.checked) {
+        return c.currentVal();
+      }
+    });
+
+    return values.length ? values : ["0"];
+  },
+  render: function() {
+    var label = this.renderLabel(),
+        html = $.map(this.choices, function (choice) {
+          return choice.render(false);
+        }).join("  ");
+
+    return label + '<div class="checklist" id="' + this.id + '">' +
+      '<label style="display: inline;"><input value="all" type="checkbox" checked/ >All</label>  ' + html +
+      '</div>';
+  },
+  validate: function(triggerEvent) {
+    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+    var err = this.label + " is required",
+        index = this.errors.indexOf(err),
+        value = this.currentVal();
+
+    if (this.required && value.indexOf("0") === 0 && value.length === 1) {
+      if (index === -1) {
+        this.errors.push(err);
+        this.showErrors();
+      }
+    } else {
+      if (index !== -1) {
+        this.errors.splice(index, 1);
+        this.removeErrors();
+      }
     }
 
     if (triggerEvent) {
       $.event.trigger("dataChanged", [this.onSave()]);
     }
+
+    return this;
   }
-
-  return this;
-};
-
-Field.prototype.showErrors = function() {
-  var $field = $(this.dom()),
-      $showModal = $("#show-modal");
-
-  if (this.errors.length) {
-    if (!$field.parent("div.required").length) {
-      $field.wrap('<div class="required"></div>');
-    }
-
-    if (!$field.prev(".show-errors").length) {
-      $field.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
-    } else {
-      $field.prev().html(this.errors.join(','));
-    }
-    $showModal.addClass("disabled");
-  }
-};
-
-Field.prototype.removeErrors = function() {
-  var $field = $(this.dom()),
-      $showModal = $("#show-modal");
-
-  if ($field.parent("div.required").length) {
-    $field.prev(".show-errors").remove();
-    $field.unwrap();
-  }
-
-  if (!this.report.hasErrors()) {
-    $showModal.removeClass("disabled");
-  }
-
-  return this;
-};
+});
 
 
-function TextField(label, id, required, defaultVal, helpText) {
-  Field.call(this, label, id, required, defaultVal, helpText);
+function DateField(options) {
+  var dVal = options.defaultVal || {};
+  Field.call(this, options);
 }
 
-TextField.prototype = Object.create(Field.prototype);
+DateField.prototype = $.extend(Object.create(Field.prototype), {
+  bindEvents: function() {
+    var dateField = this,
+        datePicker = function (e) {
+          var $targeted = $(e.currentTarget);
+          $targeted.pickadate({
+            format: "mm/dd/yyyy",
+            selectYears: true,
+            selectMonths: true,
+            min: [2014, 0, 1], // PRM started in 2014/1/1
+            max: true,
+            today: false,
+            clear: false,
+            close: false,
+            onOpen: function () {
+              if (this.get("id") === "start-date") {
+                var end_date = $("#end-date").val();
+                this.set("max", end_date ? new Date(end_date) : true);
+              } else if (this.get("id") === "end-date") {
+                var start_date = $("#start-date").val();
+                this.set("min", start_date ? new Date(start_date) : [2014, 0, 1]);
+              }
+            }
+          });
+        };
 
-TextField.prototype.render = function() {
-  var label = this.renderLabel(),
-      field = '<input id="' + this.id + '" value="' + this.defaultVal +
-              '" type="text" placeholder="' + this.label + '" />',
-      helpText = '<div class="help-text">' + this.helpText + '</div>';
-  return label + field + (this.helpText ? helpText : '');
-};
+    this.bind("focus.datepicker", ".datepicker", datePicker);
+    this.bind("change.validate", ".datepicker", function (e) {
+      dateField.validate();
+    });
+  },
+  currentVal: function(id) {
+    return $(this.dom()).find("#" + id).val();
+  },
+  onSave: function() {
+    var data = {};
+    data.start_date = this.currentVal("start-date");
+    data.end_date = this.currentVal("end-date");
+    return data;
+  },
+  render: function() {
+    var label = this.renderLabel(),
+        dateWidget = $('<div id="' + this.id + '" class="filter-option"><div class="date-picker"></div></div>'),
+        datePicker = $(dateWidget).find(".date-picker"),
+        to = '<span id="activity-to-" class="datepicker">to</span>',
+        start = '<input id="start-date" class="datepicker picker-left" type="text" value="' + (this.defaultVal ? this.defaultVal.start_date : "") + '" placeholder="Start Date" />',
+        end = '<input id="end-date" class="datepicker picker-right" type="text" value="' + (this.defaultVal ? this.defaultVal.end_date : "") + '" placeholder="End Date" />';
 
-TextField.prototype.bindEvents = function() {
-  var textField = this,
-      $field = $(textField.dom()),
-      trim = function() {
-        var value = $field.val().trim();
-        $field.val(value);
-      };
+    datePicker.append(start).append(to).append(end);
+    dateWidget.append(datePicker);
+    return label + dateWidget.prop("outerHTML");
+  },
+  validate: function(triggerEvent) {
+    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+    var dateField = this,
+        $dom = $(this.dom()),
+        $fields = $dom.find("input.datepicker"), // Both start and end inputs.
+        label,
+        err;
 
-  this.bind("change.validate", function(e) {
-    textField.validate();
-  });
-
-  this.bind("change.trim", trim);
-};
-
-
-function CheckBox(label, name, defaultVal, checked, helpText) {
-  this.checked = typeof checked === 'undefined' ? true : checked;
-  this.name = name;
-  this.id = name + '_' + defaultVal;
-
-  Field.call(this, label, this.id, false, defaultVal, helpText);
-}
-
-CheckBox.prototype = Object.create(Field.prototype);
-
-CheckBox.prototype.render = function(createLabel) {
-  createLabel = typeof createLabel === 'undefined' ? true : createLabel;
-
-  var label = this.renderLabel(),
-      field = '<label class="field"><input id="' + this.id + '" name="' + this.name +
-              '" type="checkbox" value="' + this.defaultVal + 
-              (this.checked ? '" checked />' : '" />') + this.label + '</label>',
-      helpText = '<div class="help-text">' + this.helpText + '</div>';
-
-  return (createLabel ? label : '') + field + (this.helpText ? helpText : '');
-};
-
-
-function CheckList(label, id, choices, required, defaultVal, helpText) {
-  this.choices = choices;
-
-  Field.call(this, label, id, required, defaultVal, helpText);
-}
-
-CheckList.prototype = Object.create(Field.prototype);
-
-CheckList.prototype.render = function() {
-  var label = this.renderLabel(),
-      html = $.map(this.choices, function(choice) {
-        return choice.render(false);
-      }).join("  ");
-
-  return label + '<div class="checklist" id="' + this.id + '">' +
-                 '<label style="display: inline;"><input value="all" type="checkbox" checked/ >All</label>  ' + html +
-                 '</div>';
-};
-
-CheckList.prototype.currentVal = function() {
-  var values = $.map(this.choices, function(c) {
-    if (c.checked) {
-      return c.currentVal();
-    }
-  });
-
-  return values.length ? values : ["0"];
-};
-
-CheckList.prototype.bindEvents = function() {
-  var checklist = this;
-
-  this.bind("change", "[value='all']", function(e) {
-    var $all = $(e.currentTarget),
-        $choices = $(checklist.dom()).find(".field input");
-
-    $choices.prop("checked", $all.is(":checked"));
-    $($choices[$choices.length - 1]).change();
-  });
-
-  this.bind("change", ".field input", function(e) {
-    var $choice = $(e.currentTarget),
-        choices = $(checklist.dom()).find(".field input").toArray(),
-        $all = $(checklist.dom()).find("[value='all']"),
-        checked;
-
-    checked = choices.every(function(c) { return $(c).is(":checked"); });
-    $all.prop("checked", checked);
-
-    checklist.choices.forEach(function(element) {
-      element.checked = $(element.dom()).is(":checked");
+    $.each($fields, function (index, field) {
+      label = $(field).attr('placeholder');
+      err = label + " is required";
+      index = dateField.errors.indexOf(err);
+      if ($(field).val() === "") {
+        if (index === -1) {
+          dateField.errors.push(label + " is required");
+          dateField.showErrors();
+        }
+      } else {
+        if (index !== -1) {
+          dateField.errors.splice(index, 1);
+          dateField.removeErrors();
+        }
+      }
     });
 
-    checklist.validate(); 
-  });
-};
-
-CheckList.prototype.validate = function(triggerEvent) {
-  triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
-  var err = this.label + " is required",
-      index = this.errors.indexOf(err),
-      value = this.currentVal();
-  
-  if (this.required && value.indexOf("0") === 0 && value.length === 1) {
-    if (index === -1) {
-      this.errors.push(err);
-      this.showErrors();
+    if (!dateField.errors.length && triggerEvent) {
+      $.event.trigger("dataChanged", [dateField.onSave()]);
     }
-  } else {
-    if (index !== -1) {
-      this.errors.splice(index, 1);
-      this.removeErrors();
-    }
+
+    return this;
   }
-
-  if (triggerEvent) {
-    $.event.trigger("dataChanged", [this.onSave()]);
-  }
-
-  return this;
-};
+});
 
 
-function DateField(label, id, required, defaultVal, helpText) {
-  var dVal = defaultVal || {};
-  Field.call(this, label, id, required, dVal, helpText);
+function StateField(options) {
+  Field.call(this, options);
 }
 
-DateField.prototype = Object.create(Field.prototype);
+StateField.prototype = $.extend(Object.create(Field.prototype), {
+  bindEvents: function() {
+    var stateField = this;
 
-DateField.prototype.render = function() {
-  var label = this.renderLabel(),
-      dateWidget = $('<div id="' + this.id + '" class="filter-option"><div class="date-picker"></div></div>'),
-      datePicker = $(dateWidget).find(".date-picker"),
-      to = '<span id="activity-to-" class="datepicker">to</span>',
-      start = '<input id="start-date" class="datepicker picker-left" type="text" value="' + (this.defaultVal ? this.defaultVal.start_date : "") + '" placeholder="Start Date" />',
-      end = '<input id="end-date" class="datepicker picker-right" type="text" value="' + (this.defaultVal ? this.defaultVal.end_date : "")  + '" placeholder="End Date" />';
+    $(document).on("change.validate", "#" + stateField.id, function () {
+      stateField.validate();
+    });
+  },
+  render: function() {
+    var label = this.renderLabel(),
+        $select = $('<select id="' + this.id + '"></select>'),
+        options = ['<option value="">Select a State</option>'],
+        st;
 
-  datePicker.append(start).append(to).append(end);
-  dateWidget.append(datePicker);
-  return label + dateWidget.prop("outerHTML");
-};
-
-DateField.prototype.currentVal = function(id) {
-  return $(this.dom()).find("#" + id).val();
-};
-
-DateField.prototype.validate = function(triggerEvent) {
-  triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
-  var dateField = this,
-      $dom = $(this.dom()),
-      $fields = $dom.find("input.datepicker"), // Both start and end inputs.
-      label,
-      err;
-
-  $.each($fields, function(index, field) {
-    label = $(field).attr('placeholder');
-    err = label + " is required";
-    index = dateField.errors.indexOf(err);
-    if ($(field).val() === "") {
-      if (index === -1) {
-        dateField.errors.push(label + " is required");
-        dateField.showErrors();
-      }
-    } else {
-      if (index !== -1) {
-        dateField.errors.splice(index, 1);
-        dateField.removeErrors();
+    // create options
+    for (st in states) {
+      if (states.hasOwnProperty(st)) {
+        options.push('<option value="' + st + '" ' + (this.defaultVal === st ? "selected" : "") + '>' + states[st] + '</option>');
       }
     }
-  });
 
-  if (!dateField.errors.length && triggerEvent) {
-    $.event.trigger("dataChanged", [dateField.onSave()]);
+    $select.append(options.join(''));
+    return label + $select.prop("outerHTML");
   }
-
-  return this;
-};
-
-DateField.prototype.bindEvents = function() {
-  var dateField = this,
-      datePicker = function(e) {
-        var $targeted = $(e.currentTarget);
-        $targeted.pickadate({
-          format: "mm/dd/yyyy",
-          selectYears: true,
-          selectMonths: true,
-          min: [2014, 0, 1], // PRM started in 2014/1/1
-          max: true,
-          today: false,
-          clear: false,
-          close: false,
-          onOpen: function() {
-            if(this.get("id") === "start-date") {
-              var end_date = $("#end-date").val();
-              this.set("max", end_date ? new Date(end_date) : true);
-            } else if (this.get("id") === "end-date") {
-              var start_date = $("#start-date").val();
-              this.set("min", start_date ? new Date(start_date) : [2014, 0, 1]);
-            }
-          }
-        });
-    };
-
-  this.bind("focus.datepicker", ".datepicker", datePicker);
-  this.bind("change.validate", ".datepicker", function(e) {
-    dateField.validate();
-  });
-};
-
-DateField.prototype.onSave = function() {
-  var data = {};
-  data.start_date = this.currentVal("start-date");
-  data.end_date = this.currentVal("end-date");
-  return data;
-};
+});
 
 
-function StateField(label, id, required, defaultVal, helpText) {
-  Field.call(this, label, id, required, defaultVal, helpText);
-}
-
-StateField.prototype = Object.create(Field.prototype);
-
-StateField.prototype.render = function() {
-  var label = this.renderLabel(),
-      $select = $('<select id="' + this.id + '"></select>'),
-      options = ['<option value="">Select a State</option>'],
-      st;
-
-  // create options
-  for (st in states) {
-    if (states.hasOwnProperty(st)) {
-      options.push('<option value="' + st + '" ' + (this.defaultVal === st ? "selected" : "") + '>' + states[st] + '</option>');
-    }
-  }
-
-  $select.append(options.join(''));
-  return label + $select.prop("outerHTML");
-};
-
-StateField.prototype.bindEvents = function() {
-  var stateField = this;
-
-  $(document).on("change.validate", "#" + stateField.id, function() {
-    stateField.validate();  
-  });
-};
-
-
-function TagField(label, id, required, defaultVal, helpText) {
+function TagField(options) {
   this.value = [];
-  TextField.call(this, label, id, required, defaultVal, helpText);
+  TextField.call(this, options);
 }
 
-TagField.prototype = Object.create(TextField.prototype);
-
-TagField.prototype.bindEvents = function() {
-  var tagField = this,
+TagField.prototype = $.extend(Object.create(TextField.prototype), {
+  bindEvents: function() {
+    var tagField = this,
       $dom = $(this.dom());
 
-  $dom.autocomplete({
-    focus: function() {
-      // Prevent value inserted on focus.
-      return false;
-    },
-    select: function(event, ui) {
-      // Split string by "," then trim whitespace on either side of all inputs.
-      var inputs = this.value.split(",").map(function(i) {return i.trim();});
-
-      // Remove last element of inputs. Typically is an unfinished string.
-      inputs.pop();
-      // Add selected item from autocomplete
-      inputs.push(ui.item.value);
-      // Add placeholder for join to create an extra ", " for UX goodness.
-      inputs.push("");
-      // Combine everything in inputs with ", ".
-      this.value = inputs.join(", ");
-
-      // If there are any inputs already in the field make sure default functionality doesn't run.
-      if (inputs.length) {
+    $dom.autocomplete({
+      focus: function () {
+        // Prevent value inserted on focus.
         return false;
-      }
-    },
-    source: function(request, response) {
-      var inputs = request.term.split(",").map(function(i) {return i.trim();}),
-          // Last element is always going to be what is being searched for.
+      },
+      select: function (event, ui) {
+        // Split string by "," then trim whitespace on either side of all inputs.
+        var inputs = this.value.split(",").map(function (i) {
+          return i.trim();
+        });
+
+        // Remove last element of inputs. Typically is an unfinished string.
+        inputs.pop();
+        // Add selected item from autocomplete
+        inputs.push(ui.item.value);
+        // Add placeholder for join to create an extra ", " for UX goodness.
+        inputs.push("");
+        // Combine everything in inputs with ", ".
+        this.value = inputs.join(", ");
+
+        // If there are any inputs already in the field make sure default functionality doesn't run.
+        if (inputs.length) {
+          return false;
+        }
+      },
+      source: function (request, response) {
+        var inputs = request.term.split(",").map(function (i) {
+            return i.trim();
+          }),
+        // Last element is always going to be what is being searched for.
           keyword = inputs.pop(),
-          // Initialize list of suggested tag names.
+        // Initialize list of suggested tag names.
           suggestions;
 
-      $.ajax({
-        type: "GET",
-        url: "/reports/ajax/mypartners/tag",
-        //TODO: New backend changes will fix this monstrocity
-        data: {name: keyword,
-               contactrecord__isnull: false,
-               values: ["name"],
-               order_by: "name"},
-        success: function(data) {
-          suggestions = data.filter(function(d) {
-            // Don't suggest things that are already selected.
-            if (inputs.indexOf(d.name) === -1) {
-              return d;
-            }
-          }).map(function(d) {
-            // Only care about name string.
-            return d.name;
-          });
+        $.ajax({
+          type: "GET",
+          url: "/reports/ajax/mypartners/tag",
+          //TODO: New backend changes will fix this monstrocity
+          data: {
+            name: keyword,
+            contactrecord__isnull: false,
+            values: ["name"],
+            order_by: "name"
+          },
+          success: function (data) {
+            suggestions = data.filter(function (d) {
+              // Don't suggest things that are already selected.
+              if (inputs.indexOf(d.name) === -1) {
+                return d;
+              }
+            }).map(function (d) {
+              // Only care about name string.
+              return d.name;
+            });
 
-          response(suggestions);
-        }
-      });
-    }
-  });
+            response(suggestions);
+          }
+        });
+      }
+    });
 
-  $dom.on("autocompleteopen", function() {
-    $dom.data("isOpen", true);
-  });
+    $dom.on("autocompleteopen", function () {
+      $dom.data("isOpen", true);
+    });
 
-  $dom.on("autocompleteclose", function() {
-    $dom.data("isOpen", false);
-    tagField.value = $dom.val();
-    tagField.validate();
-  });
-
-  $dom.on("change", function() {
-    if(!$dom.data("isOpen")) {
+    $dom.on("autocompleteclose", function () {
+      $dom.data("isOpen", false);
       tagField.value = $dom.val();
       tagField.validate();
-    }
-  });
-};
+    });
 
-TagField.prototype.currentVal = function() {
-  // Split on commas. Trim each element in array. Remove any elements that were blank strings.
-  // #2proud2linebreak
-  return this.dom().val().split(",").map(function(t) { return t.trim(); }).filter(function(t) { if (!!t) { return t; } });
-};
+    $dom.on("change", function () {
+      if (!$dom.data("isOpen")) {
+        tagField.value = $dom.val();
+        tagField.validate();
+      }
+    });
+  },
+  currentVal: function() {
+    // Split on commas. Trim each element in array. Remove any elements that were blank strings.
+    return this.dom().val().split(",").map(function (t) {
+      return t.trim();
+    }).filter(function (t) {
+      if (!!t) {
+        return t;
+      }
+    });
+  }
+});
 
 
-function FilteredList(label, id, required, ignore, dependencies, defaultVal, helpText) {
-  this.ignore = ignore || [];
-  this.dependencies = dependencies || [];
+function FilteredList(options) {
+  this.ignore = options.ignore || [];
+  this.dependencies = options.dependencies || [];
   this.active = 0;
   this.hasRan = false;
 
-  Field.call(this, label, id, required, defaultVal, helpText);
+  Field.call(this, options);
 }
 
-FilteredList.prototype = Object.create(Field.prototype);
-
-FilteredList.prototype.renderLabel = function() {
-  return '<div id="'+ this.id +'-header" class="list-header">' +
-         '<i class="fa fa-plus-square-o"></i>' +
-         '<input id="' + this.id + '-all-checkbox" type="checkbox" ' + (this.defaultVal ? "" : "checked") + ' />' +
-         ' All ' + this.label + (this.required ? '<star style="color: #990000">*</star>' : '') +
-         ' <span>(<span class="record-count">0</span> ' + this.label + ' Selected)</span>' +
-         '</div>';
-};
-
-FilteredList.prototype.render = function() {
-  var label = this.renderLabel(),
-      body = '<div id="' + this.id + '" style="display: none;" class="list-body"></div>';
-
-  return label + body;
-};
-
-FilteredList.prototype.filter = function() {
-  var filteredList = this,
-      filterData = {},
-      $recordCount,
-      $listBody,
-      $input,
-      Status = { UNPROCESSED: 0, APPROVED: 1, DENIED: 2 };
-
-  filteredList.report.fields.forEach(function(field) {
-    if (filteredList.ignore.indexOf(field.id) === -1) {
-      $.extend(filterData, field.onSave());
-    }
-  });
-
-  // only show approved records
-  filterData.approval_status__code=Status.APPROVED;
-
-  if (this.id === "partner") {
-    // annotate how many records a partner has.
-    $.extend(filterData, {
-      values: ["pk", "name"],
-      order_by: "name"
+FilteredList.prototype = $.extend(Object.create(Field.prototype), {
+  currentVal: function() {
+    var values = $.map($(this.dom()).find("input").toArray(), function (c) {
+      if (c.checked) {
+        return $(c).data("pk");
+      }
     });
 
-  } else if (this.id === "contact") {
-    $.extend(filterData, {values: ["pk", "name", "email"], order_by: "name"});
-  }
+    return values.length ? values : ["0"];
+  },
+  bindEvents: function() {
+    var filteredList = this,
+        $header = $('#' + filteredList.id + '-header'),
+        $recordCount = $header.find(".record-count"),
+        $all = $header.find("input"),
+        $dom = $(this.dom());
 
-  filterData.contactrecord__tags__name = filterData.tags__name;
-  delete filterData.tags__name;
+    $header.on("click", function () {
+      var $this = $(this),
+          $icon = $this.children("i:first");
 
-  $.ajax({
-    type: "GET",
-    url: "/reports/ajax/mypartners/" + this.id,
-    data: filterData,
-    global: false,
-    beforeSend: function() {
-      $('#' + filteredList.id + '-header > span').hide();
-      if (!$('#' + filteredList.id + '-header > .fa-spinner').length) {
-        $('#' + filteredList.id + '-header').append('<i style="margin-left: 5px;" class="fa fa-spinner fa-pulse"></i>');
-      }
-      filteredList.active++;
-    },
-    success: function(data) {
-      $recordCount = $('#' + filteredList.id + '-header .record-count');
-      $listBody = $('.list-body#' + filteredList.id);
-      $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
-      $listBody.append('<ul><li>' + data.map(function(element) {
-        $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
-          if (filteredList.defaultVal && !filteredList.hasRan) {
-            if (filteredList.id === "contact") {
-              return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
-            } else {
-              return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
-            }
-          }
-          return "checked";
-        })() +  '/>');
-        return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
-          (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
-      }).join("</li><li>") + '</li></ul>');
-
-      var value = filteredList.currentVal();
-      if (!filteredList.hasRan) {
-        $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function(c) { return $(c).is(":checked"); }));
+      if ($icon.hasClass("fa-plus-square-o")) {
+        $icon.removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
       } else {
-        $('#' + filteredList.id + '-header input').prop("checked", true);
+        $icon.removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
       }
+
+      $this.next().stop(true, true).slideToggle();
+    });
+
+    $header.on("change", "input", function () {
+      var $choices = $(filteredList.dom()).find("input");
+
+      $choices.prop("checked", $(this).is(":checked"));
+      $($choices[$choices.length - 1]).change();
+    });
+
+    $header.on("click", "input", function (e) {
+      e.stopPropagation();
+    });
+
+    $dom.bind("change", "input", function () {
+      var choices = $(filteredList.dom()).find("input").toArray(),
+          checked,
+          value;
+
+      checked = choices.every(function (c) {
+        return $(c).is(":checked");
+      });
+      $all.prop("checked", checked);
+      value = filteredList.currentVal();
       $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-
       $.event.trigger("filtered", [filteredList]);
-    }
-  }).done(function() {
-    filteredList.active--;
-    if (!filteredList.active) {
-      $('#' + filteredList.id + '-header > .fa-spinner').remove();
-      $('#' + filteredList.id + '-header > span').show();
-    }
-    filteredList.validate(false);
-    filteredList.hasRan = true;
-  });
-};
+    });
 
-FilteredList.prototype.currentVal = function() {
-  var values = $.map($(this.dom()).find("input").toArray(), function(c) {
-    if (c.checked) {
-      return $(c).data("pk");
-    }
-  });
+    $all.on("change", function (e) {
+      filteredList.validate();
+    });
 
-  return values.length ? values : ["0"];
-};
+    $dom.bind("change.validate", "input", function (e) {
+      filteredList.validate();
+    });
 
-FilteredList.prototype.bindEvents = function() {
-  var filteredList = this,
-      $header = $('#' + filteredList.id + '-header'),
-      $recordCount = $header.find(".record-count"),
-      $all = $header.find("input"),
-      $dom = $(this.dom());
-
-  $header.on("click", function() {
-    var $this = $(this),
-        $icon = $this.children("i:first");
-
-    if ($icon.hasClass("fa-plus-square-o")) {
-      $icon.removeClass("fa-plus-square-o").addClass("fa-minus-square-o");
-    } else {
-      $icon.removeClass("fa-minus-square-o").addClass("fa-plus-square-o");
-    }
-
-    $this.next().stop(true, true).slideToggle();
-  });
-
-  $header.on("change", "input", function() {
-    var $choices = $(filteredList.dom()).find("input");
-
-    $choices.prop("checked", $(this).is(":checked"));
-    $($choices[$choices.length - 1]).change();
-  });
-
-  $header.on("click", "input", function(e) {
-    e.stopPropagation();
-  });
-
-  $dom.bind("change", "input", function() {
-    var choices = $(filteredList.dom()).find("input").toArray(),
-        checked;
-
-    checked = choices.every(function(c) { return $(c).is(":checked"); });
-    $all.prop("checked", checked);
-    var value = filteredList.currentVal();
-    $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-    $.event.trigger("filtered", [filteredList]);
-  });
-
-  $all.on("change", function(e) {
-    filteredList.validate();
-  });
-
-  $dom.bind("change.validate", "input", function(e) {
-    filteredList.validate();
-  });
-
-  // TODO: Figure out how to reduce queries; perhaps by diffing total changes
-  $dom.on("dataChanged", function(e, data) {
-    var callFilter = !filteredList.dependencies.length && filteredList.ignore.every(function(element) {
+    // TODO: Figure out how to reduce queries; perhaps by diffing total changes
+    $dom.on("dataChanged", function (e, data) {
+      var callFilter = !filteredList.dependencies.length && filteredList.ignore.every(function (element) {
           return !(element in data);
         });
 
-    if(callFilter) {
-      filteredList.filter();
+      if (callFilter) {
+        filteredList.filter();
+      }
+
+    });
+
+    $dom.on("filtered", function (e, field) {
+      if (filteredList.dependencies.indexOf(field.id) !== -1) {
+        filteredList.filter();
+      }
+    });
+  },
+  filter: function() {
+    var filteredList = this,
+        filterData = {},
+        $recordCount,
+        $listBody,
+        $input,
+        Status = {UNPROCESSED: 0, APPROVED: 1, DENIED: 2};
+
+    filteredList.report.fields.forEach(function (field) {
+      if (filteredList.ignore.indexOf(field.id) === -1) {
+        $.extend(filterData, field.onSave());
+      }
+    });
+
+    // only show approved records
+    filterData.approval_status__code = Status.APPROVED;
+
+    if (this.id === "partner") {
+      // annotate how many records a partner has.
+      $.extend(filterData, {
+        values: ["pk", "name"],
+        order_by: "name"
+      });
+
+    } else if (this.id === "contact") {
+      $.extend(filterData, {values: ["pk", "name", "email"], order_by: "name"});
     }
 
-  });
+    filterData.contactrecord__tags__name = filterData.tags__name;
+    delete filterData.tags__name;
 
-  $dom.on("filtered", function(e, field) {
-    if (filteredList.dependencies.indexOf(field.id) !== -1) {
-      filteredList.filter();
+    $.ajax({
+      type: "GET",
+      url: "/reports/ajax/mypartners/" + this.id,
+      data: filterData,
+      global: false,
+      beforeSend: function () {
+        $('#' + filteredList.id + '-header > span').hide();
+        if (!$('#' + filteredList.id + '-header > .fa-spinner').length) {
+          $('#' + filteredList.id + '-header').append('<i style="margin-left: 5px;" class="fa fa-spinner fa-pulse"></i>');
+        }
+        filteredList.active++;
+      },
+      success: function (data) {
+        $recordCount = $('#' + filteredList.id + '-header .record-count');
+        $listBody = $('.list-body#' + filteredList.id);
+        $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
+        $listBody.append('<ul><li>' + data.map(function (element) {
+          $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
+            if (filteredList.defaultVal && !filteredList.hasRan) {
+              if (filteredList.id === "contact") {
+                return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
+              } else {
+                return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
+              }
+            }
+            return "checked";
+          })() + '/>');
+          return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
+            (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
+        }).join("</li><li>") + '</li></ul>');
+
+        var value = filteredList.currentVal();
+        if (!filteredList.hasRan) {
+          $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
+            return $(c).is(":checked");
+          }));
+        } else {
+          $('#' + filteredList.id + '-header input').prop("checked", true);
+        }
+        $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
+
+        $.event.trigger("filtered", [filteredList]);
+      }
+    }).done(function () {
+      filteredList.active--;
+      if (!filteredList.active) {
+        $('#' + filteredList.id + '-header > .fa-spinner').remove();
+        $('#' + filteredList.id + '-header > span').show();
+      }
+      filteredList.validate(false);
+      filteredList.hasRan = true;
+    });
+  },
+  removeErrors: function() {
+    var $header = $('#' + this.id + '-header'),
+        $showModal = $('#show-modal');
+
+    if ($header.parent(".required").length) {
+      $header.prev(".show-errors").remove();
+      $header.unwrap();
     }
-  });
-};
 
-FilteredList.prototype.validate = function(triggerEvent) {
-  triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
-  var err = this.label + " is required",
+    if (!this.report.hasErrors()) {
+      $showModal.removeClass("disabled");
+    }
+
+    return this;
+  },
+  render: function() {
+    var label = this.renderLabel(),
+        body = '<div id="' + this.id + '" style="display: none;" class="list-body"></div>';
+
+    return label + body;
+  },
+  renderLabel: function() {
+    return '<div id="' + this.id + '-header" class="list-header">' +
+      '<i class="fa fa-plus-square-o"></i>' +
+      '<input id="' + this.id + '-all-checkbox" type="checkbox" ' + (this.defaultVal ? "" : "checked") + ' />' +
+      ' All ' + this.label + (this.required ? '<star style="color: #990000">*</star>' : '') +
+      ' <span>(<span class="record-count">0</span> ' + this.label + ' Selected)</span>' +
+      '</div>';
+  },
+  showErrors: function() {
+    var $header = $('#' + this.id + '-header'),
+        $fuse = $('#' + this.id + '-header, #' + this.id),
+        $showModal = $('#show-modal');
+
+    if (this.errors.length) {
+      if (!$fuse.parent(".required").length) {
+        $fuse.wrapAll('<div class="required"></div>');
+      }
+
+      if (!$header.prev(".show-errors").length) {
+        $header.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
+      } else {
+        $header.prev().html(this.errors.join(','));
+      }
+      $showModal.addClass("disabled");
+    }
+
+    return this;
+  },
+  validate: function(triggerEvent) {
+    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+    var err = this.label + " is required",
       index = this.errors.indexOf(err),
       value = this.currentVal();
 
-  if (this.required && value.indexOf("0") === 0 && value.length === 1) {
-    if (index === -1) {
-      this.errors.push(err);
-      this.showErrors();
-    }
-  } else {
-    if (index !== -1) {
-      this.errors.splice(index, 1);
-      this.removeErrors();
-    }
-  }
-
-  if (triggerEvent) {
-    $.event.trigger("dataChanged", [this.onSave()]);
-  }
-
-  return this;
-};
-
-FilteredList.prototype.showErrors = function() {
-  var $header = $('#' + this.id + '-header'),
-      $fuse = $('#' + this.id + '-header, #' + this.id),
-      $showModal = $('#show-modal');
-
-  if (this.errors.length) {
-    if (!$fuse.parent(".required").length) {
-      $fuse.wrapAll('<div class="required"></div>');
-    }
-
-    if (!$header.prev(".show-errors").length) {
-      $header.before('<div class="show-errors">' + this.errors.join(', ') + '</div>');
+    if (this.required && value.indexOf("0") === 0 && value.length === 1) {
+      if (index === -1) {
+        this.errors.push(err);
+        this.showErrors();
+      }
     } else {
-      $header.prev().html(this.errors.join(','));
+      if (index !== -1) {
+        this.errors.splice(index, 1);
+        this.removeErrors();
+      }
     }
-    $showModal.addClass("disabled");
+
+    if (triggerEvent) {
+      $.event.trigger("dataChanged", [this.onSave()]);
+    }
+
+    return this;
   }
-
-  return this;
-};
-
-FilteredList.prototype.removeErrors = function() {
-  var $header = $('#' + this.id + '-header'),
-      $showModal = $('#show-modal');
-
-  if ($header.parent(".required").length) {
-    $header.prev(".show-errors").remove();
-    $header.unwrap();
-  }
-
-  if (!this.report.hasErrors()) {
-    $showModal.removeClass("disabled");
-  }
-
-  return this;
-};
+});
 
 
 // Capitalize first letter of a string.
@@ -1031,7 +1036,7 @@ var yesterday = (function(d){d.setDate(d.getDate() - 1); return d; })(new Date()
 
 
 $(document).ready(function() {
-  var subpage = $(".subpage");
+  var $subpage = $(".subpage");
 
   $("#choices input[name='report']:checked").prop("checked", false);
 
@@ -1039,7 +1044,7 @@ $(document).ready(function() {
     history.replaceState({'page': 'overview'}, "Report Overview");
   }
 
-  subpage.on("click", "#start-report:not(.disabled)", function(e) {
+  $subpage.on("click", "#start-report:not(.disabled)", function(e) {
     e.preventDefault();
     var choices = $("#choices input[name='report']:checked"),
         types = [],
@@ -1072,11 +1077,11 @@ $(document).ready(function() {
       form.renderReports(".rpt-container");
     } else {
       report.renderFields(".rpt-container", report.fields, true);
-      report.unbindEvent().bindEvents();
+      report.unbindEvents().bindEvents();
     }
   });
 
-  subpage.on("click", "#choices input[name='report']", function() {
+  $subpage.on("click", "#choices input[name='report']", function() {
     var $checkboxes = $("#choices input[name='report']"),
         $startReport = $("#start-report");
 
@@ -1088,7 +1093,7 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report-row > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+  $subpage.on("click", ".report-row > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report-row").data("report"),
         model = $(this).parents("tr, .report-row").data("model"),
         callback = function() {
@@ -1108,7 +1113,7 @@ $(document).ready(function() {
   });
 
   // Clone Report
-  subpage.on("click", ".fa-copy, .clone-report", function() {
+  $subpage.on("click", ".fa-copy, .clone-report", function() {
     var data = {id: $(this).parents("tr, .report-row").data("report"),
                 values: ['name', 'model', 'app', 'params']},
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
@@ -1130,7 +1135,7 @@ $(document).ready(function() {
 
               $("#container").addClass("rpt-container");
               report.renderFields(".rpt-container", report.fields, true);
-              report.unbindEvent().bindEvents();
+              report.unbindEvents().bindEvents();
 
               if (modernBrowser) {
                 history.pushState({'page': 'clone', 'inputs': params, 'type': report.type}, "Clone Report");
@@ -1149,7 +1154,7 @@ $(document).ready(function() {
     renderNavigation();
   });
 
-  subpage.on("click", ".fa-download:not(.disabled), .export-report:not(.disabled)", function() {
+  $subpage.on("click", ".fa-download:not(.disabled), .export-report:not(.disabled)", function() {
     var report_id = $(this).parents("tr, .report-row").data("report");
 
     if (modernBrowser) {
@@ -1159,7 +1164,7 @@ $(document).ready(function() {
     renderDownload(report_id);
   });
 
-  subpage.on("click", ".sidebar .fa-refresh:not('.fa-spin'), .regenerate-report", function() {
+  $subpage.on("click", ".sidebar .fa-refresh:not('.fa-spin'), .regenerate-report", function() {
     var $icon = $(this),
         archive = false,
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
@@ -1234,7 +1239,7 @@ $(document).ready(function() {
   });
 
   // View Archive
-  subpage.on("click", "#report-archive", function() {
+  $subpage.on("click", "#report-archive", function() {
     if (modernBrowser) {
       history.pushState({'page': 'report-archive'}, "Report Archive");
     }
@@ -1256,34 +1261,34 @@ function isIE() {
 function createReport(type) {
   var reports = {
   contact: function() {
-    return new Report("contact", [new TextField("Report Name", "report_name", true, reportNameDateFormat(new Date())),
-                                  new DateField("Select Date", "date", true, {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}),
-                                  new StateField("State", "state", false),
-                                  new TextField("City", "city", false),
-                                  new FilteredList("Partners", "partner", true, ["report_name", "partner"])]);
+    return new Report("contact", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
+                                  new DateField({label: "Select Date", id: "date", required: true, defaultVal: {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}}),
+                                  new StateField({label: "State", id: "state"}),
+                                  new TextField({label: "City", id: "city"}),
+                                  new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner"]})]);
   },
   partner: function() {
-    return new Report("partner", [new TextField("Report Name", "report_name", true, reportNameDateFormat(new Date())),
-                                  new StateField("State", "state", false),
-                                  new TextField("City", "city", false),
-                                  new TextField("URL", "uri", false),
-                                  new TextField("Source", "data_source", false)]);
+    return new Report("partner", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
+                                  new StateField({label: "State", id: "state"}),
+                                  new TextField({label: "City", id: "city"}),
+                                  new TextField({label: "URL", id: "uri"}),
+                                  new TextField({label: "Source", id: "data_source"})]);
   },
   contactrecord: function() {
-    var contactTypeChoices = [new CheckBox("Email", "contact_type", "email"),
-                              new CheckBox("Phone Call", "contact_type", "phone"),
-                              new CheckBox("Meeting or Event", "contact_type", "meetingorevent"),
-                              new CheckBox("Job Followup", "contact_type", "job"),
-                              new CheckBox("Saved Search Email", "contact_type", "pssemail")];
+    var contactTypeChoices = [new CheckBox({label: "Email", name: "contact_type", defaultVal: "email"}),
+                              new CheckBox({label: "Phone Call", name: "contact_type", defaultVal: "phone"}),
+                              new CheckBox({label: "Meeting or Event", name: "contact_type", defaultVal: "meetingorevent"}),
+                              new CheckBox({label: "Job Followup", name: "contact_type", defaultVal: "job"}),
+                              new CheckBox({label: "Saved Search Email", name: "contact_type", defaultVal: "pssemail"})];
 
-    return new Report("contactrecord", [new TextField("Report Name", "report_name", true, reportNameDateFormat(new Date())),
-                                        new DateField("Select Date", "date", true, {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}),
-                                        new StateField("State", "state", false),
-                                        new TextField("City", "city", false),
-                                        new CheckList("Contact Types", "contact_type", contactTypeChoices, true, "all"),
-                                        new TagField("Tags", "tags__name", false, undefined, "Use commas for multiple tags."),
-                                        new FilteredList("Partners", "partner", true, ["report_name", "partner", "contact"]),
-                                        new FilteredList("Contacts", "contact", true, ["report_name", "contact"], ["partner"])]);
+    return new Report("contactrecord", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
+                                        new DateField({label: "Select Date", id: "date", required: true, defaultVal: {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}}),
+                                        new StateField({label: "State", id: "state"}),
+                                        new TextField({label: "City", id: "city"}),
+                                        new CheckList({label: "Contact Types", id: "contact_type", required: true, defaultVal: "all", choices: contactTypeChoices}),
+                                        new TagField({label: "Tags", id: "tags__name", helpText: "Use commas for multiple tags."}),
+                                        new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner", "contact"]}),
+                                        new FilteredList({label: "Contacts", id: "contact", required: true, ignore: ["report_name", "contact"], dependencies: ["partner"]})]);
   }
 };
 
