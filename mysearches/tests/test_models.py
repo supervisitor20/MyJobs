@@ -13,7 +13,8 @@ from mydashboard.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
 from mymessages.models import MessageInfo
 from mypartners.models import ContactRecord
-from mypartners.tests.factories import PartnerFactory, ContactFactory
+from mypartners.tests.factories import (PartnerFactory, ContactFactory,
+                                        TagFactory)
 from myprofile.tests.factories import PrimaryNameFactory
 from mysearches.models import SavedSearch, SavedSearchLog
 from mysearches.templatetags.email_tags import get_activation_link
@@ -179,6 +180,20 @@ class SavedSearchModelsTests(MyJobsBase):
             search.send_email()
         except UnicodeEncodeError as e:
             self.fail(e)
+
+    def test_pss_contact_record_tagged(self):
+        """
+        When a contact record is created from a saved search being sent, that
+        record should have the saved search's tag.
+        """
+
+        tag = TagFactory(name="Test Tag")
+        search = SavedSearchFactory(user=self.user)
+        search.tags.add(tag)
+
+        search.send_email()
+        self.assertTrue(
+            ContactRecord.objects.filter(tags__name=tag.name).exists())
 
     def assert_modules_in_hrefs(self, modules):
         """
