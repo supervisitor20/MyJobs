@@ -187,10 +187,12 @@ class SavedSearchModelsTests(MyJobsBase):
         record should have the saved search's tag.
         """
 
+        company = CompanyFactory()
+        partner = PartnerFactory(owner=company)
         tag = TagFactory(name="Test Tag")
         search = PartnerSavedSearchFactory(
-            user=self.user, created_by=self.user, provider=self.company,
-            partner=self.partner)
+            user=self.user, created_by=self.user, provider=company,
+            partner=partner)
         search.tags.add(tag)
 
         search.send_email()
