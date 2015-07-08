@@ -115,10 +115,10 @@ Report.prototype = {
   },
   renderFields: function(renderAt, fields, clear, btn) {
     var $renderAt = $(renderAt),
-      c = typeof clear !== "undefined" ? clear : true,
-      b = typeof btn !== "undefined" ? btn : true,
-      field,
-      i;
+        c = typeof clear !== "undefined" ? clear : true,
+        b = typeof btn !== "undefined" ? btn : true,
+        field,
+        i;
 
     // Clear what is currently in the container.
     if (c) {
@@ -156,9 +156,9 @@ Report.prototype = {
   },
   createCloneReport: function(json) {
     var phony,
-      value,
-      date,
-      key;
+        value,
+        date,
+        key;
 
     for (key in json) {
       if (json.hasOwnProperty(key)) {
@@ -176,7 +176,7 @@ Report.prototype = {
   },
   bindEvents: function() {
     var report = this,
-      container = $("#main-container");
+        container = $("#main-container");
 
     container.on("click", "#show-modal:not('.disabled')", function () {
       var modal = $("#report-modal"),
@@ -194,16 +194,16 @@ Report.prototype = {
 
     $("body").on("click.submit", "#gen-report:not('disabled')", function () {
       var csrf = read_cookie("csrftoken"),
-        data = {"csrfmiddlewaretoken": csrf},
-        url = location.protocol + "//" + location.host + "/reports/view/mypartners/" + report.type,
-        newList = [];
+          data = {"csrfmiddlewaretoken": csrf},
+          url = location.protocol + "//" + location.host + "/reports/view/mypartners/" + report.type,
+          newList = [];
       if (report.data) {
         $.extend(data, report.data);
       }
       if (data.contact) {
         for (var i = 0; i < data.contact.length; i++) {
           var value = data.contact[i],
-            name = $("#contact input[data-pk='" + value + "']").parent().text().split('(')[0].trim();
+              name = $("#contact input[data-pk='" + value + "']").parent().text().split('(')[0].trim();
           newList.push(name);
         }
         delete data.contact;
@@ -235,7 +235,7 @@ Report.prototype = {
   },
   save: function() {
     var report = this,
-      errors;
+        errors;
 
     this.fields.forEach(function (field) {
       field.validate(false);
@@ -260,11 +260,11 @@ Report.prototype = {
   },
   readableData: function(d) {
     var data = d || this.data,
-      html = '',
-      items,
-      value,
-      key,
-      i;
+        html = '',
+        items,
+        value,
+        key,
+        i;
 
     for (key in data) {
       if (data.hasOwnProperty(key)) {
@@ -355,7 +355,7 @@ Field.prototype = {
   },
   showErrors: function() {
     var $field = $(this.dom()),
-      $showModal = $("#show-modal");
+        $showModal = $("#show-modal");
 
     if (this.errors.length) {
       if (!$field.parent("div.required").length) {
@@ -372,7 +372,7 @@ Field.prototype = {
   },
   removeErrors: function() {
     var $field = $(this.dom()),
-      $showModal = $("#show-modal");
+        $showModal = $("#show-modal");
 
     if ($field.parent("div.required").length) {
       $field.prev(".show-errors").remove();
@@ -423,11 +423,12 @@ function TextField(options) {
   Field.call(this, options);
 }
 
-// TextField prototype inherits Field's prototype with overwrites (or new methods).
+// TextField prototype inherits Field's prototype with overwrites
+// (or new methods, see what is being extended).
 TextField.prototype = $.extend(Object.create(Field.prototype), {
   bindEvents: function() {
     var textField = this,
-      $field = $(textField.dom()),
+        $field = $(textField.dom()),
       trim = function () {
         var value = $field.val().trim();
         $field.val(value);
@@ -441,9 +442,9 @@ TextField.prototype = $.extend(Object.create(Field.prototype), {
   },
   render: function() {
     var label = this.renderLabel(),
-      field = '<input id="' + this.id + '" value="' + this.defaultVal +
-        '" type="text" placeholder="' + this.label + '" />',
-      helpText = '<div class="help-text">' + this.helpText + '</div>';
+        field = '<input id="' + this.id + '" value="' + this.defaultVal +
+          '" type="text" placeholder="' + this.label + '" />',
+        helpText = '<div class="help-text">' + this.helpText + '</div>';
     return label + field + (this.helpText ? helpText : '');
   }
 });
@@ -485,7 +486,7 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
 
     this.bind("change", "[value='all']", function (e) {
       var $all = $(e.currentTarget),
-        $choices = $(checklist.dom()).find(".field input");
+          $choices = $(checklist.dom()).find(".field input");
 
       $choices.prop("checked", $all.is(":checked"));
       $($choices[$choices.length - 1]).change();
