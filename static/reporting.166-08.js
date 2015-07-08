@@ -422,8 +422,8 @@ function TextField(options) {
   Field.call(this, options);
 }
 
-// TextField prototype inherits Field's prototype with overwrites
-// (or new methods, see what is being extended).
+// TextField prototype inherits Field's prototype then overwrites
+// or adds methods if different from default functionality.
 TextField.prototype = $.extend(Object.create(Field.prototype), {
   bindEvents: function() {
     var textField = this,
