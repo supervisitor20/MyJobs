@@ -117,12 +117,12 @@ class QueryCountTests(DirectSEOTestCase):
             settings.SOLR_QUERY_COUNTER = 0
 
     def test_job_detail_page(self):
-        guid = SOLR_FIXTURE[1]['guid']
-        title = SOLR_FIXTURE[1]['title_exact']
+        guid = SOLR_FIXTURE[0]['guid']
+        title = SOLR_FIXTURE[0]['title_exact']
         url = reverse('job_detail_by_job_id', kwargs={'job_id': guid})
         resp = self.client.get(url, follow=True)
         self.assertIn(settings.SOLR_QUERY_COUNTER, self.query_range)
 
         # Confirm we've actually reached a description page
         # by checking for the title in the response.
-        self.assertIn(title, resp.content)
+        self.assertIn(title.encode('utf-8'), resp.content)

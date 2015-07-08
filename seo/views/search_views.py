@@ -35,6 +35,7 @@ from django.views.decorators.csrf import csrf_exempt
 from slugify import slugify
 
 from moc_coding import models as moc_models
+from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
 from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr
@@ -377,7 +378,9 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         the_job = DESearchQuerySet().narrow("%s:(%s)" % (search_type,
                                                          job_id))[0]
     except IndexError:
-        return dseo_404(request)
+        # The job was not in solr; find and redirect to its apply url if
+        # it's a new job that hasn't been syndicated, otherwise return a 404.
+        return redirect_if_new(**{search_type: job_id}) or dseo_404(request)
     else:
         if settings.SITE_BUIDS and the_job.buid not in settings.SITE_BUIDS:
             if the_job.on_sites and not (set(settings.SITE_PACKAGES) & set(the_job.on_sites)):
@@ -398,7 +401,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
 
         query_path = "%s" % qs.urlencode() if qs.urlencode() else ''
 
-        # Append the query_path to all of the exising urls
+        # Append the query_path to all of the existing urls
         for field in breadbox_path:
             breadbox_path[field]['path'] = (("%s?%s" %
                                              (breadbox_path[field].get(
@@ -458,7 +461,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             url = urlparse(the_job.link)
             path = url.path.replace("/", "")
             # use the override view source
-            if settings.VIEW_SOURCE:
+            if settings.VIEW_SOURCE and url.scheme != "mailto":
                 path = "%s%s" % (path[:32], settings.VIEW_SOURCE.view_source)
 
         # add any ats source code name value pairs

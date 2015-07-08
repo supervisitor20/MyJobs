@@ -714,9 +714,6 @@ TagField.prototype.bindEvents = function() {
         url: "/reports/ajax/mypartners/tag",
         //TODO: New backend changes will fix this monstrocity
         data: {name: keyword,
-               contact__isnull: true,
-               partner__isnull: true,
-               partnersavedsearch__isnull: true,
                contactrecord__isnull: false,
                values: ["name"],
                order_by: "name"},
@@ -1080,7 +1077,8 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a, .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+  subpage.on("click", ".report > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+
     var report_id = $(this).parents("tr, .report").data("report"),
         model = $(this).parents("tr, .report").data("model"),
         callback = function() {
