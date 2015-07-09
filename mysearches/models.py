@@ -585,7 +585,7 @@ class PartnerSavedSearch(SavedSearch):
                                     context_dict)
 
         contact = Contact.objects.filter(partner=self.partner,
-                                         user=self.user)[0]
+                                         user=self.user).first()
         record = ContactRecord.objects.create(
             partner=self.partner,
             contact_type='pssemail',
