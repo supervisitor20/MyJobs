@@ -1193,7 +1193,7 @@ $(document).ready(function() {
         if (archive) {
           origTitle = $div.data('original-title');
           $div.attr('data-original-title', 'Regenerating...');
-          if ($div.is(":hover")) {
+          if (modernBrowser && $div.is(":hover")) {
             $div.tooltip('hide').tooltip('show');
           }
         } else {
@@ -1203,7 +1203,7 @@ $(document).ready(function() {
           $icon.attr('data-original-title', 'Regenerating...');
 
           // Refresh tooltip if the user is still hovering over the element.
-          if ($icon.is(":hover")) {
+          if (modernBrowser && $icon.is(":hover")) {
             $icon.tooltip('hide').tooltip('show');
           }
         }
@@ -1217,7 +1217,7 @@ $(document).ready(function() {
               .find('.export-report, .view-report').removeClass('disabled');
           $div.attr('data-original-title', origTitle);
 
-          if ($div.is(":hover")) {
+          if (modernBrowser && $div.is(":hover")) {
             $div.tooltip('hide').tooltip('show');
           }
         } else {
@@ -1225,7 +1225,7 @@ $(document).ready(function() {
                .find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
           $icon.attr('data-original-title', origTitle);
 
-          if ($icon.is(":hover")) {
+          if (modernBrowser && $icon.is(":hover")) {
             $icon.tooltip('hide').tooltip('show');
           }
         }
