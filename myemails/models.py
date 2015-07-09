@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
 from django.core.mail import send_mail
-from django.db import models, OperationalError
+from django.db import models, OperationalError, ProgrammingError
 from django.db.models.signals import pre_save, post_save
 from django.template import Template, Context
 from django.utils.translation import ugettext_lazy as _
@@ -277,7 +277,7 @@ try:
         content_type = model if model != 'invoice' else 'purchasedproduct'
         model_map[model] = ContentType.objects.get(
             model=content_type).model_class()
-except OperationalError:
+except (OperationalError, ProgrammingError):
     # We're running syncdb and the ContentType table doesn't exist yet
     pass
 else:
