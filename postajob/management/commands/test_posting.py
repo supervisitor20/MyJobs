@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from django.utils import unittest
 from django.utils.unittest.case import TestCase
+from selenium.common.exceptions import NoSuchElementException
 
 from myjobs.models import User
 from postajob.models import SitePackage
@@ -21,12 +22,10 @@ class Command(NoArgsCommand):
         unittest.TextTestRunner().run(suite)
 
 
-def make_user(admin=False):
+def make_user(address, admin=False):
     if admin:
-        address = 'paj_admin@my.jobs'
         method = 'create_superuser'
     else:
-        address = 'paj_user@my.jobs'
         method = 'create_user'
     user = getattr(User.objects, method)(email=address, send_email=False)
     password = User.objects.make_random_password()
@@ -54,39 +53,70 @@ class JobPostingTests(TestCase):
 
     @classmethod
     def setup_objects(cls):
-        cls.admin = make_user(True)
+        cls.admin = make_user(address='paj_admin@my.jobs', admin=True)
         # I'm appending after every db write rather than at the very end
         # so we can roll back all previous successes if any transaction fails.
         cls.CREATION_ORDER.append(cls.admin)
-        cls.user = make_user(False)
+        cls.admin_2 = make_user(address='paj_admin_2@my.jobs', admin=True)
+        cls.CREATION_ORDER.append(cls.admin_2)
+        cls.user = make_user(address='paj_user@my.jobs', admin=True)
         cls.CREATION_ORDER.append(cls.user)
 
-        cls.owning_company = Company.objects.create(
+        cls.admin_company = Company.objects.create(
             name='Postajob Selenium Company',
             company_slug='postajob-selenium-company',
             member=True, product_access=True, posting_access=True)
-        cls.CREATION_ORDER.append(cls.owning_company)
-        cls.owning_company_user = CompanyUser.objects.create(
-            company=cls.owning_company, user=cls.admin)
-        cls.CREATION_ORDER.append(cls.owning_company_user)
+        cls.CREATION_ORDER.append(cls.admin_company)
+        cls.admin_company_user = CompanyUser.objects.create(
+            company=cls.admin_company, user=cls.admin)
+        cls.CREATION_ORDER.append(cls.admin_company_user)
+
+        cls.admin_company_2 = Company.objects.create(
+            name='Postajob Selenium Company 2',
+            company_slug='postajob-selenium-company-2',
+            member=True, product_access=True, posting_access=True)
+        cls.CREATION_ORDER.append(cls.admin_company_2)
+        cls.admin_company_user_2 = CompanyUser.objects.create(
+            company=cls.admin_company_2, user=cls.admin_2)
+        cls.CREATION_ORDER.append(cls.admin_company_user_2)
 
         cls.seo_site = SeoSite.objects.create(
             domain='selenium.jobs', name='Selenium Jobs',
-            canonical_company=cls.owning_company)
+            canonical_company=cls.admin_company)
         cls.CREATION_ORDER.append(cls.seo_site)
+        cls.seo_site_2 = SeoSite.objects.create(
+            domain='selenium2.jobs', name='Selenium Jobs',
+            canonical_company=cls.admin_company_2)
+        cls.CREATION_ORDER.append(cls.seo_site_2)
 
-        cls.site_package = SitePackage.objects.create(owner=cls.owning_company)
+        cls.site_package = SitePackage.objects.create(
+            owner=cls.admin_company)
         cls.site_package.sites.add(cls.seo_site)
         cls.CREATION_ORDER.append(cls.site_package)
+        cls.site_package_2 = SitePackage.objects.create(
+            owner=cls.admin_company_2)
+        cls.site_package_2.sites.add(cls.seo_site_2)
+        cls.CREATION_ORDER.append(cls.site_package_2)
 
     @classmethod
     def login(cls, user):
-        path = '/admin/'
-        cls.get(path=path)
+        cls.get('/admin/')
         cls.browser.find_element_by_id('id_username').send_keys(user.email)
         cls.browser.find_element_by_id('id_password').send_keys(
             user.raw_password)
         cls.browser.find_element_by_xpath('//input[@value="Log in"]').click()
+
+    @classmethod
+    def logout(cls):
+        cls.get('/admin/')
+        try:
+            element = cls.browser.find_element_by_xpath(
+                '//div[@id="user-tools"]//a[2]')
+        except NoSuchElementException:
+            pass
+        else:
+            element.click()
+
 
     @classmethod
     def post(cls, path='/', data=None, domain=None):
@@ -141,12 +171,21 @@ class JobPostingTests(TestCase):
 
     def test_show_job_admin(self):
         with patch_settings(**self.OVERRIDES):
-            self.login(self.admin)
-            self.get(reverse('purchasedmicrosite_admin_overview'),
-                     domain=self.seo_site.domain)
-            self.browser.get_screenshot_as_file('file.png')
-            for selector, expected in [('product-listing', 'Product Listing'),
-                                       ('our-postings', 'Posted Jobs'),
-                                       ('posting-admin', 'Partner Microsite')]:
-                element = self.browser.find_element_by_id(selector)
-                self.assertEqual(element.text, expected)
+            for user, accessible in [(self.admin, True), (self.admin_2, False),
+                                     (self.user, False)]:
+                print user.email
+                self.login(user)
+                self.get(reverse('purchasedmicrosite_admin_overview'),
+                         domain=self.seo_site.domain)
+                self.browser.get_screenshot_as_file('file.png')
+                for selector, expected in [('product-listing', 'Product Listing'),
+                                           ('our-postings', 'Posted Jobs'),
+                                           ('posting-admin', 'Partner Microsite')]:
+                    try:
+                        element = self.browser.find_element_by_id(selector)
+                    except NoSuchElementException:
+                        if accessible:
+                            raise
+                    else:
+                        self.assertEqual(element.text, expected)
+                self.logout()
