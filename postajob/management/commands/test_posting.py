@@ -1,5 +1,6 @@
 import imp
 import os
+from django.core.urlresolvers import reverse
 
 from selenium import webdriver
 
@@ -9,6 +10,7 @@ from django.utils import unittest
 from django.utils.unittest.case import TestCase
 
 from myjobs.models import User
+from postajob.models import SitePackage
 from seo.models import Company, CompanyUser, SeoSite
 from seo.tests import patch_settings
 
@@ -37,6 +39,8 @@ def make_user(admin=False):
     # on that determination.
     user.set_password(password)
     user.password_change = False
+    user.is_active = True
+    user.is_verified = True
     user.save()
     user.raw_password = password
     return user
@@ -66,9 +70,14 @@ class JobPostingTests(TestCase):
             company=cls.owning_company, user=cls.admin)
         cls.CREATION_ORDER.append(cls.owning_company_user)
 
-        cls.seo_site = SeoSite.objects.create(domain='selenium.jobs',
-                                              name='Selenium Jobs')
+        cls.seo_site = SeoSite.objects.create(
+            domain='selenium.jobs', name='Selenium Jobs',
+            canonical_company=cls.owning_company)
         cls.CREATION_ORDER.append(cls.seo_site)
+
+        cls.site_package = SitePackage.objects.create(owner=cls.owning_company)
+        cls.site_package.sites.add(cls.seo_site)
+        cls.CREATION_ORDER.append(cls.site_package)
 
     @classmethod
     def login(cls, user):
@@ -132,6 +141,12 @@ class JobPostingTests(TestCase):
 
     def test_show_job_admin(self):
         with patch_settings(**self.OVERRIDES):
-            print settings.ENVIRONMENT
-            import ipdb; ipdb.set_trace()
-            pass
+            self.login(self.admin)
+            self.get(reverse('purchasedmicrosite_admin_overview'),
+                     domain=self.seo_site.domain)
+            self.browser.get_screenshot_as_file('file.png')
+            for selector, expected in [('product-listing', 'Product Listing'),
+                                       ('our-postings', 'Posted Jobs'),
+                                       ('posting-admin', 'Partner Microsite')]:
+                element = self.browser.find_element_by_id(selector)
+                self.assertEqual(element.text, expected)
