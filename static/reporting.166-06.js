@@ -36,7 +36,7 @@ window.onpopstate = function(event) {
     };
 
     navigation = true;
-    $sidebar.length > 0 ? historyNew() : renderOverview(historyNew);
+    $sidebar.find('h2:contains("Past Reports")').length > 0 ? historyNew() : renderOverview(historyNew);
   } else if (state.page && state.page === 'view-report') {
     var callback = function() {
           renderNavigation(true);
@@ -64,7 +64,7 @@ window.onpopstate = function(event) {
     };
 
     navigation = true;
-    $sidebar.length > 0 ? historyClone() : renderOverview(historyClone);
+    $sidebar.find('h2:contains("Past Reports")').length > 0 ? historyClone() : renderOverview(historyClone);
   }
 };
 
@@ -102,6 +102,15 @@ function Report(type, fields) {
   });
 }
 
+Report.prototype.typeVerbose = function() {
+  var verbose= {
+    'contactrecord': "Communication Records",
+    'partner': "Partner",
+    'contact': "Contact"
+  };
+  return verbose[this.type] + " Report";
+};
+
 Report.prototype.renderFields = function(renderAt, fields, clear, btn) {
   var $renderAt = $(renderAt),
       c = typeof clear !== "undefined" ? clear : true,
@@ -113,6 +122,8 @@ Report.prototype.renderFields = function(renderAt, fields, clear, btn) {
   if (c) {
     $renderAt.html("");
   }
+
+  $renderAt.append('<h2 class="report-heading">' + this.typeVerbose() + '</h2>');
 
   // for field in fields render.
   for (i = 0; i < fields.length; i++) {
@@ -1077,10 +1088,9 @@ $(document).ready(function() {
   });
 
   // View Report
-  subpage.on("click", ".report > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
-
-    var report_id = $(this).parents("tr, .report").data("report"),
-        model = $(this).parents("tr, .report").data("model"),
+  subpage.on("click", ".report-row > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
+    var report_id = $(this).parents("tr, .report-row").data("report"),
+        model = $(this).parents("tr, .report-row").data("model"),
         callback = function() {
           renderNavigation(true);
         },
@@ -1099,7 +1109,7 @@ $(document).ready(function() {
 
   // Clone Report
   subpage.on("click", ".fa-copy, .clone-report", function() {
-    var data = {id: $(this).parents("tr, .report").data("report"),
+    var data = {id: $(this).parents("tr, .report-row").data("report"),
                 values: ['name', 'model', 'app', 'params']},
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
         cloneReport = function() {
@@ -1140,7 +1150,7 @@ $(document).ready(function() {
   });
 
   subpage.on("click", ".fa-download:not(.disabled), .export-report:not(.disabled)", function() {
-    var report_id = $(this).parents("tr, .report").data("report");
+    var report_id = $(this).parents("tr, .report-row").data("report");
 
     if (modernBrowser) {
       history.pushState({'page': 'report-download', 'report': report_id}, 'Download Report');
@@ -1149,13 +1159,14 @@ $(document).ready(function() {
     renderDownload(report_id);
   });
 
-  subpage.on("click", ".fa-refresh:not('.fa-spin'), .regenerate-report", function() {
-    var report_id,
-        data,
-        $icon = $(this),
-        $div,
+  subpage.on("click", ".sidebar .fa-refresh:not('.fa-spin'), .regenerate-report", function() {
+    var $icon = $(this),
         archive = false,
-        url = location.protocol + "//" + location.host; // https://secure.my.jobs
+        url = location.protocol + "//" + location.host, // https://secure.my.jobs
+        report_id,
+        data,
+        $div,
+        origTitle;
 
     if (typeof $(this).attr("id") !== "undefined") {
       report_id = $(this).attr("id").split("-")[1];
@@ -1179,14 +1190,44 @@ $(document).ready(function() {
       data: data,
       beforeSend: function() {
         $icon.addClass("fa-spin");
+        if (archive) {
+          origTitle = $div.data('original-title');
+          $div.attr('data-original-title', 'Regenerating...');
+          if (modernBrowser && $div.is(":hover")) {
+            $div.tooltip('hide').tooltip('show');
+          }
+        } else {
+          origTitle = $icon.data('original-title');
+
+          // Bootstrap tooltip reads off of the attr instead of data.
+          $icon.attr('data-original-title', 'Regenerating...');
+
+          // Refresh tooltip if the user is still hovering over the element.
+          if (modernBrowser && $icon.is(":hover")) {
+            $icon.tooltip('hide').tooltip('show');
+          }
+        }
       },
       success: function() {
         $icon.removeClass("fa-spin");
 
         if (archive) {
-          $div.parents('tr').find('.export-report, .view-report').removeClass('disabled');
+          // had to select tds because editing a tr background-color does nothing.
+          $div.parents('tr').children('td').effect("highlight", 600)
+              .find('.export-report, .view-report').removeClass('disabled');
+          $div.attr('data-original-title', origTitle);
+
+          if (modernBrowser && $div.is(":hover")) {
+            $div.tooltip('hide').tooltip('show');
+          }
         } else {
-          $icon.parents('div.report').find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
+          $icon.parents('div.report-row').effect("highlight", 600)
+               .find('.report-link, .fa-eye, .fa-download').removeClass('disabled');
+          $icon.attr('data-original-title', origTitle);
+
+          if (modernBrowser && $icon.is(":hover")) {
+            $icon.tooltip('hide').tooltip('show');
+          }
         }
       }
     });
@@ -1200,6 +1241,8 @@ $(document).ready(function() {
     navigation = true;
     renderArchive(renderNavigation);
   });
+
+  enableTooltips();
 });
 
 
@@ -1352,6 +1395,7 @@ function renderOverview(callback) {
     global: false,
     success: function(data) {
       $(".subpage > .wrapper").html(data);
+      enableTooltips();
     }
   }).complete(function() {
     if (typeof callback === "function") {
@@ -1738,10 +1782,17 @@ function renderArchive(callback) {
     data: {},
     success: function(data) {
       $("#main-container").html(data);
+      enableTooltips();
     }
   }).complete(function() {
     if (typeof callback === "function") {
       callback();
     }
   });
+}
+
+
+function enableTooltips() {
+  // Enable bootstrap tooltips
+  $('[data-toggle="tooltip"]').tooltip();
 }
