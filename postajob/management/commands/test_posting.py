@@ -1,13 +1,14 @@
 import imp
 import os
-from django.core.urlresolvers import reverse
+import sys
 
 from selenium import webdriver
 
 from django.conf import settings
 from django.core.management.base import NoArgsCommand
+from django.core.urlresolvers import reverse
 from django.utils import unittest
-from django.utils.unittest.case import TestCase
+from django.utils.unittest.case import TestCase, skipUnless
 from selenium.common.exceptions import NoSuchElementException
 
 from myjobs.models import User
@@ -55,6 +56,11 @@ def make_user(address, admin=False):
     return user
 
 
+# Django's tests work on test databases created specifically for tests.
+# Selenium tests work on databases that already exist. While these could be run
+# at the same time, it feels more correct to have them remain separate.
+@skipUnless('test_posting' in sys.argv, 'Selenium tests are incompatible '
+            'with Django tests')
 class JobPostingTests(TestCase):
     OVERRIDES = {}
     CREATION_ORDER = []
