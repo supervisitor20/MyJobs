@@ -67,9 +67,14 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 )
 
 ADMIN_MEDIA_PREFIX = '//d2e48ltfsb5exy.cloudfront.net/myjobs/admin/'
+
+TEMPLATE_DIRS = (
+    join(ROOT_PATH, 'templates')
+)
 
 TEMPLATE_LOADERS = (
     ('django.template.loaders.cached.Loader', (
@@ -103,11 +108,6 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # default
     'django.contrib.auth.backends.RemoteUserBackend',  # http
 )
-
-TEMPLATE_DIRS = (
-    join(ROOT_PATH, 'templates')
-)
-
 
 # Celery settings
 CELERY_RESULT_BACKEND = 'amqp'
@@ -273,6 +273,7 @@ INSTALLED_APPS = (
     'saved_search',
     'taggit',
     'fsm',
+    'compressor',
 )
 
 # Captcha SSL
@@ -284,7 +285,8 @@ CAPTCHA_AJAX = True
 PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mydashboard', 'mysignon', 'mymessages', 'mypartners',
                 'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
-                'wildcard', 'myblocks', 'myemails', 'myreports')
+                'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
+                'automation')
 
 INSTALLED_APPS += PROJECT_APPS
 
@@ -495,13 +497,13 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
-        },
+    },
     'groups': {
         'ENGINE': 'saved_search.groupsearch.SolrGrpEngine',
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
-        },
+    },
 }
 
 # Password settings
@@ -591,3 +593,19 @@ EMAIL_FORMATS = {
 }
 
 MEMOIZE = True
+
+DATABASE_ROUTERS = ['redirect.routers.ArchiveRouter']
+
+COMPRESS_PRECOMPILERS = (
+    ('text/less', 'lessc {infile} {outfile}'),
+)
+
+COMPRESS_ROOT = join(ROOT_PATH, 'static')
+
+COMPRESS_OUTPUT_DIR = 'CACHE'
+
+COMPRESS_CSS_HASHING_METHOD = 'hash'
+
+COMPRESS_OFFLINE = True
+
+COMPRESS_ENABLED = False

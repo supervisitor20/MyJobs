@@ -933,7 +933,9 @@ class MyJobsViewsTests(MyJobsBase):
             reverse('topbar'), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         # ensure topbar shows logged out options
-        self.assertIn("Login", response.content)
+        self.assertIn("Log In", response.content)
+
+
 
 
     def test_referring_site_in_topbar(self):
