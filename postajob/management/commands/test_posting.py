@@ -10,10 +10,13 @@ from django.core.urlresolvers import reverse
 from django.utils import unittest
 from django.utils.unittest.case import TestCase, skipUnless
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 
 from myjobs.models import User
-from postajob.models import SitePackage
-from seo.models import Company, CompanyUser, SeoSite
+from postajob.models import SitePackage, Job
+from seo.models import Company, CompanyUser, SeoSite, Configuration
 from seo.tests import patch_settings
 
 
@@ -134,6 +137,11 @@ class JobPostingTests(TestCase):
         cls.site_package_2.sites.add(cls.seo_site_2)
         cls.CREATION_ORDER.append(cls.site_package_2)
 
+        # Configurations:
+        cls.configuration = Configuration.objects.create()
+        cls.CREATION_ORDER.append(cls.configuration)
+        cls.seo_site.configurations.add(cls.configuration)
+
     @classmethod
     def login(cls, user):
         """
@@ -188,11 +196,24 @@ class JobPostingTests(TestCase):
         :path: Path being hit
         :domain: String used for domain overrides
         """
-        requested_url = 'http://{domain}{port}{path}'.format(
-            domain=cls.test_url, port=cls.test_port, path=path)
+        if path.startswith('http'):
+            requested_url = path
+        else:
+            requested_url = 'http://{domain}{port}{path}'.format(
+                domain=cls.test_url, port=cls.test_port, path=path)
         if domain:
             requested_url += '?domain=%s' % domain
         cls.browser.get(requested_url)
+        cls.wait_on_load()
+
+    @classmethod
+    def wait_on_load(cls):
+        """
+        Waits for a page to be loaded before doing the next step in a process.
+        """
+        WebDriverWait(cls.browser, 3).until(
+            expected_conditions.presence_of_element_located(
+                (By.CSS_SELECTOR, 'html')))
 
     @classmethod
     def setUpClass(cls):
@@ -236,6 +257,9 @@ class JobPostingTests(TestCase):
                 obj.delete()
         super(JobPostingTests, cls).tearDownClass()
 
+    def tearDown(self):
+        self.logout()
+
     def test_show_job_admin(self):
         """
         Ensures that the main postajob admin is functional.
@@ -262,3 +286,82 @@ class JobPostingTests(TestCase):
                     else:
                         self.assertEqual(element.text, expected)
                 self.logout()
+
+    def test_post_job_as_owner(self):
+        """
+        Ensures that a company user of the site owner can post jobs for free
+        and verify that they have been posted.
+        """
+        with patch_settings(**self.OVERRIDES):
+            # There are only four required text boxes we need to fill out to
+            # create a job.
+            job = {
+                'id_title': 'Job Title',
+                'id_description': 'Job Description',
+                'id_form-__prefix__-city': 'City',
+                'id_apply_link': 'https://www.google.com',
+            }
+            num_jobs = Job.objects.count()
+            self.login(self.admin)
+            self.get(reverse('job_add'), domain=self.seo_site.domain)
+
+            for field, value in job.items():
+                # Find the correct inputs for the four items we listed
+                # previously and submit their values.
+                self.browser.find_element_by_id(field).send_keys(value)
+
+            # Adding a location requires one click to finalize.
+            self.browser.find_element_by_id('add-location').click()
+
+            # Choosing the site that this job should appear on is relatively
+            # easy given the low number of sites being tested. If we have more
+            # sites than the default FSM cutoff, something else will be needed.
+            self.browser.find_element_by_xpath(
+                '//option[@value={site_pk}]'.format(
+                    site_pk=self.seo_site.pk)).click()
+            self.browser.find_element_by_id('id_site_packages_add_link').click()
+            self.browser.find_element_by_id('profile-save').click()
+
+            self.assertEqual(Job.objects.count(), num_jobs + 1)
+
+            # If the previous bit was successfully added to solr, the following
+            # page will have a job matching its description.
+            self.get(reverse('all_jobs'), domain=self.seo_site.domain)
+            # We could easily .click() this but that would not properly append
+            # the domain override.
+            job_link = self.browser.find_element_by_xpath(
+                '//h4//a').get_attribute('href')
+            job = Job.objects.get(title='Job Title',
+                                  description='Job Description')
+            location = job.locations.get()
+            self.assertTrue(location.guid in job_link)
+            self.get(job_link, domain=self.seo_site.domain)
+            element = self.browser.find_element_by_id(
+                'direct_jobDescriptionText')
+            self.assertEqual(element.text, job.description)
+
+            self.logout()
+
+            # Trying this with a normal user fails.
+            self.login(self.user)
+            self.get(reverse('job_add'), domain=self.seo_site.domain)
+            with self.assertRaises(NoSuchElementException):
+                self.browser.find_element_by_id(
+                    'id_site_packages_add_link')
+
+            self.logout()
+
+            # Trying this instead with another company user is successful.
+            # Due to the way one of the decorators works, this grabs the user's
+            # company. Posting will not post to the current site, but to a site
+            # determined by that company. Fixing this is outside the scope of
+            # writing Selenium tests.
+            self.login(self.admin_2)
+            self.get(reverse('job_add'), domain=self.seo_site.domain)
+            with self.assertRaises(NoSuchElementException):
+                self.browser.find_element_by_xpath(
+                    '//option[@value={site_pk}]'.format(
+                        site_pk=self.seo_site.pk))
+            self.browser.find_element_by_xpath(
+                '//option[@value={site_pk}]'.format(
+                    site_pk=self.seo_site_2.pk))
