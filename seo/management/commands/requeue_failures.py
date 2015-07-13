@@ -1,3 +1,4 @@
+import ast
 from django.core.management.base import NoArgsCommand
 from djcelery.models import TaskState
 from datetime import datetime, timedelta
@@ -16,5 +17,5 @@ class Command(NoArgsCommand):
                                                           'tasks.priority_etl_to_solr'])
 
         for task in failed_tasks:
-            task_etl_to_solr.delay(*eval(task.args))
+            task_etl_to_solr.delay(*ast.literal_eval(task.args))
             print "Requeuing task with args %s" % task.args
