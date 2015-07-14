@@ -233,10 +233,40 @@ class JobPostingTests(TestCase):
                 (By.CSS_SELECTOR, 'html')))
 
     @classmethod
+    def make_job(cls, for_admin=False):
+        for field, value in cls.job.items():
+            # Find the correct inputs for the four items we listed
+            # previously and submit their values.
+            cls.browser.find_element_by_id(field).send_keys(value)
+
+        # Adding a location requires one click to finalize.
+        cls.browser.find_element_by_id('add-location').click()
+        if for_admin:
+            # Choosing the site that this job should appear on is relatively
+            # easy given the low number of sites being tested. If we have more
+            # sites than the default FSM cutoff, something else will be needed.
+            cls.browser.find_element_by_xpath(
+                '//option[@value={site_pk}]'.format(
+                    site_pk=cls.seo_site.pk)).click()
+            cls.browser.find_element_by_id('id_site_packages_add_link').click()
+
+        cls.browser.find_element_by_id('profile-save').click()
+        cls.wait_on_load()
+
+    @classmethod
     def setUpClass(cls):
         """
         Sets up the test environment, overriding settings and modifying the db.
         """
+        # There are only four required text boxes we need to fill out to
+        # create a job from a job form.
+        cls.job = {
+            'id_title': 'Job Title',
+            'id_description': 'Job Description',
+            'id_form-__prefix__-city': 'City',
+            'id_apply_link': 'https://www.google.com',
+        }
+
         environment = os.environ.get('SETTINGS', '').lower()
         if environment == 'qc':
             print 'Running test_posting with QC settings'
@@ -274,8 +304,18 @@ class JobPostingTests(TestCase):
                 obj.delete()
         super(JobPostingTests, cls).tearDownClass()
 
+    def setUp(self):
+        super(JobPostingTests, self).setUp()
+        # TEST_OBJECTS is like CREATION_ORDER but on a test-by-test basis
+        # rather than for the entire test case.
+        self.TEST_OBJECTS = []
+
     def tearDown(self):
         self.logout()
+        with patch_settings(**self.OVERRIDES):
+            for obj in self.TEST_OBJECTS[::-1]:
+                obj.delete()
+        super(JobPostingTests, self).tearDown()
 
     def test_show_job_admin(self):
         """
@@ -283,6 +323,9 @@ class JobPostingTests(TestCase):
 
         A company user for the site owner should be able to see all options.
         A company user for a third party or a non-company-user should not.
+
+        PD-1463 Task
+        - jobs admin display
         """
         with patch_settings(**self.OVERRIDES):
             for user, accessible in [(self.admin, True), (self.admin_2, False),
@@ -308,36 +351,17 @@ class JobPostingTests(TestCase):
         """
         Ensures that a company user of the site owner can post jobs for free
         and verify that they have been posted.
+
+        PD-1463 Task
+        - posting a job and verifying it is live (as site owner)
+        - listing jobs
         """
         with patch_settings(**self.OVERRIDES):
-            # There are only four required text boxes we need to fill out to
-            # create a job.
-            job = {
-                'id_title': 'Job Title',
-                'id_description': 'Job Description',
-                'id_form-__prefix__-city': 'City',
-                'id_apply_link': 'https://www.google.com',
-            }
             num_jobs = Job.objects.count()
             self.login(self.admin)
             self.get(reverse('job_add'), domain=self.seo_site.domain)
 
-            for field, value in job.items():
-                # Find the correct inputs for the four items we listed
-                # previously and submit their values.
-                self.browser.find_element_by_id(field).send_keys(value)
-
-            # Adding a location requires one click to finalize.
-            self.browser.find_element_by_id('add-location').click()
-
-            # Choosing the site that this job should appear on is relatively
-            # easy given the low number of sites being tested. If we have more
-            # sites than the default FSM cutoff, something else will be needed.
-            self.browser.find_element_by_xpath(
-                '//option[@value={site_pk}]'.format(
-                    site_pk=self.seo_site.pk)).click()
-            self.browser.find_element_by_id('id_site_packages_add_link').click()
-            self.browser.find_element_by_id('profile-save').click()
+            self.make_job(for_admin=True)
 
             self.assertEqual(Job.objects.count(), num_jobs + 1)
 
@@ -382,3 +406,54 @@ class JobPostingTests(TestCase):
             self.browser.find_element_by_xpath(
                 '//option[@value={site_pk}]'.format(
                     site_pk=self.seo_site_2.pk))
+
+    def test_purchase_a_job(self):
+        """
+        Test that an unaffiliated user can purchase a product, creating a new
+        company in the process.
+
+        PD-1463 Task
+        - purchasing a job, approving it, and verifying it is live
+            (as site customer)
+        - listing jobs
+        """
+        self.assertEqual(self.user.company_set.count(), 0)
+        self.login(self.user)
+        self.get(reverse('product_listing'), domain=self.seo_site.domain)
+
+        purchase_link = self.browser.find_element_by_link_text(
+            self.product.name).get_attribute('href')
+        self.get(purchase_link, domain=self.seo_site.domain)
+        company_info = {
+            'id_company_name': 'Postajob Selenium Company 3',
+            'id_address_line_one': '1234 Road',
+            'id_city': 'Cityville',
+            'id_zipcode': '12345'
+        }
+        for field, value in company_info.items():
+            self.browser.find_element_by_id(field).send_keys(value)
+        self.browser.find_element_by_id('profile-save').click()
+        self.wait_on_load()
+        self.assertEqual(self.user.company_set.count(), 1)
+        created_company = self.user.company_set.get()
+        self.TEST_OBJECTS.append(created_company)
+
+        # We redirected to a new page without maintaining the domain override.
+        self.get(self.browser.current_url, domain=self.seo_site.domain)
+
+        # This retrieves the purchased product detail page.
+        self.get(self.browser.find_element_by_link_text(
+            'View').get_attribute('href'), domain=self.seo_site.domain)
+
+        # This retrieves the actual job form page.
+        self.get(self.browser.find_element_by_link_text(
+            'Post New Job').get_attribute('href'), domain=self.seo_site.domain)
+
+        self.make_job()
+
+        purchased_product = created_company.purchasedproduct_set.get()
+
+        # This should have generated a request object.
+        request = self.admin_company.request_set.get()
+
+        # TODO: Approve request and check for job's existence
