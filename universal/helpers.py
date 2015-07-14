@@ -1,7 +1,9 @@
-from copy import copy
+"""Generic helper functions."""
+
+from copy import copy, deepcopy
 import re
 import urllib
-from urlparse import parse_qsl, urlparse, urlunparse
+from urlparse import urlparse, urlunparse
 
 from django.db.models.loading import get_model
 from django.conf import settings
@@ -213,3 +215,57 @@ def send_email(email_body, email_type=settings.GENERIC,
     message.send()
 
     return message
+
+
+def nested_dict(items, value=None):
+    """Creates a nested, single-item dict from a list of items."""
+
+    length = len(items)
+
+    if length == 0:
+        return {}
+    elif length == 1:
+        return {items[0]: value}
+    else:
+        return {items[0]: nested_dict(items[1:], value)}
+
+
+def merged_dict(first, second):
+    """Merge two potentially nested dicts."""
+    if not isinstance(second, dict):
+        return second
+
+    result = deepcopy(first)
+    for key, value in second.iteritems():
+        if key in result and isinstance(result[key], dict):
+            result[key] = merged_dict(result[key], value)
+        else:
+            result[key] = deepcopy(value)
+
+    return result
+
+
+def expand(data, sep="__"):
+    """
+    Expands a django query dictionary into one suitable for json encoding.
+    """
+
+    items = [(key.split(sep), value) for key, value in data.items()]
+    dicts = [nested_dict(item[0], item[1]) for item in items]
+    results = reduce(merged_dict, dicts)
+
+    return results
+
+
+def collapse(data, parent="", sep="__"):
+    """Collapse a dict into one suitable for django queries."""
+
+    results = {}
+
+    for key, value in data.items():
+        if isinstance(value, dict):
+            results.update(collapse(value, parent=parent + key + sep, sep=sep))
+        else:
+            results[parent + key] = value
+
+    return results
