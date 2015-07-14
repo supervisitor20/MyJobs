@@ -602,7 +602,7 @@ class PurchasedProductNoPurchaseForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.158-18.css', )
+            'all': ('postajob.159-9.css', )
         }
         js = (
             'postajob.160-13.js',
