@@ -13,7 +13,7 @@ from django.views.generic import View
 from myreports.helpers import humanize, parse_params, serialize
 from myreports.models import Report
 from postajob import location_data
-from universal.helpers import get_company_or_404
+from universal.helpers import get_company_or_404, to_json
 from universal.decorators import has_access
 
 
@@ -67,18 +67,6 @@ def report_archive(request):
         return response
 
 
-def get_states(request):
-    """Returns a select widget with states as options."""
-    if request.is_ajax():
-        response = HttpResponse()
-        html = render_to_response('includes/state_dropdown.html',
-                                  {}, RequestContext(request))
-        response.content = html.content
-        return response
-    else:
-        raise Http404("This view is only reachable via an AJAX request")
-
-
 @has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
@@ -101,15 +89,13 @@ def view_records(request, app="mypartners", model="contactrecord"):
     if request.is_ajax() and request.method == 'GET':
         company = get_company_or_404(request)
 
-        # parse request into dict, converting singleton lists into single items
-        params = parse_params(request.GET)
-
+        filters = request.GET.get("filter")
         # remove non-query related params
-        values = params.pop('values', None)
-        order_by = params.pop('order_by', None)
+        values = request.GET.getlist("values")
+        order_by = request.GET.get("order_by", None)
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
         if values:
             if not hasattr(values, '__iter__'):

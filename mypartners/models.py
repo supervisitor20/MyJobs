@@ -3,6 +3,7 @@ from os import path
 from re import sub
 from urllib import urlencode
 from uuid import uuid4
+import json
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -15,7 +16,7 @@ from django.dispatch import receiver
 from myjobs.models import User
 from postajob.location_data import states
 from states import synonyms
-from universal.helpers import expand, collapse
+from universal.helpers import to_query
 
 
 CONTACT_TYPE_CHOICES = (('email', 'Email'),
@@ -68,11 +69,6 @@ class SearchParameterQuerySet(models.query.QuerySet):
     paramenters.
     """
 
-    @staticmethod
-    def parse_parameters(parameters):
-
-        return results
-
     # TODO: Come up with a better name for this method
     def from_search(self, company=None, parameters=None):
         """
@@ -94,8 +90,7 @@ class SearchParameterQuerySet(models.query.QuerySet):
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
 
-        parameters = self.parse_parameters(parameters)
-        self = self.filter(**self.parse_parameters(parameters))
+        self = self.filter(**to_query(json.loads(parameters))).distinct()
 
         return self
 

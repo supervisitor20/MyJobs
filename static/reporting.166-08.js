@@ -898,6 +898,55 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     filterData.contactrecord__tags__name = filterData.tags__name;
     delete filterData.tags__name;
 
+    filterData.filter = {
+      contactrecord: {
+        date_time: {
+          gte: reportNameDateFormat(new Date(filterData.start_date)),
+          lte: reportNameDateFormat(new Date(filterData.end_date))
+        },
+        contact_type: {
+          "in": filterData.contact_type,
+        },
+        tags: {
+          name: {
+            icontains: filterData.contactrecord__tags__name
+          }
+        }
+      },
+      approval_staus: {
+        code: {
+          iexact: filterData.aprpoval_status__code
+        }
+      },
+      locations: {
+        state: {
+          icontains: filterData.state,
+        },
+        city: {
+          icontains: filterData.city
+        },
+      }
+    };
+
+
+    if (this.id === "partner") {
+      filterData.filter.contact = {
+        locations: filterData.filter.locations
+      };
+      delete filterData.filter.locations;
+    }
+
+    filterData.filter = JSON.stringify(filterData.filter);
+
+    delete filterData.start_date;
+    delete filterData.end_date;
+    delete filterData.contact_type;
+    delete filterData.approval_status__code;
+    delete filterData.contactrecord__tags__name;
+    delete filterData.city;
+    delete filterData.state;
+
+
     $.ajax({
       type: "GET",
       url: "/reports/ajax/mypartners/" + this.id,
