@@ -907,11 +907,13 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         contact_type: {
           "in": filterData.contact_type,
         },
+        /*
         tags: {
           name: {
-            icontains: filterData.contactrecord__tags__name
+            'in': filterData.contactrecord__tags__name
           }
         }
+        */
       },
       approval_staus: {
         code: {

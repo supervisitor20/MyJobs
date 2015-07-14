@@ -86,11 +86,13 @@ class SearchParameterQuerySet(models.query.QuerySet):
             before parsing remaining parameters.
         """
 
+
         if company:
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
 
-        self = self.filter(**to_query(json.loads(parameters))).distinct()
+        query = to_query(json.loads(parameters))
+        self = self.filter(**query).distinct()
 
         return self
 
