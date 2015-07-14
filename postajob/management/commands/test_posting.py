@@ -15,7 +15,8 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from myjobs.models import User
-from postajob.models import SitePackage, Job
+from postajob.models import SitePackage, Job, Product, ProductGrouping, \
+    ProductOrder
 from seo.models import Company, CompanyUser, SeoSite, Configuration
 from seo.tests import patch_settings
 
@@ -129,11 +130,11 @@ class JobPostingTests(TestCase):
 
         # Site Packages:
         cls.site_package = SitePackage.objects.create(
-            owner=cls.admin_company)
+            owner=cls.admin_company, name='Selenium Test Package 1')
         cls.site_package.sites.add(cls.seo_site)
         cls.CREATION_ORDER.append(cls.site_package)
         cls.site_package_2 = SitePackage.objects.create(
-            owner=cls.admin_company_2)
+            owner=cls.admin_company_2, name='Selenium Test Package 2')
         cls.site_package_2.sites.add(cls.seo_site_2)
         cls.CREATION_ORDER.append(cls.site_package_2)
 
@@ -141,6 +142,22 @@ class JobPostingTests(TestCase):
         cls.configuration = Configuration.objects.create()
         cls.CREATION_ORDER.append(cls.configuration)
         cls.seo_site.configurations.add(cls.configuration)
+
+        # Products:
+        cls.product = Product.objects.create(
+            package=cls.site_package, owner=cls.admin_company,
+            name='Selenium Test Product', cost=0)
+        cls.CREATION_ORDER.append(cls.product)
+
+        # Product Groupings:
+        cls.product_grouping = ProductGrouping.objects.create(
+            owner=cls.admin_company)
+        cls.CREATION_ORDER.append(cls.product_grouping)
+
+        # Product Orders:
+        cls.product_order = ProductOrder.objects.create(
+            product=cls.product, group=cls.product_grouping)
+        cls.CREATION_ORDER.append(cls.product_order)
 
     @classmethod
     def login(cls, user):
