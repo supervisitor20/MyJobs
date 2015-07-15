@@ -1,9 +1,9 @@
 import json
-
+from os import path
 
 def get_state_map():
-    states = open('jsondata/usa_regions.json')
-    data_list = json.loads(states.read())['regions']
+    with open(path.join(path.dirname(__file__), 'jsondata/usa_regions.json')) as states:
+        data_list = json.loads(states.read())['regions']
     state_map = dict([(x['name'], x['code']) for x in data_list])
     state_map['None'] = 'None'
     return state_map
