@@ -52,6 +52,7 @@ class NewUserTests(SeleniumTestCase):
     """Tests Account creation"""
 
     def setUp(self):
+        super(NewUserTests, self).setUp()
         self.user = UserFactory(first_name="John", last_name="Doe")
 
     def test_home_page_works(self):
@@ -69,16 +70,19 @@ class NewUserTests(SeleniumTestCase):
         """
         self.browser.get('/'.join([self.live_server_url, 'prm', 'view']))
 
+        # We're trying to access a private page while unauthenticated, which
+        # should result in a next parameter being added.
+        self.assertTrue('next=' in self.browser.current_url)
+
         # attempt to log in
         username = self.find('id_username')
         username.send_keys(self.user.email)
         self.find('id_password').send_keys(self.user.password)
         self.find('login').click()
 
-        # Useless check - placeholder before and after is Email. I'm just
-        # making it work. - TP
-        self.assertEqual(username.get_attribute('placeholder'),
-                         'Email')
+        # If we've logged in, the next parameter should have went away. We
+        # aren't expecting to be logged in right now as the password was bad.
+        self.assertTrue('next=' in self.browser.current_url)
 
     def test_user_registration(self):
         """
