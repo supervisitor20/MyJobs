@@ -1,0 +1,36 @@
+.comment {
+    border: 1px solid #a3aeb1;
+    background-color: #d6e9c6;
+    padding: 5px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.comment + .comment {
+    border-top: 0;
+}
+
+.comment .delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #873f3d;
+    font-size: 1.3em;
+    cursor: pointer;
+}
+
+.commentAuthor {
+    font-weight: 700;
+    color: #0059bc;
+    text-decoration: underline;
+}
+
+.commentAuthor:hover {
+    cursor: pointer;
+    color: #873f3d;
+}
+
+.section #content p {
+    padding: 0;
+    margin: 0;
+}

@@ -14,4 +14,7 @@ urlpatterns = patterns(
         name='view_records'),
     url(r'download$', 'download_report', name='download_report'),
     url(r'view/downloads$', 'downloads', name='downloads'),
+    url(r'view/react$', 'react', name='react'),
+    url(r'view/comments$', 'get_comments', name='get_comments'),
+    url(r'view/delete$', 'delete_comment', name='delete_comment')
 )

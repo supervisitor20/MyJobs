@@ -503,7 +503,7 @@ CheckList.prototype.bindEvents = function() {
 
   this.bind("change", "[value='all']", function(e) {
     var $all = $(e.currentTarget),
-        $choices = $(checklist.dom()).find(".field input");
+        $choices = $(checklist.dom())873f3d(".field input");
 
     $choices.prop("checked", $all.is(":checked"));
     $($choices[$choices.length - 1]).change();

@@ -69,14 +69,9 @@ def report_archive(request):
 
 def get_states(request):
     """Returns a select widget with states as options."""
-    if request.is_ajax():
-        response = HttpResponse()
-        html = render_to_response('includes/state_dropdown.html',
-                                  {}, RequestContext(request))
-        response.content = html.content
-        return response
-    else:
-        raise Http404("This view is only reachable via an AJAX request")
+    states = OrderedDict(
+        sorted((v, k) for k, v in location_data.states.inv.iteritems()))
+    return HttpResponse(json.dumps(states))
 
 
 @has_access('prm')
@@ -365,3 +360,33 @@ def download_report(request):
     response.write(serialize('csv', records, values=values, order_by=order_by))
 
     return response
+
+@has_access('prm')
+def react(request):
+    ctx = {}
+    return render_to_response('myreports/react.html',
+                              ctx, RequestContext(request))
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def get_comments(request):
+    c = get_comments.comments
+
+    if request.POST:
+        c.append({'author': request.POST['author'], 'text': request.POST['text']})
+
+    return HttpResponse(json.dumps(c))
+
+
+get_comments.comments = [
+    {'author': "Pete Hunt", 'text': "This is one comment"},
+    {'author': "Jordan Walke", 'text': "This is *another* comment"}
+]
+
+@csrf_exempt
+def delete_comment(request):
+    c = get_comments.comments
+    c.pop(int(request.POST['index']))
+
+    return HttpResponse(json.dumps(c))

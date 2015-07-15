@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block site-title %}
+    <title>My.jobs - React</title>
+    <meta name="title" content="My.jobs - React">
+{% endblock %}
+
+{% block meta-extra %}
+<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
+<link rel="stylesheet" href="{{STATIC_URL}}react-test.css">
+{% endblock %}
+
+{% block content %}
+<h1>React.js</h1>
+<div class="row">
+    <div class="span12">
+        This is my pretty sweet blog.
+        <br/><br/>
+        Leave a comment below.
+    </div>
+</div>
+<div class="row">
+    <div class="span6">
+        <div id="content"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra-js %}
+<script type="text/javascript">
+    var states = {{ states }};
+</script>
+<script type="text/javascript" src="{{ STATIC_URL }}react.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}JSXTransformer.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+<script type="text/jsx" src="{{ STATIC_URL }}react-test.jsx"></script>
+{% endblock %}
