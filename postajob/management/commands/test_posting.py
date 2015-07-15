@@ -16,7 +16,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 from myjobs.models import User
 from postajob.models import SitePackage, Job, Product, ProductGrouping, \
-    ProductOrder
+    ProductOrder, PurchasedJob
 from seo.models import Company, CompanyUser, SeoSite, Configuration
 from seo.tests import patch_settings
 
@@ -70,6 +70,11 @@ class JobPostingTests(TestCase):
     CREATION_ORDER = []
     test_url = 'localhost'
     test_port = ''
+    domain_override = None
+
+    @classmethod
+    def set_domain_override(cls, domain):
+        cls.domain_override = domain
 
     @classmethod
     def setup_objects(cls):
@@ -218,6 +223,7 @@ class JobPostingTests(TestCase):
         else:
             requested_url = 'http://{domain}{port}{path}'.format(
                 domain=cls.test_url, port=cls.test_port, path=path)
+        domain = domain or cls.domain_override
         if domain:
             requested_url += '?domain=%s' % domain
         cls.browser.get(requested_url)
@@ -232,41 +238,31 @@ class JobPostingTests(TestCase):
             expected_conditions.presence_of_element_located(
                 (By.CSS_SELECTOR, 'html')))
 
-    @classmethod
-    def make_job(cls, for_admin=False):
-        for field, value in cls.job.items():
+    def make_job(self, for_admin=False):
+        for field, value in self.job.items():
             # Find the correct inputs for the four items we listed
             # previously and submit their values.
-            cls.browser.find_element_by_id(field).send_keys(value)
+            self.browser.find_element_by_id(field).send_keys(value)
 
         # Adding a location requires one click to finalize.
-        cls.browser.find_element_by_id('add-location').click()
+        self.browser.find_element_by_id('add-location').click()
         if for_admin:
             # Choosing the site that this job should appear on is relatively
             # easy given the low number of sites being tested. If we have more
             # sites than the default FSM cutoff, something else will be needed.
-            cls.browser.find_element_by_xpath(
+            self.browser.find_element_by_xpath(
                 '//option[@value={site_pk}]'.format(
-                    site_pk=cls.seo_site.pk)).click()
-            cls.browser.find_element_by_id('id_site_packages_add_link').click()
+                    site_pk=self.seo_site.pk)).click()
+            self.browser.find_element_by_id('id_site_packages_add_link').click()
 
-        cls.browser.find_element_by_id('profile-save').click()
-        cls.wait_on_load()
+        self.browser.find_element_by_id('profile-save').click()
+        self.wait_on_load()
 
     @classmethod
     def setUpClass(cls):
         """
         Sets up the test environment, overriding settings and modifying the db.
         """
-        # There are only four required text boxes we need to fill out to
-        # create a job from a job form.
-        cls.job = {
-            'id_title': 'Job Title',
-            'id_description': 'Job Description',
-            'id_form-__prefix__-city': 'City',
-            'id_apply_link': 'https://www.google.com',
-        }
-
         environment = os.environ.get('SETTINGS', '').lower()
         if environment == 'qc':
             print 'Running test_posting with QC settings'
@@ -310,6 +306,17 @@ class JobPostingTests(TestCase):
         # rather than for the entire test case.
         self.TEST_OBJECTS = []
 
+        # There are only four required text boxes we need to fill out to
+        # create a job from a job form.
+        self.job = {
+            'id_title': 'Job Title',
+            'id_description': 'Job Description',
+            'id_form-__prefix__-city': 'City',
+            'id_apply_link': 'https://www.google.com',
+        }
+
+        self.set_domain_override(self.seo_site.domain)
+
     def tearDown(self):
         self.logout()
         with patch_settings(**self.OVERRIDES):
@@ -331,8 +338,7 @@ class JobPostingTests(TestCase):
             for user, accessible in [(self.admin, True), (self.admin_2, False),
                                      (self.user, False)]:
                 self.login(user)
-                self.get(reverse('purchasedmicrosite_admin_overview'),
-                         domain=self.seo_site.domain)
+                self.get(reverse('purchasedmicrosite_admin_overview'))
                 for selector, expected in [('product-listing', 'Product Listing'),
                                            ('our-postings', 'Posted Jobs'),
                                            ('posting-admin', 'Partner Microsite')]:
@@ -359,7 +365,7 @@ class JobPostingTests(TestCase):
         with patch_settings(**self.OVERRIDES):
             num_jobs = Job.objects.count()
             self.login(self.admin)
-            self.get(reverse('job_add'), domain=self.seo_site.domain)
+            self.get(reverse('job_add'))
 
             self.make_job(for_admin=True)
 
@@ -367,16 +373,17 @@ class JobPostingTests(TestCase):
 
             # If the previous bit was successfully added to solr, the following
             # page will have a job matching its description.
-            self.get(reverse('all_jobs'), domain=self.seo_site.domain)
+            self.get(reverse('all_jobs'))
             # We could easily .click() this but that would not properly append
             # the domain override.
-            job_link = self.browser.find_element_by_xpath(
-                '//h4//a').get_attribute('href')
-            job = Job.objects.get(title='Job Title',
-                                  description='Job Description')
+            job_link = self.browser.find_element_by_link_text(
+                self.job['id_title']).get_attribute('href')
+            job = Job.objects.get(title=self.job['id_title'],
+                                  description=self.job['id_description'])
             location = job.locations.get()
+            self.TEST_OBJECTS.extend([job, location])
             self.assertTrue(location.guid in job_link)
-            self.get(job_link, domain=self.seo_site.domain)
+            self.get(job_link)
             element = self.browser.find_element_by_id(
                 'direct_jobDescriptionText')
             self.assertEqual(element.text, job.description)
@@ -385,7 +392,7 @@ class JobPostingTests(TestCase):
 
             # Trying this with a normal user fails.
             self.login(self.user)
-            self.get(reverse('job_add'), domain=self.seo_site.domain)
+            self.get(reverse('job_add'))
             with self.assertRaises(NoSuchElementException):
                 self.browser.find_element_by_id(
                     'id_site_packages_add_link')
@@ -398,7 +405,7 @@ class JobPostingTests(TestCase):
             # determined by that company. Fixing this is outside the scope of
             # writing Selenium tests.
             self.login(self.admin_2)
-            self.get(reverse('job_add'), domain=self.seo_site.domain)
+            self.get(reverse('job_add'))
             with self.assertRaises(NoSuchElementException):
                 self.browser.find_element_by_xpath(
                     '//option[@value={site_pk}]'.format(
@@ -419,11 +426,11 @@ class JobPostingTests(TestCase):
         """
         self.assertEqual(self.user.company_set.count(), 0)
         self.login(self.user)
-        self.get(reverse('product_listing'), domain=self.seo_site.domain)
+        self.get(reverse('product_listing'))
 
         purchase_link = self.browser.find_element_by_link_text(
             self.product.name).get_attribute('href')
-        self.get(purchase_link, domain=self.seo_site.domain)
+        self.get(purchase_link)
         company_info = {
             'id_company_name': 'Postajob Selenium Company 3',
             'id_address_line_one': '1234 Road',
@@ -439,21 +446,69 @@ class JobPostingTests(TestCase):
         self.TEST_OBJECTS.append(created_company)
 
         # We redirected to a new page without maintaining the domain override.
-        self.get(self.browser.current_url, domain=self.seo_site.domain)
+        self.get(self.browser.current_url)
 
         # This retrieves the purchased product detail page.
         self.get(self.browser.find_element_by_link_text(
-            'View').get_attribute('href'), domain=self.seo_site.domain)
+            'View').get_attribute('href'))
+
+        num_jobs = PurchasedJob.objects.count()
 
         # This retrieves the actual job form page.
         self.get(self.browser.find_element_by_link_text(
-            'Post New Job').get_attribute('href'), domain=self.seo_site.domain)
+            'Post New Job').get_attribute('href'))
 
+        self.job['id_title'] = created_company.name + ' Job'
         self.make_job()
 
-        purchased_product = created_company.purchasedproduct_set.get()
+        self.assertEqual(PurchasedJob.objects.count(), num_jobs + 1)
 
-        # This should have generated a request object.
+        # This should have generated a request object and a purchased product
+        # object
+        self.TEST_OBJECTS.append(self.admin_company.request_set.get())
+        self.TEST_OBJECTS.append(created_company.purchasedproduct_set.get())
+
+        self.logout()
+        self.login(self.admin)
+
+        self.get(reverse('purchasedmicrosite_admin_overview'))
+
+        requests_link = self.browser.find_element_by_link_text(
+            'Manage Requests').get_attribute('href')
+        self.get(requests_link)
+
+        view_request = self.browser.find_element_by_link_text(
+            'View').get_attribute('href')
+        self.get(view_request)
+
         request = self.admin_company.request_set.get()
 
-        # TODO: Approve request and check for job's existence
+        # The approve button submits a form whose action does not include
+        # a domain override. Add one. :(
+        request_approve = reverse('approve_admin_request',
+                                  kwargs={'pk': request.pk})
+        self.browser.execute_script(
+            '$("form[action=\'%s\']").attr("action", "%s");' % (
+                request_approve,
+                request_approve + '?domain=' + self.seo_site.domain))
+
+        # Click the approve button
+        self.browser.find_element_by_xpath(
+            '//button[contains(text(), "Approve This Job")]').click()
+        self.wait_on_load()
+
+        # Once we've finished processing the approval, check for the job on
+        # our list of jobs and ensure its data is correct.
+        self.get(reverse('all_jobs'))
+
+        job = PurchasedJob.objects.get(title=self.job['id_title'],
+                                       description=self.job['id_description'])
+        location = job.locations.get()
+        job_link = self.browser.find_element_by_link_text(
+            self.job['id_title']).get_attribute('href')
+        self.TEST_OBJECTS.extend([job, location])
+        self.assertTrue(location.guid in job_link)
+        self.get(job_link)
+        element = self.browser.find_element_by_id(
+            'direct_jobDescriptionText')
+        self.assertEqual(element.text, job.description)
