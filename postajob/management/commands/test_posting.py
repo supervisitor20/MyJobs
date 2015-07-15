@@ -381,7 +381,7 @@ class JobPostingTests(TestCase):
             job = Job.objects.get(title=self.job['id_title'],
                                   description=self.job['id_description'])
             location = job.locations.get()
-            self.TEST_OBJECTS.extend([job, location])
+            self.TEST_OBJECTS.extend([location, job])
             self.assertTrue(location.guid in job_link)
             self.get(job_link)
             element = self.browser.find_element_by_id(
@@ -506,7 +506,7 @@ class JobPostingTests(TestCase):
         location = job.locations.get()
         job_link = self.browser.find_element_by_link_text(
             self.job['id_title']).get_attribute('href')
-        self.TEST_OBJECTS.extend([job, location])
+        self.TEST_OBJECTS.extend([location, job])
         self.assertTrue(location.guid in job_link)
         self.get(job_link)
         element = self.browser.find_element_by_id(
