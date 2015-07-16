@@ -277,7 +277,8 @@ class JobPostingTests(TestCase):
                                       'deploy/settings.myjobs_staging.py')
             cls.OVERRIDES = vars(staging)
         else:
-            assert getattr(settings, 'ENVIRONMENT') != 'Production', \
+            assert (settings.DATABASES['default']['HOST'] !=
+                    'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com'), \
                 'Running test_posting with production settings is unsupported'
             print 'Running test_posting with settings.py'
             # Assuming local; I have to pick a port and runserver defaults to
