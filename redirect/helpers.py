@@ -4,6 +4,7 @@ from email.utils import getaddresses
 import urllib
 import urllib2
 import urlparse
+import uuid
 import markdown
 
 from jira.client import JIRA
@@ -759,6 +760,8 @@ def redirect_if_new(**kwargs):
     """
     Redirects to the job's url if new, otherwise returns None.
     """
+    if 'guid' in kwargs:
+        kwargs['guid'] = '{%s}' % uuid.UUID(kwargs['guid'])
     job = Redirect.objects.filter(**kwargs).first()
     if job and not job.expired_date:
         return HttpResponseRedirect(job.url)
