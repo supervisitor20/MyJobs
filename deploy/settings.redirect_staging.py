@@ -1,8 +1,11 @@
 from default_settings import *
+from redirect_settings import *
 
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
+
+ABSOLUTE_URL = 'http://staging.secure.my.jobs/'
 
 DATABASES = {
     'default': {
@@ -26,7 +29,7 @@ DATABASES = {
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
-    'ec2-54-197-41-186.compute-1.amazonaws.com'
+    'ec2-23-20-102-206.compute-1.amazonaws.com'
 ]
 
 CACHES = {

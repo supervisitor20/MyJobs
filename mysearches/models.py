@@ -585,7 +585,7 @@ class PartnerSavedSearch(SavedSearch):
                                     context_dict)
 
         contact = Contact.objects.filter(partner=self.partner,
-                                         user=self.user)[0]
+                                         user=self.user).first()
         record = ContactRecord.objects.create(
             partner=self.partner,
             contact_type='pssemail',
@@ -596,6 +596,7 @@ class PartnerSavedSearch(SavedSearch):
             subject=subject,
             notes=body,
         )
+        record.tags.add(*self.tags.all())
         mypartners.helpers.log_change(record, None, None, self.partner,
                                       self.user.email, action_type=EMAIL,
                                       change_msg=change_msg)

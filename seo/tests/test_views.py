@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from copy import deepcopy
+import uuid
 import default_settings
 import itertools
 import json
@@ -109,7 +110,7 @@ class FallbackTestCase(DirectSEOTestCase):
         # When a job is not in solr but is in the database, we should
         # redirect to that job's apply url.
         self.conn.delete(q='*:*')
-        redirect = RedirectFactory(guid=self.job['guid'],
+        redirect = RedirectFactory(guid='{%s}' % uuid.UUID(self.job['guid']),
                                    buid=self.job['buid'])
         response = self.client.get(reverse('job_detail_by_job_id',
                                            kwargs={'job_id': self.job['guid']}))
