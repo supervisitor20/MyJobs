@@ -193,23 +193,6 @@ class JobPostingTests(TestCase):
             element.click()
 
     @classmethod
-    def post(cls, path='/', data=None, domain=None):
-        """
-        Shortcut to cls.browser.post(...) with additional options.
-
-        Inputs:
-        :path: Path being hit
-        :data: A dictionary of values to be posted, if any
-        :domain: String used for domain overrides
-        """
-        data = data or {}
-        requested_url = 'http://{domain}{port}{path}'.format(
-            domain=cls.test_url, port=cls.test_port, path=path)
-        if domain:
-            requested_url += '?domain=%s' % domain
-        cls.browser.post(requested_url, data=data)
-
-    @classmethod
     def get(cls, path='/', domain=None):
         """
         Shortcut to cls.browser.get(...) with additional options.
