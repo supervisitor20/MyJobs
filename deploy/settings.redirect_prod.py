@@ -1,8 +1,11 @@
 from default_settings import *
+from redirect_settings import *
 
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
+
+ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 DATABASES = {
     'default': {
