@@ -1,7 +1,11 @@
 from datetime import timedelta
 from default_settings import MIDDLEWARE_CLASSES
 
+PROJECT = 'redirect'
+
 SITE_ID = 1
+
+COMPRESS_ENABLED = True
 
 LANDING_DELAY = timedelta(minutes=30)
 
