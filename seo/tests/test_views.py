@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from copy import deepcopy
+import urlparse
 import default_settings
 import itertools
 import json
@@ -1758,8 +1759,15 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         # Check that the apply links are formatted correctly. This particular
         # job has a mailto link, so the view source should not be included.
-        apply_link = soup.find(id="direct_applyButtonBottom").a
-        self.assertNotIn(view_source.view_source, apply_link.get("href"))
+        apply_link = soup.find(id="direct_applyButtonBottom").a.get('href')
+        self.assertNotIn(view_source.view_source, apply_link)
+        parts = urlparse.urlparse(apply_link)
+        qs = urlparse.parse_qs(parts[4])
+        params = [qs[part][0].encode('raw_unicode_escape').decode('utf-8')
+                  for part in ['body', 'subject']]
+        job = self.conn.search(q='guid:%s' % ('1' * 32)).docs[0]
+        for param in params:
+            self.assertIn(job['title'], param)
 
 
     def test_job_listing_count(self):
