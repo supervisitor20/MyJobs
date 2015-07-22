@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="row">
+    <h1>{{company}} <small>Company Users</small></h1>
+    </div>
+    <div class="row">
+    <div class="span8">
+     {% for user in users %}
+
+        <div class="product-card">
+            <div class="big-title">
+                {% if user.user.first_name or user.user.last_name %}
+                {{user.user.first_name}} {{user.user.last_name}}
+                {%else%}
+                <br/>
+                {%endif%}
+            </div>
+            <div class="sub-title">
+                {{user.user.email}}
+            </div>
+            <div class="product-details">
+                Status: {% if user.user.is_verified %}Verified{%else%}Unverified{%endif%} Last active: {{user.user.last_response}}
+            </div>
+            <div class="partner-tags">
+
+            </div>
+            <a class="btn" href="#">Remove</a>
+        </div>
+    {%endfor%}
+
+
+        </div>
+        <div class="span4">
+            <div class="sidebar">
+                <h2 class="top">Add User</h2>
+                <br/><br/><br/>
+            </div>
+        </div>
+        </div>
+    {% endblock %}
+
+{% block activation_message %}
+{% endblock %}

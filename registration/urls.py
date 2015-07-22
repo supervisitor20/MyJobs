@@ -5,7 +5,7 @@ from django.contrib.auth import views as auth_views
 from registration.forms import CustomSetPasswordForm
 from registration.views import (RegistrationComplete, activate, merge_accounts,
                                 resend_activation, logout,
-                                custom_password_reset)
+                                custom_password_reset, list_companyusers)
 
 
 urlpatterns = patterns('',
@@ -49,4 +49,6 @@ urlpatterns = patterns('',
     url(r'^register/resend/$', resend_activation, name='resend_activation'),
 
     url(r'^logout/$', logout, name='auth_logout'),
+
+    url(r'^companyusers/$', list_companyusers, name='list_companyusers'),
 )
