@@ -671,6 +671,7 @@ def read_new_logs(solr_location=None):
     delete_old_analytics_docs.delay()
 
 
+
 @task(name='tasks.expire_jobs', ignore_result=True)
 def expire_jobs():
     jobs = Job.objects.filter(date_expired__lt=date.today(),
