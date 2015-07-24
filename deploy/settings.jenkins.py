@@ -86,14 +86,15 @@ LOGGING = {
         },
     },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
         }
     },
     'loggers': {
         '': {
-            'handlers': ['null'],
+            'handlers': ['console'],
             'propagate': True,
             'level': 'WARN',
         }
