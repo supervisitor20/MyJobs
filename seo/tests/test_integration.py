@@ -25,7 +25,7 @@ class SiteTestCase(DirectSEOBase):
     def setUp(self):
         super(SiteTestCase, self).setUp()
         self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        self.conn.delete(q="*:*")        
+        self.conn.delete(q="*:*")
         self.businessunit = factories.BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
         self.filepath = os.path.join(import_jobs.DATA_DIR,
@@ -110,7 +110,7 @@ class SiteTestCase(DirectSEOBase):
         resp = self.client.get('/jobs/', HTTP_HOST=self.site.domain,
                                follow=True)
         total_jobs = resp.context['total_jobs_count']
-        solr_jobs = self.conn.search(q=u"title:'Специалист'")
+        solr_jobs = self.conn.search(q=u"title:Специалист")
         self.assertEqual(total_jobs, solr_jobs.hits)
         self.assertEqual(len(resp.context['default_jobs']), total_jobs)
         for facet_widget in resp.context['widgets']:
