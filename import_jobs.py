@@ -130,14 +130,12 @@ def get_jobs_from_zipfile(zipfileobject, guid):
     :return: [lxml.eTree, lxml.eTree,...]"""
     logger.debug("Getting current Jobs for guid: %s", guid)
 
-
     # Get current worker process id, to prevent race conditions.
     try:
         p = current_process()
         process_id =  p.index
     except AttributeError:
         process_id = 0
-
 
     # Delete any existing data and use the guid to create a unique folder.
     directory = "/tmp/%s/%s" % (process_id, guid)
