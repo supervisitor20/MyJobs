@@ -34,8 +34,8 @@ DATABASES = {
     },
 }
 SOLR = {
-    'all': 'http://127.0.0.1:8983/solr/myjobs_test/',
-    'current': 'http://127.0.0.1:8983/solr/myjobs_test_current/',
+    'all': 'http://127.0.0.1:8983/solr/myjobs/',
+    'current': 'http://127.0.0.1:8983/solr/myjobs/',
 }
 CACHES = {
     'default': {
