@@ -461,7 +461,6 @@ def _job_filter(job):
 def _xml_errors(jobfeed):
     """
     Checks XML input for errors, and logs any it finds.
-
     """
     if jobfeed.errors:
         logging.error("XML Job Feed Error",
