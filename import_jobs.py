@@ -177,6 +177,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
     # clean up after ourselves.
     shutil.rmtree(directory)
 
+
 class FeedImportError(Exception):
     def __init__(self, msg):
         self.msg = msg
