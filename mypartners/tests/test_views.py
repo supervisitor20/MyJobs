@@ -1045,7 +1045,8 @@ class EmailTests(MyPartnersTestCase):
         email = mail.outbox.pop()
         expected_str = "Contacts have been created for the following email " \
                        "addresses:"
-        self.assertEqual(email.from_email, 'My.jobs Partner Relationship Manager <prm@my.jobs>')
+        self.assertEqual(email.from_email,
+                         'My.jobs Partner Relationship Manager <prm@my.jobs>')
         self.assertEqual(email.to, [self.staff_user.email])
         self.assertTrue(expected_str in email.body)
         self.assert_contact_info_in_email(email)
@@ -1377,7 +1378,8 @@ class ContactLogEntryTests(MyPartnersTestCase):
         log = ContactLogEntry.objects.get()
 
         delta = json.loads(log.delta)
-        self.assertEqual(record.contact_email, delta['contact_email']['initial'])
+        self.assertEqual(record.contact_email,
+                         delta['contact_email']['initial'])
         self.assertEqual(data['contact_email'], delta['contact_email']['new'])
 
     def test_partner_saved_search_update(self):
