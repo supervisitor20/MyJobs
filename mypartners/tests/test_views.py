@@ -1069,9 +1069,8 @@ class EmailTests(MyPartnersTestCase):
         # This request with an unverified email does not send an email response
         # and does not create a ContactLogEntry.
         self.assertEqual(len(mail.outbox), 0)
-        with self.assertRaises(ContactLogEntry.DoesNotExist):
-            ContactLogEntry.objects.get(object_id=self.contact.pk,
-                                        action_flag=ADDITION)
+        with self.assertRaises(ContactRecord.DoesNotExist):
+            ContactRecord.objects.get(contact_email=self.contact.email)
 
         secondary.verified = True
         secondary.save()
@@ -1080,7 +1079,8 @@ class EmailTests(MyPartnersTestCase):
         # Now that the email is verified, we see one email being sent and one
         # ContactLogEntry being created.
         self.assertEqual(len(mail.outbox), 1)
-        ContactLogEntry.objects.get(object_id=self.contact.pk,
+        record = ContactRecord.objects.get(contact_email=self.contact.email)
+        ContactLogEntry.objects.get(object_id=record.pk,
                                     action_flag=ADDITION)
 
     def test_partner_email_multiple_companies(self):
