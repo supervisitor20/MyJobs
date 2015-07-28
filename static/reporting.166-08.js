@@ -93,7 +93,7 @@ Form.prototype = {
 
 // Handles storing data, rendering fields, and submitting report. See prototype functions
 function Report(type, fields) {
-  this.data = {};
+  this.data = {filters: {}};
   this.fields = fields;
   this.type = type;
 
@@ -252,7 +252,7 @@ Report.prototype = {
       return false;
     } else {
       this.fields.forEach(function (field) {
-        $.extend(true, report.data, field.onSave());
+        $.extend(true, field.isFilter ? report.data.filters : report.data, field.onSave());
       });
     }
 
@@ -273,7 +273,8 @@ function Field(options) {
         required: false,
         defaultVal: '',
         helpText: '',
-        errors: []
+        errors: [],
+        isFilter: true
       };
 
   if (typeof options === 'object') {
@@ -289,6 +290,7 @@ function Field(options) {
   this.helpText = options.helpText;
   this.errors = options.errors;
   this.key = options.key || options.id;
+  this.isFilter = options.isFilter;
 }
 
 Field.prototype = {
@@ -1312,6 +1314,7 @@ function createReport(type) {
   var reports = {
   contact: function() {
     return new Report("contact", [new TextField({
+                                        isFilter: false,
                                         label: "Report Name", 
                                         id: "report_name", 
                                         required: true, 
@@ -1340,16 +1343,19 @@ function createReport(type) {
                                         id: "city",
                                         key: "locations.city.icontains"
                                       }),
+                                  /*
                                   new FilteredList({
-                                        label: "Partners", 
-                                        id: "partner", 
-                                        required: true, 
-                                        ignore: ["report_name", "partner"]
-                                      })
-                                  ]);
+                                    label: "Partners", 
+                                    id: "partner", 
+                                    required: true, 
+                                    ignore: ["report_name", "partner"]
+                                  })
+                                  */
+                                ]);
   },
   partner: function() {
     return new Report("partner", [new TextField({
+                                    isFilter: false,
                                     label: "Report Name", 
                                     id: "report_name", 
                                     required: true, 
@@ -1357,20 +1363,26 @@ function createReport(type) {
                                   }),
                                   new StateField({
                                     label: "State", 
-                                    id: "state"
+                                    id: "state",
+                                    key: "contact.locations.state.iexact"
                                   }),
                                   new TextField({
                                     label: "City", 
-                                    id: "city"
+                                    id: "city",
+                                    key: "contact.locations.city.icontains"
                                   }),
                                   new TextField({
                                     label: "URL", 
-                                    id: "uri"
+                                    id: "uri",
+                                    key: "uri.icontains"
                                   }),
                                   new TextField({
                                     label: "Source", 
-                                    id: "data_source"})
-                                  ]);
+                                    id: "data_source",
+                                    key: "data_source.icontains"
+
+                                  })
+                                ]);
   },
   contactrecord: function() {
     var contactTypeChoices = [new CheckBox({
@@ -1400,6 +1412,7 @@ function createReport(type) {
                               })];
 
     return new Report("contactrecord", [new TextField({
+                                          isFilter: false,
                                           label: "Report Name", 
                                           id: "report_name", 
                                           required: true, 
