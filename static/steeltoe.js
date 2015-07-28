@@ -1,3 +1,5 @@
+// Downloaded from https://github.com/jclem/steeltoe
+
 function steelToe (object) {
   function _steelToe (property) {
     if (object && property) {
