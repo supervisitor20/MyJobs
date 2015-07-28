@@ -696,6 +696,7 @@ def task_clear_bu_cache(buid, **kwargs):
     except:
         logging.error(traceback.format_exc(sys.exc_info()))
 
+
 @task(name="tasks.task_update_solr", acks_late=True, ignore_result=True, soft_time_limit=3600)
 def task_update_solr(jsid, **kwargs):
     try:
