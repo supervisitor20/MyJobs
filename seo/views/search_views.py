@@ -452,6 +452,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         host = 'foo'
         link_query = ""
         jobs_count = get_total_jobs_count()
+        mailto = False
 
         if the_job.link is None:
             LOG.error("No link for job %s", the_job.uid)
@@ -463,26 +464,43 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             # use the override view source
             if settings.VIEW_SOURCE and url.scheme != "mailto":
                 path = "%s%s" % (path[:32], settings.VIEW_SOURCE.view_source)
+            elif url.scheme == "mailto":
+                mailto = True
+                subject = "Application for Job Posting: %s" % the_job.title
+                subject = '&subject=' + iri_to_uri(subject)
+                body = [
+                    '',
+                    '-' * 65,
+                    'Job Title: %s' % the_job.title
+                ]
+                if settings.VIEW_SOURCE:
+                    body.append('View Source: %s' % (
+                        settings.VIEW_SOURCE.name, ))
+                body.append(settings.SITE.domain)
+                body = '\r\n'.join(body)
+                body = '&body=' + iri_to_uri(body)
+                link_query = subject + body
 
-        # add any ats source code name value pairs
-        ats = settings.ATS_SOURCE_CODES.all()
-        if ats:
-            link_query += "&".join(["%s" % code for code in ats])
+        if not mailto:
+            # add any ats source code name value pairs
+            ats = settings.ATS_SOURCE_CODES.all()
+            if ats:
+                link_query += "&".join(["%s" % code for code in ats])
 
-        # build the google analytics query string
-        gac = settings.GA_CAMPAIGN
-        gac_data = {
-            "campaign_source": "utm_source",
-            "campaign_medium": "utm_medium",
-            "campaign_term": "utm_term",
-            "campaign_content": "utm_content",
-            "campaign_name": "utm_campaign"
-        }
+            # build the google analytics query string
+            gac = settings.GA_CAMPAIGN
+            gac_data = {
+                "campaign_source": "utm_source",
+                "campaign_medium": "utm_medium",
+                "campaign_term": "utm_term",
+                "campaign_content": "utm_content",
+                "campaign_name": "utm_campaign"
+            }
 
-        if gac:
-            q_str = "&".join(["%s=%s" % (v, getattr(gac, k))
-                              for k, v in gac_data.items()])
-            link_query = "&".join([link_query, q_str])
+            if gac:
+                q_str = "&".join(["%s=%s" % (v, getattr(gac, k))
+                                  for k, v in gac_data.items()])
+                link_query = "&".join([link_query, q_str])
 
         if link_query:
             urllib.quote_plus(link_query, "=&")
