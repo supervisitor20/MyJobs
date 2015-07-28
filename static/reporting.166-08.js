@@ -254,52 +254,14 @@ Report.prototype = {
       this.fields.forEach(function (field) {
         $.extend(true, report.data, field.onSave());
       });
-      console.log(report.data);
     }
 
     return true;
   },
   readableData: function(d) {
-    var data = d || this.data,
-        html = '',
-        items,
-        value,
-        key,
-        i;
-
-    for (key in data) {
-      if (data.hasOwnProperty(key)) {
-        html += "<div>";
-        value = data[key];
-
-        // Replace all '_' instances with spaces
-        key = key.replace(/_/g, " ");
-
-        if (value && value.length) {
-          html += '<label>' + key.capitalize() + ':</label>';
-        }
-
-        // If value is an object (aka an array).
-        if (typeof value === "object" && value !== null && value.length) {
-          items = [];
-
-          if (key === "partner" || key === "contact") {
-            for (i = 0; i < value.length; i++) {
-              items.push($('#' + key + ' input[data-pk=' + value[i] + ']').parent().text());
-            }
-          } else {
-            for (i = 0; i < value.length; i++) {
-              items.push(value[i]);
-            }
-          }
-          html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
-        } else {
-          html += value;
-        }
-        html += '</div>';
-      }
-    }
-    return html;
+    return this.fields.map(function(element) {
+      return element.readableData();
+    }).join("");
   }
 };
 
@@ -416,6 +378,35 @@ Field.prototype = {
     }
 
     return this;
+  },
+  readableData: function(key, value) {
+    key = (key || this.id).replace(/_/g, " ");
+    value = value || this.currentVal();
+    var html = '<div>',
+        items = [],
+        i;
+
+    if (value && value.length) {
+      html += '<label>' + key.capitalize() + ':</label>';
+    }
+
+    if (typeof value === "object" && value !== null && value.length) {
+      if (key === "partner" || key === "contact") {
+        for (i = 0; i < value.length; i++) {
+          items.push($('#' + key + ' input[data-pk=' + value[i] + ']').parent().text());
+        }
+      } else {
+        for (i = 0; i < value. length; i++) {
+          items.push(value[i]);
+        }
+      }
+      html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
+    } else {
+      html += value;
+    }
+    html += '</div>';
+
+    return html;
   }
 };
 
@@ -643,6 +634,12 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
     }
 
     return this;
+  },
+  readableData: function() {
+    var start_date = Field.prototype.readableData('start_date', this.currentVal('start-date')),
+        end_date = Field.prototype.readableData('end_date', this.currentVal('end-date'));
+
+    return start_date + end_date;
   }
 });
 
@@ -1076,7 +1073,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     }
 
     return this;
-  }
+  },
 });
 
 
@@ -1444,7 +1441,15 @@ function createReport(type) {
                                           key: "tags.name.icontains", 
                                           helpText: "Use commas for multiple tags."
                                         }),
-                                        //new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner", "contact"]}),
+                                        /*
+                                        new FilteredList({
+                                          label: "Partners", 
+                                          id: "partner", 
+                                          key: "partner.in",
+                                          required: true, 
+                                          ignore: ["report_name", "partner", "contact"]
+                                        }),
+                                        */
                                         //new FilteredList({label: "Contacts", id: "contact", required: true, ignore: ["report_name", "contact"], dependencies: ["partner"]})
                                         ]);
   }
