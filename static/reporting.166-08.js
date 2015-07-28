@@ -591,8 +591,8 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
   },
   onSave: function() {
     var data = {};
-    steelToe(data).set(this.key.start_date, this.currentVal("start-date"));
-    steelToe(data).set(this.key.end_date, this.currentVal("end-date"));
+    steelToe(data).set(this.key.start_date, reportNameDateFormat(new Date(this.currentVal("start-date"))));
+    steelToe(data).set(this.key.end_date, reportNameDateFormat(new Date(this.currentVal("end-date"))));
     return data;
   },
   render: function() {
