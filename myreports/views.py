@@ -200,12 +200,9 @@ class ReportView(View):
            An HttpResponse indicating success or failure of report creation.
         """
         company = get_company_or_404(request)
-        params = parse_params(request.POST)
-
-        params.pop('csrfmiddlewaretoken', None)
-        name = params.pop('report_name',
-                          str(datetime.now()))
-        values = params.pop('values', None)
+        name = request.POST.get('report_name', str(datetime.now()))
+        values = request.POST.get('values', None)
+        params = request.POST.get('filters', None)
 
         records = get_model(app, model).objects.from_search(
             company, params)

@@ -199,6 +199,7 @@ Report.prototype = {
           newList = [];
       if (report.data) {
         $.extend(data, report.data);
+        data.filters = JSON.stringify(data.filters);
       }
       if (data.contact) {
         for (var i = 0; i < data.contact.length; i++) {
