@@ -13,7 +13,7 @@ class Solr(object):
             solr_location = settings.SOLR['all']
         self.location = solr_location
         self.solr = pysolr.Solr(self.location)
-        self.q = '(*:*)'
+        self.q = '*:*'
         self.params = {
             'fq': [],
             'fl': [],
