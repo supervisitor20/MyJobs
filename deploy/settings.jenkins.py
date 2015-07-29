@@ -44,7 +44,9 @@ CACHES = {
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
 JENKINS_TEST_RUNNER = 'silent_testrunner.SilentTestRunner'
 TEST_SOLR_INSTANCE = SOLR
 CELERY_ALWAYS_EAGER = True
