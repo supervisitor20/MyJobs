@@ -311,9 +311,9 @@ Field.prototype = {
   dom: function() {
     return $("#" + this.id);
   },
-  onSave: function() {
+  onSave: function(key) {
     var data = {};
-    steelToe(data).set(this.key, this.currentVal());
+    steelToe(data).set(key || this.key, this.currentVal());
 
     return data;
   },
@@ -584,10 +584,10 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
   currentVal: function(id) {
     return $(this.dom()).find("#" + id).val();
   },
-  onSave: function() {
+  onSave: function(key) {
     var data = {};
-    steelToe(data).set(this.key.start_date, reportNameDateFormat(new Date(this.currentVal("start-date"))));
-    steelToe(data).set(this.key.end_date, reportNameDateFormat(new Date(this.currentVal("end-date"))));
+    steelToe(data).set((key || this.key).start_date, reportNameDateFormat(new Date(this.currentVal("start-date"))));
+    steelToe(data).set((key || this.key).end_date, reportNameDateFormat(new Date(this.currentVal("end-date"))));
     return data;
   },
   render: function() {
@@ -887,18 +887,11 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     for (id in dependencies) {
       if (dependencies.hasOwnProperty(id)) {
-        var field = report.findField(id);
-        // Hack to get around DateField's being composed of two inputs
-        if (field instanceof DateField) {
-          filterData.filters[dependencies[id][0]] = field.currentVal('start-date');
-          filterData.filters[dependencies[id][1]] = field.currentVal('end-date');
-        } else {
-          $.extend(filterData.filters, field.currentVal());
-        }
+        $.extend(true, filterData.filters, report.findField(id).onSave(dependencies[id]));
       }
     }
 
-    filterData.filter = JSON.stringify(filterData.filter);
+    filterData.filters = JSON.stringify(filterData.filters);
 
     $.ajax({
       type: "GET",
@@ -1411,10 +1404,10 @@ function createReport(type) {
                                           key: "partner.in",
                                           required: true, 
                                           dependencies: {
-                                            date: [
-                                              'contactrecord.date_time.gte',
-                                              'contactrecord.date_time.lte',
-                                            ],
+                                            date: {
+                                              start_date: 'contactrecord.date_time.gte',
+                                              end_date: 'contactrecord.date_time.lte',
+                                            },
                                             state: 'contact.locations.state.iexact',
                                             city: 'contact.locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',
@@ -1430,10 +1423,10 @@ function createReport(type) {
                                           required: true, 
                                           ignore: ["report_name", "contact"], 
                                           dependencies: {
-                                            date: [
-                                              'contactrecord.date_time.gte',
-                                              'contactrecord.date_time.lte',
-                                            ],
+                                            date: {
+                                              start_date: 'contactrecord.date_time.gte',
+                                              end_date: 'contactrecord.date_time.lte',
+                                            },
                                             state: 'locations.state.iexact',
                                             city: 'locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',

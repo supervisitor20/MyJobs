@@ -257,14 +257,14 @@ def to_json(data, sep="__"):
     return results
 
 
-def to_query(data, parent="", sep="__"):
+def to_query(data, sep="__", parent=""):
     """Collapse a dict into one suitable for django queries."""
 
     results = {}
 
     for key, value in data.items():
         if isinstance(value, dict):
-            results.update(to_query(value, parent=parent + key + sep, sep=sep))
+            results.update(to_query(value, sep=sep, parent=parent + key + sep))
         else:
             results[parent + key] = value
 

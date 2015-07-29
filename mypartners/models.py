@@ -100,7 +100,6 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
         return self
 
-
 class SearchParameterManager(models.Manager):
     def __init__(self, *args, **kwargs):
         super(SearchParameterManager, self).__init__(*args, **kwargs)

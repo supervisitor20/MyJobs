@@ -89,7 +89,7 @@ def view_records(request, app="mypartners", model="contactrecord"):
     if request.is_ajax() and request.method == 'GET':
         company = get_company_or_404(request)
 
-        filters = request.GET.get("filter")
+        filters = request.GET.get("filters")
         # remove non-query related params
         values = request.GET.getlist("values")
         order_by = request.GET.get("order_by", None)
