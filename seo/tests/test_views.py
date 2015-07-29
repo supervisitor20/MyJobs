@@ -1363,6 +1363,11 @@ class TemplateTestCase(DirectSEOTestCase):
 class SeoViewsTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
+    def setUp(self):
+        user = User.objects.get(email="matt@directemployers.org")
+        user.set_password('lingo23')
+        user.save()
+
     def test_sort(self):
         """
         Confirm that Sort by links are showing up on the search results
