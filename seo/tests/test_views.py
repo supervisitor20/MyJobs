@@ -1364,6 +1364,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
     def setUp(self):
+        super(TemplateTestCase, self).setUp()
         user = User.objects.get(email="matt@directemployers.org")
         user.set_password('lingo23')
         user.save()
