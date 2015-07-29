@@ -92,9 +92,14 @@ class SearchParameterQuerySet(models.query.QuerySet):
                 getattr(self.model, 'company_ref', 'company'): company})
 
         query = to_query(json.loads(parameters))
+
+        if hasattr(self.model, 'approval_status'):
+            query.update({'approval_status': Status.APPROVED})
+
         self = self.filter(**query).distinct()
 
         return self
+
 
 class SearchParameterManager(models.Manager):
     def __init__(self, *args, **kwargs):

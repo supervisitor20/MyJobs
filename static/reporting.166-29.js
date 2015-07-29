@@ -267,31 +267,29 @@ Report.prototype = {
 };
 
 
-function Field(options) {
-  var defaultOptions = {
-        label: "Default Label",
-        id: "DefaultID",
-        required: false,
-        defaultVal: '',
-        helpText: '',
-        errors: [],
-        isFilter: true
-      };
-
+function defaults(options, defaultOptions) {
   if (typeof options === 'object') {
     options = $.extend(defaultOptions, options);
   } else {
     options = defaultOptions;
   }
 
-  this.label = options.label;
-  this.id = options.id;
-  this.required = options.required;
-  this.defaultVal = options.defaultVal;
-  this.helpText = options.helpText;
-  this.errors = options.errors;
-  this.key = options.key || options.id;
-  this.isFilter = options.isFilter;
+  return options;
+}
+
+
+function Field(options) {
+  $.extend(this, defaults(options, {
+    label: "Default Label",
+    id: "DefaultID",
+    required: false,
+    defaultVal: '',
+    helpText: '',
+    errors: [],
+    isFilter: true
+  }));
+
+  this.key = this.key || options.id;
 }
 
 Field.prototype = {
@@ -446,11 +444,9 @@ TextField.prototype = $.extend(Object.create(Field.prototype), {
 
 
 function CheckBox(options) {
-  this.checked = typeof options.checked === 'undefined' ? true : options.checked;
-  this.name = options.name;
-  this.id = options.name + '_' + options.defaultVal;
-
-  $.extend(options, {id: this.id});
+  options.checked = typeof options.checked === 'undefined' ? true : options.checked;
+  options.name = options.name;
+  options.id = options.name + '_' + options.defaultVal;
 
   Field.call(this, options);
 }
@@ -551,7 +547,6 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
 
 
 function DateField(options) {
-  var dVal = options.defaultVal || {};
   Field.call(this, options);
 }
 
@@ -780,8 +775,13 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
 
 
 function FilteredList(options) {
-  this.ignore = options.ignore || [];
-  this.dependencies = options.dependencies || [];
+  $.extend(this, defaults(options, {
+    dependencies: {},
+    order_by: null,
+    values: null
+  }));
+
+  // used internally, shouldn't be changed by consumers of the API
   this.active = 0;
   this.hasRan = false;
 
@@ -853,6 +853,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     // TODO: Figure out how to reduce queries; perhaps by diffing total changes
     $dom.on("dataChanged", function (e, data) {
+      //TODO: check if any of the dependencies map to a filterd list instead
       var callFilter = !filteredList.dependencies.length && filteredList.ignore.every(function (element) {
           return !(element in data);
         });
@@ -864,6 +865,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     });
 
     $dom.on("filtered", function (e, field) {
+      //TODO: check if any of the dependencies map to a filterd list instead
       if (filteredList.dependencies.indexOf(field.id) !== -1) {
         filteredList.filter();
       }
@@ -871,85 +873,32 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
   },
   filter: function() {
     var filteredList = this,
-        filterData = {},
+        report = this.report,
+        dependencies = this.dependencies,
+        id,
         $recordCount,
         $listBody,
         $input,
-        Status = {UNPROCESSED: 0, APPROVED: 1, DENIED: 2};
+        filterData = {
+          filters:{},
+          values: filteredList.values,
+          order_by: filteredList.order_by
+        };
 
-    filteredList.report.fields.forEach(function (field) {
-      if (filteredList.ignore.indexOf(field.id) === -1) {
-        $.extend(filterData, field.onSave());
-      }
-    });
-
-    // only show approved records
-    filterData.approval_status__code = Status.APPROVED;
-
-    if (this.id === "partner") {
-      // annotate how many records a partner has.
-      $.extend(filterData, {
-        values: ["pk", "name"],
-        order_by: "name"
-      });
-
-    } else if (this.id === "contact") {
-      $.extend(filterData, {values: ["pk", "name", "email"], order_by: "name"});
-    }
-
-    filterData.contactrecord__tags__name = filterData.tags__name;
-    delete filterData.tags__name;
-
-    filterData.filter = {
-      contactrecord: {
-        date_time: {
-          gte: reportNameDateFormat(new Date(filterData.start_date)),
-          lte: reportNameDateFormat(new Date(filterData.end_date))
-        },
-        contact_type: {
-          "in": filterData.contact_type,
-        },
-        /*
-        tags: {
-          name: {
-            'in': filterData.contactrecord__tags__name
-          }
+    for (id in dependencies) {
+      if (dependencies.hasOwnProperty(id)) {
+        var field = report.findField(id);
+        // Hack to get around DateField's being composed of two inputs
+        if (field instanceof DateField) {
+          filterData.filters[dependencies[id][0]] = field.currentVal('start-date');
+          filterData.filters[dependencies[id][1]] = field.currentVal('end-date');
+        } else {
+          $.extend(filterData.filters, field.currentVal());
         }
-        */
-      },
-      approval_staus: {
-        code: {
-          iexact: filterData.aprpoval_status__code
-        }
-      },
-      locations: {
-        state: {
-          icontains: filterData.state,
-        },
-        city: {
-          icontains: filterData.city
-        },
       }
-    };
-
-
-    if (this.id === "partner") {
-      filterData.filter.contact = {
-        locations: filterData.filter.locations
-      };
-      delete filterData.filter.locations;
     }
 
     filterData.filter = JSON.stringify(filterData.filter);
-
-    delete filterData.start_date;
-    delete filterData.end_date;
-    delete filterData.contact_type;
-    delete filterData.approval_status__code;
-    delete filterData.contactrecord__tags__name;
-    delete filterData.city;
-    delete filterData.state;
-
 
     $.ajax({
       type: "GET",
@@ -1344,14 +1293,15 @@ function createReport(type) {
                                         id: "city",
                                         key: "locations.city.icontains"
                                       }),
-                                  /*
                                   new FilteredList({
                                     label: "Partners", 
                                     id: "partner", 
+                                    pk: "partner.in",
                                     required: true, 
-                                    ignore: ["report_name", "partner"]
+                                    ignore: ["report_name", "partner"],
+                                    values: ["pk", "name"],
+                                    order_by: "name"
                                   })
-                                  */
                                 ]);
   },
   partner: function() {
@@ -1455,17 +1405,45 @@ function createReport(type) {
                                           key: "tags.name.icontains", 
                                           helpText: "Use commas for multiple tags."
                                         }),
-                                        /*
                                         new FilteredList({
                                           label: "Partners", 
                                           id: "partner", 
                                           key: "partner.in",
                                           required: true, 
-                                          ignore: ["report_name", "partner", "contact"]
+                                          dependencies: {
+                                            date: [
+                                              'contactrecord.date_time.gte',
+                                              'contactrecord.date_time.lte',
+                                            ],
+                                            state: 'contact.locations.state.iexact',
+                                            city: 'contact.locations.city.icontains',
+                                            contact_type: 'contactrecord.contact_type.in',
+                                            tags: 'contactrecord.tags.in',
+                                          },
+                                          values: ["pk", "name"],
+                                          order_by: "name"
                                         }),
-                                        */
-                                        //new FilteredList({label: "Contacts", id: "contact", required: true, ignore: ["report_name", "contact"], dependencies: ["partner"]})
-                                        ]);
+                                        new FilteredList({
+                                          label: "Contacts", 
+                                          id: "contact", 
+                                          key: "contact.in",
+                                          required: true, 
+                                          ignore: ["report_name", "contact"], 
+                                          dependencies: {
+                                            date: [
+                                              'contactrecord.date_time.gte',
+                                              'contactrecord.date_time.lte',
+                                            ],
+                                            state: 'locations.state.iexact',
+                                            city: 'locations.city.icontains',
+                                            contact_type: 'contactrecord.contact_type.in',
+                                            tags: 'contactrecord.tags.in',
+                                            partner: 'partner.in'
+                                          },
+                                          values: ["pk", "name", "email"],
+                                          order_by: "name"
+                                        })
+                                      ]);
   }
 };
 
