@@ -764,7 +764,7 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
 
 function FilteredList(options) {
   $.extend(this, defaults(options, {
-    dependencies: {},
+    dependencies: null,
     order_by: null,
     values: null
   }));
@@ -790,6 +790,16 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         $recordCount = $header.find(".record-count"),
         $all = $header.find("input"),
         $dom = $(this.dom());
+
+    if (filteredList.dependencies) {
+      $dependencies = Object.keys(filteredList.dependencies).map(function(e) {
+        return "#" + e;
+      }).join(", ");
+
+      $(".rpt-container").on("change", $dependencies, function(e) {
+        filteredList.filter();
+      });
+    }
 
     $header.on("click", function () {
       var $this = $(this),
@@ -835,6 +845,8 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     $dom.bind("change.validate", "input", function (e) {
       filteredList.validate();
     });
+    
+
   },
   filter: function() {
     var filteredList = this,
