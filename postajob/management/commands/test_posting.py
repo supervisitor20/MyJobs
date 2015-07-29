@@ -244,7 +244,8 @@ class JobPostingTests(TestCase):
             self.browser.find_element_by_xpath(
                 '//option[@value={site_pk}]'.format(
                     site_pk=self.seo_site.pk)).click()
-            self.browser.find_element_by_id('id_site_packages_add_link').click()
+            self.browser.find_element_by_id(
+                'id_site_packages_add_link').click()
 
         self.browser.find_element_by_id('profile-save').click()
         self.wait_on_load()
@@ -284,9 +285,9 @@ class JobPostingTests(TestCase):
             try:
                 cls.setup_objects()
             except:
-                # If anything happens during setup (someone cancels the process,
-                # db issues, whatever), we need to roll back. Delete everything
-                # we created and reraise the exception.
+                # If anything happens during setup (someone cancels the
+                # process, db issues, whatever), we need to roll back. Delete
+                # everything we created and reraise the exception.
                 cls.remove_objects()
                 raise
 
@@ -339,9 +340,10 @@ class JobPostingTests(TestCase):
                                      (self.user, False)]:
                 self.login(user)
                 self.get(reverse('purchasedmicrosite_admin_overview'))
-                for selector, expected in [('product-listing', 'Product Listing'),
-                                           ('our-postings', 'Posted Jobs'),
-                                           ('posting-admin', 'Partner Microsite')]:
+                for selector, expected in [
+                        ('product-listing', 'Product Listing'),
+                        ('our-postings', 'Posted Jobs'),
+                        ('posting-admin', 'Partner Microsite')]:
                     try:
                         element = self.browser.find_element_by_id(selector)
                     except NoSuchElementException:
