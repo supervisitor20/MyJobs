@@ -86,13 +86,13 @@ def view_records(request, app="mypartners", model="contactrecord"):
     Output:
        A JSON response containing the records queried for.
     """
-    if request.is_ajax() and request.method == 'GET':
+    if request.is_ajax() and request.method == 'POST':
         company = get_company_or_404(request)
 
-        filters = request.GET.get("filters")
+        filters = request.POST.get("filters")
         # remove non-query related params
-        values = request.GET.getlist("values")
-        order_by = request.GET.get("order_by", None)
+        values = request.POST.getlist("values")
+        order_by = request.POST.get("order_by", None)
 
         records = get_model(app, model).objects.from_search(
             company, filters)

@@ -755,6 +755,9 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
         return t;
       }
     });
+  },
+  onSave: function() {
+    return this.value.length ? this.value : null;
   }
 });
 
@@ -775,13 +778,11 @@ function FilteredList(options) {
 
 FilteredList.prototype = $.extend(Object.create(Field.prototype), {
   currentVal: function() {
-    var values = $.map($(this.dom()).find("input").toArray(), function (c) {
-      if (c.checked) {
-        return $(c).data("pk");
-      }
+    ids = $(this.dom()).find(":checked").toArray().map(function(element) {
+      return $(element).data('pk');
     });
 
-    return values.length ? values : ["0"];
+    return ids;
   },
   bindEvents: function() {
     var filteredList = this,
@@ -846,7 +847,8 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         filterData = {
           filters:{},
           values: filteredList.values,
-          order_by: filteredList.order_by
+          order_by: filteredList.order_by,
+          csrfmiddlewaretoken: read_cookie("csrftoken")
         };
 
     for (id in dependencies) {
@@ -858,7 +860,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     filterData.filters = JSON.stringify(filterData.filters);
 
     $.ajax({
-      type: "GET",
+      type: "POST",
       url: "/reports/ajax/mypartners/" + this.id,
       data: filterData,
       global: false,
@@ -904,7 +906,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         $('#' + filteredList.id + '-header > .fa-spinner').remove();
         $('#' + filteredList.id + '-header > span').show();
       }
-      filteredList.validate(false);
       filteredList.hasRan = true;
     });
   },
@@ -976,6 +977,10 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     return this;
   },
+  onSave: function() {
+    value = this.currentVal();
+    return value.length ? value : null;
+  }
 });
 
 
@@ -1236,7 +1241,7 @@ function createReport(type) {
                                   new StateField({
                                         label: "State", 
                                         id: "state",
-                                        key: "locations.state.iexact"
+                                        key: "locations.state.icontains"
                                       }),
                                   new TextField({
                                         label: "City", 
@@ -1248,7 +1253,15 @@ function createReport(type) {
                                     id: "partner", 
                                     pk: "partner.in",
                                     required: true, 
-                                    ignore: ["report_name", "partner"],
+                                    dependencies: {
+                                      date: {
+                                        start_date: 'contactrecord.date_time.gte',
+                                        end_date: 'contactrecord.date_time.lte',
+                                      },
+                                      state: 'contact.locations.state.icontains',
+                                      city: 'contact.locations.city.icontains',
+                                      //tags: 'contactrecord.tags.in',
+                                    },
                                     values: ["pk", "name"],
                                     order_by: "name"
                                   })
@@ -1265,7 +1278,7 @@ function createReport(type) {
                                   new StateField({
                                     label: "State", 
                                     id: "state",
-                                    key: "contact.locations.state.iexact"
+                                    key: "contact.locations.state.icontains"
                                   }),
                                   new TextField({
                                     label: "City", 
@@ -1334,7 +1347,7 @@ function createReport(type) {
                                         new StateField({
                                           label: "State", 
                                           id: "state", 
-                                          key: "contact.locations.state.iexact"
+                                          key: "contact.locations.state.icontains"
                                         }),
                                         new TextField({
                                           label: "City", 
@@ -1365,7 +1378,7 @@ function createReport(type) {
                                               start_date: 'contactrecord.date_time.gte',
                                               end_date: 'contactrecord.date_time.lte',
                                             },
-                                            state: 'contact.locations.state.iexact',
+                                            state: 'contact.locations.state.icontains',
                                             city: 'contact.locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',
                                             tags: 'contactrecord.tags.in',
@@ -1378,13 +1391,12 @@ function createReport(type) {
                                           id: "contact", 
                                           key: "contact.in",
                                           required: true, 
-                                          ignore: ["report_name", "contact"], 
                                           dependencies: {
                                             date: {
                                               start_date: 'contactrecord.date_time.gte',
                                               end_date: 'contactrecord.date_time.lte',
                                             },
-                                            state: 'locations.state.iexact',
+                                            state: 'locations.state.icontains',
                                             city: 'locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',
                                             tags: 'contactrecord.tags.in',

@@ -85,8 +85,6 @@ class SearchParameterQuerySet(models.query.QuerySet):
             If the model has a `_parse_parameters` method, that is called
             before parsing remaining parameters.
         """
-
-
         if company:
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
@@ -94,7 +92,7 @@ class SearchParameterQuerySet(models.query.QuerySet):
         query = to_query(json.loads(parameters))
 
         if hasattr(self.model, 'approval_status'):
-            query.update({'approval_status': Status.APPROVED})
+            query.update({'approval_status__code__iexact': Status.APPROVED})
 
         self = self.filter(**query).distinct()
 
