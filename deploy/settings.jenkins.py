@@ -88,15 +88,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard'
-        }
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
+            'handlers': ['null'],
             'propagate': True,
             'level': 'WARN',
         }
