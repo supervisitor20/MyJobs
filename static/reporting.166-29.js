@@ -577,7 +577,7 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
   onSave: function(key) {
     var data = {};
     steelToe(data).set((key || this.key).start_date, reportNameDateFormat(new Date(this.currentVal("start-date"))));
-    steelToe(data).set((key || this.key).end_date, reportNameDateFormat(new Date(this.currentVal("end-date"))));
+    steelToe(data).set((key || this.key).end_date, reportNameDateFormat(new Date(this.currentVal("end-date")), true));
     return data;
   },
   render: function() {
@@ -1413,14 +1413,16 @@ function createReport(type) {
 }
 
 
-function reportNameDateFormat(date) {
+function reportNameDateFormat(date, isEndDate) {
+  isEndDate = typeof isEndDate !== 'undefined' ? isEndDate : false;
+
   var year = date.getFullYear(),
       month = date.getMonth(),
       day = date.getDate(),
-      hours = date.getHours(),
-      minutes = date.getMinutes(),
-      seconds = date.getSeconds(),
-      milliseconds = date.getMilliseconds();
+      hours = isEndDate ? 23 : date.getHours(),
+      minutes = isEndDate ? 59 : date.getMinutes(),
+      seconds = isEndDate ? 59 : date.getSeconds(),
+      milliseconds = isEndDate ? 999 : date.getMilliseconds();
 
   month = turnTwoDigit(parseInt(month) + 1);
   day = turnTwoDigit(day);
