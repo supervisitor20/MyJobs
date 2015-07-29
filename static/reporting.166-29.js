@@ -1846,7 +1846,7 @@ function renderGraphs(report_id, callback) {
             restRow = $('<div class="row"></div>').append(function() {
               var div = $('<div class="span12"></div>'),
                   table = $('<table class="table table-striped report-table"><thead><tr><th>Name</th>' +
-                            '<th>Email</th><th>Partner</th><th>Contact Records</th><th>Referral Reocrds</th>' +
+                            '<th>Email</th><th>Partner</th><th>Contact Records</th><th>Referral Records</th>' +
                             '</tr></thead></table>'),
                   tbody = $('<tbody></tbody>');
               tbody.append(function() {
