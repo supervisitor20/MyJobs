@@ -357,8 +357,7 @@ Field.prototype = {
 
     return this;
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
         index = this.errors.indexOf(err);
 
@@ -371,10 +370,6 @@ Field.prototype = {
       if (index !== -1) {
         this.errors.splice(index, 1);
         this.removeErrors();
-      }
-
-      if (triggerEvent) {
-        $.event.trigger("dataChanged", [this.onSave()]);
       }
     }
 
@@ -519,8 +514,7 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
       '<label style="display: inline;"><input value="all" type="checkbox" checked/ >All</label>  ' + html +
       '</div>';
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
         index = this.errors.indexOf(err),
         value = this.currentVal();
@@ -535,10 +529,6 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
         this.errors.splice(index, 1);
         this.removeErrors();
       }
-    }
-
-    if (triggerEvent) {
-      $.event.trigger("dataChanged", [this.onSave()]);
     }
 
     return this;
@@ -602,8 +592,7 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
     dateWidget.append(datePicker);
     return label + dateWidget.prop("outerHTML");
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var dateField = this,
         $dom = $(this.dom()),
         $fields = $dom.find("input.datepicker"), // Both start and end inputs.
@@ -626,10 +615,6 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
         }
       }
     });
-
-    if (!dateField.errors.length && triggerEvent) {
-      $.event.trigger("dataChanged", [dateField.onSave()]);
-    }
 
     return this;
   },
@@ -840,7 +825,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
       $all.prop("checked", checked);
       value = filteredList.currentVal();
       $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-      $.event.trigger("filtered", [filteredList]);
     });
 
     $all.on("change", function (e) {
@@ -849,26 +833,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     $dom.bind("change.validate", "input", function (e) {
       filteredList.validate();
-    });
-
-    // TODO: Figure out how to reduce queries; perhaps by diffing total changes
-    $dom.on("dataChanged", function (e, data) {
-      //TODO: check if any of the dependencies map to a filterd list instead
-      var callFilter = !filteredList.dependencies.length && filteredList.ignore.every(function (element) {
-          return !(element in data);
-        });
-
-      if (callFilter) {
-        filteredList.filter();
-      }
-
-    });
-
-    $dom.on("filtered", function (e, field) {
-      //TODO: check if any of the dependencies map to a filterd list instead
-      if (filteredList.dependencies.indexOf(field.id) !== -1) {
-        filteredList.filter();
-      }
     });
   },
   filter: function() {
@@ -933,8 +897,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
           $('#' + filteredList.id + '-header input').prop("checked", true);
         }
         $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-
-        $.event.trigger("filtered", [filteredList]);
       }
     }).done(function () {
       filteredList.active--;
@@ -995,8 +957,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     return this;
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
       index = this.errors.indexOf(err),
       value = this.currentVal();
@@ -1011,10 +972,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         this.errors.splice(index, 1);
         this.removeErrors();
       }
-    }
-
-    if (triggerEvent) {
-      $.event.trigger("dataChanged", [this.onSave()]);
     }
 
     return this;
