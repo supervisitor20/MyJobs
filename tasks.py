@@ -695,7 +695,8 @@ def task_clear_bu_cache(buid, **kwargs):
     except:
         logging.error(traceback.format_exc(sys.exc_info()))
 
-@task(name="tasks.task_update_solr", acks_late=True, ignore_result=True)
+
+@task(name="tasks.task_update_solr", acks_late=True, ignore_result=True, soft_time_limit=3600)
 def task_update_solr(jsid, **kwargs):
     try:
         import_jobs.update_solr(jsid, **kwargs)
@@ -704,7 +705,7 @@ def task_update_solr(jsid, **kwargs):
         raise task_update_solr.retry(exc=e)
 
 
-@task(name='tasks.etl_to_solr', ignore_result=True, send_error_emails=True)
+@task(name='tasks.etl_to_solr', ignore_result=True, send_error_emails=True, soft_time_limit=3600)
 def task_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
@@ -714,7 +715,7 @@ def task_etl_to_solr(guid, buid, name):
         raise task_etl_to_solr.retry(exc=e)
 
 
-@task(name='tasks.priority_etl_to_solr', ignore_result=True)
+@task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)
 def task_priority_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name, clear_cache=True)
