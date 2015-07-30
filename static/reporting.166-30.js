@@ -132,7 +132,7 @@ Report.prototype = {
       field = fields[i];
       if (!field.dom().length) {
         $renderAt.append(field.render());
-        if (typeof field.filter !== "undefined" && !field.dependencies.length) {
+        if (typeof field.filter !== "undefined" && !field.filterAfter().length) {
           field.filter();
         }
         if (typeof field.bindEvents !== "undefined") {
@@ -777,6 +777,16 @@ function FilteredList(options) {
 }
 
 FilteredList.prototype = $.extend(Object.create(Field.prototype), {
+  filterAfter: function() {
+    var filteredList = this,
+        report = this.report;
+
+    return Object.keys(filteredList.dependencies).map(function(id) {
+      return report.findField(id);
+    }).filter(function(field) {
+      return field instanceof FilteredList;
+    });
+  },
   currentVal: function() {
     ids = $(this.dom()).find(":checked").toArray().map(function(element) {
       return $(element).data('pk');
@@ -792,12 +802,23 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         $dom = $(this.dom());
 
     if (filteredList.dependencies) {
-      $dependencies = Object.keys(filteredList.dependencies).map(function(e) {
+      dependencies = Object.keys(filteredList.dependencies).map(function(e) {
         return "#" + e;
       }).join(", ");
 
-      $(".rpt-container").on("change", $dependencies, function(e) {
-        filteredList.filter();
+      $(".rpt-container").on("change", dependencies, function(e) {
+        var filteredLists = filteredList.filterAfter();
+
+        if (filteredLists.length) {
+          filteredLists.push(filteredList);
+          filteredLists.reduce(function(current, next) {
+            return current.done(function() {
+              return next.filter();
+            });
+          }, $().promise());
+        } else {
+          filteredList.filter();
+        }
       });
     }
 
@@ -845,8 +866,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     $dom.bind("change.validate", "input", function (e) {
       filteredList.validate();
     });
-    
-
   },
   filter: function() {
     var filteredList = this,
@@ -871,7 +890,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     filterData.filters = JSON.stringify(filterData.filters);
 
-    $.ajax({
+    return $.ajax({
       type: "POST",
       url: "/reports/ajax/mypartners/" + this.id,
       data: filterData,
@@ -989,9 +1008,13 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     return this;
   },
-  onSave: function() {
-    value = this.currentVal();
-    return value.length ? value : null;
+  onSave: function(key) {
+    var data = {},
+        value = this.currentVal();
+
+    steelToe(data).set(key || this.key, value);
+
+    return data;
   }
 });
 
@@ -1535,7 +1558,7 @@ function renderOverview(callback) {
     }
   }).complete(function() {
     if (typeof callback === "function") {
-      callback();
+      return callback;
     }
   });
 }
