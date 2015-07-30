@@ -1285,7 +1285,7 @@ function createReport(type) {
                                         new DateField({label: "Select Date", id: "date", required: true, defaultVal: {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}}),
                                         new StateField({label: "State", id: "state"}),
                                         new TextField({label: "City", id: "city"}),
-                                        new CheckList({label: "Contact Types", id: "contact_type", required: true, defaultVal: "all", choices: contactTypeChoices}),
+                                        new CheckList({label: "Communication Types", id: "contact_type", required: true, defaultVal: "all", choices: contactTypeChoices}),
                                         new TagField({label: "Tags", id: "tags__name", helpText: "Use commas for multiple tags."}),
                                         new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner", "contact"]}),
                                         new FilteredList({label: "Contacts", id: "contact", required: true, ignore: ["report_name", "contact"], dependencies: ["partner"]})]);

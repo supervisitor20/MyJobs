@@ -3,8 +3,8 @@
 {% load i18n %}
 
 {% block site-title %}
-    <title>PRM Contact Record {{ company.name }}</title>
-    <meta name="title" content="PRM Contact Record {{ company.name }}">
+    <title>PRM Communication Record {{ company.name }}</title>
+    <meta name="title" content="PRM Communication Record {{ company.name }}">
 {% endblock %}
 
 {% block content %}
@@ -44,7 +44,7 @@
             </div>
             {% endif %}
             <div class="tip-box" id="type">
-            <h5>Contact Type</h5>
+            <h5>Communication Type</h5>
                 <div class="tip-content">
                     {{ record.get_human_readable_contact_type }}
                 </div>
@@ -61,7 +61,7 @@
             </div>
             {% endif %}
             <div class="tip-box" id="time">
-            <h5>Date & Time of Contact</h5>
+            <h5>Date & Time of Communication</h5>
                 <div class="tip-content">
                     {{ record.date_time }}
                 </div>
