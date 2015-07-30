@@ -132,7 +132,7 @@ Report.prototype = {
       field = fields[i];
       if (!field.dom().length) {
         $renderAt.append(field.render());
-        if (typeof field.filter !== "undefined" && !field.filterAfter().length) {
+        if (typeof field.filter !== "undefined") {
           field.filter();
         }
         if (typeof field.bindEvents !== "undefined") {
@@ -806,19 +806,17 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         return "#" + e;
       }).join(", ");
 
-      $(".rpt-container").on("change", dependencies, function(e) {
+      $(".rpt-container").on("change", "#state", function(e) {
         var filteredLists = filteredList.filterAfter();
+        filteredLists.push(filteredList);
 
-        if (filteredLists.length) {
-          filteredLists.push(filteredList);
-          filteredLists.reduce(function(current, next) {
-            return current.done(function() {
-              return next.filter();
-            });
-          }, $().promise());
-        } else {
-          filteredList.filter();
-        }
+        console.log(filteredLists);
+
+        filteredLists.reduce(function(current, next) {
+          return current.done(function() {
+            return next.filter();
+          });
+        }, $().promise());
       });
     }
 
@@ -1295,7 +1293,7 @@ function createReport(type) {
                                       },
                                       state: 'contact.locations.state.icontains',
                                       city: 'contact.locations.city.icontains',
-                                      //tags: 'contactrecord.tags.in',
+                                      tags: 'contactrecord.tags.in',
                                     },
                                     values: ["pk", "name"],
                                     order_by: "name"
