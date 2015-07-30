@@ -701,18 +701,29 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
         // Last element is always going to be what is being searched for.
           keyword = inputs.pop(),
         // Initialize list of suggested tag names.
-          suggestions;
+          suggestions,
+          tagData = {
+            filters: {
+              name: {
+                icontains: keyword,
+              }
+            },
+            values: ["name"],
+            order_by: "name",
+            csrfmiddlewaretoken: read_cookie("csrftoken"),
+          };
+
+        tagData.filters[tagField.report.type] = {
+          isnull: false
+        };
+
+        tagData.filters = JSON.stringify(tagData.filters);
 
         $.ajax({
-          type: "GET",
+          type: "POST",
           url: "/reports/ajax/mypartners/tag",
           //TODO: New backend changes will fix this monstrocity
-          data: {
-            name: keyword,
-            contactrecord__isnull: false,
-            values: ["name"],
-            order_by: "name"
-          },
+          data: tagData,
           success: function (data) {
             suggestions = data.filter(function (d) {
               // Don't suggest things that are already selected.
@@ -757,8 +768,11 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
       }
     });
   },
-  onSave: function() {
-    return this.value.length ? this.value : null;
+  onSave: function(key) {
+    var data = {};
+    steelToe(data).set(key || this.value);
+
+    return data;
   }
 });
 
@@ -1277,6 +1291,12 @@ function createReport(type) {
                                         id: "city",
                                         key: "locations.city.icontains"
                                       }),
+                                  new TagField({
+                                    label: "Tags", 
+                                    id: "tags", 
+                                    key: "tags.name.icontains", 
+                                    helpText: "Use commas for multiple tags."
+                                  }),
                                   new FilteredList({
                                     label: "Partners", 
                                     id: "partner", 
@@ -1323,7 +1343,12 @@ function createReport(type) {
                                     label: "Source", 
                                     id: "data_source",
                                     key: "data_source.icontains"
-
+                                  }),
+                                  new TagField({
+                                    label: "Tags", 
+                                    id: "tags", 
+                                    key: "tags.name.icontains", 
+                                    helpText: "Use commas for multiple tags."
                                   })
                                 ]);
   },
