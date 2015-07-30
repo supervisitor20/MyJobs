@@ -14,6 +14,9 @@ from django.core import mail
 from django.http import Http404
 from django.test.client import RequestFactory 
 from django.utils.timezone import utc
+from myprofile.models import SecondaryEmail
+from myprofile.tests.factories import SecondaryEmailFactory
+from seo.models import SeoSite
 
 from tasks import PARTNER_LIBRARY_SOURCES
 
@@ -1042,10 +1045,43 @@ class EmailTests(MyPartnersTestCase):
         email = mail.outbox.pop()
         expected_str = "Contacts have been created for the following email " \
                        "addresses:"
-        self.assertEqual(email.from_email, 'My.jobs Partner Relationship Manager <prm@my.jobs>')
+        self.assertEqual(email.from_email,
+                         'My.jobs Partner Relationship Manager <prm@my.jobs>')
         self.assertEqual(email.to, [self.staff_user.email])
         self.assertTrue(expected_str in email.body)
         self.assert_contact_info_in_email(email)
+
+    def test_create_contact_record_with_secondary_email(self):
+        self.data['from'] = 'secondary@my.jobs'
+        self.data['to'] = self.contact.email
+
+        # Creating secondary emails is done through a view which immediately
+        # sends an email. As we're doing it directly, the middleware that
+        # sets settings.SITE doesn't get run.
+        settings.SITE = SeoSite.objects.get()
+        secondary = SecondaryEmailFactory(email='secondary@my.jobs',
+                                          user=self.staff_user)
+        # Re-empty mail.outbox after creating a secondary email
+        mail.outbox = []
+
+        response = self.client.post(reverse('process_email'), self.data)
+        self.assertEqual(response.status_code, 200)
+        # This request with an unverified email does not send an email response
+        # and does not create a ContactLogEntry.
+        self.assertEqual(len(mail.outbox), 0)
+        with self.assertRaises(ContactRecord.DoesNotExist):
+            ContactRecord.objects.get(contact_email=self.contact.email)
+
+        secondary.verified = True
+        secondary.save()
+        response = self.client.post(reverse('process_email'), self.data)
+        self.assertEqual(response.status_code, 200)
+        # Now that the email is verified, we see one email being sent and one
+        # ContactLogEntry being created.
+        self.assertEqual(len(mail.outbox), 1)
+        record = ContactRecord.objects.get(contact_email=self.contact.email)
+        ContactLogEntry.objects.get(object_id=record.pk,
+                                    action_flag=ADDITION)
 
     def test_partner_email_multiple_companies(self):
         company2 = CompanyFactory(name="Company 2", pk=22222)
@@ -1342,7 +1378,8 @@ class ContactLogEntryTests(MyPartnersTestCase):
         log = ContactLogEntry.objects.get()
 
         delta = json.loads(log.delta)
-        self.assertEqual(record.contact_email, delta['contact_email']['initial'])
+        self.assertEqual(record.contact_email,
+                         delta['contact_email']['initial'])
         self.assertEqual(data['contact_email'], delta['contact_email']['new'])
 
     def test_partner_saved_search_update(self):

@@ -1157,7 +1157,7 @@ def process_email(request):
     except ValueError:
         pass
 
-    admin_user = User.objects.get_email_owner(admin_email)
+    admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
     if admin_user is None:
         return HttpResponse(status=200)
     if admin_user.company_set.count() > 1:
