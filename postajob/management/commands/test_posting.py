@@ -165,6 +165,14 @@ class JobPostingTests(TestCase):
         cls.CREATION_ORDER.append(cls.product_order)
 
     @classmethod
+    def remove_objects(cls):
+        """
+        Delete objects created in setup_objects.
+        """
+        for obj in cls.CREATION_ORDER[::-1]:
+            obj.delete()
+
+    @classmethod
     def login(cls, user):
         """
         Logs the provided user in using our web driver.
@@ -236,7 +244,8 @@ class JobPostingTests(TestCase):
             self.browser.find_element_by_xpath(
                 '//option[@value={site_pk}]'.format(
                     site_pk=self.seo_site.pk)).click()
-            self.browser.find_element_by_id('id_site_packages_add_link').click()
+            self.browser.find_element_by_id(
+                'id_site_packages_add_link').click()
 
         self.browser.find_element_by_id('profile-save').click()
         self.wait_on_load()
@@ -273,7 +282,14 @@ class JobPostingTests(TestCase):
         super(JobPostingTests, cls).setUpClass()
 
         with patch_settings(**cls.OVERRIDES):
-            cls.setup_objects()
+            try:
+                cls.setup_objects()
+            except:
+                # If anything happens during setup (someone cancels the
+                # process, db issues, whatever), we need to roll back. Delete
+                # everything we created and reraise the exception.
+                cls.remove_objects()
+                raise
 
     @classmethod
     def tearDownClass(cls):
@@ -282,8 +298,7 @@ class JobPostingTests(TestCase):
         """
         cls.browser.quit()
         with patch_settings(**cls.OVERRIDES):
-            for obj in cls.CREATION_ORDER[::-1]:
-                obj.delete()
+            cls.remove_objects()
         super(JobPostingTests, cls).tearDownClass()
 
     def setUp(self):
@@ -325,9 +340,10 @@ class JobPostingTests(TestCase):
                                      (self.user, False)]:
                 self.login(user)
                 self.get(reverse('purchasedmicrosite_admin_overview'))
-                for selector, expected in [('product-listing', 'Product Listing'),
-                                           ('our-postings', 'Posted Jobs'),
-                                           ('posting-admin', 'Partner Microsite')]:
+                for selector, expected in [
+                        ('product-listing', 'Product Listing'),
+                        ('our-postings', 'Posted Jobs'),
+                        ('posting-admin', 'Partner Microsite')]:
                     try:
                         element = self.browser.find_element_by_id(selector)
                     except NoSuchElementException:
