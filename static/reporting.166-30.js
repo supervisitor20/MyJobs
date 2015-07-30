@@ -132,7 +132,8 @@ Report.prototype = {
       field = fields[i];
       if (!field.dom().length) {
         $renderAt.append(field.render());
-        if (typeof field.filter !== "undefined") {
+
+        if (field instanceof FilteredList && !field.filterAfter().length) {
           field.filter();
         }
         if (typeof field.bindEvents !== "undefined") {
@@ -806,17 +807,14 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         return "#" + e;
       }).join(", ");
 
-      $(".rpt-container").on("change", "#state", function(e) {
-        var filteredLists = filteredList.filterAfter();
-        filteredLists.push(filteredList);
+      $(".rpt-container").on("change", dependencies, function(e) {
+        filteredList.filter();
+      });
 
-        console.log(filteredLists);
-
-        filteredLists.reduce(function(current, next) {
-          return current.done(function() {
-            return next.filter();
-          });
-        }, $().promise());
+      $dom.on("filtered", function (e, field) {
+        if (Object.keys(filteredList.dependencies).indexOf(field) !== -1) {
+          filteredList.filter();
+        }
       });
     }
 
@@ -838,10 +836,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
       $choices.prop("checked", $(this).is(":checked"));
       $($choices[$choices.length - 1]).change();
-    });
 
-    $header.on("click", "input", function (e) {
-      e.stopPropagation();
     });
 
     $dom.bind("change", "input", function () {
@@ -898,42 +893,43 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         if (!$('#' + filteredList.id + '-header > .fa-spinner').length) {
           $('#' + filteredList.id + '-header').append('<i style="margin-left: 5px;" class="fa fa-spinner fa-pulse"></i>');
         }
+
         filteredList.active++;
       },
-      success: function (data) {
-        $recordCount = $('#' + filteredList.id + '-header .record-count');
-        $listBody = $('.list-body#' + filteredList.id);
-        $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
-        $listBody.append('<ul><li>' + data.map(function (element) {
-          $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
-            if (filteredList.defaultVal && !filteredList.hasRan) {
-              if (filteredList.id === "contact") {
-                return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
-              } else {
-                return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
-              }
+    }).done(function(data) {
+      $recordCount = $('#' + filteredList.id + '-header .record-count');
+      $listBody = $('.list-body#' + filteredList.id);
+      $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
+      $listBody.append('<ul><li>' + data.map(function (element) {
+        $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
+          if (filteredList.defaultVal && !filteredList.hasRan) {
+            if (filteredList.id === "contact") {
+              return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
+            } else {
+              return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
             }
-            return "checked";
-          })() + '/>');
-          return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
-            (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
-        }).join("</li><li>") + '</li></ul>');
+          }
+          return "checked";
+        })() + '/>');
+        return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
+          (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
+      }).join("</li><li>") + '</li></ul>');
 
-        var value = filteredList.currentVal();
-        if (!filteredList.hasRan) {
-          $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
-            return $(c).is(":checked");
-          }));
-        } else {
-          $('#' + filteredList.id + '-header input').prop("checked", true);
-        }
-        $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
+      var value = filteredList.currentVal();
+      if (!filteredList.hasRan) {
+        $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
+          return $(c).is(":checked");
+        }));
+      } else {
+        $('#' + filteredList.id + '-header input').prop("checked", true);
       }
-    }).done(function () {
+      $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
+
       filteredList.active--;
       if (!filteredList.active) {
         $('#' + filteredList.id + '-header > .fa-spinner').remove();
         $('#' + filteredList.id + '-header > span').show();
+        $.event.trigger("filtered", [filteredList.id]);
       }
       filteredList.hasRan = true;
     });
