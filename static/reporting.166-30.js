@@ -1,4 +1,4 @@
-window.onpopstate = function(event) {
+window.onpopstaee = function(event) {
   var state = event.state,
       $sidebar = $(".sidebar"),
       historyNew,
@@ -771,7 +771,7 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
   onSave: function(key) {
     var data = {};
     if (this.value.length) {
-      steelToe(data).set(key || this.key, this.value);
+      steelToe(data).set(key || this.key, this.currentVal());
     }
 
     return data;
@@ -823,7 +823,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         return "#" + e;
       }).join(", ");
 
-      $(".rpt-container").on("change", dependencies, function(e) {
+      $(dependencies).on("change autocompleteclose", function(e) {
         filteredList.filter();
       });
 
@@ -1442,7 +1442,6 @@ function createReport(type) {
                                           values: ["pk", "name"],
                                           order_by: "name"
                                         }),
-                                        /*
                                         new FilteredList({
                                           label: "Contacts", 
                                           id: "contact", 
@@ -1462,7 +1461,6 @@ function createReport(type) {
                                           values: ["pk", "name", "email"],
                                           order_by: "name"
                                         })
-                                        */
                                       ]);
   }
 };
