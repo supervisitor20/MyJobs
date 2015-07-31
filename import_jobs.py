@@ -133,7 +133,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
     # Get current worker process id, to prevent race conditions.
     try:
         p = current_process()
-        process_id =  p.index
+        process_id = p.index
     except AttributeError:
         process_id = 0
 
