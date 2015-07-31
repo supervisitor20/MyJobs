@@ -268,7 +268,7 @@ def process_batch_events():
     period of time.
     """
     now = date.today()
-    EmailLog.objects.filter(received__lte=now-timedelta(days=60),
+    EmailLog.objects.filter(received__lte=now - timedelta(days=60),
                             processed=True).delete()
 
     emails = set(EmailLog.objects.values_list('email', flat=True).filter(
@@ -281,8 +281,8 @@ def process_batch_events():
     # These users have not responded in a month. Send them an email if they
     # own any saved searches
     inactive = User.objects.select_related('savedsearch_set')
-    inactive = inactive.filter(Q(last_response=now-timedelta(days=172)) |
-                               Q(last_response=now-timedelta(days=179)))
+    inactive = inactive.filter(Q(last_response=now - timedelta(days=172)) |
+                               Q(last_response=now - timedelta(days=179)))
 
     category = '{"category": "User Inactivity (%s)"}'
     for user in inactive:
