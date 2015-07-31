@@ -201,24 +201,17 @@ class ReportView(View):
         """
         company = get_company_or_404(request)
         name = request.POST.get('report_name', str(datetime.now()))
-        values = request.POST.get('values', None)
         params = request.POST.get('filters', None)
 
         records = get_model(app, model).objects.from_search(
             company, params)
 
-        if values:
-            if not hasattr(values, '__iter__'):
-                values = [values]
-
-            records = records.values(*values)
-
-        contents = serialize('json', records, values=values)
+        contents = serialize('json', records)
         results = ContentFile(contents)
         report, created = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
-            values=json.dumps(values), params=json.dumps(params))
+            params=json.dumps(params))
 
         report.results.save('%s-%s.json' % (name, report.pk), results)
 

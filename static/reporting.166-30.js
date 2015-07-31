@@ -1,4 +1,4 @@
-window.onpopstaee = function(event) {
+window.onpopstate = function(event) {
   var state = event.state,
       $sidebar = $(".sidebar"),
       historyNew,

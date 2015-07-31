@@ -85,6 +85,10 @@ class SearchParameterQuerySet(models.query.QuerySet):
             If the model has a `_parse_parameters` method, that is called
             before parsing remaining parameters.
         """
+
+        # default to an empty object
+        parameters = parameters or "{}"
+
         if company:
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
