@@ -770,7 +770,9 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
   },
   onSave: function(key) {
     var data = {};
-    steelToe(data).set(key || this.value);
+    if (this.value.length) {
+      steelToe(data).set(key || this.key, this.value);
+    }
 
     return data;
   }
@@ -1294,7 +1296,7 @@ function createReport(type) {
                                   new TagField({
                                     label: "Tags", 
                                     id: "tags", 
-                                    key: "tags.name.icontains", 
+                                    key: "tags.name.in", 
                                     helpText: "Use commas for multiple tags."
                                   }),
                                   new FilteredList({
@@ -1309,7 +1311,7 @@ function createReport(type) {
                                       },
                                       state: 'contact.locations.state.icontains',
                                       city: 'contact.locations.city.icontains',
-                                      tags: 'contactrecord.tags.in',
+                                      tags: 'contactrecord.tags.name.in',
                                     },
                                     values: ["pk", "name"],
                                     order_by: "name"
@@ -1435,11 +1437,12 @@ function createReport(type) {
                                             state: 'contact.locations.state.icontains',
                                             city: 'contact.locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',
-                                            tags: 'contactrecord.tags.in',
+                                            tags: 'contactrecord.tags.name.in',
                                           },
                                           values: ["pk", "name"],
                                           order_by: "name"
                                         }),
+                                        /*
                                         new FilteredList({
                                           label: "Contacts", 
                                           id: "contact", 
@@ -1453,12 +1456,13 @@ function createReport(type) {
                                             state: 'locations.state.icontains',
                                             city: 'locations.city.icontains',
                                             contact_type: 'contactrecord.contact_type.in',
-                                            tags: 'contactrecord.tags.in',
+                                            tags: 'contactrecord.tags.name.in',
                                             partner: 'partner.in'
                                           },
                                           values: ["pk", "name", "email"],
                                           order_by: "name"
                                         })
+                                        */
                                       ]);
   }
 };
