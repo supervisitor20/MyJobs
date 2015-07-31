@@ -2004,3 +2004,9 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+def blocks_admin(request):
+    data_dict = {}
+    return render_to_response('seo/admin.html', data_dict,
+                              context_instance=RequestContext(request))

@@ -90,6 +90,7 @@ urlpatterns += patterns('seo.views.search_views',
     url(r'^member-companies/(?P<alpha>[a-z])/$', 'company_listing',
         {'group': 'member'},
         name='member-companies'),
+    url(r'^blocks/admin$', 'blocks_admin', name='blocks_admin'),
 
     # job detail (aka job view)
     url(r'^(?P<location_slug>[\w-]+)/(?P<title_slug>[\w~-]+)/(?P<job_id>[0-9A-Fa-f]{1,32})/job/$',

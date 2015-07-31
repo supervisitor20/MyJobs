@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <title>Blocks Admin Prototype</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/jQuery/jquery-ui-1.9.2.css">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/bootstrap-3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/myblocks/css/blocks_admin.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>MyBlocks Admin</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="page--type">Page Type</label>
+                        <select id="page--type" class="form-control">
+                            <option value>----------</option>
+                            <option value="404">404</option>
+                            <option value="homepage">Homepage</option>
+                            <option value="jobDetail">Job Detail</option>
+                            <option value="jobSearch">Job Search</option>
+                            <option value="login">Login</option>
+                            <option value="noResultsFound">No Results Found</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="page--name">Name</label>
+                        <input id="page--name" class="form-control" type="text"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="page--head">Head</label>
+                        <textarea id="page--head" class="form-control" rows="5"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <a id="add-row" class="btn btn-default" role="button">Add Row</a>
+                    <a id="add-block" class="btn btn-default" role="button">Add Block</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    Container Width: <span id="container--width"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="blocks__container"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>JSON Output</h2>
+                    <div class="code"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">test</div>
+                <div class="col-md-6">test</div>
+            </div>
+        </div>
+        <div id="add-block-modal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title">
+                            Block Options
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label" for="modal--type">Type</label>
+                                        <select class="form-control" id="modal--type">
+                                            <option value="">-------</option>
+                                            <option value="applylink">Apply Link</option>
+                                            <option value="breadbox">Breadbox</option>
+                                            <option value="content">Content</option>
+                                            <option value="facetblurb">Facet Blurb</option>
+                                            <option value="jobdetail">Job Detail</option>
+                                            <option value="jobdetailbreadbox">Job Detail Breadbox</option>
+                                            <option value="jobdetailheader">Job Detail Header</option>
+                                            <option value="login">Login</option>
+                                            <option value="morebutton">More Button</option>
+                                            <option value="registration">Registration</option>
+                                            <option value="savedsearchwidget">Saved Search Widget</option>
+                                            <option value="searchbox">Search Box</option>
+                                            <option value="searchfilter">Search Filter</option>
+                                            <option value="searchresult">Search Result</option>
+                                            <option value="searchresultheader">Search Result Header</option>
+                                            <option value="share">Share</option>
+                                            <option value="veteransearch">Veteran Search</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="modal--name">Name</label>
+                                        <input id="modal--name" class="form-control" type="text" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="modal--offset">Offset</label>
+                                        <input id="modal--offset" class="form-control" type="text"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="modal--span">Span</label>
+                                        <input id="modal--span" class="form-control" type="range" min="1" max="12" value="1"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="modal--head">Head</label>
+                                        <textarea id="modal--head" class="form-control" rows="10"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button id="submit-block" type="button" class="btn btn-primary">Add Block</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="{{ STATIC_URL }}jQuery/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}jQuery/jquery-ui-1.9.2.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}bootstrap-3.3.5/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}myblocks/js/blocks_admin.js"></script>
+    </body>
+</html>

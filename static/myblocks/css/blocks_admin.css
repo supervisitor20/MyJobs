@@ -1,0 +1,55 @@
+.blocks__container {
+    border: 2px solid #aaa;
+    min-height: 300px;
+}
+
+.blocks--row {
+    border: 1px solid #000;
+    box-sizing: border-box;
+    min-height: 77px;
+}
+
+.blocks--row + .blocks--row {
+    border-top: 0;
+}
+
+.blocks__block {
+    border: 1px dashed #aaa;
+    width: 30%;
+    display: inline-block;
+    padding: 3px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.blocks__block--drag {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: 3px solid transparent;
+}
+
+.blocks__block--wrapper {
+    position: relative;
+    text-align: center;
+    height: 100%;
+}
+
+.code {
+    background-color: #ddd;
+    color: #000;
+    padding: 5px;
+    font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace;
+    min-height: 30px;
+}
+
+.ui-draggable:hover {
+    cursor: move;
+}
+
+.sortable-placeholder {
+    background-color: #ddd;
+    display: inline-block;
+}
