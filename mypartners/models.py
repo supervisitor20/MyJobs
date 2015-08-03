@@ -70,30 +70,28 @@ class SearchParameterQuerySet(models.query.QuerySet):
     """
 
     # TODO: Come up with a better name for this method
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         """
-        Intelligently filter based on query parameters.
+        Intelligently filter based on query .
 
         Inputs:
             :company: The company to restrict results to
-            :parameters: A dict of field: term pairs where field is a field of
+            :filters: A dict of field: term pairs where field is a field of
                          the `ContactRecord` model and term is search term
                          you'd like to filter against.
 
                          For `datetime`, pass `start_date` and/or `end_date`
                          instead.
-            If the model has a `_parse_parameters` method, that is called
-            before parsing remaining parameters.
         """
 
         # default to an empty object
-        parameters = parameters or "{}"
+        filters = filters or "{}"
 
         if company:
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
 
-        query = to_query(json.loads(parameters))
+        query = to_query(json.loads(filters))
 
         if hasattr(self.model, 'approval_status'):
             query.update({'approval_status__code__iexact': Status.APPROVED})
@@ -109,9 +107,9 @@ class SearchParameterManager(models.Manager):
     def get_query_set(self):
         return SearchParameterQuerySet(self.model, using=self._db)
 
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         return self.get_query_set().from_search(
-            company, parameters)
+            company, filters)
 
     def sort_by(self, *fields):
         return self.get_query_set().sort_by(*fields)

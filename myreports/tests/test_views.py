@@ -109,11 +109,11 @@ class TestViewRecords(MyReportsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
 
-    def test_filtering_on_partner(self):
-        """Test the ability to filter by partner."""
+    def test_filtering_on_model(self):
+        """Test the ability to filter on a model's field's."""
 
         # we already have one because of self.partner
-        PartnerFactory.create_batch(9, name="Test Partner", owner=self.company)
+        PartnerFactory.create_batch(9, name='Test Partner', owner=self.company)
 
         self.client.path += '/partner'
         filters = json.dumps({
@@ -127,6 +127,36 @@ class TestViewRecords(MyReportsTestCase):
         # ContactRecordFactory creates 10 partners in setUp
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
+
+    def test_filtering_on_foreign_key(self):
+        """Test the ability to filter on a model's foreign key fields."""
+
+        PartnerFactory.create_batch(5, name='Test Partner', owner=self.company)
+
+        ContactRecordFactory.create_batch(
+            5, partner=self.partner, contact__name='Jane Doe')
+
+
+        self.client.path += '/partner'
+        filters = json.dumps({
+            'name': {
+                'icontains': 'Test Partner',
+            },
+            'contactrecord': {
+                'contact': {
+                    'name': {
+                        'icontains': 'Jane Doe'
+                    }
+                }
+            }
+        })
+        response = self.client.post(data={'filters': filters})
+        output = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        # We look for distinct records
+        self.assertEqual(len(output), 1)
+
 
     def test_list_query_params(self):
         """Test that query parameters that are lists are parsed correctly."""
