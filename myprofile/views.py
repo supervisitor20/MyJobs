@@ -108,7 +108,7 @@ def handle_form(request):
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()
-        
+
         model_name = model._meta.verbose_name.lower()
         if form_instance.is_valid():
             instance = form_instance.save()
