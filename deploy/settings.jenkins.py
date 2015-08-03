@@ -11,31 +11,31 @@ DATABASES = {
     'default': {
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
-        'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'USER': 'root',
+        'PASSWORD': 'P@ssW0rd',
+        'HOST': '',
         'PORT': '3306',
     },
     'qc-redirect': {
         'NAME': 'qcredirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
-        'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'USER': 'root',
+        'PASSWORD': 'P@ssW0rd',
+        'HOST': '',
         'PORT': '3306',
     },
     'archive': {
         'NAME': 'qcredirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
-        'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'USER': 'root',
+        'PASSWORD': 'P@ssW0rd',
+        'HOST': '',
         'PORT': '3306',
     },
 }
 SOLR = {
-    'all': 'http://127.0.0.1:8983/solr/myjobs_test/',
-    'current': 'http://127.0.0.1:8983/solr/myjobs_test_current/',
+    'all': 'http://127.0.0.1:8983/solr/myjobs/',
+    'current': 'http://127.0.0.1:8983/solr/myjobs/',
 }
 CACHES = {
     'default': {
@@ -44,7 +44,9 @@ CACHES = {
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+)
 JENKINS_TEST_RUNNER = 'silent_testrunner.SilentTestRunner'
 TEST_SOLR_INSTANCE = SOLR
 CELERY_ALWAYS_EAGER = True
@@ -73,3 +75,29 @@ HAYSTACK_CONNECTIONS = {
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
 )
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': "[%(asctime)s] %(levelname)s "
+                      "[%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['null'],
+            'propagate': True,
+            'level': 'WARN',
+        }
+    }
+}
