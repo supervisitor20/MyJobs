@@ -98,4 +98,4 @@ class LocationFactory(factory.django.DjangoModelFactory):
     address_line_one = factory.Sequence(lambda n: "%d Fake St" % n)
     city = fuzzy.FuzzyText()
     state = fuzzy.FuzzyText(length=2, chars=string.ascii_uppercase)
-    postal_approval_status = fuzzy.FuzzyInteger(10000, 99999)
+    postal_code = fuzzy.FuzzyInteger(10000, 99999)
