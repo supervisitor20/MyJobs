@@ -125,27 +125,3 @@ class TestHelpers(MyReportsTestCase):
 
             # ensure contact type was converted
             self.assertTrue(record['contact_type'] == 'Email')
-
-    def test_parse_params(self):
-        """Test that params are properly parsed from a `QueryDict`."""
-
-        factory = RequestFactory()
-        request = factory.post(
-            '/reports/view/mypartners/contact',
-            data=dict(
-                baz=u'',
-                biz=[u'bez', u''],
-                foo=['bar', 'baz'],
-                buz=['biz'],
-                quz='fizz',
-                quox='false'
-            ))
-
-        params = helpers.parse_params(request.POST)
-
-        # Singleton lists should be flattened into single elements, lists
-        # should be converted to tuples, and already flat elements should
-        # remain untouched.
-        self.assertEqual(params, dict(
-            biz=u'bez', foo=('bar', 'baz'), buz='biz', quz='fizz',
-            quox=False))

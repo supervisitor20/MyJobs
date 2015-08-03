@@ -59,33 +59,6 @@ def humanize(records):
     return records
 
 
-def parse_params(querydict):
-    """
-    Parses a `QueryDict` into a regular dict, discarding falsey values and
-    flattening singleton lists.
-
-    Inputs:
-        :querydict: The `QueryDict` to be pasred (eg. request.GET).
-
-    Outputs:
-        A dictionary of non-empty parameters.
-    """
-    # get rid of empty params and flatten single-item lists
-    params = {}
-    bools = {'true': True, 'false': False}
-    for key in querydict.keys():
-        value = filter(bool, querydict.getlist(key))
-        if len(value) == 1:
-            params[key] = value[0]
-        else:
-            params[key] = tuple(value)
-
-    params = {key: bools.get(value, value)
-              for key, value in params.items() if value}
-
-    return params
-
-
 # TODO:
 #   * do something other than isinstance checks (duck typing anyone?)
 def serialize(fmt, data, values=None, order_by=None):

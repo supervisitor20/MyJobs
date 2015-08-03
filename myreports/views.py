@@ -10,10 +10,10 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from myreports.helpers import humanize, parse_params, serialize
+from myreports.helpers import humanize, serialize
 from myreports.models import Report
 from postajob import location_data
-from universal.helpers import get_company_or_404, to_json
+from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
 
@@ -78,19 +78,17 @@ def view_records(request, app="mypartners", model="contactrecord"):
         :model: Model to query.
 
     Query String Parameters:
+        :filters: A JSON string representing th exact query to be run.
         :values: The fields to include in the output.
         :order_by: The field to order the results by. Prefix with a '-' to
                    indiciate descending order.
-
 
     Output:
        A JSON response containing the records queried for.
     """
     if request.is_ajax() and request.method == 'POST':
         company = get_company_or_404(request)
-
         filters = request.POST.get("filters")
-        # remove non-query related params
         values = request.POST.getlist("values")
         order_by = request.POST.get("order_by", None)
 
@@ -194,6 +192,7 @@ class ReportView(View):
             :csrfmiddlewaretoken: Used to prevent Cross Site Request Forgery.
             :report_name: What to name the report. Spaces are converted to
                           underscores.
+            :filters: A JSON string representing th exact query to be run.
             :values: Fields to include in report output.
 
         Outputs:
@@ -201,17 +200,17 @@ class ReportView(View):
         """
         company = get_company_or_404(request)
         name = request.POST.get('report_name', str(datetime.now()))
-        params = request.POST.get('filters', None)
+        filters = request.POST.get('filters', None)
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
         contents = serialize('json', records)
         results = ContentFile(contents)
         report, created = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
-            params=json.dumps(params))
+            filters=json.dumps(filters))
 
         report.results.save('%s-%s.json' % (name, report.pk), results)
 

@@ -245,7 +245,7 @@ def merged_dict(first, second):
     return result
 
 
-def to_json(data, sep="__"):
+def query_to_json(data, sep="__"):
     """
     Expands a django query dictionary into one suitable for json encoding.
     """
@@ -257,14 +257,15 @@ def to_json(data, sep="__"):
     return results
 
 
-def to_query(data, sep="__", parent=""):
+def json_to_query(data, sep="__", parent=""):
     """Collapse a dict into one suitable for django queries."""
 
     results = {}
 
     for key, value in data.items():
         if isinstance(value, dict):
-            results.update(to_query(value, sep=sep, parent=parent + key + sep))
+            results.update(
+                json_to_query(value, sep=sep, parent=parent + key + sep))
         else:
             results[parent + key] = value
 

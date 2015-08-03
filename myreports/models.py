@@ -29,8 +29,8 @@ class Report(models.Model):
     model = models.CharField(default='contactrecord', max_length=50)
     # included columns and sort order
     values = models.CharField(max_length=500, default='[]')
-    # json encoded string of the params used to filter
-    params = models.TextField()
+    # json encoded string of the filters used to filter
+    filters = models.TextField(default="{}")
     results = models.FileField(upload_to='reports')
 
     company_ref = 'owner'
@@ -58,8 +58,8 @@ class Report(models.Model):
     @property
     def queryset(self):
         model = get_model(self.app, self.model)
-        params = json.loads(self.params)
-        return model.objects.from_search(self.owner, params)
+        filters = json.loads(self.filters)
+        return model.objects.from_search(self.owner, filters)
 
     def __unicode__(self):
         return self.name

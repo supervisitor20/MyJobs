@@ -15,8 +15,7 @@ from django.dispatch import receiver
 
 from myjobs.models import User
 from postajob.location_data import states
-from states import synonyms
-from universal.helpers import to_query
+from universal.helpers import json_to_query
 
 
 CONTACT_TYPE_CHOICES = (('email', 'Email'),
@@ -91,7 +90,7 @@ class SearchParameterQuerySet(models.query.QuerySet):
             self = self.filter(**{
                 getattr(self.model, 'company_ref', 'company'): company})
 
-        query = to_query(json.loads(filters))
+        query = json_to_query(json.loads(filters))
 
         if hasattr(self.model, 'approval_status'):
             query.update({'approval_status__code__iexact': Status.APPROVED})
