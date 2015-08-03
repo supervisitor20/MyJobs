@@ -6,8 +6,8 @@
 {% localtime on %}
 <html>
 <head>
-    <title>Contact Records - {{ company.name }}</title>
-    <meta name="title" content="Contact Records - {{ company.name }}">
+    <title>Communication Records - {{ company.name }}</title>
+    <meta name="title" content="Communication Records - {{ company.name }}">
 
     <style>
         .content {
@@ -34,7 +34,7 @@
 </head>
 <body>
     <div class="content">
-        <h1>Contact Records for {{ partner.name }}</h1>
+        <h1>Communication Records for {{ partner.name }}</h1>
         {% for record in records %}
             <table class="printer-friendly-table">
                 {% for field in fields %}
