@@ -13,6 +13,7 @@ from django.core.urlresolvers import reverse
 from django.core import mail
 from django.http import Http404
 from django.test.client import RequestFactory 
+from django.template import Context, Template
 from django.utils.timezone import utc
 from myprofile.models import SecondaryEmail
 from myprofile.tests.factories import SecondaryEmailFactory
@@ -313,13 +314,8 @@ class PartnerOverviewTests(MyPartnersTestCase):
 
         for row in container('div', class_="product-card"):
             title = "Test Subject  - example-contact"
-            today = date.today()
-            # native date time doesn't have AP format so we fake it
-            month = today.strftime('%B')
-            if len(month) == 3 and month != 'May':
-                month += "."
-            sub_title = "%s %s, %s" % (month, today.day,
-                                       today.year)
+            context = Context({'date': date.today()})
+            sub_title = Template("{{ date }}").render(context)
             self.assertIn(title,
                           row('div', class_="big-title")[0].get_text().strip())
             self.assertIn(sub_title,
