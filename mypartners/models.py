@@ -75,12 +75,30 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
         Inputs:
             :company: The company to restrict results to
+            :filters: A JSON string which is an object to be passed to
+                      filter().                             
             :filters: A dict of field: term pairs where field is a field of
                          the `ContactRecord` model and term is search term
                          you'd like to filter against.
 
                          For `datetime`, pass `start_date` and/or `end_date`
                          instead.
+
+        Example:
+            If you want to filter partners where the related contact record's
+            date time is before a certain date:
+                Partner.objects.from_search(filters=json.dumps({
+                    'contactrecord': {
+                        'date_time': {
+                            'lte': '2015-08-03 00:00:00.0'
+                        }
+                    }
+                })
+
+            The above is equivalent to:
+                Partner.objects.filter(
+                    contactrecord__date_time__lte='2015-08-03 00:00:00.0')
+
         """
 
         # default to an empty object
@@ -98,6 +116,7 @@ class SearchParameterQuerySet(models.query.QuerySet):
         self = self.filter(**query).distinct()
 
         return self
+
 
 class SearchParameterManager(models.Manager):
     def __init__(self, *args, **kwargs):
