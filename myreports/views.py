@@ -207,7 +207,7 @@ class ReportView(View):
 
         contents = serialize('json', records)
         results = ContentFile(contents)
-        report, created = Report.objects.get_or_create(
+        report, _ = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
             filters=json.dumps(filters))
@@ -220,8 +220,8 @@ class ReportView(View):
 @has_access('prm')
 def regenerate(request):
     """
-    Regenerates a report. 
-    
+    Regenerates a report.
+
     Useful if the report json file is no longer available on disk. If called
     and the report is already on disk, `Report.regenerate` does nothing.
 
