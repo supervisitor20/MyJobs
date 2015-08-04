@@ -378,7 +378,6 @@ class TestRegenerate(MyReportsTestCase):
         # delete physical file and ensure that json reflects the missing link
         os.remove(report.results.file.name)
         report = Report.objects.get(pk=report.pk)
-        self.assertFalse(report.results)
         self.assertEqual(report.json, u'{}')
         self.assertEqual(report.python, {})
     
