@@ -307,9 +307,9 @@ function fill_piehole(totalrecs, size){
         piediv = isIE8() ? doughnut.children(":first") : doughnut.find('div[dir="ltr"]');
 
     if(size === 'big'){
-        piediv.prepend('<div class="piehole"><div class="piehole-big">'+String(totalrecs)+'</div><div class="piehole-topic">Contact Records</div><div class="piehole-filter"><a class="btn primary" id="reports-view-all">View All</a></div></div>');
+        piediv.prepend('<div class="piehole"><div class="piehole-big">'+String(totalrecs)+'</div><div class="piehole-topic">Communication Records</div><div class="piehole-filter"><a class="btn primary" id="reports-view-all">View All</a></div></div>');
     } else {
-        piediv.prepend('<div class="piehole"><div class="piehole-big">'+String(totalrecs)+'</div><div class="piehole-topic">Contact Records</div><div class="piehole-filter">30 Days</div></div>');
+        piediv.prepend('<div class="piehole"><div class="piehole-big">'+String(totalrecs)+'</div><div class="piehole-topic">Communication Records</div><div class="piehole-filter">30 Days</div></div>');
     }
 }
 

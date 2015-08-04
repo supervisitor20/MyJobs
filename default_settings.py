@@ -538,7 +538,7 @@ EMAIL_FORMATS = {
     },
     CREATE_CONTACT_RECORD : {
         'address': PRM_EMAIL,
-        'subject': u'Partner Relationship Manager Contact Records'
+        'subject': u'Partner Relationship Manager Communication Records'
     },
     FORGOTTEN_PASSWORD: {
         'address': u'accounts@{domain}',

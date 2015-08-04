@@ -64,7 +64,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertNotEqual(email.body.find(search.url),
                             -1,
                             "Search url was not found in email body")
-        self.assertTrue("Your resume is %s%% complete" %
+        self.assertTrue("Your profile is %s%% complete" %
                         self.user.profile_completion in email.body)
 
     def test_send_search_digest_email(self):
@@ -400,7 +400,7 @@ class PartnerSavedSearchTests(MyJobsBase):
         self.assertEqual(partner_record.notes, search_record.notes)
         self.assertEqual(partner_email.body, search_email.body)
         self.assertEqual(partner_record.notes, partner_email.body)
-        self.assertFalse("Your resume is %s%% complete" %
+        self.assertFalse("Your profile is %s%% complete" %
                          self.user.profile_completion in partner_email.body)
         logs = SavedSearchLog.objects.all()[1:]
         for log in logs:
@@ -422,7 +422,7 @@ class PartnerSavedSearchTests(MyJobsBase):
         self.assertEqual(SavedSearchLog.objects.count(), 2)
         self.assertEqual(ContactRecord.objects.count(), 2)
         email = mail.outbox[0]
-        self.assertFalse("Your resume is %s%% complete" %
+        self.assertFalse("Your profile is %s%% complete" %
                          self.user.profile_completion in email.body)
         log = SavedSearchLog.objects.last()
         self.assertTrue(log.was_sent)

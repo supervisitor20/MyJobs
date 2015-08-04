@@ -272,7 +272,8 @@ class TestDownloads(MyReportsTestCase):
         response = self.client.get(data={'id': report.id})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['columns'], {
-            'Partner': True, 'Contact Name': True, 'Contact Type': True})
+            'Partner': True, 'Contact Name': True,
+            'Contact Type': True})
 
     def test_blacklisted_columns(self):
         """Test that blacklisted columns aren't visible."""

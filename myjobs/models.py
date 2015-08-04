@@ -39,12 +39,13 @@ class CustomUserManager(BaseUserManager):
     ALLOWED_CHARS = string.printable.translate(
         None, """iloILO01!<>{}()[]|^"'`,.:;~-_/\\\t\n\r\x0b\x0c """)
 
-    def get_email_owner(self, email):
+    def get_email_owner(self, email, only_verified=False):
         """
         Tests if the specified email is already in use.
 
         Inputs:
         :email: String representation of email to be checked
+        :only_verified: Only check verified secondary addresses; Default: False
 
         Outputs:
         :user: User object if one exists; None otherwise
@@ -52,9 +53,12 @@ class CustomUserManager(BaseUserManager):
         try:
             user = self.get(email__iexact=email)
         except User.DoesNotExist:
+            prefix = 'profileunits__secondaryemail__%s'
+            search = {prefix % 'email__iexact': email}
+            if only_verified:
+                search[prefix % 'verified'] = True
             try:
-                user = self.get(
-                    profileunits__secondaryemail__email__iexact=email)
+                user = self.get(**search)
             except User.DoesNotExist:
                 user = None
         return user

@@ -291,7 +291,7 @@ class MergeUserTests(MyJobsBase):
         phrases = [
             'Your account has been successfully merged, and you are'\
             ' now logged in.',
-            "Add to your resume",
+            "Add to your profile",
             "Manage your saved searches",
             "Manage your account"]
         for phrase in phrases:
