@@ -60,6 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
+from bidict import bidict
 
 
 """
@@ -2022,3 +2023,70 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+def seo_states(request):
+    data_dict = {"states": sorted(states_with_sites.iteritems()),
+                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+
+    return render_to_response('seo/states.html', data_dict,
+                              context_instance=RequestContext(request))
+
+states_with_sites = bidict({
+    "Alabama": "alabama.jobs",
+    "Alaska": "alaska.jobs",
+    "Arizona": "arizona.jobs",
+    "Arkansas": "arkansas.jobs",
+    "California": "www.california.jobs",
+    "Colorado": "colorado.jobs",
+    "Connecticut": "connecticut.jobs",
+    "Delaware": "delaware.jobs",
+    "Florida": "florida.jobs",
+    "Georgia": "georgia.jobs",
+    "Hawaii": "hawaii.jobs",
+    "Idaho": "idaho.jobs",
+    "Illinois": "illinois.jobs",
+    "Indiana": "indiana.jobs",
+    "Iowa": "iowa.jobs",
+    "Kansas": "kansas.jobs",
+    "Louisiana": "louisiana.jobs",
+    "Maine": "maine.jobs",
+    "Maryland": "maryland.jobs",
+    "Massachusetts": "massachusetts.jobs",
+    "Michigan": "michigan.jobs",
+    "Minnesota": "minnesota.jobs",
+    "Mississippi": "mississippi.jobs",
+    "Missouri": "missouri.jobs",
+    "Montana": "montana.jobs",
+    "Nebraska": "nebraska.jobs",
+    "Nevada": "nevada.jobs",
+    "New Hampshire": "newhampshire.jobs",
+    "New Jersey": "newjersey.jobs",
+    "New Mexico": "newmexico.jobs",
+    "New York": "newyork.jobs",
+    "North Carolina": "northcarolina.jobs",
+    "North Dakota": "northdakota.jobs",
+    "Ohio": "ohio.jobs",
+    "Oklahoma": "oklahoma.jobs",
+    "Oregon": "oregon.jobs",
+    "Pennsylvania": "pennsylvania.jobs",
+    "Rhode Island": "rhodeisland.jobs",
+    "South Carolina": "southcarolina.jobs",
+    "South Dakota": "southdakota.jobs",
+    "Tennessee": "tennessee.jobs",
+    "Texas": "texas.jobs",
+    "Utah": "utah.jobs",
+    "Vermont": "vermont.jobs",
+    "Virginia": "virginia.jobs",
+    "Washington": "washington.jobs",
+    "West Virginia": "westvirginia.jobs",
+    "Wisconsin": "wisconsin.jobs",
+    "Wyoming": "wyoming.jobs"
+})
+
+other_locations_with_sites = bidict({
+    "District of Columbia": "districtofcolumbia.jobs",
+    "Guam": "guam.jobs",
+    "Puerto Rico": "puertorico.jobs",
+    "Virgin Islands": "usvirginislands.jobs"
+})
