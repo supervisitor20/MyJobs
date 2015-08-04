@@ -1,4 +1,4 @@
-import os
+from smtplib import SMTPAuthenticationError
 from celery.exceptions import RetryTaskError
 import datetime
 import re
@@ -26,6 +26,7 @@ from mysearches.tests.factories import (SavedSearchFactory,
 from mysearches.tests.test_helpers import return_file
 from registration.models import ActivationProfile, Invitation
 from tasks import send_search_digests
+from universal.helpers import send_email
 
 
 class SavedSearchModelsTests(MyJobsBase):
@@ -43,9 +44,6 @@ class SavedSearchModelsTests(MyJobsBase):
         except RuntimeError:
             # patcher was stopped in a test
             pass
-
-        if "TEST_FAIL_EMAIL" in os.environ:
-            del os.environ["TEST_FAIL_EMAIL"]
 
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -203,7 +201,8 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue(
             ContactRecord.objects.filter(tags__name=tag.name).exists())
 
-    def test_send_pss_fails(self):
+    @patch('mysearches.models.send_email')
+    def test_send_pss_fails(self, mock_send_email):
         """
         When a partner saved search fails to send, we should not imply
         that it was successful.
@@ -212,7 +211,10 @@ class SavedSearchModelsTests(MyJobsBase):
         partner = PartnerFactory(owner=company)
         search = PartnerSavedSearchFactory(user=self.user, created_by=self.user,
                                            provider=company, partner=partner)
-        os.environ["TEST_FAIL_EMAIL"] = "True"
+
+        e = SMTPAuthenticationError(418, 'Toot toot')
+        mock_send_email.side_effect = e
+
         self.assertEqual(ContactRecord.objects.count(), 0)
         self.assertEqual(SavedSearchLog.objects.count(), 0)
         search.send_email()

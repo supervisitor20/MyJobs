@@ -1,10 +1,7 @@
 from copy import copy
-import os
 import re
-from smtplib import SMTPAuthenticationError
 import urllib
 from urlparse import parse_qsl, urlparse, urlunparse
-from django.core import mail
 
 from django.db.models.loading import get_model
 from django.conf import settings
@@ -184,8 +181,6 @@ def add_pagination(request, object_list, per_page=None):
 
 def send_email(email_body, email_type=settings.GENERIC,
                recipients=None, site=None, headers=None, **kwargs):
-    if hasattr(mail, 'outbox') and os.environ.get("TEST_FAIL_EMAIL"):
-        raise SMTPAuthenticationError(418, "Toot toot")
     recipients = recipients or []
 
     company_name = 'My.jobs'

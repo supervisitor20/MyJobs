@@ -204,7 +204,7 @@ class SavedSearch(models.Model):
                                recipients=[self.email],
                                label=self.label.strip(),
                                headers=headers)
-                except Exception, e:
+                except Exception as e:
                     log_kwargs['was_sent'] = False
                     log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
                 else:
@@ -277,9 +277,9 @@ class SavedSearch(models.Model):
                     send_email(message, email_type=settings.SAVED_SEARCH_INITIAL,
                                recipients=[self.email], label=self.label.strip(),
                                headers=headers)
-                except Exception, e:
+                except Exception as e:
                     log_kwargs['was_sent'] = False
-                    log_kwargs['reason'] = e.message
+                    log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
         else:
             log_kwargs['reason'] = "User can't receive MyJobs email"
         SavedSearchLog.objects.create(**log_kwargs)
@@ -323,9 +323,9 @@ class SavedSearch(models.Model):
             send_email(message, email_type=settings.SAVED_SEARCH_UPDATED,
                        recipients=[self.email], label=self.label.strip(),
                        headers=headers)
-        except Exception, e:
+        except Exception as e:
             log_kwargs['was_sent'] = False
-            log_kwargs['reason'] = e.message
+            log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
         SavedSearchLog.objects.create(**log_kwargs)
 
     def create(self, *args, **kwargs):
@@ -488,14 +488,19 @@ class SavedSearchDigest(models.Model):
                 ','.join([str(search[0].pk) for search in saved_searches]),
                 log_kwargs['uuid'])
             headers = {'X-SMTPAPI': category}
-            send_email(message, email_type=settings.SAVED_SEARCH_DIGEST,
-                       recipients=[self.email], headers=headers)
-
-            sent_search_kwargs = {
-                'pk__in': [search[0].pk for search in saved_searches]
-            }
-            searches_sent = SavedSearch.objects.filter(**sent_search_kwargs)
-            searches_sent.update(last_sent=datetime.now())
+            try:
+                send_email(message, email_type=settings.SAVED_SEARCH_DIGEST,
+                           recipients=[self.email], headers=headers)
+            except Exception as e:
+                log_kwargs['was_sent'] = False
+                log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
+            else:
+                sent_search_kwargs = {
+                    'pk__in': [search[0].pk for search in saved_searches]
+                }
+                searches_sent = SavedSearch.objects.filter(
+                    **sent_search_kwargs)
+                searches_sent.update(last_sent=datetime.now())
         else:
             if not saved_searches:
                 log_kwargs['reason'] = ("No saved searches or saved searches "
