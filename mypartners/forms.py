@@ -345,7 +345,7 @@ class ContactRecordForm(NormalizedModelForm):
 
     class Meta:
         model = ContactRecord
-        form_name = "Contact Record"
+        form_name = "Communication Record"
         fields = ('contact_type', 'contact',
                   'contact_email', 'contact_phone', 'location',
                   'length', 'subject', 'date_time', 'job_id',

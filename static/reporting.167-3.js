@@ -1772,7 +1772,7 @@ function renderGraphs(report_id, callback) {
           });
 
           $pChart.append('<div class="piehole report"><div class="piehole-big">' + communications +
-                         '</div><div class="piehole-topic">Contact Records</div></div>');
+                         '</div><div class="piehole-topic">Communication Records</div></div>');
 
           for (bKey in bChartInfo) {
             if (bChartInfo.hasOwnProperty(bKey)) {
@@ -1829,7 +1829,7 @@ function renderGraphs(report_id, callback) {
               div = $('<div class="span4 panel top-contacts"></div>');
               div.append('<div class="name">' + name + '</div><div>' + email + '</div><div class="top-three-box-container">' +
                          '<div class="report-box small"><div class="big-num">' + commRecords +
-                         '</div><div class="reports-record-type">Contact Records</div></div>' +
+                         '</div><div class="reports-record-type">Communication Records</div></div>' +
                          '<div class="report-box small"><div class="big-num">' + cReferrals +
                          '</div><div class="reports-record-type">Referral Records</div></div></div>');
 
@@ -1844,7 +1844,7 @@ function renderGraphs(report_id, callback) {
             restRow = $('<div class="row"></div>').append(function() {
               var div = $('<div class="span12"></div>'),
                   table = $('<table class="table table-striped report-table"><thead><tr><th>Name</th>' +
-                            '<th>Email</th><th>Partner</th><th>Contact Records</th><th>Referral Records</th>' +
+                            '<th>Email</th><th>Partner</th><th>Communication Records</th><th>Referral Records</th>' +
                             '</tr></thead></table>'),
                   tbody = $('<tbody></tbody>');
               tbody.append(function() {
