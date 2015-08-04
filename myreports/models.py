@@ -45,7 +45,10 @@ class Report(models.Model):
             try:
                 self._results = self.results.read()
             except IOError:
-                self.results.delete()
+                # If we are here, the file can't be found, which is usually the
+                # case when testing locally and pointing to
+                # QC/Staging/Production.
+                pass
 
     @property
     def json(self):
