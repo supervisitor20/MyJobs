@@ -1,3 +1,4 @@
+import os
 from celery.exceptions import RetryTaskError
 import datetime
 import re
@@ -42,6 +43,9 @@ class SavedSearchModelsTests(MyJobsBase):
         except RuntimeError:
             # patcher was stopped in a test
             pass
+
+        if "TEST_FAIL_EMAIL" in os.environ:
+            del os.environ["TEST_FAIL_EMAIL"]
 
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -198,6 +202,25 @@ class SavedSearchModelsTests(MyJobsBase):
         search.send_email()
         self.assertTrue(
             ContactRecord.objects.filter(tags__name=tag.name).exists())
+
+    def test_send_pss_fails(self):
+        """
+        When a partner saved search fails to send, we should not imply
+        that it was successful.
+        """
+        company = CompanyFactory()
+        partner = PartnerFactory(owner=company)
+        search = PartnerSavedSearchFactory(user=self.user, created_by=self.user,
+                                           provider=company, partner=partner)
+        os.environ["TEST_FAIL_EMAIL"] = "True"
+        self.assertEqual(ContactRecord.objects.count(), 0)
+        self.assertEqual(SavedSearchLog.objects.count(), 0)
+        search.send_email()
+
+        self.assertEqual(ContactRecord.objects.count(), 0)
+        log = SavedSearchLog.objects.get()
+        self.assertFalse(log.was_sent)
+        self.assertEqual(log.reason, "Toot toot")
 
     def assert_modules_in_hrefs(self, modules):
         """

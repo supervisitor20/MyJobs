@@ -199,23 +199,30 @@ class SavedSearch(models.Model):
                 header = '{%s}' % (','.join(header), )
                 headers = {'X-SMTPAPI': header}
 
-                send_email(message, email_type=settings.SAVED_SEARCH,
-                           recipients=[self.email], label=self.label.strip(),
-                           headers=headers)
-
-                self.last_sent = datetime.now()
-                self.save()
-
-                if is_pss:
-                    record = self.partnersavedsearch.create_record(custom_msg)
-                    log_kwargs['contact_record'] = record
-                    log_kwargs['new_jobs'] = len([item for item in items
-                                                 if item.get('new')])
-                    log_kwargs['backfill_jobs'] = count - log_kwargs['new_jobs']
-
+                try:
+                    send_email(message, email_type=settings.SAVED_SEARCH,
+                               recipients=[self.email],
+                               label=self.label.strip(),
+                               headers=headers)
+                except Exception, e:
+                    log_kwargs['was_sent'] = False
+                    log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
                 else:
-                    log_kwargs['new_jobs'] = count
-                    log_kwargs['backfill_jobs'] = 0
+                    self.last_sent = datetime.now()
+                    self.save()
+
+                    if is_pss:
+                        record = self.partnersavedsearch.create_record(
+                            custom_msg)
+                        log_kwargs['contact_record'] = record
+                        log_kwargs['new_jobs'] = len([item for item in items
+                                                     if item.get('new')])
+                        log_kwargs['backfill_jobs'] = count - \
+                            log_kwargs['new_jobs']
+
+                    else:
+                        log_kwargs['new_jobs'] = count
+                        log_kwargs['backfill_jobs'] = 0
             else:
                 log_kwargs['reason'] = 'No jobs'
         else:
@@ -266,9 +273,13 @@ class SavedSearch(models.Model):
                                 self.pk,
                                 log_kwargs['uuid'])
                 headers = {'X-SMTPAPI': category}
-                send_email(message, email_type=settings.SAVED_SEARCH_INITIAL,
-                           recipients=[self.email], label=self.label.strip(),
-                           headers=headers)
+                try:
+                    send_email(message, email_type=settings.SAVED_SEARCH_INITIAL,
+                               recipients=[self.email], label=self.label.strip(),
+                               headers=headers)
+                except Exception, e:
+                    log_kwargs['was_sent'] = False
+                    log_kwargs['reason'] = e.message
         else:
             log_kwargs['reason'] = "User can't receive MyJobs email"
         SavedSearchLog.objects.create(**log_kwargs)
@@ -303,13 +314,19 @@ class SavedSearch(models.Model):
             self.content_type,
             self.pk)
         headers = {'X-SMTPAPI': category}
-        send_email(message, email_type=settings.SAVED_SEARCH_UPDATED,
-                   recipients=[self.email], label=self.label.strip(),
-                   headers=headers)
-        SavedSearchLog.objects.create(
-            reason='Jobs are not sent in saved search update emails',
-            was_sent=True, was_received=False, recipient=self.user,
-            recipient_email=self.email, new_jobs=0, backfill_jobs=0)
+        log_kwargs = {
+            'reason': 'Jobs are not sent in saved search update emails',
+            'was_sent': True, 'was_received': False, 'recipient': self.user,
+            'recipient_email': self.email, 'new_jobs': 0, 'backfill_jobs': 0
+        }
+        try:
+            send_email(message, email_type=settings.SAVED_SEARCH_UPDATED,
+                       recipients=[self.email], label=self.label.strip(),
+                       headers=headers)
+        except Exception, e:
+            log_kwargs['was_sent'] = False
+            log_kwargs['reason'] = e.message
+        SavedSearchLog.objects.create(**log_kwargs)
 
     def create(self, *args, **kwargs):
         """
