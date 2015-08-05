@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+
+logging.getLogger('south').setLevel(logging.INFO)
 
 
 class Migration(SchemaMigration):
