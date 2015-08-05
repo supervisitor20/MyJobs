@@ -951,7 +951,6 @@ def ajax_cities(request):
     sqs = DESearchQuerySet()
     state = request.GET.get('state', "[* TO *]")
     slab_state = state.lower().replace(" ", "")
-    import ipdb; ipdb.set_trace()
     results = sqs.narrow(u"state:({0})".format(state)
               ).facet('city_slab').facet_counts().get('fields').get('city_slab')
 

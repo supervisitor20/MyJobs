@@ -160,16 +160,18 @@ $(document).ready(function(){
     });
 
     $('#cityStatesList li').click(function(){
-        var search_state = $(this).text()
+        var search_state = $(this).text(),
+            $citiesList = $('[id=cityCitiesList]'),
+            $cityLoading = $('[id=cityLoading]');
         $('#cityStatesList li').removeClass('menu-item-active');
         $(this).addClass('menu-item-active');
-        $('#cityCitiesList').hide();
-        $('#cityLoading').show();
-        $('#cityCitiesList').load("/ajax/data/cities", "state="+search_state, function(){
-            $('#cityLoading').hide();
-            $('#cityCitiesList').show();            
+        $citiesList.hide();
+        $cityLoading.show();
+        $citiesList.load("/ajax/data/cities", "state="+search_state, function(){
+            $cityLoading.hide();
+            $citiesList.show();
         });
-        $('#cityCitiesDiv').scrollTop(0)
+        $('[id=cityCitiesDiv]').scrollTop(0);
     });
 
     $('.megaMenuTab').click(function(){
