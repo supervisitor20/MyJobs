@@ -544,6 +544,12 @@ input.mocSearchField {
     background: #a95051;
     cursor: pointer;
 }
+#cities ul {
+    margin-left: 5px;
+}
+#popularCityList {
+    margin-left: 0;
+}
 h1{
     font-family: helvetica, arial, sans-serif;
     font-weight: normal;

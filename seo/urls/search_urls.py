@@ -124,6 +124,7 @@ urlpatterns += patterns('seo.views.search_views',
 
     # SEO Pages
     url(r'^states/$', 'seo_states'),
+    url(r'^cities/$', 'seo_cities')
 )
 
 urlpatterns += patterns('',
