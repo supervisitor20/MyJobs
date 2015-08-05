@@ -299,17 +299,11 @@ def downloads(request):
                          if field not in blacklist[report.model]])
 
         values = json.loads(report.values) or fields
-        if 'contact_type' in values:
-            values[values.index('contact_type')] = 'communication_type'
+        for field_list in [values, fields]:
+            if 'contact_type' in field_list:
+                index = field_list.index('contact_type')
+                field_list[index] = 'communication_type'
         fields = values + [field for field in fields if field not in values]
-        if 'contact_type' in fields:
-            if 'communication_type' in fields:
-                # Appending fields to values will cause both of these to appear.
-                # This was not an issue before renaming contact_type to
-                # communication_type.
-                fields.remove('contact_type')
-            else:
-                fields[fields.index('contact_type')] = 'communication_type'
 
         column_choice = ''
         sort_order = ''
