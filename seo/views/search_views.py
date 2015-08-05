@@ -871,7 +871,6 @@ def member_carousel_data(request):
     :jsonp: JSONP formatted bit of JavaScript with company url, name, and image
 
     """
-
     if request.GET.get('microsite_only') == 'true':
         members = helpers.company_thumbnails(Company.objects.filter(
             member=True).exclude(canonical_microsite__isnull=True).exclude(
@@ -2094,4 +2093,18 @@ other_locations_with_sites = bidict({
 
 def seo_cities(request):
     return render_to_response('seo/cities.html', {},
+                              context_instance=RequestContext(request))
+
+
+def seo_companies(request):
+    # Grab all companies that are a member and has a canonical_microsite
+    companies = Company.objects.filter(member=True).exclude(
+        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
+
+    # Only send info that I care about
+    companies = [{"url": company.canonical_microsite, "name": company.name}
+                 for company in companies]
+
+    ctx = {"companies": companies}
+    return render_to_response('seo/companies.html', ctx,
                               context_instance=RequestContext(request))
