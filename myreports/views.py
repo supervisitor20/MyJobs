@@ -200,7 +200,7 @@ class ReportView(View):
         """
         company = get_company_or_404(request)
         name = request.POST.get('report_name', str(datetime.now()))
-        filters = request.POST.get('filters', None)
+        filters = request.POST.get('filters', "{}")
 
         records = get_model(app, model).objects.from_search(
             company, filters)
