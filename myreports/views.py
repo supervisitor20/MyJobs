@@ -210,7 +210,7 @@ class ReportView(View):
         report, _ = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
-            filters=json.dumps(filters))
+            filters=filters)
 
         report.results.save('%s-%s.json' % (name, report.pk), results)
 

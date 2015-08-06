@@ -156,24 +156,26 @@ Report.prototype = {
     })[0];
   },
   createCloneReport: function(json) {
-    var phony,
-        value,
-        date,
-        key;
+    var defaultVal,
+        formatDate = function(string) {
+          var date = string.split(" ")[0].split("-");
+          return [date[1], date[2], date[0]].join("/");
+        };
 
-    for (key in json) {
-      if (json.hasOwnProperty(key)) {
-        value = json[key];
-        if (key === "start_date" || key === "end_date") {
-          phony = {};
-          phony[key] = value;
-          date = this.findField("date");
-          $.extend(date.defaultVal, phony);
-        } else {
-          this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
-        }
+    this.fields.forEach(function(field) {
+      if (field instanceof DateField) {
+        defaultVal = {
+          start_date: formatDate(steelToe(json).get(field.key.start_date)),
+          end_date: formatDate(steelToe(json).get(field.key.end_date)),
+        };
+      } else {
+        defaultVal = steelToe(json).get(field.key);
       }
-    }
+
+      if (defaultVal) {
+        field.defaultVal = defaultVal;
+      }
+    });
   },
   bindEvents: function() {
     var report = this,
@@ -1116,31 +1118,34 @@ $(document).ready(function() {
 
   // Clone Report
   $subpage.on("click", ".fa-copy, .clone-report", function() {
-    var data = {id: $(this).parents("tr, .report-row").data("report"),
-                values: ['name', 'model', 'app', 'params']},
+    var data = {
+          filters: JSON.stringify({'pk': $(this).parents("tr, .report-row").data("report")}),
+          values: ['name', 'model', 'app', 'filters'],
+          csrfmiddlewaretoken: read_cookie("csrftoken")
+        },
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
         cloneReport = function() {
           $.ajax({
-            type: "GET",
+            type: "POST",
             url: url + "/reports/ajax/myreports/report",
             data: data,
             dataType: "json",
             success: function(data) {
               var reportData = data[0],
                   model = reportData.model,
-                  params = JSON.parse(reportData.params),
+                  filters = JSON.parse(reportData.filters),
                   report = createReport(model);
 
-              $.extend(params, {report_name: "Copy of " + reportData.name.replace(/_/g, " ")});
+              $.extend(filters, {report_name: "Copy of " + reportData.name.replace(/_/g, " ")});
 
-              report.createCloneReport(params);
+              report.createCloneReport(filters);
 
               $("#container").addClass("rpt-container");
               report.renderFields(".rpt-container", report.fields, true);
               report.unbindEvents().bindEvents();
 
               if (modernBrowser) {
-                history.pushState({'page': 'clone', 'inputs': params, 'type': report.type}, "Clone Report");
+                history.pushState({'page': 'clone', 'inputs': filters, 'type': report.type}, "Clone Report");
               }
             }
           });
@@ -1262,137 +1267,20 @@ function isIE() {
 
 function createReport(type) {
   var reports = {
-  contact: function() {
-    return new Report("contact", [new TextField({
-                                        isFilter: false,
-                                        label: "Report Name", 
-                                        id: "report_name", 
-                                        required: true, 
-                                        defaultVal: reportNameDateFormat(new Date())
-                                      }),
-                                  new DateField({
-                                        label: "Select Date", 
-                                        id: "date", 
-                                          key: {
-                                            start_date: "contactrecord.date_time.gte", 
-                                            end_date: "contactrecord.date_time.lte"
-                                          }, 
-                                        required: true, 
-                                        defaultVal: {
-                                          start_date: "01/01/2014", 
-                                          end_date: dateFieldFormat(yesterday)
-                                        }
-                                      }),
-                                  new StateField({
-                                        label: "State", 
-                                        id: "state",
-                                        key: "locations.state.icontains"
-                                      }),
-                                  new TextField({
-                                        label: "City", 
-                                        id: "city",
-                                        key: "locations.city.icontains"
-                                      }),
-                                  new TagField({
-                                    label: "Tags", 
-                                    id: "tags", 
-                                    key: "tags.name.in", 
-                                    helpText: "Use commas for multiple tags."
-                                  }),
-                                  new FilteredList({
-                                    label: "Partners", 
-                                    id: "partner", 
-                                    pk: "partner.in",
-                                    required: true, 
-                                    dependencies: {
-                                      date: {
-                                        start_date: 'contactrecord.date_time.gte',
-                                        end_date: 'contactrecord.date_time.lte',
-                                      },
-                                      state: 'contact.locations.state.icontains',
-                                      city: 'contact.locations.city.icontains',
-                                      tags: 'contactrecord.tags.name.in',
-                                    },
-                                    values: ["pk", "name"],
-                                    order_by: "name"
-                                  })
-                                ]);
-  },
-  partner: function() {
-    return new Report("partner", [new TextField({
-                                    isFilter: false,
-                                    label: "Report Name", 
-                                    id: "report_name", 
-                                    required: true, 
-                                    defaultVal: reportNameDateFormat(new Date())
-                                  }),
-                                  new StateField({
-                                    label: "State", 
-                                    id: "state",
-                                    key: "contact.locations.state.icontains"
-                                  }),
-                                  new TextField({
-                                    label: "City", 
-                                    id: "city",
-                                    key: "contact.locations.city.icontains"
-                                  }),
-                                  new TextField({
-                                    label: "URL", 
-                                    id: "uri",
-                                    key: "uri.icontains"
-                                  }),
-                                  new TextField({
-                                    label: "Source", 
-                                    id: "data_source",
-                                    key: "data_source.icontains"
-                                  }),
-                                  new TagField({
-                                    label: "Tags", 
-                                    id: "tags", 
-                                    key: "tags.name.icontains", 
-                                    helpText: "Use commas for multiple tags."
-                                  })
-                                ]);
-  },
-  contactrecord: function() {
-    var contactTypeChoices = [new CheckBox({
-                                label: "Email", 
-                                name: "contact_type", 
-                                defaultVal: "email"
-                              }),
-                              new CheckBox({
-                                label: "Phone Call", 
-                                name: "contact_type", 
-                                defaultVal: "phone"
-                              }),
-                              new CheckBox({
-                                label: "Meeting or Event", 
-                                name: "contact_type", 
-                                defaultVal: "meetingorevent"
-                              }),
-                              new CheckBox({
-                                label: "Job Followup", 
-                                name: "contact_type", 
-                                defaultVal: "job"
-                              }),
-                              new CheckBox({
-                                label: "Saved Search Email", 
-                                name: "contact_type", 
-                                defaultVal: "pssemail"
-                              })];
-
-    return new Report("contactrecord", [new TextField({
+    contact: function() {
+      return new Report("contact", [new TextField({
                                           isFilter: false,
                                           label: "Report Name", 
                                           id: "report_name", 
                                           required: true, 
-                                          defaultVal: reportNameDateFormat(new Date())}),
-                                        new DateField({
+                                          defaultVal: reportNameDateFormat(new Date())
+                                        }),
+                                    new DateField({
                                           label: "Select Date", 
                                           id: "date", 
                                           key: {
-                                            start_date: "date_time.gte", 
-                                            end_date: "date_time.lte"
+                                            start_date: "contactrecord.date_time.gte", 
+                                            end_date: "contactrecord.date_time.lte"
                                           }, 
                                           required: true, 
                                           defaultVal: {
@@ -1400,70 +1288,187 @@ function createReport(type) {
                                             end_date: dateFieldFormat(yesterday)
                                           }
                                         }),
-                                        new StateField({
+                                    new StateField({
                                           label: "State", 
-                                          id: "state", 
-                                          key: "contact.locations.state.icontains"
+                                          id: "state",
+                                          key: "locations.state.icontains"
                                         }),
-                                        new TextField({
+                                    new TextField({
                                           label: "City", 
-                                          id: "city", 
-                                          key: "contact.locations.city.icontains"
+                                          id: "city",
+                                          key: "locations.city.icontains"
                                         }),
-                                        new CheckList({
-                                          label: "Contact Types", 
-                                          id: "contact_type", 
-                                          key: "contact_type.in",
-                                          required: true, 
-                                          defaultVal: "all", 
-                                          choices: contactTypeChoices
-                                        }),
-                                        new TagField({
-                                          label: "Tags", 
-                                          id: "tags", 
-                                          key: "tags.name.icontains", 
-                                          helpText: "Use commas for multiple tags."
-                                        }),
-                                        new FilteredList({
-                                          label: "Partners", 
-                                          id: "partner", 
-                                          key: "partner.in",
-                                          required: true, 
-                                          dependencies: {
-                                            date: {
-                                              start_date: 'contactrecord.date_time.gte',
-                                              end_date: 'contactrecord.date_time.lte',
+                                    new TagField({
+                                      label: "Tags", 
+                                      id: "tags", 
+                                      key: "tags.name.in", 
+                                      helpText: "Use commas for multiple tags."
+                                    }),
+                                    new FilteredList({
+                                      label: "Partners", 
+                                      id: "partner", 
+                                      key: "partner.in",
+                                      required: true, 
+                                      dependencies: {
+                                        date: {
+                                          start_date: 'contactrecord.date_time.gte',
+                                          end_date: 'contactrecord.date_time.lte',
+                                        },
+                                        state: 'contact.locations.state.icontains',
+                                        city: 'contact.locations.city.icontains',
+                                        tags: 'contactrecord.tags.name.in',
+                                      },
+                                      values: ["pk", "name"],
+                                      order_by: "name"
+                                    })
+                                  ]);
+    },
+    partner: function() {
+      return new Report("partner", [new TextField({
+                                      isFilter: false,
+                                      label: "Report Name", 
+                                      id: "report_name", 
+                                      required: true, 
+                                      defaultVal: reportNameDateFormat(new Date())
+                                    }),
+                                    new StateField({
+                                      label: "State", 
+                                      id: "state",
+                                      key: "contact.locations.state.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "City", 
+                                      id: "city",
+                                      key: "contact.locations.city.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "URL", 
+                                      id: "uri",
+                                      key: "uri.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "Source", 
+                                      id: "data_source",
+                                      key: "data_source.icontains"
+                                    }),
+                                    new TagField({
+                                      label: "Tags", 
+                                      id: "tags", 
+                                      key: "tags.name.icontains", 
+                                      helpText: "Use commas for multiple tags."
+                                    })
+                                  ]);
+    },
+    contactrecord: function() {
+      var contactTypeChoices = [new CheckBox({
+                                  label: "Email", 
+                                  name: "contact_type", 
+                                  defaultVal: "email"
+                                }),
+                                new CheckBox({
+                                  label: "Phone Call", 
+                                  name: "contact_type", 
+                                  defaultVal: "phone"
+                                }),
+                                new CheckBox({
+                                  label: "Meeting or Event", 
+                                  name: "contact_type", 
+                                  defaultVal: "meetingorevent"
+                                }),
+                                new CheckBox({
+                                  label: "Job Followup", 
+                                  name: "contact_type", 
+                                  defaultVal: "job"
+                                }),
+                                new CheckBox({
+                                  label: "Saved Search Email", 
+                                  name: "contact_type", 
+                                  defaultVal: "pssemail"
+                                })];
+
+      return new Report("contactrecord", [new TextField({
+                                            isFilter: false,
+                                            label: "Report Name", 
+                                            id: "report_name", 
+                                            required: true, 
+                                            defaultVal: reportNameDateFormat(new Date())}),
+                                          new DateField({
+                                            label: "Select Date", 
+                                            id: "date", 
+                                            key: {
+                                              start_date: "date_time.gte", 
+                                              end_date: "date_time.lte"
+                                            }, 
+                                            required: true, 
+                                            defaultVal: {
+                                              start_date: "01/01/2014", 
+                                              end_date: dateFieldFormat(yesterday)
+                                            }
+                                          }),
+                                          new StateField({
+                                            label: "State", 
+                                            id: "state", 
+                                            key: "contact.locations.state.icontains"
+                                          }),
+                                          new TextField({
+                                            label: "City", 
+                                            id: "city", 
+                                            key: "contact.locations.city.icontains"
+                                          }),
+                                          new CheckList({
+                                            label: "Contact Types", 
+                                            id: "contact_type", 
+                                            key: "contact_type.in",
+                                            required: true, 
+                                            defaultVal: "all", 
+                                            choices: contactTypeChoices
+                                          }),
+                                          new TagField({
+                                            label: "Tags", 
+                                            id: "tags", 
+                                            key: "tags.name.icontains", 
+                                            helpText: "Use commas for multiple tags."
+                                          }),
+                                          new FilteredList({
+                                            label: "Partners", 
+                                            id: "partner", 
+                                            key: "partner.in",
+                                            required: true, 
+                                            dependencies: {
+                                              date: {
+                                                start_date: 'contactrecord.date_time.gte',
+                                                end_date: 'contactrecord.date_time.lte',
+                                              },
+                                              state: 'contact.locations.state.icontains',
+                                              city: 'contact.locations.city.icontains',
+                                              contact_type: 'contactrecord.contact_type.in',
+                                              tags: 'contactrecord.tags.name.in',
                                             },
-                                            state: 'contact.locations.state.icontains',
-                                            city: 'contact.locations.city.icontains',
-                                            contact_type: 'contactrecord.contact_type.in',
-                                            tags: 'contactrecord.tags.name.in',
-                                          },
-                                          values: ["pk", "name"],
-                                          order_by: "name"
-                                        }),
-                                        new FilteredList({
-                                          label: "Contacts", 
-                                          id: "contact", 
-                                          key: "contact.in",
-                                          required: true, 
-                                          dependencies: {
-                                            date: {
-                                              start_date: 'contactrecord.date_time.gte',
-                                              end_date: 'contactrecord.date_time.lte',
+                                            values: ["pk", "name"],
+                                            order_by: "name"
+                                          }),
+                                          new FilteredList({
+                                            label: "Contacts", 
+                                            id: "contact", 
+                                            key: "contact.in",
+                                            required: true, 
+                                            dependencies: {
+                                              date: {
+                                                start_date: 'contactrecord.date_time.gte',
+                                                end_date: 'contactrecord.date_time.lte',
+                                              },
+                                              state: 'locations.state.icontains',
+                                              city: 'locations.city.icontains',
+                                              contact_type: 'contactrecord.contact_type.in',
+                                              tags: 'contactrecord.tags.name.in',
+                                              partner: 'partner.in'
                                             },
-                                            state: 'locations.state.icontains',
-                                            city: 'locations.city.icontains',
-                                            contact_type: 'contactrecord.contact_type.in',
-                                            tags: 'contactrecord.tags.name.in',
-                                            partner: 'partner.in'
-                                          },
-                                          values: ["pk", "name", "email"],
-                                          order_by: "name"
-                                        })
-                                      ]);
-  }
-};
+                                            values: ["pk", "name", "email"],
+                                            order_by: "name"
+                                          })
+                                        ]);
+    }
+  };
 
   return reports[type]();
 }
