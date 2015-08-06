@@ -1584,7 +1584,7 @@ function renderOverview(callback) {
     }
   }).complete(function() {
     if (typeof callback === "function") {
-      return callback;
+      return callback();
     }
   });
 }
@@ -1658,11 +1658,17 @@ function renderDownload(report_id) {
       });
 
       $("input.enable-column").on("change", function() {
-        $checkboxes = $(".column-wrapper .enable-column");
-        $checked = $(".column-wrapper .enable-column:checked");
-        $allCheckbox = $(".enable-all-columns .enable-column");
+        var $checkboxes = $(".column-wrapper .enable-column"),
+            $checkbox = $(this),
+            $checked = $(".column-wrapper .enable-column:checked"),
+            $allCheckbox = $(".enable-all-columns .enable-column"),
+            $choices = $("#column-choices");
 
         $allCheckbox.prop("checked", $checkboxes.length === $checked.length);
+
+        if(!$checkbox.is(":checked") && $checkbox.val() === $choices.val()) {
+          $choices.val("");
+        }
       });
 
       $("#download-cancel").on("click", function() {
