@@ -1354,7 +1354,7 @@ function createReport(type) {
                                     new TagField({
                                       label: "Tags", 
                                       id: "tags", 
-                                      key: "tags.name.icontains", 
+                                      key: "tags.name.in", 
                                       helpText: "Use commas for multiple tags."
                                     })
                                   ]);
@@ -1426,7 +1426,7 @@ function createReport(type) {
                                           new TagField({
                                             label: "Tags", 
                                             id: "tags", 
-                                            key: "tags.name.icontains", 
+                                            key: "tags.name.in", 
                                             helpText: "Use commas for multiple tags."
                                           }),
                                           new FilteredList({
