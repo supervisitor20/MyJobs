@@ -61,8 +61,7 @@ class Report(models.Model):
     @property
     def queryset(self):
         model = get_model(self.app, self.model)
-        filters = json.loads(self.filters)
-        return model.objects.from_search(self.owner, filters)
+        return model.objects.from_search(self.owner, self.filters)
 
     def __unicode__(self):
         return self.name
