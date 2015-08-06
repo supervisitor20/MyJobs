@@ -16,14 +16,14 @@ class Migration(SchemaMigration):
         partner_ids = orm.Partner.objects.values_list('pk', flat=True)
         records = orm.ContactRecord.objects.filter(
             contact_type='pssemail', partner_id__in=partner_ids).order_by(
-                'partner__owner')
+                'partner__owner').distinct()
 
         current_company = ""
         for record in records:
 
             emails = orm['mysearches.PartnerSavedSearch'].objects.filter(
                 partner=record.partner, email=record.contact_email, 
-                tags__isnull=False).order_by('partner__owner')
+                tags__isnull=False).order_by('partner__owner').distinct()
 
             for email in emails:
                 with open("tag_changes.txt", "a+") as fd:
