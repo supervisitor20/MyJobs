@@ -728,6 +728,8 @@ class ContactRecord(models.Model):
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
+    successful = models.BooleanField(default=True)
+
     @classmethod
     def _parse_parameters(cls, parameters, records):
         """Used to parse state during `from_search()`."""

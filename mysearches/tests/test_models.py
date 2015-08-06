@@ -219,10 +219,11 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertEqual(SavedSearchLog.objects.count(), 0)
         search.send_email()
 
-        self.assertEqual(ContactRecord.objects.count(), 0)
+        record = ContactRecord.objects.get()
         log = SavedSearchLog.objects.get()
         self.assertFalse(log.was_sent)
         self.assertEqual(log.reason, "Toot toot")
+        self.assertTrue(record.notes.startswith(log.reason))
 
     def assert_modules_in_hrefs(self, modules):
         """

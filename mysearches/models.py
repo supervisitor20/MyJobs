@@ -211,18 +211,18 @@ class SavedSearch(models.Model):
                     self.last_sent = datetime.now()
                     self.save()
 
-                    if is_pss:
-                        record = self.partnersavedsearch.create_record(
-                            custom_msg)
-                        log_kwargs['contact_record'] = record
-                        log_kwargs['new_jobs'] = len([item for item in items
-                                                     if item.get('new')])
-                        log_kwargs['backfill_jobs'] = count - \
-                            log_kwargs['new_jobs']
+                if is_pss:
+                    record = self.partnersavedsearch.create_record(
+                        custom_msg, failure_message=log_kwargs.get('reason'))
+                    log_kwargs['contact_record'] = record
+                    log_kwargs['new_jobs'] = len([item for item in items
+                                                 if item.get('new')])
+                    log_kwargs['backfill_jobs'] = count - \
+                        log_kwargs['new_jobs']
 
-                    else:
-                        log_kwargs['new_jobs'] = count
-                        log_kwargs['backfill_jobs'] = 0
+                else:
+                    log_kwargs['new_jobs'] = count
+                    log_kwargs['backfill_jobs'] = 0
             else:
                 log_kwargs['reason'] = 'No jobs'
         else:
@@ -244,8 +244,9 @@ class SavedSearch(models.Model):
         Outputs:
         :message: Generated email body (if :send: is False) or None
         """
+        default_reason = 'Jobs are not sent in initial saved search emails'
         log_kwargs = {
-            'reason': 'Jobs are not sent in initial saved search emails',
+            'reason': default_reason,
             'was_sent': False,
             'was_received': False,
             'recipient': self.user,
@@ -280,6 +281,15 @@ class SavedSearch(models.Model):
                 except Exception as e:
                     log_kwargs['was_sent'] = False
                     log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
+
+                if context_dict['contains_pss']:
+                    reason = log_kwargs['reason']
+                    if log_kwargs['reason'] == default_reason:
+                        reason = None
+                    self.partnersavedsearch.create_record(
+                        "Automatic sending of initial partner saved search",
+                        failure_message=reason
+                    )
         else:
             log_kwargs['reason'] = "User can't receive MyJobs email"
         SavedSearchLog.objects.create(**log_kwargs)
@@ -326,6 +336,13 @@ class SavedSearch(models.Model):
         except Exception as e:
             log_kwargs['was_sent'] = False
             log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
+
+        if context_dict['contains_pss']:
+            self.partnersavedsearch.create_record(
+                "Automatic sending of updated partner saved search.",
+                failure_message=log_kwargs.get('reason')
+            )
+
         SavedSearchLog.objects.create(**log_kwargs)
 
     def create(self, *args, **kwargs):
@@ -443,6 +460,7 @@ class SavedSearchDigest(models.Model):
         total_jobs = 0
         saved_searches = self.user.savedsearch_set.filter(is_active=True)
         search_list = []
+        needs_records = []
         contains_pss = False
         for search in saved_searches:
             items, count = search.get_feed_items()
@@ -454,6 +472,7 @@ class SavedSearchDigest(models.Model):
                 pss = search
 
             if pss is not None:
+                needs_records.append(pss)
                 # New jobs will have a "new" key in their job dictionaries.
                 # We can count the number that do not
                 log_kwargs['backfill_jobs'] += len([item for item in items
@@ -465,7 +484,6 @@ class SavedSearchDigest(models.Model):
                     mypartners.helpers.add_extra_params_to_jobs(items, extras)
                     search.url = mypartners.helpers.add_extra_params(search.url,
                                                                      extras)
-                pss.create_record(custom_msg)
             search_list.append((search, items, count))
 
         saved_searches = [(search, items, count)
@@ -507,6 +525,9 @@ class SavedSearchDigest(models.Model):
                                         "have no jobs")
             else:
                 log_kwargs['reason'] = "User can't receive MyJobs email"
+        for pss in needs_records:
+            pss.create_record(custom_msg,
+                              failure_message=log_kwargs.get('reason'))
         SavedSearchLog.objects.create(**log_kwargs)
 
     def disable_or_fix(self):
@@ -561,22 +582,7 @@ class PartnerSavedSearch(SavedSearch):
                     self.user.send_opt_out_notifications([self])
         super(PartnerSavedSearch, self).save(*args, **kwargs)
 
-    def initial_email(self, custom_msg=None, send=True):
-        """
-        Calls the base initial_email function and then creates a record of it.
-        """
-        body = super(PartnerSavedSearch, self).initial_email(custom_msg,
-                                                             send)
-        change_msg = "Automatic sending of initial partner saved search."
-        self.create_record(change_msg, body)
-        return body
-
-    def send_update_email(self, msg, custom_msg=None):
-        super(PartnerSavedSearch, self).send_update_email(msg, custom_msg)
-        change_msg = "Automatic sending of updated partner saved search."
-        self.create_record(change_msg)
-
-    def create_record(self, change_msg=None, body=None):
+    def create_record(self, change_msg=None, body=None, failure_message=None):
         """
         Creates a record of this saved search being sent. Records the contents
         of :body: if present, otherwise generates the body for a single saved
@@ -606,6 +612,9 @@ class PartnerSavedSearch(SavedSearch):
             body = render_to_string('mysearches/email_single.html',
                                     context_dict)
 
+        if failure_message:
+            body = "<br \><br \>".join([failure_message, body])
+
         contact = Contact.objects.filter(partner=self.partner,
                                          user=self.user).first()
         record = ContactRecord.objects.create(
@@ -617,6 +626,7 @@ class PartnerSavedSearch(SavedSearch):
             date_time=datetime.now(),
             subject=subject,
             notes=body,
+            successful=not bool(failure_message)
         )
         record.tags.add(*self.tags.all())
         mypartners.helpers.log_change(record, None, None, self.partner,
