@@ -199,11 +199,7 @@ class Invitation(models.Model):
         context = {'invitation': self,
                    'activation_key': ap.activation_key}
 
-        needs_record = False
-
         if self.added_saved_search:
-            if hasattr(self.added_saved_search, 'partnersavedsearch'):
-                needs_record = True
             initial_email = self.added_saved_search.initial_email(send=False)
             context['initial_search_email'] = initial_email
 
@@ -230,8 +226,10 @@ class Invitation(models.Model):
             ap.sent = datetime_now()
             ap.save()
 
-        if needs_record:
+        if self.added_saved_search and hasattr(self.added_saved_search,
+                                               'partnersavedsearch'):
             self.added_saved_search.partnersavedsearch.create_record(
                 "Automatic sending of initial partner saved search",
+                body=context['initial_search_email'],
                 failure_message=fail_message
             )

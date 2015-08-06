@@ -284,7 +284,11 @@ class SavedSearch(models.Model):
 
                 if context_dict['contains_pss']:
                     reason = log_kwargs['reason']
-                    if log_kwargs['reason'] == default_reason:
+                    if reason == default_reason:
+                        # Most other instances of SavedSearchLog have nothing
+                        # in the reason field when successful. This one is a
+                        # little different, serving as a reminder of why this
+                        # particular email contains no jobs.
                         reason = None
                     self.partnersavedsearch.create_record(
                         "Automatic sending of initial partner saved search",
@@ -324,8 +328,10 @@ class SavedSearch(models.Model):
             self.content_type,
             self.pk)
         headers = {'X-SMTPAPI': category}
+
+        default_reason = 'Jobs are not sent in saved search update emails',
         log_kwargs = {
-            'reason': 'Jobs are not sent in saved search update emails',
+            'reason': default_reason,
             'was_sent': True, 'was_received': False, 'recipient': self.user,
             'recipient_email': self.email, 'new_jobs': 0, 'backfill_jobs': 0
         }
@@ -338,9 +344,15 @@ class SavedSearch(models.Model):
             log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
 
         if context_dict['contains_pss']:
+            reason = log_kwargs['reason']
+            if reason == default_reason:
+                # Similar to the logic in initial_email, this default reason
+                # serves as a reminder that having zero jobs in this email
+                # is intentional and expected.
+                reason = None
             self.partnersavedsearch.create_record(
                 "Automatic sending of updated partner saved search.",
-                failure_message=log_kwargs.get('reason')
+                failure_message=reason
             )
 
         SavedSearchLog.objects.create(**log_kwargs)
@@ -472,6 +484,9 @@ class SavedSearchDigest(models.Model):
                 pss = search
 
             if pss is not None:
+                # We know partner searches require communication records but
+                # we need to put off the creation of them until we find out
+                # if said communication was successful.
                 needs_records.append(pss)
                 # New jobs will have a "new" key in their job dictionaries.
                 # We can count the number that do not
