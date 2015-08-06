@@ -168,6 +168,10 @@ Report.prototype = {
           start_date: formatDate(steelToe(json).get(field.key.start_date)),
           end_date: formatDate(steelToe(json).get(field.key.end_date)),
         };
+      } else if (field instanceof FilteredList) {
+        defaultVal = steelToe(json).get(field.key).map(function(item) {
+          return item.toString();
+        });
       } else {
         defaultVal = steelToe(json).get(field.key);
       }
@@ -790,7 +794,7 @@ function FilteredList(options) {
 
   // used internally, shouldn't be changed by consumers of the API
   this.active = 0;
-  this.hasRan = false;
+  this.hasRun = false;
 
   Field.call(this, options);
 }
@@ -920,12 +924,8 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
       $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
       $listBody.append('<ul><li>' + data.map(function (element) {
         $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
-          if (filteredList.defaultVal && !filteredList.hasRan) {
-            if (filteredList.id === "contact") {
-              return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
-            } else {
-              return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
-            }
+          if (filteredList.defaultVal && !filteredList.hasRun) {
+            return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
           }
           return "checked";
         })() + '/>');
@@ -934,7 +934,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
       }).join("</li><li>") + '</li></ul>');
 
       var value = filteredList.currentVal();
-      if (!filteredList.hasRan) {
+      if (!filteredList.hasRun) {
         $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
           return $(c).is(":checked");
         }));
@@ -949,7 +949,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         $('#' + filteredList.id + '-header > span').show();
         $.event.trigger("filtered", [filteredList.id]);
       }
-      filteredList.hasRan = true;
+      filteredList.hasRun = true;
     });
   },
   removeErrors: function() {
