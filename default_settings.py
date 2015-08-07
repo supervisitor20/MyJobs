@@ -77,11 +77,11 @@ TEMPLATE_DIRS = (
 )
 
 TEMPLATE_LOADERS = (
-    #('django.template.loaders.cached.Loader', (
+    ('django.template.loaders.cached.Loader', (
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
         'django.template.loaders.eggs.Loader',
-    #)),
+    )),
 )
 
 MIDDLEWARE_CLASSES = (
