@@ -27,7 +27,10 @@ class Migration(SchemaMigration):
                 contact__email=search.email, tags__isnull=True).order_by(
                     "partner__owner").distinct()
 
-            with open("tag_changes_production.txt", "a+") as fd:
+            for record in records:
+                record.tags = search.tags
+
+            with open("tag_changes.txt", "a+") as fd:
                 company = search.partner.owner.name
                 if company != current_company:
                     current_company = company
