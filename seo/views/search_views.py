@@ -2108,3 +2108,8 @@ def seo_companies(request):
     ctx = {"companies": companies}
     return render_to_response('seo/companies.html', ctx,
                               context_instance=RequestContext(request))
+
+
+def seo_military(request):
+    return render_to_response('seo/military.html', {},
+                              context_instance=RequestContext(request))
