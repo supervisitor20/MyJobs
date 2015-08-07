@@ -55,7 +55,6 @@ def humanize(records):
             record['notes'] = '\n'.join(
                 filter(bool, record['notes'].split('\n\n')))
 
-
     return records
 
 
@@ -108,7 +107,7 @@ def serialize(fmt, data, values=None, order_by=None):
 
     # helper function to deal with different value types in a dict
     def convert(record, value):
-        val = record[value]
+        val = record[value if value != 'communication_type' else 'contact_type']
         # strip html from strings
         if isinstance(val, basestring) and val.strip():
             val = html.fromstring(val).text_content()
