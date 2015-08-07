@@ -199,14 +199,16 @@ $(document).ready(function(){
     });
 
     $('.siteTagsList li').click(function(){
-        var search_tag = $(this).text();
+        var search_tag = $(this).text(),
+            $associatedLoading = $('[id=associatedLoading]'),
+            $associatedList = $('[id=associatedList]');
         $('.siteTagsList li').removeClass('menu-item-active');
         $(this).addClass('menu-item-active');
-        $('#associatedList').hide();
-        $('#associatedLoading').show();
-        $('#associatedList').load("/ajax/data/sites", "tag="+search_tag, function(){
-            $('#associatedLoading').hide();
-            $('#associatedList').show();
+        $associatedList.hide();
+        $associatedLoading.show();
+        $associatedList.load("/ajax/data/sites", "tag="+search_tag, function(){
+            $associatedLoading.hide();
+            $associatedList.show();
         });
         $('#siteTagDiv').scrollTop(0);
     });
