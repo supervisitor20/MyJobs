@@ -8,6 +8,7 @@ from django.db import models
 
 logging.getLogger('south').setLevel(logging.INFO)
 
+#TODO: Make it so that only the missing tags are added (set union)
 
 class Migration(SchemaMigration):
     no_dry_run = True
@@ -24,11 +25,11 @@ class Migration(SchemaMigration):
         for search in searches:
             records = orm['mypartners.contactrecord'].objects.filter(
                 contact_type='pssemail', partner=search.partner,
-                contact__email=search.email, tags__isnull=True).order_by(
+                contact__email=search.email).order_by(
                     "partner__owner").distinct()
 
             for record in records:
-                record.tags = search.tags.all()
+                record.tags.add(*search.tags.all())
 
             with open("tag_changes.txt", "a+") as fd:
                 company = search.partner.owner.name
@@ -36,6 +37,8 @@ class Migration(SchemaMigration):
                     current_company = company
                     fd.write("Company: %s\n" % current_company)
 
+                fd.write("Current Tags:\n\t- %s\n" % (
+                    "\n\t- ".join(tag.name for tag in record.tags.all())))
                 fd.write("Tags being added from Partner Saved Search %s:"
                          "\n\t- %s\n" % (search.pk, "\n\t- ".join(
                              tag.name for tag in search.tags.all())))
