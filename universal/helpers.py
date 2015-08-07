@@ -230,7 +230,7 @@ def nested_dict(items, value=None):
         return {items[0]: nested_dict(items[1:], value)}
 
 
-def merged_dict(first, second):
+def merge_dicts(first, second):
     """Merge two potentially nested dicts."""
     if not isinstance(second, dict):
         return second
@@ -238,7 +238,7 @@ def merged_dict(first, second):
     result = deepcopy(first)
     for key, value in second.iteritems():
         if key in result and isinstance(result[key], dict):
-            result[key] = merged_dict(result[key], value)
+            result[key] = merge_dicts(result[key], value)
         else:
             result[key] = deepcopy(value)
 
@@ -252,7 +252,7 @@ def query_to_json(data, sep="__"):
 
     items = [(key.split(sep), value) for key, value in data.items()]
     dicts = [nested_dict(item[0], item[1]) for item in items]
-    results = reduce(merged_dict, dicts)
+    results = reduce(merge_dicts, dicts)
 
     return results
 

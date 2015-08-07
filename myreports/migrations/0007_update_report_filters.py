@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ast import literal_eval
 import json
 
 from myreports.models import Report
@@ -8,7 +9,7 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-from universal.helpers import json_to_query, query_to_json
+from universal.helpers import json_to_query, query_to_json, merge_dicts
 
 
 class Migration(SchemaMigration):
@@ -23,36 +24,46 @@ class Migration(SchemaMigration):
         reports = Report.objects.filter(filters__icontains='__')
 
         for report in reports:
-            report.filters = query_to_json(json.loads(report.filters))
-            report.regenerate()
-            report.save()
+            filters = query_to_json(json.loads(report.filters))
 
-    def backwards(self, orm):
-        """
-        The old params format didn't explicitly mention the comparison to be
-        performed when running a query, so we need to not only convert from
-        nested JSON to a flat django like query string, but we also need to
-        remove those explicit comparison terms.
-        """
-        reports = Report.objects.exclude(filters__icontains='__')
+            # deal with differences in old and new api
+            keys = filters.keys()
+            if report.model in ['contactrecord', 'partner']:
+                if 'state' in keys:
+                    merge_dicts(filters, {'contact': {'locations': {'state': {
+                        'icontains': filters.pop('state')}}}})
 
-        for report in reports:
-            try:
-                filter_json = json.loads(report.filters)
-            except ValueError:
-                # extra pair of quotes/ double-encoded
-                filter_json = json.loads(literal_eval(report.filters))
-            filters = json_to_query(filter_json)
+                if 'city' in keys:
+                    merge_dicts(filters, {'contact': {'locations': {'city': {
+                        'icontains': filters.pop('city')}}}})
 
-            for key, value in filters.items():
-                new_key = reduce(lambda acc, x:acc.split(x)[0], [
-                    "__gte", "__icontains", "__iexact", "__lte", "__in"
-                ], key)
-                filters[new_key] = filters.pop(key)
+                if 'start_date' in keys:
+                    merge_dicts(filters, {'contactrecord': {'date_time': {
+                        'gte': filters.pop('start_date')}}})
+
+                if 'end_date' in keys:
+                    merge_dicts(filters, {'contactrecord': {'date_time': {
+                        'lte': filters.pop('end_date')}}})
+
+                if 'contact__name' in keys:
+                    merge_dicts(filters, {'contact': {'name': {
+                        'icontains': filters.pop('contact__name')}}})
+
+                if 'contact' in keys:
+                    merge_dicts(filters, {'contact': {
+                        'in': filters.pop('contact')}})
+
+                if 'partner' in keys:
+                    merge_dicts(filters, {'partner': {
+                        'in': filters.pop('partner')}})
+
 
             report.filters = json.dumps(filters)
             report.regenerate()
             report.save()
+
+    def backwards(self, orm):
+        return
 
     models = {
         u'auth.group': {
