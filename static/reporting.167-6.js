@@ -1002,6 +1002,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     return this;
   },
   validate: function() {
+    console.log('here');
     var err = this.label + " is required",
       index = this.errors.indexOf(err),
       value = this.currentVal();
