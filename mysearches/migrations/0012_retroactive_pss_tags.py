@@ -13,30 +13,32 @@ class Migration(SchemaMigration):
     no_dry_run = True
 
     def forwards(self, orm):
-        partner_ids = orm.Partner.objects.values_list('pk', flat=True)
-        records = orm.ContactRecord.objects.filter(
-            contact_type='pssemail', partner_id__in=partner_ids).order_by(
-                'partner__owner').distinct()
+        partner_ids = orm['mypartners.partner'].objects.values_list(
+            'pk', flat=True)
+
+        searches = orm.PartnerSavedSearch.objects.filter(
+            partner_id__in=partner_ids, tags__isnull=False).order_by(
+                'partner__owner')
 
         current_company = ""
-        for record in records:
+        for search in searches:
+            records = orm['mypartners.contactrecord'].objects.filter(
+                contact_type='pssemail', partner=search.partner,
+                contact__email=search.email, tags__isnull=True).order_by(
+                    "partner__owner").distinct()
 
-            emails = orm['mysearches.PartnerSavedSearch'].objects.filter(
-                partner=record.partner, email=record.contact_email, 
-                tags__isnull=False).order_by('partner__owner').distinct()
+            with open("tag_changes_production.txt", "a+") as fd:
+                company = search.partner.owner.name
+                if company != current_company:
+                    current_company = company
+                    fd.write("Company: %s\n" % current_company)
 
-            for email in emails:
-                with open("tag_changes.txt", "a+") as fd:
-                    company = record.partner.owner.name
-                    if company != current_company:
-                        current_company = company
-                        fd.write("Company: %s\n" % current_company)
+                fd.write("Tags being added from Partner Saved Search %s:"
+                         "\n\t- %s\n" % (search.pk, "\n\t- ".join(
+                             tag.name for tag in search.tags.all())))
+                fd.write("Records to add tags to:\n\t- %s\n" % (
+                    "\n\t- ".join(str(record.pk) for record in records)))
 
-                    fd.write("Adding tags to contact record %s.\n" % record.pk)
-                    fd.write(
-                        "Tags to be added from Partner Saved Search %s:\n\t- %s\n" % (
-                            email.pk, "\n\t- ".join(
-                                tag.name for tag in email.tags.all())))
 
     def backwards(self, orm):
         pass
@@ -104,20 +106,6 @@ class Migration(SchemaMigration):
             'phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
-        },
-        u'mypartners.contactlogentry': {
-            'Meta': {'object_name': 'ContactLogEntry'},
-            'action_flag': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'action_time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'change_message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'contact_identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
-            'delta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
         },
         u'mypartners.contactrecord': {
             'Meta': {'object_name': 'ContactRecord'},
@@ -189,12 +177,6 @@ class Migration(SchemaMigration):
             'street2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'zip_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'})
-        },
-        u'mypartners.prmattachment': {
-            'Meta': {'object_name': 'PRMAttachment'},
-            'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '767', 'null': 'True', 'blank': 'True'}),
-            'contact_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.ContactRecord']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.status': {
             'Meta': {'object_name': 'Status'},
@@ -523,4 +505,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['mysearches', 'mypartners']
+    complete_apps = ['mysearches']
