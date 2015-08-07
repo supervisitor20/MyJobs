@@ -28,7 +28,7 @@ class Migration(SchemaMigration):
                     "partner__owner").distinct()
 
             for record in records:
-                record.tags = search.tags
+                record.tags = search.tags.all()
 
             with open("tag_changes.txt", "a+") as fd:
                 company = search.partner.owner.name
