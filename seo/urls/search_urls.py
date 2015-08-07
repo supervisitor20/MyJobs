@@ -126,7 +126,8 @@ urlpatterns += patterns('seo.views.search_views',
     url(r'^states/$', 'seo_states'),
     url(r'^cities/$', 'seo_cities'),
     url(r'^companies/$', 'seo_companies'),
-    url(r'^military/$', 'seo_military')
+    url(r'^military/$', 'seo_military'),
+    url(r'^tags/$', 'seo_tags')
 )
 
 urlpatterns += patterns('',
