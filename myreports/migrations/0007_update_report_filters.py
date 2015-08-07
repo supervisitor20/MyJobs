@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 
+from myreports.models import Report
+
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
@@ -18,7 +20,7 @@ class Migration(SchemaMigration):
         params was, but it is also nested, so we need to convert the old ones
         to this new format.
         """
-        reports = orm.Report.objects.filter(filters__icontains='__')
+        reports = Report.objects.filter(filters__icontains='__')
 
         for report in reports:
             report.filters = query_to_json(json.loads(report.filters))
@@ -32,7 +34,7 @@ class Migration(SchemaMigration):
         nested JSON to a flat django like query string, but we also need to
         remove those explicit comparison terms.
         """
-        reports = orm.Report.objects.exclude(filters__icontains='__')
+        reports = Report.objects.exclude(filters__icontains='__')
 
         for report in reports:
             try:
