@@ -2113,3 +2113,8 @@ def seo_companies(request):
 def seo_military(request):
     return render_to_response('seo/military.html', {},
                               context_instance=RequestContext(request))
+
+
+def seo_tags(request):
+    return render_to_response('seo/tags.html', {},
+                              context_instance=RequestContext(request))
