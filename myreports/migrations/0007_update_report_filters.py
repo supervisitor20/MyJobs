@@ -22,6 +22,7 @@ class Migration(SchemaMigration):
 
         for report in reports:
             report.filters = query_to_json(json.loads(report.filters))
+            report.regenerate()
             report.save()
 
     def backwards(self, orm):
@@ -48,6 +49,7 @@ class Migration(SchemaMigration):
                 filters[new_key] = filters.pop(key)
 
             report.filters = json.dumps(filters)
+            report.regenerate()
             report.save()
 
     models = {
