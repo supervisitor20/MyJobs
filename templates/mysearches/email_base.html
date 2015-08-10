@@ -47,7 +47,7 @@
                 <tr>
                     <td colspan=1 style="width: 33%; padding: 8px; line-height: 20px; border-top: 1px solid #ddd;">
                         {% if not contains_pss %}
-                            <a href="https://secure.my.jobs{% url 'view_profile' %}?verify={{saved_search.user.user_guid}}">{% trans 'My Resume' %}</a><br>
+                            <a href="https://secure.my.jobs{% url 'view_profile' %}?verify={{saved_search.user.user_guid}}">{% trans 'My Profile' %}</a><br>
                         {% endif %}
                         <a href="https://secure.my.jobs{% url 'saved_search_main' %}?verify={{saved_search.user.user_guid}}">{% trans 'My Saved Searches' %}</a><br>
                         <a href="https://secure.my.jobs{% url 'edit_account' %}?verify={{saved_search.user.user_guid}}">{% trans 'Account Settings' %}</a><br>

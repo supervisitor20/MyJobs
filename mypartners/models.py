@@ -696,7 +696,7 @@ class ContactRecord(models.Model):
     contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
                                     max_length=50,
-                                    verbose_name="Contact Type")
+                                    verbose_name="Communication Type")
     # contact type fields, fields required depending on contact_type. Enforced
     # on the form level.
     contact_email = models.CharField(max_length=255,
@@ -763,7 +763,7 @@ class ContactRecord(models.Model):
         return records
 
     def __unicode__(self):
-        return "%s Contact Record - %s" % (self.contact_type, self.subject)
+        return "%s Communication Record - %s" % (self.contact_type, self.subject)
 
     def save(self, *args, **kwargs):
         if not self.pk and self.contact:

@@ -294,7 +294,7 @@ def send_contact_record_email_response(created_records, created_contacts,
     message = render_to_string('mypartners/email/email_response.html',
                                ctx)
     headers = {
-        'X-SMTPAPI': '{"category": "Contact Record %s"}' % (
+        'X-SMTPAPI': '{"category": "Communication Record %s"}' % (
             'Failure' if error is not None else 'Success')
     }
 
