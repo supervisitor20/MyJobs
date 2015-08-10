@@ -124,10 +124,16 @@ urlpatterns += patterns('seo.views.search_views',
 
     # SEO Pages
     url(r'^listing/states/$', 'seo_states'),
-    url(r'^listing/cities/$', 'seo_cities'),
     url(r'^listing/companies/$', 'seo_companies'),
-    url(r'^listing/military/$', 'seo_military'),
-    url(r'^listing/tags/$', 'seo_tags')
+    url(r'^listing/cities/$',
+        TemplateView.as_view(template_name='seo/cities.html'),
+        name='seo_cities'),
+    url(r'^listing/military/$',
+        TemplateView.as_view(template_name='seo/military.html'),
+        name='seo_military'),
+    url(r'^listing/tags/$',
+        TemplateView.as_view(template_name='seo/tags.html'),
+        name='seo_tags')
 )
 
 urlpatterns += patterns('',

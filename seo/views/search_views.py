@@ -2031,6 +2031,20 @@ def seo_states(request):
     return render_to_response('seo/states.html', data_dict,
                               context_instance=RequestContext(request))
 
+
+def seo_companies(request):
+    # Grab all companies that are a member and has a canonical_microsite
+    companies = Company.objects.filter(member=True).exclude(
+        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
+
+    # Only send info that I care about
+    companies = [{"url": company.canonical_microsite, "name": company.name}
+                 for company in companies]
+
+    data_dict = {"companies": companies}
+    return render_to_response('seo/companies.html', data_dict,
+                              context_instance=RequestContext(request))
+
 states_with_sites = bidict({
     "Alabama": "alabama.jobs",
     "Alaska": "alaska.jobs",
@@ -2089,32 +2103,3 @@ other_locations_with_sites = bidict({
     "Puerto Rico": "puertorico.jobs",
     "Virgin Islands": "usvirginislands.jobs"
 })
-
-
-def seo_cities(request):
-    return render_to_response('seo/cities.html', {},
-                              context_instance=RequestContext(request))
-
-
-def seo_companies(request):
-    # Grab all companies that are a member and has a canonical_microsite
-    companies = Company.objects.filter(member=True).exclude(
-        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
-
-    # Only send info that I care about
-    companies = [{"url": company.canonical_microsite, "name": company.name}
-                 for company in companies]
-
-    ctx = {"companies": companies}
-    return render_to_response('seo/companies.html', ctx,
-                              context_instance=RequestContext(request))
-
-
-def seo_military(request):
-    return render_to_response('seo/military.html', {},
-                              context_instance=RequestContext(request))
-
-
-def seo_tags(request):
-    return render_to_response('seo/tags.html', {},
-                              context_instance=RequestContext(request))
