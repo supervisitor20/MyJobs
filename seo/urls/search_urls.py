@@ -123,15 +123,15 @@ urlpatterns += patterns('seo.views.search_views',
     url(r'^(?P<filter_path>[/\w-]*)ajax/joblisting/$', 'ajax_get_jobs'),
 
     # SEO Pages
-    url(r'^listing/states/$', 'seo_states'),
-    url(r'^listing/companies/$', 'seo_companies'),
-    url(r'^listing/cities/$',
+    url(r'^network/states/$', 'seo_states'),
+    url(r'^network/companies/$', 'seo_companies'),
+    url(r'^network/cities/$',
         TemplateView.as_view(template_name='seo/cities.html'),
         name='seo_cities'),
-    url(r'^listing/military/$',
+    url(r'^network/military/$',
         TemplateView.as_view(template_name='seo/military.html'),
         name='seo_military'),
-    url(r'^listing/tags/$',
+    url(r'^network/tags/$',
         TemplateView.as_view(template_name='seo/tags.html'),
         name='seo_tags')
 )
