@@ -3,9 +3,11 @@ import json
 from os import path
 from bidict import bidict
 
+from django.conf import settings
+
 
 def get_state_map():
-    with open(path.join(path.dirname(__file__), 'jsondata/usa_regions.json')) as states:
+    with open(path.join(settings.PROJ_ROOT, 'jsondata/usa_regions.json')) as states:
         data_list = json.loads(states.read())['regions']
     state_map = dict([(x['name'], x['code']) for x in data_list])
     state_map['None'] = 'None'
