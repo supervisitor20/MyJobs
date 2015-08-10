@@ -7,9 +7,9 @@ html,body{
     font-family: Arial, Verdana, Helvetica, sans-serif;
 }
 .row{
-    margin-left: 0px;
+    margin-left: 0;
 }
-h1, h2, h3, h4, h5, h6, label{
+h1, h2, h3, h4, h5, h6, label {
     color: #{{css.primaryColor}};
 }
 
@@ -233,88 +233,6 @@ li.menu-item-active,
     color: #fff;
 }
 
-/*-----------  Military Family CSS  -----------*/
-.direct_popBaseList {
-   padding: 15px 10px 0 5px;   
-   font-size: 1.2em;
-   margin-top: -4px;
-   background-color: transparent; 
-}
-.direct_popBaseList a {
-    color: #000;
-    font-size: 1em;    
-    margin: 0px;
-    text-shadow: none;
-    text-decoration: none;
-    display: block;
-}
-
-.direct_popBaseList ul {
-    list-style-type: none;
-    margin: 0;
-}
-
-.direct_popBaseList li {
-    padding-bottom: 3px;
-}
-
-.direct_popBaseList li a {
-    padding: 2px 5px;
-    margin: 0 4px;
-}
-
-div.direct_popBaseList ul li a:hover {
-    background: #5a6d81;
-    border-radius: 4px;
-    color:#fff;
-}
-
-.direct_popBaseList td {
-   width: 186px;
-   border-left: 1px solid #999;
-   padding: 3px 0;
-}
-
-.direct_popBaseList th {
-   background-color: #5a6d81;
-   padding-left: 4px;
-   color: #FFF;
-   font-size: 1.2em;
-   height: 28px;
-   width: 186px;
-   border-left: 1px solid #888;
-   border-bottom: 1px solid #888;
-}
-
-.direct_popBaseList h3 {
-   padding-left: 4px;
-   color: #FFF;
-}
-
-.direct_popBaseList table {
-    background-color: #FFF;
-    border-collapse:separate;
-    border:solid #999 1px;    
-    border-radius:4px;
-    -moz-border-radius:4px;
-}
-.direct_popBaseList td:first-child {
-    border-left: none;
-}
-.direct_popBaseList th:first-child {
-    border-left: none;
-}
-.direct_popBaseList tr:first-child {
-    background-color: #444;
-} 
-input.mocSearchField {
-    font-size: 1.3em;
-    font-weight: bold;
-    width: 930px;
-    border: 1px solid #000;
-    height: 25px;
-    background-color: #eef5ff;
-}
 .ui-autocomplete {
     max-height: 200px;
     overflow-y: auto;
