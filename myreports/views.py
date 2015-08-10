@@ -274,6 +274,10 @@ def downloads(request):
                          if field not in blacklist[report.model]])
 
         values = json.loads(report.values) or fields
+        for field_list in [values, fields]:
+            if 'contact_type' in field_list:
+                index = field_list.index('contact_type')
+                field_list[index] = 'communication_type'
         fields = values + [field for field in fields if field not in values]
 
         column_choice = ''
