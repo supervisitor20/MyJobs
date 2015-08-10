@@ -327,6 +327,9 @@ function build_data() {
     $(".sidebar > :input:has(option)").each(function() {
         if($(this).val() != 'all') {
             var data_key = $(this).prev('label').html().replace(":", "").replace(" ","_").toLowerCase();
+            if (data_key == 'communication_type') {
+                data_key = 'contact_type';
+            }
             data[data_key] = $(this).val();
         }
     });
