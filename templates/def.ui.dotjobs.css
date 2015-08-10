@@ -108,6 +108,16 @@ form,#standardSearch{
     display: none;
 }
 
+.megaMenuTab{
+    background-color: #444;
+    color: #FFF;
+    width: 128px;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid #555;
+}
+
 #megaMenuCities,
 #megaMenuSiteTags {
     display: none;
