@@ -3,34 +3,30 @@ from default_settings import *
 import datetime
 import os
 
+from secrets import REDIRECT_PROD, REDIRECT_QC, ARCHIVE_PROD
+
 DEBUG = False
 
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'qc-redirect': {
+    }, **REDIRECT_PROD),
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'archive': {
+    }, **REDIRECT_QC),
+    'archive': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }
+    }, **ARCHIVE_PROD)
 }
 
 ALLOWED_HOSTS = ['secure.my.jobs', 'my.jobs', 'localhost']

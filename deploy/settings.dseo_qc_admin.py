@@ -2,38 +2,32 @@ import datetime
 
 from default_settings import *
 from dseo_celery import *
-from secrets import PROD_DB_PASSWD
+from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 
 
 ALLOWED_HOSTS = ['*', ]
 
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC),
     # Points to staging instead of QC for testing purposes.
-    'qc-redirect': {
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'archive': {
+    }, **REDIRECT_STAGING),
+    'archive': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }
+    }, **ARCHIVE_STAGING)
 }
 
 
