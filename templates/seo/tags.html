@@ -42,3 +42,49 @@
         </div>
     </div>
 {% endblock %}
+{% block extra-js %}
+<script>
+    $(document).ready(function() {
+        $(".tagList li:visible:first").trigger("click");
+    });
+
+    $('.megaMenuTab').click(function(){
+        var $allTags = $('.siteTagsList#allTags'),
+            $topTags = $('.siteTagsList#topTags');
+        if(this.id == "allTags"){
+            $(this).removeClass('active');
+            $('.megaMenuTab#topTags').removeClass('active');
+            $(this).addClass('active');
+            $allTags.removeClass('hideTagList');
+            $topTags.removeClass('showTagList');
+            $topTags.addClass('hideTagList');
+            $allTags.addClass('showTagList');
+            $('.siteTagsList#allTags li:first').click();
+        }else{
+            $(this).removeClass('active');
+            $('.megaMenuTab#allTags').removeClass('active');
+            $(this).addClass('active');
+            $topTags.removeClass('hideTagList');
+            $allTags.removeClass('showTagList');
+            $allTags.addClass('hideTagList');
+            $topTags.addClass('showTagList');
+            $('.siteTagsList#topTags li:first').click();
+        }
+    });
+
+    $('.siteTagsList li').click(function(){
+        var search_tag = $(this).text(),
+            $associatedLoading = $('[id=associatedLoading]'),
+            $associatedList = $('[id=associatedList]');
+        $('.siteTagsList li').removeClass('menu-item-active');
+        $(this).addClass('menu-item-active');
+        $associatedList.hide();
+        $associatedLoading.show();
+        $associatedList.load("/ajax/data/sites", "tag="+search_tag, function(){
+            $associatedLoading.hide();
+            $associatedList.show();
+        });
+        $('#siteTagDiv').scrollTop(0);
+    });
+</script>
+{% endblock %}

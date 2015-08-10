@@ -2,7 +2,12 @@
 {% load i18n %}
 {% block directseo_searchbox %}{% endblock %}
 {% block directseo_main_content %}
-    <div id="cities">
+    <div class="row">
+        <div class="span16">
+            <h1>Cities</h1>
+        </div>
+    </div>
+    <div id="cities" style="margin-bottom: 20px;">
         <div class="row">
             <div class="span10"><h4>All Cities</h4></div>
             <div class="span6"><h4>Popular Cities</h4></div>
@@ -90,7 +95,28 @@
         </div>
     </div>
 {% endblock %}
+{% block extra-js %}
+<script>
+    $(document).ready(function() {
+        $("#cityStatesList li:first").trigger("click");
+    });
 
+    $('#cityStatesList li').click(function(){
+        var search_state = $(this).text(),
+            $citiesList = $('[id=cityCitiesList]'),
+            $cityLoading = $('[id=cityLoading]');
+        $('#cityStatesList li').removeClass('menu-item-active');
+        $(this).addClass('menu-item-active');
+        $citiesList.hide();
+        $cityLoading.show();
+        $citiesList.load("/ajax/data/cities", "state="+search_state, function(){
+            $cityLoading.hide();
+            $citiesList.show();
+        });
+        $('[id=cityCitiesDiv]').scrollTop(0);
+    });
+</script>
+{% endblock %}
 
 
 
