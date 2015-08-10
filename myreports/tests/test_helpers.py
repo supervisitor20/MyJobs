@@ -123,5 +123,5 @@ class TestHelpers(MyReportsTestCase):
             # ensure tags were converted
             self.assertEqual(record['tags'], 'test, stuff, working')
 
-            # ensure contact type was converted
+            # ensure communication type was converted
             self.assertTrue(record['contact_type'] == 'Email')

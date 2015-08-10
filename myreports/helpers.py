@@ -19,8 +19,8 @@ def humanize(records):
     """
     Converts values in a dict to their human-readable counterparts. At the
     moment, this means converting tag ids to a list of tag names, and
-    converting contact types. As such, this is specifically only useful for
-    contact records.
+    converting communication types. As such, this is specifically only useful
+    for contact records.
 
     Inputs:
         :records: `dict` of records to be humanized

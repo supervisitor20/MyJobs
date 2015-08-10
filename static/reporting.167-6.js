@@ -1361,29 +1361,29 @@ function createReport(type) {
                                   ]);
     },
     contactrecord: function() {
-      var contactTypeChoices = [new CheckBox({
+      var CommunicationTypeChoices = [new CheckBox({
                                   label: "Email", 
-                                  name: "contact_type", 
+                                  name: "communication_type", 
                                   defaultVal: "email"
                                 }),
                                 new CheckBox({
                                   label: "Phone Call", 
-                                  name: "contact_type", 
+                                  name: "communication_type", 
                                   defaultVal: "phone"
                                 }),
                                 new CheckBox({
                                   label: "Meeting or Event", 
-                                  name: "contact_type", 
+                                  name: "communication_type", 
                                   defaultVal: "meetingorevent"
                                 }),
                                 new CheckBox({
                                   label: "Job Followup", 
-                                  name: "contact_type", 
+                                  name: "communication_type", 
                                   defaultVal: "job"
                                 }),
                                 new CheckBox({
                                   label: "Saved Search Email", 
-                                  name: "contact_type", 
+                                  name: "communication_type", 
                                   defaultVal: "pssemail"
                                 })];
 
@@ -1417,12 +1417,12 @@ function createReport(type) {
                                             key: "contact.locations.city.icontains"
                                           }),
                                           new CheckList({
-                                            label: "Contact Types", 
-                                            id: "contact_type", 
+                                            label: "Communication Types", 
+                                            id: "communication_type", 
                                             key: "contact_type.in",
                                             required: true, 
                                             defaultVal: "all", 
-                                            choices: contactTypeChoices
+                                            choices: CommunicationTypeChoices
                                           }),
                                           new TagField({
                                             label: "Tags", 
@@ -1442,7 +1442,7 @@ function createReport(type) {
                                               },
                                               state: 'contact.locations.state.icontains',
                                               city: 'contact.locations.city.icontains',
-                                              contact_type: 'contactrecord.contact_type.in',
+                                              communication_type: 'contactrecord.contact_type.in',
                                               tags: 'contactrecord.tags.name.in',
                                             },
                                             values: ["pk", "name"],
@@ -1460,7 +1460,7 @@ function createReport(type) {
                                               },
                                               state: 'locations.state.icontains',
                                               city: 'locations.city.icontains',
-                                              contact_type: 'contactrecord.contact_type.in',
+                                              communication_type: 'contactrecord.contact_type.in',
                                               tags: 'contactrecord.tags.name.in',
                                               partner: 'partner.in'
                                             },

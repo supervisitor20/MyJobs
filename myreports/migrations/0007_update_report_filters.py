@@ -57,7 +57,6 @@ class Migration(SchemaMigration):
                     merge_dicts(filters, {'partner': {
                         'in': filters.pop('partner')}})
 
-
             report.filters = json.dumps(filters)
             report.regenerate()
             report.save()
