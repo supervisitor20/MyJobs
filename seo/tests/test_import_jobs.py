@@ -151,7 +151,7 @@ class ImportJobsTestCase(DirectSEOBase):
 
 
 class LoadETLTestCase(DirectSEOBase):
-    fixtures = ['countries.json']
+    fixtures = ['countries_167-24.json']
     
     def setUp(self):
         self.solr_settings = {
