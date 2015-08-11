@@ -72,11 +72,10 @@ class Migration(SchemaMigration):
         reports = Report.objects.exclude(filters__icontains='__')
 
         for report in reports:
-            try:
-                filter_json = literal_eval(json.loads(report.filters))
-            except ValueError:
-                # extra pair of quotes/ double-encoded
-                filter_json = json.loads(literal_eval(report.filters))
+            filter_json = json.loads(report.filters)
+            if type(filter_json) == unicode:
+                filter_json = json.loads(filter_json)
+
             filters = json_to_query(filter_json)
 
             for key, value in filters.items():
@@ -98,6 +97,10 @@ class Migration(SchemaMigration):
                     ], key)
                 # deal with differences in old and new api
                 filters[new_key] = filters.pop(key)
+
+                if new_key in ['start_date', 'end_date']:
+                    y, m, d = filters[new_key].split(' ')[0].split('-')
+                    filters[new_key] = '%s/%s/%s' % (m, d, y)
 
             report.filters = json.dumps(filters)
             report.save()
