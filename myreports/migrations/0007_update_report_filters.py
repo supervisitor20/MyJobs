@@ -76,7 +76,7 @@ class Migration(SchemaMigration):
                 filter_json = json.loads(report.filters)
             except ValueError:
                 # extra pair of quotes/ double-encoded
-                filter_json = json.loads(json.loads(report.filters))
+                filter_json = json.loads(literal_eval(report.filters))
             filters = json_to_query(filter_json)
 
             for key, value in filters.items():
