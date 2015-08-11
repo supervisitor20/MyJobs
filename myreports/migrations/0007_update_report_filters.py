@@ -57,12 +57,50 @@ class Migration(SchemaMigration):
                     merge_dicts(filters, {'partner': {
                         'in': filters.pop('partner')}})
 
+
             report.filters = json.dumps(filters)
             report.regenerate()
             report.save()
 
     def backwards(self, orm):
-        return
+        """
+        The old params format didn't explicitly mention the comparison to be
+        performed when running a query, so we need to not only convert from
+        nested JSON to a flat django like query string, but we also need to
+        remove those explicit comparison terms.
+        """
+        reports = Report.objects.exclude(filters__icontains='__')
+
+        for report in reports:
+            try:
+                filter_json = json.loads(report.filters)
+            except ValueError:
+                # extra pair of quotes/ double-encoded
+                filter_json = json.loads(json.loads(report.filters))
+            filters = json_to_query(filter_json)
+
+            for key, value in filters.items():
+                if 'locations__state' in key:
+                    new_key = 'state'
+                elif 'locations__city' in key:
+                    new_key = 'city'
+                elif 'date_time__gte' in key:
+                    new_key = 'start_date'
+                elif 'date_time__lte' in key:
+                    new_key = 'end_date'
+                elif 'contact__in' in key:
+                    new_key = 'contact'
+                elif 'partner__in' in key:
+                    new_key = 'partner'
+                else:
+                    new_key = reduce(lambda acc, x:acc.split(x)[0], [
+                        "__gte", "__icontains", "__iexact", "__lte", "__in"
+                    ], key)
+                # deal with differences in old and new api
+                filters[new_key] = filters.pop(key)
+
+            report.filters = json.dumps(filters)
+            report.save()
 
     models = {
         u'auth.group': {
