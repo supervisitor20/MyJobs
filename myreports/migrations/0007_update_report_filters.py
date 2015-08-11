@@ -98,7 +98,7 @@ class Migration(SchemaMigration):
                 # deal with differences in old and new api
                 filters[new_key] = filters.pop(key)
 
-                if new_key in ['start_date', 'end_date']:
+                if new_key in ['start_date', 'end_date'] and filters[new_key]:
                     y, m, d = filters[new_key].split(' ')[0].split('-')
                     filters[new_key] = '%s/%s/%s' % (m, d, y)
 
