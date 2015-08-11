@@ -1,49 +1,65 @@
 # -*- coding: utf-8 -*-
-import logging
+
+from urlparse import parse_qs, urlparse
+from bs4 import BeautifulSoup
 
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-logging.getLogger('south').setLevel(logging.INFO)
-
-#TODO: Make it so that only the missing tags are added (set union)
 
 class Migration(SchemaMigration):
     no_dry_run = True
 
     def forwards(self, orm):
-        partner_ids = orm['mypartners.partner'].objects.values_list(
-            'pk', flat=True)
+        # initial saved search emails don't carry the info we need
+        records = orm.ContactRecord.objects.filter(
+            contact_type='pssemail').exclude(
+                notes__icontains='initial partner saved search').order_by(
+                    'partner__owner')
 
-        searches = orm.PartnerSavedSearch.objects.filter(
-            partner_id__in=partner_ids, tags__isnull=False).order_by(
-                'partner__owner')
+        current_company = ''
+        for record in records:
+            record_tags = record.tags.all()
+            soup = BeautifulSoup(record.notes, 'html.parser')
+            # url pointing back to the saved search
+            selector = soup.select(
+                'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
 
-        current_company = ""
-        for search in searches:
-            records = orm['mypartners.contactrecord'].objects.filter(
-                contact_type='pssemail', partner=search.partner,
-                contact__email=search.email).order_by(
-                    "partner__owner").distinct()
+            if not selector:
+                continue
 
-            for record in records:
-                record.tags.add(*search.tags.all())
+            href = selector[0].attrs['href']
+
+            pss_id = parse_qs(urlparse(href).query)['id'][0]
+            pss = orm['mysearches.partnersavedsearch'].objects.filter(pk=pss_id)
+
+            if not pss.exists():
+                continue
+
+            pss = pss[0]
+            pss_tags = pss.tags.all()
 
             with open("tag_changes.txt", "a+") as fd:
-                company = search.partner.owner.name
+                company = record.partner.owner.name
                 if company != current_company:
                     current_company = company
-                    fd.write("Company: %s\n" % current_company)
+                    fd.write("Company: %s" % company)
 
-                fd.write("Current Tags:\n\t- %s\n" % (
-                    "\n\t- ".join(tag.name for tag in record.tags.all())))
-                fd.write("Tags being added from Partner Saved Search %s:"
-                         "\n\t- %s\n" % (search.pk, "\n\t- ".join(
-                             tag.name for tag in search.tags.all())))
-                fd.write("Records to add tags to:\n\t- %s\n" % (
-                    "\n\t- ".join(str(record.pk) for record in records)))
+                fd.write("Contact Record %d's tags before:\n\t- %s" % (
+                    record.pk, "\n\t- ".join(tag.name for tag in record_tags)))
+                fd.write("Partner Saved Search %s's tags:\n\t- %s" % (
+                    pss.pk, "\n\t- ".join(tag.name for tag in pss_tags)))
+
+                # combine unique tags
+                record.tags = set(pss_tags).union(record_tags)
+
+                fd.write("Contact Record %d's tags after:\n\t- %s" % (
+                    record.pk, "\n\t- ".join(
+                        tag.name for tag in record.tags.all())))
+
+                record.save()
 
 
     def backwards(self, orm):
@@ -112,6 +128,20 @@ class Migration(SchemaMigration):
             'phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
+        },
+        u'mypartners.contactlogentry': {
+            'Meta': {'object_name': 'ContactLogEntry'},
+            'action_flag': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
+            'action_time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'change_message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'contact_identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
+            'delta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
         },
         u'mypartners.contactrecord': {
             'Meta': {'object_name': 'ContactRecord'},
@@ -183,6 +213,12 @@ class Migration(SchemaMigration):
             'street2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'zip_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'})
+        },
+        u'mypartners.prmattachment': {
+            'Meta': {'object_name': 'PRMAttachment'},
+            'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '767', 'null': 'True', 'blank': 'True'}),
+            'contact_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.ContactRecord']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.status': {
             'Meta': {'object_name': 'Status'},
@@ -511,4 +547,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['mysearches']
+    complete_apps = ['mysearches', 'mypartners']
