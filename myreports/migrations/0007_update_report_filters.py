@@ -72,7 +72,11 @@ class Migration(SchemaMigration):
         reports = Report.objects.exclude(filters__icontains='__')
 
         for report in reports:
-            filter_json = json.loads(literal_eval(report.filters))
+            try:
+                filter_json = literal_eval(json.loads(report.filters))
+            except ValueError:
+                # extra pair of quotes/ double-encoded
+                filter_json = json.loads(literal_eval(report.filters))
             filters = json_to_query(filter_json)
 
             for key, value in filters.items():
