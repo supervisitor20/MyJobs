@@ -1,4 +1,5 @@
 from default_settings import *
+from secrets import REDIRECT_QC
 
 DEBUG = True
 
@@ -8,30 +9,24 @@ PROJECT = 'myjobs'
 ENVIRONMENT = 'Jenkins'
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'qc-redirect': {
+    }, **REDIRECT_QC),
+    'qc-redirect': dict({
         'NAME': 'qcredirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'archive': {
+    }, **REDIRECT_QC),
+    'archive': dict({
         'NAME': 'qcredirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC)
 }
 
 SOLR = {
