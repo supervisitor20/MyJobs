@@ -8,15 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'ContactRecord.successful'
-        db.add_column(u'mypartners_contactrecord', 'successful',
+        # Adding field 'ContactLogEntry.successful'
+        db.add_column(u'mypartners_contactlogentry', 'successful',
                       self.gf('django.db.models.fields.BooleanField')(default=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'ContactRecord.successful'
-        db.delete_column(u'mypartners_contactrecord', 'successful')
+        # Deleting field 'ContactLogEntry.successful'
+        db.delete_column(u'mypartners_contactlogentry', 'successful')
 
 
     models = {
@@ -95,6 +95,7 @@ class Migration(SchemaMigration):
             'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
+            'successful': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
         },
         u'mypartners.contactrecord': {
@@ -117,7 +118,6 @@ class Migration(SchemaMigration):
             'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
             'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'subject': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'successful': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'})
         },
         u'mypartners.location': {

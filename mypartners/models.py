@@ -728,8 +728,6 @@ class ContactRecord(models.Model):
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
-    successful = models.BooleanField(default=True)
-
     @classmethod
     def _parse_parameters(cls, parameters, records):
         """Used to parse state during `from_search()`."""
@@ -820,6 +818,12 @@ class ContactRecord(models.Model):
 
     def shorten_date_time(self):
         return self.date_time.strftime('%b %e, %Y')
+
+    @property
+    def contactlogentry(self):
+        ct = ContentType.objects.get_for_model(self.__class__)
+        return ContactLogEntry.objects.filter(content_type=ct,
+                                              object_id=self.pk).first()
 
 
 @receiver(pre_save, sender=ContactRecord, 
@@ -912,6 +916,7 @@ class ContactLogEntry(models.Model):
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    successful = models.BooleanField(blank=True, default=True)
 
     def get_edited_object(self):
         """

@@ -640,13 +640,13 @@ class PartnerSavedSearch(SavedSearch):
             created_by=self.created_by,
             date_time=datetime.now(),
             subject=subject,
-            notes=body,
-            successful=not bool(failure_message)
+            notes=body
         )
         record.tags.add(*self.tags.all())
         mypartners.helpers.log_change(record, None, None, self.partner,
                                       self.user.email, action_type=EMAIL,
-                                      change_msg=change_msg)
+                                      change_msg=change_msg,
+                                      successful=not bool(failure_message))
         return record
 
 

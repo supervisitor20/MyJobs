@@ -198,8 +198,8 @@ class SavedSearchModelsTests(MyJobsBase):
         search.tags.add(tag)
 
         search.send_email()
-        self.assertTrue(
-            ContactRecord.objects.filter(tags__name=tag.name).exists())
+        record = ContactRecord.objects.get(tags__name=tag.name)
+        self.assertTrue(record.contactlogentry.successful)
 
     @patch('mysearches.models.send_email')
     def test_send_pss_fails(self, mock_send_email):
@@ -224,6 +224,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertFalse(log.was_sent)
         self.assertEqual(log.reason, "Toot toot")
         self.assertTrue(record.notes.startswith(log.reason))
+        self.assertFalse(record.contactlogentry.successful)
 
     def assert_modules_in_hrefs(self, modules):
         """

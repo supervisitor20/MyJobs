@@ -1,7 +1,7 @@
 {% load common_tags %}
 <div class="product-card">
     <div class="big-title">
-        {{ record.subject }} {% if record.contact.name %} {% if record.subject %}-{% endif %} {{record.contact.name}} {% endif %} <i class="fa fa-{%if record.successful%}check-circle green{% else %}times-circle red{% endif %}" title="{% if record.successful %}Successfully sent{% else %}Email failed, view for more info{% endif %}"></i>
+        {{ record.subject }} {% if record.contact.name %} {% if record.subject %}-{% endif %} {{record.contact.name}} {% endif %} <i class="fa fa-{%if not record.contactlogentry or record.contactlogentry.successful%}check-circle green{% else %}times-circle red{% endif %}" title="{% if not record.contactlogentry or record.contactlogentry.successful %}Successfully sent{% else %}Email failed, view for more info{% endif %}"></i>
     </div>
     <div class="sub-title">
         {{ record.date_time }} - {{ record.get_human_readable_contact_type }}
