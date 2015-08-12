@@ -3,6 +3,7 @@ from os import path
 from re import sub
 from urllib import urlencode
 from uuid import uuid4
+import json
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -14,7 +15,7 @@ from django.dispatch import receiver
 
 from myjobs.models import User
 from postajob.location_data import states
-from universal.states import synonyms
+from universal.helpers import json_to_query
 
 
 CONTACT_TYPE_CHOICES = (('email', 'Email'),
@@ -67,91 +68,54 @@ class SearchParameterQuerySet(models.query.QuerySet):
     paramenters.
     """
 
-    # used ot map field types to a query
-    QUERY_BY_TYPE = {
-        'CharField': '__icontains',
-        'TextField': '__icontains',
-        'AutoField': '__exact',
-        'ForeignKey': '',
-        'ManyToManyField': ''}
-
     # TODO: Come up with a better name for this method
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         """
-        Intelligently filter based on query parameters.
+        Intelligently filter based on query .
 
         Inputs:
             :company: The company to restrict results to
-            :parameters: A dict of field: term pairs where field is a field of
+            :filters: A JSON string which is an object to be passed to
+                      filter().                             
+            :filters: A dict of field: term pairs where field is a field of
                          the `ContactRecord` model and term is search term
                          you'd like to filter against.
 
                          For `datetime`, pass `start_date` and/or `end_date`
                          instead.
-            If the model has a `_parse_parameters` method, that is called
-            before parsing remaining parameters.
+
+        Example:
+            If you want to filter partners where the related contact record's
+            date time is before a certain date:
+                Partner.objects.from_search(filters=json.dumps({
+                    'contactrecord': {
+                        'date_time': {
+                            'lte': '2015-08-03 00:00:00.0'
+                        }
+                    }
+                })
+
+            The above is equivalent to:
+                Partner.objects.filter(
+                    contactrecord__date_time__lte='2015-08-03 00:00:00.0')
+
         """
-        parameters = (parameters or {}).copy()
-        # only return records the current user has access to
+
+        # default to an empty object
+        filters = filters or "{}"
+
         if company:
-            company_ref = getattr(self.model, 'company_ref', 'company')
-            self = self.filter(**{company_ref: company})
-        else:
-            self = self.all()
+            self = self.filter(**{
+                getattr(self.model, 'company_ref', 'company'): company})
 
-        # fetch related models in one query
-        self = self.select_related()
+        query = json_to_query(json.loads(filters))
 
-        # extract special fields so they aren't traversed later
-        if parameters.get('start_date'):
-            parameters['start_date'] = datetime.strptime(
-                parameters['start_date'], '%m/%d/%Y').date()
+        if hasattr(self.model, 'approval_status'):
+            query.update({'approval_status__code__iexact': Status.APPROVED})
 
-        if parameters.get('end_date'):
-            # handles off-by-one error; otherwise date provided is excluded
-            parameters['end_date'] = datetime.strptime(
-                parameters['end_date'], '%m/%d/%Y').date() + timedelta(1)
-
-        # do special parsing
-        if parameters and hasattr(self.model, '_parse_parameters'):
-            self = self.model._parse_parameters(parameters, self)
-
-        for key, value in parameters.items():
-            if hasattr(value, '__iter__'):
-                query = '%s%s' % (key, '__in')
-            else:
-                type_ = self.get_field_type(key)
-
-                # construct query based on field type
-                query = '%s%s' % (
-                    key, SearchParameterQuerySet.QUERY_BY_TYPE[type_])
-
-            self = self.filter(**{query: value})
-
-        # remove duplicates
-        self = self.distinct()
+        self = self.filter(**query).distinct()
 
         return self
-
-    def get_field_type(self, name):
-        """
-        Returns the type of the `model`'s `field` or None if it doesn't
-        exist.
-        """
-
-        if '__' in name:
-            return 'ForeignKey'
-
-        # using get_fields isn't sufficient as it doesn't account
-        field = self.model._meta.get_field_by_name(name)[0]
-
-        try:
-            field_type = field.get_internal_type()
-        except AttributeError:
-            # field apparently isn't a field
-            field_type = field.field.get_internal_type()
-
-        return field_type
 
 
 class SearchParameterManager(models.Manager):
@@ -161,9 +125,9 @@ class SearchParameterManager(models.Manager):
     def get_query_set(self):
         return SearchParameterQuerySet(self.model, using=self._db)
 
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         return self.get_query_set().from_search(
-            company, parameters)
+            company, filters)
 
     def sort_by(self, *fields):
         return self.get_query_set().sort_by(*fields)
@@ -224,56 +188,6 @@ class Contact(models.Model):
 
     class Meta:
         verbose_name_plural = 'contacts'
-
-    @classmethod
-    def _parse_parameters(self, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        contact_type = parameters.pop('contact_type', None)
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        tags = parameters.pop('tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(
-                partner__contactrecord__date_time__range=[
-                    start_date, end_date])
-        elif start_date:
-            records = records.filter(
-                partner__contactrecord__date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(
-                partner__contactrecord__date_time__lte=end_date)
-
-        if state:
-            state_query = models.Q()
-            # match state synonyms when querying
-            for synonym in synonyms[state.strip().lower()]:
-                state_query |= models.Q(
-                    locations__state__iexact=synonym)
-
-            records = records.filter(state_query)
-
-        if city:
-            records = records.filter(locations__city__icontains=city)
-
-        if contact_type:
-            if not hasattr(contact_type, '__iter__'):
-                contact_type = [contact_type]
-
-            records = records.filter(
-                contactrecord__contact_type__in=contact_type)
-
-        return records
 
     def __unicode__(self):
         if self.name:
@@ -390,63 +304,6 @@ class Partner(models.Model):
 
     company_ref = 'owner'
     objects = SearchParameterManager()
-
-    @classmethod
-    def _parse_parameters(cls, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        contact_type = parameters.pop('contact_type', None)
-        tags = parameters.pop('tags__name', None)
-        contactrecord_tags = parameters.pop('contactrecord__tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        if contactrecord_tags:
-            if not hasattr(contactrecord_tags, '__iter__'):
-                contactrecord_tags = [contactrecord_tags]
-
-            for tag in contactrecord_tags:
-                records = records.filter(
-                    contactrecord__tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(contactrecord__date_time__range=[
-                start_date, end_date])
-        elif start_date:
-            records = records.filter(contactrecord__date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(contactrecord__date_time__lte=end_date)
-
-        if state:
-            state_query = models.Q()
-            # match state synonyms when querying
-            for synonym in synonyms[state.strip().lower()]:
-                state_query |= models.Q(
-                    contact__locations__state__iexact=synonym)
-
-            records = records.filter(state_query)
-
-        if city:
-            records = records.filter(contact__locations__city__icontains=city)
-
-        if contact_type:
-            if not hasattr(contact_type, '__iter__'):
-                contact_type = [contact_type]
-
-            records = records.filter(
-                contactrecord__contact_type__in=contact_type)
-
-        return records
 
     def __unicode__(self):
         return self.name
@@ -727,40 +584,6 @@ class ContactRecord(models.Model):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-
-    @classmethod
-    def _parse_parameters(cls, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        # popping city and state so it doesn't get parsed again
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        tags = parameters.pop('tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(date_time__range=[start_date, end_date])
-        elif start_date:
-            records = records.filter(date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(date_time__lte=end_date)
-
-        if city or state:
-            if state:
-                records = records.filter(contact__locations__state=state)
-
-            if city:
-                records = records.filter(contact__locations__city=city)
-
-        return records
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)

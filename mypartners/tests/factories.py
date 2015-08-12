@@ -8,6 +8,14 @@ from django.contrib.contenttypes.models import ContentType
 from seo.tests.factories import CompanyFactory
 
 
+class StatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = 'mypartners.Status'
+
+    # Approved
+    code = 1
+
+
 class PartnerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'mypartners.Partner'
@@ -16,6 +24,7 @@ class PartnerFactory(factory.django.DjangoModelFactory):
     uri = 'www.my.jobs'
 
     owner = factory.SubFactory(CompanyFactory)
+    approval_status = factory.SubFactory(StatusFactory)
 
 
 class ContactFactory(factory.django.DjangoModelFactory):
@@ -27,6 +36,7 @@ class ContactFactory(factory.django.DjangoModelFactory):
     phone = '84104391'
 
     partner = factory.SubFactory(PartnerFactory)
+    approval_status = factory.SubFactory(StatusFactory)
 
     @factory.post_generation
     def locations(self, create, extracted, **kwargs):
@@ -50,6 +60,7 @@ class ContactRecordFactory(factory.django.DjangoModelFactory):
 
     contact = factory.SubFactory(ContactFactory, name='example-contact')
     partner = factory.SubFactory(PartnerFactory)
+    approval_status = factory.SubFactory(StatusFactory)
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
