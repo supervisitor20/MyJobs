@@ -14,7 +14,7 @@ from django.dispatch import receiver
 
 from myjobs.models import User
 from postajob.location_data import states
-from states import synonyms
+from universal.states import synonyms
 
 
 CONTACT_TYPE_CHOICES = (('email', 'Email'),

@@ -19,8 +19,8 @@ from django.utils.translation import ugettext
 from lxml import html
 from lxml.cssselect import CSSSelector
 import requests
-import states
 
+from universal import states
 from universal.helpers import (get_domain, get_company, get_company_or_404,
                                get_int_or_none, send_email)
 from mypartners.models import (Contact, ContactLogEntry, CONTACT_TYPE_CHOICES,

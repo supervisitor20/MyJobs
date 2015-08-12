@@ -60,6 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
+from universal.states import states_with_sites, other_locations_with_sites
 
 
 """
@@ -870,7 +871,6 @@ def member_carousel_data(request):
     :jsonp: JSONP formatted bit of JavaScript with company url, name, and image
 
     """
-
     if request.GET.get('microsite_only') == 'true':
         members = helpers.company_thumbnails(Company.objects.filter(
             member=True).exclude(canonical_microsite__isnull=True).exclude(
@@ -2022,3 +2022,25 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+def seo_states(request):
+    data_dict = {"states": sorted(states_with_sites.iteritems()),
+                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+
+    return render_to_response('seo/states.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+def seo_companies(request):
+    # Grab all companies that are a member and has a canonical_microsite
+    companies = Company.objects.filter(member=True).exclude(
+        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
+
+    # Only send info that I care about
+    companies = [{"url": company.canonical_microsite, "name": company.name}
+                 for company in companies]
+
+    data_dict = {"companies": companies}
+    return render_to_response('seo/companies.html', data_dict,
+                              context_instance=RequestContext(request))

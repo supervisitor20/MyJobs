@@ -93,7 +93,7 @@ def country_select(selected="usa", html_id="", input_name="country",
     
     """
     selected = selected.lower()
-    data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/countries.json'
+    data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/countries_167-24.json'
     data_list = _load_json_data(data_url)
     country_list = data_list["countries"]
     try:
