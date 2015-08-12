@@ -67,7 +67,8 @@ class Migration(SchemaMigration):
         The old params format didn't explicitly mention the comparison to be
         performed when running a query, so we need to not only convert from
         nested JSON to a flat django like query string, but we also need to
-        remove those explicit comparison terms.
+        remove those explicit comparison terms. Report regeneration should only
+        happen after first migrating back t 0005.
         """
         reports = Report.objects.exclude(filters__icontains='__')
 
