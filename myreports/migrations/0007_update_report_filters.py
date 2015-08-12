@@ -73,11 +73,7 @@ class Migration(SchemaMigration):
         reports = Report.objects.exclude(filters__icontains='__')
 
         for report in reports:
-            filter_json = json.loads(report.filters)
-            if type(filter_json) == unicode:
-                filter_json = json.loads(filter_json)
-
-            filters = json_to_query(filter_json)
+            filters = json_to_query(json.loads(report.filters))
 
             for key, value in filters.items():
                 if 'locations__state' in key:
