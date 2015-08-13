@@ -1747,7 +1747,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
-    print facet_counts
     if not facet_counts:
         return redirect("/")
 
