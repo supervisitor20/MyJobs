@@ -1004,7 +1004,7 @@ class BusinessUnitAdminFilter(FSMView):
 
 class SeoSiteAdminFilter(FSMView):
     model = SeoSite
-    fields = ('domain__icontains',) 
+    fields = ('domain__icontains',)
 
     @method_decorator(login_required(login_url='/admin/'))
     def dispatch(self, *args, **kwargs):
@@ -1747,10 +1747,8 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
+    print facet_counts
     if not facet_counts:
-        return redirect("/")
-
-    if num_default_jobs == 0 and num_featured_jobs == 0 and not query_path:
         return redirect("/")
 
     default_jobs = default_jobs[:num_default_jobs]
@@ -1760,7 +1758,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if query_path:
         for job in jobs:
             helpers.add_text_to_job(job)
-    
+
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
 
     company_data = helpers.get_company_data(filters)
