@@ -590,16 +590,21 @@ def get_job_from_solr(guid):
     return None
 
 
-def send_response_to_sender(new_to, old_to, email_type, guid='', job=None,
-                            solr_job=None):
+def send_response_to_sender(new_to, old_to, email_type, cc=None, guid='',
+                            job=None, solr_job=None):
     """
     Send response to guid@my.jobs emails
 
     Inputs:
-    :new_to:
-    :old_to:
-    :email_type:
-    :guid:
+    :new_to: Email address associated with the GUID address's buid
+    :old_to: GUID address
+    :email_type: no_job, no_contact, or contact; denotes what type of email
+        is to be sent
+    :cc: Any addresses that were originally CC'd
+    :guid: GUID portion of the incoming address
+    :job: Job from database; includes basic job info (title, location, owner)
+    :solr_job: Job from Solr; If this is passed, the job must not be expired
+        and we can include a job description.
     """
     if not isinstance(new_to, (list, set)):
         new_to = [new_to]
@@ -607,6 +612,9 @@ def send_response_to_sender(new_to, old_to, email_type, guid='', job=None,
         old_to = old_to[0]
     email = EmailMessage(from_email=settings.DEFAULT_FROM_EMAIL,
                          to=new_to)
+    if cc:
+        email.cc = cc
+
     if email_type == 'no_job':
         email.subject = 'Email forward failure'
         email.body = render_to_string('redirect/email/no_job.html',
