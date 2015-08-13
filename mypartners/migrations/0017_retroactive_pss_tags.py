@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from itertools import chain
 from urlparse import parse_qs, urlparse
 from bs4 import BeautifulSoup
 
@@ -14,53 +15,68 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # initial saved search emails don't carry the info we need
+        """
         records = orm.ContactRecord.objects.filter(
             contact_type='pssemail').exclude(
                 notes__icontains='initial partner saved search').order_by(
                     'partner__owner')
+        """
+        records = orm.ContactRecord.objects.filter(
+            contact_type='pssemail').order_by('partner__owner')
 
         current_company = ''
         for record in records:
             record_tags = record.tags.all()
-            soup = BeautifulSoup(record.notes, 'html.parser')
-            # url pointing back to the saved search
-            selector = soup.select(
-                'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
 
-            if not selector:
-                continue
+            if 'intial partner saved search' in record.notes:
+                searches = orm['mysearches.partnersavedsearch'].objects.filter(
+                    email=record.contact.email, partner=record.partner)
 
-            href = selector[0].attrs['href']
+                search_tags = chain(*[search.tags.all() for search in searches])
+            else:
+                soup = BeautifulSoup(record.notes, 'html.parser')
+                # url pointing back to the saved search
+                selector = soup.select(
+                    'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
 
-            pss_id = parse_qs(urlparse(href).query)['id'][0]
-            pss = orm['mysearches.partnersavedsearch'].objects.filter(pk=pss_id)
+                if not selector:
+                    continue
 
-            if not pss.exists():
-                continue
+                href = selector[0].attrs['href']
 
-            pss = pss[0]
-            pss_tags = pss.tags.all()
+                search_id = parse_qs(urlparse(href).query)['id'][0]
+                search = orm['mysearches.partnersavedsearch'].objects.filter(
+                    pk=search_id)
 
-            with open("tag_changes.txt", "a+") as fd:
-                company = record.partner.owner.name
-                if company != current_company:
-                    current_company = company
-                    fd.write("Company: %s" % company)
+                if not search.exists():
+                    continue
 
-                fd.write("Contact Record %d's tags before:\n\t- %s" % (
-                    record.pk, "\n\t- ".join(tag.name for tag in record_tags)))
-                fd.write("Partner Saved Search %s's tags:\n\t- %s" % (
-                    pss.pk, "\n\t- ".join(tag.name for tag in pss_tags)))
+                search = search[0]
+                search_tags = search.tags.all()
 
-                # combine unique tags
-                record.tags = set(pss_tags).union(record_tags)
+                with open('tag_changes.txt', 'a+') as fd:
+                    if search_tags:
+                        company = record.partner.owner.name
+                        if company != current_company:
+                            current_company = company
+                            fd.write("Company: %s\n" % company)
 
-                fd.write("Contact Record %d's tags after:\n\t- %s" % (
-                    record.pk, "\n\t- ".join(
-                        tag.name for tag in record.tags.all())))
+                        fd.write("Contact Record:  %d\n" % record.pk)
+                        fd.write("search tags: %s\n" % str([
+                            tag.name for tag in search_tags]))
 
-                record.save()
+                    if record_tags:
+                        fd.write("record tags: %s\n" % str([
+                            tag.name for tag in record_tags]))
 
+                    # combine unique tags
+                    combined_tags = set(search_tags).union(record_tags)
+
+                    if combined_tags:
+                        fd.write("combined tags: %s\n" %
+                                 str(list([tag.name for tag in combined_tags])))
+
+                    record.save()
 
     def backwards(self, orm):
         pass
