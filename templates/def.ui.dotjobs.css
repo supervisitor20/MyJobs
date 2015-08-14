@@ -7,9 +7,9 @@ html,body{
     font-family: Arial, Verdana, Helvetica, sans-serif;
 }
 .row{
-    margin-left: 0px;
+    margin-left: 0;
 }
-h1, h2, h3, h4, h5, h6, label{
+h1, h2, h3, h4, h5, h6, label {
     color: #{{css.primaryColor}};
 }
 
@@ -82,11 +82,6 @@ form,#standardSearch{
     float: left;
 }
 
-.menu-tabs {
-    border-bottom: 0 solid #333;
-}
-
-.menu-tabs a,
 #current-microsite-name {
     color: #FFF;
     font-weight: bold;
@@ -100,46 +95,19 @@ form,#standardSearch{
     margin-left: 11px;
 }
 
-.menu-tabs .active a,
-div>ul.menu-tabs .active>a,
-div#megaMenu ul a:hover,
-div#megaMenu .menu-tabs a:hover {
-    color: #FFF;
-    background-color: #a95051;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+.moreLocs {
+    padding-top: 2px;
+    padding-bottom: 1px;
+    margin-top: 42px;
 }
 
-/* Mega Menu dropdown network navigation */
-#megaMenu {
-    height: 300px;
-    background: #f2f2f2;
-    position: absolute;
-    width: 960px;
-    top: 29px;
-    left: -1px;
-    border-left: 1px solid #444;
-    border-right: 1px solid #444;
-    border-bottom: 1px solid #444;
+.siteTagsList.showTagList{
+    display: block;
+}
+.siteTagsList.hideTagList{
     display: none;
-    font-size: 12px;
 }
-#megaMenu .container{
-    background: #a95051;
-    width: 960px;
-    position: relative;
-}
-.megaTabSelected {
-    background-color: #67696B;
-}
-#megaMenuContent {
-    height: 273px;
-    display: block;
-}
-#megaMenuStates {
-    height: inherit; 
-    display: block;
-}
+
 .megaMenuTab{
     background-color: #444;
     color: #FFF;
@@ -149,51 +117,6 @@ div#megaMenu .menu-tabs a:hover {
     cursor: pointer;
     border: 1px solid #555;
 }
-#megaMenu ul#mega-menu-navigation > li > a:hover,
-#megaMenu ul#mega-menu-navigation > li.active > a,
-#megaMenu ul#mega-menu-navigation > li.active > a:hover{
-    background-color: #f2f2f2;
-    color: #000;
-    text-shadow: none;
-}
-#megaMenu ul#mega-menu-navigation li a:hover{
-    background-color: #ccc;
-}
-.siteTagsList.showTagList{
-    display: block;
-}
-.siteTagsList.hideTagList{
-    display: none;
-}
-#megaMenuStates > div {
-    margin-left: 16px;
-    margin-top: 10px;
-    height: 250px;
-}
-#megaMenuStates li, #megaMenuStates ul {
-    float: none;
-}
-div#megaMenuStates ul > li a {
-    color: #000;
-    font-size: 1em;
-    padding: 1px 0 1px 10px;
-    width: 172px;
-    margin: 0;
-    text-shadow: none;
-}
-
-div#megaMenuStates ul > li a:hover,
-div#megaCompanyColumnWrapper ul > li a:hover {
-    background-color: #5a6d81;
-    border-radius: 4px;
-    color: #fff;
-}
-
-.moreLocs {
-    padding-top: 2px;
-    padding-bottom: 1px;
-    margin-top: 42px;
-}
 
 #megaMenuCities,
 #megaMenuSiteTags {
@@ -202,33 +125,20 @@ div#megaCompanyColumnWrapper ul > li a:hover {
 
 #megaMenuCities h4,
 #megaMenuSiteTags h4{
-background: #444;
-margin-right: 21px;
-margin-top: 10px;
-border-top-left-radius: 4px;
-border-top-right-radius: 4px;
-color: #fff;
-padding-left: 5px;
-padding-bottom: 2px;
-}
-
-.megamenu-social-tabs {
-    float: right;
-    height: 25px;
-    margin-top: 3px;
-    margin-right: 5px;
+    background: #444;
+    margin-right: 21px;
+    margin-top: 10px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    color: #fff;
+    padding-left: 5px;
+    padding-bottom: 2px;
 }
 
 #megaMenuCities div.selectBox {
     height: 251px;
     margin-top: -1px;
     float: left;          
-}
-
-.topbar #megaMenu h3 {
-    line-height: 27px;
-    font-size: 18px;
-    height: auto;
 }
 
 .cityList,
@@ -333,107 +243,6 @@ li.menu-item-active,
     color: #fff;
 }
 
-/*-----------  Military Family CSS  -----------*/
-#megaMenuMF {
-    display: none;
-}
-#megaMenuMF > div {        
-    display: block;    
-    font-size: 1em;
-}
-#MilitaryFamilySearch {    
-    padding: 6px 0px 3px 5px;
-    font-size: 1em;
-}
-.MFsearchlabel {
-   display: block;
-   font-style: italic;
-   font-size: .8em;
-   text-indent: 10px;
-   margin-top: -15px;   
-}
-.direct_popBaseList {
-   padding: 15px 10px 0 5px;   
-   font-size: 1.2em;
-   margin-top: -4px;
-   background-color: transparent; 
-}
-.direct_popBaseList a {
-    color: #000;
-    font-size: 1em;    
-    margin: 0px;
-    text-shadow: none;
-    text-decoration: none;
-    display: block;
-}
-
-.direct_popBaseList ul {
-    list-style-type: none;
-    margin: 0;
-}
-
-.direct_popBaseList li {
-    padding-bottom: 3px;
-}
-
-.direct_popBaseList li a {
-    padding: 2px 5px;
-    margin: 0 4px;
-}
-
-div.direct_popBaseList ul li a:hover,
-#megaMenuMF div#MilitaryFamilySearch a:hover {
-    background: #5a6d81;
-    border-radius: 4px;
-    color:#fff;
-}
-
-.direct_popBaseList td {
-   width: 186px;
-   border-left: 1px solid #999;
-   padding: 3px 0;
-}
-
-.direct_popBaseList th {
-   background-color: #5a6d81;
-   padding-left: 4px;
-   color: #FFF;
-   font-size: 1.2em;
-   height: 28px;
-   width: 186px;
-   border-left: 1px solid #888;
-   border-bottom: 1px solid #888;
-}
-
-.direct_popBaseList h3 {
-   padding-left: 4px;
-   color: #FFF;
-}
-
-.direct_popBaseList table {
-    background-color: #FFF;
-    border-collapse:separate;
-    border:solid #999 1px;    
-    border-radius:4px;
-    -moz-border-radius:4px;
-}
-.direct_popBaseList td:first-child {
-    border-left: none;
-}
-.direct_popBaseList th:first-child {
-    border-left: none;
-}
-.direct_popBaseList tr:first-child {
-    background-color: #444;
-} 
-input.mocSearchField {
-    font-size: 1.3em;
-    font-weight: bold;
-    width: 930px;
-    border: 1px solid #000;
-    height: 25px;
-    background-color: #eef5ff;
-}
 .ui-autocomplete {
     max-height: 200px;
     overflow-y: auto;
@@ -465,84 +274,12 @@ input.mocSearchField {
     float:left;
     width: 200px;
 }
-/*--------------------*/
 
-#megaMenuCompanies {
-    display: none;
+#cities ul {
+    margin-left: 5px;
 }
-#megaCompanyButtons {
-    margin-left: 15px;
-    margin-top: 15px;
-    width: 200px;
-    float: left;
-    background-color: transparent;
-}
-#megaCompanyColumnWrapper {
-    overflow-y: auto;
-    margin-top: 15px;
-    float: left;
-    width: 729px;
-    background-color: #fff;
-    border: 1px solid #999;
-    height: 240px;
-    position: relative;
-    border-radius: 4px;
-}
-#megaCompanyColumnWrapper a {
-    color: #000;
-    font-size: 1em;
-    padding: 1px 0px 1px 10px;
-    width: 221px;
-    margin: 0px;
-    text-shadow: none;
-}
-.megaCompanyColumn {
-    width: 231px;
-    float: left !important;
-    margin-top: 5px !important;
-    margin-left: 5px !important;
-    margin-bottom: 5px !important;
-}
-.megaCompanyColumn li {
-    float: none;
-    width: inherit;
-}
-#megaCompanyButtons .btn {
-    width: 10px;
-    margin-left: 0px !important;
-    margin-bottom: 5px;
-    margin-right: 3px;
-    text-transform: capitalize;
-}
-#megaCompanyButtons > .alpha-0-9 {
-    width: 48px;
-}
-
-.topbar div#megaMenu div > ul, .topbar .nav{
-    margin: 0;
-}
-.topbar div#megaMenu div > ul a.interLink {
-    /*padding: 6px 8px 10px 8px;
-    z-index: 9999;
-    text-align: center;
-    height: 8px;
-    font-size: 11ox;
-    border: 1px solid #444;
-    float: left;
-    background: none;
-    color: white !important;
-    display: block;
-    font-weight: bold;
-    text-shadow: none;
-    margin-top: 0px;
-    line-height: 13px;    
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;*/
-}
-.topbar div#megaMenu div > ul a.interLink:hover {
-    background: #a95051;
-    cursor: pointer;
+#popularCityList {
+    margin-left: 0;
 }
 h1{
     font-family: helvetica, arial, sans-serif;
