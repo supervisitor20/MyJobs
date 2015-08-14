@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'ContactLogEntry.successful'
         db.add_column(u'mypartners_contactlogentry', 'successful',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True),
                       keep_default=False)
 
 
@@ -95,7 +95,7 @@ class Migration(SchemaMigration):
             'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'successful': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'successful': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
         },
         u'mypartners.contactrecord': {

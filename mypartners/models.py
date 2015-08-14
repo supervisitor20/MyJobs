@@ -739,7 +739,7 @@ class ContactLogEntry(models.Model):
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    successful = models.BooleanField(blank=True, default=True)
+    successful = models.NullBooleanField(default=None)
 
     def get_edited_object(self):
         """
