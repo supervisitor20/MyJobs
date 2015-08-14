@@ -91,7 +91,7 @@ def validate_dotjobs_url(search_url, user):
 
     try:
         page = urllib.urlopen(search_url).read()
-        soup = BeautifulSoup(page)
+        soup = BeautifulSoup(page, "html.parser")
     except Exception, e:
         print e
         return None, None
