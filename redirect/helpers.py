@@ -590,7 +590,7 @@ def get_job_from_solr(guid):
     return None
 
 
-def send_response_to_sender(new_to, old_to, email_type, cc=None, guid='',
+def send_response_to_sender(new_to, old_to, email_type, cc=(), guid='',
                             job=None, solr_job=None):
     """
     Send response to guid@my.jobs emails
@@ -611,9 +611,7 @@ def send_response_to_sender(new_to, old_to, email_type, cc=None, guid='',
     if isinstance(old_to, (list, set)):
         old_to = old_to[0]
     email = EmailMessage(from_email=settings.DEFAULT_FROM_EMAIL,
-                         to=new_to)
-    if cc:
-        email.cc = cc
+                         to=new_to, cc=cc)
 
     if email_type == 'no_job':
         email.subject = 'Email forward failure'
