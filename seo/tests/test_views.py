@@ -7,6 +7,7 @@ import default_settings
 import itertools
 import json
 from StringIO import StringIO
+from collections import OrderedDict
 
 from django.contrib.auth.models import AnonymousUser
 from django.conf import settings
@@ -169,8 +170,8 @@ class WidgetsTestCase(DirectSEOTestCase):
 
     """
     fixtures = ['seo_views_testdata.json']
-    
-    def test_get_widget(self):        
+
+    def test_get_widget(self):
         import widget_settings  # tuple of haystack slab sets
         resp = self.client.get("/")  # get the homepage
         site_config = resp.context['site_config'] # grab the current site config
@@ -737,7 +738,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(resp.context['total_jobs_count'], 1)
 
     def test_bad_lookup_value(self):
-        """ 
+        """
             Tests the use of else block in the solr_ac view when
             the lookup is neither title nor location
         """
@@ -746,7 +747,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         resp3 = self.client.get(u'/ajax/ac/?lookup=bad_value&term=california')
         self.assertEqual(resp1.status_code, 200)
         self.assertEqual(resp2.status_code, 200)
-        # when lookup was neither title nor location, request 
+        # when lookup was neither title nor location, request
         #returns a page which has None([]) as content
         self.assertNotEqual(resp3.status_code, 500)
 
@@ -775,7 +776,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         """
         Regression test, using the same custom facet in a Site for both
         featured and default facets caused a 500 error
-        
+
         """
         site = factories.SeoSiteFactory.build()
         site.save()
@@ -788,7 +789,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
                 i1=self.solr_docs[0]['id'],
                 i2=self.solr_docs[1]['id']))
         default_cf.save()
-        
+
         factories.SeoSiteFacetFactory(
             customfacet=default_cf,
             seosite=site,
@@ -834,7 +835,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
                 u=featured_job['uid']),
             group=group)
         featured_cf.save()
- 
+
         factories.SeoSiteFacetFactory(customfacet=default_cf,
                                       seosite=site,
                                       facet_type=SeoSiteFacet.DEFAULT)
@@ -892,8 +893,8 @@ class SeoSiteTestCase(DirectSEOTestCase):
     def test_default_custom_facets_homepage(self):
         """
         Tests that custom facets are applied to ajax_get_jobs when viewing all
-        jobs. 
-        
+        jobs.
+
         """
         site = factories.SeoSiteFactory.build()
         site.save()
@@ -911,7 +912,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         factories.SeoSiteFacetFactory(customfacet=default_cf,
                                       seosite=site,
                                       facet_type=SeoSiteFacet.DEFAULT)
-        
+
         resp = self.client.get('/jobs/', follow=True,
                                HTTP_HOST='buckconsultants.jobs')
 
@@ -921,7 +922,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(resp.context['total_jobs_count'], 1)
         self.assertEqual(str(all_jobs[0].uid), site_job['uid'])
 
-        #This querystring should return two jobs 
+        #This querystring should return two jobs
         default_cf.querystring = 'id:({i}) OR uid:{u}'.format(
             i=self.solr_docs[0]['id'],
             u=site_job['uid'])
@@ -958,7 +959,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
 
         facet_fields = ['facets', 'titles', 'cities', 'states', 'mocs',
                         'countries', 'facets', 'company-facets']
- 
+
         for query in query_strings:
             default_cf = factories.CustomFacetFactory.build(querystring=query)
             default_cf.save()
@@ -985,7 +986,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
     def test_custom_moc(self):
         """
         Regression test on a series of default and custom moc mappings. Checks
-        two-to-one and one-to-two moc-onet mappings, which were returning 
+        two-to-one and one-to-two moc-onet mappings, which were returning
         null search results - Ticket MS-378
 
         """
@@ -1016,7 +1017,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         })
 
         self.conn.add([default_job, custom_job])
-        
+
         #Perform a search by moc code, Solr should be queried by that moc code
         resp = self.client.get('/jobs/?location=&q=&moc=%s' % moc_code,
                                follow=True)
@@ -1029,7 +1030,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
                                              id=4105)
         moc.save()
 
-        #Perform a search by moc with an moc_models.Moc object in ORM 
+        #Perform a search by moc with an moc_models.Moc object in ORM
         #Solr should now be queried by mocid, but the result should still
         #be default_job
         resp = self.client.get('/jobs/?&moc=%s' % moc_code)
@@ -1067,7 +1068,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.conn.delete(q='*:*')
         self.conn.add([default_job, custom_job])
 
-        #Perform a search by moc with a custom_career mapping. Search result 
+        #Perform a search by moc with a custom_career mapping. Search result
         #should be custom job
         resp = self.client.get('/jobs/?moc=%s' % moc_code)
         self.assertEqual(resp.status_code, 200)
@@ -1127,7 +1128,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
 
 class TemplateTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
-    
+
     def setUp(self):
         super(TemplateTestCase, self).setUp()
         self.site = factories.SeoSiteFactory.build(id=1)
@@ -1157,12 +1158,12 @@ class TemplateTestCase(DirectSEOTestCase):
         #Check string from view_all_jobs_label
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
- 
+
     def test_view_all_jobs_label(self):
         bu = BusinessUnit.objects.get(id=1)
         bu.title="Acme"
         bu.save()
-        self.site.business_units.add(bu)        
+        self.site.business_units.add(bu)
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
         settings.SITE_TITLE = "Acme Ohio Jobs"
@@ -1196,7 +1197,7 @@ class TemplateTestCase(DirectSEOTestCase):
         bu = BusinessUnit.objects.get(id=1)
         bu.title=None
         bu.save()
-        self.site.business_units.add(bu)        
+        self.site.business_units.add(bu)
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
         settings.SITE_TITLE = "Acme Ohio Jobs"
@@ -1207,8 +1208,8 @@ class TemplateTestCase(DirectSEOTestCase):
         resp = template.render(TemplateContext(request))
         self.assertEqual(resp,"View All Jobs")
         config = factories.ConfigurationFactory.build(id=2)
-        config.view_all_jobs_detail=True        
-        config.save()        
+        config.view_all_jobs_detail=True
+        config.save()
         self.site.configurations.clear()
         self.site.configurations.add(config)
         cache.clear()
@@ -1218,7 +1219,7 @@ class TemplateTestCase(DirectSEOTestCase):
                 "{% view_all_jobs_label site_config.view_all_jobs_detail %}")
         resp = template.render(TemplateContext(request))
         #Check string from view_all_jobs_label
-        self.assertEqual(resp,"View All Acme Ohio Jobs")        
+        self.assertEqual(resp,"View All Acme Ohio Jobs")
 
     def test_search_box_template(self):
         config = factories.ConfigurationFactory.build()
@@ -1243,12 +1244,12 @@ class TemplateTestCase(DirectSEOTestCase):
         """Renders seo_base.html"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme"        
+        settings.SITE_TITLE = "Acme"
         template = Template(file("templates/seo_base.html", 'r').read())
         resp = template.render(TemplateContext(request, {}))
         #Check string from view_all_jobs_label
         self.assertIn("View All Jobs", resp)
-        
+
     def test_seo_no_sponsor_logo_network_site(self):
         """Check that the empty sponsor logo function is rendered on
         network sites with no sponsor set"""
@@ -1263,7 +1264,7 @@ class TemplateTestCase(DirectSEOTestCase):
         resp = template.render(TemplateContext(request, {'widgets':'',
                                                          'site_tags':'["network"]'}))
         self.assertIn('BuildSponsorLogo("",""));', resp)
-    
+
     def test_seo_sponsor_logo_network_site(self):
         """Check that the sponsor logo function is rendered with data on
         network sites with a sponsor set"""
@@ -1271,8 +1272,8 @@ class TemplateTestCase(DirectSEOTestCase):
         request.user = AnonymousUser()
         settings.SITE_TITLE = "Acme"
         bb = factories.BillboardImageFactory.build()
-        bb.save()        
-        settings.SITE.billboard_images.add(bb)        
+        bb.save()
+        settings.SITE.billboard_images.add(bb)
         template = Template(
             file("templates/seo_billboard_homepage_base.html", 'r').read())
         resp = template.render(
@@ -1280,12 +1281,12 @@ class TemplateTestCase(DirectSEOTestCase):
                 request, {
                     'widgets':'',
                     'billboard_images':settings.SITE.billboard_images.all(),
-                    'site_tags':['network'],                    
+                    'site_tags':['network'],
                     }
                 )
             )
         self.assertIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
-        
+
     def test_seo_no_sponsor_logo_company_site(self):
         """Check that the empty sponsor logo function is not rendered on
         company sites with no sponsor set"""
@@ -1317,7 +1318,7 @@ class TemplateTestCase(DirectSEOTestCase):
             )
         )
         self.assertNotIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
-        
+
     def test_seo_sponsor_logo_company_site(self):
         """Check that the sponsor logo function is rendered on
         company sites with a sponsor set"""
@@ -1329,10 +1330,10 @@ class TemplateTestCase(DirectSEOTestCase):
         site.configurations.add(config_obj)
         site.save()
         settings.SITE = site
-        settings.SITE_TITLE = "Acme"        
+        settings.SITE_TITLE = "Acme"
         bb = factories.BillboardImageFactory.build()
-        bb.save()        
-        settings.SITE.billboard_images.add(bb)        
+        bb.save()
+        settings.SITE.billboard_images.add(bb)
         template = Template(
             file("templates/seo_billboard_homepage_base.html", 'r').read())
         resp = template.render(
@@ -1344,7 +1345,7 @@ class TemplateTestCase(DirectSEOTestCase):
                 }
             )
         )
-        self.assertIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)        
+        self.assertIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
 
     def test_smart_truncate(self):
         """Test that the smart truncate template tag properly reduces the the
@@ -1360,7 +1361,7 @@ class TemplateTestCase(DirectSEOTestCase):
         self.assertEqual(smart_truncate(eas_string),
                          u"(特殊字符特殊字符) A 48 char str...")
 
-    
+
 class SeoViewsTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
@@ -1561,7 +1562,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
     def test_hashtag_search(self):
         results = self.conn.search("description:#job", fl="uid").docs
         self.assertEqual(results, [{u'uid': 1000}])
-    
+
     def build_slug_tag_paths(self, SLUG_TAGS, reverse=False):
         """Builds a list of url filter paths from a slug tag dictionary"""
         paths = []
@@ -1588,9 +1589,19 @@ class SeoViewsTestCase(DirectSEOTestCase):
     def test_slug_tag_permanent_redirect(self):
         """Filter paths not in canonical order result in a 301 to the canonical
         path"""
+        slugs_and_paths = OrderedDict([
+            ('sample_title', '/jobs-in/'),
+            ('sample_location', '/jobs/'),
+            ('test/moc/slug', '/vet-jobs/'),
+            ('sample_facet', '/new-jobs/'),
+            ('sample_company', '/careers/'),
+        ])
+        """Ensure slugs_and_paths has the same number of slug combinations as
+        the settings file"""
+        self.assertEqual(len(slugs_and_paths), len(default_settings.SLUG_TAGS))
         paths = self.build_slug_tag_paths(
-                default_settings.SLUG_TAGS, reverse=True)
-        targets = self.build_slug_tag_paths(default_settings.SLUG_TAGS)
+                slugs_and_paths, reverse=True)
+        targets = self.build_slug_tag_paths(slugs_and_paths)
         for (path,target) in zip(paths, targets):
             resp = self.client.get(path)
             self.assertEqual(resp.status_code, 301)
@@ -1600,7 +1611,18 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
     def test_slug_tag_redirect(self):
         """Filter paths in canonical order don't result in a redirect"""
-        paths = self.build_slug_tag_paths(default_settings.SLUG_TAGS)
+        slugs_and_paths = OrderedDict([
+            ('sample_title', '/jobs-in/'),
+            ('sample_location', '/jobs/'),
+            ('test/moc/slug', '/vet-jobs/'),
+            ('sample_facet', '/new-jobs/'),
+            ('sample_company', '/careers/'),
+        ])
+        """Ensure slugs_and_paths has the same number of slug combinations as
+        the settings file"""
+        self.assertEqual(len(slugs_and_paths), len(default_settings.SLUG_TAGS))
+
+        paths = self.build_slug_tag_paths(slugs_and_paths)
         for path in paths:
             resp = self.client.get(path)
             #job_listing_by_slug tag can return a 200, 302, or 404 depending
@@ -1612,8 +1634,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
         # Make sure that links from feed that include a query string aren't
         # stripped of the query string by the redirect to the canonical URL
         site = factories.SeoSiteFactory.build()
-        site.save()        
-        resp = self.client.get('/indeed/1000/job?src=indeed_test', 
+        site.save()
+        resp = self.client.get('/indeed/1000/job?src=indeed_test',
             follow=True, HTTP_HOST='buckconsultants.jobs')
         target_path = u'indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/?utm_source=indeed&utm_medium=feed&src=indeed_test'
         quoted_path = urlquote(target_path, safe='&:=?/')
@@ -1666,7 +1688,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         def test_search_not(self):
             """Tests the '-' search operator for a title query"""
-            #This query should return results for Retail Associate, 
+            #This query should return results for Retail Associate,
             #but not Retail Manager
             resp = self.client.get(
                 u'/jobs/?q=Retail+-Manager'
@@ -1841,7 +1863,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         """
         Test that job listing pages return no server errors and that objects
         all work.
-        
+
         """
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
             site = factories.SeoSiteFactory.build()
@@ -1874,7 +1896,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         cf1.save()
 
         factories.SeoSiteFacetFactory(customfacet=cf1, seosite=site)
-                        
+
         cf2 = factories.CustomFacetFactory.build(city="Pasadena", state="Texas",
                                                  country="United States",
                                                  name="Pasadena Jobs",
@@ -1915,7 +1937,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
-        
+
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
             next_link = '/feed/xml?num_items=1'
             num_pages = 0
@@ -1953,7 +1975,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         job = self.solr_docs[0]
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
             resp = self.client.get(
-                    '/feed/rss?q=uid:1000' 
+                    '/feed/rss?q=uid:1000'
                 )
             tree = etree.parse(StringIO(resp.content))
             self.assertEqual(resp.status_code, 200)
@@ -1980,16 +2002,16 @@ class SeoViewsTestCase(DirectSEOTestCase):
             self.assertTrue('location=' in self_link and 'q=' in self_link)
             next_link = tree.find("link[@rel='next']").get('href')
             # Get the child tags of the first <job> tag from the XML output
-            self.assertTrue('location=' in next_link and 'q=' in next_link) 
+            self.assertTrue('location=' in next_link and 'q=' in next_link)
 
     def test_feed_title(self):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
-        feed_types = ['rss', 'atom'] 
+        feed_types = ['rss', 'atom']
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
             for feed_type in feed_types:
-                resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' % 
+                resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' %
                                        feed_type, HTTP_HOST="buckconsultants.jobs")
                 self.assertEqual(resp.status_code, 200)
                 self.assertNotEqual(resp.content.find(
@@ -2011,12 +2033,12 @@ class SeoViewsTestCase(DirectSEOTestCase):
             self.assertIn(rss_link, resp.content)
 
     def test_feed_urls(self):
-        
+
         feed_types = {
-            'xml': 'xml', 
-            'json': 'json', 
+            'xml': 'xml',
+            'json': 'json',
             'indeed': 'xml',
-            'atom': 'atom+xml; charset=utf-8', 
+            'atom': 'atom+xml; charset=utf-8',
             'rss': 'rss+xml; charset=utf-8',
             'jsonp': 'javascript'
         }
@@ -2223,14 +2245,14 @@ class SeoViewsTestCase(DirectSEOTestCase):
                              default_settings.SLUG_TAGS.items()])
         response = self.client.get('/test/test/test/')
         self.assertEqual(response.status_code, 404)
-        
+
     def test_stylesheet(self):
         response = self.client.get('/style/style.css')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/style/def.ui.dotjobs.css')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/style/def.ui.dotjobs.ie7.css')
-        self.assertEqual(response.status_code, 200)   
+        self.assertEqual(response.status_code, 200)
         response = self.client.get('/style/def.ui.dotjobs.results.css')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/style/def.ui.microsite.mobile.css')
@@ -2304,25 +2326,25 @@ class SeoViewsTestCase(DirectSEOTestCase):
         moc.save()
         onet = moc_factories.OnetFactory.build()
         onet.save()
-        
+
         moc.onets = moc_models.Onet.objects.all()
         val = mocd.primary_value
         label = "%s - %s (%s - %s)" % (val, mocd.civilian_description,
                                       branches[mocd.service_branch].capitalize(),
                                       mocd.military_description)
         mocid = moc.id
-        
+
         # test for code
         resp = self.client.get("/ajax/mac/?lookup=moc&term=01&callback=jq_code")
         self.assertEqual(resp.content, ('jq_code([{"moc_id": %s, "value": "%s",'
                                         ' "label": "%s"}])' % (mocid, val,
                                                               label)))
-        # test for keyword        
+        # test for keyword
         resp = self.client.get("/ajax/mac/?lookup=moc&term=busi&callback=jq_term")
         self.assertEqual(resp.content, ('jq_term([{"moc_id": %s, "value": "%s",'
                                         ' "label": "%s"}])' % (mocid, val,
                                                               label)))
-        
+
         # remove buid associations and try again
         buids = BusinessUnit.objects.all()
         for buid in buids:
@@ -2332,18 +2354,18 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertEqual(resp.content, ('jq_code([{"moc_id": %s, "value": "%s",'
                                         ' "label": "%s"}])' % (mocid, val,
                                                               label)))
-        # test for keyword        
+        # test for keyword
         resp = self.client.get("/ajax/mac/?lookup=moc&term=busi&callback=jq_term")
         self.assertEqual(resp.content, ('jq_term([{"moc_id": %s, "value": "%s",'
                                         ' "label": "%s"}])' % (mocid, val,
                                                               label)))
-        
+
     def test_configuration_admin(self):
         """
         Test the custom configuration admin template to make sure there are no
         errors in the template tags or block translations.
-        
-        """        
+
+        """
         config = factories.ConfigurationFactory.build()
         config.save()
         self.assertTrue(self.client.login(email='matt@directemployers.org',
@@ -2370,8 +2392,13 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.post("/ajax/data/sites?tag=Fake%20Tag")
         self.assertEqual(resp.status_code, 200)
 
-    def test_company_302(self):
+    def test_invalid_company_200(self):
         """
+        Modification of previous test to ensure that an invalid company name
+        would return a 302. Invalid company names should now return a empty
+        search page (status code 200).
+
+        PREVIOUS COMMENT:
         Regression test to ensure that a URL specifying a non-existent
         company name returns a 302 appropriately.
 
@@ -2379,6 +2406,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         visiting a URL like `http://www.my.jobs/alksjdklajsd/careers/`
         returned all results for www.my.jobs. This would work on any site
         that has company facets enabled.
+
 
         """
         # In order to actually capture this bug properly, we must set our
@@ -2389,9 +2417,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.business_units = []
         site.save()
         resp = self.client.get("/aslkdjas/careers/")
-        self.assertEqual(resp.status_code, 302)
-        
-    def test_moc_duplicate_search(self):       
+        self.assertEqual(resp.status_code, 200)
+
+    def test_moc_duplicate_search(self):
         """Search by non-unique moc should return all matching jobs."""
         self.conn.delete(q="*:*")
         solr_docs_copy=deepcopy(self.solr_docs)
@@ -2420,7 +2448,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertEqual(len(jobs), 2)
         self.assertNotEqual(jobs[0].id, jobs[1].id)
 
-    def test_moc_id_search(self):       
+    def test_moc_id_search(self):
         """Search by unique moc_id should return jobs unique to the moc record."""
         #create two job listings with the same moc
         self.conn.delete(q="*:*")
@@ -2443,7 +2471,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         }
         solr_docs_copy[1].update(kwargs2)
         self.conn.add(solr_docs_copy)
-        #Check that a search by duplicated moc and unique moc_id 
+        #Check that a search by duplicated moc and unique moc_id
         #returns 1 correct job listing only
         resp = self.client.get("/jobs/?moc=%s&moc_id=%s" % (kwargs1['mapped_moc'],
                                                             kwargs2['mapped_mocid']),
@@ -2452,11 +2480,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
         jobs = resp.context['default_jobs']
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0].id, kwargs2['id'])
-    
+
     def test_company_list(self):
         """
         Test the view all companies listing to make sure it returns results.
-        
+
         """
         self.conn.delete(q="*:*")
 
@@ -2470,7 +2498,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         solr_docs_copy[0].update(kwargs1)
 
         self.conn.add(solr_docs_copy)
-        
+
         alpha_buid = factories.BusinessUnitFactory.build(title="1A Company",id=1)
         alpha_buid.save()
         site = factories.SeoSiteFactory.build(id=1,
@@ -2480,28 +2508,28 @@ class SeoViewsTestCase(DirectSEOTestCase):
         company.save()
         company.job_source_ids.add(alpha_buid.id)
         company.save()
-        
+
         company = factories.CompanyFactory.build(name="A Company")
         company.save()
         company.job_source_ids.add(alpha_buid.id)
         company.save()
-        
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):   
+
+        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
             #test for companies beginning with a number
             resp = self.client.get("/all-companies/0-9/")
-            self.assertContains(resp,'<li class="company">',count=None, 
+            self.assertContains(resp,'<li class="company">',count=None,
                                 status_code=200, msg_prefix='')
             #test for companies beginning with a letter
             resp = self.client.get("/all-companies/a/")
-            self.assertContains(resp,'<li class="company">',count=None, 
+            self.assertContains(resp,'<li class="company">',count=None,
                                 status_code=200, msg_prefix='')
-            
+
     def test_empty_company_listing(self):
         company = Company.objects.none()
         response = self.client.get('/all-companies/')
         self.assertEqual(response.status_code, 200)
-        
-    def test_static_page_analytics(self):           
+
+    def test_static_page_analytics(self):
         site = factories.SeoSiteFactory.build(id=1, domain=u'www.my.jobs',
                                               name='www.my.jobs')
         site.save()
@@ -2512,15 +2540,15 @@ class SeoViewsTestCase(DirectSEOTestCase):
         fp.save()
         fp.sites.add(site)
         fp.save()
-        
+
         ga = factories.GoogleAnalyticsFactory.build()
         ga.save()
         site.google_analytics.add(ga)
-        
+
         resp = self.client.get('/test-page/')
 
-        self.assertIn(ga.web_property_id, resp.content)      
-        self.assertEqual(resp.content.count(ga.web_property_id), 1)      
+        self.assertIn(ga.web_property_id, resp.content)
+        self.assertEqual(resp.content.count(ga.web_property_id), 1)
         #GA pageview sent in footer
         self.assertContains(resp, "'g"+str(ga.id)+".send', 'pageview'")
         #Check that site is getting default header and footer
@@ -2533,9 +2561,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertEqual(settings.SITE_TITLE, "Test Site")
 
     def footer_no_network_tag_test(self):
-        """ 
+        """
         Sites that do not have the network tag should not get a header and footer
-        """         
+        """
         site = factories.SeoSiteFactory.build(id=1,
                                     domain=u'www.my.jobs',name='www.my.jobs')
         site.save()
@@ -2558,7 +2586,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         ga = factories.GoogleAnalyticsFactory.build()
         ga.save()
         site.google_analytics.add(ga)
- 
+
         resp = self.client.get(
                 '/',
                 HTTP_HOST='buckconsultants.jobs',
@@ -2568,8 +2596,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertIn('function(i,s,o,g,r,a,m)', resp.content)
         # Check that classic analytics script isn't present
         self.assertNotIn('google-analytics.com/ga.js', resp.content)
-        self.assertEqual(resp.content.count(ga.web_property_id), 1)      
-        
+        self.assertEqual(resp.content.count(ga.web_property_id), 1)
+
     def test_saved_search_render(self):
         """Test that network sites get the saved search form on job listings."""
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
@@ -2582,9 +2610,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
                     '/indianapolis/indiana/usa/jobs/',
                     HTTP_HOST='buckconsultants.jobs',
                     follow=True)
-            self.assertContains(resp,'<div id="de-myjobs-widget"',count=None, 
+            self.assertContains(resp,'<div id="de-myjobs-widget"',count=None,
                                     status_code=200, msg_prefix='')
-            
+
     def test_saved_search_non_render(self):
         """Test company sites don't have a saved search form on job listings."""
         with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
@@ -2592,12 +2620,12 @@ class SeoViewsTestCase(DirectSEOTestCase):
             site.save()
             site_tag = SiteTag(site_tag='company')
             site_tag.save()
-            site.site_tags.add(site_tag) 
+            site.site_tags.add(site_tag)
             resp = self.client.get(
                     '/indianapolis/indiana/usa/jobs/',
                     HTTP_HOST='buckconsultants.jobs',
                     follow=True)
-            self.assertNotContains(resp,'<div id="direct_savedsearch"', 
+            self.assertNotContains(resp,'<div id="direct_savedsearch"',
                                    status_code=200, msg_prefix='')
 
     def test_secure_redirect(self):
