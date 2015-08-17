@@ -66,6 +66,7 @@ class FallbackTestCase(DirectSEOTestCase):
 
     def tearDown(self):
         self.conn.delete(q='*:*')
+        super(FallbackTestCase, self).tearDown()
 
     def make_page(self, page_type):
         content = 'This is a content block'
@@ -2605,7 +2606,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
         tag = SiteTag.objects.create(site_tag='network')
         for path in ['about', 'privacy', 'contact', 'contact_faq', 'terms']:
             response = self.client.get(reverse(path))
-            print path
             self.assertEqual(response.status_code, 404)
 
             site.site_tags.add(tag)
