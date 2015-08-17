@@ -56,7 +56,7 @@ def add_view_source_group(url, view_source):
     """
     vs = ViewSource.objects.filter(
         view_source_id=view_source).prefetch_related(
-        'viewsourcegroup_set').first()
+            'viewsourcegroup_set').first()
     if (vs is not None and vs.include_ga_params
             and vs.viewsourcegroup_set.exists()):
         url = replace_or_add_query(
@@ -655,7 +655,7 @@ def repost_to_mj(post, files):
         for index in range(len(files)):
             # This fails when we include content type for some reason;
             # Don't send content type
-            new_files['attachment%s' % (index+1, )] = files[index][:2]
+            new_files['attachment%s' % (index + 1, )] = files[index][:2]
         r = requests.post(mj_url, data=post, files=new_files)
 
 
