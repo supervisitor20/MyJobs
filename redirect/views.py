@@ -245,8 +245,7 @@ def email_redirect(request):
 
     email_dict = {'new_to': from_email,
                   'old_to': to_email,
-                  'guid': hex_guid,
-                  'cc': cc}
+                  'guid': hex_guid}
 
     try:
         to_guid = '{%s}' % uuid.UUID(hex_guid)

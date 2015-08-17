@@ -590,7 +590,7 @@ def get_job_from_solr(guid):
     return None
 
 
-def send_response_to_sender(new_to, old_to, email_type, cc=(), guid='',
+def send_response_to_sender(new_to, old_to, email_type, guid='',
                             job=None, solr_job=None):
     """
     Send response to guid@my.jobs emails
@@ -600,7 +600,6 @@ def send_response_to_sender(new_to, old_to, email_type, cc=(), guid='',
     :old_to: GUID address
     :email_type: no_job, no_contact, or contact; denotes what type of email
         is to be sent
-    :cc: Any addresses that were originally CC'd
     :guid: GUID portion of the incoming address
     :job: Job from database; includes basic job info (title, location, owner)
     :solr_job: Job from Solr; If this is passed, the job must not be expired
@@ -611,7 +610,7 @@ def send_response_to_sender(new_to, old_to, email_type, cc=(), guid='',
     if isinstance(old_to, (list, set)):
         old_to = old_to[0]
     email = EmailMessage(from_email=settings.DEFAULT_FROM_EMAIL,
-                         to=new_to, cc=cc)
+                         to=new_to)
 
     if email_type == 'no_job':
         email.subject = 'Email forward failure'

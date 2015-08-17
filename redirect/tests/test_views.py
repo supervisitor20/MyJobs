@@ -1114,15 +1114,19 @@ class EmailForwardTests(RedirectBase):
         The ideal path for GUID emails sends two emails per request, one to
         the original sender to denote that we received the request and one
         to the job owner. If anyone has been CC'd, we should also CC them on
-        both of these.
+        the company contact email but not the acknowledgement of receipt.
         """
         self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
         self.post_dict['subject'] = 'Email forward success'
         self.post_dict['cc'] = ['comprep@company.org']
         self.submit_email()
 
-        self.assertTrue(all(self.post_dict['cc'] == email.cc
-                            for email in mail.outbox))
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(mail.outbox[0].to, [self.post_dict['from']])
+        self.assertNotEqual(mail.outbox[0].cc, self.post_dict['cc'])
+
+        self.assertEqual(mail.outbox[1].to, [self.contact.email])
+        self.assertEqual(mail.outbox[1].cc, self.post_dict['cc'])
 
     def test_good_guid_email_old_job(self):
         """
