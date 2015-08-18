@@ -84,9 +84,8 @@ def send_search_digest(self, search):
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
         else:
-            # After the initial try and two retries, disable the offending
-            # saved search
-            search.disable_or_fix()
+            # Ignore the failure and hope it somehow resolves itself
+            pass
 
 
 @task(name='tasks.update_partner_library', ignore_result=True,

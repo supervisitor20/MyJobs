@@ -344,28 +344,6 @@ class SavedSearch(models.Model):
     class Meta:
         verbose_name_plural = "saved searches"
 
-    def disable_or_fix(self):
-        """
-        Disables or fixes this saved search based on the presence or lack of an
-        rss feed on the search url. Sends a "search has been disabled" email
-        if this is not fixable.
-        """
-        try:
-            _, feed = validate_dotjobs_url(self.url, self.user)
-        except ValueError:
-            feed = None
-
-        if feed is None:
-            # search url did not contain an rss link and is not valid
-            self.is_active = False
-            self.save()
-            self.send_disable_email()
-        elif self.feed == '':
-            # search url passed validation in the past even though there was
-            # an issue retrieving the page; update the feed url
-            self.feed = feed
-            self.save()
-
     def send_disable_email(self):
         message = render_to_string('mysearches/email_disable.html',
                                    {'saved_search': self})
@@ -486,14 +464,6 @@ class SavedSearchDigest(models.Model):
             else:
                 log_kwargs['reason'] = "User can't receive MyJobs email"
         SavedSearchLog.objects.create(**log_kwargs)
-
-    def disable_or_fix(self):
-        """
-        Calls SavedSearch.disable_or_fix for each saved search associated
-        with the owner of this digest.
-        """
-        for search in self.user.savedsearch_set.filter(is_active=True):
-            search.disable_or_fix()
 
 
 class PartnerSavedSearch(SavedSearch):
