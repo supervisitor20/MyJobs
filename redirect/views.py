@@ -206,7 +206,7 @@ def email_redirect(request):
         content_type = file_.content_type
         attachment_data.append((name, content, content_type))
 
-    addresses = getaddresses(to_email + cc)
+    addresses = getaddresses(to_email)
     addresses = [addr[1].lower() for addr in addresses]
 
     prm_bcc = False
@@ -233,8 +233,7 @@ def email_redirect(request):
             return HttpResponse(content='reposted')
         return HttpResponse(status=200)
     if len(addresses) != 1:
-        # >1 recipients
-        # or 0 recipients (everyone is bcc)
+        # >1 recipients in the "to" field or everyone is (b)cc
         # Probably not a guid@my.jobs email
         return HttpResponse(status=200)
     hex_guid = addresses[0].split('@')[0]
