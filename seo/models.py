@@ -943,9 +943,6 @@ class SiteTag(models.Model):
                                          help_text='Tag can be used for '
                                                    'navigation by users. '
                                                    'Viewable by public.')
-    parent = models.ForeignKey(SeoSite, blank=True, null=True,
-                               help_text='The parent site if the tag is a '
-                                         'for a site family.')
 
     def __unicode__(self):
         return "%s" % self.site_tag
