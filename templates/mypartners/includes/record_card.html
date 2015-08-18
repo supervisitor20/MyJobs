@@ -2,7 +2,7 @@
 <div class="product-card">
     <div class="big-title">
         {% with record.contactlogentry as cle %}
-            {{ record.subject }} {% if record.contact.name %} {% if record.subject %}-{% endif %} {{record.contact.name}} {% endif %}{% if cle %} <i class="fa fa-{%if cle.successful%}check-circle green{% else %}times-circle red{% endif %}" title="{% if cle.successful %}Successfully sent{% else %}Email failed, view for more info{% endif %}"></i>{% endif %}
+            {{ record.subject }} {% if record.contact.name %} {% if record.subject %}-{% endif %} {{record.contact.name}} {% endif %}{% if record.contact_type == "pssemail" %} <i class="fa fa-{% if cle.successful %}check-circle green{% else %}times-circle red{% endif %}" title="{% if cle.successful %}Successfully sent{% else %}Email failed, view notes for more info{% endif %}"></i>{% endif %}
         {% endwith %}
     </div>
     <div class="sub-title">
