@@ -51,15 +51,15 @@ class GroupListFilter(admin.SimpleListFilter):
     Limits group filter selection and results to only groups the user is a
     member of unless the user is a superadmin.
     """
-    
+
     title = _('Group')
     parameter_name = 'filtered_groups'
-    
+
     def lookups(self, request, model_admin):
         """
         Limits filter selection.
         """
-        
+
         if request.user.is_superuser:
             return [(group.name, group.name) for group in Group.objects.all()]
         return [(group.name, group.name) for group in request.user.groups.all()]
@@ -68,7 +68,7 @@ class GroupListFilter(admin.SimpleListFilter):
         """
         Limits query results.
         """
-        
+
         if not self.value():
             return queryset
         return queryset.filter(group__name=self.value())
@@ -116,13 +116,13 @@ class ConfigurationAdmin (admin.ModelAdmin):
         return actions
 
     actions = ['clone_objects', ]
-    
+
     def queryset(self, request):
         qs = super(ConfigurationAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(group__in=request.user.groups.all())
-        
+
     def clone_objects(self, request, queryset):
         def clone(from_object):
             args = dict([(fld.name, getattr(from_object, fld.name))
@@ -143,7 +143,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
             obj.save()
             objs.append(obj)
     clone_objects.short_description = "Copy the selected configurations"
-        
+
     def get_form(self, request, obj=None, **kwargs):
         this = super(ConfigurationAdmin, self).get_form(request, obj, **kwargs)
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
@@ -220,11 +220,11 @@ class ConfigurationAdmin (admin.ModelAdmin):
                         id__in=request.user.groups.all())
         return this
 
-    @check_message_queue        
+    @check_message_queue
     def delete_model(self, request, *args, **kwargs):
         super(ConfigurationAdmin, self).delete_model(request, *args, **kwargs)
 
-    @check_message_queue        
+    @check_message_queue
     def save_model(self, request, obj, form, change):
         if obj.status == [1, 2]:
             #Force an evaluation of obj site keys. When obj.seosite_set was used
@@ -244,7 +244,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
             obj.group = request.user.groups.all()[0]
         obj.save()
 
-      
+
 class BusinessUnitAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'show_sites', 'associated_jobs',
                     'date_crawled', 'date_updated')
@@ -272,19 +272,19 @@ class BusinessUnitAdmin(admin.ModelAdmin):
         """
         for business_unit in queryset:
             tasks.task_update_solr.delay(business_unit.id, force=True)
-            
+
         messages.info(request, u"{alljobs} {busiunitid} {reprocess}".format(
             alljobs=_("All jobs for Business Unit:"),
             busiunitid=(business_unit.id),
             reprocess=_("will be re-processed shortly."))
         )
     reset_jobs.short_description = _("Refresh all jobs in business unit")
-    
+
     def clear(self, request, queryset):
         for jsid in queryset:
             tasks.task_clear.delay(jsid)
             tasks.task_clear_solr.delay(jsid.id)
-            
+
         messages.info(request, u"{alljobs} {jsident} {remove}".format(
             alljobs=_("All jobs for Business Unit:"),
             jsident=(jsid.id),
@@ -303,11 +303,11 @@ class BusinessUnitAdmin(admin.ModelAdmin):
         )
     force_create.short_description = _("Force creation of business unit feed")
 
-    
+
 class MyUserAdmin(UserAdmin):
     filter_horizontal = ('user_permissions', 'groups')
 
-        
+
 class GoogleAnalyticsForm(forms.ModelForm):
     sites = MyModelMultipleChoiceField(SeoSite.objects.all(), my_model=SeoSite,
                                        required=False,
@@ -316,7 +316,7 @@ class GoogleAnalyticsForm(forms.ModelForm):
                                                                        False)))
     group = MyModelChoiceField(Group.objects.order_by('name'), my_model=Group,
                                required=False)
-          
+
     def save(self, commit=True):
         added_sites = set()
         ga = forms.ModelForm.save(self, commit)
@@ -333,19 +333,19 @@ class GoogleAnalyticsForm(forms.ModelForm):
     class Meta:
         model = GoogleAnalytics
 
-        
+
 class GoogleAnalyticsAdmin(admin.ModelAdmin):
-    
-    form = GoogleAnalyticsForm    
+
+    form = GoogleAnalyticsForm
     list_display = ('web_property_id', 'group', 'show_sites')
     search_fields = ['seosite__domain', 'seosite__name', 'web_property_id']
-    
+
     def queryset(self, request):
         qs = super(GoogleAnalyticsAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(group__in=request.user.groups.all())
-        
+
     def get_form(self, request, obj=None, **kwargs):
         this = super(GoogleAnalyticsAdmin, self).get_form(request, obj,
                                                           **kwargs)
@@ -379,7 +379,7 @@ class GoogleAnalyticsAdmin(admin.ModelAdmin):
                     this.base_fields['group'].queryset = Group.objects.filter(
                         id__in=request.user.groups.all())
         return this
-        
+
     def save_model(self, request, obj, form, change):
         if (not request.user.is_superuser and
             request.user.groups.count() is 1 and
@@ -396,10 +396,10 @@ class RowPermissionsAdmin(admin.ModelAdmin):
     passed to the form. By overriding the add_view and change_view
     methods, we can then pass that data to our RowPermissionForm, and use
     it to filter results as appropriate.
-    
+
     """
     form = RowPermissionsForm
-    
+
     def queryset(self, request):
         qs = super(RowPermissionsAdmin, self).queryset(request)
 
@@ -461,7 +461,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
         context.update(extra_context or {})
         return self.render_change_form(request, context, form_url=form_url,
                                        add=True)
-        
+
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, extra_context=None):
@@ -526,7 +526,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             request.user.groups.count() is 1 and
             not obj.group):
             obj.group = request.user.groups.all()[0]
-        obj.save()         
+        obj.save()
 
 
 class CustomFacetAdmin(RowPermissionsAdmin):
@@ -558,7 +558,7 @@ class CustomFacetAdmin(RowPermissionsAdmin):
             cache.set(cache_key, results_count, 600)
         return results_count
     results.short_description = 'Results Count'
-        
+
     def last_updated(self, obj):
         return str(obj.date_created)
     last_updated.short_description = 'Last Updated'
@@ -575,15 +575,15 @@ class CustomPageAdmin(RowPermissionsAdmin):
                               'fields': ('enable_comments',
                                          'registration_required',
                                          'template_name', 'meta')}),
-    ) 
+    )
     list_filter = (GroupListFilter, 'enable_comments', 'registration_required')
     search_fields = ('url', 'title')
 
-    
+
 class BillboardHotspotInline(admin.StackedInline):
     model = BillboardHotspot
     extra = 0
-    can_delete = True 
+    can_delete = True
     fieldsets = (
         (None, {'fields': [('title', 'url', 'display_url'), 'text']}),
         (None, {'fields': [('offset_x', 'offset_y')]}),
@@ -791,7 +791,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, obj), 
+            for FormSet, inline in zip(self.get_formsets(request, obj),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -831,7 +831,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
         context.update(extra_context or {})
         return self.render_change_form(request, context, change=True, obj=obj)
 
-    
+
 class SeoSiteRedirectAdmin(admin.ModelAdmin):
     model = SeoSiteRedirect
     list_display = ('redirect_url', 'seosite')
@@ -843,13 +843,13 @@ class SeoSiteRedirectAdmin(admin.ModelAdmin):
             return True
         else:
             return False
-    
+
     def has_add_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         else:
             return False
-            
+
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
@@ -874,14 +874,14 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         Returns the ChangeList class for use on the changelist page.
         """
-        return UnorderedChangeList 
+        return UnorderedChangeList
 
 
 class SeoSiteAdmin(admin.ModelAdmin):
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
-                         'business_units', 'ats_source_codes', 
+                         'business_units', 'ats_source_codes',
                          'billboard_images', 'special_commitments',
                          'site_tags', 'featured_companies', )
     list_display = ('name', 'domain', 'group', )
@@ -927,7 +927,7 @@ class SeoSiteAdmin(admin.ModelAdmin):
                 new_object = self.model()
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request), 
+            for FormSet, inline in zip(self.get_formsets(request),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -1061,7 +1061,7 @@ class SeoSiteAdmin(admin.ModelAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, obj), 
+            for FormSet, inline in zip(self.get_formsets(request, obj),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -1094,24 +1094,24 @@ class SeoSiteAdmin(admin.ModelAdmin):
             'is_popup': "_popup" in request.REQUEST,
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
-            'errors': helpers.AdminErrorList(form, formsets),  
+            'errors': helpers.AdminErrorList(form, formsets),
             'app_label': opts.app_label,
         }
         context.update(extra_context or {})
-        return self.render_change_form(request, context, change=True, obj=obj)    
+        return self.render_change_form(request, context, change=True, obj=obj)
 
     def queryset(self, request):
         qs = super(SeoSiteAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(group__in=request.user.groups.all())
-        
+
     def has_add_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         else:
             return False
-            
+
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
@@ -1159,11 +1159,10 @@ class SpecialCommitmentAdmin(admin.ModelAdmin):
 
 
 class SiteTagAdmin(admin.ModelAdmin):
-    form = SiteTagForm 
+    form = SiteTagForm
     save_on_top = True
     fieldsets = [
-        (None, {'fields': ['site_tag', 'tag_navigation',
-                           ('is_site_family', 'parent')]}),
+        (None, {'fields': ['site_tag', 'tag_navigation','parent']}),
     ]
 
 
@@ -1229,18 +1228,18 @@ except NotRegistered:
 
 def check_inline_instance(obj, req):
     """
-    This method checks if the inline_instances attribute is set. If it is not, 
+    This method checks if the inline_instances attribute is set. If it is not,
     it calls get_inline_instances and eturns the value to the callling location.
-    If it is set, it returns the existing value. This is neededed because of a 
-    change in Django 1.4 that modified when this attribute is available. 
+    If it is set, it returns the existing value. This is neededed because of a
+    change in Django 1.4 that modified when this attribute is available.
     12/5/12 Jason Sole.
-    
+
     Inputs:
         :obj:   The object to test. Usually "self"
         :req:   Django request object
     Returns:
         obj.inline_instances object
-        
+
     """
     if not hasattr(obj, 'inline_instances'):
         return obj.get_inline_instances(req)

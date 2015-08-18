@@ -673,12 +673,12 @@ class Company(models.Model):
         Counts how many users are mapped to this company. This is useful for
         determining which company to map companyusers to when two company
         instances have very similar names.
-        
+
         It is treated as a property of the model.
-        
+
         """
         return self.companyuser_set.count()
-        
+
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
     company_slug = models.SlugField('Company Slug', max_length=200, null=True,
@@ -943,10 +943,6 @@ class SiteTag(models.Model):
                                          help_text='Tag can be used for '
                                                    'navigation by users. '
                                                    'Viewable by public.')
-    is_site_family = models.BooleanField('Tag represents site family',
-                                         default=False,
-                                         help_text='Site tag represents '
-                                                   'a family of sites.')
     parent = models.ForeignKey(SeoSite, blank=True, null=True,
                                help_text='The parent site if the tag is a '
                                          'for a site family.')
