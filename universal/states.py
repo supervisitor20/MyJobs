@@ -38,6 +38,7 @@ states_with_sites = bidict({
     "Indiana": "indiana.jobs",
     "Iowa": "iowa.jobs",
     "Kansas": "kansas.jobs",
+    "Kentucky": "kentucky.jobs",
     "Louisiana": "louisiana.jobs",
     "Maine": "maine.jobs",
     "Maryland": "maryland.jobs",
