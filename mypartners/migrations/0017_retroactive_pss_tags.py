@@ -15,12 +15,6 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # initial saved search emails don't carry the info we need
-        """
-        records = orm.ContactRecord.objects.filter(
-            contact_type='pssemail').exclude(
-                notes__icontains='initial partner saved search').order_by(
-                    'partner__owner')
-        """
         records = orm.ContactRecord.objects.filter(
             contact_type='pssemail').order_by('partner__owner')
 
@@ -40,7 +34,15 @@ class Migration(SchemaMigration):
                     'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
 
                 if not selector:
-                    continue
+                    with open("tag_errors.txt", "a+") as fd:
+                        fd.write("Problems scraping contact record %s.\n" % 
+                                 record.pk)
+                        fd.write("Record's notes does not contain a url to the"
+                                 " saved search it was created for.")
+                        if record.created_by:
+                            fd.write("Created by: %s.\n\n" % 
+                                     record.created_by.email)
+                        continue
 
                 href = selector[0].attrs['href']
 
@@ -49,7 +51,15 @@ class Migration(SchemaMigration):
                     pk=search_id)
 
                 if not search.exists():
-                    continue
+                    with open("tag_errors.txt", "a+") as fd:
+                        fd.write("Partner Saved Search %s does not exist. " %
+                                 search_id)
+                        fd.write("ID obtained by scraping record %s." %
+                                 record.pk)
+                        if record.created_by:
+                            fd.write("Created by: %s.\n\n" %
+                                     record.created_by.email)
+                        continue
 
                 search = search[0]
                 search_tags = search.tags.all()
@@ -61,7 +71,14 @@ class Migration(SchemaMigration):
                             current_company = company
                             fd.write("Company: %s\n" % company)
 
-                        fd.write("Contact Record:  %d\n" % record.pk)
+                        fd.write("Contact Record:  %s\n" % record.pk)
+
+                        if search:
+                            fd.write("saved search: %s" % search.pk)
+                        elif searches:
+                            fd.write("saved searches: %s" % [
+                                search.pk for search in searches])
+
                         fd.write("search tags: %s\n" % str([
                             tag.name for tag in search_tags]))
 
@@ -75,6 +92,8 @@ class Migration(SchemaMigration):
                     if combined_tags:
                         fd.write("combined tags: %s\n" %
                                  str(list([tag.name for tag in combined_tags])))
+
+                    record.tags = combined_tags
 
                     record.save()
 
