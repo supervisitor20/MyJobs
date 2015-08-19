@@ -2,7 +2,8 @@
 
 from itertools import chain
 from urlparse import parse_qs, urlparse
-from bs4 import BeautifulSoup
+from lxml import etree
+from lxml.cssselect import CSSSelector
 
 from south.utils import datetime_utils as datetime
 from south.db import db
@@ -15,87 +16,52 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # initial saved search emails don't carry the info we need
+        parser = etree.HTMLParser()
         records = orm.ContactRecord.objects.filter(
-            contact_type='pssemail').order_by('partner__owner')
+            contact_type='pssemail',
+            notes__icontains='https://secure.my.jobs/saved-search/view/edit'
+        ).order_by('partner__owner')
+        skipped_records = orm.ContactRecord.objects.exclude(
+            pk__in=records.values_list('pk', flat=True))
 
         current_company = ''
         for record in records:
-            record_tags = record.tags.all()
+            tree = etree.fromstring(record.notes, parser)
+            selector = CSSSelector(
+                'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
+            anchor = selector(tree)[0]
 
-            if 'intial partner saved search' in record.notes:
-                searches = orm['mysearches.partnersavedsearch'].objects.filter(
-                    email=record.contact.email,
-                    partner=record.partner).distinct()
+            search_id = parse_qs(urlparse(anchor.get('href')).query)['id'][0]
+            search = orm['mysearches.partnersavedsearch'].objects.filter(
+                pk=search_id, tags__isnull=False)
 
-                search_tags = chain(*[search.tags.all() for search in searches])
+            if not search.exists():
+                with open("bad_searches.txt", "a+") as fd:
+                    fd.write("Record %s produced this url: %s\n" % (
+                        record.pk, anchor.get("href")))
+
             else:
-                soup = BeautifulSoup(record.notes, 'html.parser')
-                # url pointing back to the saved search
-                selector = soup.select(
-                    'a[href^="https://secure.my.jobs/saved-search/view/edit"]')
-
-                if not selector:
-                    with open("tag_errors.txt", "a+") as fd:
-                        fd.write("Problems scraping contact record %s. " % 
-                                 record.pk)
-                        fd.write("Record's notes does not contain a url to the"
-                                 " saved search it was created for. ")
-                        if record.created_by:
-                            fd.write("Created by: %s.\n" % 
-                                     record.created_by.email)
-                        continue
-
-                href = selector[0].attrs['href']
-
-                search_id = parse_qs(urlparse(href).query)['id'][0]
-                search = orm['mysearches.partnersavedsearch'].objects.filter(
-                    pk=search_id)
-
-                if not search.exists():
-                    with open("tag_errors.txt", "a+") as fd:
-                        fd.write("Partner Saved Search %s does not exist. " %
-                                 search_id)
-                        fd.write("ID obtained by scraping record %s. " %
-                                 record.pk)
-                        if record.created_by:
-                            fd.write("Created by: %s.\n" %
-                                     record.created_by.email)
-                        continue
-
                 search = search[0]
-                search_tags = search.tags.all()
 
-                with open('tag_changes.txt', 'a+') as fd:
-                    if search_tags:
-                        company = record.partner.owner.name
-                        if company != current_company:
-                            current_company = company
-                            fd.write("Company: %s\n" % company)
+                with open("tag_changes.txt", "a+") as fd:
+                    company = record.partner.owner.name
+                    if company != current_company:
+                        current_company = company
+                        fd.write("Company: %s\n" % current_company)
 
-                        fd.write("Contact Record: %s\n" % record.pk)
-
-                        if search:
-                            fd.write("saved search: %s\n" % search.pk)
-                        elif searches:
-                            fd.write("saved searches: %s\n" % [
-                                search.pk for search in searches])
-
-                        fd.write("search tags: %s\n" % str([
-                            tag.name for tag in search_tags]))
-
-                    if record_tags:
-                        fd.write("record tags: %s\n" % str([
-                            tag.name for tag in record_tags]))
-
-                    # combine unique tags
+                    record_tags = record.tags.all()
+                    search_tags = search.tags.all()
                     combined_tags = set(search_tags).union(record_tags)
 
-                    if combined_tags:
-                        fd.write("combined tags: %s\n" % str(list([
-                            tag.name for tag in combined_tags])))
+                    fd.write("Contact Record: %s.\n" % record.pk)
+                    fd.write("\tTags before: %s.\n" %
+                             [tag.name for tag in record_tags])
+                    fd.write("\tTags after: %s\n" %
+                             [tag.name for tag in combined_tags])
 
-                    record.tags = combined_tags
-                    record.save()
+        with open("tag_errors.txt", "a+") as fd:
+            fd.write("Records skipped because no usable link was found:\n\t")
+            fd.write("\n\t".join(str(record.pk) for record in skipped_records))
 
     def backwards(self, orm):
         pass
