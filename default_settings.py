@@ -86,6 +86,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'middleware.SiteRedirectMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -97,7 +98,6 @@ MIDDLEWARE_CLASSES = (
     'middleware.MultiHostMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
     'middleware.PasswordChangeRedirectMiddleware',
-    'middleware.XsSharing',
     'django.middleware.locale.LocaleMiddleware',
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
@@ -274,6 +274,7 @@ INSTALLED_APPS = (
     'taggit',
     'fsm',
     'compressor',
+    'corsheaders',
 )
 
 # Captcha SSL
@@ -623,3 +624,6 @@ COMPRESS_CSS_HASHING_METHOD = 'hash'
 COMPRESS_OFFLINE = True
 
 COMPRESS_ENABLED = False
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
