@@ -39,6 +39,7 @@ class ProfileUnits(models.Model):
 
     def get_fields(self):
         """
+        Returns the module type, value, and field type for all        
         fields on a specific model
         """
         field_list = []

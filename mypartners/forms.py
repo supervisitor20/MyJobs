@@ -24,6 +24,7 @@ def init_tags(self):
         self.initial['tags'] = tag_names
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Spaces are not allowed.',
         widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
     )
 
@@ -157,20 +158,24 @@ class NewPartnerForm(NormalizedModelForm):
         new_fields = {
             'partnername': forms.CharField(
                 label="Partner Organization", max_length=255, required=True,
+                help_text="Name of the Organization",
                 widget=forms.TextInput(
                     attrs={'placeholder': 'Partner Organization',
                            'id': 'id_partner-partnername'})),
             'partnersource': forms.CharField(
                 label="Source", max_length=255, required=False,
+                help_text="Website, event, or other source where you found the partner",
                 widget=forms.TextInput(
                     attrs={'placeholder': 'Source',
                            'id': 'id_partner-partnersource'})),
             'partnerurl': forms.URLField(
                 label="URL", max_length=255, required=False,
+                help_text="Full url. ie http://partnerorganization.org",
                 widget=forms.TextInput(attrs={'placeholder': 'URL',
                                               'id': 'id_partner-partnerurl'})),
             'partner-tags': forms.CharField(
                 label='Tags', max_length=255, required=False,
+                help_text="ie 'Disability', 'veteran-outreach', etc. Spaces are not allowed.",
                 widget=forms.TextInput(attrs={'id': 'p-tags',
                                               'placeholder': 'Tags'}))
         }
@@ -290,6 +295,7 @@ class PartnerForm(NormalizedModelForm):
 
         self.fields['primary_contact'] = forms.ChoiceField(
             label="Primary Contact", required=False,
+            help_text='Denotes who the primary contact is for this organization.',
             initial=unicode(choices[0][0]),
             choices=choices)
 
