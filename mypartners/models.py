@@ -134,20 +134,26 @@ class SearchParameterManager(models.Manager):
 
 
 class Location(models.Model):
-    label = models.CharField(max_length=60, verbose_name='Address Label',
-                             blank=True)
     address_line_one = models.CharField(max_length=255,
                                         verbose_name='Address Line One',
-                                        blank=True)
+                                        blank=True,
+                                        help_text='ie 123 Main St')
     address_line_two = models.CharField(max_length=255,
                                         verbose_name='Address Line Two',
-                                        blank=True)
-    city = models.CharField(max_length=255, verbose_name='City')
-    state = models.CharField(max_length=200, verbose_name='State/Region')
+                                        blank=True,
+                                        help_text='ie Suite 100')
+    city = models.CharField(max_length=255, verbose_name='City',
+                                           help_text='ie Chicago, Washington, Dayton')
+    state = models.CharField(max_length=200, verbose_name='State/Region',
+                                             help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, verbose_name='Country',
                                     default='USA')
     postal_code = models.CharField(max_length=12, verbose_name='Postal Code',
-                                   blank=True)
+                                   blank=True,
+                                   help_text='ie 90210, 12345-7890')
+    label = models.CharField(max_length=60, verbose_name='Address Name',
+                             blank=True,
+                             help_text='ie Main Office, Corporate, Regional')
 
     def __unicode__(self):
         return ", ".join(filter(bool, [self.city, self.state]))
