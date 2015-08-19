@@ -12,11 +12,10 @@
             <div class="cp-grid-fourth">
                 <ul style="margin-left: 5px;">
         {% endif %}
-        {% with name=state.0 url=state.1 %}
             <li>
-                <a href="http://{{ url }}">{{ name }}</a>
+                <a href="http://{{ state.url }}">{{ state.state }} Jobs
+                    {% if state.count > 0 %}({{ state.count }}){% endif %}</a>
             </li>
-        {% endwith %}
         {% if forloop.last %}
             </ul>
         </div>
@@ -27,11 +26,10 @@
     <div class="cp-grid-fourth">
         <ul style="margin-left: 5px;">
     {% for state in other_locations %}
-        {% with name=state.0 url=state.1 %}
             <li>
-                <a href="http://{{ url }}">{{ name }}</a>
+                <a href="http://{{ state.url }}">{{ state.state }} Jobs
+                    {% if state.count > 0 %}({{ state.count }}){% endif %}</a>
             </li>
-        {% endwith %}
     {% endfor %}
         </ul>
     </div>
