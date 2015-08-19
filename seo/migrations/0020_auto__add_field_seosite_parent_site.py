@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'SeoSite.parent_site'
         db.add_column(u'seo_seosite', 'parent_site',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.SeoSite'], null=True, on_delete=models.SET_NULL, blank=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='child_sites', null=True, on_delete=models.SET_NULL, to=orm['seo.SeoSite']),
                       keep_default=False)
 
 
@@ -341,7 +341,7 @@ class Migration(SchemaMigration):
             'google_analytics_campaigns': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.GoogleAnalyticsCampaign']", 'null': 'True', 'blank': 'True'}),
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'null': 'True'}),
             'microsite_carousel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['social_links.MicrositeCarousel']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
-            'parent_site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'parent_site': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'child_sites'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['seo.SeoSite']"}),
             'postajob_filter_type': ('django.db.models.fields.CharField', [], {'default': "'this site only'", 'max_length': '255'}),
             'site_description': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),
             'site_heading': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200', 'blank': 'True'}),

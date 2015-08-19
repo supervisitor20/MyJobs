@@ -497,7 +497,8 @@ class SeoSite(Site):
                                           related_name='canonical_company_for')
     
     parent_site = models.ForeignKey('self', blank=True, null=True,
-                                     on_delete=models.SET_NULL)                                      
+                                     on_delete=models.SET_NULL,
+                                     related_name='child_sites')                                      
                                         
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
