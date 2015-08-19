@@ -12,6 +12,7 @@ from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
 from django.core.cache import cache
 from django.core.validators import MaxValueValidator, ValidationError
+from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
@@ -497,7 +498,8 @@ class SeoSite(Site):
                                           related_name='canonical_company_for')
     
     parent_site = models.ForeignKey('self', blank=True, null=True,
-                                     on_delete=models.SET_NULL)                                      
+                                     on_delete=models.SET_NULL,
+                                     related_name='child_sites')                                      
                                         
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
@@ -571,10 +573,45 @@ class SeoSite(Site):
                             profile.outgoing_email_domain))
         return choices
 
+    def verify_parent_child_relationship(self):
+        """
+            Verify that this object's parent_site relationship is proper.
+            Parent site link cannot be self referencing and a site cannot be both 
+            a parent and a child.
+            
+            Returns:
+                error_flag - boolean representing whether or not an error occurred
+                error_description - description of the error, if one occurred
+        """
+        error_flag = False
+        error_description = ''
+        if self.parent_site:
+            if self.parent_site == self:
+                error_flag = True
+                error_description = '%s cannot be a parent to itself' % self.name
+            elif self.child_sites.exists():
+                error_flag = True
+                error_description = ('%s is a parent site and cannot' + \
+                                    ' have a parent') % self.name 
+            elif self.parent_site.parent_site:
+                error_flag = True
+                error_description = ('%s is a child of another site and' + \
+                                     ' cannot be a parent') % self.parent_site.name
+        return error_flag, error_description
+            
+    def clean(self, *args, **kwargs):        
+        error_flag, error_description = self.verify_parent_child_relationship()
+        if error_flag:
+            raise ValidationError(error_description)
+        super(SeoSite, self).clean(*args, **kwargs)
+
     def save(self, *args, **kwargs):
+        error_flag, error_description = self.verify_parent_child_relationship()
+        if error_flag:
+            raise FieldError(error_description)
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
-
+    
     def user_has_access(self, user):
         """
         In order for a user to have access they must be a CompanyUser

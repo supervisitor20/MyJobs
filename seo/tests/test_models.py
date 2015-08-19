@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, FieldError
 
 from seo.tests import factories
 from seo.models import CustomFacet, SeoSite, SiteTag
@@ -57,7 +57,55 @@ class ModelsTestCase(DirectSEOBase):
         facet.querystring = ")"
         self.assertRaises(ValidationError, facet.save)
 
+    def test_child_seosite_cant_have_children(self):
+        """
+            Verify that a SeoSite that has a parent_site entry cannot be
+            made the parent of another SeoSite entry
+        """
+        parent_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory()
+        grandchild_site = factories.SeoSiteFactory()
+        child_site.parent_site = parent_site
+        child_site.save()
+        grandchild_site.parent_site = child_site
+        error_flag = grandchild_site.verify_parent_child_relationship()[0]
+        self.assertEqual(error_flag, True)
+        with self.assertRaises(ValidationError):
+            grandchild_site.clean()
+        with self.assertRaises(FieldError):
+            grandchild_site.save()
 
+    def test_parent_seosite_cannot_become_child(self):
+        """
+            Verify that a SeoSite that has child sites cannot become the child
+            of another site.
+        """
+        parent_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory()
+        super_parent_site = factories.SeoSiteFactory()
+        child_site.parent_site = parent_site
+        child_site.save()
+        parent_site.parent_site = super_parent_site
+        error_flag = parent_site.verify_parent_child_relationship()[0]
+        self.assertEqual(error_flag, True)
+        with self.assertRaises(ValidationError):
+            parent_site.clean()
+        with self.assertRaises(FieldError):
+            parent_site.save()
+
+    def test_seosite_cant_be_its_own_parent(self):
+        """
+            Verify that a SeoSite cannot be its own parent
+        """
+        orphan_site = factories.SeoSiteFactory()
+        orphan_site.parent_site = orphan_site
+        error_flag = orphan_site.verify_parent_child_relationship()[0]
+        self.assertEqual(error_flag, True)
+        with self.assertRaises(ValidationError):
+            orphan_site.clean()
+        with self.assertRaises(FieldError):
+            orphan_site.save()        
+        
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
     def setUp(self):
         super(SeoSitePostAJobFiltersTestCase, self).setUp()
@@ -191,4 +239,5 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         # postajob_sites = company_sites + network_sites + generic_sites +
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
-
+        
+        
