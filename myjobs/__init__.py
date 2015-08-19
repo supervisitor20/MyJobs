@@ -42,5 +42,5 @@ def hide_production_solr_from_tests():
     settings.HAYSTACK_CONNECTIONS.clear()
     settings.HAYSTACK_CONNECTIONS.update(default_settings.TEST_HAYSTACK_CONNECTIONS)
 
-if "test" in sys.argv or "jenkins" in sys.argv:
+if "test" in ''.join(sys.argv) or "jenkins" in sys.argv:
     hide_production_solr_from_tests()
