@@ -62,7 +62,6 @@ from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites, other_locations_with_sites
 
-
 """
 The 'filters' dictionary seen in some of these methods
 has this basic structure:
@@ -2026,8 +2025,28 @@ def test_markdown(request):
 
 
 def seo_states(request):
-    data_dict = {"states": sorted(states_with_sites.iteritems()),
-                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+    search = DESearchQuerySet()
+    search = dict(search.facet('state').facet_counts()['fields']['state'])
+
+    # Mutates states by adding counts from search
+    def _add_job_counts(states):
+        for state in states:
+            state['count'] = search.get(state['state'], 0)
+
+    # returns a sorted list by state/location's name
+    def _sort_by_name(states):
+        return sorted(states, key=lambda s: s['state'])
+
+    # add counts
+    _add_job_counts(states_with_sites)
+    _add_job_counts(other_locations_with_sites)
+
+    # ensure the states/locations are in alphabetical order.
+    sorted_states = _sort_by_name(states_with_sites)
+    sorted_other_locations = _sort_by_name(other_locations_with_sites)
+
+    data_dict = {"states": sorted_states,
+                 "other_locations": sorted_other_locations}
 
     return render_to_response('seo/states.html', data_dict,
                               context_instance=RequestContext(request))
