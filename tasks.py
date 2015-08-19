@@ -36,6 +36,8 @@ from registration.models import ActivationProfile
 from solr import helpers
 from solr.models import Update
 from solr.signals import object_to_dict, profileunits_to_dict
+from djcelery.models import TaskState
+import ast
 
 
 logger = logging.getLogger(__name__)
@@ -898,3 +900,18 @@ def send_event_email(email_task):
 
     email_task.completed_on = datetime.now()
     email_task.save()
+
+
+@task(name="tasks.requeue_failures", ignore_result=True)
+def requeue_failures(hours=8):
+    period = datetime.datetime.now() - datetime.timedelta(hours=hours)
+
+    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'], 
+                                            tstamp__gt=period, 
+                                            name__in=['tasks.etl_to_solr',
+                                                      'tasks.priority_etl_to_solr'])
+
+    for task in failed_tasks:
+        task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        print "Requeuing task with args %s" % task.args
+
