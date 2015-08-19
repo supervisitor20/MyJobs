@@ -2025,8 +2025,10 @@ def test_markdown(request):
 
 
 def seo_states(request):
-    search = DESearchQuerySet()
-    search = dict(search.facet('state').facet_counts()['fields']['state'])
+    search = DESearchQuerySet().narrow('country:United States').facet(
+        'state').facet_counts()
+    us_jobs_count = search.numFound
+    search = dict(search['fields']['state'])
 
     # Mutates states by adding counts from search
     def _add_job_counts(states):
@@ -2045,7 +2047,8 @@ def seo_states(request):
     sorted_states = _sort_by_name(states_with_sites)
     sorted_other_locations = _sort_by_name(other_locations_with_sites)
 
-    data_dict = {"states": sorted_states,
+    data_dict = {"us_jobs_count": us_jobs_count,
+                 "states": sorted_states,
                  "other_locations": sorted_other_locations}
 
     return render_to_response('seo/states.html', data_dict,
