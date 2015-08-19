@@ -36,10 +36,10 @@ class Migration(SchemaMigration):
 
                 if not selector:
                     with open("tag_errors.txt", "a+") as fd:
-                        fd.write("Problems scraping contact record %s.\n" % 
+                        fd.write("Problems scraping contact record %s. " % 
                                  record.pk)
                         fd.write("Record's notes does not contain a url to the"
-                                 " saved search it was created for.\n")
+                                 " saved search it was created for. ")
                         if record.created_by:
                             fd.write("Created by: %s.\n" % 
                                      record.created_by.email)
@@ -53,9 +53,9 @@ class Migration(SchemaMigration):
 
                 if not search.exists():
                     with open("tag_errors.txt", "a+") as fd:
-                        fd.write("Partner Saved Search %s does not exist.\n" %
+                        fd.write("Partner Saved Search %s does not exist. " %
                                  search_id)
-                        fd.write("ID obtained by scraping record %s.\n" %
+                        fd.write("ID obtained by scraping record %s. " %
                                  record.pk)
                         if record.created_by:
                             fd.write("Created by: %s.\n" %
