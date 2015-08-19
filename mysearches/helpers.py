@@ -88,7 +88,7 @@ def validate_dotjobs_url(search_url, user):
         search_parts[4] = parse_qsl(search_parts[4])
         search_parts[4] = urllib.urlencode(search_parts[4])
         search_url = urlunparse(tuple(search_parts))
-    except Exception, e:
+    except Exception as e:
         logger.error("Failed to parse dotjobs url: %s" % search_url)
         logger.exception(e)
         return None, None
@@ -96,7 +96,7 @@ def validate_dotjobs_url(search_url, user):
     try:
         page = urllib.urlopen(search_url).read()
         soup = BeautifulSoup(page, "html.parser")
-    except Exception, e:
+    except Exception as e:
         logger.error("Failed to download or parse page with rss link: %s"
                      % search_url)
         logger.exception(e)
