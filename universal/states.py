@@ -76,6 +76,5 @@ states_with_sites = [
 other_locations_with_sites = [
     {"state": "District Of Columbia",   "url": "districtofcolumbia.jobs"},
     {"state": "Guam",                   "url": "guam.jobs"},
-    {"state": "Puerto Rico",            "url": "puertorico.jobs"},
-    {"state": "Virgin Islands",         "url": "usvirginislands.jobs"}
+    {"state": "Puerto Rico",            "url": "puertorico.jobs"}
 ]
