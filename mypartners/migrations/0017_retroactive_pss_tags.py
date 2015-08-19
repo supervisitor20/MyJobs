@@ -15,8 +15,9 @@ class Migration(SchemaMigration):
     no_dry_run = True
 
     def forwards(self, orm):
-        # initial saved search emails don't carry the info we need
         parser = etree.HTMLParser()
+        # we only want records with a link back to the saved search they were
+        # created from
         records = orm.ContactRecord.objects.filter(
             contact_type='pssemail',
             notes__icontains='https://secure.my.jobs/saved-search/view/edit'
@@ -35,12 +36,7 @@ class Migration(SchemaMigration):
             search = orm['mysearches.partnersavedsearch'].objects.filter(
                 pk=search_id, tags__isnull=False)
 
-            if not search.exists():
-                with open("bad_searches.txt", "a+") as fd:
-                    fd.write("Record %s produced this url: %s\n" % (
-                        record.pk, anchor.get("href")))
-
-            else:
+            if search.exists():
                 search = search[0]
 
                 with open("tag_changes.txt", "a+") as fd:
@@ -58,6 +54,15 @@ class Migration(SchemaMigration):
                              [tag.name for tag in record_tags])
                     fd.write("\tTags after: %s\n" %
                              [tag.name for tag in combined_tags])
+
+                record.tags = combined_tags
+                record.save()
+            else:
+                # saved search doesn't exist or has no tags, so we log it
+                with open("bad_searches.txt", "a+") as fd:
+                    fd.write("Record %s produced this url: %s\n" % (
+                        record.pk, anchor.get("href")))
+
 
         with open("tag_errors.txt", "a+") as fd:
             fd.write("Records skipped because no usable link was found:\n\t")
