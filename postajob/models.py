@@ -788,7 +788,7 @@ class CompanyProfile(models.Model):
     zipcode = models.CharField(max_length=255, blank=True,
                                    help_text='ie 90210, 12345-7890')
     phone = models.CharField(max_length=255, blank=True,
-                                   help_text='ie 123-456-7890, (123)456-7890')
+                                   help_text='ie (123) 456-7890')
 
     # Only used for Partner Microsites.
     authorize_net_login = models.CharField(

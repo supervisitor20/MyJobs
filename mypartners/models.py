@@ -182,7 +182,7 @@ class Contact(models.Model):
     email = models.EmailField(max_length=255, verbose_name='Email', blank=True,
                              help_text='Contact\'s email address')
     phone = models.CharField(max_length=30, verbose_name='Phone', blank=True,
-            default='', help_text='ie 123-456-7890, (123)456-7890')
+            default='', help_text='ie (123) 456-7890')
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',
@@ -309,7 +309,7 @@ class Partner(models.Model):
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
     tags = models.ManyToManyField('Tag', null=True, 
-        help_text='ie \'Disability\', \'veteran-outreach\', etc. Spaces are not allowed.')
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.')
     # owner is the Company that owns this partner.
     owner = models.ForeignKey('seo.Company', null=True,
                               on_delete=models.SET_NULL)

@@ -24,7 +24,7 @@ def init_tags(self):
         self.initial['tags'] = tag_names
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
-        help_text='ie \'Disability\', \'veteran-outreach\', etc. Spaces are not allowed.',
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.',
         widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
     )
 
@@ -175,7 +175,7 @@ class NewPartnerForm(NormalizedModelForm):
                                               'id': 'id_partner-partnerurl'})),
             'partner-tags': forms.CharField(
                 label='Tags', max_length=255, required=False,
-                help_text="ie 'Disability', 'veteran-outreach', etc. Spaces are not allowed.",
+                help_text="ie 'Disability', 'veteran-outreach', etc. Separate tags with a comma.",
                 widget=forms.TextInput(attrs={'id': 'p-tags',
                                               'placeholder': 'Tags'}))
         }
