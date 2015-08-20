@@ -277,14 +277,18 @@ class SavedSearchModelsTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertTrue('activate your account' in email.body)
 
-    def test_fix_fixable_search(self):
-        self.patcher.stop()
+    def test_errors_dont_disable_searches(self):
+        """
+        We should retry sending saved searches but exceeding our maximum
+        number of retries should not disable those searches.
+        """
+        self.mock_urlopen.side_effect = ValueError("bork bork bork")
+
         SavedSearchDigestFactory(user=self.user)
-        search = SavedSearchFactory(user=self.user, feed='')
-        self.assertFalse(search.feed)
+        search = SavedSearchFactory(user=self.user, feed='www.my.jobs')
 
         # Celery raises a retry that makes the test fail. In reality
-        # everything is fine, so ignore the retry-fail.
+        # everything is fine, so ignore the retry.
         try:
             send_search_digests()
         except RetryTaskError:
@@ -293,27 +297,6 @@ class SavedSearchModelsTests(MyJobsBase):
 
         search = SavedSearch.objects.get(pk=search.pk)
         self.assertTrue(search.is_active)
-        self.assertTrue(search.feed)
-
-    def test_disable_bad_search(self):
-        self.patcher.stop()
-        SavedSearchDigestFactory(user=self.user)
-        search = SavedSearchFactory(user=self.user, feed='',
-                                    url='http://example.com')
-        self.assertFalse(search.feed)
-
-        # Celery raises a retry that makes the test fail. In reality
-        # everything is fine, so ignore the retry-fail.
-        try:
-            send_search_digests()
-        except RetryTaskError:
-            pass
-
-        email = mail.outbox.pop()
-        search = SavedSearch.objects.get(pk=search.pk)
-        self.assertFalse(search.is_active)
-
-        self.assertTrue('has failed URL validation' in email.body)
 
     def test_get_unsent_jobs(self):
         """
