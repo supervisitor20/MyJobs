@@ -1,0 +1,23 @@
+.nw-row {
+    position: relative;
+    overflow: auto;
+}
+
+.nw-fourth {
+    float: left;
+    width: 23.5%;
+    margin: 0 2% 0 0;
+}
+
+.nw-fourth.last,
+.nw-fourth:last-child {
+    margin: 0 0 0 0;
+}
+
+.nw-fourth.last::after {
+    content: "";
+    display: block;
+    clear: both;
+    line-height: 1px;
+    min-height: 1px;
+}
