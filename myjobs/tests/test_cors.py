@@ -27,15 +27,13 @@ class CorsTests(MyJobsBase):
         self.assertAllIn(['content-type'], "Access-Control-Allow-Headers")
 
     def assertHeaderValue(self, expected, header_name):
-        header_dict = dict(self.resp.items())
-        self.assertIn(header_name, header_dict)
-        header_value = header_dict[header_name]
+        self.assertIn(header_name, self.resp)
+        header_value = self.resp[header_name]
         self.assertEqual(expected, header_value)
 
     def assertAllIn(self, expected_list, header_name):
-        header_dict = dict(self.resp.items())
-        self.assertIn(header_name, header_dict)
-        header_value = header_dict[header_name]
+        self.assertIn(header_name, self.resp)
+        header_value = self.resp[header_name]
         header_split = re.split(r"[\s,]+", header_value)
         for expected in expected_list:
             self.assertIn(expected, header_split,
