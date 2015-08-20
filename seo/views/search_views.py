@@ -2025,10 +2025,14 @@ def test_markdown(request):
 
 
 def seo_states(request):
-    search = DESearchQuerySet().narrow('country:United States').facet(
-        'state').facet_counts()
-    us_jobs_count = search.numFound
-    search = dict(search['fields']['state'])
+    # Pull jobs from solr, only in the US and group by states.
+    search = DESearchQuerySet().narrow('country:United States').facet('state')
+
+    # Grab total count before search becomes a dict
+    us_jobs_count = search.count()
+
+    # Turn search results into a dict formatted {state:count}
+    search = dict(search.facet_counts()['fields']['state'])
 
     # Mutates states by adding counts from search
     def _add_job_counts(states):
@@ -2039,13 +2043,18 @@ def seo_states(request):
     def _sort_by_name(states):
         return sorted(states, key=lambda s: s['state'])
 
+    # Copy imported lists
+    # don't want to mutate something that could be used elsewhere
+    new_states = states_with_sites[:]
+    new_other_locations = other_locations_with_sites[:]
+
     # add counts
-    _add_job_counts(states_with_sites)
-    _add_job_counts(other_locations_with_sites)
+    _add_job_counts(new_states)
+    _add_job_counts(new_other_locations)
 
     # ensure the states/locations are in alphabetical order.
-    sorted_states = _sort_by_name(states_with_sites)
-    sorted_other_locations = _sort_by_name(other_locations_with_sites)
+    sorted_states = _sort_by_name(new_states)
+    sorted_other_locations = _sort_by_name(new_other_locations)
 
     data_dict = {"us_jobs_count": us_jobs_count,
                  "states": sorted_states,
