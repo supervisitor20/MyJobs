@@ -230,6 +230,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'tasks.submit_all_sitemaps',
         'schedule': crontab(hour=13, minute=0)
     },
+    'requeue-failed-tasks': {
+        'task': 'tasks.requeue_failures',
+        'schedule': crontab(hour=7, minute=5)
+    },
 }
 
 
