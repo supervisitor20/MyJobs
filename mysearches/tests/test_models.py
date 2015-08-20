@@ -250,6 +250,27 @@ class SavedSearchModelsTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertTrue('activate your account' in email.body)
 
+    def test_errors_dont_disable_searches(self):
+        """
+        We should retry sending saved searches but exceeding our maximum
+        number of retries should not disable those searches.
+        """
+        self.mock_urlopen.side_effect = ValueError("bork bork bork")
+
+        SavedSearchDigestFactory(user=self.user)
+        search = SavedSearchFactory(user=self.user, feed='www.my.jobs')
+
+        # Celery raises a retry that makes the test fail. In reality
+        # everything is fine, so ignore the retry.
+        try:
+            send_search_digests()
+        except RetryTaskError:
+            pass
+        self.assertEqual(len(mail.outbox), 0)
+
+        search = SavedSearch.objects.get(pk=search.pk)
+        self.assertTrue(search.is_active)
+
     def test_get_unsent_jobs(self):
         """
         When sending a saved search email, we should retrieve all new jobs since

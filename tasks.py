@@ -73,7 +73,10 @@ PARTNER_LIBRARY_SOURCES = {
 def send_search_digest(self, search):
     """
     Task used by send_send_search_digests to send individual digest or search
-    emails.
+    emails. This can raise three different exceptions depending on various
+    factors that may be within or outside of our control. In the event that
+    that occurs, we err on the side of momentary network issues and assume that
+    this search will send successfully at a later time.
 
     Inputs:
     :search: SavedSearch or SavedSearchDigest instance to be mailed
@@ -83,9 +86,6 @@ def send_search_digest(self, search):
     except (ValueError, URLError, HTTPError) as e:
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
-        else:
-            # Ignore the failure and hope it somehow resolves itself
-            pass
 
 
 @task(name='tasks.update_partner_library', ignore_result=True,
