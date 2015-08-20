@@ -4762,3 +4762,11 @@ span.helptext {
 .read {
     background-color: #eee;
 }
+
+.fa-check-circle.green {
+    color: green;
+}
+
+.fa-times-circle.red {
+    color: red;
+}
