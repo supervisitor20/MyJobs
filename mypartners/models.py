@@ -134,20 +134,26 @@ class SearchParameterManager(models.Manager):
 
 
 class Location(models.Model):
-    label = models.CharField(max_length=60, verbose_name='Address Label',
-                             blank=True)
     address_line_one = models.CharField(max_length=255,
                                         verbose_name='Address Line One',
-                                        blank=True)
+                                        blank=True,
+                                        help_text='ie 123 Main St')
     address_line_two = models.CharField(max_length=255,
                                         verbose_name='Address Line Two',
-                                        blank=True)
-    city = models.CharField(max_length=255, verbose_name='City')
-    state = models.CharField(max_length=200, verbose_name='State/Region')
+                                        blank=True,
+                                        help_text='ie Suite 100')
+    city = models.CharField(max_length=255, verbose_name='City',
+                                           help_text='ie Chicago, Washington, Dayton')
+    state = models.CharField(max_length=200, verbose_name='State/Region',
+                                             help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, verbose_name='Country',
                                     default='USA')
     postal_code = models.CharField(max_length=12, verbose_name='Postal Code',
-                                   blank=True)
+                                   blank=True,
+                                   help_text='ie 90210, 12345-7890')
+    label = models.CharField(max_length=60, verbose_name='Address Name',
+                             blank=True,
+                             help_text='ie Main Office, Corporate, Regional')
 
     def __unicode__(self):
         return ", ".join(filter(bool, [self.city, self.state]))
@@ -171,14 +177,17 @@ class Contact(models.Model):
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
-    name = models.CharField(max_length=255, verbose_name='Full Name')
-    email = models.EmailField(max_length=255, verbose_name='Email', blank=True)
+    name = models.CharField(max_length=255, verbose_name='Full Name',
+                             help_text='Contact\'s full name')
+    email = models.EmailField(max_length=255, verbose_name='Email', blank=True,
+                             help_text='Contact\'s email address')
     phone = models.CharField(max_length=30, verbose_name='Phone', blank=True,
-            default='')
+            default='', help_text='ie (123) 456-7890')
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',
-                             blank=True, default="")
+                             blank=True, default="", 
+                             help_text='Any additional information you want to record')
     archived_on = models.DateTimeField(null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
@@ -284,18 +293,23 @@ class Partner(models.Model):
 
     """
     name = models.CharField(max_length=255,
-                            verbose_name='Partner Organization')
+                            verbose_name='Partner Organization',
+                            help_text='Name of the Organization')
     data_source = models.CharField(max_length=255,
                                    verbose_name='Source',
-                                   blank=True)
-    uri = models.URLField(verbose_name='URL', blank=True)
+                                   blank=True, 
+                                   help_text='Website, event, or other source where you found the partner')
+    uri = models.URLField(verbose_name='URL', blank=True, 
+                        help_text='Full url. ie http://partnerorganization.org')
     primary_contact = models.ForeignKey('Contact', null=True,
                                         related_name='primary_contact',
-                                        on_delete=models.SET_NULL)
+                                        on_delete=models.SET_NULL,
+                                        help_text='Denotes who the primary contact is for this organization.')
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
-    tags = models.ManyToManyField('Tag', null=True)
+    tags = models.ManyToManyField('Tag', null=True, 
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.')
     # owner is the Company that owns this partner.
     owner = models.ForeignKey('seo.Company', null=True,
                               on_delete=models.SET_NULL)
