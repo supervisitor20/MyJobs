@@ -267,11 +267,11 @@ def downloads(request):
             'contact': common_blacklist + ['archived_on', 'library', 'user'],
             'partner': common_blacklist + ['library', 'owner']}
 
-        if not report.results:
-            report.regenerate()
-
-        fields = sorted([field for field in report.python[0].keys()
-                         if field not in blacklist[report.model]])
+        if report.python:
+            fields = sorted([field for field in report.python[0].keys()
+                             if field not in blacklist[report.model]])
+        else:
+            fields = []
 
         values = json.loads(report.values) or fields
         for field_list in [values, fields]:
