@@ -3,8 +3,12 @@
 {% load i18n %}
 
 {% block site-title %}
-    <title>PRM Contact Record {{ company.name }}</title>
-    <meta name="title" content="PRM Contact Record {{ company.name }}">
+    <title>PRM Communication Record {{ company.name }}</title>
+    <meta name="title" content="PRM Communication Record {{ company.name }}">
+{% endblock %}
+
+{% block meta-extra %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome.css">
 {% endblock %}
 
 {% block content %}
@@ -44,7 +48,7 @@
             </div>
             {% endif %}
             <div class="tip-box" id="type">
-            <h5>Contact Type</h5>
+            <h5>Communication Type</h5>
                 <div class="tip-content">
                     {{ record.get_human_readable_contact_type }}
                 </div>
@@ -61,7 +65,7 @@
             </div>
             {% endif %}
             <div class="tip-box" id="time">
-            <h5>Date & Time of Contact</h5>
+            <h5>Date &amp; Time of Communication</h5>
                 <div class="tip-content">
                     {{ record.date_time }}
                 </div>
@@ -99,7 +103,9 @@
                     No history for this record could be found.
                     {% else %}
                         {% for activity in record_history %}
-                            {% get_action_type activity %} - {{ activity.action_time|date:'M d, Y' }}<br/>
+                            {% get_action_type activity %} - {{ activity.action_time|date:'M d, Y' }}
+                            {% if activity.successful != None %} <i class="fa fa-{% if activity.successful %}check-circle green{% else %}times-circle red{% endif %}" title="{% if activity.successful %}Successfully sent{% else %}Email failed, view notes for more info{% endif %}"></i>{% endif %}
+                            <br />
                         {% endfor %}
                     {% endif %}
                 </div>

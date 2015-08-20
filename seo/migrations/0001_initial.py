@@ -8,20 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Redirect'
-        db.create_table('redirect_redirect', (
-            ('guid', self.gf('django.db.models.fields.CharField')(max_length=38, primary_key=True)),
-            ('buid', self.gf('django.db.models.fields.IntegerField')(default=0)),
-            ('uid', self.gf('django.db.models.fields.IntegerField')(unique=True, null=True, blank=True)),
-            ('url', self.gf('django.db.models.fields.TextField')()),
-            ('new_date', self.gf('django.db.models.fields.DateTimeField')()),
-            ('expired_date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('job_location', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('job_title', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('company_name', self.gf('django.db.models.fields.TextField')(blank=True)),
-        ))
-        db.send_create_signal(u'seo', ['Redirect'])
-
         # Adding model 'CustomFacet'
         db.create_table(u'seo_customfacet', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -449,9 +435,6 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'SeoSiteRedirect', fields ['redirect_url', 'seosite']
         db.delete_unique(u'seo_seositeredirect', ['redirect_url', 'seosite_id'])
 
-        # Deleting model 'Redirect'
-        db.delete_table('redirect_redirect')
-
         # Deleting model 'CustomFacet'
         db.delete_table(u'seo_customfacet')
 
@@ -840,18 +823,6 @@ class Migration(SchemaMigration):
             'titleSlug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'db_index': 'True'}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True', 'blank': 'True'})
-        },
-        u'seo.redirect': {
-            'Meta': {'object_name': 'Redirect', 'db_table': "'redirect_redirect'"},
-            'buid': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'company_name': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'expired_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'guid': ('django.db.models.fields.CharField', [], {'max_length': '38', 'primary_key': 'True'}),
-            'job_location': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'job_title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'new_date': ('django.db.models.fields.DateTimeField', [], {}),
-            'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.TextField', [], {})
         },
         u'seo.seosite': {
             'Meta': {'ordering': "(u'domain',)", 'object_name': 'SeoSite', '_ormbases': [u'sites.Site']},

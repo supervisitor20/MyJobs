@@ -3,14 +3,6 @@ import datetime
 
 from settings import *
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'seo.tests.setup.TestDESolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/seo',
-        'INCLUDE_SPELLING': True,
-    },
-}
-
 SOLR_FIXTURE = [
     {
         'buid': 0,
@@ -66,7 +58,7 @@ SOLR_FIXTURE = [
         'title_slab_exact': u'retail-associate-розничная-ассоциированных/jobs-in::Retail Associate Розничная ассоциированных',
         'title_slug': u'retail-associate-розничная-ассоциированных',
         'uid': "1000",
-        'link': 'http://my.jobs/EE45273E6D914AED8CB3C9C59D203F4410',
+        'link': 'mailto:apply@test.jobs',
         'lat_long_buid_slab_exact': '-32.202924::-64.404945::0'
     },
     {

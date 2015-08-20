@@ -9,8 +9,8 @@ import pytz
 from postajob.location_data import states
 from myprofile.forms import generate_custom_widgets
 from mypartners.models import (Contact, Partner, ContactRecord, PRMAttachment,
-                               ADDITION, CHANGE, MAX_ATTACHMENT_MB, Tag,
-                               Location)
+                               Status, Tag, Location,
+                               ADDITION, CHANGE, MAX_ATTACHMENT_MB)
 from mypartners.helpers import (log_change, get_attachment_link,
                                 prm_worthy, tag_get_or_create)
 from mypartners.widgets import (MultipleFileField,
@@ -24,6 +24,7 @@ def init_tags(self):
         self.initial['tags'] = tag_names
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.',
         widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
     )
 
@@ -67,7 +68,8 @@ class ContactForm(NormalizedModelForm):
     class Meta:
         form_name = "Contact Information"
         model = Contact
-        exclude = ['user', 'partner', 'locations', 'library', 'archived_on']
+        exclude = ['user', 'partner', 'locations', 'library', 'archived_on',
+                   'approval_status']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -156,20 +158,24 @@ class NewPartnerForm(NormalizedModelForm):
         new_fields = {
             'partnername': forms.CharField(
                 label="Partner Organization", max_length=255, required=True,
+                help_text="Name of the Organization",
                 widget=forms.TextInput(
                     attrs={'placeholder': 'Partner Organization',
                            'id': 'id_partner-partnername'})),
             'partnersource': forms.CharField(
                 label="Source", max_length=255, required=False,
+                help_text="Website, event, or other source where you found the partner",
                 widget=forms.TextInput(
                     attrs={'placeholder': 'Source',
                            'id': 'id_partner-partnersource'})),
             'partnerurl': forms.URLField(
                 label="URL", max_length=255, required=False,
+                help_text="Full url. ie http://partnerorganization.org",
                 widget=forms.TextInput(attrs={'placeholder': 'URL',
                                               'id': 'id_partner-partnerurl'})),
             'partner-tags': forms.CharField(
                 label='Tags', max_length=255, required=False,
+                help_text="ie 'Disability', 'veteran-outreach', etc. Separate tags with a comma.",
                 widget=forms.TextInput(attrs={'id': 'p-tags',
                                               'placeholder': 'Tags'}))
         }
@@ -181,7 +187,8 @@ class NewPartnerForm(NormalizedModelForm):
     class Meta:
         form_name = "Partner Information"
         model = Contact
-        exclude = ['user', 'partner', 'tags', 'locations', 'library']
+        exclude = ['user', 'partner', 'tags', 'locations', 'library',
+                   'approval_status', 'archived_on']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -193,9 +200,11 @@ class NewPartnerForm(NormalizedModelForm):
         partner_url = self.data.get('partnerurl', '')
         partner_source = self.data.get('partnersource', '')
 
+        status = Status.objects.create(approved_by=self.user)
         partner = Partner.objects.create(name=self.data['partnername'],
                                          uri=partner_url, owner_id=company_id,
-                                         data_source=partner_source)
+                                         data_source=partner_source,
+                                         approval_status=status)
 
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
@@ -286,6 +295,7 @@ class PartnerForm(NormalizedModelForm):
 
         self.fields['primary_contact'] = forms.ChoiceField(
             label="Primary Contact", required=False,
+            help_text='Denotes who the primary contact is for this organization.',
             initial=unicode(choices[0][0]),
             choices=choices)
 
@@ -341,7 +351,7 @@ class ContactRecordForm(NormalizedModelForm):
 
     class Meta:
         model = ContactRecord
-        form_name = "Contact Record"
+        form_name = "Communication Record"
         fields = ('contact_type', 'contact',
                   'contact_email', 'contact_phone', 'location',
                   'length', 'subject', 'date_time', 'job_id',

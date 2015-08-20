@@ -30,12 +30,14 @@ Used to check if registration was successful.
             {% else %}
             {% trans "Your account has been successfully activated, but you need to login before you use it."%}
             {% endif %}
-            {% if password %}
-                {% blocktrans %}
-                    Your temporary password is {{ password }}. Please change it at your convenience.
-                {% endblocktrans %}
-            {% endif %}
             </p>
+            {% if password %}
+                <p>
+                {% blocktrans %}
+                Your temporary password is <strong>{{ password }}</strong>.
+                {% endblocktrans %}
+                </p>
+            {% endif %}
         </div>
 
         {% if logged_in %}
@@ -45,7 +47,7 @@ Used to check if registration was successful.
                 <h2>Next Steps:</h2>
                 <table class="table table-bordered tables-striped">
                     <tr class="profile-section">
-                        <td><a href="{% url 'view_profile' %}">Add to your resume</a></td>
+                        <td><a href="{% url 'view_profile' %}">Add to your profile</a></td>
                     </tr>
                     <tr class="profile-section">
                         <td><a href="{% url 'saved_search_main' %}">Manage your saved searches</a></td>
@@ -64,7 +66,7 @@ Used to check if registration was successful.
                 <h2>What now:</h2>
                 <table class="table table-bordered tables-striped">
                     <tr class="profile-section">
-                        <td><a href="/">Login</a></td>
+                        <td><a href="/">Log In</a></td>
                     </tr>
                 </table>
             </div>

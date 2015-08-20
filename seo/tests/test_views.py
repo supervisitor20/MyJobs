@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from copy import deepcopy
+import urlparse
+import uuid
 import default_settings
 import itertools
 import json
@@ -31,11 +33,12 @@ from myjobs.tests.factories import UserFactory
 from postajob.models import SitePackage
 from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
+from redirect.tests.factories import RedirectFactory
 from seo import helpers
-from seo.tests.setup import (connection, DirectSEOBase, DirectSEOTestCase,
-                             patch_settings)
+from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
                         SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
+from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
 from universal.helpers import build_url
@@ -62,6 +65,7 @@ class FallbackTestCase(DirectSEOTestCase):
 
     def tearDown(self):
         self.conn.delete(q='*:*')
+        super(FallbackTestCase, self).tearDown()
 
     def make_page(self, page_type):
         content = 'This is a content block'
@@ -103,6 +107,15 @@ class FallbackTestCase(DirectSEOTestCase):
         # a Page.
         self.assertIn(self.content, response.content)
         self.assertNotIn(self.job['location'], self.content)
+
+        # When a job is not in solr but is in the database, we should
+        # redirect to that job's apply url.
+        self.conn.delete(q='*:*')
+        redirect = RedirectFactory(guid='{%s}' % uuid.UUID(self.job['guid']),
+                                   buid=self.job['buid'])
+        response = self.client.get(reverse('job_detail_by_job_id',
+                                           kwargs={'job_id': self.job['guid']}))
+        self.assertEqual(response['Location'], redirect.url)
 
     def test_404_fallback(self):
         error_text = ('If you found this page from a job link, '
@@ -477,18 +490,17 @@ class SeoSiteTestCase(DirectSEOTestCase):
         site.business_units = [self.buid_id]
         site.save()
 
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get('/jobs/?q=C#', follow=True)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.context['default_jobs']), 1)
+        resp = self.client.get('/jobs/?q=C#', follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['default_jobs']), 1)
 
-            resp = self.client.get('/jobs/?q=C$', follow=True)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.context['default_jobs']), 1)
+        resp = self.client.get('/jobs/?q=C$', follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['default_jobs']), 1)
 
-            resp = self.client.get('/jobs/?q=AT%5C%26T', follow=True)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.context['default_jobs']), 1)
+        resp = self.client.get('/jobs/?q=AT%5C%26T', follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['default_jobs']), 1)
 
     def test_postajob(self):
         company = factories.CompanyFactory()
@@ -1351,6 +1363,12 @@ class TemplateTestCase(DirectSEOTestCase):
 class SeoViewsTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
+    def setUp(self):
+        super(SeoViewsTestCase, self).setUp()
+        user = User.objects.get(email="matt@directemployers.org")
+        user.set_password('lingo23')
+        user.save()
+
     def test_sort(self):
         """
         Confirm that Sort by links are showing up on the search results
@@ -1745,48 +1763,77 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 break
         self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
+        # Check that the apply links are formatted correctly. This particular
+        # job has a mailto link, so the view source should not be included.
+        apply_link = soup.find(id="direct_applyButtonBottom").a.get('href')
+        self.assertNotIn(view_source.view_source, apply_link)
+        parts = urlparse.urlparse(apply_link)
+        qs = urlparse.parse_qs(parts[4])
+        params = [qs[part][0].encode('raw_unicode_escape').decode('utf-8')
+                  for part in ['body', 'subject']]
+        job = self.conn.search(q='guid:%s' % ('1' * 32)).docs[0]
+        for param in params:
+            self.assertIn(job['title'], param)
+
+
     def test_job_listing_count(self):
         """
         Test that the job listing header contains the correct job count.
 
         """
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            job = solr_settings.SOLR_FIXTURE[0].copy()
-            job.update({
-                'city': 'Muncie',
-                'city_ac': 'Muncie',
-                'city_exact': 'Muncie',
-                'city_slab': 'muncie/indiana/usa/jobs::muncie, IN',
-                'city_slab_exact': 'muncie/indiana/usa/jobs::Muncie, IN',
-                'city_slug': 'muncie',
-                'full_loc': 'city::Indianapolis@@state::Indiana@@location::Indianapolis, IN@@country::United States',
-                'full_loc_exact': 'city::Muncie@@state::Indiana@@location::Muncie, IN@@country::United States',
-                'guid': '3'*32,
-                'id': 'seo.joblisting.3',
-                'location': 'Muncie, IN',
-                'location_exact': 'Muncie, IN',
-                'reqid': 'AAA000002',
-                'uid': "1002",
-                'link': 'http://my.jobs/' + '3'*32
-            })
-            self.conn.add([job])
-            site = factories.SeoSiteFactory.build()
-            site.save()
+        job = solr_settings.SOLR_FIXTURE[0].copy()
+        job.update({
+            'city': 'Muncie',
+            'city_ac': 'Muncie',
+            'city_exact': 'Muncie',
+            'city_slab': 'muncie/indiana/usa/jobs::muncie, IN',
+            'city_slab_exact': 'muncie/indiana/usa/jobs::Muncie, IN',
+            'city_slug': 'muncie',
+            'full_loc': 'city::Indianapolis@@state::Indiana@@location::Indianapolis, IN@@country::United States',
+            'full_loc_exact': 'city::Muncie@@state::Indiana@@location::Muncie, IN@@country::United States',
+            'guid': '3'*32,
+            'id': 'seo.joblisting.3',
+            'location': 'Muncie, IN',
+            'location_exact': 'Muncie, IN',
+            'reqid': 'AAA000002',
+            'uid': "1002",
+            'link': 'http://my.jobs/' + '3'*32
+        })
+        self.conn.add([job])
+        site = factories.SeoSiteFactory.build()
+        site.save()
 
-            for url, num_jobs in [('/indiana/usa/jobs/', 3),
-                                  ('/indianapolis/indiana/usa/jobs/', 2)]:
-                resp = self.client.get(url,
-                                       HTTP_HOST='buckconsultants.jobs',
-                                       follow=True)
-                self.assertEqual(len(resp.context['default_jobs']), num_jobs)
-                content = BeautifulSoup(resp.content)
-                count = content.find('h3',
-                                     **{'class': 'direct_highlightedText'})
+        for url, num_jobs in [('/indiana/usa/jobs/', 3),
+                                ('/indianapolis/indiana/usa/jobs/', 2)]:
+            resp = self.client.get(url,
+                                    HTTP_HOST='buckconsultants.jobs',
+                                    follow=True)
+            self.assertEqual(len(resp.context['default_jobs']), num_jobs)
+            content = BeautifulSoup(resp.content)
+            count = content.find('h3',
+                                    **{'class': 'direct_highlightedText'})
 
-                count_text = '%d Jobs in Indiana' % num_jobs
-                if 'indianapolis' in url:
-                    count_text += 'polis, IN'
-                self.assertEqual(count.text.strip(), count_text)
+            count_text = '%d Jobs in Indiana' % num_jobs
+            if 'indianapolis' in url:
+                count_text += 'polis, IN'
+            self.assertEqual(count.text.strip(), count_text)
+
+    def test_url_for_sort_field(self):
+        """
+        Test that queries with unicode in search terms don't cause an error.
+        The templatetag is being used directly to bypass the possibility of 404
+        errors, thus minimizing external factors related to this particular
+        regression.
+        """
+        request = RequestFactory().get(
+            '/jobs/?q=Truck+Driver+%E2%80%93+CDL+Class+A%2FTouch+Freight'
+            '+%E2%80%93+Penske+Logistics')
+
+        context = {'request': request}
+        try:
+            url_for_sort_field(context, 'relevance')
+        except UnicodeEncodeError as e:
+            self.fail(e)
 
     def test_job_listing_by_slug_tag(self):
         """
@@ -1794,15 +1841,14 @@ class SeoViewsTestCase(DirectSEOTestCase):
         all work.
         
         """
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            site = factories.SeoSiteFactory.build()
-            site.save()
-            resp = self.client.get(
-                '/indianapolis/indiana/usa/jobs/',
-                HTTP_HOST='buckconsultants.jobs',
-                follow=True)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.context['default_jobs']), 2)
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        resp = self.client.get(
+            '/indianapolis/indiana/usa/jobs/',
+            HTTP_HOST='buckconsultants.jobs',
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['default_jobs']), 2)
 
     def test_customfacet_with_querystring(self):
         """
@@ -1840,7 +1886,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
             '/pasadena/texas/usa/jobs/engineering-jobs/new-jobs/',
             follow=True)
         self.assertEqual(resp.status_code, 200)
-        
+
+    def test_feed_items(self):
+        site = SeoSite.objects.get(id=1)
+        site.business_units = [self.buid_id]
+        site.save()
+        expected_fields = ['country_short', 'city', 'description', 'date_new',
+                           'url', 'country', 'company', 'title', 'reqid',
+                           'state', 'state_short', 'location', 'guid', 'uid']
+
+        response = self.client.get('/feed/json')
+        jobs = json.loads(response.content)
+        job = jobs[0]
+        self.assertItemsEqual(expected_fields, job.keys())
+        for field in expected_fields:
+            self.assertIsNotNone(job[field])
+            self.assertNotEqual(job[field], 'None')
+
     def test_syndicate_feed_paging(self):
         feed_types = {'xml': 'xml', 'indeed': 'xml'}
         # Since the BusinessUnit id for our test XML feed is set to 0 on the
@@ -1851,18 +1913,17 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.business_units = [self.buid_id]
         site.save()
         
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            next_link = '/feed/xml?num_items=1'
-            num_pages = 0
-            while next_link:
-                num_pages += 1
-                resp = self.client.get(next_link)
-                tree = etree.parse(StringIO(resp.content))
-                self.assertEqual(resp.status_code, 200)
-                next_link = tree.find("link[@rel='next']")
-                if next_link is not None:
-                    next_link = next_link.get('href')
-            self.assertEqual(num_pages, 2)
+        next_link = '/feed/xml?num_items=1'
+        num_pages = 0
+        while next_link:
+            num_pages += 1
+            resp = self.client.get(next_link)
+            tree = etree.parse(StringIO(resp.content))
+            self.assertEqual(resp.status_code, 200)
+            next_link = tree.find("link[@rel='next']")
+            if next_link is not None:
+                next_link = next_link.get('href')
+        self.assertEqual(num_pages, 2)
 
     def test_syndicate_feed_offset_larger_than_num_records(self):
         """Validate that when the offset is greater than the number of records,
@@ -1872,29 +1933,27 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.business_units = [self.buid_id]
         site.save()
         job = self.solr_docs[0]
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get(
-                    '/feed/rss?q=uid:1000&offset=1'
-                )
-            tree = etree.parse(StringIO(resp.content))
-            self.assertEqual(resp.status_code, 200)
-            # Check that ther ren't any jobs.
-            self.assertNotIn('<guid>', resp.content)
+        resp = self.client.get(
+                '/feed/rss?q=uid:1000&offset=1'
+            )
+        tree = etree.parse(StringIO(resp.content))
+        self.assertEqual(resp.status_code, 200)
+        # Check that ther ren't any jobs.
+        self.assertNotIn('<guid>', resp.content)
 
     def test_syndicate_feed_query_results(self):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
         job = self.solr_docs[0]
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get(
-                    '/feed/rss?q=uid:1000' 
-                )
-            tree = etree.parse(StringIO(resp.content))
-            self.assertEqual(resp.status_code, 200)
-            #Check that there's only one job
-            self.assertEqual(resp.content.find('<guid>'),
-                             resp.content.rfind('<guid>'))
+        resp = self.client.get(
+                '/feed/rss?q=uid:1000' 
+            )
+        tree = etree.parse(StringIO(resp.content))
+        self.assertEqual(resp.status_code, 200)
+        #Check that there's only one job
+        self.assertEqual(resp.content.find('<guid>'),
+                         resp.content.rfind('<guid>'))
 
     def test_syndicate_feed_query(self):
         # Since the BusinessUnit id for our test XML feed is set to 0 on the
@@ -1905,45 +1964,42 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.business_units = [self.buid_id]
         site.save()
         job = self.solr_docs[0]
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get(
-                '/feed/xml?num_items=1&location=Indianapolis&q=Retail'
-                )
-            tree = etree.parse(StringIO(resp.content))
-            self.assertEqual(resp.status_code, 200)
-            self_link = tree.find("link[@rel='self']").get('href')
-            self.assertTrue('location=' in self_link and 'q=' in self_link)
-            next_link = tree.find("link[@rel='next']").get('href')
-            # Get the child tags of the first <job> tag from the XML output
-            self.assertTrue('location=' in next_link and 'q=' in next_link) 
+        resp = self.client.get(
+            '/feed/xml?num_items=1&location=Indianapolis&q=Retail'
+            )
+        tree = etree.parse(StringIO(resp.content))
+        self.assertEqual(resp.status_code, 200)
+        self_link = tree.find("link[@rel='self']").get('href')
+        self.assertTrue('location=' in self_link and 'q=' in self_link)
+        next_link = tree.find("link[@rel='next']").get('href')
+        # Get the child tags of the first <job> tag from the XML output
+        self.assertTrue('location=' in next_link and 'q=' in next_link) 
 
     def test_feed_title(self):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
         feed_types = ['rss', 'atom'] 
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            for feed_type in feed_types:
-                resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' % 
-                                       feed_type, HTTP_HOST="buckconsultants.jobs")
-                self.assertEqual(resp.status_code, 200)
-                self.assertNotEqual(resp.content.find(
-                                    'Retail Jobs in Indianapolis'), -1)
+        for feed_type in feed_types:
+            resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' % 
+                                    feed_type, HTTP_HOST="buckconsultants.jobs")
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotEqual(resp.content.find(
+                                'Retail Jobs in Indianapolis'), -1)
 
     def test_rss_link_title(self):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get('/jobs/?q=Retail&location=Indianapolis',
-                                   HTTP_HOST="buckconsultants.jobs")
-            self.assertEqual(resp.status_code, 200)
+        resp = self.client.get('/jobs/?q=Retail&location=Indianapolis',
+                                HTTP_HOST="buckconsultants.jobs")
+        self.assertEqual(resp.status_code, 200)
 
-            rss_link = '<link rel="alternate" type="application/rss+xml" ' \
-                       'title="Test - Retail Jobs in Indianapolis" ' \
-                       'href="http://buckconsultants.jobs/jobs/feed/' \
-                       'rss?q=Retail&amp;amp;location=Indianapolis">'
-            self.assertIn(rss_link, resp.content)
+        rss_link = '<link rel="alternate" type="application/rss+xml" ' \
+                    'title="Test - Retail Jobs in Indianapolis" ' \
+                    'href="http://buckconsultants.jobs/jobs/feed/' \
+                    'rss?q=Retail&amp;amp;location=Indianapolis">'
+        self.assertIn(rss_link, resp.content)
 
     def test_feed_urls(self):
         
@@ -1974,23 +2030,22 @@ class SeoViewsTestCase(DirectSEOTestCase):
         job.site_packages.add(package)
         job.save()
 
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            known_url = 'http://testserver/11111111111111111111111111111111'
-            postajob_url = 'http://testserver/%s/job/' % job_location.guid
-            for feed_type in feed_types:
-                resp = self.client.get('/feed/%s' % feed_type)
+        known_url = 'http://testserver/11111111111111111111111111111111'
+        postajob_url = 'http://testserver/%s/job/' % job_location.guid
+        for feed_type in feed_types:
+            resp = self.client.get('/feed/%s' % feed_type)
 
-                # Confirm that the url for a posted job is correct in the
-                # feed.
-                self.assertIn(postajob_url, resp.content)
-                # Confirm that the url for a normal job is correct
-                # in the feed.
-                self.assertIn(known_url, resp.content)
+            # Confirm that the url for a posted job is correct in the
+            # feed.
+            self.assertIn(postajob_url, resp.content)
+            # Confirm that the url for a normal job is correct
+            # in the feed.
+            self.assertIn(known_url, resp.content)
 
-                # Sanity check. Make sure the extra field we've added
-                # to help generate the urls isn't making it to the
-                # final feed.
-                self.assertNotIn('is_posted', resp.content)
+            # Sanity check. Make sure the extra field we've added
+            # to help generate the urls isn't making it to the
+            # final feed.
+            self.assertNotIn('is_posted', resp.content)
 
     def test_syndicate_feed(self):
 
@@ -2010,32 +2065,31 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.business_units = [self.buid_id]
         site.save()
 
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            resp = self.client.get('/feed/xml')
-            tree = etree.parse(StringIO(resp.content))
-            walker = etree.iterwalk(tree, events=("start",), tag="job")
-            # Get the child tags of the first <job> tag from the XML output
-            children = walker.next()[1].iterchildren()
-            tags = [child.tag for child in children]
-            self.assertIn('reqid', tags)
-            site = factories.SeoSiteFactory.build()
-            site.save()
-            for feed_type, ctype in feed_types.items():
-                resp = self.client.get('/jobs/feed/%s' % feed_type,
-                                       HTTP_HOST="buckconsultants.jobs")
-                self.assertEqual(resp.status_code, 200)
+        resp = self.client.get('/feed/xml')
+        tree = etree.parse(StringIO(resp.content))
+        walker = etree.iterwalk(tree, events=("start",), tag="job")
+        # Get the child tags of the first <job> tag from the XML output
+        children = walker.next()[1].iterchildren()
+        tags = [child.tag for child in children]
+        self.assertIn('reqid', tags)
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        for feed_type, ctype in feed_types.items():
+            resp = self.client.get('/jobs/feed/%s' % feed_type,
+                                    HTTP_HOST="buckconsultants.jobs")
+            self.assertEqual(resp.status_code, 200)
 
-                job = self.conn.search(q='uid:1000')
-                vs = feed_type
-                if vs == 'jsonp':
-                    vs = 'json'
-                test_str = "http://buckconsultants.jobs/%s%d" % \
-                           (job.docs[0]['guid'],
-                            settings.FEED_VIEW_SOURCES[vs])
-                self.assertNotEqual(resp.content.decode('utf-8').find(test_str),
-                                    -1)
+            job = self.conn.search(q='uid:1000')
+            vs = feed_type
+            if vs == 'jsonp':
+                vs = 'json'
+            test_str = "http://buckconsultants.jobs/%s%d" % \
+                        (job.docs[0]['guid'],
+                        settings.FEED_VIEW_SOURCES[vs])
+            self.assertNotEqual(resp.content.decode('utf-8').find(test_str),
+                                -1)
 
-                self.assertEqual(resp['Content-Type'], 'application/%s' % ctype)
+            self.assertEqual(resp['Content-Type'], 'application/%s' % ctype)
 
     def test_new_businessunit(self):
         """
@@ -2421,15 +2475,14 @@ class SeoViewsTestCase(DirectSEOTestCase):
         company.job_source_ids.add(alpha_buid.id)
         company.save()
         
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):   
-            #test for companies beginning with a number
-            resp = self.client.get("/all-companies/0-9/")
-            self.assertContains(resp,'<li class="company">',count=None, 
-                                status_code=200, msg_prefix='')
-            #test for companies beginning with a letter
-            resp = self.client.get("/all-companies/a/")
-            self.assertContains(resp,'<li class="company">',count=None, 
-                                status_code=200, msg_prefix='')
+        #test for companies beginning with a number
+        resp = self.client.get("/all-companies/0-9/")
+        self.assertContains(resp,'<li class="company">',count=None, 
+                            status_code=200, msg_prefix='')
+        #test for companies beginning with a letter
+        resp = self.client.get("/all-companies/a/")
+        self.assertContains(resp,'<li class="company">',count=None, 
+                            status_code=200, msg_prefix='')
             
     def test_empty_company_listing(self):
         company = Company.objects.none()
@@ -2507,33 +2560,45 @@ class SeoViewsTestCase(DirectSEOTestCase):
         
     def test_saved_search_render(self):
         """Test that network sites get the saved search form on job listings."""
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            site = factories.SeoSiteFactory.build()
-            site.save()
-            site_tag = SiteTag(site_tag='network')
-            site_tag.save()
-            site.site_tags.add(site_tag)
-            resp = self.client.get(
-                    '/indianapolis/indiana/usa/jobs/',
-                    HTTP_HOST='buckconsultants.jobs',
-                    follow=True)
-            self.assertContains(resp,'<div id="de-myjobs-widget"',count=None, 
-                                    status_code=200, msg_prefix='')
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        site_tag = SiteTag(site_tag='network')
+        site_tag.save()
+        site.site_tags.add(site_tag)
+        resp = self.client.get(
+                '/indianapolis/indiana/usa/jobs/',
+                HTTP_HOST='buckconsultants.jobs',
+                follow=True)
+        self.assertContains(resp,'<div id="de-myjobs-widget"',count=None, 
+                                status_code=200, msg_prefix='')
             
     def test_saved_search_non_render(self):
         """Test company sites don't have a saved search form on job listings."""
-        with connection(connections_info=solr_settings.HAYSTACK_CONNECTIONS):
-            site = factories.SeoSiteFactory.build()
-            site.save()
-            site_tag = SiteTag(site_tag='company')
-            site_tag.save()
-            site.site_tags.add(site_tag) 
-            resp = self.client.get(
-                    '/indianapolis/indiana/usa/jobs/',
-                    HTTP_HOST='buckconsultants.jobs',
-                    follow=True)
-            self.assertNotContains(resp,'<div id="direct_savedsearch"', 
-                                   status_code=200, msg_prefix='')
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        site_tag = SiteTag(site_tag='company')
+        site_tag.save()
+        site.site_tags.add(site_tag) 
+        resp = self.client.get(
+                '/indianapolis/indiana/usa/jobs/',
+                HTTP_HOST='buckconsultants.jobs',
+                follow=True)
+        self.assertNotContains(resp,'<div id="direct_savedsearch"', 
+                                status_code=200, msg_prefix='')
+
+    def test_secure_redirect(self):
+        site = SeoSite.objects.get()
+        tag = SiteTag.objects.create(site_tag='network')
+        for path in ['about', 'privacy', 'contact', 'contact_faq', 'terms']:
+            response = self.client.get(reverse(path))
+            self.assertEqual(response.status_code, 404)
+
+            site.site_tags.add(tag)
+            response = self.client.get(reverse(path))
+            self.assertEqual(response['Location'],
+                             'https://secure.my.jobs/%s' % (
+                                 path.replace('_', '-'), ))
+            site.site_tags.remove(tag)
 
 
 class FlatpagesTestCase(DirectSEOBase):

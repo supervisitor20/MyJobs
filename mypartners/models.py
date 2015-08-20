@@ -3,18 +3,19 @@ from os import path
 from re import sub
 from urllib import urlencode
 from uuid import uuid4
+import json
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 
 from myjobs.models import User
 from postajob.location_data import states
-from states import synonyms
+from universal.helpers import json_to_query
 
 
 CONTACT_TYPE_CHOICES = (('email', 'Email'),
@@ -39,97 +40,82 @@ ACTIVITY_TYPES = {
 }
 
 
+class Status(models.Model):
+    """
+    Keeps track of a particular model's approval status.
+    """
+    UNPROCESSED, APPROVED, DENIED = range(3)
+    CODES = {
+        UNPROCESSED: 'Unprocessed',
+        APPROVED: 'Approved',
+        DENIED: 'Denied'
+    }
+
+    code = models.PositiveSmallIntegerField(
+        default=APPROVED, choices=CODES.items(), verbose_name="Status Code")
+    approved_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="Last Modified")
+
+    def __unicode__(self):
+        return dict(Status.CODES)[self.code]
+
+
 class SearchParameterQuerySet(models.query.QuerySet):
     """
     Defines a query set with a `from_search` method for filtering by query
     paramenters.
     """
 
-    # used ot map field types to a query
-    QUERY_BY_TYPE = {
-        'CharField': '__icontains',
-        'TextField': '__icontains',
-        'AutoField': '__exact',
-        'ForeignKey': '',
-        'ManyToManyField': ''}
-
     # TODO: Come up with a better name for this method
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         """
-        Intelligently filter based on query parameters.
+        Intelligently filter based on query .
 
         Inputs:
             :company: The company to restrict results to
-            :parameters: A dict of field: term pairs where field is a field of
+            :filters: A JSON string which is an object to be passed to
+                      filter().                             
+            :filters: A dict of field: term pairs where field is a field of
                          the `ContactRecord` model and term is search term
                          you'd like to filter against.
 
                          For `datetime`, pass `start_date` and/or `end_date`
                          instead.
-            If the model has a `_parse_parameters` method, that is called
-            before parsing remaining parameters.
+
+        Example:
+            If you want to filter partners where the related contact record's
+            date time is before a certain date:
+                Partner.objects.from_search(filters=json.dumps({
+                    'contactrecord': {
+                        'date_time': {
+                            'lte': '2015-08-03 00:00:00.0'
+                        }
+                    }
+                })
+
+            The above is equivalent to:
+                Partner.objects.filter(
+                    contactrecord__date_time__lte='2015-08-03 00:00:00.0')
+
         """
-        parameters = (parameters or {}).copy()
-        # only return records the current user has access to
+
+        # default to an empty object
+        filters = filters or "{}"
+
         if company:
-            company_ref = getattr(self.model, 'company_ref', 'company')
-            self = self.filter(**{company_ref: company})
-        else:
-            self = self.all()
+            self = self.filter(**{
+                getattr(self.model, 'company_ref', 'company'): company})
 
-        # fetch related models in one query
-        self = self.select_related()
+        query = json_to_query(json.loads(filters))
 
-        # extract special fields so they aren't traversed later
-        if parameters.get('start_date'):
-            parameters['start_date'] = datetime.strptime(
-                parameters['start_date'], '%m/%d/%Y').date()
+        if hasattr(self.model, 'approval_status'):
+            query.update({'approval_status__code__iexact': Status.APPROVED})
 
-        if parameters.get('end_date'):
-            # handles off-by-one error; otherwise date provided is excluded
-            parameters['end_date'] = datetime.strptime(
-                parameters['end_date'], '%m/%d/%Y').date() + timedelta(1)
-
-        # do special parsing
-        if parameters and hasattr(self.model, '_parse_parameters'):
-            self = self.model._parse_parameters(parameters, self)
-
-        for key, value in parameters.items():
-            if hasattr(value, '__iter__'):
-                query = '%s%s' % (key, '__in')
-            else:
-                type_ = self.get_field_type(key)
-
-                # construct query based on field type
-                query = '%s%s' % (
-                    key, SearchParameterQuerySet.QUERY_BY_TYPE[type_])
-
-            self = self.filter(**{query: value})
-
-        # remove duplicates
-        self = self.distinct()
+        self = self.filter(**query).distinct()
 
         return self
-
-    def get_field_type(self, name):
-        """
-        Returns the type of the `model`'s `field` or None if it doesn't
-        exist.
-        """
-
-        if '__' in name:
-            return 'ForeignKey'
-
-        # using get_fields isn't sufficient as it doesn't account
-        field = self.model._meta.get_field_by_name(name)[0]
-
-        try:
-            field_type = field.get_internal_type()
-        except AttributeError:
-            # field apparently isn't a field
-            field_type = field.field.get_internal_type()
-
-        return field_type
 
 
 class SearchParameterManager(models.Manager):
@@ -139,33 +125,38 @@ class SearchParameterManager(models.Manager):
     def get_query_set(self):
         return SearchParameterQuerySet(self.model, using=self._db)
 
-    def from_search(self, company=None, parameters=None):
+    def from_search(self, company=None, filters=None):
         return self.get_query_set().from_search(
-            company, parameters)
+            company, filters)
 
     def sort_by(self, *fields):
         return self.get_query_set().sort_by(*fields)
 
 
 class Location(models.Model):
-    label = models.CharField(max_length=60, verbose_name='Address Label',
-                             blank=True)
     address_line_one = models.CharField(max_length=255,
                                         verbose_name='Address Line One',
-                                        blank=True)
+                                        blank=True,
+                                        help_text='ie 123 Main St')
     address_line_two = models.CharField(max_length=255,
                                         verbose_name='Address Line Two',
-                                        blank=True)
-    city = models.CharField(max_length=255, verbose_name='City')
-    state = models.CharField(max_length=200, verbose_name='State/Region')
+                                        blank=True,
+                                        help_text='ie Suite 100')
+    city = models.CharField(max_length=255, verbose_name='City',
+                                           help_text='ie Chicago, Washington, Dayton')
+    state = models.CharField(max_length=200, verbose_name='State/Region',
+                                             help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, verbose_name='Country',
                                     default='USA')
     postal_code = models.CharField(max_length=12, verbose_name='Postal Code',
-                                   blank=True)
+                                   blank=True,
+                                   help_text='ie 90210, 12345-7890')
+    label = models.CharField(max_length=60, verbose_name='Address Name',
+                             blank=True,
+                             help_text='ie Main Office, Corporate, Regional')
 
     def __unicode__(self):
-        return (", ".join([self.city, self.state]) if self.city and self.state
-                else self.city or self.state)
+        return ", ".join(filter(bool, [self.city, self.state]))
 
     natural_key = __unicode__
 
@@ -181,75 +172,31 @@ class Contact(models.Model):
     """
     user = models.ForeignKey(User, blank=True, null=True,
                              on_delete=models.SET_NULL)
-    partner = models.ForeignKey('Partner')
+    partner = models.ForeignKey('Partner', 
+                                null=True, on_delete=models.SET_NULL)
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
-    name = models.CharField(max_length=255, verbose_name='Full Name')
-    email = models.EmailField(max_length=255, verbose_name='Email', blank=True)
+    name = models.CharField(max_length=255, verbose_name='Full Name',
+                             help_text='Contact\'s full name')
+    email = models.EmailField(max_length=255, verbose_name='Email', blank=True,
+                             help_text='Contact\'s email address')
     phone = models.CharField(max_length=30, verbose_name='Phone', blank=True,
-            default='')
+            default='', help_text='ie (123) 456-7890')
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',
-                             blank=True, default="")
+                             blank=True, default="", 
+                             help_text='Any additional information you want to record')
     archived_on = models.DateTimeField(null=True)
+    approval_status = models.OneToOneField(
+        'mypartners.Status', null=True, verbose_name="Approval Status")
 
     company_ref = 'partner__owner'
     objects = SearchParameterManager()
 
     class Meta:
         verbose_name_plural = 'contacts'
-
-    @classmethod
-    def _parse_parameters(self, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        contact_type = parameters.pop('contact_type', None)
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        tags = parameters.pop('tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(
-                partner__contactrecord__date_time__range=[
-                    start_date, end_date])
-        elif start_date:
-            records = records.filter(
-                partner__contactrecord__date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(
-                partner__contactrecord__date_time__lte=end_date)
-
-        if state:
-            state_query = models.Q()
-            # match state synonyms when querying
-            for synonym in synonyms[state.strip().lower()]:
-                state_query |= models.Q(
-                    locations__state__iexact=synonym)
-
-            records = records.filter(state_query)
-
-        if city:
-            records = records.filter(locations__city__icontains=city)
-
-        if contact_type:
-            if not hasattr(contact_type, '__iter__'):
-                contact_type = [contact_type]
-
-            records = records.filter(
-                contactrecord__contact_type__in=contact_type)
-
-        return records
 
     def __unicode__(self):
         if self.name:
@@ -274,6 +221,7 @@ class Contact(models.Model):
                     pass
                 else:
                     self.user = user
+
         return super(Contact, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -331,86 +279,45 @@ def delete_contact_locations(sender, instance, **kwargs):
             location.delete()
 
 
+@receiver(pre_save, sender=Contact, dispatch_uid='pre_save_contact_signal')
+def save_contact(sender, instance, **kwargs):
+    if not instance.approval_status:
+        # if no relation exists, instance.user will raise an attribute error
+        instance.approval_status = Status.objects.create(
+            approved_by=instance.user)
+
+
 class Partner(models.Model):
     """
     Object that this whole app is built around.
 
     """
     name = models.CharField(max_length=255,
-                            verbose_name='Partner Organization')
+                            verbose_name='Partner Organization',
+                            help_text='Name of the Organization')
     data_source = models.CharField(max_length=255,
                                    verbose_name='Source',
-                                   blank=True)
-    uri = models.URLField(verbose_name='URL', blank=True)
+                                   blank=True, 
+                                   help_text='Website, event, or other source where you found the partner')
+    uri = models.URLField(verbose_name='URL', blank=True, 
+                        help_text='Full url. ie http://partnerorganization.org')
     primary_contact = models.ForeignKey('Contact', null=True,
                                         related_name='primary_contact',
-                                        on_delete=models.SET_NULL)
+                                        on_delete=models.SET_NULL,
+                                        help_text='Denotes who the primary contact is for this organization.')
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
-    tags = models.ManyToManyField('Tag', null=True)
+    tags = models.ManyToManyField('Tag', null=True, 
+        help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.')
     # owner is the Company that owns this partner.
-    owner = models.ForeignKey('seo.Company')
+    owner = models.ForeignKey('seo.Company', null=True,
+                              on_delete=models.SET_NULL)
+    approval_status = models.OneToOneField(
+        'mypartners.Status', null=True, verbose_name="Approval Status")
 
     company_ref = 'owner'
     objects = SearchParameterManager()
-
-    @classmethod
-    def _parse_parameters(cls, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        contact_type = parameters.pop('contact_type', None)
-        tags = parameters.pop('tags__name', None)
-        contactrecord_tags = parameters.pop('contactrecord__tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        if contactrecord_tags:
-            if not hasattr(contactrecord_tags, '__iter__'):
-                contactrecord_tags = [contactrecord_tags]
-
-            for tag in contactrecord_tags:
-                records = records.filter(
-                    contactrecord__tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(contactrecord__date_time__range=[
-                start_date, end_date])
-        elif start_date:
-            records = records.filter(contactrecord__date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(contactrecord__date_time__lte=end_date)
-
-        if state:
-            state_query = models.Q()
-            # match state synonyms when querying
-            for synonym in synonyms[state.strip().lower()]:
-                state_query |= models.Q(
-                    contact__locations__state__iexact=synonym)
-
-            records = records.filter(state_query)
-
-        if city:
-            records = records.filter(contact__locations__city__icontains=city)
-
-        if contact_type:
-            if not hasattr(contact_type, '__iter__'):
-                contact_type = [contact_type]
-
-            records = records.filter(
-                contactrecord__contact_type__in=contact_type)
-
-        return records
 
     def __unicode__(self):
         return self.name
@@ -431,9 +338,17 @@ class Partner(models.Model):
         return logs.order_by('-action_time')[:num_items]
 
     def get_contact_locations(self):
-        return Location.objects.filter(
+        """Return a list of unique contact locations as strings."""
+
+        # Unique city and state pairs attached to contacts belonging to this
+        # partner.
+        locs = Location.objects.filter(
             contacts__in=self.contact_set.all()).exclude(
-                contacts__archived_on__isnull=False).order_by('state', 'city')
+                contacts__archived_on__isnull=False).values(
+                    'city', 'state').distinct().order_by('state', 'city')
+
+        # Convert these city/state pairs into comma separated strings
+        return [", ".join(filter(bool, [l['city'], l['state']])) for l in locs]
 
     # get_contact_records_for_partner
     def get_contact_records(self, contact_name=None, record_type=None,
@@ -480,6 +395,14 @@ class Partner(models.Model):
             Tag.objects.filter(contact__in=self.contact_set.all()))
 
         return tags
+
+
+@receiver(pre_save, sender=Partner, dispatch_uid='pre_save_partner_signal')
+def save_partner(sender, instance, **kwargs):
+    if not instance.approval_status:
+        # TODO: find out how to get a user for approved_by
+        # if no relation exists, instance.user will raise an attribute error    
+        instance.approval_status = Status.objects.create()
 
 
 class PartnerLibrary(models.Model):
@@ -627,7 +550,7 @@ class ContactRecordManager(SearchParameterManager):
         return ContactRecordQuerySet(self.model, using=self._db)
 
     def communication_activity(self):
-        return self.get_query_set().communication_activity()
+        return self.get_query_set().communication_activity
 
 
 class ContactRecord(models.Model):
@@ -640,11 +563,11 @@ class ContactRecord(models.Model):
 
     created_on = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-    partner = models.ForeignKey(Partner)
-    contact = models.ForeignKey(Contact, null=True)
+    partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
+    contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
                                     max_length=50,
-                                    verbose_name="Contact Type")
+                                    verbose_name="Communication Type")
     # contact type fields, fields required depending on contact_type. Enforced
     # on the form level.
     contact_email = models.CharField(max_length=255,
@@ -673,43 +596,11 @@ class ContactRecord(models.Model):
     job_hires = models.CharField(max_length=6, verbose_name="Number of Hires",
                                  blank=True, default="")
     tags = models.ManyToManyField('Tag', null=True)
-
-    @classmethod
-    def _parse_parameters(cls, parameters, records):
-        """Used to parse state during `from_search()`."""
-
-        start_date = parameters.pop('start_date', None)
-        end_date = parameters.pop('end_date', None)
-        # popping city and state so it doesn't get parsed again
-        state = parameters.pop('state', None)
-        city = parameters.pop('city', None)
-        tags = parameters.pop('tags__name', None)
-
-        if tags:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            for tag in tags:
-                records = records.filter(tags__name__icontains=tag)
-
-        # using a foreign relationship, so can't just filter twice
-        if start_date and end_date:
-            records = records.filter(date_time__range=[start_date, end_date])
-        elif start_date:
-            records = records.filter(date_time__gte=start_date)
-        elif end_date:
-            records = records.filter(date_time__lte=end_date)
-
-        if city or state:
-            if state:
-                records = records.filter(contact__locations__state=state)
-
-            if city:
-                records = records.filter(contact__locations__city=city)
-
-        return records
+    approval_status = models.OneToOneField(
+        'mypartners.Status', null=True, verbose_name="Approval Status")
 
     def __unicode__(self):
-        return "%s Contact Record - %s" % (self.contact_type, self.subject)
+        return "%s Communication Record - %s" % (self.contact_type, self.subject)
 
     def save(self, *args, **kwargs):
         if not self.pk and self.contact:
@@ -764,6 +655,21 @@ class ContactRecord(models.Model):
 
     def shorten_date_time(self):
         return self.date_time.strftime('%b %e, %Y')
+
+    @property
+    def contactlogentry(self):
+        ct = ContentType.objects.get_for_model(self.__class__)
+        return ContactLogEntry.objects.filter(content_type=ct,
+                                              object_id=self.pk).first()
+
+
+@receiver(pre_save, sender=ContactRecord, 
+          dispatch_uid='pre_save_contactrecord_signal')
+def save_contactrecord(sender, instance, **kwargs):
+    if not instance.approval_status:
+        # if no relation exists, instance.user will raise an attribute error
+        instance.approval_status = Status.objects.create(
+            approved_by=instance.created_by)
 
 
 MAX_ATTACHMENT_MB = 4
@@ -847,6 +753,7 @@ class ContactLogEntry(models.Model):
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    successful = models.NullBooleanField(default=None)
 
     def get_edited_object(self):
         """

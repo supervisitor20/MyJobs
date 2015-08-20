@@ -35,6 +35,7 @@ from django.views.decorators.csrf import csrf_exempt
 from slugify import slugify
 
 from moc_coding import models as moc_models
+from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
 from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr
@@ -59,6 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
+from universal.states import states_with_sites, other_locations_with_sites
 
 
 """
@@ -377,7 +379,9 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         the_job = DESearchQuerySet().narrow("%s:(%s)" % (search_type,
                                                          job_id))[0]
     except IndexError:
-        return dseo_404(request)
+        # The job was not in solr; find and redirect to its apply url if
+        # it's a new job that hasn't been syndicated, otherwise return a 404.
+        return redirect_if_new(**{search_type: job_id}) or dseo_404(request)
     else:
         if settings.SITE_BUIDS and the_job.buid not in settings.SITE_BUIDS:
             if the_job.on_sites and not (set(settings.SITE_PACKAGES) & set(the_job.on_sites)):
@@ -398,7 +402,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
 
         query_path = "%s" % qs.urlencode() if qs.urlencode() else ''
 
-        # Append the query_path to all of the exising urls
+        # Append the query_path to all of the existing urls
         for field in breadbox_path:
             breadbox_path[field]['path'] = (("%s?%s" %
                                              (breadbox_path[field].get(
@@ -449,6 +453,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         host = 'foo'
         link_query = ""
         jobs_count = get_total_jobs_count()
+        mailto = False
 
         if the_job.link is None:
             LOG.error("No link for job %s", the_job.uid)
@@ -458,28 +463,45 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             url = urlparse(the_job.link)
             path = url.path.replace("/", "")
             # use the override view source
-            if settings.VIEW_SOURCE:
+            if settings.VIEW_SOURCE and url.scheme != "mailto":
                 path = "%s%s" % (path[:32], settings.VIEW_SOURCE.view_source)
+            elif url.scheme == "mailto":
+                mailto = True
+                subject = "Application for Job Posting: %s" % the_job.title
+                subject = '&subject=' + iri_to_uri(subject)
+                body = [
+                    '',
+                    '-' * 65,
+                    'Job Title: %s' % the_job.title
+                ]
+                if settings.VIEW_SOURCE:
+                    body.append('View Source: %s' % (
+                        settings.VIEW_SOURCE.name, ))
+                body.append(settings.SITE.domain)
+                body = '\r\n'.join(body)
+                body = '&body=' + iri_to_uri(body)
+                link_query = subject + body
 
-        # add any ats source code name value pairs
-        ats = settings.ATS_SOURCE_CODES.all()
-        if ats:
-            link_query += "&".join(["%s" % code for code in ats])
+        if not mailto:
+            # add any ats source code name value pairs
+            ats = settings.ATS_SOURCE_CODES.all()
+            if ats:
+                link_query += "&".join(["%s" % code for code in ats])
 
-        # build the google analytics query string
-        gac = settings.GA_CAMPAIGN
-        gac_data = {
-            "campaign_source": "utm_source",
-            "campaign_medium": "utm_medium",
-            "campaign_term": "utm_term",
-            "campaign_content": "utm_content",
-            "campaign_name": "utm_campaign"
-        }
+            # build the google analytics query string
+            gac = settings.GA_CAMPAIGN
+            gac_data = {
+                "campaign_source": "utm_source",
+                "campaign_medium": "utm_medium",
+                "campaign_term": "utm_term",
+                "campaign_content": "utm_content",
+                "campaign_name": "utm_campaign"
+            }
 
-        if gac:
-            q_str = "&".join(["%s=%s" % (v, getattr(gac, k))
-                              for k, v in gac_data.items()])
-            link_query = "&".join([link_query, q_str])
+            if gac:
+                q_str = "&".join(["%s=%s" % (v, getattr(gac, k))
+                                  for k, v in gac_data.items()])
+                link_query = "&".join([link_query, q_str])
 
         if link_query:
             urllib.quote_plus(link_query, "=&")
@@ -730,7 +752,6 @@ def syndication_feed(request, filter_path, feed_type):
 
     job_count = jobs.count()
     num_items = min(num_items, max_items, job_count)
-    jobs[:num_items]
 
     if days_ago:
         now = datetime.datetime.utcnow()
@@ -751,6 +772,8 @@ def syndication_feed(request, filter_path, feed_type):
                      'date_new', 'description', 'location', 'reqid', 'state',
                      'state_short', 'title', 'uid', 'guid',
                      'is_posted')[offset:offset+num_items]
+    # jobs is being used for rss feeds for BreadBox
+    jobs = jobs[offset:offset+num_items]
 
     self_link = ExtraValue(name="link", content="",
                            attributes={'href': request.build_absolute_uri(),
@@ -818,7 +841,7 @@ def syndication_feed(request, filter_path, feed_type):
         selected = helpers.get_bread_box_headings(filters, jobs)
         rss.description = ''
 
-        if not any in selected.values():
+        if not any(selected.values()):
             selected = {'title_slug': request.GET.get('q'),
                         'location_slug': request.GET.get('location')}
 
@@ -849,7 +872,6 @@ def member_carousel_data(request):
     :jsonp: JSONP formatted bit of JavaScript with company url, name, and image
 
     """
-
     if request.GET.get('microsite_only') == 'true':
         members = helpers.company_thumbnails(Company.objects.filter(
             member=True).exclude(canonical_microsite__isnull=True).exclude(
@@ -1706,8 +1728,18 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
 
+    # Text uses html_description instead of just description.
+    fl = list(helpers.search_fields)
+    index = fl.index('description')
+    fl.pop(index)
+    # We use the html_description to show highlighted snippets of the
+    # description that match the search term. If there is no search
+    # term there's no reason to even get the html_description.
+    if q_term:
+        fl.append('html_description')
+
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
-        request, filters, num_jobs)
+        request, filters, num_jobs, fl=fl)
 
     total_featured_jobs = featured_jobs.count()
     total_default_jobs = default_jobs.count()
@@ -1726,8 +1758,9 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     featured_jobs = featured_jobs[:num_featured_jobs]
 
     jobs = list(itertools.chain(featured_jobs, default_jobs))
-    for job in jobs:
-        helpers.add_text_to_job(job)
+    if query_path:
+        for job in jobs:
+            helpers.add_text_to_job(job)
     
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
 
@@ -1845,7 +1878,7 @@ def post_a_job(request):
     if jobs_to_add:
         jobs_to_add = json.loads(jobs_to_add)
         jobs_to_add = [transform_for_postajob(job) for job in jobs_to_add]
-        jobs_added = add_jobs(jobs_to_add)
+        jobs_added = len(add_jobs(jobs_to_add))
     else:
         jobs_added = 0
     resp = {'jobs_added': jobs_added}
@@ -1990,3 +2023,25 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+def seo_states(request):
+    data_dict = {"states": sorted(states_with_sites.iteritems()),
+                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+
+    return render_to_response('seo/states.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+def seo_companies(request):
+    # Grab all companies that are a member and has a canonical_microsite
+    companies = Company.objects.filter(member=True).exclude(
+        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
+
+    # Only send info that I care about
+    companies = [{"url": company.canonical_microsite, "name": company.name}
+                 for company in companies]
+
+    data_dict = {"companies": companies}
+    return render_to_response('seo/companies.html', data_dict,
+                              context_instance=RequestContext(request))

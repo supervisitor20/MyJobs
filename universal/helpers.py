@@ -1,13 +1,16 @@
-from copy import copy
+"""Generic helper functions."""
+
+from copy import copy, deepcopy
 import re
 import urllib
-from urlparse import parse_qsl, urlparse, urlunparse
+from urlparse import urlparse, urlunparse
 
 from django.db.models.loading import get_model
 from django.conf import settings
 from django.shortcuts import get_object_or_404, Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import EmailMessage
+from django.http import QueryDict
 
 
 def update_url_param(url, param, new_val):
@@ -23,11 +26,13 @@ def update_url_param(url, param, new_val):
     outputs:
     The new url.
     """
+
     url_parts = list(urlparse(url))
     parts = copy(url_parts)
-    query = dict(parse_qsl(parts[4]))
+    query = QueryDict(parts[4], mutable=True)
     query[param] = new_val
-    parts[4] = urllib.urlencode(query)
+    parts[4] = query.urlencode()
+
     return urlunparse(parts)
 
 
@@ -176,10 +181,6 @@ def add_pagination(request, object_list, per_page=None):
     return pagination
 
 
-def has_mx_record(domain):
-    return True
-
-
 def send_email(email_body, email_type=settings.GENERIC,
                recipients=None, site=None, headers=None, **kwargs):
     recipients = recipients or []
@@ -214,3 +215,58 @@ def send_email(email_body, email_type=settings.GENERIC,
     message.send()
 
     return message
+
+
+def nested_dict(items, value=None):
+    """Creates a nested, single-item dict from a list of items."""
+
+    length = len(items)
+
+    if length == 0:
+        return {}
+    elif length == 1:
+        return {items[0]: value}
+    else:
+        return {items[0]: nested_dict(items[1:], value)}
+
+
+def merge_dicts(first, second):
+    """Merge two potentially nested dicts."""
+    if not isinstance(second, dict):
+        return second
+
+    result = deepcopy(first)
+    for key, value in second.iteritems():
+        if key in result and isinstance(result[key], dict):
+            result[key] = merge_dicts(result[key], value)
+        else:
+            result[key] = deepcopy(value)
+
+    return result
+
+
+def query_to_json(data, sep="__"):
+    """
+    Expands a django query dictionary into one suitable for json encoding.
+    """
+
+    items = [(key.split(sep), value) for key, value in data.items()]
+    dicts = [nested_dict(item[0], item[1]) for item in items]
+    results = reduce(merge_dicts, dicts)
+
+    return results
+
+
+def json_to_query(data, sep="__", parent=""):
+    """Collapse a dict into one suitable for django queries."""
+
+    results = {}
+
+    for key, value in data.items():
+        if isinstance(value, dict):
+            results.update(
+                json_to_query(value, sep=sep, parent=parent + key + sep))
+        else:
+            results[parent + key] = value
+
+    return results

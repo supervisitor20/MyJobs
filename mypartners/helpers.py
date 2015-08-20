@@ -19,8 +19,8 @@ from django.utils.translation import ugettext
 from lxml import html
 from lxml.cssselect import CSSSelector
 import requests
-import states
 
+from universal import states
 from universal.helpers import (get_domain, get_company, get_company_or_404,
                                get_int_or_none, send_email)
 from mypartners.models import (Contact, ContactLogEntry, CONTACT_TYPE_CHOICES,
@@ -85,7 +85,7 @@ def add_extra_params_to_jobs(items, extra_urls):
 
 
 def log_change(obj, form, user, partner, contact_identifier,
-               action_type=CHANGE, change_msg=None):
+               action_type=CHANGE, change_msg=None, successful=None):
     """
     Creates a ContactLogEntry for obj.
 
@@ -121,6 +121,7 @@ def log_change(obj, form, user, partner, contact_identifier,
         object_repr=force_text(obj)[:200],
         partner=partner,
         user=user,
+        successful=successful,
     )
 
 
@@ -294,7 +295,7 @@ def send_contact_record_email_response(created_records, created_contacts,
     message = render_to_string('mypartners/email/email_response.html',
                                ctx)
     headers = {
-        'X-SMTPAPI': '{"category": "Contact Record %s"}' % (
+        'X-SMTPAPI': '{"category": "Communication Record %s"}' % (
             'Failure' if error is not None else 'Success')
     }
 

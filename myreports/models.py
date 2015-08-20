@@ -20,16 +20,17 @@ class Report(models.Model):
                     `referrals` from the `ContactRecord` model).
     """
     name = models.CharField(max_length=50)
-    created_by = models.ForeignKey('myjobs.User')
+    created_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey('seo.Company')
     created_on = models.DateTimeField(auto_now_add=True)
-    order_by = models.CharField(max_length=50, blank=True)
+    order_by = models.CharField(max_length=50, blank=True, default='')
     app = models.CharField(default='mypartners', max_length=50)
     model = models.CharField(default='contactrecord', max_length=50)
     # included columns and sort order
     values = models.CharField(max_length=500, default='[]')
-    # json encoded string of the params used to filter
-    params = models.TextField()
+    # json encoded string of the filters used to filter
+    filters = models.TextField(default="{}")
     results = models.FileField(upload_to='reports')
 
     company_ref = 'owner'
@@ -38,13 +39,16 @@ class Report(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(Report, self).__init__(*args, **kwargs)
+        self._results = '{}'
+
         if self.results:
             try:
                 self._results = self.results.read()
             except IOError:
-                self.results.delete()
-        else:
-            self._results = '{}'
+                # If we are here, the file can't be found, which is usually the
+                # case when testing locally and pointing to
+                # QC/Staging/Production.
+                pass
 
     @property
     def json(self):
@@ -57,18 +61,18 @@ class Report(models.Model):
     @property
     def queryset(self):
         model = get_model(self.app, self.model)
-        params = json.loads(self.params)
-        return model.objects.from_search(self.owner, params)
+        return model.objects.from_search(self.owner, self.filters)
 
     def __unicode__(self):
         return self.name
 
     def regenerate(self):
         """Regenerate the report file if it doesn't already exist on disk."""
-        if not self.results:
-            values = json.loads(self.values)
-            contents = serialize('json', self.queryset, values=values)
-            results = ContentFile(contents)
+        contents = serialize('json', self.queryset)
+        results = ContentFile(contents)
 
-            self.results.save('%s-%s.json' % (self.name, self.pk), results)
-            self._results = contents
+        if self.results:
+            self.results.delete()
+
+        self.results.save('%s-%s.json' % (self.name, self.pk), results)
+        self._results = contents

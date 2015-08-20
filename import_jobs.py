@@ -4,7 +4,7 @@ import sys
 import urllib
 import datetime
 import logging
-from itertools import izip_longest
+from itertools import izip_longest, islice, chain
 import urllib2
 import base64
 import zipfile
@@ -22,6 +22,7 @@ from seo.helpers import slices, create_businessunit
 from seo.models import BusinessUnit, Company
 import tasks
 from transform import hr_xml_to_json, make_redirect
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,11 @@ FEED_FILE_PREFIX = "dseo_feed_"
 def update_job_source(guid, buid, name, clear_cache=False):
     """Composed method for resopnding to a guid update."""
 
+    assert(re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid),
+           "%s is not a valid guid" % guid)
+    assert(re.match(r'^\d+$', str(buid)),
+           "%s is not a valid buid" % buid)
+
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
     create_businessunit(buid)
@@ -49,19 +55,32 @@ def update_job_source(guid, buid, name, clear_cache=False):
     zf = get_jobsfs_zipfile(guid)
     jobs = get_jobs_from_zipfile(zf, guid)
     jobs = filter_current_jobs(jobs, bu)
-    jobs = [hr_xml_to_json(job, bu) for job in jobs]
-    for job in jobs:
-        job['link'] = make_redirect(job, bu).make_link()
-    add_jobs(jobs)
-    remove_expired_jobs(buid, jobs)
+    jobs = (hr_xml_to_json(job, bu) for job in jobs)
+    jobs = (add_redirect(job, bu) for job in jobs)
+
+    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
+    # Therefore, when processing AT&T lower the document chunk size.
+    if int(buid) == 19389:
+        logger.warn("AT&T has large amounts of mapped_mocs, that cause problems.  Reducing chunk size.")
+        upload_chunk_size = 64
+    else:
+        upload_chunk_size = 1024
+
+    job_ids = add_jobs(jobs, upload_chunk_size)
+    remove_expired_jobs(buid, job_ids)
 
     # Update business information
-    bu.associated_jobs = len(jobs)
+    bu.associated_jobs = len(job_ids)
     bu.date_updated = datetime.datetime.utcnow()
     bu.save()
     if clear_cache:
         # Clear cache in 25 minutes to allow for solr replication
         tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
+
+
+def add_redirect(job, bu):
+    job['link'] = make_redirect(job, bu).make_link()
+    return job
 
 
 def filter_current_jobs(jobs, bu):
@@ -99,7 +118,7 @@ def get_jobsfs_zipfile(guid):
     authheader = "Basic %s" % base64.encodestring('%s:%s' % ('microsites',
                                                              'di?dsDe4'))
     req.add_header("Authorization", authheader)
-    resp = urllib2.urlopen(req)
+    resp = urllib2.urlopen(req, timeout=30)
     return resp
 
 
@@ -111,18 +130,16 @@ def get_jobs_from_zipfile(zipfileobject, guid):
     :return: [lxml.eTree, lxml.eTree,...]"""
     logger.debug("Getting current Jobs for guid: %s", guid)
 
-
     # Get current worker process id, to prevent race conditions.
     try:
         p = current_process()
-        process_id =  p.index
+        process_id = p.index
     except AttributeError:
         process_id = 0
 
-
     # Delete any existing data and use the guid to create a unique folder.
     directory = "/tmp/%s/%s" % (process_id, guid)
-    prefix =  os.path.commonprefix(['/tmp/%s' % process_id, os.path.abspath(directory)])
+    prefix = os.path.commonprefix(['/tmp/%s' % process_id, os.path.abspath(directory)])
     assert prefix == '/tmp/%s' % process_id, "Directory should be located in /tmp/%s" % process_id
 
     if os.path.exists(directory):
@@ -159,6 +176,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
 
     # clean up after ourselves.
     shutil.rmtree(directory)
+
 
 class FeedImportError(Exception):
     def __init__(self, msg):
@@ -389,6 +407,9 @@ def update_solr(buid, download=True, force=True, set_title=False,
             logging.debug("BUID:%s - SOLR - Delete chunk: %s" %
                          (buid, list(solr_del_uids)))
             conn.delete(q=delete_chunk)
+    
+    # delete any jobs that may have been added via etl_to_solr
+    conn.delete(q="buid:%s AND !uid:[0  TO *]" % buid)
 
     #Update business unit information: title, dates, and associated_jobs
     if set_title or not bu.title or (bu.title != jobfeed.job_source_name and
@@ -440,7 +461,6 @@ def _job_filter(job):
 def _xml_errors(jobfeed):
     """
     Checks XML input for errors, and logs any it finds.
-
     """
     if jobfeed.errors:
         logging.error("XML Job Feed Error",
@@ -572,26 +592,29 @@ def _build_solr_delete_query(old_jobs):
     return delete_query
 
 
-def chunk(l, chunk_size=1024):
+def chunk(iterable, chunk_size=1024):
     """
     Create chunks from a list.
 
     """
-    for i in xrange(0, len(l), chunk_size):
-        yield l[i:i + chunk_size]
+    iterator = iter(iterable)
+    for first in iterator:
+        yield chain([first], islice(iterator, chunk_size - 1))
 
 
-def remove_expired_jobs(buid, active_jobs, upload_chunk_size=1024):
+def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
     """
-    Given a job source id and a list of active jobs for that job source,
+    Given a job source id and a list of active job ids for that job source,
     Remove the jobs on solr that are not among the active jobs.
     """
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+
+    active_ids = set(active_ids)
+
     count = conn.search("*:*", fq="buid:%s" % buid, facet="false",
                                       mlt="false").hits
     old_jobs = conn.search("*:*", fq="buid:%s" % buid, facet="false",
                            rows=count, mlt="false").docs
-    active_ids = set(j['id'] for j in active_jobs)
     old_ids = set(j['id'] for j in old_jobs)
     expired = old_ids - active_ids
     chunks = chunk(list(expired), upload_chunk_size)
@@ -609,24 +632,18 @@ def add_jobs(jobs, upload_chunk_size=1024):
         :jobs: A list of solr-ready, json-formatted jobs.
 
     outputs:
-        The number of jobs loaded into solr.
+        The ids of jobs loaded into solr.
     """
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    num_jobs = len(jobs)
-    # AT&T Showed that large numbers of MOCs can cause import issues due to the size of documents.
-    # Therefore, when processing AT&T lower the document chunk size.
-    for job in jobs:
-        if int(job.get('buid', 0)) == 19389:
-            logger.warn("AT&T has large amounts of mapped_mocs, that cause problems.  Reducing chunk size.")
-            upload_chunk_size = 64
-            break
-            
-    
+
     # Chunk them
     jobs = chunk(jobs, upload_chunk_size)
+    job_ids = list()
     for job_group in jobs:
-        conn.add(list(job_group))
-    return num_jobs
+        job_group = list(job_group)
+        conn.add(job_group)
+        job_ids.extend(j['id'] for j in job_group)
+    return job_ids
 
 
 def delete_by_guid(guids):

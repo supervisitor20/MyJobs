@@ -3,26 +3,30 @@ from default_settings import *
 import datetime
 import os
 
+from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
+
 DEBUG = True
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC),
     # Points to staging instead of QC for testing purposes.
-    'qc-redirect': {
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_STAGING),
+    'archive': dict({
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'redirect',
+        'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }, **ARCHIVE_STAGING)
 }
 
 ALLOWED_HOSTS = ['my.jobs', 'localhost']
@@ -32,7 +36,7 @@ _PATH = os.path.abspath(os.path.dirname(__file__))
 
 # Absolute URL used for cross site links, relative during local/staging
 # absolute during production
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'http://qc.secure.my.jobs/'
 
 PROJECT = "myjobs"
 ENVIRONMENT = 'QC'
