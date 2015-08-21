@@ -230,6 +230,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'tasks.submit_all_sitemaps',
         'schedule': crontab(hour=13, minute=0)
     },
+    'requeue-failed-tasks': {
+        'task': 'tasks.requeue_failures',
+        'schedule': crontab(hour=7, minute=5)
+    },
 }
 
 
@@ -503,6 +507,20 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
+    },
+}
+
+# Keep these here since a number of apps need them. (circular imports)
+TEST_HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'seo.tests.setup.TestDESolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
+    },
+    'groups': {
+        'ENGINE': 'seo.tests.setup.TestSolrGrpEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
     },
 }
 

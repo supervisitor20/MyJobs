@@ -216,8 +216,20 @@ class Invitation(models.Model):
             'X-SMTPAPI': '{"category": "Invitation Sent (%s)"}' % self.pk
         }
 
-        self.invitee.email_user(body, email_type=settings.INVITATION,
-                                inviter=from_, headers=headers)
+        fail_message = None
+        try:
+            self.invitee.email_user(body, email_type=settings.INVITATION,
+                                    inviter=from_, headers=headers)
+        except Exception as e:
+            fail_message = getattr(e, 'smtp_error', e.message)
+        else:
+            ap.sent = datetime_now()
+            ap.save()
 
-        ap.sent = datetime_now()
-        ap.save()
+        if self.added_saved_search and hasattr(self.added_saved_search,
+                                               'partnersavedsearch'):
+            self.added_saved_search.partnersavedsearch.create_record(
+                "Automatic sending of initial partner saved search",
+                body=context['initial_search_email'],
+                failure_message=fail_message
+            )

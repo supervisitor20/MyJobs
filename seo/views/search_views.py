@@ -752,7 +752,6 @@ def syndication_feed(request, filter_path, feed_type):
 
     job_count = jobs.count()
     num_items = min(num_items, max_items, job_count)
-    jobs[:num_items]
 
     if days_ago:
         now = datetime.datetime.utcnow()
@@ -773,6 +772,8 @@ def syndication_feed(request, filter_path, feed_type):
                      'date_new', 'description', 'location', 'reqid', 'state',
                      'state_short', 'title', 'uid', 'guid',
                      'is_posted')[offset:offset+num_items]
+    # jobs is being used for rss feeds for BreadBox
+    jobs = jobs[offset:offset+num_items]
 
     self_link = ExtraValue(name="link", content="",
                            attributes={'href': request.build_absolute_uri(),
@@ -840,7 +841,7 @@ def syndication_feed(request, filter_path, feed_type):
         selected = helpers.get_bread_box_headings(filters, jobs)
         rss.description = ''
 
-        if not any in selected.values():
+        if not any(selected.values()):
             selected = {'title_slug': request.GET.get('q'),
                         'location_slug': request.GET.get('location')}
 
