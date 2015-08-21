@@ -319,8 +319,12 @@ Field.prototype = {
     return $("#" + this.id);
   },
   onSave: function(key) {
-    var data = {};
-    steelToe(data).set(key || this.key, this.currentVal());
+    var data = {},
+        value = this.currentVal();
+
+    if(value) {
+      steelToe(data).set(key || this.key, value);
+    }
 
     return data;
   },
@@ -776,6 +780,7 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
   },
   onSave: function(key) {
     var data = {};
+
     if (this.value.length) {
       steelToe(data).set(key || this.key, this.currentVal());
     }
@@ -1020,14 +1025,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     }
 
     return this;
-  },
-  onSave: function(key) {
-    var data = {},
-        value = this.currentVal();
-
-    steelToe(data).set(key || this.key, value);
-
-    return data;
   }
 });
 
@@ -1317,7 +1314,7 @@ function createReport(type) {
                                         },
                                         state: 'contact.locations.state.icontains',
                                         city: 'contact.locations.city.icontains',
-                                        tags: 'contactrecord.tags.name.in',
+                                        tags: 'contact.tags.name.in',
                                       },
                                       values: ["pk", "name"],
                                       order_by: "name"
