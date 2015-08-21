@@ -60,7 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
-from universal.states import states_with_sites, other_locations_with_sites
+from universal.states import states_with_sites
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2029,7 +2029,8 @@ def seo_states(request):
     search = DESearchQuerySet().narrow('country:United States').facet('state')
 
     # Grab total count before search becomes a dict
-    us_jobs_count = search.count()
+    all_link = "<a href=''>All United States Jobs ({0})</a>".format(
+        search.count())
 
     # Turn search results into a dict formatted {state:count}
     search = dict(search.facet_counts()['fields']['state'])
@@ -2039,28 +2040,22 @@ def seo_states(request):
         for state in states:
             state['count'] = search.get(state['state'], 0)
 
-    # returns a sorted list by state/location's name
-    def _sort_by_name(states):
-        return sorted(states, key=lambda s: s['state'])
-
-    # Copy imported lists
-    # don't want to mutate something that could be used elsewhere
+    # Copy imported list
+    # Don't want to mutate something that could be used elsewhere
     new_states = states_with_sites[:]
-    new_other_locations = other_locations_with_sites[:]
 
     # add counts
     _add_job_counts(new_states)
-    _add_job_counts(new_other_locations)
 
-    # ensure the states/locations are in alphabetical order.
-    sorted_states = _sort_by_name(new_states)
-    sorted_other_locations = _sort_by_name(new_other_locations)
+    # ensure the states are in alphabetical order.
+    sorted_states = sorted(new_states, key=lambda s: s['state'])
 
-    data_dict = {"us_jobs_count": us_jobs_count,
-                 "states": sorted_states,
-                 "other_locations": sorted_other_locations}
+    data_dict = {"title": "States",
+                 "all_link": all_link,
+                 "has_child_page": True,
+                 "states": sorted_states}
 
-    return render_to_response('seo/states.html', data_dict,
+    return render_to_response('seo/network_locations.html', data_dict,
                               context_instance=RequestContext(request))
 
 
