@@ -288,9 +288,17 @@ def filter_custom_facets_by_production_status(custom_facets):
 
 
 class RedirectOverrideMiddleware(object):
+    """
+    Does a redirect if one is set on the current configuration for the current
+    path. Default behavior was to not do redirects if the page did not result
+    in a 404.
+    """
     def process_request(self, request):
+        # Configuration is cached. The effect on response time is
+        # hopefully minimal.
         configuration = get_site_config(request)
         if configuration.not_found_override.exists():
+            # Check both the current path with and without a trailing slash
             paths = [request.path,
                      (request.path[:-1] if request.path.endswith('/')
                       else request.path + '/')]

@@ -2718,3 +2718,19 @@ class StaticPageOverrideTests(DirectSEOTestCase):
         response = self.client.get('/about/', HTTP_HOST=self.site.domain)
         self.assertEqual(response.status_code, 301)
         self.assertEqual(response['Location'], 'https://secure.my.jobs/about')
+
+    def test_always_do_redirects(self):
+        """
+        If an entry in the Django redirect table is marked in a configuration
+        as always happening, it should happen even when the old path didn't 404.
+        """
+        redirect = Redirect.objects.create(site=self.site, old_path='/jobs/',
+                                           new_path='https://www.google.com')
+        response = self.client.get('/jobs/', HTTP_HOST=self.site.domain)
+        self.assertEqual(response.status_code, 200)
+
+        configuration = self.site.configurations.get(status=2)
+        configuration.not_found_override.add(redirect)
+        response = self.client.get('/jobs/', HTTP_HOST=self.site.domain)
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response['Location'], redirect.new_path)
