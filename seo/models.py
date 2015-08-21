@@ -1190,6 +1190,9 @@ class Configuration(models.Model):
     what_helptext = models.TextField(blank=True)
     where_helptext = models.TextField(blank=True)
 
+    not_found_override = models.ManyToManyField('redirects.Redirect', null=True,
+                                                blank=True)
+
 
 class GoogleAnalytics (models.Model):
     web_property_id = models.CharField('Web Property ID', max_length=20)

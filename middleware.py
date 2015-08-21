@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.shortcuts import redirect
 
 from postajob.models import SitePackage
+from seo.cache import get_site_config
 from seo.models import SeoSite, SeoSiteRedirect, SeoSiteFacet
 import version
 
@@ -284,3 +285,16 @@ def custom_facets_ops_groups(site_facets):
 
 def filter_custom_facets_by_production_status(custom_facets):
     return [facet for facet in custom_facets if facet.show_production]
+
+
+class RedirectOverrideMiddleware(object):
+    def process_request(self, request):
+        configuration = get_site_config(request)
+        if configuration.not_found_override.exists():
+            paths = [request.path,
+                     (request.path[:-1] if request.path.endswith('/')
+                      else request.path + '/')]
+            not_found = configuration.not_found_override.filter(
+                old_path__in=paths).first()
+            if not_found:
+                return redirect(not_found.new_path, permanent=True)
