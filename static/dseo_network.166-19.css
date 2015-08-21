@@ -1,5 +1,5 @@
 .nw-heading {
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #666;
     margin: 20px 0 10px 0;
 }
 
@@ -37,6 +37,10 @@
     margin: 0 2% 0 0;
 }
 
+.nw-full {
+    width: 100%;
+}
+
 .network-card {
     margin-bottom: 10px;
 }
@@ -47,4 +51,32 @@
 
 .network-card .sub-link {
     padding-left: 10px;
+}
+
+@media screen and (max-width: 500px) {
+    .nw-heading {
+        padding: 0 4%;
+        box-sizing: border-box;
+        font-size: 3em;
+    }
+    .m-nw-full,
+    .nw-full {
+        display: block;
+        width: 100%;
+        padding: 0 4%;
+        box-sizing: border-box;
+    }
+
+    .network-card {
+        margin-bottom: 20px;
+    }
+
+    .network-card .title-link {
+        font-size: 1.8em;
+    }
+
+    .network-card .sub-link {
+        margin-top: 8px;
+        font-size: 1.4em;
+    }
 }
