@@ -29,8 +29,10 @@ states_with_sites = [
     {"state": "Colorado", "url": "colorado.jobs"},
     {"state": "Connecticut", "url": "connecticut.jobs"},
     {"state": "Delaware", "url": "delaware.jobs"},
+    {"state": "District Of Columbia", "url": "districtofcolumbia.jobs"},
     {"state": "Florida", "url": "florida.jobs"},
     {"state": "Georgia", "url": "georgia.jobs"},
+    {"state": "Guam", "url": "guam.jobs"},
     {"state": "Hawaii", "url": "hawaii.jobs"},
     {"state": "Idaho", "url": "idaho.jobs"},
     {"state": "Illinois", "url": "illinois.jobs"},
@@ -59,6 +61,7 @@ states_with_sites = [
     {"state": "Oklahoma", "url": "oklahoma.jobs"},
     {"state": "Oregon", "url": "oregon.jobs"},
     {"state": "Pennsylvania", "url": "pennsylvania.jobs"},
+    {"state": "Puerto Rico", "url": "puertorico.jobs"},
     {"state": "Rhode Island", "url": "rhodeisland.jobs"},
     {"state": "South Carolina", "url": "southcarolina.jobs"},
     {"state": "South Dakota", "url": "southdakota.jobs"},
@@ -71,10 +74,4 @@ states_with_sites = [
     {"state": "West Virginia", "url": "westvirginia.jobs"},
     {"state": "Wisconsin", "url": "wisconsin.jobs"},
     {"state": "Wyoming", "url": "wyoming.jobs"}
-]
-
-other_locations_with_sites = [
-    {"state": "District Of Columbia", "url": "districtofcolumbia.jobs"},
-    {"state": "Guam", "url": "guam.jobs"},
-    {"state": "Puerto Rico", "url": "puertorico.jobs"}
 ]

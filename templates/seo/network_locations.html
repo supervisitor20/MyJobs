@@ -5,12 +5,20 @@
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}dseo_network.166-19.css" />
 {% endblock %}
 {% block directseo_main_content %}
-    <div class="network-card">
-        <div class="title-link">
-            <a href="">All United States Jobs ({{ us_jobs_count }})</a>
+    {% if back_to_parent %}
+    {% endif %}
+    <h1 class="nw-heading">{{ title }}</h1>
+    {% if all_link %}
+    <div class="nw-row">
+        <div class="nw-full">
+            <div class="network-card">
+                <div class="title-link">
+                    {{ all_link|safe }}
+                </div>
+            </div>
         </div>
     </div>
-    <h1 class="nw-heading">States</h1>
+    {% endif %}
     <div class="nw-row">
     {% for state in states %}
         {% if forloop.first or forloop.counter0|divisibleby:"15" %}
@@ -18,7 +26,7 @@
                 </ul>
             </div>
             {% endif %}
-            <div class="nw-fourth{% if forloop.counter0|divisibleby:'45' %} last{% endif %}">
+            <div class="nw-fourth{% if forloop.counter0|divisibleby:'45' %} last{% endif %} m-nw-full">
                 <ul>
         {% endif %}
             <li>
@@ -27,9 +35,11 @@
                         <a href="http://{{ state.url }}">{{ state.state }} Jobs
                         {% if state.count > 0 %}({{ state.count }}){% endif %}</a>
                     </div>
+                    {% if has_child_page %}
                     <div class="sub-link">
-                        <a href="">View {{ state.state }} Jobs by City</a>
+                        <a href="">View {{ state.state }} Cities</a>
                     </div>
+                    {% endif %}
                 </div>
             </li>
         {% if forloop.last %}
@@ -39,24 +49,4 @@
     {% endfor %}
     </div>
     <div class="clearfix"></div>
-    <h1 class="nw-heading">Other US Locations</h1>
-    <div class="nw-row">
-        <div class="nw-half">
-            <ul>
-            {% for state in other_locations %}
-                <li>
-                    <div class="network-card">
-                        <div class="title-link">
-                            <a href="http://{{ state.url }}">{{ state.state }} Jobs
-                                {% if state.count > 0 %}({{ state.count }}){% endif %}</a>
-                        </div>
-                        <div class="sub-link">
-                            <a href="">View {{ state.state }} Jobs by City</a>
-                        </div>
-                    </div>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-    </div>
 {% endblock %}
