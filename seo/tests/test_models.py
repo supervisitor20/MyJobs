@@ -57,10 +57,27 @@ class ModelsTestCase(DirectSEOBase):
         facet.querystring = ")"
         self.assertRaises(ValidationError, facet.save)
 
-    def test_child_seosite_cant_have_children(self):
+    def test_child_nonchainfk_works_in_valid_relationships(self):
         """
-            Verify that a SeoSite that has a parent_site entry cannot be
-            made the parent of another SeoSite entry
+            Verify that a NonChainedForeignKey field will allow a typical
+            one to many relationship with children elements.
+            
+            Uses SeoSite.parent_site as example field.
+        """
+        failed = False
+        parent_site = factories.SeoSiteFactory()
+        child_sites = [factories.SeoSiteFactory() for x in range(0,9)]
+        for child in child_sites:
+            child.parent_site = parent_site 
+            child.clean_fields()
+            child.save()
+                    
+    def test_child_nonchainfk_cant_have_children(self):
+        """
+            Verify that a NonChainedForeignKey field that has a parent_site entry 
+            cannot be made the parent of another NonChainedForeignKey field.
+            
+            Uses SeoSite.parent_site as example field.
         """
         parent_site = factories.SeoSiteFactory()
         child_site = factories.SeoSiteFactory()
@@ -68,42 +85,40 @@ class ModelsTestCase(DirectSEOBase):
         child_site.parent_site = parent_site
         child_site.save()
         grandchild_site.parent_site = child_site
-        error_flag = grandchild_site.verify_parent_child_relationship()[0]
-        self.assertEqual(error_flag, True)
         with self.assertRaises(ValidationError):
-            grandchild_site.clean()
-        with self.assertRaises(FieldError):
+            grandchild_site.clean_fields()
+        with self.assertRaises(ValidationError):
             grandchild_site.save()
 
-    def test_parent_seosite_cannot_become_child(self):
+    def test_parent_nonchainfk_cannot_become_child(self):
         """
-            Verify that a SeoSite that has child sites cannot become the child
-            of another site.
-        """
-        parent_site = factories.SeoSiteFactory()
+            Verify that a NonChainedForeignKey field that has child sites cannot 
+            become the child of another NonChainedForeignKey field. 
+            
+            Uses SeoSite.parent_site as example field.
+        """        
+        initial_parent_site = factories.SeoSiteFactory()
         child_site = factories.SeoSiteFactory()
         super_parent_site = factories.SeoSiteFactory()
-        child_site.parent_site = parent_site
+        child_site.parent_site = initial_parent_site
         child_site.save()
-        parent_site.parent_site = super_parent_site
-        error_flag = parent_site.verify_parent_child_relationship()[0]
-        self.assertEqual(error_flag, True)
+        initial_parent_site.parent_site = super_parent_site
         with self.assertRaises(ValidationError):
-            parent_site.clean()
-        with self.assertRaises(FieldError):
-            parent_site.save()
+            initial_parent_site.clean_fields()
+        with self.assertRaises(ValidationError):
+            initial_parent_site.save()
 
-    def test_seosite_cant_be_its_own_parent(self):
+    def test_nonchainfk_cant_be_its_own_parent(self):
         """
-            Verify that a SeoSite cannot be its own parent
-        """
+            Verify that a NonChainedForeignKey field cannot be its own parent.
+            
+            Uses SeoSite.parent_site as example field.
+        """        
         orphan_site = factories.SeoSiteFactory()
         orphan_site.parent_site = orphan_site
-        error_flag = orphan_site.verify_parent_child_relationship()[0]
-        self.assertEqual(error_flag, True)
         with self.assertRaises(ValidationError):
-            orphan_site.clean()
-        with self.assertRaises(FieldError):
+            orphan_site.clean_fields()
+        with self.assertRaises(ValidationError):
             orphan_site.save()        
         
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
