@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 from myjobs.tests.factories import UserFactory
 from mypartners.forms import ContactForm, ContactRecordForm
-from mypartners.models import Contact
+from mypartners.models import Contact, Location
 from mypartners.tests.factories import ContactFactory
 from mypartners.tests.test_views import MyPartnersTestCase
 from mysearches.tests.factories import PartnerSavedSearchFactory
@@ -48,6 +48,29 @@ class ContactFormTests(MyPartnersTestCase):
         contact = Contact.objects.get(email=self.data['email'])
         self.assertEqual(contact.name, "John Doe")
 
+    def test_location_from_contact(self):
+        """
+        If location information is inputted (include address label/name), then
+        a location should be created along with the contact.
+        """
+
+        data = {
+            "name": "John Doe",
+            "partner": self.partner.pk
+        }
+        address_info = {
+            'label': 'Home',
+            'address_line_one': "123 Fake St",
+            'address_line_two': "Ste 321",
+            'city': "Somewhere",
+            "state": "NM"}
+        data.update(address_info)
+        data['company_id'] = 1
+        form = ContactForm(data=data)
+        self.assertTrue(form.is_valid())
+        form.save(self.staff_user, self.partner.pk)
+
+        self.assertTrue(Location.objects.filter(**address_info).exists())
 
 class PartnerSavedSearchFormTests(MyPartnersTestCase):
     def test_partner_saved_search_form_from_instance(self):
