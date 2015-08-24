@@ -2029,8 +2029,8 @@ def seo_states(request):
     search = DESearchQuerySet().narrow('country:United States').facet('state')
 
     # Grab total count before search becomes a dict
-    all_link = "<a href=''>All United States Jobs ({0})</a>".format(
-        search.count())
+    all_link = "<a href='www.usa.jobs'>All United States Jobs ({0})</a>".format(
+        intcomma(search.count()))
 
     # Turn search results into a dict formatted {state:count}
     search = dict(search.facet_counts()['fields']['state'])
@@ -2038,7 +2038,7 @@ def seo_states(request):
     # Mutates states by adding counts from search
     def _add_job_counts(states):
         for state in states:
-            state['count'] = search.get(state['state'], 0)
+            state['count'] = intcomma(search.get(state['state'], 0))
 
     # Copy imported list
     # Don't want to mutate something that could be used elsewhere
