@@ -3,7 +3,7 @@ import json
 from functools import wraps
 
 
-def autoserialize_view_decorator(fn):
+def autoserialize(fn):
     @wraps(fn)
     def handle_autoserialize(request):
         response = fn(request)

@@ -6,10 +6,10 @@ from django.test import TestCase
 from django.test.utils import override_settings
 
 from myjobs.tests.setup import MyJobsBase
-from myjobs.autoserialize import autoserialize_view_decorator
+from myjobs.autoserialize import autoserialize
 
 
-@autoserialize_view_decorator
+@autoserialize
 def ping(request):
     return {"pong": request.GET.get("param", "")}
 
