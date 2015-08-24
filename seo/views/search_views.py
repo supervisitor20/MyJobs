@@ -60,8 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
-from universal.states import states_with_sites, other_locations_with_sites
-
+from universal.states import states_with_sites
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2028,10 +2027,37 @@ def test_markdown(request):
 
 
 def seo_states(request):
-    data_dict = {"states": sorted(states_with_sites.iteritems()),
-                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+    # Pull jobs from solr, only in the US and group by states.
+    search = DESearchQuerySet().narrow('country:United States').facet('state')
 
-    return render_to_response('seo/states.html', data_dict,
+    # Grab total count before search becomes a dict
+    all_link = "<a href='http://www.usa.jobs'>All United States Jobs ({0})</a>"
+    all_link = all_link.format(intcomma(search.count()))
+
+    # Turn search results into a dict formatted {state:count}
+    search = dict(search.facet_counts()['fields']['state'])
+
+    # Mutates states by adding counts from search
+    def _add_job_counts(states):
+        for state in states:
+            state['count'] = intcomma(search.get(state['state'], 0))
+
+    # Copy imported list
+    # Don't want to mutate something that could be used elsewhere
+    new_states = states_with_sites[:]
+
+    # add counts
+    _add_job_counts(new_states)
+
+    # ensure the states are in alphabetical order.
+    sorted_states = sorted(new_states, key=lambda s: s['state'])
+
+    data_dict = {"title": "States",
+                 "all_link": all_link,
+                 "has_child_page": True,
+                 "states": sorted_states}
+
+    return render_to_response('seo/network_locations.html', data_dict,
                               context_instance=RequestContext(request))
 
 
