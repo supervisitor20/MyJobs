@@ -2029,8 +2029,8 @@ def seo_states(request):
     search = DESearchQuerySet().narrow('country:United States').facet('state')
 
     # Grab total count before search becomes a dict
-    all_link = "<a href='www.usa.jobs'>All United States Jobs ({0})</a>".format(
-        intcomma(search.count()))
+    all_link = "<a href='http://www.usa.jobs'>All United States Jobs ({0})</a>"
+    all_link = all_link.format(intcomma(search.count()))
 
     # Turn search results into a dict formatted {state:count}
     search = dict(search.facet_counts()['fields']['state'])
