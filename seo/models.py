@@ -600,32 +600,6 @@ class SeoSite(Site):
             choices.append((profile.outgoing_email_domain,
                             profile.outgoing_email_domain))
         return choices    
-    
-    # def verify_parent_child_relationship(self):
-    #     """
-    #         Verify that this object's parent_site relationship is proper.
-    #         Parent site link cannot be self referencing and a site cannot be both 
-    #         a parent and a child.
-    #         
-    #         Returns:
-    #             error_flag - boolean representing whether or not an error occurred
-    #             error_description - description of the error, if one occurred
-    #     """
-    #     error_flag = False
-    #     error_description = ''
-    #     if self.parent_site:
-    #         if self.parent_site == self:
-    #             error_flag = True
-    #             error_description = '%s cannot be a parent to itself' % self.name
-    #         elif self.child_sites.exists():
-    #             error_flag = True
-    #             error_description = ('%s is a parent site and cannot' + \
-    #                                 ' have a parent') % self.name 
-    #         elif self.parent_site.parent_site:
-    #             error_flag = True
-    #             error_description = ('%s is a child of another site and' + \
-    #                                  ' cannot be a parent') % self.parent_site.name
-    #     return error_flag, error_description
 
     def save(self, *args, **kwargs):
         #always call clean if the parent_site entry exists to prevent invalid
