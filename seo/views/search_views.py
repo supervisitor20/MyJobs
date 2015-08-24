@@ -841,7 +841,9 @@ def syndication_feed(request, filter_path, feed_type):
         selected = helpers.get_bread_box_headings(filters, jobs)
         rss.description = ''
 
-        if not any(selected.values()):
+        # This doesn't work. Breaks stuff if fixed. /win
+        # TODO: Fix things that break when this is fixed.
+        if not any in selected.values():
             selected = {'title_slug': request.GET.get('q'),
                         'location_slug': request.GET.get('location')}
 
