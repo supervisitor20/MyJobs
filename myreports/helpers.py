@@ -19,8 +19,8 @@ def humanize(records):
     """
     Converts values in a dict to their human-readable counterparts. At the
     moment, this means converting tag ids to a list of tag names, and
-    converting contact types. As such, this is specifically only useful for
-    contact records.
+    converting communication types. As such, this is specifically only useful
+    for contact records.
 
     Inputs:
         :records: `dict` of records to be humanized
@@ -55,35 +55,7 @@ def humanize(records):
             record['notes'] = '\n'.join(
                 filter(bool, record['notes'].split('\n\n')))
 
-
     return records
-
-
-def parse_params(querydict):
-    """
-    Parses a `QueryDict` into a regular dict, discarding falsey values and
-    flattening singleton lists.
-
-    Inputs:
-        :querydict: The `QueryDict` to be pasred (eg. request.GET).
-
-    Outputs:
-        A dictionary of non-empty parameters.
-    """
-    # get rid of empty params and flatten single-item lists
-    params = {}
-    bools = {'true': True, 'false': False}
-    for key in querydict.keys():
-        value = filter(bool, querydict.getlist(key))
-        if len(value) == 1:
-            params[key] = value[0]
-        else:
-            params[key] = tuple(value)
-
-    params = {key: bools.get(value, value)
-              for key, value in params.items() if value}
-
-    return params
 
 
 # TODO:
@@ -108,7 +80,7 @@ def serialize(fmt, data, values=None, order_by=None):
 
     # helper function to deal with different value types in a dict
     def convert(record, value):
-        val = record[value]
+        val = record[value if value != 'communication_type' else 'contact_type']
         # strip html from strings
         if isinstance(val, basestring) and val.strip():
             val = html.fromstring(val).text_content()

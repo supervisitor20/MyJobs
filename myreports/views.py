@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from myreports.helpers import humanize, parse_params, serialize
+from myreports.helpers import humanize, serialize
 from myreports.models import Report
 from postajob import location_data
 from universal.helpers import get_company_or_404
@@ -67,18 +67,6 @@ def report_archive(request):
         return response
 
 
-def get_states(request):
-    """Returns a select widget with states as options."""
-    if request.is_ajax():
-        response = HttpResponse()
-        html = render_to_response('includes/state_dropdown.html',
-                                  {}, RequestContext(request))
-        response.content = html.content
-        return response
-    else:
-        raise Http404("This view is only reachable via an AJAX request")
-
-
 @has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
@@ -90,26 +78,22 @@ def view_records(request, app="mypartners", model="contactrecord"):
         :model: Model to query.
 
     Query String Parameters:
+        :filters: A JSON string representing th exact query to be run.
         :values: The fields to include in the output.
         :order_by: The field to order the results by. Prefix with a '-' to
                    indiciate descending order.
 
-
     Output:
        A JSON response containing the records queried for.
     """
-    if request.is_ajax() and request.method == 'GET':
+    if request.is_ajax() and request.method == 'POST':
         company = get_company_or_404(request)
-
-        # parse request into dict, converting singleton lists into single items
-        params = parse_params(request.GET)
-
-        # remove non-query related params
-        values = params.pop('values', None)
-        order_by = params.pop('order_by', None)
+        filters = request.POST.get("filters")
+        values = request.POST.getlist("values")
+        order_by = request.POST.get("order_by", None)
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
         if values:
             if not hasattr(values, '__iter__'):
@@ -208,34 +192,25 @@ class ReportView(View):
             :csrfmiddlewaretoken: Used to prevent Cross Site Request Forgery.
             :report_name: What to name the report. Spaces are converted to
                           underscores.
+            :filters: A JSON string representing th exact query to be run.
             :values: Fields to include in report output.
 
         Outputs:
            An HttpResponse indicating success or failure of report creation.
         """
         company = get_company_or_404(request)
-        params = parse_params(request.POST)
-
-        params.pop('csrfmiddlewaretoken', None)
-        name = params.pop('report_name',
-                          str(datetime.now()))
-        values = params.pop('values', None)
+        name = request.POST.get('report_name', str(datetime.now()))
+        filters = request.POST.get('filters', "{}")
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
-        if values:
-            if not hasattr(values, '__iter__'):
-                values = [values]
-
-            records = records.values(*values)
-
-        contents = serialize('json', records, values=values)
+        contents = serialize('json', records)
         results = ContentFile(contents)
-        report, created = Report.objects.get_or_create(
+        report, _ = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
-            values=json.dumps(values), params=json.dumps(params))
+            filters=filters)
 
         report.results.save('%s-%s.json' % (name, report.pk), results)
 
@@ -292,13 +267,17 @@ def downloads(request):
             'contact': common_blacklist + ['archived_on', 'library', 'user'],
             'partner': common_blacklist + ['library', 'owner']}
 
-        if not report.results:
-            report.regenerate()
-
-        fields = sorted([field for field in report.python[0].keys()
-                         if field not in blacklist[report.model]])
+        if report.python:
+            fields = sorted([field for field in report.python[0].keys()
+                             if field not in blacklist[report.model]])
+        else:
+            fields = []
 
         values = json.loads(report.values) or fields
+        for field_list in [values, fields]:
+            if 'contact_type' in field_list:
+                index = field_list.index('contact_type')
+                field_list[index] = 'communication_type'
         fields = values + [field for field in fields if field not in values]
 
         column_choice = ''

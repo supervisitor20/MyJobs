@@ -67,11 +67,11 @@ class TestViewRecords(MyReportsTestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_restricted_to_get(self):
+    def test_restricted_to_post(self):
         """POST requests should raise a 404."""
 
         self.client.path += '/partner'
-        response = self.client.post()
+        response = self.client.get()
 
         self.assertEqual(response.status_code, 404)
 
@@ -82,7 +82,14 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, contact__name='John Doe')
 
         self.client.path += '/contactrecord'
-        response = self.client.get(data={'contact__name': 'Joe Shmoe'})
+        filters = json.dumps({
+            'contact': {
+                'name': {
+                    'icontains': 'Joe Shmoe'
+                }
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -96,25 +103,60 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, partner=partner)
 
         self.client.path += '/contactrecord'
-        response = self.client.get()
+        response = self.client.post()
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
 
-    def test_filtering_on_partner(self):
-        """Test the ability to filter by partner."""
+    def test_filtering_on_model(self):
+        """Test the ability to filter on a model's field's."""
 
         # we already have one because of self.partner
-        PartnerFactory.create_batch(9, name="Test Partner", owner=self.company)
+        PartnerFactory.create_batch(9, name='Test Partner', owner=self.company)
 
         self.client.path += '/partner'
-        response = self.client.get(data={'name': 'Test Partner'})
+        filters = json.dumps({
+            'name': {
+                'icontains': 'Test Partner'
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         # ContactRecordFactory creates 10 partners in setUp
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
+
+    def test_filtering_on_foreign_key(self):
+        """Test the ability to filter on a model's foreign key fields."""
+
+        PartnerFactory.create_batch(5, name='Test Partner', owner=self.company)
+
+        ContactRecordFactory.create_batch(
+            5, partner=self.partner, contact__name='Jane Doe')
+
+
+        self.client.path += '/partner'
+        filters = json.dumps({
+            'name': {
+                'icontains': 'Test Partner',
+            },
+            'contactrecord': {
+                'contact': {
+                    'name': {
+                        'icontains': 'Jane Doe'
+                    }
+                }
+            }
+        })
+        response = self.client.post(data={'filters': filters})
+        output = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        # We look for distinct records
+        self.assertEqual(len(output), 1)
+
 
     def test_list_query_params(self):
         """Test that query parameters that are lists are parsed correctly."""
@@ -123,74 +165,16 @@ class TestViewRecords(MyReportsTestCase):
         pks = [contact.pk for contact in contacts[:5]]
 
         self.client.path += '/partner'
-        response = self.client.get(data={'contact': pks})
+        filters = json.dumps({
+            'contact': {
+                'in': pks
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 5)
-
-    def test_filtering_on_contact(self):
-        """Test the ability to filter by contact."""
-
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner)
-
-        # contacts with the wrong name
-        ContactFactory.create_batch(10, name="Jen Smith", partner=self.partner)
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'name': 'Jen Doe'})
-        output = json.loads(response.content)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(output), 10)
-
-    def test_filter_by_state(self):
-        """Tests that filtering by state works."""
-
-        indiana = LocationFactory(state="IN")
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner,
-                                    locations=[indiana])
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'state': 'IN'})
-        output = json.loads(response.content)
-
-        self.assertEqual(len(output), 10)
-
-    def test_filter_by_city(self):
-        """Tests that filtering by city works."""
-
-        indianapolis = LocationFactory(city="Indianapolis")
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner,
-                                    locations=[indianapolis])
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'city': 'indianapolis'})
-        output = json.loads(response.content)
-
-        self.assertEqual(len(output), 10)
-
-    def test_filter_by_tag(self):
-        """Tests that records can be found by tag."""
-
-        tag = TagFactory(name="Test", company=self.company)
-        ContactRecord.objects.first().tags.add(tag)
-
-        # explicitly add tag to partner to make sure that a tag associated wiht
-        # multiple models doesn't cause issues
-        self.partner.tags.add(tag)
-
-        self.client.path += '/tag'
-        # make a call that mimicks static/reporting:721 (as of 7/1/15)
-        response = self.client.get(data={
-            'name': 'Test',
-            'contactrecord__isnull': 'false',
-            'values': ['name'],
-            'order_by': 'name'})
-        output = json.loads(response.content)
-
-        self.assertEqual(len(output), 1)
-
 
 
 class TestReportView(MyReportsTestCase):
@@ -224,7 +208,6 @@ class TestReportView(MyReportsTestCase):
         self.assertEqual(len(report.python), 15)
 
         # we use this in other tests
-
         return report_name
 
     def test_get_report(self):
@@ -263,17 +246,18 @@ class TestDownloads(MyReportsTestCase):
         # company
         response = self.client.post(
             path=reverse('reports', kwargs={
-                'app': 'mypartners', 'model': 'contactrecord'}),
-            data={'values': ['partner', 'contact__name', 'contact_type']})
+                'app': 'mypartners', 'model': 'contactrecord'}))
 
         report_name = response.content
         report = Report.objects.get(name=report_name)
+        report.values = json.dumps(['partner', 'contact name', 'contact_type'])
+        report.save()
 
         response = self.client.get(data={'id': report.id})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['columns'], {
-            'Partner': True, 'Contact Name': True,
-            'Contact Type': True})
+        self.assertEqual(response.context['columns'].items()[:3],
+                         [('Partner', True), ('Contact Name', True),
+                          ('Communication Type', True)])
 
     def test_blacklisted_columns(self):
         """Test that blacklisted columns aren't visible."""
@@ -394,7 +378,6 @@ class TestRegenerate(MyReportsTestCase):
         # delete physical file and ensure that json reflects the missing link
         os.remove(report.results.file.name)
         report = Report.objects.get(pk=report.pk)
-        self.assertFalse(report.results)
         self.assertEqual(report.json, u'{}')
         self.assertEqual(report.python, {})
     

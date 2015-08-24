@@ -2,36 +2,30 @@ import datetime
 from S3 import CallingFormat
 
 from default_settings import *
-from secrets import PROD_DB_PASSWD, SOLR_AUTH
+from secrets import SOLR_AUTH, REDIRECT_PROD, ARCHIVE_PROD, REDIRECT_QC
 
 
 ALLOWED_HOSTS = ['*', ]
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'qc-redirect': {
+    }, **REDIRECT_PROD),
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'archive': {
+    }, **REDIRECT_QC),
+    'archive': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }
+    }, **ARCHIVE_PROD)
 }
 
 TEMPLATE_DIRS = (

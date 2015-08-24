@@ -1,6 +1,8 @@
 from default_settings import *
 from redirect_settings import *
 
+from secrets import REDIRECT_PROD, ARCHIVE_PROD
+
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -8,22 +10,18 @@ TEMPLATE_DEBUG = DEBUG
 ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'archive': {
+    }, **REDIRECT_PROD),
+    'archive': dict({
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'redirect',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    }
+    }, **ARCHIVE_PROD)
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
