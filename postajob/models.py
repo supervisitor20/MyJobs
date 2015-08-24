@@ -772,17 +772,23 @@ class CompanyProfile(models.Model):
 
     company = models.OneToOneField('seo.Company')
     description = models.TextField(max_length=255, blank=True,
-                                   verbose_name='Company Description')
+                                   verbose_name='Company Description',
+                                        help_text='Acme Corporation')
     address_line_one = models.CharField(max_length=255, blank=True,
-                                        verbose_name='Address Line One')
+                                        verbose_name='Address Line One',
+                                        help_text='ie 123 Main St')
     address_line_two = models.CharField(max_length=255, blank=True,
-                                        verbose_name='Address Line Two')
-    city = models.CharField(max_length=255, blank=True)
+                                        verbose_name='Address Line Two',
+                                        help_text='ie suite 100')
+    city = models.CharField(max_length=255, blank=True,
+                                       help_text='ie Chicago, Washington, Dayton')
     state = models.CharField(max_length=255, blank=True)
     country = models.CharField(max_length=255, choices=country_choices,
                                default='United States')
-    zipcode = models.CharField(max_length=255, blank=True)
-    phone = models.CharField(max_length=255, blank=True)
+    zipcode = models.CharField(max_length=255, blank=True,
+                                   help_text='ie 90210, 12345-7890')
+    phone = models.CharField(max_length=255, blank=True,
+                                   help_text='ie (123) 456-7890')
 
     # Only used for Partner Microsites.
     authorize_net_login = models.CharField(

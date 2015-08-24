@@ -11,6 +11,10 @@
 {% load i18n %}
 {% load label_tags %}
 
+{% block meta-extra %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}font-awesome.css">
+{% endblock %}
+
 {% block content %}
     {% include "mypartners/includes/prm_header.html" with page_title="Overview" back_to="Back to Partner Relationship Manager" back_to_url="prm" %}
     <div class="row desktop_hide" id="prm-mobile-row-buttons">

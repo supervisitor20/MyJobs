@@ -3,14 +3,6 @@ import datetime
 
 from settings import *
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'seo.tests.setup.TestDESolrEngine',
-        'URL': 'http://127.0.0.1:8983/solr/seo',
-        'INCLUDE_SPELLING': True,
-    },
-}
-
 SOLR_FIXTURE = [
     {
         'buid': 0,

@@ -86,6 +86,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'middleware.SiteRedirectMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -97,7 +98,6 @@ MIDDLEWARE_CLASSES = (
     'middleware.MultiHostMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
     'middleware.PasswordChangeRedirectMiddleware',
-    'middleware.XsSharing',
     'django.middleware.locale.LocaleMiddleware',
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
@@ -230,6 +230,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'tasks.submit_all_sitemaps',
         'schedule': crontab(hour=13, minute=0)
     },
+    'requeue-failed-tasks': {
+        'task': 'tasks.requeue_failures',
+        'schedule': crontab(hour=7, minute=5)
+    },
 }
 
 
@@ -274,6 +278,7 @@ INSTALLED_APPS = (
     'taggit',
     'fsm',
     'compressor',
+    'corsheaders',
 )
 
 # Captcha SSL
@@ -506,6 +511,20 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+# Keep these here since a number of apps need them. (circular imports)
+TEST_HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'seo.tests.setup.TestDESolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
+    },
+    'groups': {
+        'ENGINE': 'seo.tests.setup.TestSolrGrpEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
+    },
+}
+
 # Password settings
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_COMPLEXITY = {
@@ -609,3 +628,6 @@ COMPRESS_CSS_HASHING_METHOD = 'hash'
 COMPRESS_OFFLINE = True
 
 COMPRESS_ENABLED = False
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
