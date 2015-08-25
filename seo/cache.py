@@ -143,10 +143,13 @@ def get_site_config(request):
 def get_domain_parent(request):
     """"
         Returns the parent site for the currently selected domain (if exists)
+        
+        Returns:
+        - SeoSite object or None
     """
     if request.user.is_staff and 'domain' in request.REQUEST:
         try: 
-            return SeoSite.objects.get(domain=request.get('domain')) 
+            return SeoSite.objects.get(domain=request.REQUEST.get('domain')).parent_site 
         except:
             return None
     try:
