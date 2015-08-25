@@ -2729,7 +2729,9 @@ class StaticPageOverrideTests(DirectSEOBase):
         response = self.client.get('/', HTTP_HOST=self.site.domain, follow=True)
         self.assertEqual(response.status_code, 200)
 
-        configuration = self.site.configurations.get(status=2)
+        configuration = Configuration.objects.get(status=2)
+
+        self.site.configurations.add(configuration)
         configuration.not_found_override.add(redirect)
         response = self.client.get('/', HTTP_HOST=self.site.domain)
         self.assertEqual(response.status_code, 301)
