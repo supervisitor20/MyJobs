@@ -155,7 +155,7 @@ def get_form_delta(form):
                 new_val = form.data.get(field, '')
                 new_val = form.fields[field].to_python(new_val)
             except ValidationError:
-                # MultipleFileFields break hear because the two place initial
+                # MultipleFileFields break here because the two places initial
                 # data can come from are formatted differently: one is a list,
                 # and the other is a string. We don't simply move this into an
                 # else block because choice fields rely on this initialization
