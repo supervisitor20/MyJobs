@@ -35,7 +35,8 @@ class ContactForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'address_line_one', 'address_line_two', 'city', 'state', 'postal_code')
+        'label', 'address_line_one', 'address_line_two', 
+        'city', 'state', 'postal_code')
     # similarly for partner information
     __PARTNER_FIELDS = ('parnter-tags', 'partner_id', 'partnername')
 
@@ -125,7 +126,8 @@ class NewPartnerForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'address_line_one', 'address_line_two', 'city', 'state', 'postal_code')
+        'label', 'address_line_one', 'address_line_two',
+        'city', 'state', 'postal_code')
     # similarly for partner information
     __CONTACT_FIELDS = ('phone', 'email', 'name', 'notes')
 
