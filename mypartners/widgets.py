@@ -84,7 +84,10 @@ class SplitDateTimeDropDownWidget(MultiWidget):
         if not value:
             value = localtime(now())
         else:
-            value = localtime(value)
+            if value.tzinfo:
+                value = localtime(value)
+            else:
+                value = localtime(pytz.utc.localize(value))
         month = datetime.strftime(value, '%b')
         day = datetime.strftime(value, '%d')
         year = datetime.strftime(value, '%Y')
