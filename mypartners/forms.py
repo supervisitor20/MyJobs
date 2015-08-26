@@ -438,18 +438,15 @@ class ContactRecordForm(NormalizedModelForm):
 
         self.instance.tags = self.cleaned_data.get('tags')
         attachments = self.cleaned_data.get('attachment', None)
-        for attachment in attachments:
-            if attachment:
-                prm_attachment = PRMAttachment(attachment=attachment,
-                                               contact_record=self.instance)
-                prm_attachment.partner = self.instance.partner
-                prm_attachment.save()
+        prm_attachments = [PRMAttachment(attachment=attachment,
+                                         contact_record=self.instance)
+                           for attachment in attachments if attachment]
 
-        for attachment in self.cleaned_data.get('attach_delete', []):
-            PRMAttachment.objects.get(pk=attachment).delete()
+        PRMAttachment.objects.bulk_create(prm_attachments)
+        PRMAttachment.objects.filter(
+            pk__in=self.cleaned_data.get('attach_delete', [])).delete()
 
         identifier = instance.contact.name
-
         log_change(instance, self, user, partner, identifier,
                    action_type=new_or_change)
 
