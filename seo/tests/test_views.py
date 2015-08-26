@@ -2600,6 +2600,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                  path.replace('_', '-'), ))
             site.site_tags.remove(tag)
 
+    def test_network_states_loads(self):
+        response = self.client.get('/network/states/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
 
 class FlatpagesTestCase(DirectSEOBase):
     def setUp(self):
