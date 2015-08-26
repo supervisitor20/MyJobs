@@ -4,6 +4,7 @@ import urllib2
 from urlparse import urlparse, urlunparse, parse_qs, parse_qsl
 from urllib import urlencode
 import datetime
+import logging
 
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
@@ -79,21 +80,26 @@ def validate_dotjobs_url(search_url, user):
 
     search_url = update_url_if_protected(search_url, user)
 
+    logger = logging.getLogger(__name__)
+
     # Encode parameters
     try:
         search_parts = list(urlparse(search_url.rstrip('/')))
         search_parts[4] = parse_qsl(search_parts[4])
         search_parts[4] = urllib.urlencode(search_parts[4])
         search_url = urlunparse(tuple(search_parts))
-    except Exception, e:
-        print e
+    except Exception as e:
+        logger.error("Failed to parse dotjobs url: %s" % search_url)
+        logger.exception(e)
         return None, None
 
     try:
         page = urllib.urlopen(search_url).read()
         soup = BeautifulSoup(page, "html.parser")
-    except Exception, e:
-        print e
+    except Exception as e:
+        logger.error("Failed to download or parse page with rss link: %s"
+                     % search_url)
+        logger.exception(e)
         return None, None
 
     link = soup.find("link", {"type": "application/rss+xml"})

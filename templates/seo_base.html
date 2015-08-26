@@ -153,13 +153,13 @@
         </div><!--direct_header-->
         {% block directseo_blurb %}{% endblock directseo_blurb %}
         {% block directseo_searchbox %}
-			<div class="direct_searchContainer">
+            <div class="direct_searchContainer">
             {% if site_config.browse_moc_show %}
                 {% include "search_box_vets.html" %}
             {% else %}
                 {% include "search_box.html" %}
             {% endif %}
-			</div>
+            </div>
         {% endblock directseo_searchbox %}
 
         {% block directseo_main_content %}{% endblock %}
@@ -181,32 +181,32 @@
     {% endblock directseo_container %}
 {% block directseo_micrositecarousel %}
 {% if carousel %}
-	<div id="direct_micrositeCarousel">
-	<h3>{{carousel.carousel_title}}</h3>
-	<script src="//dn9tckvz2rpxv.cloudfront.net/js/jquery.tools-minus-tabs.min.js"></script>
-	<script> 
-		$(document).ready(function() {
-			$("#browsable").scrollable().navigator();	
-		});
-	</script> 
+    <div id="direct_micrositeCarousel">
+    <h3>{{carousel.carousel_title}}</h3>
+    <script src="//dn9tckvz2rpxv.cloudfront.net/js/jquery.tools-minus-tabs.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#browsable").scrollable().navigator();
+        });
+    </script>
 
-	<div class="navi"></div> 
-	<div id="scrollable_container">
-	<a class="prev browse left"></a> 
-	<div class="scrollable" id="browsable">   
-		<div class="items">
-			<div><ul>
-			{% for link in carousel.link_sites.all %}
-				<li class='test'><a target="_blank" href="http://{{link.domain}}">{{link.name}}</a></li>
-				{% if not forloop.last %}{% calculate_microsite_tags carousel_cycle_string %}
-				{% else %}</ul></span></div>{% endif %}
-			{% endfor %}
+    <div class="navi"></div>
+    <div id="scrollable_container">
+    <a class="prev browse left"></a>
+    <div class="scrollable" id="browsable">
+        <div class="items">
+            <div><ul>
+            {% for link in carousel.link_sites.all %}
+                <li class='test'><a target="_blank" href="http://{{link.domain}}">{{link.name}}</a></li>
+                {% if not forloop.last %}{% calculate_microsite_tags carousel_cycle_string %}
+                {% else %}</ul></span></div>{% endif %}
+            {% endfor %}
 
-		</div> 
-	</div> 
-	<a class="next browse right"></a>
-	</div> 
-	<br clear="all" />
+        </div>
+    </div>
+    <a class="next browse right"></a>
+    </div>
+    <br clear="all" />
 </div>
 {% endif %}
 {% endblock directseo_micrositecarousel %}
