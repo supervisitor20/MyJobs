@@ -153,7 +153,7 @@ def get_domain_parent(request):
         except:
             return None
     try:
-        return SeoSite.objects.get(id=settings.SITE_ID).parent_site
+        return settings.SITE.parent_site
     except:
         return None
      
