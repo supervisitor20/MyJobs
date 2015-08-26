@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, FieldError
 
 from seo.tests import factories
 from seo.models import CustomFacet, SeoSite, SiteTag
@@ -57,7 +57,70 @@ class ModelsTestCase(DirectSEOBase):
         facet.querystring = ")"
         self.assertRaises(ValidationError, facet.save)
 
+    def test_child_nonchainfk_works_in_valid_relationships(self):
+        """
+            Verify that a NonChainedForeignKey field will allow a typical
+            one to many relationship with children elements.
+            
+            Uses SeoSite.parent_site as example field.
+        """
+        failed = False
+        parent_site = factories.SeoSiteFactory()
+        child_sites = [factories.SeoSiteFactory() for x in range(0,9)]
+        for child in child_sites:
+            child.parent_site = parent_site 
+            child.clean_fields()
+            child.save()
+                    
+    def test_child_nonchainfk_cant_have_children(self):
+        """
+            Verify that a NonChainedForeignKey field that has a parent_site entry 
+            cannot be made the parent of another NonChainedForeignKey field.
+            
+            Uses SeoSite.parent_site as example field.
+        """
+        parent_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory()
+        grandchild_site = factories.SeoSiteFactory()
+        child_site.parent_site = parent_site
+        child_site.save()
+        grandchild_site.parent_site = child_site
+        with self.assertRaises(ValidationError):
+            grandchild_site.clean_fields()
+        with self.assertRaises(ValidationError):
+            grandchild_site.save()
 
+    def test_parent_nonchainfk_cannot_become_child(self):
+        """
+            Verify that a NonChainedForeignKey field that has child sites cannot 
+            become the child of another NonChainedForeignKey field. 
+            
+            Uses SeoSite.parent_site as example field.
+        """        
+        initial_parent_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory()
+        super_parent_site = factories.SeoSiteFactory()
+        child_site.parent_site = initial_parent_site
+        child_site.save()
+        initial_parent_site.parent_site = super_parent_site
+        with self.assertRaises(ValidationError):
+            initial_parent_site.clean_fields()
+        with self.assertRaises(ValidationError):
+            initial_parent_site.save()
+
+    def test_nonchainfk_cant_be_its_own_parent(self):
+        """
+            Verify that a NonChainedForeignKey field cannot be its own parent.
+            
+            Uses SeoSite.parent_site as example field.
+        """        
+        orphan_site = factories.SeoSiteFactory()
+        orphan_site.parent_site = orphan_site
+        with self.assertRaises(ValidationError):
+            orphan_site.clean_fields()
+        with self.assertRaises(ValidationError):
+            orphan_site.save()        
+        
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
     def setUp(self):
         super(SeoSitePostAJobFiltersTestCase, self).setUp()
@@ -191,4 +254,5 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         # postajob_sites = company_sites + network_sites + generic_sites +
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
-
+        
+        
