@@ -1,12 +1,7 @@
 #  -*- coding: utf-8 -*-
-import os
-import json
-
 from django.conf import settings
 
-import import_jobs
 from myjobs.models import User
-from seo_pysolr import Solr
 from seo.tests import factories
 from seo.models import SeoSite
 from setup import DirectSEOBase
@@ -19,12 +14,6 @@ class SiteTestCase(DirectSEOBase):
     """
     def setUp(self):
         super(SiteTestCase, self).setUp()
-        # self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        # self.conn.delete(q="*:*")
-        # self.businessunit = factories.BusinessUnitFactory(id=0)
-        # self.buid = self.businessunit.id
-        # self.filepath = os.path.join(import_jobs.DATA_DIR,
-        #                              'dseo_feed_%s.xml' % self.buid)
         SeoSite.objects.all().delete()
         self.site = factories.SeoSiteFactory(id=1)
         settings.SITE = self.site
