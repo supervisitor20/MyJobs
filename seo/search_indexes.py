@@ -46,12 +46,17 @@ class ExactStringField(CharField):
 
 
 class MultiValueSpecialField(indexes.MultiValueField):
+    """
+    Multivalue field that gives us direct control over the field_type.
+
+    Otherwise we have to try to set field_type indirectly with facet_for.
+    """
     def __init__(self, *args, **kwargs):
         self.field_type = kwargs.pop('field_type', 'text_en')
-        super(MultiValueSpecialField, self).__init__(*args, **kwargs)
         # This attribute is checked in the search backend. If facet_for is
         # blank, the type gets overridden from string to text_en
         self.trust_field_type = True
+        super(MultiValueSpecialField, self).__init__(*args, **kwargs)
 
 
 class JobIndex(indexes.SearchIndex, indexes.Indexable):
