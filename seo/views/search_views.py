@@ -60,7 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
-
+from universal.states import states_with_sites
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -751,7 +751,6 @@ def syndication_feed(request, filter_path, feed_type):
 
     job_count = jobs.count()
     num_items = min(num_items, max_items, job_count)
-    jobs[:num_items]
 
     if days_ago:
         now = datetime.datetime.utcnow()
@@ -772,6 +771,8 @@ def syndication_feed(request, filter_path, feed_type):
                      'date_new', 'description', 'location', 'reqid', 'state',
                      'state_short', 'title', 'uid', 'guid',
                      'is_posted')[offset:offset+num_items]
+    # jobs is being used for rss feeds for BreadBox
+    jobs = jobs[offset:offset+num_items]
 
     self_link = ExtraValue(name="link", content="",
                            attributes={'href': request.build_absolute_uri(),
@@ -839,6 +840,8 @@ def syndication_feed(request, filter_path, feed_type):
         selected = helpers.get_bread_box_headings(filters, jobs)
         rss.description = ''
 
+        # This doesn't work. Breaks stuff if fixed. /win
+        # TODO: Fix things that break when this is fixed.
         if not any in selected.values():
             selected = {'title_slug': request.GET.get('q'),
                         'location_slug': request.GET.get('location')}
@@ -870,7 +873,6 @@ def member_carousel_data(request):
     :jsonp: JSONP formatted bit of JavaScript with company url, name, and image
 
     """
-
     if request.GET.get('microsite_only') == 'true':
         members = helpers.company_thumbnails(Company.objects.filter(
             member=True).exclude(canonical_microsite__isnull=True).exclude(
@@ -2016,3 +2018,52 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+def seo_states(request):
+    # Pull jobs from solr, only in the US and group by states.
+    search = DESearchQuerySet().narrow('country:United States').facet('state')
+
+    # Grab total count before search becomes a dict
+    all_link = "<a href='http://www.usa.jobs'>All United States Jobs ({0})</a>"
+    all_link = all_link.format(intcomma(search.count()))
+
+    # Turn search results into a dict formatted {state:count}
+    search = dict(search.facet_counts()['fields']['state'])
+
+    # Mutates states by adding counts from search
+    def _add_job_counts(states):
+        for state in states:
+            state['count'] = intcomma(search.get(state['state'], 0))
+
+    # Copy imported list
+    # Don't want to mutate something that could be used elsewhere
+    new_states = states_with_sites[:]
+
+    # add counts
+    _add_job_counts(new_states)
+
+    # ensure the states are in alphabetical order.
+    sorted_states = sorted(new_states, key=lambda s: s['state'])
+
+    data_dict = {"title": "States",
+                 "all_link": all_link,
+                 "has_child_page": True,
+                 "states": sorted_states}
+
+    return render_to_response('seo/network_locations.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+def seo_companies(request):
+    # Grab all companies that are a member and has a canonical_microsite
+    companies = Company.objects.filter(member=True).exclude(
+        canonical_microsite__isnull=True).exclude(canonical_microsite=u"")
+
+    # Only send info that I care about
+    companies = [{"url": company.canonical_microsite, "name": company.name}
+                 for company in companies]
+
+    data_dict = {"companies": companies}
+    return render_to_response('seo/companies.html', data_dict,
+                              context_instance=RequestContext(request))

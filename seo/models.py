@@ -12,10 +12,12 @@ from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
 from django.core.cache import cache
 from django.core.validators import MaxValueValidator, ValidationError
+from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
+from django.db.models.fields.related import ForeignKey
 from django.dispatch import receiver
 
 from haystack.inputs import Raw
@@ -56,6 +58,33 @@ class GoogleAnalyticsBySiteManager(models.Manager):
     def get_query_set(self):
         return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
             seosite__id=settings.SITE_ID)
+
+class NonChainedForeignKey(ForeignKey):
+    """
+        This field is a special foreign key field designed for same-class FK
+        that does not allow...
+        - Self-referencing FK (FK to itself)
+        - Grandchild relationships (parent has a parent or child has a child)
+    """
+    def clean(self, value, model_instance):
+        super(NonChainedForeignKey, self).clean(value, model_instance)
+        
+        if value:
+            object_class = model_instance.__class__
+            potential_parent = object_class.objects.get(pk=value)
+            
+            if value == model_instance.pk:
+                raise ValidationError('%s cannot be at parent entity of itself'
+                                        % model_instance)
+            elif object_class.objects.filter(**{
+                                        self.name:model_instance}).exists():
+                raise ValidationError('%s is a parent entity and cannot be a child'
+                                        % model_instance)
+            elif getattr(potential_parent, self.name):
+                raise ValidationError('%s is a child entity and cannot be a parent'
+                                        % potential_parent)
+        return value
+        
 
 
 def term_splitter(terms):
@@ -487,7 +516,7 @@ class SeoSite(Site):
     # The "designated" site package specific to this seosite.
     # This site should be the only site attached to site_package.
     site_package = models.ForeignKey('postajob.SitePackage', null=True,
-                                     on_delete=models.SET_NULL)
+                                     blank=True, on_delete=models.SET_NULL)
 
     postajob_filter_type = models.CharField(max_length=255,
                                             choices=postajob_filter_options,
@@ -495,6 +524,11 @@ class SeoSite(Site):
     canonical_company = models.ForeignKey('Company', blank=True, null=True,
                                           on_delete=models.SET_NULL,
                                           related_name='canonical_company_for')
+    
+    parent_site = NonChainedForeignKey('self', blank=True, null=True,
+                                     on_delete=models.SET_NULL,
+                                     related_name='child_sites')                                      
+                                        
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
     def clean_domain(self):
@@ -565,12 +599,15 @@ class SeoSite(Site):
         if profile and profile.outgoing_email_domain:
             choices.append((profile.outgoing_email_domain,
                             profile.outgoing_email_domain))
-        return choices
+        return choices    
 
     def save(self, *args, **kwargs):
+        #always call clean if the parent_site entry exists to prevent invalid
+        #relationships
+        if self.parent_site: self.clean_fields()
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
-
+    
     def user_has_access(self, user):
         """
         In order for a user to have access they must be a CompanyUser
@@ -587,7 +624,6 @@ class SeoSite(Site):
     def get_companies(self):
         site_buids = self.business_units.all()
         return Company.objects.filter(job_source_ids__in=site_buids).distinct()
-
 
 class SeoSiteFacet(models.Model):
     """This model defines the default Custom Facet(s) for a given site."""
@@ -673,12 +709,12 @@ class Company(models.Model):
         Counts how many users are mapped to this company. This is useful for
         determining which company to map companyusers to when two company
         instances have very similar names.
-        
+
         It is treated as a property of the model.
-        
+
         """
         return self.companyuser_set.count()
-        
+
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
     company_slug = models.SlugField('Company Slug', max_length=200, null=True,
@@ -943,13 +979,6 @@ class SiteTag(models.Model):
                                          help_text='Tag can be used for '
                                                    'navigation by users. '
                                                    'Viewable by public.')
-    is_site_family = models.BooleanField('Tag represents site family',
-                                         default=False,
-                                         help_text='Site tag represents '
-                                                   'a family of sites.')
-    parent = models.ForeignKey(SeoSite, blank=True, null=True,
-                               help_text='The parent site if the tag is a '
-                                         'for a site family.')
 
     def __unicode__(self):
         return "%s" % self.site_tag

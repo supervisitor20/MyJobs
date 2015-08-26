@@ -1064,6 +1064,10 @@ class EmailForwardTests(RedirectBase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_bad_guid_email(self):
+        """
+        Sending a compliance email to a nonexistant job results in an error
+        response.
+        """
         self.post_dict['to'] = '%s@my.jobs' % ('1'*32)
         self.post_dict['text'] = 'This address is not in the database'
 
@@ -1075,6 +1079,11 @@ class EmailForwardTests(RedirectBase):
                         in email.body)
 
     def test_good_guid_email_new_job(self):
+        """
+        When info is requested for a new job, we can grab its doc from solr.
+        This lets us provide the job's ReqID and description instead of just
+        a title.
+        """
         self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
         self.post_dict['subject'] = 'Email forward success'
 
@@ -1088,6 +1097,10 @@ class EmailForwardTests(RedirectBase):
         self.assertTrue(email.subject.startswith('[ReqID: %s]' % JOB['reqid']))
 
     def test_good_guid_email_new_job_no_user(self):
+        """
+        If no entry exists in the CompanyEmail table for a given buid, we
+        tell the user that everything was successful to prevent leakage of info.
+        """
         self.contact.delete()
 
         self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
@@ -1096,7 +1109,31 @@ class EmailForwardTests(RedirectBase):
         self.submit_email()
         self.assert_guid_email_responses_are_correct(self.redirect, JOB)
 
+    def test_guid_email_with_cc(self):
+        """
+        The ideal path for GUID emails sends two emails per request, one to
+        the original sender to denote that we received the request and one
+        to the job owner. If anyone has been CC'd, we should also CC them on
+        the company contact email but not the acknowledgement of receipt.
+        """
+        self.post_dict['to'] = ['%s@my.jobs' % self.redirect_guid]
+        self.post_dict['subject'] = 'Email forward success'
+        self.post_dict['cc'] = ['comprep@company.org']
+        self.submit_email()
+
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(mail.outbox[0].to, [self.post_dict['from']])
+        self.assertNotEqual(mail.outbox[0].cc, self.post_dict['cc'])
+
+        self.assertEqual(mail.outbox[1].to, [self.contact.email])
+        self.assertEqual(mail.outbox[1].cc, self.post_dict['cc'])
+
     def test_good_guid_email_old_job(self):
+        """
+        Requesting info for an expired job is functional but we don't keep all
+        info on a job around forever. Thus we can only provide basic information
+        on the job in question.
+        """
         guid = '1'*32
         redirect = RedirectFactory(guid='{%s}' % uuid.UUID(guid),
                                    buid=self.redirect.buid,

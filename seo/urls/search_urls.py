@@ -121,6 +121,19 @@ urlpatterns += patterns('seo.views.search_views',
     # since it collides with our normal url structure where '/jobs/'
     # comes at the end of the url
     url(r'^(?P<filter_path>[/\w-]*)ajax/joblisting/$', 'ajax_get_jobs'),
+
+    # SEO Pages
+    url(r'^network/states/$', 'seo_states'),
+    url(r'^network/companies/$', 'seo_companies'),
+    url(r'^network/cities/$',
+        TemplateView.as_view(template_name='seo/cities.html'),
+        name='seo_cities'),
+    url(r'^network/military/$',
+        TemplateView.as_view(template_name='seo/military.html'),
+        name='seo_military'),
+    url(r'^network/tags/$',
+        TemplateView.as_view(template_name='seo/tags.html'),
+        name='seo_tags')
 )
 
 urlpatterns += patterns('',

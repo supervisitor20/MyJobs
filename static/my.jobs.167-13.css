@@ -1759,9 +1759,10 @@ h3.bottom-bordered {
 }
 
 .panel.top-contacts .report-box {
-    height: 60px;
+    height: 70px;
     width: 125px;
     background-color: #5EB95E;
+    float: left;
 }
 
 .panel.top-contacts .report-box + .report-box {
@@ -1775,10 +1776,6 @@ h3.bottom-bordered {
     margin-bottom: 0;
 }
 
-.panel.top-contacts .report-box .reports-record-type {
-    line-height: 10px;
-}
-
 .top-three-box-container {
     margin-top: 10px;
 }
@@ -1787,8 +1784,15 @@ h3.bottom-bordered {
     display: inline-block;
 }
 
+.top-three-box-container::after {
+    clear: both;
+    content: "";
+    display: table;
+    line-height: 0;
+}
+
 .piehole.report {
-    top: 40%;
+    top: 38%;
     left: 14%;
 }
 
@@ -1799,7 +1803,7 @@ h3.bottom-bordered {
 
 .piehole.report .piehole-topic {
     font-size: 1.4em;
-    line-height: 14px;
+    line-height: 18px;
 }
 
 .table-striped.report-table tbody tr:nth-child(even) td {
@@ -4757,4 +4761,12 @@ span.helptext {
 
 .read {
     background-color: #eee;
+}
+
+.fa-check-circle.green {
+    color: green;
+}
+
+.fa-times-circle.red {
+    color: red;
 }

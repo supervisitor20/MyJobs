@@ -109,7 +109,6 @@ class SeoSiteFactory(SiteFactory):
     name = u'buckconsultants.jobs'
     site_title = "Test Site"
 
-
 class SeoSiteCopyToFactory(SiteFactory):
     class Meta:
         model = 'seo.SeoSite'

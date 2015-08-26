@@ -6,6 +6,7 @@ from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
 from django.db.models import Min, Max, Q
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
@@ -19,8 +20,8 @@ from django.utils.translation import ugettext
 from lxml import html
 from lxml.cssselect import CSSSelector
 import requests
-import states
 
+from universal import states
 from universal.helpers import (get_domain, get_company, get_company_or_404,
                                get_int_or_none, send_email)
 from mypartners.models import (Contact, ContactLogEntry, CONTACT_TYPE_CHOICES,
@@ -85,7 +86,7 @@ def add_extra_params_to_jobs(items, extra_urls):
 
 
 def log_change(obj, form, user, partner, contact_identifier,
-               action_type=CHANGE, change_msg=None):
+               action_type=CHANGE, change_msg=None, successful=None):
     """
     Creates a ContactLogEntry for obj.
 
@@ -121,6 +122,7 @@ def log_change(obj, form, user, partner, contact_identifier,
         object_repr=force_text(obj)[:200],
         partner=partner,
         user=user,
+        successful=successful,
     )
 
 
@@ -144,15 +146,23 @@ def get_form_delta(form):
     if form.changed_data:
 
         for field in form.changed_data:
-            # There are two places that initial data can come from:
-            # form.initial or form.fields[field].initial. Django
-            # favors form.initial in their code, so this code prefers
-            # form.initial first as well.
-            initial_val = form.initial.get(field, form.fields[field].initial)
-            initial_val = form.fields[field].to_python(initial_val)
-
-            new_val = form.data.get(field, '')
-            new_val = form.fields[field].to_python(new_val)
+            try:
+                # There are two places that initial data can come from:
+                # form.initial or form.fields[field].initial. Django
+                # favors form.initial in their code, so this code prefers
+                # form.initial first as well.
+                initial_val = form.initial.get(field, form.fields[field].initial)
+                initial_val = form.fields[field].to_python(initial_val)
+                new_val = form.data.get(field, '')
+                new_val = form.fields[field].to_python(new_val)
+            except ValidationError:
+                # MultipleFileFields break here because the two places initial
+                # data can come from are formatted differently: one is a list,
+                # and the other is a string. We don't simply move this into an
+                # else block because choice fields rely on this initialization
+                # of initial_val and new_val.
+                initial_val = None
+                new_val = None
 
             if isinstance(form.fields[field], MultipleFileField):
                 # Multiple file added results in a MultiValueDict.

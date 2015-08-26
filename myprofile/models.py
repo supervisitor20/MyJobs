@@ -39,7 +39,7 @@ class ProfileUnits(models.Model):
 
     def get_fields(self):
         """
-        Returns the module type, value, and field type for all
+        Returns the module type, value, and field type for all        
         fields on a specific model
         """
         field_list = []
@@ -293,22 +293,30 @@ class Education(ProfileUnits):
         else:
             return []
 
-
 class Address(ProfileUnits):
-    label = models.CharField(max_length=60, blank=True,
-                             verbose_name=_('Address Label'))
     address_line_one = models.CharField(max_length=255, blank=True,
-                                        verbose_name=_('Address Line One'))
+                                        verbose_name=_('Address Line One'),
+                                        help_text='ie 123 Main St')
     address_line_two = models.CharField(max_length=255, blank=True,
-                                        verbose_name=_('Address Line Two'))
+                                        verbose_name=_('Address Line Two'),
+                                        help_text='ie apartment 1')
     city_name = models.CharField(max_length=255, blank=True,
-                                 verbose_name=_("City"))
+                                 verbose_name=_("City"),
+                                 help_text='ie Chicago, Washington, Dayton')
     country_sub_division_code = models.CharField(max_length=5, blank=True,
-                                                 verbose_name=_("State/Region"))
+                                                 verbose_name=_("State/Region"),
+                                                 help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, blank=True,
-                                    verbose_name=_("Country"))
+                                    verbose_name=_("Country"),
+                                    default='USA')
     postal_code = models.CharField(max_length=12, blank=True,
-                                   verbose_name=_("Postal Code"))
+                                   verbose_name=_("Postal Code"),
+                                   help_text='ie 90210, 12345-7890')
+    label = models.CharField(max_length=60, blank=True,
+                             verbose_name=_('Address Name'),
+                             help_text='ie Home, Work, etc')
+    
+
 
     @classmethod
     def get_suggestion(cls, user):

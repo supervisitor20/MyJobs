@@ -93,7 +93,7 @@ Form.prototype = {
 
 // Handles storing data, rendering fields, and submitting report. See prototype functions
 function Report(type, fields) {
-  this.data = {};
+  this.data = {filters: {}};
   this.fields = fields;
   this.type = type;
 
@@ -132,7 +132,8 @@ Report.prototype = {
       field = fields[i];
       if (!field.dom().length) {
         $renderAt.append(field.render());
-        if (typeof field.filter !== "undefined" && !field.dependencies.length) {
+
+        if (field instanceof FilteredList && !field.filterAfter().length) {
           field.filter();
         }
         if (typeof field.bindEvents !== "undefined") {
@@ -155,24 +156,48 @@ Report.prototype = {
     })[0];
   },
   createCloneReport: function(json) {
-    var phony,
-        value,
-        date,
-        key;
+    // We can't simply iterate over the json keys because they are in the
+    // nested object format, and the only reference to fields we have are their
+    // IDs and key values. Thus, we iterate over each key and see if we can
+    // grab them from the json by key.
+    var formatDate = function(string) {
+          var date = string.split(" ")[0].split("-");
+          return [date[1], date[2], date[0]].join("/");
+        };
 
-    for (key in json) {
-      if (json.hasOwnProperty(key)) {
-        value = json[key];
-        if (key === "start_date" || key === "end_date") {
-          phony = {};
-          phony[key] = value;
-          date = this.findField("date");
-          $.extend(date.defaultVal, phony);
-        } else {
-          this.findField(key === "contact__name" ? "contact" : key).defaultVal = value;
+    this.fields.forEach(function(field) {
+      // I needed to be able to set defaultVal to undefined on each iteration,
+      // but didn't want to shadow the value undefined. Null was insufficient
+      // as then I'd have to later check for null and undefined.
+      var defaultVal = void 0;
+      // DateField is special since it contains two values, so we need to check
+      // for  both values and combine them into a single default value.
+      if (field instanceof DateField) {
+        var start_date = steelToe(json).get(field.key.start_date),
+            end_date = steelToe(json).get(field.key.end_date);
+
+        if (typeof start_date !== 'undefined' && typeof end_date !== 'undefined') {
+          defaultVal = {
+            start_date: formatDate(start_date),
+            end_date: formatDate(end_date)
+          };
+        } 
+      } else {
+        defaultVal = steelToe(json).get(field.key);
+
+        // We store list values as an integer, but expect them as strings for
+        // the form instances, which is why we conver them here if they exist
+        if (field instanceof FilteredList && typeof defaultVal !== 'undefined') {
+          defaultVal = defaultVal.map(function(item) {
+            return item.toString();
+          });
         }
+      } 
+
+      if (typeof defaultVal !== 'undefined') {
+        field.defaultVal = defaultVal;
       }
-    }
+    });
   },
   bindEvents: function() {
     var report = this,
@@ -199,6 +224,7 @@ Report.prototype = {
           newList = [];
       if (report.data) {
         $.extend(data, report.data);
+        data.filters = JSON.stringify(data.filters);
       }
       if (data.contact) {
         for (var i = 0; i < data.contact.length; i++) {
@@ -252,79 +278,43 @@ Report.prototype = {
       return false;
     } else {
       this.fields.forEach(function (field) {
-        $.extend(report.data, field.onSave());
+        $.extend(true, field.isFilter ? report.data.filters : report.data, field.onSave());
       });
     }
 
     return true;
   },
   readableData: function(d) {
-    var data = d || this.data,
-        html = '',
-        items,
-        value,
-        key,
-        i;
-
-    for (key in data) {
-      if (data.hasOwnProperty(key)) {
-        html += "<div>";
-        value = data[key];
-
-        // Replace all '_' instances with spaces
-        key = key.replace(/_/g, " ");
-
-        if (value && value.length) {
-          html += '<label>' + key.capitalize() + ':</label>';
-        }
-
-        // If value is an object (aka an array).
-        if (typeof value === "object" && value !== null && value.length) {
-          items = [];
-
-          if (key === "partner" || key === "contact") {
-            for (i = 0; i < value.length; i++) {
-              items.push($('#' + key + ' input[data-pk=' + value[i] + ']').parent().text());
-            }
-          } else {
-            for (i = 0; i < value.length; i++) {
-              items.push(value[i]);
-            }
-          }
-          html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
-        } else {
-          html += value;
-        }
-        html += '</div>';
-      }
-    }
-    return html;
+    return this.fields.map(function(element) {
+      return element.readableData();
+    }).join("");
   }
 };
 
 
-function Field(options) {
-  var defaultOptions = {
-        label: "Default Label",
-        id: "DefaultID",
-        required: false,
-        defaultVal: '',
-        helpText: '',
-        errors: []
-      };
-
+function defaults(options, defaultOptions) {
   if (typeof options === 'object') {
     options = $.extend(defaultOptions, options);
   } else {
     options = defaultOptions;
   }
 
-  this.label = options.label;
-  this.id = options.id;
-  this.required = options.required;
-  this.defaultVal = options.defaultVal;
-  this.helpText = options.helpText;
-  this.errors = options.errors;
+  return options;
+}
+
+
+function Field(options) {
+  $.extend(this, defaults(options, {
+    label: "Default Label",
+    id: "DefaultID",
+    required: false,
+    defaultVal: '',
+    helpText: '',
+    errors: [],
+    isFilter: true
+  }));
+
+  this.key = this.key || options.id;
 }
 
 Field.prototype = {
@@ -346,9 +336,13 @@ Field.prototype = {
   dom: function() {
     return $("#" + this.id);
   },
-  onSave: function() {
-    var data = {};
-    data[this.id] = this.currentVal();
+  onSave: function(key) {
+    var data = {},
+        value = this.currentVal();
+
+    if(value) {
+      steelToe(data).set(key || this.key, value);
+    }
 
     return data;
   },
@@ -392,8 +386,7 @@ Field.prototype = {
 
     return this;
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
         index = this.errors.indexOf(err);
 
@@ -407,13 +400,38 @@ Field.prototype = {
         this.errors.splice(index, 1);
         this.removeErrors();
       }
-
-      if (triggerEvent) {
-        $.event.trigger("dataChanged", [this.onSave()]);
-      }
     }
 
     return this;
+  },
+  readableData: function(key, value) {
+    key = (key || this.id).replace(/_/g, " ");
+    value = value || this.currentVal();
+    var html = '<div>',
+        items = [],
+        i;
+
+    if (value && value.length) {
+      html += '<label>' + key.capitalize() + ':</label>';
+    }
+
+    if (typeof value === "object" && value !== null && value.length) {
+      if (key === "partner" || key === "contact") {
+        for (i = 0; i < value.length; i++) {
+          items.push($('#' + key + ' input[data-pk=' + value[i] + ']').parent().text());
+        }
+      } else {
+        for (i = 0; i < value. length; i++) {
+          items.push(value[i]);
+        }
+      }
+      html += '<ul class="short-list"><li>' + items.join('</li><li>') + '</li></ul>';
+    } else {
+      html += value;
+    }
+    html += '</div>';
+
+    return html;
   }
 };
 
@@ -450,11 +468,9 @@ TextField.prototype = $.extend(Object.create(Field.prototype), {
 
 
 function CheckBox(options) {
-  this.checked = typeof options.checked === 'undefined' ? true : options.checked;
-  this.name = options.name;
-  this.id = options.name + '_' + options.defaultVal;
-
-  $.extend(options, {id: this.id});
+  options.checked = typeof options.checked === 'undefined' ? true : options.checked;
+  options.name = options.name;
+  options.id = options.name + '_' + options.defaultVal;
 
   Field.call(this, options);
 }
@@ -527,8 +543,7 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
       '<label style="display: inline;"><input value="all" type="checkbox" checked/ >All</label>  ' + html +
       '</div>';
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
         index = this.errors.indexOf(err),
         value = this.currentVal();
@@ -545,17 +560,12 @@ CheckList.prototype = $.extend(Object.create(Field.prototype), {
       }
     }
 
-    if (triggerEvent) {
-      $.event.trigger("dataChanged", [this.onSave()]);
-    }
-
     return this;
   }
 });
 
 
 function DateField(options) {
-  var dVal = options.defaultVal || {};
   Field.call(this, options);
 }
 
@@ -593,10 +603,10 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
   currentVal: function(id) {
     return $(this.dom()).find("#" + id).val();
   },
-  onSave: function() {
+  onSave: function(key) {
     var data = {};
-    data.start_date = this.currentVal("start-date");
-    data.end_date = this.currentVal("end-date");
+    steelToe(data).set((key || this.key).start_date, reportNameDateFormat(new Date(this.currentVal("start-date"))));
+    steelToe(data).set((key || this.key).end_date, reportNameDateFormat(new Date(this.currentVal("end-date")), true));
     return data;
   },
   render: function() {
@@ -611,8 +621,7 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
     dateWidget.append(datePicker);
     return label + dateWidget.prop("outerHTML");
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var dateField = this,
         $dom = $(this.dom()),
         $fields = $dom.find("input.datepicker"), // Both start and end inputs.
@@ -636,11 +645,13 @@ DateField.prototype = $.extend(Object.create(Field.prototype), {
       }
     });
 
-    if (!dateField.errors.length && triggerEvent) {
-      $.event.trigger("dataChanged", [dateField.onSave()]);
-    }
-
     return this;
+  },
+  readableData: function() {
+    var start_date = Field.prototype.readableData('start_date', this.currentVal('start-date')),
+        end_date = Field.prototype.readableData('end_date', this.currentVal('end-date'));
+
+    return start_date + end_date;
   }
 });
 
@@ -718,18 +729,29 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
         // Last element is always going to be what is being searched for.
           keyword = inputs.pop(),
         // Initialize list of suggested tag names.
-          suggestions;
+          suggestions,
+          tagData = {
+            filters: {
+              name: {
+                icontains: keyword,
+              }
+            },
+            values: ["name"],
+            order_by: "name",
+            csrfmiddlewaretoken: read_cookie("csrftoken"),
+          };
+
+        tagData.filters[tagField.report.type] = {
+          isnull: false
+        };
+
+        tagData.filters = JSON.stringify(tagData.filters);
 
         $.ajax({
-          type: "GET",
+          type: "POST",
           url: "/reports/ajax/mypartners/tag",
           //TODO: New backend changes will fix this monstrocity
-          data: {
-            name: keyword,
-            contactrecord__isnull: false,
-            values: ["name"],
-            order_by: "name"
-          },
+          data: tagData,
           success: function (data) {
             suggestions = data.filter(function (d) {
               // Don't suggest things that are already selected.
@@ -773,28 +795,50 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
         return t;
       }
     });
+  },
+  onSave: function(key) {
+    var data = {};
+
+    if (this.value.length) {
+      steelToe(data).set(key || this.key, this.currentVal());
+    }
+
+    return data;
   }
 });
 
 
 function FilteredList(options) {
-  this.ignore = options.ignore || [];
-  this.dependencies = options.dependencies || [];
+  $.extend(this, defaults(options, {
+    dependencies: null,
+    order_by: null,
+    values: null
+  }));
+
+  // used internally, shouldn't be changed by consumers of the API
   this.active = 0;
-  this.hasRan = false;
+  this.hasRun = false;
 
   Field.call(this, options);
 }
 
 FilteredList.prototype = $.extend(Object.create(Field.prototype), {
+  filterAfter: function() {
+    var filteredList = this,
+        report = this.report;
+
+    return Object.keys(filteredList.dependencies).map(function(id) {
+      return report.findField(id);
+    }).filter(function(field) {
+      return field instanceof FilteredList;
+    });
+  },
   currentVal: function() {
-    var values = $.map($(this.dom()).find("input").toArray(), function (c) {
-      if (c.checked) {
-        return $(c).data("pk");
-      }
+    ids = $(this.dom()).find(":checked").toArray().map(function(element) {
+      return $(element).data('pk');
     });
 
-    return values.length ? values : ["0"];
+    return ids;
   },
   bindEvents: function() {
     var filteredList = this,
@@ -802,6 +846,22 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         $recordCount = $header.find(".record-count"),
         $all = $header.find("input"),
         $dom = $(this.dom());
+
+    if (filteredList.dependencies) {
+      dependencies = Object.keys(filteredList.dependencies).map(function(e) {
+        return "#" + e;
+      }).join(", ");
+
+      $(dependencies).on("change autocompleteclose", function(e) {
+        filteredList.filter();
+      });
+
+      $dom.on("filtered", function (e, field) {
+        if (Object.keys(filteredList.dependencies).indexOf(field) !== -1) {
+          filteredList.filter();
+        }
+      });
+    }
 
     $header.on("click", function () {
       var $this = $(this),
@@ -821,10 +881,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
       $choices.prop("checked", $(this).is(":checked"));
       $($choices[$choices.length - 1]).change();
-    });
 
-    $header.on("click", "input", function (e) {
-      e.stopPropagation();
     });
 
     $dom.bind("change", "input", function () {
@@ -838,7 +895,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
       $all.prop("checked", checked);
       value = filteredList.currentVal();
       $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-      $.event.trigger("filtered", [filteredList]);
     });
 
     $all.on("change", function (e) {
@@ -848,58 +904,32 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     $dom.bind("change.validate", "input", function (e) {
       filteredList.validate();
     });
-
-    // TODO: Figure out how to reduce queries; perhaps by diffing total changes
-    $dom.on("dataChanged", function (e, data) {
-      var callFilter = !filteredList.dependencies.length && filteredList.ignore.every(function (element) {
-          return !(element in data);
-        });
-
-      if (callFilter) {
-        filteredList.filter();
-      }
-
-    });
-
-    $dom.on("filtered", function (e, field) {
-      if (filteredList.dependencies.indexOf(field.id) !== -1) {
-        filteredList.filter();
-      }
-    });
   },
   filter: function() {
     var filteredList = this,
-        filterData = {},
+        report = this.report,
+        dependencies = this.dependencies,
+        id,
         $recordCount,
         $listBody,
         $input,
-        Status = {UNPROCESSED: 0, APPROVED: 1, DENIED: 2};
+        filterData = {
+          filters:{},
+          values: filteredList.values,
+          order_by: filteredList.order_by,
+          csrfmiddlewaretoken: read_cookie("csrftoken")
+        };
 
-    filteredList.report.fields.forEach(function (field) {
-      if (filteredList.ignore.indexOf(field.id) === -1) {
-        $.extend(filterData, field.onSave());
+    for (id in dependencies) {
+      if (dependencies.hasOwnProperty(id)) {
+        $.extend(true, filterData.filters, report.findField(id).onSave(dependencies[id]));
       }
-    });
-
-    // only show approved records
-    filterData.approval_status__code = Status.APPROVED;
-
-    if (this.id === "partner") {
-      // annotate how many records a partner has.
-      $.extend(filterData, {
-        values: ["pk", "name"],
-        order_by: "name"
-      });
-
-    } else if (this.id === "contact") {
-      $.extend(filterData, {values: ["pk", "name", "email"], order_by: "name"});
     }
 
-    filterData.contactrecord__tags__name = filterData.tags__name;
-    delete filterData.tags__name;
+    filterData.filters = JSON.stringify(filterData.filters);
 
-    $.ajax({
-      type: "GET",
+    return $.ajax({
+      type: "POST",
       url: "/reports/ajax/mypartners/" + this.id,
       data: filterData,
       global: false,
@@ -908,47 +938,41 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         if (!$('#' + filteredList.id + '-header > .fa-spinner').length) {
           $('#' + filteredList.id + '-header').append('<i style="margin-left: 5px;" class="fa fa-spinner fa-pulse"></i>');
         }
+
         filteredList.active++;
       },
-      success: function (data) {
-        $recordCount = $('#' + filteredList.id + '-header .record-count');
-        $listBody = $('.list-body#' + filteredList.id);
-        $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
-        $listBody.append('<ul><li>' + data.map(function (element) {
-          $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
-            if (filteredList.defaultVal && !filteredList.hasRan) {
-              if (filteredList.id === "contact") {
-                return filteredList.defaultVal.indexOf(element.name) >= 0 ? "checked" : "";
-              } else {
-                return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
-              }
-            }
-            return "checked";
-          })() + '/>');
-          return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
-            (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
-        }).join("</li><li>") + '</li></ul>');
+    }).done(function(data) {
+      $recordCount = $('#' + filteredList.id + '-header .record-count');
+      $listBody = $('.list-body#' + filteredList.id);
+      $listBody.html("").parent(".required").children().unwrap().prev('.show-errors').remove();
+      $listBody.append('<ul><li>' + data.map(function (element) {
+        $input = $('<input type="checkbox" data-pk="' + element.pk + '" ' + (function () {
+          if (filteredList.defaultVal && !filteredList.hasRun) {
+            return filteredList.defaultVal.indexOf(element.pk.toString()) >= 0 ? "checked" : "";
+          }
+          return "checked";
+        })() + '/>');
+        return '<label>' + $input.prop("outerHTML") + ' ' + element.name +
+          (filteredList.id === 'contact' && element.email ? ' <span class="small">(' + element.email + ')</span>' : '') + '</label>';
+      }).join("</li><li>") + '</li></ul>');
 
-        var value = filteredList.currentVal();
-        if (!filteredList.hasRan) {
-          $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
-            return $(c).is(":checked");
-          }));
-        } else {
-          $('#' + filteredList.id + '-header input').prop("checked", true);
-        }
-        $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
-
-        $.event.trigger("filtered", [filteredList]);
+      var value = filteredList.currentVal();
+      if (!filteredList.hasRun) {
+        $('#' + filteredList.id + '-header input').prop("checked", $(filteredList.dom()).find("input").toArray().every(function (c) {
+          return $(c).is(":checked");
+        }));
+      } else {
+        $('#' + filteredList.id + '-header input').prop("checked", true);
       }
-    }).done(function () {
+      $recordCount.text(value.length === 1 && value.indexOf("0") === 0 ? 0 : value.length);
+
       filteredList.active--;
       if (!filteredList.active) {
         $('#' + filteredList.id + '-header > .fa-spinner').remove();
         $('#' + filteredList.id + '-header > span').show();
+        $.event.trigger("filtered", [filteredList.id]);
       }
-      filteredList.validate(false);
-      filteredList.hasRan = true;
+      filteredList.hasRun = true;
     });
   },
   removeErrors: function() {
@@ -1000,8 +1024,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
 
     return this;
   },
-  validate: function(triggerEvent) {
-    triggerEvent = typeof triggerEvent === 'undefined' ? true : triggerEvent;
+  validate: function() {
     var err = this.label + " is required",
       index = this.errors.indexOf(err),
       value = this.currentVal();
@@ -1016,10 +1039,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
         this.errors.splice(index, 1);
         this.removeErrors();
       }
-    }
-
-    if (triggerEvent) {
-      $.event.trigger("dataChanged", [this.onSave()]);
     }
 
     return this;
@@ -1114,31 +1133,34 @@ $(document).ready(function() {
 
   // Clone Report
   $subpage.on("click", ".fa-copy, .clone-report", function() {
-    var data = {id: $(this).parents("tr, .report-row").data("report"),
-                values: ['name', 'model', 'app', 'params']},
+    var data = {
+          filters: JSON.stringify({'pk': $(this).parents("tr, .report-row").data("report")}),
+          values: ['name', 'model', 'app', 'filters'],
+          csrfmiddlewaretoken: read_cookie("csrftoken")
+        },
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
         cloneReport = function() {
           $.ajax({
-            type: "GET",
+            type: "POST",
             url: url + "/reports/ajax/myreports/report",
             data: data,
             dataType: "json",
             success: function(data) {
               var reportData = data[0],
                   model = reportData.model,
-                  params = JSON.parse(reportData.params),
+                  filters = JSON.parse(reportData.filters),
                   report = createReport(model);
 
-              $.extend(params, {report_name: "Copy of " + reportData.name.replace(/_/g, " ")});
+              $.extend(filters, {report_name: "Copy of " + reportData.name.replace(/_/g, " ")});
 
-              report.createCloneReport(params);
+              report.createCloneReport(filters);
 
               $("#container").addClass("rpt-container");
               report.renderFields(".rpt-container", report.fields, true);
               report.unbindEvents().bindEvents();
 
               if (modernBrowser) {
-                history.pushState({'page': 'clone', 'inputs': params, 'type': report.type}, "Clone Report");
+                history.pushState({'page': 'clone', 'inputs': filters, 'type': report.type}, "Clone Report");
               }
             }
           });
@@ -1260,50 +1282,223 @@ function isIE() {
 
 function createReport(type) {
   var reports = {
-  contact: function() {
-    return new Report("contact", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
-                                  new DateField({label: "Select Date", id: "date", required: true, defaultVal: {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}}),
-                                  new StateField({label: "State", id: "state"}),
-                                  new TextField({label: "City", id: "city"}),
-                                  new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner"]})]);
-  },
-  partner: function() {
-    return new Report("partner", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
-                                  new StateField({label: "State", id: "state"}),
-                                  new TextField({label: "City", id: "city"}),
-                                  new TextField({label: "URL", id: "uri"}),
-                                  new TextField({label: "Source", id: "data_source"})]);
-  },
-  contactrecord: function() {
-    var contactTypeChoices = [new CheckBox({label: "Email", name: "contact_type", defaultVal: "email"}),
-                              new CheckBox({label: "Phone Call", name: "contact_type", defaultVal: "phone"}),
-                              new CheckBox({label: "Meeting or Event", name: "contact_type", defaultVal: "meetingorevent"}),
-                              new CheckBox({label: "Job Followup", name: "contact_type", defaultVal: "job"}),
-                              new CheckBox({label: "Saved Search Email", name: "contact_type", defaultVal: "pssemail"})];
+    contact: function() {
+      return new Report("contact", [new TextField({
+                                          isFilter: false,
+                                          label: "Report Name", 
+                                          id: "report_name", 
+                                          required: true, 
+                                          defaultVal: reportNameDateFormat(new Date())
+                                        }),
+                                    new DateField({
+                                          label: "Select Date", 
+                                          id: "date", 
+                                          key: {
+                                            start_date: "contactrecord.date_time.gte", 
+                                            end_date: "contactrecord.date_time.lte"
+                                          }, 
+                                          required: true, 
+                                          defaultVal: {
+                                            start_date: "01/01/2014", 
+                                            end_date: dateFieldFormat(yesterday)
+                                          }
+                                        }),
+                                    new StateField({
+                                          label: "State", 
+                                          id: "state",
+                                          key: "locations.state.icontains"
+                                        }),
+                                    new TextField({
+                                          label: "City", 
+                                          id: "city",
+                                          key: "locations.city.icontains"
+                                        }),
+                                    new TagField({
+                                      label: "Tags", 
+                                      id: "tags", 
+                                      key: "tags.name.in", 
+                                      helpText: "Use commas for multiple tags."
+                                    }),
+                                    new FilteredList({
+                                      label: "Partners", 
+                                      id: "partner", 
+                                      key: "partner.in",
+                                      required: true, 
+                                      dependencies: {
+                                        date: {
+                                          start_date: 'contactrecord.date_time.gte',
+                                          end_date: 'contactrecord.date_time.lte',
+                                        },
+                                        state: 'contact.locations.state.icontains',
+                                        city: 'contact.locations.city.icontains',
+                                        tags: 'contact.tags.name.in',
+                                      },
+                                      values: ["pk", "name"],
+                                      order_by: "name"
+                                    })
+                                  ]);
+    },
+    partner: function() {
+      return new Report("partner", [new TextField({
+                                      isFilter: false,
+                                      label: "Report Name", 
+                                      id: "report_name", 
+                                      required: true, 
+                                      defaultVal: reportNameDateFormat(new Date())
+                                    }),
+                                    new StateField({
+                                      label: "State", 
+                                      id: "state",
+                                      key: "contact.locations.state.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "City", 
+                                      id: "city",
+                                      key: "contact.locations.city.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "URL", 
+                                      id: "uri",
+                                      key: "uri.icontains"
+                                    }),
+                                    new TextField({
+                                      label: "Source", 
+                                      id: "data_source",
+                                      key: "data_source.icontains"
+                                    }),
+                                    new TagField({
+                                      label: "Tags", 
+                                      id: "tags", 
+                                      key: "tags.name.in", 
+                                      helpText: "Use commas for multiple tags."
+                                    })
+                                  ]);
+    },
+    contactrecord: function() {
+      var CommunicationTypeChoices = [new CheckBox({
+                                  label: "Email", 
+                                  name: "communication_type", 
+                                  defaultVal: "email"
+                                }),
+                                new CheckBox({
+                                  label: "Phone Call", 
+                                  name: "communication_type", 
+                                  defaultVal: "phone"
+                                }),
+                                new CheckBox({
+                                  label: "Meeting or Event", 
+                                  name: "communication_type", 
+                                  defaultVal: "meetingorevent"
+                                }),
+                                new CheckBox({
+                                  label: "Job Followup", 
+                                  name: "communication_type", 
+                                  defaultVal: "job"
+                                }),
+                                new CheckBox({
+                                  label: "Saved Search Email", 
+                                  name: "communication_type", 
+                                  defaultVal: "pssemail"
+                                })];
 
-    return new Report("contactrecord", [new TextField({label: "Report Name", id: "report_name", required: true, defaultVal: reportNameDateFormat(new Date())}),
-                                        new DateField({label: "Select Date", id: "date", required: true, defaultVal: {start_date: "01/01/2014", end_date: dateFieldFormat(yesterday)}}),
-                                        new StateField({label: "State", id: "state"}),
-                                        new TextField({label: "City", id: "city"}),
-                                        new CheckList({label: "Communication Types", id: "contact_type", required: true, defaultVal: "all", choices: contactTypeChoices}),
-                                        new TagField({label: "Tags", id: "tags__name", helpText: "Use commas for multiple tags."}),
-                                        new FilteredList({label: "Partners", id: "partner", required: true, ignore: ["report_name", "partner", "contact"]}),
-                                        new FilteredList({label: "Contacts", id: "contact", required: true, ignore: ["report_name", "contact"], dependencies: ["partner"]})]);
-  }
-};
+      return new Report("contactrecord", [new TextField({
+                                            isFilter: false,
+                                            label: "Report Name", 
+                                            id: "report_name", 
+                                            required: true, 
+                                            defaultVal: reportNameDateFormat(new Date())}),
+                                          new DateField({
+                                            label: "Select Date", 
+                                            id: "date", 
+                                            key: {
+                                              start_date: "date_time.gte", 
+                                              end_date: "date_time.lte"
+                                            }, 
+                                            required: true, 
+                                            defaultVal: {
+                                              start_date: "01/01/2014", 
+                                              end_date: dateFieldFormat(yesterday)
+                                            }
+                                          }),
+                                          new StateField({
+                                            label: "State", 
+                                            id: "state", 
+                                            key: "contact.locations.state.icontains"
+                                          }),
+                                          new TextField({
+                                            label: "City", 
+                                            id: "city", 
+                                            key: "contact.locations.city.icontains"
+                                          }),
+                                          new CheckList({
+                                            label: "Communication Types", 
+                                            id: "communication_type", 
+                                            key: "contact_type.in",
+                                            required: true, 
+                                            defaultVal: "all", 
+                                            choices: CommunicationTypeChoices
+                                          }),
+                                          new TagField({
+                                            label: "Tags", 
+                                            id: "tags", 
+                                            key: "tags.name.in", 
+                                            helpText: "Use commas for multiple tags."
+                                          }),
+                                          new FilteredList({
+                                            label: "Partners", 
+                                            id: "partner", 
+                                            key: "partner.in",
+                                            required: true, 
+                                            dependencies: {
+                                              date: {
+                                                start_date: 'contactrecord.date_time.gte',
+                                                end_date: 'contactrecord.date_time.lte',
+                                              },
+                                              state: 'contact.locations.state.icontains',
+                                              city: 'contact.locations.city.icontains',
+                                              communication_type: 'contactrecord.contact_type.in',
+                                              tags: 'contactrecord.tags.name.in',
+                                            },
+                                            values: ["pk", "name"],
+                                            order_by: "name"
+                                          }),
+                                          new FilteredList({
+                                            label: "Contacts", 
+                                            id: "contact", 
+                                            key: "contact.in",
+                                            required: true, 
+                                            dependencies: {
+                                              date: {
+                                                start_date: 'contactrecord.date_time.gte',
+                                                end_date: 'contactrecord.date_time.lte',
+                                              },
+                                              state: 'locations.state.icontains',
+                                              city: 'locations.city.icontains',
+                                              communication_type: 'contactrecord.contact_type.in',
+                                              tags: 'contactrecord.tags.name.in',
+                                              partner: 'partner.in'
+                                            },
+                                            values: ["pk", "name", "email"],
+                                            order_by: "name"
+                                          })
+                                        ]);
+    }
+  };
 
   return reports[type]();
 }
 
 
-function reportNameDateFormat(date) {
+function reportNameDateFormat(date, isEndDate) {
+  isEndDate = typeof isEndDate !== 'undefined' ? isEndDate : false;
+
   var year = date.getFullYear(),
       month = date.getMonth(),
       day = date.getDate(),
-      hours = date.getHours(),
-      minutes = date.getMinutes(),
-      seconds = date.getSeconds(),
-      milliseconds = date.getMilliseconds();
+      hours = isEndDate ? 23 : date.getHours(),
+      minutes = isEndDate ? 59 : date.getMinutes(),
+      seconds = isEndDate ? 59 : date.getSeconds(),
+      milliseconds = isEndDate ? 999 : date.getMilliseconds();
 
   month = turnTwoDigit(parseInt(month) + 1);
   day = turnTwoDigit(day);
@@ -1404,7 +1599,7 @@ function renderOverview(callback) {
     }
   }).complete(function() {
     if (typeof callback === "function") {
-      callback();
+      return callback();
     }
   });
 }
@@ -1478,11 +1673,17 @@ function renderDownload(report_id) {
       });
 
       $("input.enable-column").on("change", function() {
-        $checkboxes = $(".column-wrapper .enable-column");
-        $checked = $(".column-wrapper .enable-column:checked");
-        $allCheckbox = $(".enable-all-columns .enable-column");
+        var $checkboxes = $(".column-wrapper .enable-column"),
+            $checkbox = $(this),
+            $checked = $(".column-wrapper .enable-column:checked"),
+            $allCheckbox = $(".enable-all-columns .enable-column"),
+            $choices = $("#column-choices");
 
         $allCheckbox.prop("checked", $checkboxes.length === $checked.length);
+
+        if(!$checkbox.is(":checked") && $checkbox.val() === $choices.val()) {
+          $choices.val("");
+        }
       });
 
       $("#download-cancel").on("click", function() {
