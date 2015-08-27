@@ -2035,7 +2035,7 @@ def seo_states(request):
     all_link = all_link.format(intcomma(search.count()))
 
     # Turn search results into a dict formatted {state:count}
-    search = dict(search.facet_counts().get('fields').get('state'))
+    search = dict(search.facet_counts().get('fields', {}).get('state', {}))
 
     # Mutates states by adding counts from search
     def _add_job_counts(states):
@@ -2076,7 +2076,7 @@ def seo_cities(request, state):
                                intcomma(results.count()))
 
     # add counts and get just want we need
-    results = results.facet_counts().get('fields').get('city_slab')
+    results = results.facet_counts().get('fields', {}).get('city_slab', {})
 
     # Make a list of city dicts
     output = []
