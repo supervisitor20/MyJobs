@@ -2052,7 +2052,7 @@ def seo_states(request):
     # ensure the states are in alphabetical order.
     sorted_states = sorted(new_states, key=lambda s: s['location'])
 
-    data_dict = {"title": "States",
+    data_dict = {"title": "United States Locations",
                  "all_link": all_link,
                  "has_child_page": True,
                  "locations": sorted_states}
@@ -2075,8 +2075,6 @@ def seo_cities(request, state):
     all_link = all_link.format('http://' + state_url, state,
                                intcomma(results.count()))
 
-    back_to_parent = '<a href="/network/states/">US Locations</a>'
-
     # add counts and get just want we need
     results = results.facet_counts().get('fields').get('city_slab')
 
@@ -2095,7 +2093,7 @@ def seo_cities(request, state):
 
     data_dict = {"title": "{0} Cities".format(state.title()),
                  "all_link": all_link,
-                 "back_to_parent": back_to_parent,
+                 "breadcrumbs": True,
                  "has_child_page": False,
                  "state": state,
                  "locations": sorted_locations}
