@@ -708,11 +708,12 @@ def prm_records(request):
     _, _, contact_records = get_records_from_request(request)
     paginated_records = add_pagination(request, contact_records)
 
+    ctx = {
+        'partner': partner,
+        'records': paginated_records
+    }
+
     if request.is_ajax():
-        ctx = {
-            'partner': partner,
-            'records': paginated_records
-        }
         response = HttpResponse()
         html = render_to_response(
             'mypartners/includes/contact_record_column.html', ctx,
@@ -724,15 +725,13 @@ def prm_records(request):
     contact_choices = [('all', 'All')] + list(contact_records.values_list(
         'contact__name', 'contact__name'))
 
-    ctx = {
+    ctx.update({
         'admin_id': request.REQUEST.get('admin'),
         'company': company,
         'contact_choices': contact_choices,
         'contact_type_choices': contact_type_choices,
-        'partner': partner,
-        'records': paginated_records,
         'view_name': 'PRM',
-    }
+    })
 
     return render_to_response('mypartners/main_records.html', ctx,
                               RequestContext(request))
