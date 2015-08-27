@@ -2723,3 +2723,26 @@ class StaticPageOverrideTests(DirectSEOTestCase):
         response = self.client.get('/about/', HTTP_HOST=self.site.domain)
         self.assertEqual(response.status_code, 301)
         self.assertEqual(response['Location'], 'https://secure.my.jobs/about')
+
+
+class DubaiTests(DirectSEOTestCase):
+    fixtures = ['seo_views_testdata.json']
+
+    def setUp(self):
+        super(DubaiTests, self).setUp()
+        self.conn.add(solr_settings.DUBAI_FIXTURE)
+        self.site = SeoSite.objects.get()
+        bu = BusinessUnit.objects.get(id=0)
+        self.site.business_units.add(bu)
+
+    def test_search_dubai(self):
+        # ARE is a stopword.
+        # Make sure we still get our result from this query.
+        resp = self.client.get(
+            u'/none/none/ARE/jobs/',
+            HTTP_HOST=self.site.domain,
+            follow=True
+        )
+        jobs = resp.context['default_jobs']
+        self.assertEqual(1, len(jobs))
+        self.assertEqual(jobs[0].city, 'Dubai')
