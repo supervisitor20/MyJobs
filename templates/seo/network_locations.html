@@ -6,6 +6,7 @@
 {% endblock %}
 {% block directseo_main_content %}
     {% if back_to_parent %}
+        {{ back_to_parent|safe }}
     {% endif %}
     <h1 class="nw-heading">{{ title }}</h1>
     {% if all_link %}
@@ -20,24 +21,27 @@
     </div>
     {% endif %}
     <div class="nw-row">
-    {% for state in states %}
+    {% for location in locations %}
         {% if forloop.first or forloop.counter0|divisibleby:"15" %}
             {% if not forloop.first %}
                 </ul>
             </div>
+                {% if forloop.counter0|divisibleby:'60' and not forloop.first %}
+                    <h1 class="nw-separator"></h1>
+                {% endif %}
             {% endif %}
-            <div class="nw-fourth{% if forloop.counter0|divisibleby:'45' %} last{% endif %} m-nw-full">
+            <div class="nw-fourth{% if forloop.counter0|divisibleby:'45' and not forloop.first %} last{% endif %} m-nw-full">
                 <ul>
         {% endif %}
             <li>
                 <div class="network-card">
                     <div class="title-link">
-                        <a href="http://{{ state.url }}">{{ state.state }} Jobs
-                        {% if state.count > 0 %}({{ state.count }}){% endif %}</a>
+                        <a href="http://{{ location.url }}">{{ location.location }} Jobs
+                        {% if location.count > 0 %}({{ location.count }}){% endif %}</a>
                     </div>
                     {% if has_child_page %}
                     <div class="sub-link">
-                        <a href="">View {{ state.state }} Cities</a>
+                        <a href="/network/{{ location.location }}/cities/">View {{ location.location }} Cities</a>
                     </div>
                     {% endif %}
                 </div>
