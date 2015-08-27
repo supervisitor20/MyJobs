@@ -1757,10 +1757,22 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         for job in jobs:
             helpers.add_text_to_job(job)
 
-    breadbox = Breadbox(request.path, filters, jobs, request.GET)
-
+    # checks to ensure that improper URL configurations return the correct
+    # 404 response.
     company_data = helpers.get_company_data(filters)
-
+    if not company_data and filters['company_slug']:
+        raise Http404("No company found for %s" % filters['company_slug'])
+    if filters['location_slug']:
+        location = helpers.pull_location_from_jobs_via_slug(filters['location_slug'])
+        if not location:
+            raise Http404("No location found for url input %s" % filters['location_slug'])
+    if filters['moc_slug']:
+        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
+        if not moc:
+            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
+    
+    breadbox = Breadbox(request.path, filters, jobs, request.GET)
+    
     widgets = helpers.get_widgets(request, site_config, facet_counts,
                                   custom_facet_counts, filters=filters)
 
