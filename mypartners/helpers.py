@@ -114,12 +114,17 @@ def log_change(obj, form, user, partner, contact_identifier,
         change_msg = get_change_message(form) if action_type == CHANGE else ''
     delta = get_form_delta(form) if action_type == CHANGE else {}
 
+    try:
+        delta = json.dumps(delta, cls=DjangoJSONEncoder)
+    except:
+        import ipdb; ipdb.set_trace()
+
     ContactLogEntry.objects.create(
         action_flag=action_type,
         change_message=change_msg,
         contact_identifier=contact_identifier,
         content_type=ContentType.objects.get_for_model(obj),
-        delta=json.dumps(delta, cls=DjangoJSONEncoder),
+        delta=delta,
         object_id=obj.pk,
         object_repr=force_text(obj)[:200],
         partner=partner,
@@ -151,8 +156,6 @@ def get_form_delta(form):
         if isinstance(form.fields[field], MultipleFileField):
             initial = [fd.name for fd in initial or [] if fd]
             new = [fd.name for fd in new or [] if fd]
-        elif isinstance(form.fields[field], ChoiceField):
-            initial = dict(form.fields[field].choices).get(initial)
 
         if initial or new:
             delta[field] = {'initial': initial, 'new': new}
