@@ -2035,7 +2035,7 @@ def seo_states(request):
     all_link = all_link.format(intcomma(search.count()))
 
     # Turn search results into a dict formatted {state:count}
-    search = dict(search.facet_counts()['fields']['state'])
+    search = dict(search.facet_counts().get('fields').get('state'))
 
     # Mutates states by adding counts from search
     def _add_job_counts(states):
@@ -2062,31 +2062,35 @@ def seo_states(request):
 
 
 def seo_cities(request, state):
+    # Pull jobs from solr
     results = DESearchQuerySet().narrow(u"state:({0})".format(state)
         ).facet('city_slab')
 
+    # Grab root url for state. Ex: indiana.jobs
     state_url = (s for s in states_with_sites
                  if s['location'] == state).next()['url']
 
+    # Grabbing results count before turning into a dict
     all_link = '<a href="{0}">All {1} Jobs ({2})</a>'
     all_link = all_link.format('http://' + state_url, state,
                                intcomma(results.count()))
 
     back_to_parent = '<a href="/network/states/">US Locations</a>'
 
+    # add counts and get just want we need
     results = results.facet_counts().get('fields').get('city_slab')
-    slab_state = state.replace(" ", "")
 
+    # Make a list of city dicts
     output = []
     for result in results:
         url, location = result[0].split("::")
         city = {'count': intcomma(result[1]),
                 'url': state_url + '/' + url,
-                'location': location[:-4],
-                'slab_state': slab_state}
+                'location': location[:-4]}
 
         output.append(city)
 
+    # sort cities by location name
     sorted_locations = sorted(output, key=lambda c: c['location'])
 
     data_dict = {"title": "{0} Cities".format(state.title()),
