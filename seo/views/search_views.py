@@ -2064,7 +2064,7 @@ def seo_states(request):
 def seo_cities(request, state):
     # Pull jobs from solr
     results = DESearchQuerySet().narrow(u"state:({0})".format(state)
-        ).facet('city_slab')
+                                        ).facet('city_slab')
 
     # Grab root url for state. Ex: indiana.jobs
     state_url = (s for s in states_with_sites
