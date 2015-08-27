@@ -2040,7 +2040,7 @@ def seo_states(request):
     # Mutates states by adding counts from search
     def _add_job_counts(states):
         for state in states:
-            state['count'] = intcomma(search.get(state['state'], 0))
+            state['count'] = intcomma(search.get(state['location'], 0))
 
     # Copy imported list
     # Don't want to mutate something that could be used elsewhere
@@ -2050,12 +2050,52 @@ def seo_states(request):
     _add_job_counts(new_states)
 
     # ensure the states are in alphabetical order.
-    sorted_states = sorted(new_states, key=lambda s: s['state'])
+    sorted_states = sorted(new_states, key=lambda s: s['location'])
 
     data_dict = {"title": "States",
                  "all_link": all_link,
                  "has_child_page": True,
-                 "states": sorted_states}
+                 "locations": sorted_states}
+
+    return render_to_response('seo/network_locations.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+def seo_cities(request, state):
+    results = DESearchQuerySet().narrow(u"state:({0})".format(state)
+        ).facet('city_slab')
+
+    state_title = state.title()
+    state_url = (s for s in states_with_sites
+                 if s['location'] == state_title).next()['url']
+
+    all_link = '<a href="{0}">All {1} Jobs ({2})</a>'
+    all_link = all_link.format('http://' + state_url, state_title,
+                               intcomma(results.count()))
+
+    back_to_parent = '<a href="/network/states/">US Locations</a>'
+
+    results = results.facet_counts().get('fields').get('city_slab')
+    slab_state = state.replace(" ", "")
+
+    output = []
+    for result in results:
+        url, location = result[0].split("::")
+        city = {'count': intcomma(result[1]),
+                'url': state_url + '/' + url,
+                'location': location[:-4],
+                'slab_state': slab_state}
+
+        output.append(city)
+
+    sorted_locations = sorted(output, key=lambda c: c['location'])
+
+    data_dict = {"title": "{0} Cities".format(state.title()),
+                 "all_link": all_link,
+                 "back_to_parent": back_to_parent,
+                 "has_child_page": False,
+                 "state": state,
+                 "locations": sorted_locations}
 
     return render_to_response('seo/network_locations.html', data_dict,
                               context_instance=RequestContext(request))
