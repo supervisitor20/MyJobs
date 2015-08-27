@@ -5,8 +5,8 @@
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}dseo_network.166-19.css" />
 {% endblock %}
 {% block directseo_main_content %}
-    {% if back_to_parent %}
-        {{ back_to_parent|safe }}
+    {% if breadcrumbs %}
+        {% include "seo/network_breadcrumbs.html" %}
     {% endif %}
     <h1 class="nw-heading">{{ title }}</h1>
     {% if all_link %}
