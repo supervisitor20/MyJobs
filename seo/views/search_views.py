@@ -2065,12 +2065,11 @@ def seo_cities(request, state):
     results = DESearchQuerySet().narrow(u"state:({0})".format(state)
         ).facet('city_slab')
 
-    state_title = state.title()
     state_url = (s for s in states_with_sites
-                 if s['location'] == state_title).next()['url']
+                 if s['location'] == state).next()['url']
 
     all_link = '<a href="{0}">All {1} Jobs ({2})</a>'
-    all_link = all_link.format('http://' + state_url, state_title,
+    all_link = all_link.format('http://' + state_url, state,
                                intcomma(results.count()))
 
     back_to_parent = '<a href="/network/states/">US Locations</a>'
