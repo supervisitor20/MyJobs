@@ -563,8 +563,8 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
 
     sqs = sqs.order_by(sort_order_mapper.get(sort_order, '-score'))
 
-    #The boost function added to this search query set scales relevancy scores
-    #by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
+    # The boost function added to this search query set scales relevancy scores
+    # by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
     sqs = sqs.bf('recip(ms(NOW/HOUR,salted_date),1.8e-9,1,1)')
 
     if fields:
