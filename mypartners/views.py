@@ -721,11 +721,8 @@ def prm_records(request):
         return response
 
     contact_type_choices = (('all', 'All'),) + CONTACT_TYPE_CHOICES
-
-    contact_choices = [
-        (c, c) for c in contact_records.order_by(
-            'contact__name').distinct().values_list('contact__name', flat=True)]
-    contact_choices.insert(0, ('all', 'All'))
+    contact_choices = [('all', 'All')] + list(contact_records.values_list(
+        'contact__name', 'contact__name'))
 
     ctx = {
         'admin_id': request.REQUEST.get('admin'),
@@ -793,6 +790,7 @@ def prm_view_records(request):
         page = int(request.GET.get('page', 1))
     except ValueError:
         page = 1
+
     # change number of objects per page
     paginated_records = add_pagination(request, contact_records, 1)
 
