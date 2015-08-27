@@ -2605,6 +2605,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                    HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(response.status_code, 200)
 
+    def test_network_cities_loads(self):
+        response = self.client.get('/network/Indiana/cities/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
 
 class FlatpagesTestCase(DirectSEOBase):
     def setUp(self):
