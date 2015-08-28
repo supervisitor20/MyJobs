@@ -2605,6 +2605,17 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                    HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(response.status_code, 200)
 
+    def test_network_cities_loads(self):
+        # Test state with no spaces
+        response = self.client.get('/network/Indiana/cities/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
+        # Test state with spaces
+        response = self.client.get('/network/New%20Jersey/cities/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
 
 class FlatpagesTestCase(DirectSEOBase):
     def setUp(self):
