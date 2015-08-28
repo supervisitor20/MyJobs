@@ -730,6 +730,7 @@ def task_priority_etl_to_solr(guid, buid, name):
 
 @task(name="tasks.check_solr_count", send_error_emails=True)
 def task_check_solr_count(buid, count):
+    buid = int(buid)
     conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
     hits = conn.search(q="buid:%s" % buid, rows=1, mlt="false", facet="false").hits
     if int(count) != int(hits):
