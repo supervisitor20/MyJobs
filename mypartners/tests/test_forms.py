@@ -135,7 +135,17 @@ class ContactRecordFormTests(MyPartnersTestCase):
         Tests that when you create a record, you are redirected to the view
         which contains that record.
         """
-        pass
+        self.data.update({
+            "notes": "brand new record"
+        })
+
+        record_count = ContactRecord.objects.count()
+
+        response = self.client.post(data=self.data, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(ContactRecord.objects.count(), record_count + 1)
+        self.assertIn("brand new record", response.content)
 
 
     def test_changing_contact_type_redirects_correctly(self):
