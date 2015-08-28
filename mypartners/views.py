@@ -794,11 +794,8 @@ def prm_view_records(request):
     paginator = Paginator(contact_records, 1)
 
     if record_id:
-        for i in range(1, paginator.num_pages + 1):
-            page = paginator.page(i)
-            if page.object_list[0].pk == record_id:
-                page_number = i
-                break
+        pks = list(contact_records.values_list('pk', flat=True))
+        page_number = pks.index(record_id) + 1
 
     paginated_records = paginator.page(page_number)
     record = paginated_records.object_list[0]
