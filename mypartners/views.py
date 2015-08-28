@@ -12,6 +12,7 @@ from validate_email import validate_email
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -723,7 +724,7 @@ def prm_records(request):
 
     contact_type_choices = (('all', 'All'),) + CONTACT_TYPE_CHOICES
     contact_choices = [('all', 'All')] + list(contact_records.values_list(
-        'contact__name', 'contact__name'))
+        'contact__name', 'contact__name').distinct().order_by('contact__name'))
 
     ctx.update({
         'admin_id': request.REQUEST.get('admin'),
@@ -760,7 +761,8 @@ def prm_edit_records(request):
                                  partner=partner, instance=instance)
         if form.is_valid():
             form.save(user, partner)
-            return HttpResponseRedirect(reverse('record_view') + '?' +
+            return HttpResponseRedirect(reverse('record_view') + 
+                                        '?id=%s&' % form.instance.pk +
                                         request.META['QUERY_STRING'])
     else:
         form = ContactRecordForm(partner=partner, instance=instance)
@@ -787,11 +789,23 @@ def prm_view_records(request):
     _, _, contact_records = get_records_from_request(request)
     try:
         page = int(request.GET.get('page', 1))
+        record_id = int(request.GET.get('id', 0))
     except ValueError:
-        page = 1
+        page = 0
+        record_id = 0
 
     # change number of objects per page
     paginated_records = add_pagination(request, contact_records, 1)
+    paginated_records = Paginator(contact_records, 1)
+
+    if record_id:
+        for i in range(1, paginated_records.num_pages + 1):
+            page = paginated_records.page(i)
+            if page.object_list[0].pk == record_id:
+                page = i
+                break
+
+    paginated_records = paginated_records.page(page)
 
     if len(paginated_records.object_list) > 1:
         record = paginated_records.object_list[page - 1]
