@@ -7,6 +7,7 @@ from lxml import etree
 import pytz
 import re
 import unicodecsv
+from urllib import urlencode
 from validate_email import validate_email
 
 from django.conf import settings
@@ -761,9 +762,10 @@ def prm_edit_records(request):
                                  partner=partner, instance=instance)
         if form.is_valid():
             form.save(user, partner)
-            return HttpResponseRedirect(reverse('record_view') + 
-                                        '?id=%s&' % form.instance.pk +
-                                        request.META['QUERY_STRING'])
+            search_params = request.GET.copy()
+            search_params.update({'id': form.instance.pk})
+            return HttpResponseRedirect(reverse('record_view') + '?' +
+                                        urlencode(search_params))
     else:
         form = ContactRecordForm(partner=partner, instance=instance)
 
@@ -795,7 +797,13 @@ def prm_view_records(request):
 
     if record_id:
         pks = list(contact_records.values_list('pk', flat=True))
-        page_number = pks.index(record_id) + 1
+
+        if record_id in pks:
+            page_number = pks.index(record_id) + 1
+        else:
+            page_number = 1
+            paginator = Paginator(
+                ContactRecord.objects.filter(pk=record_id), 1)
 
     paginated_records = paginator.page(page_number)
     record = paginated_records.object_list[0]
@@ -805,6 +813,10 @@ def prm_view_records(request):
         object_id=record.pk, content_type_id=ContentType.objects.get_for_model(
             ContactRecord).pk)
 
+    search_params = request.GET.copy()
+    navigation_params = search_params.copy()
+    navigation_params.pop('id', None)
+
     ctx = {
         'record': record,
         'records': paginated_records,
@@ -813,7 +825,9 @@ def prm_view_records(request):
         'attachments': attachments,
         'record_history': record_history,
         'view_name': 'PRM',
-        'page': page_number
+        'page': page_number,
+        'search_params': urlencode(search_params),
+        'navigation_params': urlencode(navigation_params)
     }
 
     return render_to_response('mypartners/view_record.html', ctx,

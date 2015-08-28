@@ -19,10 +19,10 @@
             <a class="mobile_hide" href="{% url 'partner_records' %}?company={{ company.id }}&partner={{ partner.id }}">Back to Communication Records</a>
             <span class="pull-right">
                 {% if records.has_previous %}
-                    <a href="?{% for key, values in request.GET.iterlists %}{% ifnotequal key 'page' %}{% for value in values %}{{ key }}={{ value }}&amp;{% endfor %}{% endifnotequal %}{% endfor %}page={{ records.previous_page_number }}">Previous</a>
+                    <a href="?{{ navigation_params }}&page={{ records.previous_page_number }}">Previous</a>
                 {% endif %}
                 {% if records.has_next %}
-                    <a href="?{% for key, values in request.GET.iterlists %}{% ifnotequal key 'page' %}{% for value in values %}{{ key }}={{ value }}&amp;{% endfor %}{% endifnotequal %}{% endfor %}page={{ records.next_page_number }}">Next</a>
+                    <a href="?{{ navigation_params }}&page={{ records.next_page_number }}">Next</a>
                 {% endif %}
                 &nbsp;&nbsp;
             </span>
@@ -95,7 +95,7 @@
         </div>
         <div class="span3">
             <a class="btn one-hundred-percent-button-border-boxed" 
-               href="{% url 'partner_edit_record' %}?id={{ record.id }}&partner={{ partner.pk }}&page={{ page }}">Edit</a>
+               href="{% url 'partner_edit_record' %}?id={{ record.id }}&{{ request.GET.urlencode }}">Edit</a>
             <div class="tip-box" id="record-history">
             <h5>Record History</h5>
                 <div class="tip-content">
