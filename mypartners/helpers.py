@@ -113,11 +113,7 @@ def log_change(obj, form, user, partner, contact_identifier,
     if not change_msg:
         change_msg = get_change_message(form) if action_type == CHANGE else ''
     delta = get_form_delta(form) if action_type == CHANGE else {}
-
-    try:
-        delta = json.dumps(delta, cls=DjangoJSONEncoder)
-    except:
-        import ipdb; ipdb.set_trace()
+    delta = json.dumps(delta, cls=DjangoJSONEncoder)
 
     ContactLogEntry.objects.create(
         action_flag=action_type,
