@@ -149,4 +149,8 @@ CELERY_ROUTES = {
         'queue': 'solr',
         'routing_key': 'solr.update_solr'
     },
+    'tasks.check_solr_count': {
+        'queue': 'solr',
+        'routing_key': 'solr.update_solr'
+    },
 }

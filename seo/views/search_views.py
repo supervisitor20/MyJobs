@@ -38,7 +38,7 @@ from moc_coding import models as moc_models
 from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
-from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr
+from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr, task_check_solr_count
 from xmlparse import text_fields
 from import_jobs import add_jobs, delete_by_guid
 from transform import transform_for_postajob
@@ -1979,7 +1979,14 @@ def confirm_load_jobs_from_etl(response):
             if jsid.lower() in blocked_jsids:
                 LOG.info("Ignoring sns for %s", jsid)
                 return None
-            LOG.info("Creating ETL Task (%s, %s, %s" % (jsid, buid, name))
+
+            # Setup a check on this business unit down the road.
+            if 'count' in msg:
+                LOG.info("Creating check_solr_count task (%s, %s)" % (buid, msg['count']))
+                eta=datetime.datetime.now() + datetime.timedelta(minutes=20)
+                task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
+
+            LOG.info("Creating ETL Task (%s, %s, %s)" % (jsid, buid, name))
             if int(prio) == 1:
                 task_priority_etl_to_solr.delay(jsid, buid, name)
             else:
