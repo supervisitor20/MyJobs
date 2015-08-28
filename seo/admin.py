@@ -20,6 +20,9 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from django_extensions.admin import ForeignKeyAutocompleteAdmin
+from django_extensions.admin.widgets import ForeignKeySearchInput
+
 import djcelery.admin
 from celery import current_app
 from djcelery.admin_utils import action
@@ -876,8 +879,16 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         return UnorderedChangeList
 
+def parent_site_string(parent_site):
+    return "%s (%s)" % (parent_site.name, parent_site.domain)
 
-class SeoSiteAdmin(admin.ModelAdmin):
+class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
+    related_search_fields = {
+        'parent_site': ('domain','name' ),
+    }
+    related_string_functions = {
+        'seosite': parent_site_string,
+    }
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
@@ -897,6 +908,9 @@ class SeoSiteAdmin(admin.ModelAdmin):
         ('Settings', {'fields': [('site_tags', 'special_commitments',
                                   'view_sources', )]}),
     ]
+
+    class Media:
+        js = ('django_extensions/js/jquery-1.7.2.min.js', )
 
     # Disable bulk delete on this model to prevent accidental catastrophe
     def get_actions(self, request):
@@ -969,7 +983,13 @@ class SeoSiteAdmin(admin.ModelAdmin):
                 formset = FormSet(instance=self.model(), prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-
+        #overwrite for the "parent_site" form information...
+        #django-extensions does not allow for addition of the widget
+        #in the form declaration
+        form.fields['parent_site'].widget = ForeignKeySearchInput(
+            opts.get_field('parent_site').rel,['name','domain'])
+        form.fields['parent_site'].help_text=('Use the left field to do'
+            ' parent site lookups via domains or names')
         adminForm = helpers.AdminForm(form, list(self.get_fieldsets(request)),
             self.prepopulated_fields, self.get_readonly_fields(request),
             model_admin=self)
@@ -1057,7 +1077,7 @@ class SeoSiteAdmin(admin.ModelAdmin):
                 self.log_change(request, new_object, change_message)
                 return self.response_change(request, new_object)
 
-        else:
+        else:            
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
@@ -1070,7 +1090,13 @@ class SeoSiteAdmin(admin.ModelAdmin):
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-
+        #overwrite for the "parent_site" form information...
+        #django-extensions does not allow for addition of the widget
+        #in the form declaration
+        form.fields['parent_site'].widget = ForeignKeySearchInput(
+            opts.get_field('parent_site').rel,['name','domain'])
+        form.fields['parent_site'].help_text=('Use the left field to do'
+            ' parent site lookups via domains or names')
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
             model_admin=self)
