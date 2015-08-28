@@ -787,30 +787,21 @@ def prm_view_records(request):
     """
     company, partner, _ = prm_worthy(request)
     _, _, contact_records = get_records_from_request(request)
-    try:
-        page = int(request.GET.get('page', 1))
-        record_id = int(request.GET.get('id', 0))
-    except ValueError:
-        page = 0
-        record_id = 0
+    page_number = int(request.GET.get('page', 1))
+    record_id = int(request.GET.get('id', 0))
 
     # change number of objects per page
-    paginated_records = add_pagination(request, contact_records, 1)
-    paginated_records = Paginator(contact_records, 1)
+    paginator = Paginator(contact_records, 1)
 
     if record_id:
-        for i in range(1, paginated_records.num_pages + 1):
-            page = paginated_records.page(i)
+        for i in range(1, paginator.num_pages + 1):
+            page = paginator.page(i)
             if page.object_list[0].pk == record_id:
-                page = i
+                page_number = i
                 break
 
-    paginated_records = paginated_records.page(page)
-
-    if len(paginated_records.object_list) > 1:
-        record = paginated_records.object_list[page - 1]
-    else:
-        record = paginated_records.object_list[0]
+    paginated_records = paginator.page(page_number)
+    record = paginated_records.object_list[0]
 
     attachments = record.prmattachment_set.all()
     record_history = ContactLogEntry.objects.filter(
@@ -825,7 +816,7 @@ def prm_view_records(request):
         'attachments': attachments,
         'record_history': record_history,
         'view_name': 'PRM',
-        'page': page
+        'page': page_number
     }
 
     return render_to_response('mypartners/view_record.html', ctx,
