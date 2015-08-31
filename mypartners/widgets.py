@@ -3,7 +3,7 @@ import pytz
 
 from django.core.exceptions import ValidationError
 from django.forms import (FileField, FileInput, MultiValueField, MultiWidget,
-                          Select, TextInput, fields)
+                          Select, fields)
 from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime, now
 
