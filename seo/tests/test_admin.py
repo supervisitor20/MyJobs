@@ -95,7 +95,6 @@ class SeoAdminTestCase(DirectSEOBase):
                                 'postajob_filter_type':parent_seo_site.postajob_filter_type,
                                 'parent_site':super_parent_seo_site.pk})
         self.assertEqual(resp.status_code, 200)
-        print resp
         self.assertContains(resp, "field-parent_site errors")
         parent_site_refresh = SeoSite.objects.get(pk = parent_seo_site.pk)
         self.assertEqual(parent_site_refresh.parent_site, None)
