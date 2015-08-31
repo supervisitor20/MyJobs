@@ -16,5 +16,5 @@
         <span class="tag-name small" style="background-color: #{{tag.hex_color}}">{{ tag.name }}</span>
         {% endfor %}
     </div>
-    <a class="btn" href="{% url 'record_view' %}?{% for key, values in request.GET.iterlists %}{% ifnotequal key 'page' %}{% for value in values %}{{ key }}={{ value }}&amp;{% endfor %}{% endifnotequal %}{% endfor %}&page={% paginated_index index page request.GET.per_page %}">View</a>
+    <a class="btn" href="{% url 'record_view' %}?{% for key, values in request.GET.iterlists %}{% ifnotequal key 'page' %}{% for value in values %}{{ key }}={{ value }}&amp;{% endfor %}{% endifnotequal %}{% endfor %}page={% paginated_index index page request.GET.per_page %}">View</a>
 </div>

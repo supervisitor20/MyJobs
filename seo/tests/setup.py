@@ -67,7 +67,8 @@ class DirectSEOBase(TestCase):
 
         self.base_middleware_classes = settings.MIDDLEWARE_CLASSES
         middleware_classes = self.base_middleware_classes + (
-            'wildcard.middleware.WildcardMiddleware', )
+            'wildcard.middleware.WildcardMiddleware',
+            'middleware.RedirectOverrideMiddleware')
         setattr(settings, 'MIDDLEWARE_CLASSES', middleware_classes)
 
         self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS

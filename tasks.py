@@ -38,6 +38,8 @@ from solr.models import Update
 from solr.signals import object_to_dict, profileunits_to_dict
 from djcelery.models import TaskState
 import ast
+from pysolr import Solr
+from django.core.mail import send_mail
 
 
 logger = logging.getLogger(__name__)
@@ -724,6 +726,21 @@ def task_priority_etl_to_solr(guid, buid, name):
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
         raise task_priority_etl_to_solr.retry(exc=e)
+
+
+@task(name="tasks.check_solr_count", send_error_emails=True)
+def task_check_solr_count(buid, count):
+    buid = int(buid)
+    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+    hits = conn.search(q="buid:%s" % buid, rows=1, mlt="false", facet="false").hits
+    if int(count) != int(hits):
+        logger.warn("For BUID: %s, we expected %s jobs, but have %s jobs", buid, count, hits)
+        send_mail(recipient_list=["matt@apps.directemployers.org"],
+                  from_email="solr_count_monitoring@apps.directemployers.org",
+                  subject="Buid Count for %s is incorrect." % buid,
+                  message="For BUID: %s, we expected %s jobs, but have %s jobs.  Check imports for this buid." %
+                        (buid, count, hits),
+                  fail_silently=False)
 
 
 @task(name="tasks.task_clear_solr", ignore_result=True)

@@ -42,21 +42,21 @@ class ExactStringField(CharField):
         super(ExactStringField, self).__init__(*args, **kwargs)
         # This attribute is checked in the search backend. If facet_for is
         # blank, the type gets overridden from string to text_en
-        self.facet_for = self.model_attr
+        self.trust_field_type = True
 
 
-class StringField(CharField):
+class MultiValueSpecialField(indexes.MultiValueField):
     """
-    Duplicate of ExactStringField, but doesn't require facet_for, since
-    not everything matches up with the model. Doesn't work for indexed fields,
-    likely because of some setting in search_backends.py.
+    Multivalue field that gives us direct control over the field_type.
 
+    Otherwise we have to try to set field_type indirectly with facet_for.
     """
-    field_type = 'string'
-
-
-class MultiValueIntegerField(indexes.MultiValueField):
-        field_type = 'int'
+    def __init__(self, *args, **kwargs):
+        self.field_type = kwargs.pop('field_type', 'text_en')
+        # This attribute is checked in the search backend. If facet_for is
+        # blank, the type gets overridden from string to text_en
+        self.trust_field_type = True
+        super(MultiValueSpecialField, self).__init__(*args, **kwargs)
 
 
 class JobIndex(indexes.SearchIndex, indexes.Indexable):
@@ -64,12 +64,14 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
     All fields that you want stored will be put here, in django model form
     """
     job_source_name = indexes.CharField()
+    all_locations = MultiValueSpecialField(field_type='location_char')
     buid = indexes.IntegerField(model_attr='buid_id')
     city = LocationCharField(faceted=True, model_attr='city', null=True)
     city_ac = indexes.EdgeNgramField(model_attr='city', null=True, stored=False)
     city_slab = indexes.CharField(faceted=True)
     city_slug = indexes.CharField(model_attr="citySlug", stored=False)
     company = indexes.CharField(faceted=True)
+    company_buid_slab = indexes.CharField(faceted=True)
     company_canonical_microsite = indexes.CharField(faceted=True)
     company_enhanced = indexes.BooleanField(indexed=True, stored=True)
     company_member = indexes.BooleanField(indexed=True, stored=True)
@@ -84,14 +86,17 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
     country_slug = indexes.CharField(model_attr="countrySlug", stored=False)
     date_new = indexes.DateTimeField(model_attr='date_new', null=True,
                                      faceted=True)
+    date_added = indexes.DateTimeField(null=True, faceted=True)
     date_updated = indexes.DateTimeField(model_attr='date_updated', null=True,
                                          faceted=True)
     description = KeywordSearchField(model_attr="description", stored=True,
                                      indexed=True)
+    federal_contractor = indexes.CharField(faceted=False)
     full_loc = indexes.CharField(faceted=True, stored=False)
     html_description = indexes.CharField(model_attr="html_description", 
                                          stored=True,
                                          indexed=False)
+    ind = MultiValueSpecialField(field_type='string')
     link = indexes.CharField(stored=True, indexed=False) 
     location = LocationCharField(model_attr='location', faceted=True, null=True)
     GeoLocation = indexes.LocationField(model_attr='location')
@@ -103,10 +108,12 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
     mapped_mocid = indexes.MultiValueField(null=True, stored=False)
     mapped_moc_slab = indexes.MultiValueField(faceted=True, null=True,
                                               stored=False)
+    network = indexes.BooleanField()
     onet = indexes.MultiValueField(model_attr='onet_id', faceted=True,
                                    null=True)
     reqid = ExactStringField(model_attr='reqid', null=True)
     salted_date = indexes.DateTimeField(stored=False, null=True)
+    staffing_code = indexes.CharField(faceted=False)
     state = LocationCharField(model_attr='state', faceted=True, null=True)
     state_ac = indexes.EdgeNgramField(model_attr='state', null=True,
                                       stored=False)
@@ -126,8 +133,8 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
 
     # Fields for post-a-job
     is_posted = indexes.BooleanField()
-    on_sites = MultiValueIntegerField()
-    apply_info = StringField(indexed=False)
+    on_sites = MultiValueSpecialField(field_type='int')
+    apply_info = ExactStringField(indexed=False)
 
     def get_model(self):
         return jobListing

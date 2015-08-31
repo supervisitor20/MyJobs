@@ -1,11 +1,18 @@
 from itertools import product
 from datetime import datetime, timedelta
+import json
 import random
 
+from django.core.urlresolvers import reverse
+
+
 from mypartners import helpers
+from mypartners.forms import ContactRecordForm
 from mypartners.tests.test_views import (MyPartnersTestCase,
                                          PartnerLibraryTestCase)
-from mypartners.tests.factories import ContactRecordFactory, PartnerFactory
+from mypartners.tests.factories import (ContactRecordFactory, PartnerFactory,
+                                        PRMAttachmentFactory)
+from mypartners.models import ContactLogEntry
 
 
 
@@ -73,6 +80,45 @@ class HelpersTests(MyPartnersTestCase):
         response = helpers.get_records_from_request(request)
         (start_date, end_date), _, _ = response
         self.assertGreaterEqual(end_date, start_date)
+
+    def test_get_form_delta(self):
+        """Tests that form changes are properly captured in a delta."""
+
+        contact_record = ContactRecordFactory(
+            contact=self.contact, partner=self.partner)
+        attachment = PRMAttachmentFactory(contact_record=contact_record)
+
+        # The contact record form has a lot of required fields. 
+        data=dict(
+            contact_type=contact_record.contact_type,
+            contact=contact_record.contact.pk,
+            contact_email=contact_record.contact_email,
+            #contact_phone=contact_record.contact_phone,
+            length_0="00",
+            length_1="30",
+            date_time_0="Aug",
+            date_time_1="24",
+            date_time_2="2015",
+            date_time_3="03",
+            date_time_4="10",
+            date_time_5="PM",
+            notes=contact_record.notes,
+            partner=contact_record.partner.pk,
+            company=contact_record.partner.owner,
+            attach_delete=[attachment.pk]
+        )
+        form = ContactRecordForm(
+            instance=contact_record, partner=contact_record.partner, data=data)
+
+        # Before 8/25/2015, saving this form with such changes would cause an
+        # error
+        form.save(self.staff_user, contact_record.partner)
+
+        delta = json.loads(ContactLogEntry.objects.last().delta)
+        # ensure a change is logged
+        self.assertEqual(delta['attach_delete']['new'], [str(attachment.pk)])
+        # ensure things that aren't changes aren't logged
+        self.assertNotIn("notes", delta.keys())
 
 
 class PartnerLibraryFilterTests(PartnerLibraryTestCase):

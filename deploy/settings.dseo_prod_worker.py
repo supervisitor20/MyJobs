@@ -96,7 +96,10 @@ AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 ROOT_URLCONF = 'dseo_urls'
-MIDDLEWARE_CLASSES += ('wildcard.middleware.WildcardMiddleware', )
+MIDDLEWARE_CLASSES += (
+    'wildcard.middleware.WildcardMiddleware',
+    'middleware.RedirectOverrideMiddleware',
+)
 TEMPLATE_CONTEXT_PROCESSORS += (
     "social_links.context_processors.social_links_context",
     "seo.context_processors.site_config_context",
@@ -146,6 +149,10 @@ CELERY_ROUTES = {
         'routing_key': 'solr.clear_solr'
     },
     'tasks.etl_to_solr': {
+        'queue': 'solr',
+        'routing_key': 'solr.update_solr'
+    },
+    'tasks.check_solr_count': {
         'queue': 'solr',
         'routing_key': 'solr.update_solr'
     },
