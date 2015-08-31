@@ -720,6 +720,10 @@ class PRMAttachment(models.Model):
         super(PRMAttachment, self).delete(*args, **kwargs)
         default_storage.delete(filename)
 
+    @property
+    def partner(self):
+        return getattr(self.contact_record, 'partner', None)
+
 
 class ContactLogEntry(models.Model):
     action_flag = models.PositiveSmallIntegerField('action flag')
