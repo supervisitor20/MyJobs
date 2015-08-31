@@ -42,7 +42,10 @@ TEMPLATE_DIRS = (
 CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
 
 ROOT_URLCONF = 'dseo_urls'
-MIDDLEWARE_CLASSES += ('wildcard.middleware.WildcardMiddleware', )
+MIDDLEWARE_CLASSES += (
+    'wildcard.middleware.WildcardMiddleware',
+    'middleware.RedirectOverrideMiddleware',
+)
 TEMPLATE_CONTEXT_PROCESSORS += (
     "social_links.context_processors.social_links_context",
     "seo.context_processors.site_config_context",

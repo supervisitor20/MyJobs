@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url, include
 from django.views.generic import RedirectView
 
 from myjobs.views import About, Privacy, Terms
+from myjobs.child_dashboard import child_dashboard
 
 accountpatterns = patterns('myjobs.views',
     url(r'^edit/$', 'edit_account', name='edit_account'),
@@ -32,4 +33,5 @@ urlpatterns = patterns(
     url(r'^toolbar/$', 'toolbar', name='toolbar'),
     url(r'^cas/$', 'cas', name='cas'),
     url(r'^topbar/$', 'topbar', name='topbar'),
+    url(r'^child-dashboard/$', child_dashboard, name='child_dashboard'),
 )
