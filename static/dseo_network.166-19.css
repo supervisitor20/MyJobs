@@ -1,6 +1,13 @@
 .nw-heading {
     border-bottom: 1px solid #666;
-    margin: 20px 0 10px 0;
+    margin: 20px 0;
+}
+
+.nw-separator {
+    float: left;
+    width: 100%;
+    border-bottom: 1px solid #666;
+    margin: 10px 0 20px 0;
 }
 
 .nw-row {
@@ -9,7 +16,7 @@
 }
 
 .nw-row ul {
-    margin-left: 0;
+    margin: 0;
 }
 
 .nw-fourth {
@@ -20,7 +27,7 @@
 
 .nw-fourth.last,
 .nw-fourth:last-child {
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
 .nw-fourth.last::after {
@@ -59,6 +66,11 @@
         box-sizing: border-box;
         font-size: 3em;
     }
+
+    .nw-separator {
+        display: none;
+    }
+
     .m-nw-full,
     .nw-full {
         display: block;
