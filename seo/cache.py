@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.utils.cache import get_cache_key
 from seo.helpers import get_jobs, get_solr_facet
 
-from seo.models import Configuration
+from seo.models import Configuration, SeoSite
 from django.conf import settings
 
 # This module is currently a holding place for low-level caching that was
@@ -139,3 +139,21 @@ def get_site_config(request):
                 site_config = Configuration.objects.get(id=2)
         cache.set(config_cache_key, site_config, timeout)
     return site_config
+    
+def get_domain_parent(request):
+    """"
+        Returns the parent site for the currently selected domain (if exists)
+        
+        Returns:
+        - SeoSite object or None
+    """
+    if request.user.is_staff and 'domain' in request.REQUEST:
+        try: 
+            return SeoSite.objects.get(domain=request.REQUEST.get('domain')).parent_site 
+        except:
+            return None
+    try:
+        return settings.SITE.parent_site
+    except:
+        return None
+     
