@@ -401,18 +401,6 @@ def location_from_job(job, num_locations):
     except IndexError:
         return None
 
-def pull_location_from_jobs_via_slug(location_slug_value, loc_length=None):
-    if not loc_length:
-        locations = location_slug_value.split('/')
-        loc_length = len(locations)
-    sqs = DESearchQuerySet()
-    jobs = filter_sqs_by_location(sqs, location_slug_value)[:1]
-    try:
-        location = location_from_job(jobs[0], loc_length)
-    except IndexError:
-        return None
-    return location
-
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
         return None
@@ -431,7 +419,12 @@ def bread_box_location_heading(location_slug_value, jobs=None):
     if not location:
         # We didn't have a valid job to pull the location, state,
         # or country from.
-        location = pull_location_from_jobs_via_slug(location_slug_value, loc_length)
+        sqs = DESearchQuerySet()
+        jobs = filter_sqs_by_location(sqs, location_slug_value)[:1]
+        try:
+            location = location_from_job(jobs[0], loc_length)
+        except IndexError:
+            pass
 
     if not location:
         # Solr has no results for it at all either. Resort to
@@ -444,14 +437,16 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-
+    
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
+    if len(moc_pieces) < 3: #moc url must be 3 parts
+        return None
     moc_code = moc_pieces[1]
     branch = moc_pieces[2]
 
     try:
-        moc = Moc.objects.get(code=moc_code, branch=branch)
+        return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
         return None    
 

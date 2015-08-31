@@ -1072,8 +1072,7 @@ def home_page(request):
     returns:
     render_to_response call
 
-    """
-
+    """    
     site_config = get_site_config(request)
     num_facet_items = site_config.num_filter_items_to_show
     custom_facet_counts = []
@@ -1696,7 +1695,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     redirect_url = helpers.determine_redirect(request, filters)
     if redirect_url:
         return redirect_url
-
+    
     query_path = request.META.get('QUERY_STRING', None)
     moc_id_term = request.GET.get('moc_id', None)
     q_term = request.GET.get('q', None)
@@ -1710,7 +1709,20 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
 
+    # checks to ensure that improper URL configurations return the correct
+    # 404 response before executing query for jobs
+    company_data = helpers.get_company_data(filters)
+    if not company_data and filters['company_slug']:
+        raise Http404("No company found for %s" % filters['company_slug'])
+    if filters['moc_slug']:
+        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
+        if not moc:
+            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
+    
     custom_facet_counts = []
+    facet_slugs = []
+    active_facets = []
+    
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1719,7 +1731,11 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             custom_facet_counts = cf_count_tup
         else:
             facet_slugs = filters['facet_slug'].split('/')
+            # retrieve active facet from URL and add it to list of facets
+            # available to given domain
             active_facets = helpers.standard_facets_by_name_slug(facet_slugs)
+            # remove active facet from list of available facets and counts
+            # to prevent display on the available facets list
             custom_facet_counts = [(facet, count) for facet, count
                                    in cf_count_tup
                                    if facet not in active_facets]
@@ -1728,7 +1744,10 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             # CustomFacet applied.
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
-
+    
+    if filters['facet_slug'] and not active_facets:
+        raise Http404("No job category found for %s" % filters['facet_slug'])
+    
     # Text uses html_description instead of just description.
     fl = list(helpers.search_fields)
     index = fl.index('description')
@@ -1756,28 +1775,15 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if query_path:
         for job in jobs:
             helpers.add_text_to_job(job)
-
-    # checks to ensure that improper URL configurations return the correct
-    # 404 response.
-    company_data = helpers.get_company_data(filters)
-    if not company_data and filters['company_slug']:
-        raise Http404("No company found for %s" % filters['company_slug'])
-    if filters['location_slug']:
-        location = helpers.pull_location_from_jobs_via_slug(filters['location_slug'])
-        if not location:
-            raise Http404("No location found for url input %s" % filters['location_slug'])
-    if filters['moc_slug']:
-        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
-        if not moc:
-            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
     
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
     
     widgets = helpers.get_widgets(request, site_config, facet_counts,
                                   custom_facet_counts, filters=filters)
-
+    
     location_term = breadbox.location_display_heading()
     moc_term = breadbox.moc_display_heading()
+    
     if not location_term:
         location_term = '\*'
     if not moc_term:

@@ -1590,13 +1590,13 @@ class SeoViewsTestCase(DirectSEOTestCase):
         path"""
         slugs_and_paths = OrderedDict([
             ('sample_title', '/jobs-in/'),
-            ('sample_location', '/jobs/'),
+            ('a/sample/loc', '/jobs/'),
             ('test/moc/slug', '/vet-jobs/'),
             ('sample_facet', '/new-jobs/'),
             ('sample_company', '/careers/'),
         ])
-        """Ensure slugs_and_paths has the same number of slug combinations as
-        the settings file"""
+        #Ensure slugs_and_paths has the same number of slug combinations as
+        #the settings file
         self.assertEqual(len(slugs_and_paths), len(default_settings.SLUG_TAGS))
         paths = self.build_slug_tag_paths(
                 slugs_and_paths, reverse=True)
@@ -1612,7 +1612,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         """Filter paths in canonical order don't result in a redirect"""
         slugs_and_paths = OrderedDict([
             ('sample_title', '/jobs-in/'),
-            ('sample_location', '/jobs/'),
+            ('a/sample/loc', '/jobs/'),
             ('test/moc/slug', '/vet-jobs/'),
             ('sample_facet', '/new-jobs/'),
             ('sample_company', '/careers/'),
@@ -1884,11 +1884,13 @@ class SeoViewsTestCase(DirectSEOTestCase):
         CustomFacet instance had its 'querystring' attribute set, it was
         handled by passing it to Haystack's 'raw_search' method, while
         field lookups were handled by turning them into SQ objects.
-
-        """
-        site = factories.SeoSiteFactory()
+        
+        Update:
+        Also serves as test that valid custom facet entry does not trigger 404
+        """        
+        site = SeoSite.objects.get(id=1)
         cf1 = factories.CustomFacetFactory.build(querystring="uid:[17000000 TO 17999999]",
-                                                 name="Engineering Jobs",
+                                                 name="Test Flappitypoo",
                                                  show_production=True)
         cf1.save()
 
@@ -1896,7 +1898,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         cf2 = factories.CustomFacetFactory.build(city="Pasadena", state="Texas",
                                                  country="United States",
-                                                 name="Pasadena Jobs",
+                                                 name="Pasadena Jerbinos",
                                                  show_production=True)
         cf2.save()
 
@@ -1905,7 +1907,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
         config = factories.ConfigurationFactory.build(id=2)
         config.save()
         resp = self.client.get(
-            '/pasadena/texas/usa/jobs/engineering-jobs/new-jobs/',
+            '/pasadena/texas/usa/jobs/test-flappitypoo/new-jobs/',
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(
+            '/pasadena/texas/usa/jobs/pasadena-jerbinos/new-jobs/',
             follow=True)
         self.assertEqual(resp.status_code, 200)
 
@@ -2381,32 +2387,21 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.post("/ajax/data/sites?tag=Fake%20Tag")
         self.assertEqual(resp.status_code, 200)
 
-    def test_invalid_company_200(self):
+    def test_invalid_company_404(self):
         """
-        Modification of previous test to ensure that an invalid company name
-        would return a 302. Invalid company names should now return a empty
-        search page (status code 200).
-
-        PREVIOUS COMMENT:
-        Regression test to ensure that a URL specifying a non-existent
-        company name returns a 302 appropriately.
-
-        The bug that spawned this test was one in which it was found that
-        visiting a URL like `http://www.my.jobs/alksjdklajsd/careers/`
-        returned all results for www.my.jobs. This would work on any site
-        that has company facets enabled.
-
-
+            Verify that invalid companies will return a 404 error
         """
-        # In order to actually capture this bug properly, we must set our
-        # SeoSite to not have any related BusinessUnit instances, so that in
-        # the case there are no matches, it will still serve all the results
-        # in the database.
-        site = SeoSite.objects.get(id=1)
-        site.business_units = []
-        site.save()
         resp = self.client.get("/aslkdjas/careers/")
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_invalid_moc_404(self):
+        """
+            Verify that invalid companies will return a 404 error
+        """
+        resp = self.client.get("/a/fake/moc/vet-jobs/")
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get("/fake/moc/vet-jobs/")
+        self.assertEqual(resp.status_code, 404)
 
     def test_moc_duplicate_search(self):
         """Search by non-unique moc should return all matching jobs."""
@@ -2603,17 +2598,17 @@ class SeoViewsTestCase(DirectSEOTestCase):
             
     def test_saved_search_non_render(self):
         """Test company sites don't have a saved search form on job listings."""
-            site = factories.SeoSiteFactory.build()
-            site.save()
-            site_tag = SiteTag(site_tag='company')
-            site_tag.save()
-            site.site_tags.add(site_tag)
-            resp = self.client.get(
-                    '/indianapolis/indiana/usa/jobs/',
-                    HTTP_HOST='buckconsultants.jobs',
-                    follow=True)
-            self.assertNotContains(resp,'<div id="direct_savedsearch"',
-                                   status_code=200, msg_prefix='')
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        site_tag = SiteTag(site_tag='company')
+        site_tag.save()
+        site.site_tags.add(site_tag)
+        resp = self.client.get(
+                '/indianapolis/indiana/usa/jobs/',
+                HTTP_HOST='buckconsultants.jobs',
+                follow=True)
+        self.assertNotContains(resp,'<div id="direct_savedsearch"',
+                               status_code=200, msg_prefix='')
 
     def test_secure_redirect(self):
         site = SeoSite.objects.get()
