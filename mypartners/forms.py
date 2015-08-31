@@ -483,10 +483,10 @@ class LocationForm(NormalizedModelForm):
         exclude = ('country_code',)
         widgets = generate_custom_widgets(model)
 
-    states = sorted(states.items(), key=lambda s: s[1])
-    states.insert(0, ('', 'Select a State'))
+    state_choices = sorted(states.items(), key=lambda s: s[1])
+    state_choices.insert(0, ('', 'Select a State'))
     state = forms.ChoiceField(
-        widget=forms.Select(), choices=states, label='State')
+        widget=forms.Select(), choices=state_choices, label='State')
 
     def save(self, request, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
