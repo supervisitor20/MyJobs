@@ -6,6 +6,7 @@ from django.utils.timezone import get_current_timezone_name
 from collections import OrderedDict
 import pytz
 
+from postajob.location_data import states
 from myprofile.forms import generate_custom_widgets
 from mypartners.models import (Contact, Partner, ContactRecord, PRMAttachment,
                                Status, Tag, Location,
