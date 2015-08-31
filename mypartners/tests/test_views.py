@@ -1442,7 +1442,7 @@ class ContactLogEntryTests(MyPartnersTestCase):
 
         delta = json.loads(log.delta)
 
-        self.assertEqual(new_contact.name, delta['primary_contact']['new'])
+        self.assertEqual(str(new_contact.pk), delta['primary_contact']['new'])
 
     def test_contact_update(self):
 

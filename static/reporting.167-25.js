@@ -156,27 +156,45 @@ Report.prototype = {
     })[0];
   },
   createCloneReport: function(json) {
-    var defaultVal,
-        formatDate = function(string) {
+    // We can't simply iterate over the json keys because they are in the
+    // nested object format, and the only reference to fields we have are their
+    // IDs and key values. Thus, we iterate over each key and see if we can
+    // grab them from the json by key.
+    var formatDate = function(string) {
           var date = string.split(" ")[0].split("-");
           return [date[1], date[2], date[0]].join("/");
         };
 
     this.fields.forEach(function(field) {
+      // I needed to be able to set defaultVal to undefined on each iteration,
+      // but didn't want to shadow the value undefined. Null was insufficient
+      // as then I'd have to later check for null and undefined.
+      var defaultVal = void 0;
+      // DateField is special since it contains two values, so we need to check
+      // for  both values and combine them into a single default value.
       if (field instanceof DateField) {
-        defaultVal = {
-          start_date: formatDate(steelToe(json).get(field.key.start_date)),
-          end_date: formatDate(steelToe(json).get(field.key.end_date)),
-        };
-      } else if (field instanceof FilteredList) {
-        defaultVal = steelToe(json).get(field.key).map(function(item) {
-          return item.toString();
-        });
+        var start_date = steelToe(json).get(field.key.start_date),
+            end_date = steelToe(json).get(field.key.end_date);
+
+        if (typeof start_date !== 'undefined' && typeof end_date !== 'undefined') {
+          defaultVal = {
+            start_date: formatDate(start_date),
+            end_date: formatDate(end_date)
+          };
+        } 
       } else {
         defaultVal = steelToe(json).get(field.key);
-      }
 
-      if (defaultVal) {
+        // We store list values as an integer, but expect them as strings for
+        // the form instances, which is why we conver them here if they exist
+        if (field instanceof FilteredList && typeof defaultVal !== 'undefined') {
+          defaultVal = defaultVal.map(function(item) {
+            return item.toString();
+          });
+        }
+      } 
+
+      if (typeof defaultVal !== 'undefined') {
         field.defaultVal = defaultVal;
       }
     });
@@ -319,8 +337,12 @@ Field.prototype = {
     return $("#" + this.id);
   },
   onSave: function(key) {
-    var data = {};
-    steelToe(data).set(key || this.key, this.currentVal());
+    var data = {},
+        value = this.currentVal();
+
+    if(value) {
+      steelToe(data).set(key || this.key, value);
+    }
 
     return data;
   },
@@ -776,6 +798,7 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
   },
   onSave: function(key) {
     var data = {};
+
     if (this.value.length) {
       steelToe(data).set(key || this.key, this.currentVal());
     }
@@ -1002,7 +1025,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     return this;
   },
   validate: function() {
-    console.log('here');
     var err = this.label + " is required",
       index = this.errors.indexOf(err),
       value = this.currentVal();
@@ -1020,14 +1042,6 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
     }
 
     return this;
-  },
-  onSave: function(key) {
-    var data = {},
-        value = this.currentVal();
-
-    steelToe(data).set(key || this.key, value);
-
-    return data;
   }
 });
 
@@ -1317,7 +1331,7 @@ function createReport(type) {
                                         },
                                         state: 'contact.locations.state.icontains',
                                         city: 'contact.locations.city.icontains',
-                                        tags: 'contactrecord.tags.name.in',
+                                        tags: 'contact.tags.name.in',
                                       },
                                       values: ["pk", "name"],
                                       order_by: "name"

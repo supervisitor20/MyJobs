@@ -36,7 +36,8 @@ class ContactForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'address_line_one', 'address_line_two', 'city', 'state', 'postal_code')
+        'label', 'address_line_one', 'address_line_two', 
+        'city', 'state', 'postal_code')
     # similarly for partner information
     __PARTNER_FIELDS = ('parnter-tags', 'partner_id', 'partnername')
 
@@ -126,7 +127,8 @@ class NewPartnerForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'address_line_one', 'address_line_two', 'city', 'state', 'postal_code')
+        'label', 'address_line_one', 'address_line_two',
+        'city', 'state', 'postal_code')
     # similarly for partner information
     __CONTACT_FIELDS = ('phone', 'email', 'name', 'notes')
 
@@ -436,18 +438,15 @@ class ContactRecordForm(NormalizedModelForm):
 
         self.instance.tags = self.cleaned_data.get('tags')
         attachments = self.cleaned_data.get('attachment', None)
-        for attachment in attachments:
-            if attachment:
-                prm_attachment = PRMAttachment(attachment=attachment,
-                                               contact_record=self.instance)
-                prm_attachment.partner = self.instance.partner
-                prm_attachment.save()
+        prm_attachments = [PRMAttachment(attachment=attachment,
+                                         contact_record=self.instance)
+                           for attachment in attachments if attachment]
 
-        for attachment in self.cleaned_data.get('attach_delete', []):
-            PRMAttachment.objects.get(pk=attachment).delete()
+        PRMAttachment.objects.bulk_create(prm_attachments)
+        PRMAttachment.objects.filter(
+            pk__in=self.cleaned_data.get('attach_delete', [])).delete()
 
         identifier = instance.contact.name
-
         log_change(instance, self, user, partner, identifier,
                    action_type=new_or_change)
 
@@ -484,10 +483,10 @@ class LocationForm(NormalizedModelForm):
         exclude = ('country_code',)
         widgets = generate_custom_widgets(model)
 
-    states = sorted(states.items(), key=lambda s: s[1])
-    states.insert(0, ('', 'Select a State'))
+    state_choices = sorted(states.items(), key=lambda s: s[1])
+    state_choices.insert(0, ('', 'Select a State'))
     state = forms.ChoiceField(
-        widget=forms.Select(), choices=states, label='State')
+        widget=forms.Select(), choices=state_choices, label='State')
 
     def save(self, request, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION

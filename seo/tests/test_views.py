@@ -2600,6 +2600,22 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                  path.replace('_', '-'), ))
             site.site_tags.remove(tag)
 
+    def test_network_states_loads(self):
+        response = self.client.get('/network/states/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
+    def test_network_cities_loads(self):
+        # Test state with no spaces
+        response = self.client.get('/network/Indiana/cities/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
+        # Test state with spaces
+        response = self.client.get('/network/New%20Jersey/cities/',
+                                   HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(response.status_code, 200)
+
 
 class FlatpagesTestCase(DirectSEOBase):
     def setUp(self):
@@ -2690,7 +2706,7 @@ class ProtectedSiteTestCase(DirectSEOBase):
         self.assertEqual(response.request['PATH_INFO'], '/jobs/')
 
 
-class StaticPageOverrideTests(DirectSEOTestCase):
+class StaticPageOverrideTests(DirectSEOBase):
     def setUp(self):
         super(StaticPageOverrideTests, self).setUp()
         self.site = SeoSite.objects.get()
@@ -2718,3 +2734,21 @@ class StaticPageOverrideTests(DirectSEOTestCase):
         response = self.client.get('/about/', HTTP_HOST=self.site.domain)
         self.assertEqual(response.status_code, 301)
         self.assertEqual(response['Location'], 'https://secure.my.jobs/about')
+
+    def test_always_do_redirects(self):
+        """
+        If an entry in the Django redirect table is marked in a configuration
+        as always happening, it should happen even when the old path didn't 404.
+        """
+        redirect = Redirect.objects.create(site=self.site, old_path='/',
+                                           new_path='https://www.google.com')
+        response = self.client.get('/', HTTP_HOST=self.site.domain, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        configuration = Configuration.objects.get(status=2)
+
+        self.site.configurations.add(configuration)
+        configuration.not_found_override.add(redirect)
+        response = self.client.get('/', HTTP_HOST=self.site.domain)
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response['Location'], redirect.new_path)
