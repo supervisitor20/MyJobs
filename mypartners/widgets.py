@@ -3,7 +3,7 @@ import pytz
 
 from django.core.exceptions import ValidationError
 from django.forms import (FileField, FileInput, MultiValueField, MultiWidget,
-                          Select, TextInput, fields)
+                          Select, fields)
 from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime, now
 
@@ -84,7 +84,10 @@ class SplitDateTimeDropDownWidget(MultiWidget):
         if not value:
             value = localtime(now())
         else:
-            value = localtime(value)
+            if value.tzinfo:
+                value = localtime(value)
+            else:
+                value = localtime(pytz.utc.localize(value))
         month = datetime.strftime(value, '%b')
         day = datetime.strftime(value, '%d')
         year = datetime.strftime(value, '%Y')
