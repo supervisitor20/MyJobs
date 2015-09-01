@@ -83,7 +83,7 @@ class RegistrationViewTests(MyJobsBase):
         anchors = bank.findAll('a')
         self.assertEqual(len(anchors), 1)
         self.assertEqual(anchors[0].attrs['href'], '/')
-        self.assertEqual(anchors[0].text, 'Login')
+        self.assertEqual(anchors[0].text, 'Log In')
 
     def test_invalid_activation(self):
         """
@@ -140,7 +140,6 @@ class RegistrationViewTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 1,
                          [msg.subject for msg in mail.outbox])
         msg = mail.outbox[0]
-        print domain
         self.assertEqual(msg.subject, "Password Reset on {0}".format(domain))
         self.assertIn("The {0} Team".format(domain.lower()), msg.body)
         self.assertIn("user account at {0}.".format(domain.lower()), msg.body)
@@ -159,6 +158,21 @@ class RegistrationViewTests(MyJobsBase):
 
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.is_active)
+
+    def test_invitation_asks_for_password_change(self):
+        """
+        When activating an account via an invitation, the user should still be
+        prompted to change their password.
+        """
+        invitation = InvitationFactory(inviting_user=self.user)
+        key = invitation.invitee.activationprofile_set.first().activation_key
+        response = self.client.get(
+            reverse('invitation_activate', kwargs={'activation_key': key}),
+            data={'verify-email': invitation.invitee_email})
+
+        invitee = User.objects.get(pk=invitation.invitee.pk)
+
+        self.assertTrue(invitee.password_change)
 
     def test_accept_invitation_already_activated(self):
         """
@@ -277,7 +291,7 @@ class MergeUserTests(MyJobsBase):
         phrases = [
             'Your account has been successfully merged, and you are'\
             ' now logged in.',
-            "Add to your resume",
+            "Add to your profile",
             "Manage your saved searches",
             "Manage your account"]
         for phrase in phrases:

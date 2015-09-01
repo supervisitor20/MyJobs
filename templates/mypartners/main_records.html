@@ -14,6 +14,7 @@
 {% block meta-extra %}
 <link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.css" id="theme_base">
 <link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.date.css" id="theme_date">
+<link rel="stylesheet" href="{{ STATIC_URL }}font-awesome.css">
 {% endblock meta-extra %}
 
 {% block content %}
@@ -39,7 +40,7 @@
                         <option value="{{ contact.0 }}">{{ contact.1 }}</option>
                     {% endfor %}
                 </select>
-                <label>Contact Type</label>
+                <label>Communication Type</label>
                 <select id="record_contact_type" name="record_contact_type">
                     {% for contact_type in contact_type_choices %}
                         <option value="{{ contact_type.0 }}">{{ contact_type.1 }}</option>
@@ -60,7 +61,7 @@
 {% endblock %}
 
 {% block extra-js %}
-<script src="{{ STATIC_URL }}record_overview.163-29.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}record_overview.167-10.js{{ gz }}"></script>
 <script src="{{ STATIC_URL }}pickadate/picker.js"></script>
 <script src="{{ STATIC_URL }}pickadate/picker.date.js"></script>
 <script src="{{ STATIC_URL }}pickadate/legacy.js"></script>

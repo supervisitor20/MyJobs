@@ -6,12 +6,14 @@ from django.core import mail
 
 
 class Solr(object):
-    def __init__(self, solr_location=settings.SOLR['all']):
+    def __init__(self, solr_location=None):
         if hasattr(mail, 'outbox'):
             solr_location = settings.TEST_SOLR_INSTANCE['current']
+        elif not solr_location:
+            solr_location = settings.SOLR['all']
         self.location = solr_location
         self.solr = pysolr.Solr(self.location)
-        self.q = '(*:*)'
+        self.q = '*:*'
         self.params = {
             'fq': [],
             'fl': [],

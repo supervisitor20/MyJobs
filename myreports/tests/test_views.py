@@ -1,6 +1,7 @@
 """Tests associated with myreports views."""
 
 import json
+import os
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -8,7 +9,9 @@ from django.core.urlresolvers import reverse
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        LocationFactory, PartnerFactory)
+                                        LocationFactory, PartnerFactory,
+                                        TagFactory)
+from mypartners.models import ContactRecord
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
@@ -64,11 +67,11 @@ class TestViewRecords(MyReportsTestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_restricted_to_get(self):
+    def test_restricted_to_post(self):
         """POST requests should raise a 404."""
 
         self.client.path += '/partner'
-        response = self.client.post()
+        response = self.client.get()
 
         self.assertEqual(response.status_code, 404)
 
@@ -79,7 +82,14 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, contact__name='John Doe')
 
         self.client.path += '/contactrecord'
-        response = self.client.get(data={'contact__name': 'Joe Shmoe'})
+        filters = json.dumps({
+            'contact': {
+                'name': {
+                    'icontains': 'Joe Shmoe'
+                }
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -93,25 +103,60 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, partner=partner)
 
         self.client.path += '/contactrecord'
-        response = self.client.get()
+        response = self.client.post()
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
 
-    def test_filtering_on_partner(self):
-        """Test the ability to filter by partner."""
+    def test_filtering_on_model(self):
+        """Test the ability to filter on a model's field's."""
 
         # we already have one because of self.partner
-        PartnerFactory.create_batch(9, name="Test Partner", owner=self.company)
+        PartnerFactory.create_batch(9, name='Test Partner', owner=self.company)
 
         self.client.path += '/partner'
-        response = self.client.get(data={'name': 'Test Partner'})
+        filters = json.dumps({
+            'name': {
+                'icontains': 'Test Partner'
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         # ContactRecordFactory creates 10 partners in setUp
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 10)
+
+    def test_filtering_on_foreign_key(self):
+        """Test the ability to filter on a model's foreign key fields."""
+
+        PartnerFactory.create_batch(5, name='Test Partner', owner=self.company)
+
+        ContactRecordFactory.create_batch(
+            5, partner=self.partner, contact__name='Jane Doe')
+
+
+        self.client.path += '/partner'
+        filters = json.dumps({
+            'name': {
+                'icontains': 'Test Partner',
+            },
+            'contactrecord': {
+                'contact': {
+                    'name': {
+                        'icontains': 'Jane Doe'
+                    }
+                }
+            }
+        })
+        response = self.client.post(data={'filters': filters})
+        output = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        # We look for distinct records
+        self.assertEqual(len(output), 1)
+
 
     def test_list_query_params(self):
         """Test that query parameters that are lists are parsed correctly."""
@@ -120,52 +165,16 @@ class TestViewRecords(MyReportsTestCase):
         pks = [contact.pk for contact in contacts[:5]]
 
         self.client.path += '/partner'
-        response = self.client.get(data={'contact': pks})
+        filters = json.dumps({
+            'contact': {
+                'in': pks
+            }
+        })
+        response = self.client.post(data={'filters': filters})
         output = json.loads(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(output), 5)
-
-    def test_filtering_on_contact(self):
-        """Test the ability to filter by contact."""
-
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner)
-
-        # contacts with the wrong name
-        ContactFactory.create_batch(10, name="Jen Smith", partner=self.partner)
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'name': 'Jen Doe'})
-        output = json.loads(response.content)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(output), 10)
-
-    def test_filter_by_state(self):
-        """Tests that filtering by state works."""
-
-        indiana = LocationFactory(state="IN")
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner,
-                                    locations=[indiana])
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'state': 'IN'})
-        output = json.loads(response.content)
-
-        self.assertEqual(len(output), 10)
-
-    def test_filter_by_city(self):
-        """Tests that filtering by city works."""
-
-        indianapolis = LocationFactory(city="Indianapolis")
-        ContactFactory.create_batch(10, name="Jen Doe", partner=self.partner,
-                                    locations=[indianapolis])
-
-        self.client.path += '/contact'
-        response = self.client.get(data={'city': 'indianapolis'})
-        output = json.loads(response.content)
-
-        self.assertEqual(len(output), 10)
 
 
 class TestReportView(MyReportsTestCase):
@@ -199,7 +208,6 @@ class TestReportView(MyReportsTestCase):
         self.assertEqual(len(report.python), 15)
 
         # we use this in other tests
-
         return report_name
 
     def test_get_report(self):
@@ -238,6 +246,24 @@ class TestDownloads(MyReportsTestCase):
         # company
         response = self.client.post(
             path=reverse('reports', kwargs={
+                'app': 'mypartners', 'model': 'contactrecord'}))
+
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+        report.values = json.dumps(['partner', 'contact name', 'contact_type'])
+        report.save()
+
+        response = self.client.get(data={'id': report.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['columns'].items()[:3],
+                         [('Partner', True), ('Contact Name', True),
+                          ('Communication Type', True)])
+
+    def test_blacklisted_columns(self):
+        """Test that blacklisted columns aren't visible."""
+        blacklist = ['pk', 'approval_status']
+        response = self.client.post(
+            path=reverse('reports', kwargs={
                 'app': 'mypartners', 'model': 'contactrecord'}),
             data={'values': ['partner', 'contact__name', 'contact_type']})
 
@@ -245,9 +271,8 @@ class TestDownloads(MyReportsTestCase):
         report = Report.objects.get(name=report_name)
 
         response = self.client.get(data={'id': report.id})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['columns'], {
-            'Partner': True, 'Contact Name': True, 'Contact Type': True})
+        self.assertFalse(
+            set(response.context['columns']).intersection(blacklist))
 
 
 class TestDownloadReport(MyReportsTestCase):
@@ -275,12 +300,18 @@ class TestDownloadReport(MyReportsTestCase):
             'app': 'mypartners', 'model': 'contactrecord'}))
         report_name = response.content
         report = Report.objects.get(name=report_name)
+        python = report.python
 
         # download the report
-        response = self.client.get(data={'id': report.pk})
+        response = self.client.get(data={
+            'id': report.pk,
+            'values': ['contact', 'contact_email', 'contact_phone']})
 
         self.assertEqual(response['Content-Type'], 'text/csv')
 
+        # specifying export values shouldn't modify the underlying report
+        self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
+        
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
@@ -294,21 +325,18 @@ class TestRegenerate(MyReportsTestCase):
         ContactRecordFactory.create_batch(10, partner__owner=self.company)
 
     def test_regenerate(self):
-        # create a report whose results is for all contact records in the
-        # company
+        # create a new report
         response = self.client.post(
             path=reverse('reports', kwargs={
-                'app': 'mypartners', 'model': 'contactrecord'}),
-            data={'values': ['partner', 'contact__name', 'contact_type']})
+                'app': 'mypartners', 'model': 'contactrecord'}))
 
         report_name = response.content
         report = Report.objects.get(name=report_name)
-        results = report.results
 
         response = self.client.get(data={'id': report.id})
         self.assertEqual(response.status_code, 200)
 
-        # remove report results and ensure we can still get a resonable
+        # remove report results and ensure we can still get a reasonable
         # response
         report.results.delete()
         report.save()
@@ -322,4 +350,37 @@ class TestRegenerate(MyReportsTestCase):
             'id': report.pk})
         report = Report.objects.get(name=report_name)
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(report.results)
+
+        # regenerate report without deleting the report prior
+        # see if it overwrites other report.
+        results = report.results
+        response = self.client.get(path=reverse('regenerate'), data={
+            'id': report.pk})
+        report = Report.objects.get(name=report_name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(results.name, report.results.name)
+
+    def test_regenerating_missing_file(self):
+        """Tests that a report can be regenerated when file is missing."""
+
+        # create a new report
+        response = self.client.post(
+            path=reverse('reports', kwargs={
+                'app': 'mypartners', 'model': 'contactrecord'}))
+
+        report_name = response.content
+        report = Report.objects.get(name=report_name)
+
+        # report should have results
+        self.assertTrue(report.results)
+
+        # delete physical file and ensure that json reflects the missing link
+        os.remove(report.results.file.name)
+        report = Report.objects.get(pk=report.pk)
+        self.assertEqual(report.json, u'{}')
+        self.assertEqual(report.python, {})
+    
+        # regenerate the report even though the file is physically missing
+        report.regenerate()
         self.assertTrue(report.results)

@@ -101,7 +101,7 @@ for page in ['about', 'privacy', 'contact', 'contact-faq', 'terms']:
     urlpatterns += patterns(
         '',
         url(r'^{page}/'.format(page=page), secure_redirect, {'page': page},
-            name=page)
+            name=page.replace('-', '_'))
     )
 
 urlpatterns += patterns(

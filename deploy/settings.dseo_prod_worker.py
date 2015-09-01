@@ -2,28 +2,30 @@ import datetime
 from S3 import CallingFormat
 
 from default_settings import *
-from secrets import PROD_DB_PASSWD, SOLR_AUTH
+from secrets import SOLR_AUTH, REDIRECT_PROD, ARCHIVE_PROD, REDIRECT_QC
 
 
 ALLOWED_HOSTS = ['*', ]
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'qc-redirect': {
+    }, **REDIRECT_PROD),
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC),
+    'archive': dict({
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'redirect',
+        'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }, **ARCHIVE_PROD)
 }
 
 TEMPLATE_DIRS = (
@@ -75,14 +77,14 @@ HAYSTACK_CONNECTIONS = {
         # code is deployed. Check the deployment project in
         # direct_seo/web/conf/hosts and make sure the one in production looks
         # like that.
-        'URL': 'http://solr_server:8983/solr',
+        'URL': 'http://solr_server:8983/solr/seo',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
     },
     'groups': {
         'ENGINE': 'saved_search.groupsearch.SolrGrpEngine',
-        'URL': 'http://solr_server:8983/solr',
+        'URL': 'http://solr_server:8983/solr/seo',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
@@ -94,7 +96,10 @@ AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 ROOT_URLCONF = 'dseo_urls'
-MIDDLEWARE_CLASSES += ('wildcard.middleware.WildcardMiddleware', )
+MIDDLEWARE_CLASSES += (
+    'wildcard.middleware.WildcardMiddleware',
+    'middleware.RedirectOverrideMiddleware',
+)
 TEMPLATE_CONTEXT_PROCESSORS += (
     "social_links.context_processors.social_links_context",
     "seo.context_processors.site_config_context",
@@ -105,7 +110,7 @@ SOLR = {
     'current': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test_current/',
     }
 
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 PROJECT = "dseo"
 
@@ -144,6 +149,10 @@ CELERY_ROUTES = {
         'routing_key': 'solr.clear_solr'
     },
     'tasks.etl_to_solr': {
+        'queue': 'solr',
+        'routing_key': 'solr.update_solr'
+    },
+    'tasks.check_solr_count': {
         'queue': 'solr',
         'routing_key': 'solr.update_solr'
     },

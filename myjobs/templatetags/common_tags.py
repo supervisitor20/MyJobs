@@ -227,13 +227,13 @@ def json_companies(companies):
 @register.filter
 def get_suggestions(user):
     """
-    Get all resume suggestions for the given user, sorted by resume importance
+    Get all profile suggestions for the given user, sorted by profile importance
 
     Inputs:
     :user: User for whom suggestions will be retrieved
 
     Outputs:
-    :suggestions: List of resume suggestions
+    :suggestions: List of profile suggestions
     """
     suggestions = [suggestion for suggestion in
                    user.profileunits_set.model.suggestions(user,

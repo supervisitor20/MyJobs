@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.shortcuts import redirect
 
 from postajob.models import SitePackage
+from seo.cache import get_site_config
 from seo.models import SeoSite, SeoSiteRedirect, SeoSiteFacet
 import version
 
@@ -50,44 +51,6 @@ class PasswordChangeRedirectMiddleware:
 
         elif request.is_ajax() and bool(request.REQUEST.get('next')):
             return http.HttpResponse(status=403)
-
-
-XS_SHARING_ALLOWED_ORIGINS = '*'
-XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
-XS_SHARING_ALLOWED_HEADERS = 'Content-Type'
-
-
-class XsSharing(object):
-    """
-        This middleware allows cross-domain XHR using the html5 postMessage API.
-
-        Access-Control-Allow-Origin: http://foo.example
-        Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE
-    """
-    def process_request(self, request):
-
-        if 'HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META:
-            response = http.HttpResponse()
-            response['Access-Control-Allow-Origin'] = XS_SHARING_ALLOWED_ORIGINS
-            response['Access-Control-Allow-Headers'] = XS_SHARING_ALLOWED_HEADERS
-            response['Access-Control-Allow-Methods'] = ",".join(
-                XS_SHARING_ALLOWED_METHODS)
-
-            return response
-
-        return None
-
-    def process_response(self, request, response):
-        # Avoid unnecessary work
-        if response.has_header('Access-Control-Allow-Origin'):
-            return response
-
-        response['Access-Control-Allow-Origin'] = XS_SHARING_ALLOWED_ORIGINS
-        response['Access-Control-Allow-Headers'] = XS_SHARING_ALLOWED_HEADERS
-        response['Access-Control-Allow-Methods'] = ",".join(
-            XS_SHARING_ALLOWED_METHODS)
-
-        return response
 
 
 class NewRelic(object):
@@ -284,3 +247,24 @@ def custom_facets_ops_groups(site_facets):
 
 def filter_custom_facets_by_production_status(custom_facets):
     return [facet for facet in custom_facets if facet.show_production]
+
+
+class RedirectOverrideMiddleware(object):
+    """
+    Does a redirect if one is set on the current configuration for the current
+    path. Default behavior was to not do redirects if the page did not result
+    in a 404.
+    """
+    def process_request(self, request):
+        # Configuration is cached. The effect on response time is
+        # hopefully minimal.
+        configuration = get_site_config(request)
+        if configuration.not_found_override.exists():
+            # Check both the current path with and without a trailing slash
+            paths = [request.path,
+                     (request.path[:-1] if request.path.endswith('/')
+                      else request.path + '/')]
+            not_found = configuration.not_found_override.filter(
+                old_path__in=paths).first()
+            if not_found:
+                return redirect(not_found.new_path, permanent=True)

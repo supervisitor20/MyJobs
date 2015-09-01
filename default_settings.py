@@ -67,9 +67,14 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 )
 
 ADMIN_MEDIA_PREFIX = '//d2e48ltfsb5exy.cloudfront.net/myjobs/admin/'
+
+TEMPLATE_DIRS = (
+    join(ROOT_PATH, 'templates')
+)
 
 TEMPLATE_LOADERS = (
     ('django.template.loaders.cached.Loader', (
@@ -81,6 +86,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'middleware.SiteRedirectMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -92,7 +98,6 @@ MIDDLEWARE_CLASSES = (
     'middleware.MultiHostMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
     'middleware.PasswordChangeRedirectMiddleware',
-    'middleware.XsSharing',
     'django.middleware.locale.LocaleMiddleware',
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
@@ -103,11 +108,6 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # default
     'django.contrib.auth.backends.RemoteUserBackend',  # http
 )
-
-TEMPLATE_DIRS = (
-    join(ROOT_PATH, 'templates')
-)
-
 
 # Celery settings
 CELERY_RESULT_BACKEND = 'amqp'
@@ -133,6 +133,9 @@ CELERY_QUEUES = {
     },
     'sendgrid': {
         'binding_key': 'sendgrid.#'
+    },
+    'myemails': {
+        'binding_key': 'myemails.#'
     }
 }
 CELERY_ROUTES = {
@@ -185,6 +188,10 @@ CELERY_ROUTES = {
         'queue': 'myjobs',
         'routing_key': 'dseo.submit_all_sitemaps'
     },
+    'tasks.send_event_email': {
+        'queue': 'myemails',
+        'routing_key': 'myemails.send_event_emails'
+    },
     'tasks.process_sendgrid_event': {
         'queue': 'sendgrid',
         'routing_key': 'sendgrid.process_sendgrid_event',
@@ -222,6 +229,10 @@ CELERYBEAT_SCHEDULE = {
     'morning-sitemap-ping': {
         'task': 'tasks.submit_all_sitemaps',
         'schedule': crontab(hour=13, minute=0)
+    },
+    'requeue-failed-tasks': {
+        'task': 'tasks.requeue_failures',
+        'schedule': crontab(hour=7, minute=5)
     },
 }
 
@@ -266,6 +277,8 @@ INSTALLED_APPS = (
     'saved_search',
     'taggit',
     'fsm',
+    'compressor',
+    'corsheaders',
 )
 
 # Captcha SSL
@@ -277,7 +290,8 @@ CAPTCHA_AJAX = True
 PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mydashboard', 'mysignon', 'mymessages', 'mypartners',
                 'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
-                'wildcard', 'myblocks', 'myemails', 'myreports')
+                'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
+                'automation')
 
 INSTALLED_APPS += PROJECT_APPS
 
@@ -488,13 +502,27 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
-        },
+    },
     'groups': {
         'ENGINE': 'saved_search.groupsearch.SolrGrpEngine',
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
-        },
+    },
+}
+
+# Keep these here since a number of apps need them. (circular imports)
+TEST_HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'seo.tests.setup.TestDESolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
+    },
+    'groups': {
+        'ENGINE': 'seo.tests.setup.TestSolrGrpEngine',
+        'URL': 'http://127.0.0.1:8983/solr/seo',
+        'INCLUDE_SPELLING': True,
+    },
 }
 
 # Password settings
@@ -529,7 +557,7 @@ EMAIL_FORMATS = {
     },
     CREATE_CONTACT_RECORD : {
         'address': PRM_EMAIL,
-        'subject': u'Partner Relationship Manager Contact Records'
+        'subject': u'Partner Relationship Manager Communication Records'
     },
     FORGOTTEN_PASSWORD: {
         'address': u'accounts@{domain}',
@@ -584,3 +612,22 @@ EMAIL_FORMATS = {
 }
 
 MEMOIZE = True
+
+DATABASE_ROUTERS = ['redirect.routers.ArchiveRouter']
+
+COMPRESS_PRECOMPILERS = (
+    ('text/less', 'lessc {infile} {outfile}'),
+)
+
+COMPRESS_ROOT = join(ROOT_PATH, 'static')
+
+COMPRESS_OUTPUT_DIR = 'CACHE'
+
+COMPRESS_CSS_HASHING_METHOD = 'hash'
+
+COMPRESS_OFFLINE = True
+
+COMPRESS_ENABLED = False
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True

@@ -4,6 +4,7 @@ from taggit.forms import TagField, TagWidget
 
 from django.conf import settings
 from django import forms
+from django.core import validators
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -234,6 +235,8 @@ class SeoSiteForm(RowPermissionsForm):
         )
     group = MyModelChoiceField(Group.objects.order_by('name'), my_model=Group,
                                required=False)
+    domain = forms.CharField(max_length=255, label='Domain name',
+                             validators=[])
 
     def __init__(self, data=None, user=None, *args, **kwargs):
         # The 'user' kwarg is passed in from the 'change_view' and 'add_view'
@@ -241,6 +244,15 @@ class SeoSiteForm(RowPermissionsForm):
         # main (only?) reason for creating a generic class in the first place.
         super(SeoSiteForm, self).__init__(data, user, *args, **kwargs)
         this = kwargs.get('instance')
+
+        # Override some undesired default behavior
+        if hasattr(self, 'errors') and 'domain' in self.errors:
+            bad_error = 'Ensure this value has at most 100 characters'
+            try:
+                if self.errors['domain'][0].startswith(bad_error):
+                    del self.errors['domain']
+            except IndexError:
+                pass
 
         if this:
             group = getattr(this, 'group') or Group()
@@ -296,6 +308,7 @@ class SeoSiteForm(RowPermissionsForm):
 
         if not user.is_superuser and len(grp_qs) <= 1:
             self.fields['group'].empty_label = None
+
     
     def clean_configurations(self):
         data = self.cleaned_data['configurations']

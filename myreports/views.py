@@ -10,14 +10,14 @@ from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from myreports.helpers import humanize, parse_params, serialize
+from myreports.helpers import humanize, serialize
 from myreports.models import Report
 from postajob import location_data
 from universal.helpers import get_company_or_404
-from universal.decorators import company_has_access
+from universal.decorators import has_access
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def overview(request):
     """The Reports app landing page."""
     company = get_company_or_404(request)
@@ -48,7 +48,7 @@ def overview(request):
                               RequestContext(request))
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def report_archive(request):
     """Archive of previously run reports."""
     if request.is_ajax():
@@ -67,20 +67,8 @@ def report_archive(request):
         return response
 
 
-def get_states(request):
-    """Returns a select widget with states as options."""
-    if request.is_ajax():
-        response = HttpResponse()
-        html = render_to_response('includes/state_dropdown.html',
-                                  {}, RequestContext(request))
-        response.content = html.content
-        return response
-    else:
-        raise Http404("This view is only reachable via an AJAX request")
-
-
-@company_has_access('prm_access')
-def view_records(request, app="myparters", model="contactrecord"):
+@has_access('prm')
+def view_records(request, app="mypartners", model="contactrecord"):
     """
     Returns records as JSON.
 
@@ -90,26 +78,22 @@ def view_records(request, app="myparters", model="contactrecord"):
         :model: Model to query.
 
     Query String Parameters:
+        :filters: A JSON string representing th exact query to be run.
         :values: The fields to include in the output.
         :order_by: The field to order the results by. Prefix with a '-' to
                    indiciate descending order.
 
-
     Output:
        A JSON response containing the records queried for.
     """
-    if request.is_ajax() and request.method == 'GET':
+    if request.is_ajax() and request.method == 'POST':
         company = get_company_or_404(request)
-
-        # parse request into dict, converting singleton lists into single items
-        params = parse_params(request.GET)
-
-        # remove non-query related params
-        values = params.pop('values', None)
-        order_by = params.pop('order_by', None)
+        filters = request.POST.get("filters")
+        values = request.POST.getlist("values")
+        order_by = request.POST.get("order_by", None)
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
         if values:
             if not hasattr(values, '__iter__'):
@@ -144,7 +128,7 @@ class ReportView(View):
     app = 'mypartners'
     model = 'contactrecord'
 
-    @method_decorator(company_has_access('prm_access'))
+    @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
 
@@ -166,9 +150,9 @@ class ReportView(View):
 
         report_id = request.GET.get('id', 0)
         report = Report.objects.get(id=report_id)
-        records = report.queryset
 
         if report.model == "contactrecord":
+            records = report.queryset
             ctx = json.dumps({
                 'emails': records.emails,
                 'calls': records.calls,
@@ -180,11 +164,17 @@ class ReportView(View):
                 'communications': records.communication_activity.count(),
                 'referrals': records.referrals,
                 'contacts': list(records.contacts)})
-        else:
+            status = 200
+        elif report.results:
             ctx = report.json
+            status = 200
+        else:
+            ctx = "Report %s has no results. Please regenerate." % report.name
+            status = 503
 
         return HttpResponse(
             ctx,
+            status=status,
             content_type='application/json; charset=utf-8')
 
     def post(self, request, app='mypartners', model='contactrecords'):
@@ -202,45 +192,36 @@ class ReportView(View):
             :csrfmiddlewaretoken: Used to prevent Cross Site Request Forgery.
             :report_name: What to name the report. Spaces are converted to
                           underscores.
+            :filters: A JSON string representing th exact query to be run.
             :values: Fields to include in report output.
 
         Outputs:
            An HttpResponse indicating success or failure of report creation.
         """
         company = get_company_or_404(request)
-        params = parse_params(request.POST)
-
-        params.pop('csrfmiddlewaretoken', None)
-        name = params.pop('report_name',
-                          str(datetime.now()))
-        values = params.pop('values', None)
+        name = request.POST.get('report_name', str(datetime.now()))
+        filters = request.POST.get('filters', "{}")
 
         records = get_model(app, model).objects.from_search(
-            company, params)
+            company, filters)
 
-        if values:
-            if not hasattr(values, '__iter__'):
-                values = [values]
-
-            records = records.values(*values)
-
-        contents = serialize('json', records, values=values)
+        contents = serialize('json', records)
         results = ContentFile(contents)
-        report, created = Report.objects.get_or_create(
+        report, _ = Report.objects.get_or_create(
             name=name, created_by=request.user,
             owner=company, app=app, model=model,
-            values=json.dumps(values), params=json.dumps(params))
+            filters=filters)
 
         report.results.save('%s-%s.json' % (name, report.pk), results)
 
         return HttpResponse(name, content_type='text/plain')
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def regenerate(request):
     """
-    Regenerates a report. 
-    
+    Regenerates a report.
+
     Useful if the report json file is no longer available on disk. If called
     and the report is already on disk, `Report.regenerate` does nothing.
 
@@ -262,7 +243,7 @@ def regenerate(request):
         "This view is only reachable via a GET request.")
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def downloads(request):
     """ Renders a download customization screen.
 
@@ -279,12 +260,24 @@ def downloads(request):
         report_id = request.GET.get('id', 0)
         report = get_object_or_404(
             get_model('myreports', 'report'), pk=report_id)
-        report.regenerate()
 
-        fields = sorted([field for field in report.python[0].keys()
-                         if field != 'pk'])
+        common_blacklist = ['pk', 'approval_status']
+        blacklist = {
+            'contactrecord': common_blacklist,
+            'contact': common_blacklist + ['archived_on', 'library', 'user'],
+            'partner': common_blacklist + ['library', 'owner']}
+
+        if report.python:
+            fields = sorted([field for field in report.python[0].keys()
+                             if field not in blacklist[report.model]])
+        else:
+            fields = []
 
         values = json.loads(report.values) or fields
+        for field_list in [values, fields]:
+            if 'contact_type' in field_list:
+                index = field_list.index('contact_type')
+                field_list[index] = 'communication_type'
         fields = values + [field for field in fields if field not in values]
 
         column_choice = ''
@@ -311,7 +304,7 @@ def downloads(request):
         raise Http404("This view is only reachable via an AJAX request")
 
 
-@company_has_access('prm_access')
+@has_access('prm')
 def download_report(request):
     """
     Download report as CSV.

@@ -9,7 +9,7 @@ login-username.html -- Username/password login form
     </fieldset>
     {% csrf_token %}
     <div class="actions">
-        <button type="submit" class="btn primary pull-right" name="login" id="login">{% trans "Login" %}</button>
+        <button type="submit" class="btn primary pull-right" name="login" id="login">{% trans "Log In" %}</button>
         <div class="clear"></div>
         <span class="pull-right pagination-right">
             <a href="{% url 'password_reset' %}">{% trans "lost password" %}</a>

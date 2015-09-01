@@ -3,28 +3,30 @@ from S3 import CallingFormat
 
 from default_settings import *
 from dseo_celery import *
-from secrets import PROD_DB_PASSWD
+from secrets import REDIRECT_PROD, ARCHIVE_PROD, REDIRECT_QC
 
 
 ALLOWED_HOSTS = ['*', ]
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'db_deuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirect.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
-    'qc-redirect': {
+    }, **REDIRECT_PROD),
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC),
+    'archive': dict({
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'redirect',
+        'HOST': 'db-redirectarchive.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }, **ARCHIVE_PROD)
 }
 
 HAYSTACK_CONNECTIONS = {
@@ -73,7 +75,10 @@ AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 ROOT_URLCONF = 'dseo_urls'
-MIDDLEWARE_CLASSES += ('wildcard.middleware.WildcardMiddleware', )
+MIDDLEWARE_CLASSES += (
+    'wildcard.middleware.WildcardMiddleware',
+    'middleware.RedirectOverrideMiddleware',
+)
 TEMPLATE_CONTEXT_PROCESSORS += (
     "social_links.context_processors.social_links_context",
     "seo.context_processors.site_config_context",
@@ -84,6 +89,6 @@ SOLR = {
     'current': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test_current/',
     }
 
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'http://qc.secure.my.jobs/'
 
 PROJECT = "dseo"

@@ -12,8 +12,10 @@ from setup import DirectSEOBase
 class SitemapTestCase(DirectSEOBase):
     def setUp(self):
         super(SitemapTestCase, self).setUp()
-        self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        self.conn.add(SOLR_FIXTURE)
+
+    def tearDown(self):
+        super(SitemapTestCase, self).tearDown()
+        self.conn.delete("*:*")
 
     def test_index(self):
         resp = self.client.get("/sitemap.xml")
@@ -28,6 +30,8 @@ class SitemapTestCase(DirectSEOBase):
         site = SeoSite.objects.get(id=1)
         site.business_units = []
         site.save()
+        job = dict(SOLR_FIXTURE[0])
+        self.conn.add([job])
         today = datetime.datetime.today()
         dt = datetime.date(*today.timetuple()[0:3]).isoformat()
         resp = self.client.get("/sitemap-" + dt + ".xml")
@@ -70,7 +74,3 @@ class SitemapTestCase(DirectSEOBase):
         resp = self.client.get("/sitemap-" + dt + ".xml")
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("<url>" in resp.content)
-        
-    def tearDown(self):
-        super(SitemapTestCase, self).tearDown()
-        self.conn.delete("*:*")

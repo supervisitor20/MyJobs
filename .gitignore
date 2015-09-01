@@ -13,6 +13,8 @@ static-files/100x50
 static-files/content_profile
 dev_*
 .idea
+CACHE
+static/redirect.css
 
 # Editor aritfacts
 *~
@@ -24,6 +26,7 @@ dev_*
 content_226
 .coverage
 *.swp
+.ropeproject
 
 # Secret Stuff
 secrets*
@@ -35,6 +38,7 @@ deploy/settings.local.py
 # Log Files
 *.log
 logfile
+comparison_log/*.json
 
 # OS generated
 .DS_Store*

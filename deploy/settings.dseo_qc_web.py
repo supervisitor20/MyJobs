@@ -2,30 +2,32 @@ import datetime
 
 from default_settings import *
 from dseo_celery import *
-from secrets import PROD_DB_PASSWD
+from secrets import REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING
 
 
 ALLOWED_HOSTS = ['*', ]
 
 
 DATABASES = {
-    'default': {
+    'default': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectqc.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_QC),
     # Points to staging instead of QC for testing purposes.
-    'qc-redirect': {
+    'qc-redirect': dict({
         'NAME': 'redirect',
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'de_dbuser',
-        'PASSWORD': PROD_DB_PASSWD,
         'HOST': 'db-redirectstaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
-    },
+    }, **REDIRECT_STAGING),
+    'archive': dict({
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'redirect',
+        'HOST': 'db-redirectarchivestaging.c9shuxvtcmer.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+    }, **ARCHIVE_STAGING)
 }
 
 
@@ -58,7 +60,10 @@ HAYSTACK_CONNECTIONS = {
 }
 
 ROOT_URLCONF = 'dseo_urls'
-MIDDLEWARE_CLASSES += ('wildcard.middleware.WildcardMiddleware', )
+MIDDLEWARE_CLASSES += (
+    'wildcard.middleware.WildcardMiddleware',
+    'middleware.RedirectOverrideMiddleware',
+)
 WILDCARD_REDIRECT=False
 TEMPLATE_CONTEXT_PROCESSORS += (
     "social_links.context_processors.social_links_context",
@@ -70,6 +75,6 @@ SOLR = {
     'current': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test_current/',
     }
 
-ABSOLUTE_URL = '/'
+ABSOLUTE_URL = 'http://qc.secure.my.jobs/'
 
 PROJECT = "dseo"

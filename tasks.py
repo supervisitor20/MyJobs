@@ -36,6 +36,10 @@ from registration.models import ActivationProfile
 from solr import helpers
 from solr.models import Update
 from solr.signals import object_to_dict, profileunits_to_dict
+from djcelery.models import TaskState
+import ast
+from pysolr import Solr
+from django.core.mail import send_mail
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +77,10 @@ PARTNER_LIBRARY_SOURCES = {
 def send_search_digest(self, search):
     """
     Task used by send_send_search_digests to send individual digest or search
-    emails.
+    emails. This can raise three different exceptions depending on various
+    factors that may be within or outside of our control. In the event that
+    that occurs, we err on the side of momentary network issues and assume that
+    this search will send successfully at a later time.
 
     Inputs:
     :search: SavedSearch or SavedSearchDigest instance to be mailed
@@ -83,10 +90,6 @@ def send_search_digest(self, search):
     except (ValueError, URLError, HTTPError) as e:
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
-        else:
-            # After the initial try and two retries, disable the offending
-            # saved search
-            search.disable_or_fix()
 
 
 @task(name='tasks.update_partner_library', ignore_result=True,
@@ -268,7 +271,7 @@ def process_batch_events():
     period of time.
     """
     now = date.today()
-    EmailLog.objects.filter(received__lte=now-timedelta(days=60),
+    EmailLog.objects.filter(received__lte=now - timedelta(days=60),
                             processed=True).delete()
 
     emails = set(EmailLog.objects.values_list('email', flat=True).filter(
@@ -281,8 +284,8 @@ def process_batch_events():
     # These users have not responded in a month. Send them an email if they
     # own any saved searches
     inactive = User.objects.select_related('savedsearch_set')
-    inactive = inactive.filter(Q(last_response=now-timedelta(days=82)) |
-                               Q(last_response=now-timedelta(days=89)))
+    inactive = inactive.filter(Q(last_response=now - timedelta(days=172)) |
+                               Q(last_response=now - timedelta(days=179)))
 
     category = '{"category": "User Inactivity (%s)"}'
     for user in inactive:
@@ -298,7 +301,7 @@ def process_batch_events():
                             headers=headers)
 
     # These users have not responded in 90 days. Stop sending emails.
-    users = User.objects.filter(last_response__lte=now-timedelta(days=90))
+    users = User.objects.filter(last_response__lte=now-timedelta(days=180))
     users.update(opt_in_myjobs=False)
 
 
@@ -334,7 +337,12 @@ def update_solr_task(solr_location=None):
         content_type, key = obj.uid.split("##")
         model = ContentType.objects.get_for_id(content_type).model_class()
         if model == SavedSearch:
-            updates.append(object_to_dict(model, model.objects.get(pk=key)))
+            search = model.objects.get(pk=key)
+            # Saved search recipients can currently be null; Displaying these
+            # searches may be implemented in the future but will likely require
+            # some template work.
+            if search.user:
+                updates.append(object_to_dict(model, search))
         # If the user is being updated, because the user is stored on the
         # SavedSearch document, every SavedSearch belonging to that user
         # also has to be updated.
@@ -389,7 +397,7 @@ def task_reindex_solr(solr_location=None):
     for x in u:
         l.append(profileunits_to_dict(x))
 
-    s = SavedSearch.objects.all()
+    s = SavedSearch.objects.filter(user__isnull=False)
     for x in s:
         saved_search_dict = object_to_dict(SavedSearch, x)
         saved_search_dict['doc_type'] = 'savedsearch'
@@ -690,33 +698,49 @@ def task_clear_bu_cache(buid, **kwargs):
     except:
         logging.error(traceback.format_exc(sys.exc_info()))
 
-@task(name="tasks.task_update_solr", acks_late=True, ignore_result=True)
+
+@task(name="tasks.task_update_solr", acks_late=True, ignore_result=True, soft_time_limit=3600)
 def task_update_solr(jsid, **kwargs):
     try:
         import_jobs.update_solr(jsid, **kwargs)
-    except:
+    except Exception as e:
         logging.error(traceback.format_exc(sys.exc_info()))
-        raise task_update_solr.retry()
+        raise task_update_solr.retry(exc=e)
 
 
-@task(name='tasks.etl_to_solr', ignore_result=True, send_error_emails=True)
+@task(name='tasks.etl_to_solr', ignore_result=True, send_error_emails=True, soft_time_limit=3600)
 def task_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
-        raise task_etl_to_solr.retry()
+        raise task_etl_to_solr.retry(exc=e)
 
 
-@task(name='tasks.priority_etl_to_solr', ignore_result=True)
+@task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)
 def task_priority_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name, clear_cache=True)
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
-        raise task_priority_etl_to_solr.retry()
+        raise task_priority_etl_to_solr.retry(exc=e)
+
+
+@task(name="tasks.check_solr_count", send_error_emails=True)
+def task_check_solr_count(buid, count):
+    buid = int(buid)
+    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+    hits = conn.search(q="buid:%s" % buid, rows=1, mlt="false", facet="false").hits
+    if int(count) != int(hits):
+        logger.warn("For BUID: %s, we expected %s jobs, but have %s jobs", buid, count, hits)
+        send_mail(recipient_list=["matt@apps.directemployers.org"],
+                  from_email="solr_count_monitoring@apps.directemployers.org",
+                  subject="Buid Count for %s is incorrect." % buid,
+                  message="For BUID: %s, we expected %s jobs, but have %s jobs.  Check imports for this buid." %
+                        (buid, count, hits),
+                  fail_silently=False)
 
 
 @task(name="tasks.task_clear_solr", ignore_result=True)
@@ -861,6 +885,7 @@ def event_list_to_email_log(event_list):
 
     return events_to_create
 
+
 @task(name="tasks.process_sendgrid_event", ignore_result=True)
 def process_sendgrid_event(events):
     """
@@ -874,3 +899,35 @@ def process_sendgrid_event(events):
     event_list = get_event_list(events)
     events_to_create = event_list_to_email_log(event_list)
     EmailLog.objects.bulk_create(events_to_create)
+
+
+@task(name="tasks.send_event_email", ignore_result=True)
+def send_event_email(email_task):
+    """
+    Send an appropriate email given an EmailTask instance.
+
+    Inputs:
+    :email_task: EmailTask we are using to generate this email
+    """
+    email_task.task_id = send_event_email.request.id
+    email_task.save()
+
+    email_task.send_email()
+
+    email_task.completed_on = datetime.now()
+    email_task.save()
+
+
+@task(name="tasks.requeue_failures", ignore_result=True)
+def requeue_failures(hours=8):
+    period = datetime.datetime.now() - datetime.timedelta(hours=hours)
+
+    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'], 
+                                            tstamp__gt=period, 
+                                            name__in=['tasks.etl_to_solr',
+                                                      'tasks.priority_etl_to_solr'])
+
+    for task in failed_tasks:
+        task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        print "Requeuing task with args %s" % task.args
+

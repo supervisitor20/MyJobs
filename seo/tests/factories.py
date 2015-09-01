@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 
 from myjobs.tests.factories import UserFactory
-from seo.models import SeoSiteFacet
+from seo.models import SeoSiteFacet, Company
 
 copy_to_database = 'qc-redirect'
 
@@ -109,7 +109,6 @@ class SeoSiteFactory(SiteFactory):
     name = u'buckconsultants.jobs'
     site_title = "Test Site"
 
-
 class SeoSiteCopyToFactory(SiteFactory):
     class Meta:
         model = 'seo.SeoSite'
@@ -206,6 +205,14 @@ class CompanyFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "Acme Incorporated %d" % n)
     member = True
     company_slug = factory.LazyAttribute(lambda x: slugify(x.name))
+
+    @classmethod
+    def _setup_next_sequence(cls):
+        try:
+            return Company.objects.latest('id').id + 1
+        except Company.DoesNotExist:
+            return 1
+CompanyFactory.reset_sequence()
 
 
 class GoogleAnalyticsFactory(factory.django.DjangoModelFactory):

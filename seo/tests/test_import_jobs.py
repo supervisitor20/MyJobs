@@ -3,13 +3,13 @@ import os
 
 from django.conf import settings
 
-from seo_pysolr import Solr
 from import_jobs import (DATA_DIR, add_company, remove_expired_jobs, update_solr, get_jobs_from_zipfile,
-    filter_current_jobs)
+    filter_current_jobs, update_job_source)
 
 from seo.models import BusinessUnit, Company
 from seo.tests.factories import BusinessUnitFactory, CompanyFactory
 from setup import DirectSEOBase
+from mock import patch
 
 
 class ImportJobsTestCase(DirectSEOBase):
@@ -20,14 +20,10 @@ class ImportJobsTestCase(DirectSEOBase):
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid_id = self.businessunit.id        
         self.filepath = os.path.join(DATA_DIR, '0', 'dseo_feed_%s.xml' % self.buid_id)
-        self.solr_settings = {
-            'default': {'URL': 'http://127.0.0.1:8983/solr/seo'}
-        }
-        self.solr = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
 
     def tearDown(self):
         super(ImportJobsTestCase, self).tearDown()
-        self.solr.delete(q='*:*')
+        self.conn.delete(q='*:*')
 
     def test_solr_rm_feedfile(self):
         """
@@ -139,19 +135,21 @@ class ImportJobsTestCase(DirectSEOBase):
         active_jobs = [{'id': 'seo.%s' % i, 'buid': buid} for i in range(4)]
         old_jobs = [{'id': 'seo.%s' % i, 'buid': buid} for i in range(2, 10)]
 
-        with self.settings(HAYSTACK_CONNECTIONS=self.solr_settings):
-            self.solr.add(old_jobs)
-            self.solr.commit()
+        self.conn.add(old_jobs)
+        self.conn.commit()
 
-            removed = remove_expired_jobs(buid, active_jobs)
-            self.assertEqual(len(removed), 6, "Removed jobs %s" % removed)
-            ids = [d['id'] for d in self.solr.search('*:*').docs]
-            self.assertTrue([5, 6, 7, 8, 9, 10] not in ids)
+        removed = remove_expired_jobs(buid, [d['id'] for d in active_jobs])
+        self.assertEqual(len(removed), 6, "Removed jobs %s" % removed)
+        ids = [d['id'] for d in self.conn.search('*:*').docs]
+        self.assertTrue([5, 6, 7, 8, 9, 10] not in ids)
 
 
 class LoadETLTestCase(DirectSEOBase):
+    fixtures = ['countries.json']
+    
     def setUp(self):
-        
+        super(LoadETLTestCase, self).setUp()
+
         self.zipfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'data',
                                     'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip') 
@@ -160,9 +158,29 @@ class LoadETLTestCase(DirectSEOBase):
             self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
             
         self.businessunit = BusinessUnitFactory(id=0)
+        self.buid = self.businessunit.id
+        self.guid = 'ce2ca701-eeca-4c13-96ba-e6bde9cb7060'
+        self.name = "Test"
     
     def tearDown(self):
-        pass
+        super(LoadETLTestCase, self).tearDown()
+
+    
+    @patch('import_jobs.get_jobsfs_zipfile')
+    def test_update_job_source(self, mock_jobsfs):
+        mock_jobsfs.return_value = open(self.zipfile, 'rb')
+        
+        count = self.conn.search('*:*').hits
+        self.assertEqual(count, 0, "Jobs for buid in solr before the test.  Cannot guarantee correct behavior.")
+        self.assertEqual(self.businessunit.associated_jobs, 4, "Initial Job Count does not match the factory")
+
+        update_job_source(self.guid, self.buid, self.name)
+
+        count = self.conn.search('buid:%s' % self.buid).hits
+        # Note the job count being one low here is due to one job being filtered out due to include_in_index_bit
+        self.assertEqual(count, 38, "38 Jobs not in solr after call to update job source. Found %s" % count)
+        self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 38, 
+                         "Job Count not updated after imports: Should be 38 was %s" % self.businessunit.associated_jobs)
     
     def test_filtering_on_includeinindex_bit(self):
         """Test that filtering on the include_in_index bit works"""
