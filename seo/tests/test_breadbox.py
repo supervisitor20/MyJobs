@@ -122,6 +122,7 @@ class BreadboxTests(DirectSEOBase):
 
     def test_moc_slug(self):
         moc = MocFactory()
+
         self.filters['moc_slug'] = 'something/%s/%s' % (moc.code, moc.branch)
 
         path = '/%s/%s/' % (self.filters['moc_slug'],

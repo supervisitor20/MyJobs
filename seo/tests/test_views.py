@@ -2386,7 +2386,15 @@ class SeoViewsTestCase(DirectSEOTestCase):
         """
         resp = self.client.post("/ajax/data/sites?tag=Fake%20Tag")
         self.assertEqual(resp.status_code, 200)
-
+    
+    def test_valid_company_200(self):
+        """
+            Verify that a valid company search string returns a 200
+        """
+        new_company = factories.CompanyFactory()
+        resp = self.client.get("/%s/careers/" % new_company.company_slug)
+        self.assertEqual(resp.status_code, 200)
+        
     def test_invalid_company_404(self):
         """
             Verify that invalid companies will return a 404 error
@@ -2396,7 +2404,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
     def test_invalid_moc_404(self):
         """
-            Verify that invalid companies will return a 404 error
+            Verify that invalid moc url values will return a 404 error
         """
         resp = self.client.get("/a/fake/moc/vet-jobs/")
         self.assertEqual(resp.status_code, 404)
