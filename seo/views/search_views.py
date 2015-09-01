@@ -1729,16 +1729,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
 
-    # Text uses html_description instead of just description.
     fl = list(helpers.search_fields)
-    index = fl.index('description')
-    fl.pop(index)
-    # We use the html_description to show highlighted snippets of the
-    # description that match the search term. If there is no search
-    # term there's no reason to even get the html_description.
-    if q_term:
-        fl.append('html_description')
-
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
         request, filters, num_jobs, fl=fl)
 
