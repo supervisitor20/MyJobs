@@ -4,6 +4,8 @@ from pysolr import safe_urlencode
 import re
 from slugify import slugify
 import unicodedata
+from bs4 import BeautifulSoup
+import markdown2
 
 from django import template
 from django.conf import settings
@@ -336,6 +338,15 @@ def to_slug(co_slab):
 @register.filter
 def compare(a, b):
     return a == b
+
+
+@register.filter
+@stringfilter
+def highlight_solr(description):
+    html = markdown2.markdown(description, safe_mode="replace")
+    text = BeautifulSoup(html).text
+    highlighted = text.replace("###{{{###", "<b>").replace("###}}}###", "</b>")
+    return mark_safe(highlighted)
 
 
 @register.assignment_tag(takes_context=True)

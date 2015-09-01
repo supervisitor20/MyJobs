@@ -1001,7 +1001,8 @@ def prepare_sqs_from_search_params(params, sqs=None):
         if exact_title:
             sqs = sqs.filter(title_exact__exact=title)
         else:
-            sqs = sqs.filter(SQ(content=Raw(title)) | SQ(title=Raw(tb)))\
+            sqs = sqs.filter(SQ(content=Raw(title)) | SQ(title=Raw(tb)) |
+                             SQ(description=Raw(title)))\
                      .highlight()
 
     # If there is a value in the `location` parameter, add filters for it
