@@ -533,7 +533,7 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
              default_sqs=None, filters={},  fields=None, facet_limit=250,
              facet_sort="count", facet_offset=None, mc=1,
              sort_order='relevance', fl=search_fields,
-             additional_fields=[]):
+             additional_fields=None):
     """
     Returns 3-tuple containing a DESearchQuerySet object, a set of facet
     counts that have been filtered, and a set of unfiltered facet counts.
@@ -1012,9 +1012,9 @@ def prepare_sqs_from_search_params(params, sqs=None):
         else:
             # We have to query on description here so that highlighting
             # matches the exact term and not a stem.
-            sqs = sqs.filter(SQ(content=Raw("((%s))^1" % title)) | SQ(title=Raw(tb)) |
-                             SQ(description=Raw(title))) \
-                    .highlight()
+            sqs = sqs.filter(SQ(content=Raw("((%s))^1" % title)) |
+                             SQ(title=Raw(tb)) |
+                             SQ(description=Raw(title))).highlight()
 
     # If there is a value in the `location` parameter, add filters for it
     # in each location-y field in the index. If the `exact` parameter is
