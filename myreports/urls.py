@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, url
 from myreports.views import ReportView
+from django.views.generic import RedirectView
 
 urlpatterns = patterns(
     'myreports.views',

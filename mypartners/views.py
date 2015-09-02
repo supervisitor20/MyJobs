@@ -80,6 +80,7 @@ def prm(request):
         'user': request.user,
         'partner_ct': ContentType.objects.get_for_model(Partner).id,
         'view_name': 'PRM',
+        'down_for_maintenance': True,
     }
 
     return render_to_response('mypartners/prm.html', ctx,
