@@ -12,43 +12,7 @@
 {% endblock %}
 
 {% block content %}
-    {% if down_for_maintenance %}
-        <style>
-            .big-margins {
-                margin-top: 40px;
-                margin-bottom: 40px;
-            }
-            .down-box {
-                background-color: #F7F7F7;
-                border: 1px solid #E5E5E5;
-                box-sizing: border-box;
-                box-shadow: 2px 2px 3px #BBB;
-                position: relative;
-                height: 200px;
-                width: 100%;
-                display: table;
-            }
-            .more-bold-text {
-                font-size: 1.2em;
-                vertical-align: middle;
-                text-align: center;
-                display: table-cell;
-                padding: 10px;
-            }
-
-        </style>
-        <div class="row">
-            <div class="span8 offset2 big-margins">
-                <div class="down-box">
-                    <p class="more-bold-text">
-                        Reporting is currently down for maintenance.<br /> Sorry for the inconvenience.
-                    </p>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        {% include "myreports/includes/report_overview.html" %}
-    {% endif %}
+    {% include "myreports/includes/report_overview.html" %}
 {% endblock %}
 
 {% block extra-js %}
