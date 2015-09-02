@@ -747,6 +747,7 @@ def syndication_feed(request, filter_path, feed_type):
     jobs = helpers.get_jobs(default_sqs=sqs,
                             custom_facets=settings.DEFAULT_FACET,
                             jsids=settings.SITE_BUIDS,
+                            additional_fields=['description'],
                             filters=filters, sort_order=sort_order)
 
     job_count = jobs.count()

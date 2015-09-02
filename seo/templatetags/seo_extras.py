@@ -344,7 +344,7 @@ def compare(a, b):
 @stringfilter
 def highlight_solr(description):
     html = markdown2.markdown(description, safe_mode="replace")
-    text = BeautifulSoup(html).text
+    text = escape(BeautifulSoup(html).text)
     highlighted = text.replace("###{{{###", "<b>").replace("###}}}###", "</b>")
     return mark_safe(highlighted)
 

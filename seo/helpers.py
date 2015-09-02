@@ -532,7 +532,8 @@ def get_bread_box_headings(filters=None, jobs=None):
 def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
              default_sqs=None, filters={},  fields=None, facet_limit=250,
              facet_sort="count", facet_offset=None, mc=1,
-             sort_order='relevance', fl=search_fields):
+             sort_order='relevance', fl=search_fields,
+             additional_fields=[]):
     """
     Returns 3-tuple containing a DESearchQuerySet object, a set of facet
     counts that have been filtered, and a set of unfiltered facet counts.
@@ -558,8 +559,6 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
         sqs = DESearchQuerySet()
     sqs = sqs_apply_custom_facets(custom_facets, sqs, exclude_facets)
     sqs = _sqs_narrow_by_buid_and_site_package(sqs, buids=jsids)
-    # Limit the retrieved results to only fields that are actually needed.
-    sqs = sqs.fields(fl)
 
     sqs = sqs.order_by(sort_order_mapper.get(sort_order, '-score'))
 
@@ -567,8 +566,16 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
     #by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
     sqs = sqs.bf('recip(ms(NOW/HOUR,salted_date),1.8e-9,1,1)')
 
+    # Limit the retrieved results to only fields that are actually needed.
     if fields:
-        sqs = sqs.fields(fields)
+        field_list = list(fields)
+    else:
+        field_list = list(fl)
+
+    if additional_fields:
+        field_list = additional_fields + field_list
+
+    sqs = sqs.fields(field_list)
 
     if facet_offset:
         sqs = sqs.facet_offset(facet_offset)
@@ -951,7 +958,9 @@ def create_sq(custom_facets):
 
 
 def prepare_sqs_from_search_params(params, sqs=None):
-    boost_value = 1.5
+    # We usually search description twice, so we need a higher boost on
+    # title to overcome that.
+    boost_value = 10
     title = params.get('q')
     location = params.get('location')
     moc = params.get('moc')
@@ -1001,9 +1010,11 @@ def prepare_sqs_from_search_params(params, sqs=None):
         if exact_title:
             sqs = sqs.filter(title_exact__exact=title)
         else:
-            sqs = sqs.filter(SQ(content=Raw(title)) | SQ(title=Raw(tb)) |
-                             SQ(description=Raw(title)))\
-                     .highlight()
+            # We have to query on description here so that highlighting
+            # matches the exact term and not a stem.
+            sqs = sqs.filter(SQ(content=Raw("((%s))^1" % title)) | SQ(title=Raw(tb)) |
+                             SQ(description=Raw(title))) \
+                    .highlight()
 
     # If there is a value in the `location` parameter, add filters for it
     # in each location-y field in the index. If the `exact` parameter is

@@ -135,13 +135,14 @@ class FallbackTestCase(DirectSEOTestCase):
 
     def test_search_results_fallback(self):
         response = self.client.get(reverse('all_jobs'))
-        self.assertIn('"direct_joblisting"', response.content)
+        self.assertIn('"direct_joblisting with_description"', response.content)
 
         self.make_page(Page.SEARCH_RESULTS)
 
         response = self.client.get(reverse('all_jobs'))
         self.assertIn(self.content, response.content)
-        self.assertNotIn('"direct_joblisting"', response.content)
+        self.assertNotIn('"direct_joblisting with_description"',
+                         response.content)
 
     def test_search_results_no_results_fallback(self):
         self.conn.delete(q='*:*')
