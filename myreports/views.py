@@ -34,7 +34,8 @@ def overview(request):
         "success": success,
         "states": json.dumps(states),
         "past_reports": past_reports,
-        "report_count": report_count
+        "report_count": report_count,
+        "down_for_maintenance": True,
     }
 
     if request.is_ajax():
