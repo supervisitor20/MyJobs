@@ -41,7 +41,6 @@
       $(document).on("ready", function() {
         // determine whether or not we should use CORS or JSONP
         $.ajax({
-          url: "https://" + "{{ domain_parent }}",
           type: "OPTIONS",
           error: function(xhr, textStatus, error) {
             corsEnabled = false;
