@@ -42,9 +42,10 @@
         // determine whether or not we should use CORS or JSONP
         $.ajax({
           type: "OPTIONS",
+          crossDomain: true,
           error: function(xhr, textStatus, error) {
             corsEnabled = false;
-          }
+          },
         });
       });
       {% endif %}
