@@ -190,6 +190,9 @@ def transform_for_postajob(job):
     solr_job['city_slab_exact'] = solr_job['city_slab']
     solr_job['title_slab_exact'] = solr_job['title_slab']
 
+    solr_job['all_locations'] = [job['zip_code'], job['city'], job['state'], job['state_short'],
+                                "%s, %s" % (job['city'], job['state']), job['country']]
+
     solr_job['text'] = " ".join([force_text((job.get(k)) or "None") for k in
                                  text_fields])
 
@@ -367,6 +370,9 @@ def hr_xml_to_json(xml, business_unit):
 
     job['text'] = " ".join([force_text((job.get(k)) or "None") for k in
                             text_fields])
+
+    job['all_locations'] = [job['zipcode'], city, state, state_short,
+                                "%s, %s" % (city, state), country]
 
     job['GeoLocation'] = ("%s, %s" % (latitude, longitude)
                           if latitude and longitude else None)
