@@ -1,0 +1,51 @@
+{% extends "seo/dashboard/dashboard_base.html" %}
+
+{% block content %}
+
+{% include "myemails/includes/header.html" with title="..." %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="jump-to" style="vertical-align: top;">
+            Jump to:
+            <select>
+                    <option value="" selected>Select an Event</option>
+                {% for test in mmm %}
+                    <option value="{{test.lower}}">{{test}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% for test in mmm %}
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 id="{{test.lower}}" style="margin-bottom: 0;">{{test}}</h3>
+                    <p style="padding: 0;">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad assumenda atque consequatur delectus dicta ipsum iste laudantium maxime nesciunt qui rerum sunt, tenetur voluptas voluptates. Blanditiis delectus iure quasi.</p>
+                    <a class="awrap" href="">
+                        <div class="product-card" style="padding: 10px; font-size: 1.3em;">
+                            <i class="fa fa-plus-circle" style="color: #009900;"></i> <span style="color: #000;">Create New Template</span>
+                        </div>
+                    </a>
+                    {% for eh in "start" %}
+                        <div style="padding: 5px 10px; position: relative; background-color: {% if forloop.counter|divisibleby:2 %}#F7F7F7{%else%}#FEFEFE{% endif %};">
+
+                            <span style="font-size: 1.3em; padding: 8px 0; display: inline-block;">Template Name {{forloop.counter}}</span>
+                            {% if forloop.first %}<div class="label label-success">Active</div>{% endif %}
+                            <div style="float: right;">
+                                <a class="btn" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
+                                <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
+                                <a class="btn btn-danger {% if forloop.first %}disabled{%endif%}" style="color: #FFF;" {%if forloop.first%}title="Cannot delete active templates"{%endif%}><i class="fa fa-trash-o"></i> Delete</a>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+            {% if not forloop.first %}
+            <div class="pull-right back-to-top" style="font-size: 1.1em; color: #5a6d81; cursor: pointer; padding-right: 10px; margin-top: 2px;"><i class="fa fa-arrow-circle-up"></i> Back to top</div>
+            <div class="clearfix"></div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
