@@ -72,7 +72,7 @@ def get_facet_count_key(filters=None, query_string=None):
     )
 
 
-def get_custom_facets(request, filters=None, query_string=None):
+def get_custom_facets(request, filters=None, query_string=None):    
     custom_facet_key = get_facet_count_key(filters, query_string)
     custom_facets = cache.get(custom_facet_key)
 

@@ -639,7 +639,7 @@ class SeoSiteFacet(models.Model):
     BOOLEAN_CHOICES = (('or', 'OR'), ('and', 'AND'), )
 
     FACET_GROUP_CHOICES = ((1, 'Facet Group 1'), (2, 'Facet Group 2'),
-                           (3, 'Facet Group 3'), )
+                           (3, 'Facet Group 3'), (4, 'Facet Group 4'))
 
     facet_group = models.IntegerField(choices=FACET_GROUP_CHOICES, default=1)
     seosite = models.ForeignKey('SeoSite', verbose_name="Seo Site")
@@ -1094,6 +1094,7 @@ class Configuration(models.Model):
     browse_facet_show = models.BooleanField('Show', default=False)
     browse_facet_show_2 = models.BooleanField('Show', default=False)
     browse_facet_show_3 = models.BooleanField('Show', default=False)
+    browse_facet_show_4 = models.BooleanField('Show', default=False)
     browse_moc_show = models.BooleanField('Show', default=False)
     browse_company_show = models.BooleanField('Show', default=False)
 
@@ -1118,6 +1119,9 @@ class Configuration(models.Model):
     browse_facet_text_3 = models.CharField('Heading for Custom Facet Group 3',
                                            default='Job Profiles',
                                            max_length=50)
+    browse_facet_text_4 = models.CharField('Heading for Custom Facet Group 4',
+                                           default='Job Profiles',
+                                           max_length=50)
     browse_moc_text = models.CharField('Heading for MOC Facet',
                                        default='Military Titles',
                                        max_length=50)
@@ -1133,12 +1137,14 @@ class Configuration(models.Model):
                                             choices=ORDER_CHOICES)
     browse_title_order = models.IntegerField('Order', default=6,
                                              choices=ORDER_CHOICES)
-    browse_facet_order = models.IntegerField('Order', default=2,
+    browse_facet_order = models.IntegerField('Order', default=1,
                                              choices=ORDER_CHOICES)
     browse_facet_order_2 = models.IntegerField('Order', default=2,
                                                choices=ORDER_CHOICES)
-    browse_facet_order_3 = models.IntegerField('Order', default=2,
+    browse_facet_order_3 = models.IntegerField('Order', default=3,
                                                choices=ORDER_CHOICES)
+    browse_facet_order_4 = models.IntegerField('Order', default=4,
+                                               choices=ORDER_CHOICES)                                               
     browse_moc_order = models.IntegerField('Order', default=1,
                                            choices=ORDER_CHOICES)
     browse_company_order = models.IntegerField('Order', default=7,

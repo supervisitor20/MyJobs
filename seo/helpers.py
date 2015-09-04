@@ -783,8 +783,8 @@ def sort_custom_facets_by_group(custom_facets):
              values are a list of custom facets for that facet_group.
 
     """
-    # Right now we know we only have these 3 facet_groups.
-    grouped_facets = {1: [], 2: [], 3: []}
+    # Right now we know we only have these 4 facet_groups.
+    grouped_facets = {1: [], 2: [], 3: [], 4: []}
 
     for facet, count in custom_facets:
         cached_facets = getattr(settings, 'STANDARD_FACET', [])
@@ -1353,7 +1353,7 @@ def _facet_query_result_counts(tagged_facets, sqs):
 
 
 def get_solr_facet(jsids, filters=None, params=None):
-    custom_facets = settings.STANDARD_FACET
+    custom_facets = settings.STANDARD_FACET    
 
     # Short-circuit the function if a site has facets turned on, but either
     # does not have any facets with `show_production` == 1 or has not yet
