@@ -2041,6 +2041,20 @@ def admin_dashboard(request):
                               context_instance=RequestContext(request))
 
 
+@user_is_allowed()
+def event_overview(request):
+    data_dict = {}
+    return render_to_response('myemails/event_overview.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def manage_templates(request):
+    data_dict = {}
+    return render_to_response('myemails/manage_templates.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
 def seo_states(request):
     # Pull jobs from solr, only in the US and group by states.
     search = DESearchQuerySet().narrow('country:United States').facet('state')
