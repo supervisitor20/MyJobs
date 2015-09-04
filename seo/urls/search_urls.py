@@ -126,6 +126,8 @@ urlpatterns += patterns('seo.views.search_views',
     url(r'^dashboard/$', 'admin_dashboard'),
     # Dashboard - Event Manager
     url(r'^dashboard/events/$', 'event_overview', name='event_overview'),
+    url(r'^dashboard/events/manage-header-footer', 'manage_header_footer',
+        name='manage_header_footer'),
     url(r'^dashboard/events/manage-templates/$', 'manage_templates',
         name='manage_templates'),
 
