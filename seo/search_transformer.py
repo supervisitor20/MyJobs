@@ -417,12 +417,6 @@ class Parser(object):
 # reference to it in optimize_tree.
 
 
-def remove_root_quotes(tree, root):
-    if (tree is root and tree.node_type == 'term' and
-            'quote' in tree.flags):
-        tree.flags.remove('quote')
-
-
 bare_term_re = re.compile(r'\A%s\Z' % raw_term_pattern)
 
 
@@ -518,7 +512,6 @@ def escape_plus_term(tree, root):
 
 def optimize_tree(tree, root):
     optimizations = [
-        remove_root_quotes,
         remove_simple_term_quotes,
         remove_redundant_parens,
         drop_standalone_dash,
