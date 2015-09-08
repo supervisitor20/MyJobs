@@ -996,8 +996,7 @@ def prepare_sqs_from_search_params(params, sqs=None):
         # intended as negation.
         # Retail -Sales will search for Retail excluding Sales
         # Retail - Sales will search for 'Retail - Sales'
-        title = transform_search("(%s)" % title.replace(' - ', ' \\- '),
-                                 '', '')
+        title = "(%s)" % transform_search(title.replace(' - ', ' \\- '))
         tb = u"({t})^{b}".format(t=title, b=boost_value)
 
         if exact_title:

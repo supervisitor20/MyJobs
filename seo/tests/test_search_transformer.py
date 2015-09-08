@@ -10,75 +10,70 @@ from seo.search_transformer import transform_search, \
 # Columns:
 # input query, input location, default_query, expected output
 test_data = [
-    ('teaching assistant', '', '', 'teaching AND assistant'),
-    ('teaching and assistant', '', '', 'teaching AND assistant'),
-    ('teaching & assistant', '', '', 'teaching AND assistant'),
-    ('teaching &      assistant', '', '', 'teaching AND assistant'),
-    ('teaching     &    assistant', '', '', 'teaching AND assistant'),
-    ('teaching && assistant', '', '', 'teaching AND assistant'),
-    ('teaching AND assistant', '', '', 'teaching AND assistant'),
-    ('teaching AND "assistant"', '', '', 'teaching AND assistant'),
-    ('teaching,assistant', '', '', '(teaching OR assistant)'),
-    ('teaching ,assistant', '', '', '(teaching OR assistant)'),
-    ('teaching or assistant', '', '', '(teaching OR assistant)'),
-    ('teaching OR assistant', '', '', '(teaching OR assistant)'),
-    ('teaching | assistant', '', '', '(teaching OR assistant)'),
-    ('teaching || assistant', '', '', '(teaching OR assistant)'),
-    ('teaching   or  assistant', '', '', '(teaching OR assistant)'),
-    ('"teaching OR assistant"', '', '', '"teaching OR assistant"'),
-    ('"teaching,assistant"', '', '', '"teaching,assistant"'),
-    ('"teaching assistant"', '', '', '"teaching assistant"'),
-    ('" teaching assistant"', '', '', '"teaching assistant"'),
-    ('"    teaching assistant"', '', '', '"teaching assistant"'),
-    ('!"teaching assistant"', '', '', 'NOT "teaching assistant"'),
-    ('NOT "teaching assistant"', '', '', 'NOT "teaching assistant"'),
-    ('not "teaching assistant"', '', '', 'NOT "teaching assistant"'),
-    ('-"teaching assistant"', '', '', 'NOT "teaching assistant"'),
-    ('!teacher', '', '', 'NOT teacher'),
-    ('NOT teacher', '', '', 'NOT teacher'),
-    ('not teacher', '', '', 'NOT teacher'),
-    ('-teacher', '', '', 'NOT teacher'),
-    ('! teacher', '', '', 'NOT teacher'),
-    ('!    teacher', '', '', 'NOT teacher'),
-    ('NOT   teacher', '', '', 'NOT teacher'),
-    ('not   teacher', '', '', 'NOT teacher'),
-    ('- teacher', '', '', 'teacher'),
-    ('& assistant', '', '', 'assistant'),
-    ('assistant &', '', '', 'assistant'),
-    ('| assistant', '', '', 'assistant'),
-    ('assistant |', '', '', 'assistant'),
-    ('AND assistant', '', '', 'assistant'),
-    ('assistant AND', '', '', 'assistant'),
-    ('OR assistant', '', '', 'assistant'),
-    ('assistant OR', '', '', 'assistant'),
-    ('"AND assistant"', '', '', '"AND assistant"'),
-    ('"assistant AND"', '', '', '"assistant AND"'),
-    ('"OR assistant"', '', '', '"OR assistant"'),
-    ('"assistant OR"', '', '', '"assistant OR"'),
-    ('(assistant OR teacher)', '', '', '(assistant OR teacher)'),
-    ('(assistant OR teacher) and curriculum', '', '',
+    ('teaching assistant', 'teaching AND assistant'),
+    ('teaching and assistant', 'teaching AND assistant'),
+    ('teaching & assistant', 'teaching AND assistant'),
+    ('teaching &      assistant', 'teaching AND assistant'),
+    ('teaching     &    assistant', 'teaching AND assistant'),
+    ('teaching && assistant', 'teaching AND assistant'),
+    ('teaching AND assistant', 'teaching AND assistant'),
+    ('teaching AND "assistant"', 'teaching AND assistant'),
+    ('teaching,assistant', '(teaching OR assistant)'),
+    ('teaching ,assistant', '(teaching OR assistant)'),
+    ('teaching or assistant', '(teaching OR assistant)'),
+    ('teaching OR assistant', '(teaching OR assistant)'),
+    ('teaching | assistant', '(teaching OR assistant)'),
+    ('teaching || assistant', '(teaching OR assistant)'),
+    ('teaching   or  assistant', '(teaching OR assistant)'),
+    ('"teaching OR assistant"', '"teaching OR assistant"'),
+    ('"teaching,assistant"', '"teaching,assistant"'),
+    ('"teaching assistant"', '"teaching assistant"'),
+    ('" teaching assistant"', '"teaching assistant"'),
+    ('"    teaching assistant"', '"teaching assistant"'),
+    ('!"teaching assistant"', 'NOT "teaching assistant"'),
+    ('NOT "teaching assistant"', 'NOT "teaching assistant"'),
+    ('not "teaching assistant"', 'NOT "teaching assistant"'),
+    ('-"teaching assistant"', 'NOT "teaching assistant"'),
+    ('!teacher', 'NOT teacher'),
+    ('NOT teacher', 'NOT teacher'),
+    ('not teacher', 'NOT teacher'),
+    ('-teacher', 'NOT teacher'),
+    ('! teacher', 'NOT teacher'),
+    ('!    teacher', 'NOT teacher'),
+    ('NOT   teacher', 'NOT teacher'),
+    ('not   teacher', 'NOT teacher'),
+    ('- teacher', 'teacher'),
+    ('& assistant', 'assistant'),
+    ('assistant &', 'assistant'),
+    ('| assistant', 'assistant'),
+    ('assistant |', 'assistant'),
+    ('AND assistant', 'assistant'),
+    ('assistant AND', 'assistant'),
+    ('OR assistant', 'assistant'),
+    ('assistant OR', 'assistant'),
+    ('"AND assistant"', '"AND assistant"'),
+    ('"assistant AND"', '"assistant AND"'),
+    ('"OR assistant"', '"OR assistant"'),
+    ('"assistant OR"', '"assistant OR"'),
+    ('(assistant OR teacher)', '(assistant OR teacher)'),
+    ('(assistant OR teacher) and curriculum',
         '(assistant OR teacher) AND curriculum'),
-    ('(assistant AND teacher) OR curriculum', '', '',
+    ('(assistant AND teacher) OR curriculum',
         '((assistant AND teacher) OR curriculum)'),
-    ('(assistant AND teacher) OR curriculum OR (homework AND test)', '',
-        '',
+    ('(assistant AND teacher) OR curriculum OR (homework AND test)',
         '((assistant AND teacher) OR curriculum OR (homework AND test))'),
-    ("+-&&||!(){}[]^\"~*?:\\", '', '',
+    ("+-&&||!(){}[]^\"~*?:\\",
         '\+\-\&&\||\!\(\)\{\}\[\]\^\"\~\*\?\:\\'),
-    ('teach*', '', '', 'teach*'),
-    ('teach?', '', '', 'teach?'),
-    ('"teaching assistant', '', '', '\"teaching AND assistant'),
-    ('(teaching assistant', '', '', '\(teaching AND assistant'),
-    ('teaching assistant"', '', '', 'teaching AND assistant\"'),
-    ('teaching assistant)', '', '', 'teaching AND assistant\)'),
-    ('*teach', '', '', '\*teach'),
-    ('query', '', 'defaultquery', '(defaultquery) AND (query)'),
-    ('query', 'locationquery', '', '(locationquery) AND (query)'),
-    ('query', 'locationquery', 'defaultquery',
-        '(defaultquery) AND (locationquery) AND (query)'),
+    ('teach*', 'teach*'),
+    ('teach?', 'teach?'),
+    ('"teaching assistant', '\"teaching AND assistant'),
+    ('(teaching assistant', '\(teaching AND assistant'),
+    ('teaching assistant"', 'teaching AND assistant\"'),
+    ('teaching assistant)', 'teaching AND assistant\)'),
+    ('*teach', '\*teach'),
 
     # Cases added after the official cases in PD-616
-    ('', '', '', ''),
+    ('', ''),
 
 ]
 
@@ -89,12 +84,11 @@ class TestSearchParser(TestCase):
     pass
 
 
-def test_one_case(self, input_query, location, default_query, expected):
-    actual = transform_search(input_query, location, default_query)
-    message_data = [input_query, location, default_query]
+def test_one_case(self, input_query, expected):
+    actual = transform_search(input_query)
     message = ""
     message += "\n    input: "
-    message += " | ".join([d for d in message_data if d != ''])
+    message += input_query
     message += "\n expected: "
     message += expected
     message += "\n      got: "
@@ -102,12 +96,10 @@ def test_one_case(self, input_query, location, default_query, expected):
     self.assertEqual(expected, actual, message)
     logging.info("Correct: %s -> %s", input_query, expected)
 
-for i, (input_query, location, default_query, expected) \
-        in enumerate(test_data):
+for i, (input_query, expected) in enumerate(test_data):
 
-    def run_test(self, input_query=input_query, location=location,
-                 default_query=default_query, expected=expected):
-        test_one_case(self, input_query, location, default_query, expected)
+    def run_test(self, input_query=input_query, expected=expected):
+        test_one_case(self, input_query, expected)
     setattr(TestSearchParser, 'test_%03d' % (i + 1),
             run_test)
 
@@ -125,7 +117,7 @@ class TestSearchParserSpecial(TestCase):
 
         transformer = SearchTransformer(blow_up, Parser, optimize_tree,
                                         energy_factory)
-        result = transformer.transform("error here ok", "", "")
+        result = transformer.transform("error here ok")
         self.assertEqual("error here ok", result)
 
     def test_too_much_parsing(self):
@@ -136,7 +128,7 @@ class TestSearchParserSpecial(TestCase):
                                         energy_factory)
 
         bad_query = 10 * "happy "
-        result = transformer.transform(bad_query, "", "")
+        result = transformer.transform(bad_query)
         self.assertEqual(bad_query, result)
 
 # Run just this test very fast:

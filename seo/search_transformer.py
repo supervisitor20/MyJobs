@@ -545,7 +545,7 @@ class SearchTransformer(object):
         self.optimize = optimize
         self.stepper_factory = stepper_factory
 
-    def transform(self, input_query, location, default_query):
+    def transform(self, input_query):
         try:
             # Tokenize
             token_stream = self.tokenize(input_query)
@@ -561,24 +561,18 @@ class SearchTransformer(object):
             # Serialize
             query = optimized_tree.string()
 
-            # Stuff in other queries if needed
-            aux_queries = [default_query, location]
-            if any(q != '' for q in aux_queries):
-                all_queries = (q for q in aux_queries + [query] if q != '')
-                return " AND ".join("(%s)" % q for q in all_queries)
-            else:
-                return query
+            return query
         except Exception as e:
             logging.warn("Could not handle search '%s': %s" %
                          (input_query, e.message))
             return input_query
 
 
-def transform_search(input_query, location, default_query):
+def transform_search(input_query):
     """Create a query ready for sending to Solr."""
     def build_stepper():
         return Energy(5000)
 
     compiler = SearchTransformer(tokenize, Parser, optimize_tree,
                                  build_stepper)
-    return compiler.transform(input_query, location, default_query)
+    return compiler.transform(input_query)
