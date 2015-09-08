@@ -5,10 +5,12 @@ import os
 from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
-from django.db.models import Min, Max, Q
+from django.db.models import Min, Max, Q, Model
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.forms import ChoiceField
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -86,7 +88,7 @@ def add_extra_params_to_jobs(items, extra_urls):
 
 
 def log_change(obj, form, user, partner, contact_identifier,
-               action_type=CHANGE, change_msg=None):
+               action_type=CHANGE, change_msg=None, successful=None):
     """
     Creates a ContactLogEntry for obj.
 
@@ -111,17 +113,19 @@ def log_change(obj, form, user, partner, contact_identifier,
     if not change_msg:
         change_msg = get_change_message(form) if action_type == CHANGE else ''
     delta = get_form_delta(form) if action_type == CHANGE else {}
+    delta = json.dumps(delta, cls=DjangoJSONEncoder)
 
     ContactLogEntry.objects.create(
         action_flag=action_type,
         change_message=change_msg,
         contact_identifier=contact_identifier,
         content_type=ContentType.objects.get_for_model(obj),
-        delta=json.dumps(delta),
+        delta=delta,
         object_id=obj.pk,
         object_repr=force_text(obj)[:200],
         partner=partner,
         user=user,
+        successful=successful,
     )
 
 
@@ -142,50 +146,17 @@ def get_form_delta(form):
     """
     delta = {}
 
-    if form.changed_data:
+    for field in form.changed_data:
+        initial = form.initial.get(field, form.fields[field].initial)
+        new = form.cleaned_data.get(field)
 
-        for field in form.changed_data:
-            try:
-                # There are two places that initial data can come from:
-                # form.initial or form.fields[field].initial. Django
-                # favors form.initial in their code, so this code prefers
-                # form.initial first as well.
-                initial_val = form.initial.get(field, form.fields[field].initial)
-                initial_val = form.fields[field].to_python(initial_val)
-                new_val = form.data.get(field, '')
-                new_val = form.fields[field].to_python(new_val)
-            except ValidationError:
-                # MultipleFileFields break here because the two places initial
-                # data can come from are formatted differently: one is a list,
-                # and the other is a string. We don't simply move this into an
-                # else block because choice fields rely on this initialization
-                # of initial_val and new_val.
-                initial_val = None
-                new_val = None
+        if isinstance(form.fields[field], MultipleFileField):
+            initial = [fd.name for fd in initial or [] if fd]
+            new = [fd.name for fd in new or [] if fd]
 
-            if isinstance(form.fields[field], MultipleFileField):
-                # Multiple file added results in a MultiValueDict.
-                # MultiValueDict.get() just gets the last item in the list,
-                # so we need to use MultiValueDict.getlist() to account
-                # for all the added attachments.
-                if isinstance(form.files, MultiValueDict):
-                    initial_val = None
-                    new_val = [f.name for f in form.files.getlist(field)]
+        if initial or new:
+            delta[field] = {'initial': initial, 'new': new}
 
-            elif hasattr(form.fields[field], 'choices'):
-                # Coerce the keys to unicode, since the data values
-                # we will be getting back should be unicode.
-                choices = form.fields[field].choices
-                choices_dict = {unicode(x[0]): x[1] for x in choices}
-
-                initial_val = choices_dict.get(initial_val, initial_val)
-                new_val = choices_dict.get(new_val, new_val)
-
-            if (initial_val != new_val) and (initial_val or new_val):
-                delta[field] = {
-                    'initial': force_unicode(initial_val),
-                    'new': force_unicode(new_val)
-                }
     return delta
 
 

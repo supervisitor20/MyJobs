@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 from myjobs.tests.factories import UserFactory
+from seo.tests.factories import CompanyUserFactory, CompanyFactory
 from django.test import LiveServerTestCase
 from django.test.utils import override_settings
 from selenium import webdriver
@@ -53,7 +54,9 @@ class NewUserTests(SeleniumTestCase):
 
     def setUp(self):
         super(NewUserTests, self).setUp()
+        company = CompanyFactory()
         self.user = UserFactory(first_name="John", last_name="Doe")
+        company_user = CompanyUserFactory(company=company, user=self.user)
 
     def test_home_page_works(self):
         """

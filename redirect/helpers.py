@@ -56,7 +56,7 @@ def add_view_source_group(url, view_source):
     """
     vs = ViewSource.objects.filter(
         view_source_id=view_source).prefetch_related(
-        'viewsourcegroup_set').first()
+            'viewsourcegroup_set').first()
     if (vs is not None and vs.include_ga_params
             and vs.viewsourcegroup_set.exists()):
         url = replace_or_add_query(
@@ -590,16 +590,20 @@ def get_job_from_solr(guid):
     return None
 
 
-def send_response_to_sender(new_to, old_to, email_type, guid='', job=None,
-                            solr_job=None):
+def send_response_to_sender(new_to, old_to, email_type, guid='',
+                            job=None, solr_job=None):
     """
     Send response to guid@my.jobs emails
 
     Inputs:
-    :new_to:
-    :old_to:
-    :email_type:
-    :guid:
+    :new_to: Email address associated with the GUID address's buid
+    :old_to: GUID address
+    :email_type: no_job, no_contact, or contact; denotes what type of email
+        is to be sent
+    :guid: GUID portion of the incoming address
+    :job: Job from database; includes basic job info (title, location, owner)
+    :solr_job: Job from Solr; If this is passed, the job must not be expired
+        and we can include a job description.
     """
     if not isinstance(new_to, (list, set)):
         new_to = [new_to]
@@ -607,6 +611,7 @@ def send_response_to_sender(new_to, old_to, email_type, guid='', job=None,
         old_to = old_to[0]
     email = EmailMessage(from_email=settings.DEFAULT_FROM_EMAIL,
                          to=new_to)
+
     if email_type == 'no_job':
         email.subject = 'Email forward failure'
         email.body = render_to_string('redirect/email/no_job.html',
@@ -650,7 +655,7 @@ def repost_to_mj(post, files):
         for index in range(len(files)):
             # This fails when we include content type for some reason;
             # Don't send content type
-            new_files['attachment%s' % (index+1, )] = files[index][:2]
+            new_files['attachment%s' % (index + 1, )] = files[index][:2]
         r = requests.post(mj_url, data=post, files=new_files)
 
 

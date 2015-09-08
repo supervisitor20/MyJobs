@@ -38,7 +38,7 @@ from moc_coding import models as moc_models
 from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
-from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr
+from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr, task_check_solr_count
 from xmlparse import text_fields
 from import_jobs import add_jobs, delete_by_guid
 from transform import transform_for_postajob
@@ -60,8 +60,7 @@ from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
-from universal.states import states_with_sites, other_locations_with_sites
-
+from universal.states import states_with_sites
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -1980,7 +1979,14 @@ def confirm_load_jobs_from_etl(response):
             if jsid.lower() in blocked_jsids:
                 LOG.info("Ignoring sns for %s", jsid)
                 return None
-            LOG.info("Creating ETL Task (%s, %s, %s" % (jsid, buid, name))
+
+            # Setup a check on this business unit down the road.
+            if 'count' in msg:
+                LOG.info("Creating check_solr_count task (%s, %s)" % (buid, msg['count']))
+                eta=datetime.datetime.now() + datetime.timedelta(minutes=20)
+                task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
+
+            LOG.info("Creating ETL Task (%s, %s, %s)" % (jsid, buid, name))
             if int(prio) == 1:
                 task_priority_etl_to_solr.delay(jsid, buid, name)
             else:
@@ -2028,10 +2034,78 @@ def test_markdown(request):
 
 
 def seo_states(request):
-    data_dict = {"states": sorted(states_with_sites.iteritems()),
-                 "other_locations": sorted(other_locations_with_sites.iteritems())}
+    # Pull jobs from solr, only in the US and group by states.
+    search = DESearchQuerySet().narrow('country:United States').facet('state')
 
-    return render_to_response('seo/states.html', data_dict,
+    # Grab total count before search becomes a dict
+    all_link = "<a href='http://www.usa.jobs'>All United States Jobs ({0})</a>"
+    all_link = all_link.format(intcomma(search.count()))
+
+    # Turn search results into a dict formatted {state:count}
+    search = dict(search.facet_counts().get('fields', {}).get('state', {}))
+
+    # Mutates states by adding counts from search
+    def _add_job_counts(states):
+        for state in states:
+            state['count'] = intcomma(search.get(state['location'], 0))
+
+    # Copy imported list
+    # Don't want to mutate something that could be used elsewhere
+    new_states = states_with_sites[:]
+
+    # add counts
+    _add_job_counts(new_states)
+
+    # ensure the states are in alphabetical order.
+    sorted_states = sorted(new_states, key=lambda s: s['location'])
+
+    data_dict = {"title": "United States Locations",
+                 "all_link": all_link,
+                 "has_child_page": True,
+                 "locations": sorted_states}
+
+    return render_to_response('seo/network_locations.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+def seo_cities(request, state):
+    # Pull jobs from solr
+    results = DESearchQuerySet().narrow(u"state:({0})".format(state)
+                                        ).facet('city_slab')
+
+    # Grab root url for state. Ex: indiana.jobs
+    state_url = (s for s in states_with_sites
+                 if s['location'] == state).next()['url']
+
+    # Grabbing results count before turning into a dict
+    all_link = '<a href="{0}">All {1} Jobs ({2})</a>'
+    all_link = all_link.format('http://' + state_url, state,
+                               intcomma(results.count()))
+
+    # add counts and get just want we need
+    results = results.facet_counts().get('fields', {}).get('city_slab', {})
+
+    # Make a list of city dicts
+    output = []
+    for result in results:
+        url, location = result[0].split("::")
+        city = {'count': intcomma(result[1]),
+                'url': state_url + '/' + url,
+                'location': location[:-4]}
+
+        output.append(city)
+
+    # sort cities by location name
+    sorted_locations = sorted(output, key=lambda c: c['location'])
+
+    data_dict = {"title": "{0} Cities".format(state.title()),
+                 "all_link": all_link,
+                 "breadcrumbs": True,
+                 "has_child_page": False,
+                 "state": state,
+                 "locations": sorted_locations}
+
+    return render_to_response('seo/network_locations.html', data_dict,
                               context_instance=RequestContext(request))
 
 

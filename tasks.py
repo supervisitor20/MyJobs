@@ -36,6 +36,10 @@ from registration.models import ActivationProfile
 from solr import helpers
 from solr.models import Update
 from solr.signals import object_to_dict, profileunits_to_dict
+from djcelery.models import TaskState
+import ast
+from pysolr import Solr
+from django.core.mail import send_mail
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +77,10 @@ PARTNER_LIBRARY_SOURCES = {
 def send_search_digest(self, search):
     """
     Task used by send_send_search_digests to send individual digest or search
-    emails.
+    emails. This can raise three different exceptions depending on various
+    factors that may be within or outside of our control. In the event that
+    that occurs, we err on the side of momentary network issues and assume that
+    this search will send successfully at a later time.
 
     Inputs:
     :search: SavedSearch or SavedSearchDigest instance to be mailed
@@ -83,10 +90,6 @@ def send_search_digest(self, search):
     except (ValueError, URLError, HTTPError) as e:
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
-        else:
-            # After the initial try and two retries, disable the offending
-            # saved search
-            search.disable_or_fix()
 
 
 @task(name='tasks.update_partner_library', ignore_result=True,
@@ -725,6 +728,21 @@ def task_priority_etl_to_solr(guid, buid, name):
         raise task_priority_etl_to_solr.retry(exc=e)
 
 
+@task(name="tasks.check_solr_count", send_error_emails=True)
+def task_check_solr_count(buid, count):
+    buid = int(buid)
+    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+    hits = conn.search(q="buid:%s" % buid, rows=1, mlt="false", facet="false").hits
+    if int(count) != int(hits):
+        logger.warn("For BUID: %s, we expected %s jobs, but have %s jobs", buid, count, hits)
+        send_mail(recipient_list=["matt@apps.directemployers.org"],
+                  from_email="solr_count_monitoring@apps.directemployers.org",
+                  subject="Buid Count for %s is incorrect." % buid,
+                  message="For BUID: %s, we expected %s jobs, but have %s jobs.  Check imports for this buid." %
+                        (buid, count, hits),
+                  fail_silently=False)
+
+
 @task(name="tasks.task_clear_solr", ignore_result=True)
 def task_clear_solr(jsid):
     """Delete all jobs for a given Business Unit/Job Source."""
@@ -898,3 +916,18 @@ def send_event_email(email_task):
 
     email_task.completed_on = datetime.now()
     email_task.save()
+
+
+@task(name="tasks.requeue_failures", ignore_result=True)
+def requeue_failures(hours=8):
+    period = datetime.datetime.now() - datetime.timedelta(hours=hours)
+
+    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'], 
+                                            tstamp__gt=period, 
+                                            name__in=['tasks.etl_to_solr',
+                                                      'tasks.priority_etl_to_solr'])
+
+    for task in failed_tasks:
+        task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        print "Requeuing task with args %s" % task.args
+
