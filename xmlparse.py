@@ -370,7 +370,8 @@ class DEJobFeed(JobFeed):
         job_dict['country'] = job_node['country']
         job_dict['country_ac'] = job_node['country']
         job_dict['country_exact'] = job_node['country']
-        job_dict['country_short'] = job_node['country_short']
+        job_dict['country_short'] = job_node['country_short'].upper()
+        job_dict['country_short_exact'] = job_node['country_short'].upper()
         job_dict['country_slab'] = country_slab
         job_dict['country_slab_exact'] = country_slab
         job_dict['country_slug'] = slugify(job_node['country'])
