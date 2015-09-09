@@ -100,9 +100,9 @@ def peekable(last):
 
 # Tokenizer -------------------------------
 
-and_ops = Set(["and", "&"])
+and_ops = Set(["and", "&", "-"])
 or_ops = Set(["or", ",", "|"])
-not_ops = Set(["not", "-", "!"])
+not_ops = Set(["not", "!"])
 
 
 class Token(object):
@@ -120,7 +120,8 @@ class Token(object):
         return self.token_type == 'op' and self.token in and_ops
 
     def is_not(self):
-        return self.token_type == 'op' and self.token in not_ops
+        return (self.token_type == 'pdash' or
+                self.token_type == 'op' and self.token in not_ops)
 
     def is_term(self):
         return self.token_type == 'term'
@@ -162,11 +163,11 @@ def build_op_regex(ops):
 infix_ops_re = build_op_regex(and_ops | or_ops)
 # dash is not a proper prefix op. No following space allowed.
 dash_re = re.compile(r'(-)(\S.*)')
-prefix_ops_re = build_op_regex(not_ops - Set(['-']))
+prefix_ops_re = build_op_regex(not_ops)
 ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
-raw_term_pattern = r'[0-9A-Za-z]+'
+raw_term_pattern = r'\w(?:\w|-)+'
 term_re = re.compile(r'(%s)(.*)' % raw_term_pattern)
 
 token_peekable = peekable(Token('eof', ''))
@@ -209,15 +210,15 @@ def tokenize(input_query):
             yield Token('term', match.group(1), ['quote'])
             continue
 
-        # try to match an infix operator
-        match = infix_ops_re.match(current)
-        if match:
-            current = match.group(2)
-            yield Token('op', match.group(1).lower())
-            continue
-
         # try to match prefix - special behavior
         match = dash_re.match(current)
+        if match:
+            current = match.group(2)
+            yield Token('pdash', match.group(1).lower())
+            continue
+
+        # try to match an infix operator
+        match = infix_ops_re.match(current)
         if match:
             current = match.group(2)
             yield Token('op', match.group(1).lower())

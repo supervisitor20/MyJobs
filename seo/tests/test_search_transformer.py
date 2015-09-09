@@ -74,7 +74,9 @@ test_data = [
 
     # Cases added after the official cases in PD-616
     ('', ''),
-
+    ('teaching-assistant', 'teaching-assistant'),
+    ('Highway Crew Members - Seasonal Snow-Mechanics',
+     'Highway AND Crew AND Members AND Seasonal AND Snow-Mechanics'),
 ]
 
 
