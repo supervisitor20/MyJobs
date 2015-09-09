@@ -401,7 +401,6 @@ def location_from_job(job, num_locations):
     except IndexError:
         return None
 
-
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
         return None
@@ -435,22 +434,27 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 
     return location
 
-
-def bread_box_moc_heading(moc_slug_value):
+def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-
+    
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
+    if len(moc_pieces) < 3: #moc url must be 3 parts
+        return None
     moc_code = moc_pieces[1]
     branch = moc_pieces[2]
 
     try:
-        moc = Moc.objects.get(code=moc_code, branch=branch)
+        return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
-        return None
+        return None    
 
-    return moc.code + ' - ' + moc.title
+def bread_box_moc_heading(moc_slug_value):
+    moc = pull_moc_object_via_slug(moc_slug_value)
+    if moc:
+        return moc.code + ' - ' + moc.title
+    return None
 
 
 def bread_box_title_heading(title_slug_value, jobs=None):
