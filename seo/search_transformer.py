@@ -1,5 +1,4 @@
 import re
-from sets import Set
 import itertools
 from functools import wraps
 import logging
@@ -100,9 +99,9 @@ def peekable(last):
 
 # Tokenizer -------------------------------
 
-and_ops = Set(["and", "&", "-"])
-or_ops = Set(["or", ",", "|"])
-not_ops = Set(["not", "!"])
+and_ops = set(["and", "&", "-"])
+or_ops = set(["or", ",", "|"])
+not_ops = set(["not", "!"])
 
 
 class Token(object):
