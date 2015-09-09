@@ -1,11 +1,11 @@
-{% extends "seo/dashboard/dashboard_base.html" %}
+{% extends "myemails/email_base.html" %}
 
 {% block content %}
 {% include "myemails/includes/header.html" with title="..." %}
 
 <div class="row">
     <div class="col-md-12">
-        <h3 style="margin-bottom: 0;">Headers</h3>
+        <h3>Headers</h3>
         <a class="awrap" href="">
             <div class="product-card" style="padding: 10px; font-size: 1.3em;">
                 <i class="fa fa-plus-circle" style="color: #009900;"></i> <span style="color: #000;">Create New Header</span>
@@ -15,15 +15,15 @@
             <div style="padding: 5px 10px; position: relative; background-color: {% if forloop.counter|divisibleby:2 %}#F7F7F7{%else%}#FEFEFE{% endif %};">
                 <span style="font-size: 1.3em; padding: 8px 0; display: inline-block;">Header Name {{forloop.counter}}</span>
 
-                <div style="float: right;">
-                    <a class="btn" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
-                    <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-                    <a class="btn btn-danger" style="color: #FFF;"><i class="fa fa-trash-o"></i> Delete</a>
+                <div class="pull-right">
+                    <a class="btn btn-default" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
+                    <a class="btn btn-default" href=""><i class="fa fa-eye fa-lg"></i> View</a>
+                    <a class="btn btn-danger" role="button"><i class="fa fa-trash-o"></i> Delete</a>
                 </div>
                 <div class="clearfix"></div>
             </div>
         {% endfor %}
-        <h3 style="margin-bottom: 0;">Footers</h3>
+        <h3>Footers</h3>
         <a class="awrap" href="">
             <div class="product-card" style="padding: 10px; font-size: 1.3em;">
                 <i class="fa fa-plus-circle" style="color: #009900;"></i> <span style="color: #000;">Create New Footer</span>
@@ -33,10 +33,10 @@
             <div style="padding: 5px 10px; position: relative; background-color: {% if forloop.counter|divisibleby:2 %}#F7F7F7{%else%}#FEFEFE{% endif %};">
                 <span style="font-size: 1.3em; padding: 8px 0; display: inline-block;">Footer Name {{forloop.counter}}</span>
 
-                <div style="float: right;">
-                    <a class="btn" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
-                    <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-                    <a class="btn btn-danger" style="color: #FFF;"><i class="fa fa-trash-o"></i> Delete</a>
+                <div class="pull-right">
+                    <a class="btn btn-default" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
+                    <a class="btn btn-default" href=""><i class="fa fa-eye fa-lg"></i> View</a>
+                    <a class="btn btn-danger" role="button"><i class="fa fa-trash-o"></i> Delete</a>
                 </div>
                 <div class="clearfix"></div>
             </div>
