@@ -1,3 +1,4 @@
+from smtplib import SMTPAuthenticationError
 from celery.exceptions import RetryTaskError
 import datetime
 import re
@@ -25,6 +26,7 @@ from mysearches.tests.factories import (SavedSearchFactory,
 from mysearches.tests.test_helpers import return_file
 from registration.models import ActivationProfile, Invitation
 from tasks import send_search_digests
+from universal.helpers import send_email
 
 
 class SavedSearchModelsTests(MyJobsBase):
@@ -196,8 +198,33 @@ class SavedSearchModelsTests(MyJobsBase):
         search.tags.add(tag)
 
         search.send_email()
-        self.assertTrue(
-            ContactRecord.objects.filter(tags__name=tag.name).exists())
+        record = ContactRecord.objects.get(tags__name=tag.name)
+        self.assertTrue(record.contactlogentry.successful)
+
+    @patch('mysearches.models.send_email')
+    def test_send_pss_fails(self, mock_send_email):
+        """
+        When a partner saved search fails to send, we should not imply
+        that it was successful.
+        """
+        company = CompanyFactory()
+        partner = PartnerFactory(owner=company)
+        search = PartnerSavedSearchFactory(user=self.user, created_by=self.user,
+                                           provider=company, partner=partner)
+
+        e = SMTPAuthenticationError(418, 'Toot toot')
+        mock_send_email.side_effect = e
+
+        self.assertEqual(ContactRecord.objects.count(), 0)
+        self.assertEqual(SavedSearchLog.objects.count(), 0)
+        search.send_email()
+
+        record = ContactRecord.objects.get()
+        log = SavedSearchLog.objects.get()
+        self.assertFalse(log.was_sent)
+        self.assertEqual(log.reason, "Toot toot")
+        self.assertTrue(record.notes.startswith(log.reason))
+        self.assertFalse(record.contactlogentry.successful)
 
     def assert_modules_in_hrefs(self, modules):
         """
@@ -250,14 +277,18 @@ class SavedSearchModelsTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertTrue('activate your account' in email.body)
 
-    def test_fix_fixable_search(self):
-        self.patcher.stop()
+    def test_errors_dont_disable_searches(self):
+        """
+        We should retry sending saved searches but exceeding our maximum
+        number of retries should not disable those searches.
+        """
+        self.mock_urlopen.side_effect = ValueError("bork bork bork")
+
         SavedSearchDigestFactory(user=self.user)
-        search = SavedSearchFactory(user=self.user, feed='')
-        self.assertFalse(search.feed)
+        search = SavedSearchFactory(user=self.user, feed='www.my.jobs')
 
         # Celery raises a retry that makes the test fail. In reality
-        # everything is fine, so ignore the retry-fail.
+        # everything is fine, so ignore the retry.
         try:
             send_search_digests()
         except RetryTaskError:
@@ -266,27 +297,6 @@ class SavedSearchModelsTests(MyJobsBase):
 
         search = SavedSearch.objects.get(pk=search.pk)
         self.assertTrue(search.is_active)
-        self.assertTrue(search.feed)
-
-    def test_disable_bad_search(self):
-        self.patcher.stop()
-        SavedSearchDigestFactory(user=self.user)
-        search = SavedSearchFactory(user=self.user, feed='',
-                                    url='http://example.com')
-        self.assertFalse(search.feed)
-
-        # Celery raises a retry that makes the test fail. In reality
-        # everything is fine, so ignore the retry-fail.
-        try:
-            send_search_digests()
-        except RetryTaskError:
-            pass
-
-        email = mail.outbox.pop()
-        search = SavedSearch.objects.get(pk=search.pk)
-        self.assertFalse(search.is_active)
-
-        self.assertTrue('has failed URL validation' in email.body)
 
     def test_get_unsent_jobs(self):
         """
