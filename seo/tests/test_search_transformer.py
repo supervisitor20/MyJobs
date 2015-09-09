@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # from django.test import TestCase
 from unittest import TestCase
 import logging
@@ -77,6 +78,7 @@ test_data = [
     ('teaching-assistant', 'teaching-assistant'),
     ('Highway Crew Members - Seasonal Snow-Mechanics',
      'Highway AND Crew AND Members AND Seasonal AND Snow-Mechanics'),
+    (u'全联接的智慧世界驱动', u'全联接的智慧世界驱动'),
 ]
 
 
@@ -88,13 +90,13 @@ class TestSearchParser(TestCase):
 
 def test_one_case(self, input_query, expected):
     actual = transform_search(input_query)
-    message = ""
+    message = u""
     message += "\n    input: "
     message += input_query
     message += "\n expected: "
     message += expected
     message += "\n      got: "
-    message += str(actual)
+    message += unicode(actual)
     self.assertEqual(expected, actual, message)
     logging.info("Correct: %s -> %s", input_query, expected)
 

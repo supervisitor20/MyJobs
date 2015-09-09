@@ -168,7 +168,7 @@ ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
 raw_term_pattern = r'\w(?:\w|-)+'
-term_re = re.compile(r'(%s)(.*)' % raw_term_pattern)
+term_re = re.compile(r'(%s)(.*)' % raw_term_pattern, re.U)
 
 token_peekable = peekable(Token('eof', ''))
 
@@ -418,7 +418,7 @@ class Parser(object):
 # reference to it in optimize_tree.
 
 
-bare_term_re = re.compile(r'\A%s\Z' % raw_term_pattern)
+bare_term_re = re.compile(r'\A%s\Z' % raw_term_pattern, re.U)
 
 
 def remove_simple_term_quotes(tree, root):
