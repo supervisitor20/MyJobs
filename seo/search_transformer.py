@@ -167,7 +167,13 @@ prefix_ops_re = build_op_regex(not_ops)
 ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
-raw_term_pattern = r'\w(?:\w|-)+'
+
+# Need to include dashes as part of search terms.
+# Also want to include : and ^ just in case those need
+# passed through to solr as well.
+# Also include other non operator symbols. ex: c#, c$
+# Also include \ escaped chars in the middle of terms
+raw_term_pattern = r'\w(?:[\w\-:^$#]|\\.)+'
 term_re = re.compile(r'(%s)(.*)' % raw_term_pattern, re.U)
 
 token_peekable = peekable(Token('eof', ''))

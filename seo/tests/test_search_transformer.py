@@ -79,6 +79,11 @@ test_data = [
     ('Highway Crew Members - Seasonal Snow-Mechanics',
      'Highway AND Crew AND Members AND Seasonal AND Snow-Mechanics'),
     (u'全联接的智慧世界驱动', u'全联接的智慧世界驱动'),
+    ('c#', 'c#'),
+    ('c$', 'c$'),
+    ('guid:22', 'guid:22'),
+    ('software c^2 developer', 'software AND c^2 AND developer'),
+    ('AT\\&T', 'AT\\&T'),
 ]
 
 
