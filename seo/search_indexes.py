@@ -81,7 +81,7 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
     company_slab = indexes.CharField(faceted=True)
     country = LocationCharField(model_attr='country', faceted=True, null=True)
     country_ac = indexes.EdgeNgramField(model_attr='country', null=True)
-    country_short = indexes.CharField(model_attr='country_short')
+    country_short = indexes.CharField(model_attr='country_short', faceted=True)
     country_slab = indexes.CharField(faceted=True)
     country_slug = indexes.CharField(model_attr="countrySlug", stored=False)
     date_new = indexes.DateTimeField(model_attr='date_new', null=True,
