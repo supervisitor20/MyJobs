@@ -747,6 +747,7 @@ def syndication_feed(request, filter_path, feed_type):
     jobs = helpers.get_jobs(default_sqs=sqs,
                             custom_facets=settings.DEFAULT_FACET,
                             jsids=settings.SITE_BUIDS,
+                            additional_fields=['description'],
                             filters=filters, sort_order=sort_order)
 
     job_count = jobs.count()
@@ -1744,20 +1745,11 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             # CustomFacet applied.
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
-    
+
     if filters['facet_slug'] and not active_facets:
         raise Http404("No job category found for %s" % filters['facet_slug'])
-    
-    # Text uses html_description instead of just description.
-    fl = list(helpers.search_fields)
-    index = fl.index('description')
-    fl.pop(index)
-    # We use the html_description to show highlighted snippets of the
-    # description that match the search term. If there is no search
-    # term there's no reason to even get the html_description.
-    if q_term:
-        fl.append('html_description')
 
+    fl = list(helpers.search_fields)
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
         request, filters, num_jobs, fl=fl)
 

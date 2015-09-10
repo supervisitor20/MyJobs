@@ -45,7 +45,9 @@
     {% if query_string %}
         {% if location_term and location_term != '\*' or title_term and title_term != '\*' or moc_term and moc_term != '\*' %}
             <div class="directseo_jobsnippet" itemprop="description">
-                {% highlight job.text with title_term html_tag "b" max_length 200 %}
+                ...
+                {{ job.highlighted.description | join:" ... " | highlight_solr }}
+                ...
             </div>
         {% endif %}
     {% endif %}
