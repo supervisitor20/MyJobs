@@ -61,6 +61,7 @@ from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
+from myjobs.decorators import user_is_allowed
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2035,6 +2036,13 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def admin_dashboard(request):
+    data_dict = {}
+    return render_to_response('seo/dashboard/dashboard_base.html', data_dict,
+                              context_instance=RequestContext(request))
 
 
 def seo_states(request):
