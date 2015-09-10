@@ -292,27 +292,12 @@ class FiltersTestCase(DirectSEOBase):
             facet_counts['%s_slab' % filter_type] = items
 
         facet_counts['facet_slab'] = []
-        for i in range(num_items):
-            facet = factories.CustomFacetFactory(name='Test 1', url_slab=slab)
-            factories.SeoSiteFacetFactory(customfacet=facet, seosite=self.site,
-                                          facet_group=1)
-            facet_counts['facet_slab'].append((facet, 5))
-        for i in range(num_items):
-            facet = factories.CustomFacetFactory(name='Test 2', url_slab=slab)
-            factories.SeoSiteFacetFactory(customfacet=facet, seosite=self.site,
-                                          facet_group=2)
-            facet_counts['facet_slab'].append((facet, 5))
-        for i in range(num_items):
-            facet = factories.CustomFacetFactory(name='Test 3',  url_slab=slab)
-            factories.SeoSiteFacetFactory(customfacet=facet, seosite=self.site,
-                                          facet_group=3)
-            facet_counts['facet_slab'].append((facet, 5))
-        for i in range(num_items):
-            facet = factories.CustomFacetFactory(name='Test 3',  url_slab=slab)
-            factories.SeoSiteFacetFactory(customfacet=facet, seosite=self.site,
-                                          facet_group=4)
-                                          
-            facet_counts['facet_slab'].append((facet, 5))
+        for i in range(1,5):
+            seo_facets = factories.SeoSiteFacetFactory.create_batch(num_items, seosite=self.site,
+                                                                    facet_group=i)
+            for seo_facet in seo_facets:
+                facet_counts['facet_slab'].append((seo_facet.customfacet, 5))
+
         path = '/mechanic-jobs/new-jobs/'
         filters = helpers.build_filter_dict(path)
         request = DummyRequest(path)
