@@ -40,11 +40,10 @@
         // determine whether or not we should use CORS or JSONP
         $.ajax({
           type: "OPTIONS",
-          crossDomain: true,
-          fail: function(xhr, textStatus, error) {
-            // Do JSONP
-            console.log("jsonp");
-          },
+          crossDomain: true
+        }).fail(function(xhr, textStatus, error) {
+          // Do JSONP
+          console.log("jsonp");
         }).done(function() {
           // Do CORS-enabled AJAX
           console.log("cors");
