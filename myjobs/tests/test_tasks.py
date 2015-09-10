@@ -9,11 +9,14 @@ from tasks import process_batch_events
 class TaskTests(MyJobsBase):
     @staticmethod
     def make_email_logs(email, event, received, processed, number):
+        to_create = []
         for _ in range(number):
-            EmailLog.objects.create(
-                email=email, event=event, received=received,
-                processed=processed
-            )
+            to_create.append(
+                EmailLog(
+                    email=email, event=event, received=received,
+                    processed=processed
+                ))
+        EmailLog.objects.bulk_create(to_create)
 
     def test_required_number_of_bad_events(self):
         now = datetime.datetime.now()
