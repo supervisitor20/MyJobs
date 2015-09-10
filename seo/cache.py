@@ -148,12 +148,11 @@ def get_domain_parent(request):
         - SeoSite object or None
     """
     if request.user.is_staff and 'domain' in request.REQUEST:
-        try: 
-            return SeoSite.objects.get(domain=request.REQUEST.get('domain')).parent_site 
-        except:
-            return None
-    try:
-        return settings.SITE.parent_site
-    except:
-        return None
-     
+        # filter() + first() will return None rather than raising an exception
+        site = SeoSite.objects.filter(
+            domain=request.REQUEST.get('domain')).first()
+    else:
+        # SITE might not be set on the settings object
+        site = getattr(settings, 'SITE', None)
+
+    return getattr(site, 'parent_site', None)
