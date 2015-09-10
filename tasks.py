@@ -218,8 +218,8 @@ def process_user_events(email):
     logs = EmailLog.objects.filter(email=email).order_by('-received')
     newest_log = logs[0]
 
-    filter_by_event = lambda x, num=None: [log for log in logs
-                                           if log.event in x][:num]
+    filter_by_event = lambda x, num=None: [log for log in logs[:num]
+                                           if log.event in x]
 
     max_errors = 3
     # The presence (and number of events) of deactivate or stop_sending
