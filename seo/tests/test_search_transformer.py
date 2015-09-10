@@ -84,6 +84,7 @@ test_data = [
     ('guid:22', 'guid:22'),
     ('software c^2 developer', 'software AND c^2 AND developer'),
     ('AT\\&T', 'AT\\&T'),
+    ('country_short_exact:*', 'country_short_exact:*'),
 ]
 
 
