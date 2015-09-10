@@ -36,16 +36,18 @@
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       {% if domain_parent %}
-      var corsEnabled = true;
-
       $(document).on("ready", function() {
         // determine whether or not we should use CORS or JSONP
         $.ajax({
           type: "OPTIONS",
           crossDomain: true,
-          error: function(xhr, textStatus, error) {
-            corsEnabled = false;
+          fail: function(xhr, textStatus, error) {
+            // Do JSONP
+            console.log("jsonp");
           },
+        }).done(function() {
+          // Do CORS-enabled AJAX
+          console.log("cors");
         });
       });
       {% endif %}
