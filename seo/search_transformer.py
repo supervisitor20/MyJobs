@@ -167,12 +167,19 @@ ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
 
+# These characters are considered part of a term and can
+# start a term. Does not include - which can only appear in
+# the middle of a term.
+term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
+term_punctuation_pattern = "|".join([re.escape(c)
+                                     for c in term_punctuation])
+
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
 # passed through to solr as well.
 # Also include other non operator symbols. ex: c#, c$
-# Also include \ escaped chars in the middle of terms
-raw_term_pattern = r'\w(?:[\w\-:^$#]|\\.)+'
+raw_term_pattern = (r'(?:\\.|\w|%(punc)s)(?:\\.|\w|%(punc)s|-)*' %
+                    {'punc': term_punctuation_pattern})
 term_re = re.compile(r'(%s)(.*)' % raw_term_pattern, re.U)
 
 token_peekable = peekable(Token('eof', ''))
@@ -449,6 +456,12 @@ def drop_standalone_dash(tree, root):
         return AstTree('term', children=new_children)
 
 
+def escape_standalone_slash(tree, root):
+    if (tree.node_type == 'term' and
+            tree.children[0] == '/'):
+        tree.children[0] = '\\/'
+
+
 def prepend_term_prefix(tree, root):
     if (tree.node_type == 'and' and
             len(tree.children) > 1 and
@@ -521,6 +534,7 @@ def optimize_tree(tree, root):
         remove_simple_term_quotes,
         remove_redundant_parens,
         drop_standalone_dash,
+        escape_standalone_slash,
         prepend_term_prefix,
         append_term_suffix,
         escape_prefix_symbol,

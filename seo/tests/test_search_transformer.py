@@ -85,6 +85,9 @@ test_data = [
     ('software c^2 developer', 'software AND c^2 AND developer'),
     ('AT\\&T', 'AT\\&T'),
     ('country_short_exact:*', 'country_short_exact:*'),
+    ('snow \/ shovel', 'snow AND \/ AND shovel'),
+    ('snow / shovel', 'snow AND \/ AND shovel'),
+    ('snow/shovel', 'snow AND \/ AND shovel'),
 ]
 
 
