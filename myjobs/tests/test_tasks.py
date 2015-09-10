@@ -7,12 +7,35 @@ from tasks import process_batch_events
 
 
 class TaskTests(MyJobsBase):
+    @staticmethod
+    def make_email_logs(email, event, received, processed, number):
+        for _ in range(number):
+            EmailLog.objects.create(
+                email=email, event=event, received=received,
+                processed=processed
+            )
+
+    def test_required_number_of_bad_events(self):
+        now = datetime.datetime.now()
+        event = BAD_EMAIL[0]
+        u = UserFactory(is_verified=True, opt_in_myjobs=True)
+        self.make_email_logs(u.email, event, now, False, 2)
+        process_batch_events()
+
+        u = User.objects.get(pk=u.pk)
+        self.assertEqual(u.deactivate_type, 'none')
+
+        self.make_email_logs(u.email, event, now, False, 3)
+        process_batch_events()
+
+        u = User.objects.get(pk=u.pk)
+        self.assertEqual(u.deactivate_type, event)
+
     def test_bad_events_deactivate_user(self):
         now = datetime.datetime.now()
         for event in STOP_SENDING + BAD_EMAIL:
             u = UserFactory(is_verified=True, opt_in_myjobs=True)
-            EmailLog.objects.create(email=u.email, event=event, received=now,
-                                    processed=False)
+            self.make_email_logs(u.email, event, now, False, 3)
             process_batch_events()
 
             u = User.objects.get(pk=u.pk)
