@@ -1353,7 +1353,7 @@ def _facet_query_result_counts(tagged_facets, sqs):
 
 
 def get_solr_facet(jsids, filters=None, params=None):
-    custom_facets = settings.STANDARD_FACET    
+    custom_facets = settings.STANDARD_FACET
 
     # Short-circuit the function if a site has facets turned on, but either
     # does not have any facets with `show_production` == 1 or has not yet
