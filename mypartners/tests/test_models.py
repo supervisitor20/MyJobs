@@ -9,7 +9,7 @@ from myjobs.tests.factories import UserFactory
 from mydashboard.tests.factories import CompanyFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
-                                        TagFactory)
+                                        TagFactory, PRMAttachmentFactory)
 from mypartners.models import Contact, Location, Partner, PRMAttachment, Status
 from mysearches.models import PartnerSavedSearch
 from mysearches.tests.factories import PartnerSavedSearchFactory
@@ -104,9 +104,7 @@ class MyPartnerTests(MyJobsBase):
 
         for filename, expected_filename in filenames:
             f.name = filename
-            prm_attachment = PRMAttachment(attachment=f)
-            setattr(prm_attachment, 'partner', self.partner)
-            prm_attachment.save()
+            prm_attachment = PRMAttachmentFactory(attachment=f)
             result = PRMAttachment.objects.get(
                 attachment__contains=expected_filename)
             result.delete()

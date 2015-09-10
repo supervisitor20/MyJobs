@@ -7,11 +7,13 @@ from lxml import etree
 import pytz
 import re
 import unicodecsv
+from urllib import urlencode
 from validate_email import validate_email
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -708,11 +710,12 @@ def prm_records(request):
     _, _, contact_records = get_records_from_request(request)
     paginated_records = add_pagination(request, contact_records)
 
+    ctx = {
+        'partner': partner,
+        'records': paginated_records
+    }
+
     if request.is_ajax():
-        ctx = {
-            'partner': partner,
-            'records': paginated_records
-        }
         response = HttpResponse()
         html = render_to_response(
             'mypartners/includes/contact_record_column.html', ctx,
@@ -721,21 +724,16 @@ def prm_records(request):
         return response
 
     contact_type_choices = (('all', 'All'),) + CONTACT_TYPE_CHOICES
+    contact_choices = [('all', 'All')] + list(contact_records.values_list(
+        'contact__name', 'contact__name').distinct().order_by('contact__name'))
 
-    contact_choices = [
-        (c, c) for c in contact_records.order_by(
-            'contact__name').distinct().values_list('contact__name', flat=True)]
-    contact_choices.insert(0, ('all', 'All'))
-
-    ctx = {
+    ctx.update({
         'admin_id': request.REQUEST.get('admin'),
         'company': company,
         'contact_choices': contact_choices,
         'contact_type_choices': contact_type_choices,
-        'partner': partner,
-        'records': paginated_records,
         'view_name': 'PRM',
-    }
+    })
 
     return render_to_response('mypartners/main_records.html', ctx,
                               RequestContext(request))
@@ -764,8 +762,10 @@ def prm_edit_records(request):
                                  partner=partner, instance=instance)
         if form.is_valid():
             form.save(user, partner)
+            search_params = request.GET.copy()
+            search_params.update({'id': form.instance.pk})
             return HttpResponseRedirect(reverse('record_view') + '?' +
-                                        request.META['QUERY_STRING'])
+                                        urlencode(search_params))
     else:
         form = ContactRecordForm(partner=partner, instance=instance)
 
@@ -789,22 +789,33 @@ def prm_view_records(request):
     """
     company, partner, _ = prm_worthy(request)
     _, _, contact_records = get_records_from_request(request)
-    try:
-        page = int(request.GET.get('page', 1))
-    except ValueError:
-        page = 1
-    # change number of objects per page
-    paginated_records = add_pagination(request, contact_records, 1)
+    page_number = int(request.GET.get('page', 1))
+    record_id = int(request.GET.get('id', 0))
 
-    if len(paginated_records.object_list) > 1:
-        record = paginated_records.object_list[page - 1]
-    else:
-        record = paginated_records.object_list[0]
+    # change number of objects per page
+    paginator = Paginator(contact_records, 1)
+
+    if record_id:
+        pks = list(contact_records.values_list('pk', flat=True))
+
+        if record_id in pks:
+            page_number = pks.index(record_id) + 1
+        else:
+            page_number = 1
+            paginator = Paginator(
+                ContactRecord.objects.filter(pk=record_id), 1)
+
+    paginated_records = paginator.page(page_number)
+    record = paginated_records.object_list[0]
 
     attachments = record.prmattachment_set.all()
     record_history = ContactLogEntry.objects.filter(
         object_id=record.pk, content_type_id=ContentType.objects.get_for_model(
             ContactRecord).pk)
+
+    search_params = request.GET.copy()
+    navigation_params = search_params.copy()
+    navigation_params.pop('id', None)
 
     ctx = {
         'record': record,
@@ -814,7 +825,9 @@ def prm_view_records(request):
         'attachments': attachments,
         'record_history': record_history,
         'view_name': 'PRM',
-        'page': page
+        'page': page_number,
+        'search_params': urlencode(search_params),
+        'navigation_params': urlencode(navigation_params)
     }
 
     return render_to_response('mypartners/view_record.html', ctx,

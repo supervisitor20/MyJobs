@@ -401,7 +401,6 @@ def location_from_job(job, num_locations):
     except IndexError:
         return None
 
-
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
         return None
@@ -435,22 +434,27 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 
     return location
 
-
-def bread_box_moc_heading(moc_slug_value):
+def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-
+    
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
+    if len(moc_pieces) < 3: #moc url must be 3 parts
+        return None
     moc_code = moc_pieces[1]
     branch = moc_pieces[2]
 
     try:
-        moc = Moc.objects.get(code=moc_code, branch=branch)
+        return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
-        return None
+        return None    
 
-    return moc.code + ' - ' + moc.title
+def bread_box_moc_heading(moc_slug_value):
+    moc = pull_moc_object_via_slug(moc_slug_value)
+    if moc:
+        return moc.code + ' - ' + moc.title
+    return None
 
 
 def bread_box_title_heading(title_slug_value, jobs=None):
@@ -563,8 +567,8 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
 
     sqs = sqs.order_by(sort_order_mapper.get(sort_order, '-score'))
 
-    #The boost function added to this search query set scales relevancy scores
-    #by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
+    # The boost function added to this search query set scales relevancy scores
+    # by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
     sqs = sqs.bf('recip(ms(NOW/HOUR,salted_date),1.8e-9,1,1)')
 
     if fields:
@@ -597,7 +601,7 @@ def filter_sqs_by_location(sqs, location_slug):
     for k, v in loc.items():
         if v:
             if k == 'country_short':
-                sqs = sqs.narrow('country_short:(%s)' % v.upper())
+                sqs = sqs.narrow('country_short_exact:(%s)' % v.upper())
             elif k == 'state':
                 if v != 'none':
                     sqs = sqs.narrow("state_slug:(%s)" % v)
