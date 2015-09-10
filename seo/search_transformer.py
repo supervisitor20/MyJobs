@@ -99,9 +99,9 @@ def peekable(last):
 
 # Tokenizer -------------------------------
 
-and_ops = set(["and", "&", "-"])
-or_ops = set(["or", ",", "|"])
-not_ops = set(["not", "!"])
+AND_OPS = {"and", "&", "-"}
+OR_OPS = {"or", ",", "|"}
+NOT_OPS = {"not", "!"}
 
 
 class Token(object):
@@ -113,14 +113,14 @@ class Token(object):
         self.flags = flags
 
     def is_or(self):
-        return self.token_type == 'op' and self.token in or_ops
+        return self.token_type == 'op' and self.token in OR_OPS
 
     def is_and(self):
-        return self.token_type == 'op' and self.token in and_ops
+        return self.token_type == 'op' and self.token in AND_OPS
 
     def is_not(self):
         return (self.token_type == 'pdash' or
-                self.token_type == 'op' and self.token in not_ops)
+                self.token_type == 'op' and self.token in NOT_OPS)
 
     def is_term(self):
         return self.token_type == 'term'
@@ -159,10 +159,10 @@ def build_op_regex(ops):
                    '|'.join(regex_format_op(op) for op in ops))
     return re.compile(ops_pattern, re.I)
 
-infix_ops_re = build_op_regex(and_ops | or_ops)
+infix_ops_re = build_op_regex(AND_OPS | OR_OPS)
 # dash is not a proper prefix op. No following space allowed.
 dash_re = re.compile(r'(-)(\S.*)')
-prefix_ops_re = build_op_regex(not_ops)
+prefix_ops_re = build_op_regex(NOT_OPS)
 ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
@@ -189,7 +189,7 @@ token_peekable = peekable(Token('eof', ''))
 def tokenize(input_query):
     current = input_query
     while(current != ''):
-        # eat ws
+        # eat whitespace
         ws_match = ws_re.match(current)
         if ws_match:
             current = ws_match.group(1)
@@ -226,7 +226,7 @@ def tokenize(input_query):
         match = dash_re.match(current)
         if match:
             current = match.group(2)
-            yield Token('pdash', match.group(1).lower())
+            yield Token('pdash', match.group(1))
             continue
 
         # try to match an infix operator
