@@ -23,6 +23,9 @@ from django.dispatch import receiver
 from haystack.inputs import Raw
 from haystack.query import SQ
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
+
 from saved_search.models import BaseSavedSearch, SOLR_ESCAPE_CHARS
 from taggit.managers import TaggableManager
 
