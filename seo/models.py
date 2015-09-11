@@ -1,7 +1,6 @@
 import operator
 from DNS import DNSError
 from boto.route53.exception import DNSServerError
-from django.core import mail
 from slugify import slugify
 
 from django.conf import settings
@@ -11,20 +10,23 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
 from django.core.cache import cache
+from django.core import mail
 from django.core.validators import MaxValueValidator, ValidationError
-from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
 from django.dispatch import receiver
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 
 from haystack.inputs import Raw
 from haystack.query import SQ
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
+add_introspection_rules([], ["^seo\.models\.CommaSeparatedTextField"])
 
 from saved_search.models import BaseSavedSearch, SOLR_ESCAPE_CHARS
 from taggit.managers import TaggableManager
@@ -37,7 +39,6 @@ from seo.search_backend import DESearchQuerySet
 from myjobs.models import User
 from mypartners.models import Tag
 from universal.helpers import get_domain, get_object_or_none
-
 
 import decimal
 
@@ -61,6 +62,7 @@ class GoogleAnalyticsBySiteManager(models.Manager):
     def get_query_set(self):
         return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
             seosite__id=settings.SITE_ID)
+
 
 class NonChainedForeignKey(ForeignKey):
     """
@@ -1229,8 +1231,32 @@ class Configuration(models.Model):
     what_helptext = models.TextField(blank=True)
     where_helptext = models.TextField(blank=True)
 
-    not_found_override = models.ManyToManyField('redirects.Redirect', null=True,
-                                                blank=True)
+
+#@python_2_unicode_compatible
+#class QueryParameter(models.Model):
+#    redirect = models.ForeignKey(QueryRedirect, on_delete=models.CASCADE,
+#                                 related_name='query_parameters')
+#    param = models.CharField(max_length=200)
+#    value = models.CharField(max_length=200)
+#
+#
+#@python_2_unicode_compatible
+#class QueryRedirect(models.Model):
+#    site = models.ForeignKey(Site)
+#    old_path = models.CharField(_('redirect from'), max_length=200,
+#                                db_index=True,
+#                                help_text=_(
+#                                    "This should be an absolute path, "
+#                                    "excluding the domain name. Example: "
+#                                    "'/events/search/'."))
+#    new_path = models.CharField(_('redirect to'), max_length=200, blank=True,
+#                                help_text=_(
+#                                    "This can be either an absolute "
+#                                    "path (as above) or a full URL starting "
+#                                    "with 'http://' or 'https://'."))
+#
+#    def __str__(self):
+#        return "%s ---> %s" % (self.old_path, self.new_path)
 
 
 class GoogleAnalytics (models.Model):

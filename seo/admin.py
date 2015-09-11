@@ -153,14 +153,14 @@ class ConfigurationAdmin (admin.ModelAdmin):
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget'),
-                             'sites', 'not_found_override']
+                             'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
                 ('title', 'view_all_jobs_detail', 'status',
                  'percent_featured'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', ),
-                'sites', 'not_found_override']}),
+                'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
                  'show_home_social_footer',
@@ -208,8 +208,6 @@ class ConfigurationAdmin (admin.ModelAdmin):
             this.base_fields['sites'].queryset = seo_site_qs
             this.base_fields['sites'].initial = [o.pk for o in obj.seosite_set
                                                  .filter(group=obj.group)]
-            this.base_fields['not_found_override'].queryset = (
-                Redirect.objects.filter(site__in=seo_site_qs))
 
             if request.user.is_superuser or request.user.groups.count() >= 1:
                 if not request.user.is_superuser:

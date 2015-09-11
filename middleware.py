@@ -259,12 +259,4 @@ class RedirectOverrideMiddleware(object):
         # Configuration is cached. The effect on response time is
         # hopefully minimal.
         configuration = get_site_config(request)
-        if configuration.not_found_override.exists():
-            # Check both the current path with and without a trailing slash
-            paths = [request.path,
-                     (request.path[:-1] if request.path.endswith('/')
-                      else request.path + '/')]
-            not_found = configuration.not_found_override.filter(
-                old_path__in=paths).first()
-            if not_found:
-                return redirect(not_found.new_path, permanent=True)
+        # TODO: Do stuff
