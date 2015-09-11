@@ -87,7 +87,6 @@ class NonChainedForeignKey(ForeignKey):
                 raise ValidationError('%s is a child entity and cannot be a parent'
                                         % potential_parent)
         return value
-        
 
 
 def term_splitter(terms):
