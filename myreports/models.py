@@ -76,3 +76,75 @@ class Report(models.Model):
 
         self.results.save('%s-%s.json' % (self.name, self.pk), results)
         self._results = contents
+
+
+class UserType(models.Model):
+    user_type = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=False)
+
+
+class DataType(models.Model):
+    data_type = models.CharField(max_length=100)
+    description = models.TextField(max_length=500)
+    is_active = models.BooleanField(default=False)
+
+
+class ReportType(models.Model):
+    report_type = models.CharField(max_length=50)
+    description = models.TextField(max_length=500)
+    data_types = models.ManyToManyField(DataType)
+    is_active = models.BooleanField(default=False)
+
+
+class ReportingType(models.Model):
+    reporting_type = models.CharField(max_length=50)
+    description = models.TextField(max_length=500)
+    user_types = models.ManyToManyField(UserType)
+    report_types = models.ManyToManyField(ReportType)
+    is_active = models.BooleanField(default=False)
+
+
+class PresentationType(models.Model):
+    presentation_type = models.CharField(max_length=100)
+    description = models.TextField(max_length=500)
+    is_active = models.BooleanField(default=False)
+
+
+class Configuration(models.Model):
+    name = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=False)
+
+
+class Column(models.Model):
+    table_name = models.CharField(max_length=50)
+    column_name = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=False)
+
+
+class ColumnFormat(models.Model):
+    name = models.CharField(max_length=50)
+    format_code = models.CharField(max_length=2000)
+    is_active = models.BooleanField(default=False)
+
+
+class InterfaceElementType(models.Model):
+    interface_element_type = models.CharField(max_length=50)
+    description = models.TextField(max_length=500)
+    element_code = models.CharField(max_length=2000)
+    is_active = models.BooleanField(default=False)
+
+
+class ConfigurationColumn(models.Model):
+    configuration = models.ForeignKey(Configuration)
+    column = models.ForeignKey(Column)
+    interface_element_type = models.ForeignKey(InterfaceElementType)
+    alias = models.CharField(max_length=100)
+    multi_value_expansion = models.PositiveSmallIntegerField()
+    column_formats = models.ManyToManyField(ColumnFormat)
+    is_active = models.BooleanField(default=False)
+
+
+class ReportRepresentation(models.Model):
+    presentation_type = models.ForeignKey(PresentationType)
+    data_type = models.ForeignKey(DataType)
+    configuration = models.ForeignKey(Configuration)
