@@ -44,7 +44,7 @@ from seo.models import (ATSSourceCode, BillboardHotspot, BillboardImage,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
                         SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource)
 from seo.queryset_copier import copy_following_relationships
-from seo.signals import check_message_queue
+from seo.models import check_message_queue
 
 
 csrf_protect_m = method_decorator(csrf_protect)
