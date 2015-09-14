@@ -370,7 +370,8 @@ class DEJobFeed(JobFeed):
         job_dict['country'] = job_node['country']
         job_dict['country_ac'] = job_node['country']
         job_dict['country_exact'] = job_node['country']
-        job_dict['country_short'] = job_node['country_short']
+        job_dict['country_short'] = job_node['country_short'].upper()
+        job_dict['country_short_exact'] = job_node['country_short'].upper()
         job_dict['country_slab'] = country_slab
         job_dict['country_slab_exact'] = country_slab
         job_dict['country_slug'] = slugify(job_node['country'])
@@ -435,6 +436,8 @@ class DEJobFeed(JobFeed):
         job_dict['id'] = 'seo.joblisting.' + job_dict['uid']
         job_dict['django_id'] = 0
         job_dict['django_ct'] = 'seo.joblisting'
+        job_dict['all_locations'] = [job_node['zip'], job_node['city'], job_node['state'], job_node['state_short'],
+                                "%s, %s" % (job_node['city'], job_node['state']), job_node['country']]
         job_dict['text'] = " ".join([(job_dict.get(k) or "None") for k
                                      in text_fields])
         return job_dict

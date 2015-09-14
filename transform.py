@@ -121,7 +121,8 @@ def transform_for_postajob(job):
     solr_job['django_ct'] = 'seo.joblisting'
     solr_job['django_id'] = 0
     solr_job['city_slug'] = slugify(job['city'])
-    solr_job['country_short'] = job['country_short']
+    solr_job['country_short'] = job['country_short'].upper()
+    solr_job['country_short_exact'] = job['country_short'].upper()
     solr_job['date_updated_exact'] = job['date_updated']
     solr_job['job_source_name'] = 'Post-a-Job'
     solr_job['date_updated'] = job['date_updated']
@@ -188,6 +189,9 @@ def transform_for_postajob(job):
     solr_job['country_slab_exact'] = solr_job['country_slab']
     solr_job['city_slab_exact'] = solr_job['city_slab']
     solr_job['title_slab_exact'] = solr_job['title_slab']
+
+    solr_job['all_locations'] = [job['zipcode'], job['city'], job['state'], job['state_short'],
+                                "%s, %s" % (job['city'], job['state']), job['country']]
 
     solr_job['text'] = " ".join([force_text((job.get(k)) or "None") for k in
                                  text_fields])
@@ -278,7 +282,8 @@ def hr_xml_to_json(xml, business_unit):
     job['django_ct'] = 'seo.joblisting'
     job['django_id'] = 0
     job['city_slug'] = slugify(city)
-    job['country_short'] = country_short
+    job['country_short'] = country_short.upper()
+    job['country_short_exact'] = country_short.upper()
     job['date_updated_exact'] = job['date_updated']
     job['job_source_name'] = business_unit.title
     job['salted_date'] = DEJobFeed.date_salt(job['date_updated'])
@@ -365,6 +370,9 @@ def hr_xml_to_json(xml, business_unit):
 
     job['text'] = " ".join([force_text((job.get(k)) or "None") for k in
                             text_fields])
+
+    job['all_locations'] = [job['zipcode'], city, state, state_short,
+                                "%s, %s" % (city, state), country]
 
     job['GeoLocation'] = ("%s, %s" % (latitude, longitude)
                           if latitude and longitude else None)

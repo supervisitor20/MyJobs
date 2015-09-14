@@ -342,11 +342,16 @@ class DESolrSearchBackend(SolrSearchBackend):
 
         if highlight is True:
             kwargs['hl'] = 'true'
-            kwargs['hl.fragsize'] = '100'
-            kwargs['hl.snippets'] = '2'
+            kwargs['hl.fl'] = 'description'
+            kwargs['hl.alternateField'] = 'description'
+            kwargs['hl.maxAlternateFieldLength'] = \
+                settings.SEARCH_FRAGMENT_SIZE
+            kwargs['hl.requireFieldMatch'] = 'true'
+            kwargs['hl.fragsize'] = settings.SEARCH_FRAGMENT_SIZE
+            kwargs['hl.snippets'] = settings.SEARCH_SNIPPETS
             kwargs['hl.mergeContiguous'] = 'true'
-            kwargs['hl.simple.pre'] = '<b>'
-            kwargs['hl.simple.post'] = '</b>'
+            kwargs['hl.simple.pre'] = '###{{{###'
+            kwargs['hl.simple.post'] = '###}}}###'
 
         if self.include_spelling is True:
             kwargs['spellcheck'] = 'true'
