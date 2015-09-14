@@ -266,8 +266,15 @@ class RedirectOverrideMiddleware(object):
         for r in redirects:
             matches = 0
             for query in r.query_parameters.all():
-                if ('='.join([query.param, query.value]).lower()
-                        in request.META['QUERY_STRING'].lower()):
+                # Allow for multiple pipe-delimited values
+                if '|' in query.value:
+                    values = query.value.split('|')
+                else:
+                    values = [query.value]
+
+                if any([q.lower() in request.META['QUERY_STRING'].lower()
+                        for q in ['='.join([query.param, v])
+                                  for v in values]]):
                     # For each potential redirect, determine how likely it
                     # matches the current request.
                     matches += 1
@@ -277,12 +284,13 @@ class RedirectOverrideMiddleware(object):
                     matches = 0
                     break
             counts[matches].append(r)
-        max_count = max(counts.keys())
-        if max_count > 0:
-            matches = counts[max_count]
-            if matches:
-                # These QueryRedirects match the current request and each
-                # contains the same number of query parameters; draw one out of
-                # a hat.
-                choice = random.choice(matches)
-                return redirect(choice.new_path, permanent=True)
+        if len(counts):
+            max_count = max(counts.keys())
+            if max_count > 0:
+                matches = counts[max_count]
+                if matches:
+                    # These QueryRedirects match the current request and each
+                    # contains the same number of query parameters; draw one
+                    # out of a hat.
+                    choice = random.choice(matches)
+                    return redirect(choice.new_path, permanent=True)
