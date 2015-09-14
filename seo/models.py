@@ -1232,31 +1232,36 @@ class Configuration(models.Model):
     where_helptext = models.TextField(blank=True)
 
 
-#@python_2_unicode_compatible
-#class QueryParameter(models.Model):
-#    redirect = models.ForeignKey(QueryRedirect, on_delete=models.CASCADE,
-#                                 related_name='query_parameters')
-#    param = models.CharField(max_length=200)
-#    value = models.CharField(max_length=200)
-#
-#
-#@python_2_unicode_compatible
-#class QueryRedirect(models.Model):
-#    site = models.ForeignKey(Site)
-#    old_path = models.CharField(_('redirect from'), max_length=200,
-#                                db_index=True,
-#                                help_text=_(
-#                                    "This should be an absolute path, "
-#                                    "excluding the domain name. Example: "
-#                                    "'/events/search/'."))
-#    new_path = models.CharField(_('redirect to'), max_length=200, blank=True,
-#                                help_text=_(
-#                                    "This can be either an absolute "
-#                                    "path (as above) or a full URL starting "
-#                                    "with 'http://' or 'https://'."))
-#
-#    def __str__(self):
-#        return "%s ---> %s" % (self.old_path, self.new_path)
+@python_2_unicode_compatible
+class QueryParameter(models.Model):
+    redirect = models.ForeignKey('QueryRedirect', on_delete=models.CASCADE,
+                                 related_name='query_parameters')
+    param = models.CharField(max_length=200,
+                             help_text=_('The part before the equals sign'))
+    value = models.CharField(max_length=200,
+                             help_text=_('The part after the equals sign'))
+
+    def __str__(self):
+        return ""
+
+
+@python_2_unicode_compatible
+class QueryRedirect(models.Model):
+    site = models.ForeignKey('sites.Site')
+    old_path = models.CharField(_('redirect from'), max_length=200,
+                                db_index=True,
+                                help_text=_(
+                                    "This should be an absolute path, "
+                                    "excluding the domain name. Example: "
+                                    "'/events/search/'."))
+    new_path = models.CharField(_('redirect to'), max_length=200, blank=True,
+                                help_text=_(
+                                    "This can be either an absolute "
+                                    "path (as above) or a full URL starting "
+                                    "with 'http://' or 'https://'."))
+
+    def __str__(self):
+        return "%s ---> %s" % (self.old_path, self.new_path)
 
 
 class GoogleAnalytics (models.Model):

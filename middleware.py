@@ -1,4 +1,6 @@
+from collections import defaultdict
 import operator
+import random
 import pytz
 
 from django import http
@@ -10,7 +12,6 @@ from django.core.cache import cache
 from django.shortcuts import redirect
 
 from postajob.models import SitePackage
-from seo.cache import get_site_config
 from seo.models import SeoSite, SeoSiteRedirect, SeoSiteFacet
 import version
 
@@ -251,12 +252,37 @@ def filter_custom_facets_by_production_status(custom_facets):
 
 class RedirectOverrideMiddleware(object):
     """
-    Does a redirect if one is set on the current configuration for the current
-    path. Default behavior was to not do redirects if the page did not result
-    in a 404.
+    Determines if we need to redirect based on the current path, any query
+    strings, and any entries in the QueryRedirect table for the current domain.
     """
     def process_request(self, request):
-        # Configuration is cached. The effect on response time is
-        # hopefully minimal.
-        configuration = get_site_config(request)
-        # TODO: Do stuff
+        paths = [request.path,
+                 (request.path[:-1] if request.path.endswith('/')
+                  else request.path + '/')]
+        # This is a reverse foreign key so select_related won't work.
+        redirects = settings.SITE.queryredirect_set.filter(
+            old_path__in=paths).prefetch_related('query_parameters')
+        counts = defaultdict(lambda: [])
+        for r in redirects:
+            matches = 0
+            for query in r.query_parameters.all():
+                if ('='.join([query.param, query.value]).lower()
+                        in request.META['QUERY_STRING'].lower()):
+                    # For each potential redirect, determine how likely it
+                    # matches the current request.
+                    matches += 1
+                else:
+                    # If any query doesn't match, the entire redirect doesn't
+                    # match.
+                    matches = 0
+                    break
+            counts[matches].append(r)
+        max_count = max(counts.keys())
+        if max_count > 0:
+            matches = counts[max_count]
+            if matches:
+                # These QueryRedirects match the current request and each
+                # contains the same number of query parameters; draw one out of
+                # a hat.
+                choice = random.choice(matches)
+                return redirect(choice.new_path, permanent=True)

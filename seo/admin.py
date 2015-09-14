@@ -6,7 +6,6 @@ from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
-from django.contrib.redirects.models import Redirect
 from django.contrib.sites.models import Site
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -42,7 +41,8 @@ from seo.models import (ATSSourceCode, BillboardHotspot, BillboardImage,
                         BusinessUnit, Company, Configuration, CustomFacet,
                         CustomPage, FlatPage, GoogleAnalytics,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
-                        SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource)
+                        SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource,
+                        QueryParameter, QueryRedirect)
 from seo.queryset_copier import copy_following_relationships
 from seo.signals import check_message_queue
 
@@ -1229,6 +1229,15 @@ class ViewSourceAdmin(admin.ModelAdmin):
         ('Sites Commited', {'fields': ['sites']}),
     ]
 
+
+class QueryParameterInline(admin.TabularInline):
+    model = QueryParameter
+
+
+class QueryRedirectAdmin(admin.ModelAdmin):
+    inlines = [QueryParameterInline]
+
+
 admin.site.register(CustomFacet, CustomFacetAdmin)
 admin.site.register(Configuration, ConfigurationAdmin)
 admin.site.register(BusinessUnit, BusinessUnitAdmin)
@@ -1243,6 +1252,7 @@ admin.site.register(ATSSourceCode, ATSSourceCodeAdmin)
 admin.site.register(ViewSource, ViewSourceAdmin)
 admin.site.register(BillboardImage, BillboardImageAdmin)
 admin.site.register(Company, CompanyAdmin)
+admin.site.register(QueryRedirect, QueryRedirectAdmin)
 
 try:
     admin.site.unregister(FlatPage)
@@ -1277,7 +1287,7 @@ def check_inline_instance(obj, req):
 
 
 def copy_to_qc(modeladmin, request, queryset):
-    # This shouldnt't be used to copy a large number of objects at once.
+    # This shouldn't be used to copy a large number of objects at once.
     if queryset.count() > 5:
         error_message = 'You cannot copy more than 5 items at once.'
         modeladmin.message_user(request, error_message)
