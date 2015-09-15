@@ -45,6 +45,11 @@ i.m-btn-icon {
     vertical-align: middle;
 }
 
+li.danger-item > a,
+li.danger-item > a:hover {
+    color: #d9534f;
+}
+
 /* Small devices (tablets and up) */
 @media (min-width: 768px) {
 
