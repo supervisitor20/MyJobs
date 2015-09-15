@@ -1,6 +1,8 @@
 import re, sys
 import ipdb
+
 from search_transformer import peekable
+from mypartners.models import Location
 
 address_line_1_terms = ['alley',
                         'alley',
@@ -722,7 +724,7 @@ address_line_2_terms = ['apartment','apt',
                         'floor','fl',
                         'basement','bsmt']
 
-po_box_terms = ['po','p.o.', 'p o','po','p']
+po_box_terms = ['po','p.o.', 'p o','po','post office box']
 
 direction_terms = ['n',
                    'ne',
@@ -745,16 +747,15 @@ ws_re = re.compile("\s+(.*)")
 numeric_re = re.compile("(\d+)(.*)")
 direction_re = re.compile("\s+(%s)\s+(.*)" % "|".join(direction_terms), re.I)
 add_1_re = re.compile("(%s)(?:$|\s)(.*)" % "|".join(address_line_1_terms), re.I)
-po_box_re = re.compile("(%s)((?:\s*(?:box|bo|b)(?:$|\s))|\s*)(.*)" % "|".join(po_box_terms), re.I)
-add_2_re = re.compile("((?:(?:%s)(?=\s))|#)(.*)" % "|".join(address_line_2_terms), re.I)
+po_box_re = re.compile("(%s)((?:\s*(?:box|bo|b)(?:$|\s))|\s+)(.*)" % "|".join(po_box_terms), re.I)
+add_2_re = re.compile("^((?:(?:%s)(?=\s))|#)(.*)" % "|".join(address_line_2_terms), re.I)
 word_re = re.compile("(\S+)(.*)")
 
 
 class Token(object):
-    def __init__(self, token_type, token, flags=[]):
+    def __init__(self, token_type, token):
         self.token_type = token_type
         self.token = token
-        self.flags = flags
 
     def is_numeric(self):
         return self.token_type == 'num'
@@ -807,8 +808,6 @@ def tokenize(input_string):
         match = po_box_re.match(current)
         if match:
             current = match.group(3)
-            print match.group(1)
-            print match.group(3)
             yield Token('pob', match.group(1))
             continue
 
@@ -834,11 +833,14 @@ def tokenize(input_string):
         continue
 
 class ScoreTree(object):
-    def __init__(self, node_type, head, tail=None, children=[]):
+    def __init__(self, node_type, head, tail=None, children=None):
         self.node_type = node_type
         self.head = head
         self.tail = tail
-        self.children = children
+        if children is None:
+            self.children = []
+        else:
+            self.children = children
 
     def get_score(self):
         
@@ -862,7 +864,7 @@ class ScoreTree(object):
 
         if self.node_type == 'pob':
             if self.tail:
-                add1_score += 10
+                add1_score += 20
                 add2_score += 10
 
         if self.node_type == 'add2':
@@ -941,11 +943,50 @@ class Parser(object):
         else:
             return None
 
+class ScoreTransformer(object):
+    def __init__(self, tokenize, parser):
+        self.tokenize = tokenize
+        self.parser = parser
+
+    def get_total_score(self, input_query):
+        # Tokenize
+        token_stream = self.tokenize(input_query)
+
+        # Parse
+        parser = self.parser(token_stream)
+        return parser.parse()
+
 def calculate_score(input_string):
     input_string = re.sub("[.|,]", "", input_string)
-    token_stream = tokenize(input_string)
-    parser = Parser(token_stream)
-    return parser.parse()
+    score_transformer = ScoreTransformer(tokenize, Parser)
+    return score_transformer.get_total_score(input_string)
+
+def determine_label_is_address():
+    count = 0
+    output_file = open('output.txt','w')
+    for location in Location.objects.all():
+        addr1_score, addr2_score = calculate_score(location.label)
+        if addr1_score >= 20:
+            count += 1
+            output_file.write('----------BEFORE----------\n')
+            output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
+            output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
+            output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
+
+            if location.address_line_one:
+                if location.address_line_two:
+                    output_file.write('####### UNABLE TO FIX THE ABOVE AUTOMATICALLY, MOVING ON #######\n')
+                    continue #report not able to be fixed automatically
+                else:
+                    location.address_line_two = location.address_line_one
+            location.address_line_one = location.label
+
+            output_file.write('----------AFTER----------\n')
+            output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
+            output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
+            output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
+
+    output_file.write('Count: %s' % count)
 
 if __name__ == '__main__':
     print calculate_score(sys.argv[1])

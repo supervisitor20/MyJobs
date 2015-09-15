@@ -265,13 +265,30 @@ class AstTree(object):
     It is primarily responsible for representing value and serization.
     """
 
-    def __init__(self, node_type, head=None, tail=[], flags=[], children=None):
+    def __init__(self, node_type, head=None, tail=None, flags=None, children=None):
+        if tail is None:
+            self.tail = []
+        else:
+            self.tail = tail
+
+        if flags is None:
+            self.flags = []
+        else:
+            self.flags = flags
+
         self.node_type = node_type
         if children is not None:
             self.children = children
         else:
-            self.children = [head] + tail
-        self.flags = flags
+            self.children = [head] + self.tail
+
+    # def __init__(self, node_type, head=None, tail=[], flags=[], children=None):
+    #     self.node_type = node_type
+    #     if children is not None:
+    #         self.children = children
+    #     else:
+    #         self.children = [head] + tail
+    #     self.flags = flags
 
     def string(self):
         if self.node_type == 'or':
