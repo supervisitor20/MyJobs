@@ -50,6 +50,25 @@ li.danger-item > a:hover {
     color: #d9534f;
 }
 
+.add-row {
+    font-size: 1.3em;
+    padding: 0 8px 8px 8px;
+}
+
+.add-row > .cta {
+    color: #000;
+    margin-left: 5px;
+}
+
+.fa.green {
+    color: #009900;
+}
+
+.cell-title-lg {
+    font-size: 1.3em;
+    padding: 8px 0;
+}
+
 /* Small devices (tablets and up) */
 @media (min-width: 768px) {
 
@@ -87,6 +106,10 @@ li.danger-item > a:hover {
     a.m-btn-icon > i.fa-lg,
     i.m-btn-icon.fa-lg {
         font-size: 1.333333em;
+    }
+
+    .add-row {
+        padding: 0 8px 6px 8px;
     }
 }
 
