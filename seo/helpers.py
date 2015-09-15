@@ -23,6 +23,7 @@ from seo.search_backend import DESearchQuerySet
 from seo.models import BusinessUnit, Company
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.filters import FacetListWidget, CustomFacetListWidget
+from seo.search_transformer import transform_search
 from serializers import JSONExtraValuesSerializer
 from moc_coding.models import Moc
 from xmlparse import text_fields
@@ -45,7 +46,7 @@ sort_fields = ['relevance', 'date']
 search_fields = ['apply_info', 'city', 'company', 'company_canonical_microsite',
                  'company_enhanced', 'company_exact', 'company_slab', 'country',
                  'country_short', 'date_new', 'date_updated',
-                 'description', 'django_ct', 'django_id', 'guid', 'highlighted',
+                 'django_ct', 'django_id', 'guid', 'highlighted',
                  'id', 'is_posted', 'link', 'location',
                  'location_exact', 'reqid', 'score', 'state',
                  'state_short', 'text', 'title', 'title_exact', 'uid']
@@ -401,7 +402,6 @@ def location_from_job(job, num_locations):
     except IndexError:
         return None
 
-
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
         return None
@@ -435,22 +435,27 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 
     return location
 
-
-def bread_box_moc_heading(moc_slug_value):
+def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-
+    
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
+    if len(moc_pieces) < 3: #moc url must be 3 parts
+        return None
     moc_code = moc_pieces[1]
     branch = moc_pieces[2]
 
     try:
-        moc = Moc.objects.get(code=moc_code, branch=branch)
+        return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
-        return None
+        return None    
 
-    return moc.code + ' - ' + moc.title
+def bread_box_moc_heading(moc_slug_value):
+    moc = pull_moc_object_via_slug(moc_slug_value)
+    if moc:
+        return moc.code + ' - ' + moc.title
+    return None
 
 
 def bread_box_title_heading(title_slug_value, jobs=None):
@@ -532,7 +537,8 @@ def get_bread_box_headings(filters=None, jobs=None):
 def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
              default_sqs=None, filters={},  fields=None, facet_limit=250,
              facet_sort="count", facet_offset=None, mc=1,
-             sort_order='relevance', fl=search_fields):
+             sort_order='relevance', fl=search_fields,
+             additional_fields=None):
     """
     Returns 3-tuple containing a DESearchQuerySet object, a set of facet
     counts that have been filtered, and a set of unfiltered facet counts.
@@ -558,8 +564,6 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
         sqs = DESearchQuerySet()
     sqs = sqs_apply_custom_facets(custom_facets, sqs, exclude_facets)
     sqs = _sqs_narrow_by_buid_and_site_package(sqs, buids=jsids)
-    # Limit the retrieved results to only fields that are actually needed.
-    sqs = sqs.fields(fl)
 
     sqs = sqs.order_by(sort_order_mapper.get(sort_order, '-score'))
 
@@ -567,8 +571,16 @@ def get_jobs(custom_facets=None, exclude_facets=None, jsids=None,
     # by a factor of 1/2 at ~6 months (1.8e-11 ms) in all future queries
     sqs = sqs.bf('recip(ms(NOW/HOUR,salted_date),1.8e-9,1,1)')
 
+    # Limit the retrieved results to only fields that are actually needed.
     if fields:
-        sqs = sqs.fields(fields)
+        field_list = list(fields)
+    else:
+        field_list = list(fl)
+
+    if additional_fields:
+        field_list = additional_fields + field_list
+
+    sqs = sqs.fields(field_list)
 
     if facet_offset:
         sqs = sqs.facet_offset(facet_offset)
@@ -779,8 +791,8 @@ def sort_custom_facets_by_group(custom_facets):
              values are a list of custom facets for that facet_group.
 
     """
-    # Right now we know we only have these 3 facet_groups.
-    grouped_facets = {1: [], 2: [], 3: []}
+    # Right now we know we only have these 4 facet_groups.
+    grouped_facets = {1: [], 2: [], 3: [], 4: []}
 
     for facet, count in custom_facets:
         cached_facets = getattr(settings, 'STANDARD_FACET', [])
@@ -951,7 +963,9 @@ def create_sq(custom_facets):
 
 
 def prepare_sqs_from_search_params(params, sqs=None):
-    boost_value = 1.5
+    # We usually search description twice, so we need a higher boost on
+    # title to overcome that.
+    boost_value = 10
     title = params.get('q')
     location = params.get('location')
     moc = params.get('moc')
@@ -995,14 +1009,17 @@ def prepare_sqs_from_search_params(params, sqs=None):
         # intended as negation.
         # Retail -Sales will search for Retail excluding Sales
         # Retail - Sales will search for 'Retail - Sales'
-        title = "(%s)" % title.replace(' - ', ' \\- ')
+        title = "(%s)" % transform_search(title.replace(' - ', ' \\- '))
         tb = u"({t})^{b}".format(t=title, b=boost_value)
 
         if exact_title:
             sqs = sqs.filter(title_exact__exact=title)
         else:
-            sqs = sqs.filter(SQ(content=Raw(title)) | SQ(title=Raw(tb)))\
-                     .highlight()
+            # We have to query on description here so that highlighting
+            # matches the exact term and not a stem.
+            sqs = sqs.filter(SQ(content=Raw("((%s))^1" % title)) |
+                             SQ(title=Raw(tb)) |
+                             SQ(description=Raw(title))).highlight()
 
     # If there is a value in the `location` parameter, add filters for it
     # in each location-y field in the index. If the `exact` parameter is

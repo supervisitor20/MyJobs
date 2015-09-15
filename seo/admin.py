@@ -186,6 +186,8 @@ class ConfigurationAdmin (admin.ModelAdmin):
                  'browse_facet_show_2'),
                 ('browse_facet_order_3', 'browse_facet_text_3',
                  'browse_facet_show_3'),
+                ('browse_facet_order_4', 'browse_facet_text_4',
+                 'browse_facet_show_4'),                 
                 ('browse_company_order', 'browse_company_text',
                  'browse_company_show'),
                 ('browse_moc_order', 'browse_moc_text', 'browse_moc_show'),
