@@ -11,18 +11,32 @@
                 <i class="fa fa-plus-circle" style="color: #009900;"></i> <span style="color: #000;">Create New Header</span>
             </div>
         </a>
-        {% for something in "heads" %}
-            <div style="padding: 5px 10px; position: relative; background-color: {% if forloop.counter|divisibleby:2 %}#F7F7F7{%else%}#FEFEFE{% endif %};">
-                <span style="font-size: 1.3em; padding: 8px 0; display: inline-block;">Header Name {{forloop.counter}}</span>
-
-                <div class="pull-right">
-                    <a class="btn btn-default" href=""><i class="fa fa-pencil fa-lg"></i> Edit</a>
-                    <a class="btn btn-default" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-                    <a class="btn btn-danger" role="button"><i class="fa fa-trash-o"></i> Delete</a>
-                </div>
-                <div class="clearfix"></div>
-            </div>
-        {% endfor %}
+        <table class="table table-striped">
+            {% for header in "test" %}
+            <tr>
+                <td>
+                    <span style="font-size: 1.3em; padding: 8px 0;">Header Name</span>
+                </td>
+                <td class="icon-column">
+                    <div class="pull-right VEM-icons">
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="View Header"><i class="fa fa-eye fa-lg"></i><span class="hidden-xs hidden-sm"> View</span></a>
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="Edit Header"><i class="fa fa-pencil fa-lg"></i><span class="hidden-xs hidden-sm"> Edit</span></a>
+                        <a class="btn btn-danger hidden-xs hidden-sm" href="" data-toggle="tooltip" data-placement="top" title="Delete Header" role="button"><i class="fa fa-trash-o"></i> Delete</a>
+                        <div class="dropdown visible-xs-inline-block visible-sm-inline-block">
+                            <a id="d-options" class="btn btn-default m-btn-icon bs-tooltip" href="#"  data-toggle="dropdown" data-placement="top" title="More Options" aria-haspopup="true" aria-expanded="false" role="button">
+                                <i class="fa fa-ellipsis-v fa-lg"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="d-options">
+                                <li>
+                                    <a role="button"><i class="fa fa-trash-o fa-lg"></i> Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
         <h3>Footers</h3>
         <a class="awrap" href="">
             <div class="product-card" style="padding: 10px; font-size: 1.3em;">
@@ -43,4 +57,16 @@
         {% endfor %}
     </div>
 </div>
+
 {% endblock %}
+
+{% block js %}
+{{ block.super }}
+<script>
+    $(function() {
+        $('[data-toggle="tooltip"], .bs-tooltip').tooltip();
+        $('[data-toggle="dropdown"]').dropdown();
+    });
+</script>
+{% endblock %}
+
