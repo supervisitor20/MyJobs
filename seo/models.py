@@ -1234,15 +1234,32 @@ class Configuration(models.Model):
 
 @python_2_unicode_compatible
 class QueryParameter(models.Model):
-    redirect = models.ForeignKey('QueryRedirect', on_delete=models.CASCADE,
-                                 related_name='query_parameters')
-    param = models.CharField(max_length=200,
-                             help_text=_('The part before the equals sign'))
     value = models.CharField(max_length=200,
                              help_text=_('The part after the equals sign'))
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return ""
+
+
+class QParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='q')
+
+
+class LocationParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='location')
+
+
+class MocParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='moc')
 
 
 @python_2_unicode_compatible

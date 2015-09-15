@@ -8,6 +8,14 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'QParameter'
+        db.create_table(u'seo_qparameter', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=200)),
+            ('redirect', self.gf('django.db.models.fields.related.OneToOneField')(related_name='q', unique=True, null=True, to=orm['seo.QueryRedirect'])),
+        ))
+        db.send_create_signal(u'seo', ['QParameter'])
+
         # Adding model 'QueryRedirect'
         db.create_table(u'seo_queryredirect', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -17,22 +25,35 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'seo', ['QueryRedirect'])
 
-        # Adding model 'QueryParameter'
-        db.create_table(u'seo_queryparameter', (
+        # Adding model 'MocParameter'
+        db.create_table(u'seo_mocparameter', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('redirect', self.gf('django.db.models.fields.related.ForeignKey')(related_name='query_parameters', to=orm['seo.QueryRedirect'])),
-            ('param', self.gf('django.db.models.fields.CharField')(max_length=200)),
             ('value', self.gf('django.db.models.fields.CharField')(max_length=200)),
+            ('redirect', self.gf('django.db.models.fields.related.OneToOneField')(related_name='moc', unique=True, null=True, to=orm['seo.QueryRedirect'])),
         ))
-        db.send_create_signal(u'seo', ['QueryParameter'])
+        db.send_create_signal(u'seo', ['MocParameter'])
+
+        # Adding model 'LocationParameter'
+        db.create_table(u'seo_locationparameter', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=200)),
+            ('redirect', self.gf('django.db.models.fields.related.OneToOneField')(related_name='location', unique=True, null=True, to=orm['seo.QueryRedirect'])),
+        ))
+        db.send_create_signal(u'seo', ['LocationParameter'])
 
 
     def backwards(self, orm):
+        # Deleting model 'QParameter'
+        db.delete_table(u'seo_qparameter')
+
         # Deleting model 'QueryRedirect'
         db.delete_table(u'seo_queryredirect')
 
-        # Deleting model 'QueryParameter'
-        db.delete_table(u'seo_queryparameter')
+        # Deleting model 'MocParameter'
+        db.delete_table(u'seo_mocparameter')
+
+        # Deleting model 'LocationParameter'
+        db.delete_table(u'seo_locationparameter')
 
 
     models = {
@@ -346,11 +367,22 @@ class Migration(SchemaMigration):
             'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'db_index': 'True'}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True', 'blank': 'True'})
         },
-        u'seo.queryparameter': {
-            'Meta': {'object_name': 'QueryParameter'},
+        u'seo.locationparameter': {
+            'Meta': {'object_name': 'LocationParameter'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'param': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'redirect': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'query_parameters'", 'to': u"orm['seo.QueryRedirect']"}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'location'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'seo.mocparameter': {
+            'Meta': {'object_name': 'MocParameter'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'moc'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'seo.qparameter': {
+            'Meta': {'object_name': 'QParameter'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'q'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         u'seo.queryredirect': {

@@ -42,7 +42,8 @@ from seo.models import (ATSSourceCode, BillboardHotspot, BillboardImage,
                         CustomPage, FlatPage, GoogleAnalytics,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
                         SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource,
-                        QueryParameter, QueryRedirect)
+                        QueryRedirect, QParameter, LocationParameter,
+                        MocParameter)
 from seo.queryset_copier import copy_following_relationships
 from seo.signals import check_message_queue
 
@@ -1230,12 +1231,23 @@ class ViewSourceAdmin(admin.ModelAdmin):
     ]
 
 
-class QueryParameterInline(admin.TabularInline):
-    model = QueryParameter
+class QParameterAdmin(admin.TabularInline):
+    model = QParameter
 
 
-class QueryRedirectAdmin(admin.ModelAdmin):
-    inlines = [QueryParameterInline]
+class LocationParameterAdmin(admin.TabularInline):
+    model = LocationParameter
+
+
+class MocParameterAdmin(admin.TabularInline):
+    model = MocParameter
+
+
+class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
+    related_search_fields = {
+        'site': ('domain', 'name')
+    }
+    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
 
 
 admin.site.register(CustomFacet, CustomFacetAdmin)

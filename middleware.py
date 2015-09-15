@@ -259,44 +259,60 @@ class RedirectOverrideMiddleware(object):
         paths = [request.path,
                  (request.path[:-1] if request.path.endswith('/')
                   else request.path + '/')]
-        # This is a reverse foreign key so select_related won't work.
         redirects = settings.SITE.queryredirect_set.filter(
-            old_path__in=paths).prefetch_related('query_parameters')
+            old_path__in=paths).select_related('query_parameters')
         counts = defaultdict(lambda: [])
         choice = None
         for r in redirects:
             matches = 0
-            if r.query_parameters.exists():
-                for query in r.query_parameters.all():
-                    # Allow for multiple pipe-delimited values
-                    if '|' in query.value:
-                        values = query.value.split('|')
-                    else:
-                        values = [query.value]
-
-                    if any([q.lower() in request.META['QUERY_STRING'].lower()
-                            for q in ['='.join([query.param, v])
-                                      for v in values]]):
-                        # For each potential redirect, determine how likely it
-                        # matches the current request.
+            param_names = ['q', 'location', 'moc']
+            # params will, over the following three lines, eventually hold all
+            # defined query parameters for the current QueryRedirect object,
+            # in the form of a list of tuples of (parameter, value).
+            params = [getattr(r, param).value
+                      if hasattr(r, param) else ''
+                      for param in param_names]
+            params = zip(param_names, params)
+            params = filter((lambda x: x[1] != ''), params)
+            if len(params) > 0:
+                # This QueryRedirect has query params that we need to check
+                for param in params:
+                    # Determine if the current value is multi-valued and
+                    # normalize it to a list regardless
+                    param = (param[0], param[1].split('|'))
+                    # Turn the previous tuple into a list of param=value strings
+                    test_params = (lambda x: ['='.join([x[0], y])
+                                              for y in x[1]])(param)
+                    if any(test_param.lower()
+                           in request.META['QUERY_STRING'].lower()
+                           for test_param in test_params):
+                        # This pair matches; Increase the likelihood that this
+                        # is the one we want.
                         matches += 1
                     else:
-                        # If any query doesn't match, the entire redirect doesn't
-                        # match.
+                        # This pair does not match, which rules this
+                        # QueryRedirect out as a possibility.
                         matches = 0
                         break
             else:
+                # This QueryRedirect has no query params to check; it must be
+                # the one we want.
                 choice = r
                 break
+
             counts[matches].append(r)
 
         do_redirect = lambda: redirect(choice.new_path, permanent=True)
 
         if choice is not None:
+            # We have definitively found the redirect we want; execute it.
             return do_redirect()
         elif len(counts):
+            # We need to find a redirect that most matches the current request.
             max_count = max(counts.keys())
             if max_count > 0:
+                # We should only check redirects that match; ones with a count
+                # of zero don't.
                 matches = counts[max_count]
                 if matches:
                     # These QueryRedirects match the current request and each
