@@ -1,5 +1,91 @@
-@media screen and (max-width: 500px) {
-    .btn {
-        display: block;
+/*
+    Mobile first CSS. Media queries match bootstrap 3 so when
+    bootstrap switches, so do we. Phone view will be default
+    styles then media queries will handle tablet and desktop views.
+*/
+
+.btn.m-btn-icon {
+    border: 0;
+}
+
+.btn-default.m-btn-icon {
+    background-color: transparent;
+}
+
+.btn-default.m-btn-icon:hover {
+    background-color: transparent;
+}
+
+a.m-btn-icon,
+i.m-btn-icon {
+    min-width: 40px;
+}
+
+a.m-btn-icon > i,
+i.m-btn-icon {
+    font-size: 1.7em;
+}
+
+a.m-btn-icon:active,
+i.m-btn-icon:active {
+    box-shadow: none;
+}
+
+i.m-btn-icon {
+    cursor: pointer;
+    padding: 6px 12px;
+}
+
+/* View Edit More icons */
+.VEM-icons {
+    min-width: 140px;
+}
+
+.table>tbody>tr>td.icon-column {
+    vertical-align: middle;
+}
+
+/* Small devices (tablets and up) */
+@media (min-width: 768px) {
+
+}
+
+/* Medium devices (desktops and up) */
+@media (min-width: 992px) {
+    /* back to default bootstrap */
+    .btn.m-btn-icon {
+        border: 1px solid transparent;
     }
+
+    .btn-default.m-btn-icon {
+        color: #333;
+        background-color: #fff;
+        border-color: #ccc;
+    }
+
+    .btn-default.m-btn-icon:hover {
+        background-color: #e6e6e6;
+        border-color: #adadad;
+    }
+
+    .btn-danger.m-btn-icon {
+        color: #fff;
+        background-color: #d9534f;
+        border-color: #d43f3a;
+    }
+
+    a.m-btn-icon > i,
+    i.m-btn-icon {
+        font-size: 1em;
+    }
+
+    a.m-btn-icon > i.fa-lg,
+    i.m-btn-icon.fa-lg {
+        font-size: 1.333333em;
+    }
+}
+
+/* Large devices (large desktops and up) */
+@media (min-width: 1200px) {
+
 }
