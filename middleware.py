@@ -263,28 +263,38 @@ class RedirectOverrideMiddleware(object):
         redirects = settings.SITE.queryredirect_set.filter(
             old_path__in=paths).prefetch_related('query_parameters')
         counts = defaultdict(lambda: [])
+        choice = None
         for r in redirects:
             matches = 0
-            for query in r.query_parameters.all():
-                # Allow for multiple pipe-delimited values
-                if '|' in query.value:
-                    values = query.value.split('|')
-                else:
-                    values = [query.value]
+            if r.query_parameters.exists():
+                for query in r.query_parameters.all():
+                    # Allow for multiple pipe-delimited values
+                    if '|' in query.value:
+                        values = query.value.split('|')
+                    else:
+                        values = [query.value]
 
-                if any([q.lower() in request.META['QUERY_STRING'].lower()
-                        for q in ['='.join([query.param, v])
-                                  for v in values]]):
-                    # For each potential redirect, determine how likely it
-                    # matches the current request.
-                    matches += 1
-                else:
-                    # If any query doesn't match, the entire redirect doesn't
-                    # match.
-                    matches = 0
-                    break
+                    if any([q.lower() in request.META['QUERY_STRING'].lower()
+                            for q in ['='.join([query.param, v])
+                                      for v in values]]):
+                        # For each potential redirect, determine how likely it
+                        # matches the current request.
+                        matches += 1
+                    else:
+                        # If any query doesn't match, the entire redirect doesn't
+                        # match.
+                        matches = 0
+                        break
+            else:
+                choice = r
+                break
             counts[matches].append(r)
-        if len(counts):
+
+        do_redirect = lambda: redirect(choice.new_path, permanent=True)
+
+        if choice is not None:
+            return do_redirect()
+        elif len(counts):
             max_count = max(counts.keys())
             if max_count > 0:
                 matches = counts[max_count]
@@ -293,4 +303,4 @@ class RedirectOverrideMiddleware(object):
                     # contains the same number of query parameters; draw one
                     # out of a hat.
                     choice = random.choice(matches)
-                    return redirect(choice.new_path, permanent=True)
+                    return do_redirect()
