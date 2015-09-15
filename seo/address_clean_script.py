@@ -1,5 +1,6 @@
 import re, sys
-from search_transformer import Peekable, peekable
+import ipdb
+from search_transformer import peekable
 
 address_line_1_terms = ['alley',
                         'alley',
@@ -742,11 +743,12 @@ direction_terms = ['n',
 
 ws_re = re.compile("\s+(.*)")
 numeric_re = re.compile("(\d+)(.*)")
-direction_re = re.compile("(%s)(.*)" % "|".join(direction_terms), re.I)
-add_1_re = re.compile("\s(%s)\b(.*)", re.I)
-po_box_re = re.compile("(%s)(\s*[box|bo|b])?(.*)" % "|".join(po_box_terms), re.I)
-add_2_re = re.compile("(%s\s)|#(.*)" % "|".join(address_line_2_terms), re.I)
+direction_re = re.compile("\s+(%s)\s+(.*)" % "|".join(direction_terms), re.I)
+add_1_re = re.compile("(%s)(?:$|\s)(.*)" % "|".join(address_line_1_terms), re.I)
+po_box_re = re.compile("(%s)((?:\s*(?:box|bo|b)(?:$|\s))|\s*)(.*)" % "|".join(po_box_terms), re.I)
+add_2_re = re.compile("((?:(?:%s)(?=\s))|#)(.*)" % "|".join(address_line_2_terms), re.I)
 word_re = re.compile("(\S+)(.*)")
+
 
 class Token(object):
     def __init__(self, token_type, token, flags=[]):
@@ -792,42 +794,44 @@ def tokenize(input_string):
 
         match = numeric_re.match(current)
         if match:
-            yield Token('num', match.group(0))
-            current = match.group(1)
+            current = match.group(2)
+            yield Token('num', match.group(1))
             continue
 
         match = direction_re.match(current)
         if match:
-            yield Token('dir', match.group(0))
-            current = match.group(1)
+            current = match.group(2)
+            yield Token('dir', match.group(1))
             continue
 
         match = po_box_re.match(current)
         if match:
-            yield Token('pob', match.group(0))
-            current = match.group(1)
+            current = match.group(3)
+            print match.group(1)
+            print match.group(3)
+            yield Token('pob', match.group(1))
             continue
 
         match = add_2_re.match(current)
         if match:
-            yield Token('add2', match.group(0))
-            current = match.group(1)
+            current = match.group(2)
+            yield Token('add2', match.group(1))
             continue
 
         match = add_1_re.match(current)
         if match:
-            yield Token('add1', match.group(0))
-            current = match.group(1)
+            current = match.group(2)
+            yield Token('add1', match.group(1))
             continue
 
         match = word_re.match(current)
         if match:
-            yield Token('word',match.group(0))
-            current = match.group(1)
+            current = match.group(2)
+            yield Token('word',match.group(1))
             continue
 
-        yield Token('chara',current[0])
         current = current[1:]
+        continue
 
 class ScoreTree(object):
     def __init__(self, node_type, head, tail=None, children=[]):
@@ -837,6 +841,7 @@ class ScoreTree(object):
         self.children = children
 
     def get_score(self):
+        
         add1_score = 0
         add2_score = 0
         if self.children:
@@ -845,16 +850,15 @@ class ScoreTree(object):
                 add2_score += child.get_score()[1]
 
         if self.node_type == 'add1':
-            add1_score += 10
             if self.tail:
                 non_word_child = False
                 for child in self.children:
-                    if child.node_type != 'word':
+                    if child.node_type not in ('word','dir'):
                         non_word_child = True
                 if not non_word_child:
                     add1_score += 30
-            if len(self.children) in range(1,4):
-                add1_score += 5
+            if self.get_child_count() > 4:
+                add1_score -= 20
 
         if self.node_type == 'pob':
             if self.tail:
@@ -870,41 +874,55 @@ class ScoreTree(object):
 
         return add1_score, add2_score
 
+    def get_child_count(self):
+        count = 0
+        for child in self.children:
+            count += child.get_child_count()
+
+        return count or 1
+
 class Parser(object):
     def __init__(self, token_stream):
         self.token_stream = token_stream
 
     def parse(self):
-        return self.handle_add2
+        st = self.handle_master()
+        return st.get_score()
 
     def handle_master(self):
         master_tree = ScoreTree('master','master')
-        while not self.token_stream.peek().is_eof:
+
+        while not self.token_stream.peek().is_eof():
             master_tree.children.append(self.handle_add2())
         return master_tree
 
     def handle_add2(self):
         if self.token_stream.peek().is_add_2():
-            return ScoreTree('add2',self.token_stream.next(), self.token_stream.next())
+            return ScoreTree('add2',self.token_stream.next(), self.token_stream.next(), [])
         else:
             return self.handle_pobox()
 
     def handle_pobox(self):
         if self.token_stream.peek().is_po_box():
-            return ScoreTree('pob',self.token_stream.next(), self.token_stream.next())
+            po_address = None
+            po_token = self.token_stream.next()
+            if not self.token_stream.peek().is_eof():
+                po_address = self.token_stream.next()
+            return ScoreTree('pob',po_token, po_address, [])
         else:
             return self.handle_number()
 
     def handle_number(self):
+        
         found_number = False
         addr_children = []
 
         if self.token_stream.peek().is_numeric():
             self.token_stream.next()
             found_number = True
-
+        
         if found_number:
-            while not (self.token_stream.peek().is_eof or self.token_stream.peek().is_add_1()):
+            while not (self.token_stream.peek().is_eof() or self.token_stream.peek().is_add_1()):
                 addr_children.append(self.handle_add2())
         else:
             word = self.handle_word()
@@ -918,8 +936,8 @@ class Parser(object):
             return word
 
     def handle_word(self):
-        if not self.token_stream.peek().is_eof:
-            return ScoreTree('word',self.token_stream.next())
+        if not self.token_stream.peek().is_eof():
+            return ScoreTree('word',self.token_stream.next(),None,[])
         else:
             return None
 
@@ -930,4 +948,4 @@ def calculate_score(input_string):
     return parser.parse()
 
 if __name__ == '__main__':
-    print calculate_score(sys.argv[0])
+    print calculate_score(sys.argv[1])
