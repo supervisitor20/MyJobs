@@ -9,8 +9,9 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save
+from django.db.models.signals import pre_delete, pre_save, post_save
 from django.dispatch import receiver
 
 from myjobs.models import User
@@ -811,3 +812,39 @@ class Tag(models.Model):
     class Meta:
         unique_together = ('name', 'company')
         verbose_name = "tag"
+
+
+class CommonEmailDomain(models.Model):
+    """
+    Common email domains which should not be allowed for outreach email
+    domains.
+    """
+    domain = models.CharField(max_length=255, unique=True)
+
+
+class OutreachEmailDomain(models.Model):
+    """
+    Email domains from which a comany will accept emails from for the purpose
+    of outreach.
+    """
+    class Meta:
+        unique_together = ("company", "domain")
+
+    company = models.ForeignKey("seo.Company")
+    domain = models.CharField(max_length=255)
+
+
+@receiver(pre_save, sender=OutreachEmailDomain, 
+          dispatch_uid='pre_save_outreach_email_domain_signal')
+def save_outreach_email_domain(sender, instance, **kwargs):
+    if CommonEmailDomain.objects.filter(domain=instance.domain).exists():
+        raise ValidationError(
+            "The domain %s has been blacklisted, as it is too common." %
+            instance.domain)
+
+@receiver(post_save, sender=CommonEmailDomain,
+          dispatch_uid='post_save_common_email_domain_signal')
+def save_common_email_domain(sender, instance, **kwargs):
+    # Remove outreach email domains which should now be blacklisted do to the
+    # new common domain.
+    OutreachEmailDomain.objects.filter(domain=instance.domain).delete()
