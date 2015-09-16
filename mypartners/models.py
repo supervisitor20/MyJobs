@@ -841,10 +841,3 @@ def save_outreach_email_domain(sender, instance, **kwargs):
         raise ValidationError(
             "The domain %s has been blacklisted, as it is too common." %
             instance.domain)
-
-@receiver(post_save, sender=CommonEmailDomain,
-          dispatch_uid='post_save_common_email_domain_signal')
-def save_common_email_domain(sender, instance, **kwargs):
-    # Remove outreach email domains which should now be blacklisted do to the
-    # new common domain.
-    OutreachEmailDomain.objects.filter(domain=instance.domain).delete()
