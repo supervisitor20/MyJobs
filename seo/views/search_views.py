@@ -61,7 +61,9 @@ from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
+from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
+from myemails.models import EmailTemplate, EmailSection, CreatedEvent
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2061,7 +2063,10 @@ def manage_header_footer(request):
 
 @user_is_allowed()
 def manage_templates(request):
-    data_dict = {}
+    company = get_company_or_404(request)
+    events = CreatedEvent.objects.filter(owner=company).select_related(
+        'email_template__name')
+    data_dict = {'mmm': events}
     return render_to_response('myemails/manage_templates.html', data_dict,
                               context_instance=RequestContext(request))
 
