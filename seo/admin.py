@@ -1245,9 +1245,12 @@ class MocParameterAdmin(admin.TabularInline):
 
 class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
     related_search_fields = {
-        'site': ('domain', 'name')
+        'site': ('domain', )
     }
     inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+
+    class Media:
+        js = ('django_extensions/js/jquery-1.7.2.min.js', )
 
 
 admin.site.register(CustomFacet, CustomFacetAdmin)
