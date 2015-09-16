@@ -12,8 +12,6 @@ address_line_1_terms = ['alley',
                         'annex',
                         'annx',
                         'anx',
-                        'arcade',
-                        'arcade',
                         'avenue',
                         'ave',
                         'aven',
@@ -23,8 +21,6 @@ address_line_1_terms = ['alley',
                         'avnue',
                         'bayou',
                         'bayou',
-                        'beach',
-                        'beach',
                         'bend',
                         'bnd',
                         'bluff',
@@ -55,46 +51,27 @@ address_line_1_terms = ['alley',
                         'bypas',
                         'bypass',
                         'byps',
-                        'camp',
                         'cp',
                         'cmp',
-                        'canyon',
-                        'canyon',
                         'cnyn',
                         'cape',
                         'cpe',
                         'causeway',
                         'causwa',
                         'cswy',
-                        'center',
                         'cent',
-                        'center',
                         'centr',
-                        'centre',
                         'cnter',
                         'cntr',
                         'ctr',
-                        'centers',
-                        'circle',
                         'circ',
                         'circl',
-                        'circle',
                         'crcl',
                         'crcle',
-                        'circles',
-                        'cliff',
-                        'cliff',
-                        'cliffs',
-                        'cliffs',
-                        'club',
-                        'club',
-                        'common',
-                        'commons',
                         'corner',
                         'corner',
                         'corners',
                         'cors',
-                        'course',
                         'crse',
                         'court',
                         'ct',
@@ -116,7 +93,6 @@ address_line_1_terms = ['alley',
                         'crossroad',
                         'crossroads',
                         'curve',
-                        'dale',
                         'dl',
                         'dam',
                         'dm',
@@ -172,9 +148,6 @@ address_line_1_terms = ['alley',
                         'frk',
                         'forks',
                         'frks',
-                        'fort',
-                        'frt',
-                        'ft',
                         'freeway',
                         'freewy',
                         'frway',
@@ -298,14 +271,6 @@ address_line_1_terms = ['alley',
                         'mount',
                         'mt',
                         'mount',
-                        'mountain',
-                        'mntn',
-                        'mountain',
-                        'mountin',
-                        'mtin',
-                        'mtn',
-                        'mountains',
-                        'mountains',
                         'neck',
                         'neck',
                         'orchard',
@@ -412,10 +377,6 @@ address_line_1_terms = ['alley',
                         'square',
                         'squares',
                         'squares',
-                        'station',
-                        'station',
-                        'statn',
-                        'stn',
                         'stravenue',
                         'strav',
                         'straven',
@@ -528,8 +489,6 @@ address_line_1_terms = ['alley',
                         'canyn',
                         'cape',
                         'causeway',
-                        'cen',
-                        'centers',
                         'cir',
                         'circles',
                         'clb',
@@ -753,7 +712,9 @@ word_re = re.compile("(\S+)(.*)")
 
 
 class Token(object):
-    def __init__(self, token_type, token):
+    def __init__(self, token_type, token, iterations=None):
+        if iterations is None: iterations=0
+        self.iterations = iterations
         self.token_type = token_type
         self.token = token
 
@@ -779,7 +740,7 @@ class Token(object):
         return self.token_type == 'eof'
 
     def __repr__(self):
-        return "<Token %s %s: %s>" % (self.token_type, tuple(self.flags),
+        return "<Token %s: %s>" % (self.token_type,
                                       self.token)
 
 token_peekable = peekable(Token('eof', ''))
@@ -787,16 +748,18 @@ token_peekable = peekable(Token('eof', ''))
 @token_peekable
 def tokenize(input_string):
     current = input_string
+    iterations = 0
     while current:
         match = ws_re.match(current)
         if match:
             current = match.group(1)
             continue
 
+        iterations += 1
         match = numeric_re.match(current)
         if match:
             current = match.group(2)
-            yield Token('num', match.group(1))
+            yield Token('num', match.group(1), iterations)
             continue
 
         match = direction_re.match(current)
@@ -808,19 +771,19 @@ def tokenize(input_string):
         match = po_box_re.match(current)
         if match:
             current = match.group(3)
-            yield Token('pob', match.group(1))
+            yield Token('pob', match.group(1), iterations)
             continue
 
         match = add_2_re.match(current)
         if match:
             current = match.group(2)
-            yield Token('add2', match.group(1))
+            yield Token('add2', match.group(1), iterations)
             continue
 
         match = add_1_re.match(current)
         if match:
             current = match.group(2)
-            yield Token('add1', match.group(1))
+            yield Token('add1', match.group(1), iterations)
             continue
 
         match = word_re.match(current)
@@ -845,13 +808,13 @@ class ScoreTree(object):
     def get_score(self):
         
         add1_score = 0
-        add2_score = 0
         if self.children:
             for child in self.children:
-                add1_score += child.get_score()[0]
-                add2_score += child.get_score()[1]
+                add1_score += child.get_score()
 
         if self.node_type == 'add1':
+            if self.head.iterations == 1:
+                add1_score += 10
             if self.tail:
                 non_word_child = False
                 for child in self.children:
@@ -864,17 +827,9 @@ class ScoreTree(object):
 
         if self.node_type == 'pob':
             if self.tail:
-                add1_score += 20
-                add2_score += 10
+                add1_score += 10
 
-        if self.node_type == 'add2':
-            if self.tail:
-                add2_score += 20
-
-        if self.node_type == 'dir':
-            add1_score += 5
-
-        return add1_score, add2_score
+        return add1_score
 
     def get_child_count(self):
         count = 0
@@ -920,7 +875,7 @@ class Parser(object):
         addr_children = []
 
         if self.token_stream.peek().is_numeric():
-            self.token_stream.next()
+            number_found = self.token_stream.next()
             found_number = True
         
         if found_number:
@@ -930,7 +885,7 @@ class Parser(object):
             word = self.handle_word()
 
         if found_number:
-            st = ScoreTree('add1', 'num', None, addr_children)
+            st = ScoreTree('add1', number_found, None, addr_children)
             if self.token_stream.peek().is_add_1():
                 st.tail = self.token_stream.next()
             return st
@@ -939,7 +894,7 @@ class Parser(object):
 
     def handle_word(self):
         if not self.token_stream.peek().is_eof():
-            return ScoreTree('word',self.token_stream.next(),None,[])
+            return ScoreTree('word',self.token_stream.next())
         else:
             return None
 
@@ -963,30 +918,32 @@ def calculate_score(input_string):
 
 def determine_label_is_address():
     count = 0
-    output_file = open('output.txt','w')
-    for location in Location.objects.all():
-        addr1_score, addr2_score = calculate_score(location.label)
-        if addr1_score >= 20:
+    for location in Location.objects.raw("select * FROM mypartners_location where address_line_two = '' or address_line_one = ''"):
+    # for location in Location.objects.all():
+        addr1_score = calculate_score(location.label)
+        if addr1_score in range(1,51):
+            # output_file.write(location.label + "\n")
             count += 1
-            output_file.write('----------BEFORE----------\n')
-            output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
-            output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
-            output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
-
+            # output_file.write('----------BEFORE----------\n')
+            # output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
+            # output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
+            # output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
+            # continue_flag = raw_input("Continue? [y]/n: ")
+            # if continue_flag == 'n':
+            #     break
             if location.address_line_one:
                 if location.address_line_two:
-                    output_file.write('####### UNABLE TO FIX THE ABOVE AUTOMATICALLY, MOVING ON #######\n')
                     continue #report not able to be fixed automatically
                 else:
                     location.address_line_two = location.address_line_one
             location.address_line_one = location.label
 
-            output_file.write('----------AFTER----------\n')
-            output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
-            output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
-            output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
-
-    output_file.write('Count: %s' % count)
-
+            # output_file.write('----------AFTER----------\n')
+            # output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
+            # output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
+            # output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
+    # output_file.write('Count: %s' % count)
+    # output_file.close()
+    print 'Count: %s' % count
 if __name__ == '__main__':
     print calculate_score(sys.argv[1])
