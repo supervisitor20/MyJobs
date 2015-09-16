@@ -276,13 +276,12 @@ class RedirectOverrideMiddleware(object):
             params = filter((lambda x: x[1] != ''), params)
             if len(params) > 0:
                 # This QueryRedirect has query params that we need to check
-                for param in params:
+                for param, value in params:
                     # Determine if the current value is multi-valued and
                     # normalize it to a list regardless
-                    param = (param[0], param[1].split('|'))
+                    values = value.split('|')
                     # Turn the previous tuple into a list of param=value strings
-                    test_params = (lambda x: ['='.join([x[0], y])
-                                              for y in x[1]])(param)
+                    test_params = ['='.join([param, x]) for x in values]
                     if any(test_param.lower()
                            in request.META['QUERY_STRING'].lower()
                            for test_param in test_params):
