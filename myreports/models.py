@@ -85,20 +85,20 @@ class UserType(models.Model):
 
 class DataType(models.Model):
     data_type = models.CharField(max_length=100)
-    description = models.TextField(max_length=500)
+    description = models.CharField(max_length=500)
     is_active = models.BooleanField(default=False)
 
 
 class ReportType(models.Model):
     report_type = models.CharField(max_length=50)
-    description = models.TextField(max_length=500)
+    description = models.CharField(max_length=500)
     data_types = models.ManyToManyField(DataType)
     is_active = models.BooleanField(default=False)
 
 
 class ReportingType(models.Model):
     reporting_type = models.CharField(max_length=50)
-    description = models.TextField(max_length=500)
+    description = models.CharField(max_length=500)
     user_types = models.ManyToManyField(UserType)
     report_types = models.ManyToManyField(ReportType)
     is_active = models.BooleanField(default=False)
@@ -106,7 +106,7 @@ class ReportingType(models.Model):
 
 class PresentationType(models.Model):
     presentation_type = models.CharField(max_length=100)
-    description = models.TextField(max_length=500)
+    description = models.CharField(max_length=500)
     is_active = models.BooleanField(default=False)
 
 
@@ -129,7 +129,7 @@ class ColumnFormat(models.Model):
 
 class InterfaceElementType(models.Model):
     interface_element_type = models.CharField(max_length=50)
-    description = models.TextField(max_length=500)
+    description = models.CharField(max_length=500)
     element_code = models.CharField(max_length=2000)
     is_active = models.BooleanField(default=False)
 
