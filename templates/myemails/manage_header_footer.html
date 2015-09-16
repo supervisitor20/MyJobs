@@ -12,10 +12,10 @@
             </div>
         </a>
         <table class="table table-striped">
-            {% for header in "test" %}
+            {% for header in headers %}
             <tr>
                 <td>
-                    <span class="cell-title-lg">Header Name</span>
+                    <span class="cell-title-lg">{{ header.name }}</span>
                 </td>
                 <td class="icon-column">
                     <div class="pull-right VEM-icons">
@@ -53,10 +53,10 @@
             </div>
         </a>
         <table class="table table-striped">
-            {% for something in "foot" %}
+            {% for footer in footers %}
             <tr>
                 <td>
-                    <span class="cell-title-lg">Footer Name</span>
+                    <span class="cell-title-lg">{{ footer.name }}</span>
                 </td>
                 <td class="icon-column">
                     <div class="pull-right VEM-icons">
