@@ -12,19 +12,19 @@
                 <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-                {% for test in mmm %}
+                {% for event in events %}
                     <li>
-                        <a href="#">{{test.name}}</a>
+                        <a href="#">{{event.name}}</a>
                     </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 </div>
-{% for test in mmm %}
+{% for event in events %}
 <div class="row">
     <div class="col-md-12">
-        <h3 id="{{test.name.lower}}" style="margin-bottom: 0;">{{test.name}}</h3>
+        <h3 id="{{event.name.lower}}" style="margin-bottom: 0;">{{event.name}}</h3>
         <p style="padding: 0;">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ad assumenda atque consequatur delectus dicta ipsum iste laudantium maxime nesciunt qui rerum sunt, tenetur voluptas voluptates. Blanditiis delectus iure quasi.</p>
         <a class="awrap" href="">
             <div class="add-row">
@@ -63,6 +63,14 @@
                             </ul>
                         </div>
                     </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td>
+                    <span class="cell-title-lg">
+                        Currently no templates have been made for this event. <a href="#">Create a template.</a>
+                    </span>
                 </td>
             </tr>
         {% endfor %}
