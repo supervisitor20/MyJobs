@@ -2073,7 +2073,9 @@ def manage_templates(request):
     company = get_company_or_404(request)
     events = CreatedEvent.objects.filter(owner=company).select_related(
         'email_template__name')
-    data_dict = {'mmm': events}
+
+    data_dict = {'events': events}
+
     return render_to_response('myemails/manage_templates.html', data_dict,
                               context_instance=RequestContext(request))
 
