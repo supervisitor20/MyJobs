@@ -2056,7 +2056,14 @@ def event_overview(request):
 
 @user_is_allowed()
 def manage_header_footer(request):
-    data_dict = {}
+    headers = EmailSection.objects.filter(section_type=1)
+    footers = EmailSection.objects.filter(section_type=3)
+
+    data_dict = {
+        'headers': headers,
+        'footers': footers
+    }
+
     return render_to_response('myemails/manage_header_footer.html', data_dict,
                               context_instance=RequestContext(request))
 
