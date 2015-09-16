@@ -8,7 +8,7 @@
         <h3>Headers</h3>
         <a class="awrap" href="">
             <div class="add-row">
-                <i class="fa fa-plus-circle green"></i><span class="cta">Add a new header</span>
+                <i class="fa fa-plus-circle green"></i><span class="cta">Create a new header</span>
             </div>
         </a>
         <table class="table table-striped">
@@ -44,12 +44,20 @@
                     </div>
                 </td>
             </tr>
+            {% empty %}
+            <tr>
+                <td>
+                    <span class="cell-title-lg">
+                        Currently no headers have been made. <a href="#">Create a header.</a>
+                    </span>
+                </td>
+            </tr>
             {% endfor %}
         </table>
         <h3>Footers</h3>
         <a class="awrap" href="">
             <div class="add-row">
-                <i class="fa fa-plus-circle green"></i><span class="cta">Add a new footer</span>
+                <i class="fa fa-plus-circle green"></i><span class="cta">Create a new footer</span>
             </div>
         </a>
         <table class="table table-striped">
@@ -83,6 +91,14 @@
                             </ul>
                         </div>
                     </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td>
+                    <span class="cell-title-lg">
+                        Currently no footers have been made. <a href="#">Create a footer.</a>
+                    </span>
                 </td>
             </tr>
             {% endfor %}
