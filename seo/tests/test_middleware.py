@@ -3,7 +3,8 @@ import datetime
 from django.conf import settings
 
 from seo.tests.factories import (SeoSiteFactory, SeoSiteRedirectFactory)
-from seo.models import BusinessUnit, SeoSite
+from seo.models import BusinessUnit, SeoSite, QueryRedirect, QParameter, \
+    LocationParameter
 from setup import DirectSEOBase
 
 
@@ -88,3 +89,64 @@ class MultiHostMiddlewareTestCase(DirectSEOBase):
         self.assertEqual(settings.SITE_ID, 1)
         self.assertEqual(settings.SITE_NAME, site.name)
         self.assertEqual(len(settings.SITE_BUIDS), site.business_units.all().count())
+
+
+class RedirectOverrideMiddlewareTestCase(DirectSEOBase):
+    def setUp(self):
+        super(RedirectOverrideMiddlewareTestCase, self).setUp()
+        self.site = SeoSite.objects.get()
+        self.other_site = SeoSiteFactory(domain=u'buckconsultants.jobs',
+                                         name=u'buckconsultants')
+
+        self.redirect = QueryRedirect.objects.create(
+            site=self.site, old_path='/jobs/',
+            new_path='https://www.google.com')
+
+    def test_query_redirect_without_queries(self):
+        """
+        Requests for a given site/path should redirect on that site but
+        not others.
+        """
+        response = self.client.get(self.redirect.old_path,
+                                   HTTP_HOST=self.site.domain)
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response['Location'], self.redirect.new_path)
+
+        response = self.client.get(self.redirect.old_path,
+                                   HTTP_HOST=self.other_site.domain)
+        self.assertEqual(response.status_code, 200)
+
+    def test_query_redirect_with_queries(self):
+        """
+        Requests for a given site/path and a number of query strings should
+        redirect only on that site and only if all query strings are present.
+        """
+        q = QParameter.objects.create(redirect=self.redirect, value="sales")
+        location = LocationParameter.objects.create(redirect=self.redirect,
+                                                    value="Indianapolis")
+
+        # q.value.upper() is not required but it also shows that this check
+        # is case-insensitive.
+        response = self.client.get(
+            self.redirect.old_path + '?location=' + location.value + '&q='
+            + q.value.upper(),
+            HTTP_HOST=self.site.domain
+        )
+        self.assertEqual(response.status_code, 301,
+                         "Query redirect did not take place")
+        self.assertEqual(response['Location'], self.redirect.new_path)
+
+        response = self.client.get(
+            self.redirect.old_path + '?location=' + location.value,
+            HTTP_HOST=self.site.domain
+        )
+        self.assertEqual(response.status_code, 200,
+                         "Query redirect took place despite a missing query")
+
+        response = self.client.get(
+            self.redirect.old_path + '?location=' + location.value + '&q='
+            + q.value.upper(),
+            HTTP_HOST=self.other_site.domain
+        )
+        self.assertEqual(response.status_code, 200,
+                         "Query redirect took place on the wrong site")
