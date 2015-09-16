@@ -1232,16 +1232,12 @@ class Configuration(models.Model):
     where_helptext = models.TextField(blank=True)
 
 
-@python_2_unicode_compatible
 class QueryParameter(models.Model):
     value = models.CharField(max_length=200,
                              help_text=_('The part after the equals sign'))
 
     class Meta:
         abstract = True
-
-    def __str__(self):
-        return ""
 
 
 class QParameter(QueryParameter):
