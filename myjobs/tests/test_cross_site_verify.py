@@ -6,13 +6,14 @@ from django.conf.urls import url
 import django.test
 from django.test.utils import override_settings
 
+from seo.tests.factories import SeoSiteFactory
+
 import unittest
 
 from seo.models import SeoSite
 from myjobs.cross_site_verify import cross_site_verify, \
     verify_cross_site_request, DomainRelationshipException, \
-    guess_child_domain, parse_request_meta, XRW, \
-    extract_hostname_from_header
+    guess_child_domain, parse_request_meta, XRW
 
 
 class TestRequestParsing(unittest.TestCase):
@@ -25,29 +26,13 @@ class TestRequestParsing(unittest.TestCase):
             'HTTP_X_REQUESTED_WITH': 'ddd',
             'QUERY_STRING': 'a=b&referer=aa.com&c=d',
         })
-        expected = ('GET', 'aa.com', 'bb.com', 'cc.com', 'aa.com', 'ddd')
+        expected = ('GET', 'bb.com', 'cc.com', 'aa.com', 'ddd')
         self.assertEqual(expected, result)
 
     def test_none(self):
         result = parse_request_meta({})
-        self.assertEqual(('', None, None, None, None, None),
+        self.assertEqual(('', None, None, None, None),
                          result)
-
-    def test_hostname_typical(self):
-        self.assert_hostname_header('aa.com', 'aa.com')
-
-    def test_hostname_no_dot(self):
-        self.assert_hostname_header('aa', 'aa')
-
-    def test_hostname_with_port(self):
-        self.assert_hostname_header('aa.com', 'aa.com:8000')
-
-    def test_hostname_none(self):
-        self.assert_hostname_header(None, None)
-
-    def assert_hostname_header(self, expected, header):
-        self.assertEqual(expected,
-                         extract_hostname_from_header(header))
 
 
 class TestChildDomainGuessing(unittest.TestCase):
@@ -92,17 +77,22 @@ class TestChildDomainGuessing(unittest.TestCase):
 
 
 class MockSite(object):
-    def __init__(self, id, parent_site=None):
+    def __init__(self, id, domain, parent_site=None):
         self.id = id
+        self.domain = domain,
         self.parent_site = parent_site
 
 
+AA = MockSite('aa', 'aa.com')
+AA2 = MockSite('aa2', 'teach.aa.com', AA)
+BB = MockSite('bb', 'bb.com')
+
+
 def mock_site_loader(site):
-    aa = MockSite('aa')
     return {
-        'aa.com': aa,
-        'teach.aa.com': MockSite('aa2', aa),
-        'bb.com': MockSite('bb'),
+        AA.domain: AA,
+        AA2.domain: AA2,
+        BB.domain: BB,
     }.get(site)
 
 
@@ -121,8 +111,8 @@ class TestVerifyCrossSite(unittest.TestCase):
         self.assert_failure(
             'bad-xrw',
             'POST',
-            'aa.com',
-            'aa.com',
+            AA,
+            AA.domain,
             None,
             "z" + XRW,
             None)
@@ -130,27 +120,27 @@ class TestVerifyCrossSite(unittest.TestCase):
     def test_no_origin_is_parent(self):
         self.assert_success(
             'POST',
-            'aa.com',
+            AA,
             None,
             None,
             XRW,
-            'aa.com')
+            AA.domain)
 
     def test_no_origin_is_parent_qsreferer_mismatch(self):
         self.assert_failure(
             'qsreferer-not-host',
             'POST',
-            'aa.com',
+            AA,
             None,
             None,
             XRW,
-            'bb.com')
+            BB.domain)
 
     def test_get_origin_is_parent(self):
         self.assert_success(
             'POST',
-            'aa.com',
-            'aa.com',
+            AA,
+            AA.domain,
             None,
             XRW,
             None)
@@ -159,7 +149,7 @@ class TestVerifyCrossSite(unittest.TestCase):
         self.assert_failure(
             'host-not-parent',
             'POST',
-            'teach.aa.com',
+            AA2,
             None,
             None,
             None,
@@ -169,8 +159,8 @@ class TestVerifyCrossSite(unittest.TestCase):
         self.assert_failure(
             'not-child-of-parent',
             'POST',
-            'bb.com',
-            'teach.aa.com',
+            BB,
+            AA2.domain,
             None,
             XRW,
             None)
@@ -179,8 +169,8 @@ class TestVerifyCrossSite(unittest.TestCase):
         self.assert_failure(
             'bad-xrw',
             'POST',
-            'aa.com',
-            'teach.aa.com',
+            AA,
+            AA2.domain,
             None,
             None,
             None)
@@ -188,8 +178,8 @@ class TestVerifyCrossSite(unittest.TestCase):
     def test_origin_is_child_of_parent(self):
         self.assert_success(
             'POST',
-            'aa.com',
-            'teach.aa.com',
+            AA,
+            AA2.domain,
             None,
             XRW,
             None)
@@ -198,7 +188,7 @@ class TestVerifyCrossSite(unittest.TestCase):
         self.assert_failure(
             'no-child-info',
             'GET',
-            'aa.com',
+            AA,
             None,
             None,
             None,
@@ -207,21 +197,21 @@ class TestVerifyCrossSite(unittest.TestCase):
     def test_get_referer_is_missing_qsreferer_is_parent(self):
         self.assert_success(
             'GET',
-            'aa.com',
+            AA,
             None,
             None,
             None,
-            'aa.com')
+            AA.domain)
 
     def test_get_referer_is_missing_qsreferer_is_child(self):
         self.assert_failure(
             'qsreferer-not-host',
             'GET',
-            'aa.com',
+            AA,
             None,
             None,
             None,
-            'teach.aa.com')
+            AA2.domain)
 
     def assert_success(self, method, host, origin, referer, xrw,
                        qsreferer):
@@ -274,22 +264,9 @@ urlpatterns = [
 @override_settings(ROOT_URLCONF=__name__)
 class TestVerifyCrossSiteIntegration(django.test.TestCase):
     def setUp(self):
-        self.client.cookies['lastmicrosite'] = ''
-        domain = 'jobs.directemployers.org'
-        self.de_site = SeoSite.objects.filter(domain=domain)[0]
-
-        self.aa = self.build_site('AA', 'aa.com', None)
-        self.aa2 = self.build_site('AA', 'teach.aa.com', self.aa)
-        self.bb = self.build_site('BB', 'bb.com', None)
-
-    def build_site(self, name, domain, parent):
-        create = SeoSite.objects.create
-        company = create(name=name, domain=domain,
-                         group=self.de_site.group)
-        if parent is not None:
-            company.parent_site = parent
-        company.save()
-        return company
+        self.aa = SeoSiteFactory(domain='aa.com')
+        self.aa2 = SeoSiteFactory(domain='teach.aa.com')
+        self.bb = SeoSiteFactory(domain='bb.com')
 
     def test_get_from_parent(self):
         resp = self.client.get(

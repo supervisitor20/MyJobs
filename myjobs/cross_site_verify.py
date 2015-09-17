@@ -1,6 +1,6 @@
-import re
 import logging
 from django.http import HttpResponse
+from django.conf import settings
 
 from functools import wraps
 from seo.models import SeoSite
@@ -22,20 +22,8 @@ def extract_hostname(url):
         return urlparse(url).hostname
 
 
-def extract_hostname_from_header(header):
-    if header is None:
-        return header
-    match = re.match(r'(.*):[0-9]+$', header)
-    if match:
-        return match.group(1)
-    else:
-        return header
-
-
 def parse_request_meta(meta):
     method = meta.get('REQUEST_METHOD', '')
-
-    host = extract_hostname_from_header(meta.get('HTTP_HOST'))
 
     origin = extract_hostname(meta.get('HTTP_ORIGIN'))
 
@@ -47,7 +35,7 @@ def parse_request_meta(meta):
 
     qsreferer = parse_qs(qs).get('referer', [None])[0]
 
-    return (method, host, origin, referer, qsreferer, xrw)
+    return (method, origin, referer, qsreferer, xrw)
 
 
 def guess_child_domain(host, origin, referer, qsreferer):
@@ -104,12 +92,10 @@ def get_site(domain):
     return sites[0]
 
 
-def verify_cross_site_request(site_loader, method, host, origin,
+def verify_cross_site_request(site_loader, method, host_site, origin,
                               referer, xrw, qsreferer):
     if not is_permitted_method(method):
         raise DomainRelationshipException('method')
-
-    host_site = site_loader(host)
 
     if host_site is None:
         raise DomainRelationshipException('host-unknown')
@@ -117,7 +103,8 @@ def verify_cross_site_request(site_loader, method, host, origin,
     if not is_parent(host_site):
         raise DomainRelationshipException('host-not-parent')
 
-    child = guess_child_domain(host, origin, referer, qsreferer)
+    child = guess_child_domain(host_site.domain, origin, referer,
+                               qsreferer)
 
     child_site = site_loader(child)
     if not is_self_or_child(host_site, child_site):
@@ -131,16 +118,19 @@ def verify_cross_site_request(site_loader, method, host, origin,
 def cross_site_verify(fn):
     @wraps(fn)
     def verify(request):
-        method, host, origin, referer, qsreferer, xrw = (
+        method, origin, referer, qsreferer, xrw = (
             parse_request_meta(request.META))
 
+        host_site = settings.SITE
+
         try:
-            verify_cross_site_request(get_site, method, host, origin,
+            verify_cross_site_request(get_site, method, host_site, origin,
                                       referer, xrw, qsreferer)
         except DomainRelationshipException as e:
             data = (("method: %r, host %r, origin %r, " +
                      "referer %r, qsreferer %r, xrw %r") %
-                    (method, host, origin, referer, qsreferer, xrw))
+                    (method, host_site.domain, origin, referer,
+                     qsreferer, xrw))
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)
