@@ -819,7 +819,14 @@ class CommonEmailDomain(models.Model):
     Common email domains which should not be allowed for outreach email
     domains.
     """
+
+    class Meta:
+        ordering = ["domain"]
+
     domain = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return self.domain
 
 
 class OutreachEmailDomain(models.Model):
@@ -827,17 +834,23 @@ class OutreachEmailDomain(models.Model):
     Email domains from which a comany will accept emails from for the purpose
     of outreach.
     """
+
     class Meta:
         unique_together = ("company", "domain")
+        ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
     domain = models.CharField(max_length=255)
 
+    def __unicode__(self):
+        return "%s for %s" % (self.domain, self.company)
 
-@receiver(pre_save, sender=OutreachEmailDomain, 
-          dispatch_uid='pre_save_outreach_email_domain_signal')
-def save_outreach_email_domain(sender, instance, **kwargs):
-    if CommonEmailDomain.objects.filter(domain=instance.domain).exists():
-        raise ValidationError(
-            "The domain %s has been blacklisted, as it is too common." %
-            instance.domain)
+    def clean_fields(self, exclude=None):
+        if CommonEmailDomain.objects.filter(domain=self.domain).exists():
+            raise ValidationError(
+                "%s has been blacklisted as a common domain, please choose "
+                "another." % self.domain)
+
+    def save(self, *args, **kwargs):
+        self.clean_fields()
+        super(OutreachEmailDomain, self).save(*args, **kwargs)
