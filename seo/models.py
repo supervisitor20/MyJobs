@@ -1232,6 +1232,11 @@ class Configuration(models.Model):
     where_helptext = models.TextField(blank=True)
 
 
+to_string = lambda param, values: " or ".join("=".join([param, value])
+                                              for value in values.split('|')
+                                              if value)
+
+
 class QueryParameter(models.Model):
     value = models.CharField(max_length=200,
                              help_text=_('The part after the equals sign'))
@@ -1240,22 +1245,34 @@ class QueryParameter(models.Model):
         abstract = True
 
 
+@python_2_unicode_compatible
 class QParameter(QueryParameter):
     redirect = models.OneToOneField('QueryRedirect', null=True,
                                     on_delete=models.CASCADE,
                                     related_name='q')
 
+    def __str__(self):
+        return to_string(param='q', values=self.value)
 
+
+@python_2_unicode_compatible
 class LocationParameter(QueryParameter):
     redirect = models.OneToOneField('QueryRedirect', null=True,
                                     on_delete=models.CASCADE,
                                     related_name='location')
 
+    def __str__(self):
+        return to_string(param='location', values=self.value)
 
+
+@python_2_unicode_compatible
 class MocParameter(QueryParameter):
     redirect = models.OneToOneField('QueryRedirect', null=True,
                                     on_delete=models.CASCADE,
                                     related_name='moc')
+
+    def __str__(self):
+        return to_string(param='moc', values=self.value)
 
 
 @python_2_unicode_compatible
