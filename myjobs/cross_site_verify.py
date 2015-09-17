@@ -3,7 +3,6 @@ import logging
 from django.http import HttpResponse
 
 from functools import wraps
-from universal.helpers import get_domain
 from seo.models import SeoSite
 from urlparse import urlparse, parse_qs
 
