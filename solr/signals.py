@@ -1,15 +1,17 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.loading import get_model
 from django.db.models.signals import post_save, post_delete, pre_save
 
-from myjobs.models import User
 from myprofile.models import ProfileUnits
-from mysearches.models import SavedSearch
 from solr.models import Update
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
+
+User = get_model("myjobs", "User")
+SavedSearch = get_model("mysearches", "SavedSearch")
 
 
 def presave_solr(sender, instance, *args, **kwargs):
