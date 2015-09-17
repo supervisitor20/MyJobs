@@ -1,7 +1,7 @@
 {% extends "myemails/email_base.html" %}
 
 {% block content %}
-{% include "myemails/includes/header.html" with title="Company Name?" %}
+{% include "myemails/includes/header.html" with title="Overview" %}
 
 <div class="row">
     <div class="col-md-12 notice">
@@ -10,58 +10,46 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
-        <div class="row">
-            <div class="col-md-8">
-                <h4>Active Events</h4>
-                {% for event in active_events %}
-                <div class="product-card no-highlight">
-                    <div style="font-weight: 700;">{{ event.name }}</div>
-                    <div>
-                        Template:
-                        <span>{{ event.template.name }}</span>
-                        <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
-                    </div>
-                    <div>Last Sent: {{ event.last_sent }}</div>
-                    <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
-                    <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-                </div>
-                {% empty %}
-                    <div class="product-card no-highlight">
-                        No active events
-                    </div>
-                {% endfor %}
+    <div class="col-md-12">
+        <h3>Active Events</h3>
+        {% for event in active_events %}
+        <div class="product-card no-highlight">
+            <strong>{{ event.name }}</strong>
+            <div>
+                Template:
+                <span>{{ event.email_template.name }}</span>
+                <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
             </div>
+            <div>Last Sent: {{ event.last_sent }}</div>
+            <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
+            <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
         </div>
-        <div class="row">
-            <div class="col-md-8">
-                <h4>Inactive Events</h4>
-                {% for event in inactive_events %}
-                <div class="product-card no-highlight">
-                    <div style="font-weight: 700">{{ event.name }}</div>
-                    <div>Template:
-                         <span>{{ event.template.name }}</span>
-                         <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
-                    </div>
-                    <div>Last Sent: {{ event.last_sent }}</div>
-                    <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
-                    <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-                </div>
-                {% empty %}
-                    <div class="product-card no-highlight">
-                        No inactive events
-                    </div>
-                {% endfor %}
+        {% empty %}
+            <div class="product-card no-highlight">
+                No active events
             </div>
-        </div>
+        {% endfor %}
     </div>
-    <div class="col-md-4 sidebar">
-        <h2 class="top">Stats</h2>
-        <span style="font-size: 1.5em; font-weight: 700; color: #777">1,041</span> emails sent
-        <span style="font-size: 0.8em; color: #999">all time</span>
-        <br />
-        <span style="font-size: 1.5em; font-weight: 700; color: #777">77</span> emails sent
-        <span style="font-size: 0.8em; color: #999">in the last 30 days</span>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h3>Inactive Events</h3>
+        {% for event in inactive_events %}
+        <div class="product-card no-highlight">
+            <div style="font-weight: 700">{{ event.name }}</div>
+            <div>Template:
+                 <span>{{ event.email_template.name }}</span>
+                 <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
+            </div>
+            <div>Last Sent: {{ event.last_sent }}</div>
+            <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
+            <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
+        </div>
+        {% empty %}
+            <div class="product-card no-highlight">
+                No inactive events
+            </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock content %}
