@@ -113,5 +113,14 @@
         $('[data-toggle="tooltip"], .bs-tooltip').tooltip();
         $('[data-toggle="dropdown"]').dropdown();
     });
+
+    $(document).ready(function() {
+       $('#delete-modal').on('show.bs.modal', function(event) {
+           var button = $(event.relatedTarget),
+               name = button.parents('tr').find('.cell-title-lg').text();
+
+           $(this).find('#hf-name').text(name);
+       })
+    });
 </script>
 {% endblock %}
