@@ -6,7 +6,7 @@ from myjobs.tests.setup import MyJobsBase
 
 
 class TestChildDashboard(MyJobsBase):
-    def test_child_dastboard(self):
+    def test_child_dashboard(self):
         url = reverse('child_dashboard')
         url += "?referer=jobs.directemployers.org"
         resp = self.client.post(
