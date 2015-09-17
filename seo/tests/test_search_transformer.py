@@ -143,11 +143,3 @@ class TestSearchParserSpecial(TestCase):
         bad_query = 10 * "happy "
         result = transformer.transform(bad_query)
         self.assertEqual(bad_query, result)
-
-# Run just this test very fast:
-# PYTHONPATH=.:seo/tests python -m unittest test_search_transformer
-# or just a single test:
-# PYTHONPATH=.:seo/tests python -m unittest \
-#   test_search_transformer.TestSearchParser.test_002
-if 'unittest/__main__' in __main__.__file__:
-    logging.basicConfig(level=logging.INFO)
