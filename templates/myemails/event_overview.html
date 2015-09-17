@@ -12,44 +12,83 @@
 <div class="row">
     <div class="col-md-12">
         <h3>Active Events</h3>
+        <table class="table table-striped">
         {% for event in active_events %}
-        <div class="product-card no-highlight">
-            <strong>{{ event.name }}</strong>
-            <div>
-                Template:
-                <span>{{ event.email_template.name }}</span>
-                <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
-            </div>
-            <div>Last Sent: {{ event.last_sent }}</div>
-            <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
-            <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-        </div>
+            <tr>
+                <td>
+                    <strong>{{ event.name }}</strong>
+
+                    <div>
+                        Template:
+                        <span>{{ event.email_template.name }}</span>
+                        <i class="fa fa-pencil edit-template-name"></i>
+                    </div>
+                    <div>
+                        Last Sent: {{ event.last_sent }}
+                    </div>
+                </td>
+                <td>
+                    <div class="pull-right">
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="View Template">
+                            <i class="fa fa-eye fa-lg"></i>
+                            <span class="hidden-xs hidden-sm">View</span>
+                        </a>
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="Edit Template">
+                            <i class="fa fa-pencil fa-lg"></i>
+                            <span class="hidden-xs hidden-sm">Edit</span>
+                        </a>
+                    </div>
+                </td>
+            </tr>
         {% empty %}
-            <div class="product-card no-highlight">
-                No active events
-            </div>
+            <tr>
+                <td>
+                    Currently there are no active events.
+                </td>
+            </tr>
         {% endfor %}
+        </table>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
         <h3>Inactive Events</h3>
+        <table class="table table-striped">
         {% for event in inactive_events %}
-        <div class="product-card no-highlight">
-            <div style="font-weight: 700">{{ event.name }}</div>
-            <div>Template:
-                 <span>{{ event.email_template.name }}</span>
-                 <i class="fa fa-pencil edit-template-name" style="cursor: pointer;"></i>
-            </div>
-            <div>Last Sent: {{ event.last_sent }}</div>
-            <a class="btn" href="" style="right: 95px;"><i class="fa fa-pencil fa-lg"></i> Edit Template</a>
-            <a class="btn" href=""><i class="fa fa-eye fa-lg"></i> View</a>
-        </div>
+            <tr>
+                <td>
+                    <strong>{{ event.name }}</strong>
+
+                    <div>
+                        Template:
+                        <span>{{ event.email_template.name }}</span>
+                        <i class="fa fa-pencil edit-template-name"></i>
+                    </div>
+                    <div>
+                        Last Sent: {{ event.last_sent }}
+                    </div>
+                </td>
+                <td>
+                    <div class="pull-right">
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="View Template">
+                            <i class="fa fa-eye fa-lg"></i>
+                            <span class="hidden-xs hidden-sm">View</span>
+                        </a>
+                        <a class="btn btn-default m-btn-icon" href="#" data-toggle="tooltip" data-placement="top" title="Edit Template">
+                            <i class="fa fa-pencil fa-lg"></i>
+                            <span class="hidden-xs hidden-sm">Edit</span>
+                        </a>
+                    </div>
+                </td>
+            </tr>
         {% empty %}
-            <div class="product-card no-highlight">
-                No inactive events
-            </div>
+            <tr>
+                <td>
+                    Currently there are no inactive events.
+                </td>
+            </tr>
         {% endfor %}
+        </table>
     </div>
 </div>
 {% endblock content %}
