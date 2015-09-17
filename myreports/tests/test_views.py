@@ -4,7 +4,6 @@ import json
 import os
 
 from django.test import TestCase
-from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.test_views import TestClient
@@ -17,7 +16,6 @@ from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
-@override_settings(PROJECT="myjobs", ROOT_URLCONF="myjobs_urls")
 class MyReportsTestCase(TestCase):
     """
     Base class for all MyReports Tests. Identical to `django.test.TestCase`
