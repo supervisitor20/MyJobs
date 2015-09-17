@@ -51,6 +51,8 @@ class DirectSEOBase(TestCase):
                            "set utf8 collate utf8_unicode_ci")
             cursor.execute("alter table seo_company convert to character set "
                            "utf8 collate utf8_unicode_ci")
+            cursor.execute("alter table seo_queryredirect convert to character "
+                           "set utf8 collate utf8_unicode_ci")
             cursor.execute("alter table taggit_tag convert to character set "
                            "utf8 collate utf8_unicode_ci")
             cursor.execute("alter table taggit_taggeditem convert to "
