@@ -4,6 +4,7 @@ from boto.route53.exception import DNSServerError
 from django.core import mail
 from slugify import slugify
 
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes import generic
@@ -1383,7 +1384,7 @@ class CompanyUser(models.Model):
 
     user = models.ForeignKey(User)
     company = models.ForeignKey(Company)
-    date_added = models.DateTimeField(auto_now=True)
+    date_added = models.DateTimeField(default=timezone.now)
     group = models.ManyToManyField('auth.Group', blank=True)
 
     def __unicode__(self):
