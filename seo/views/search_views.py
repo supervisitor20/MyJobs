@@ -63,7 +63,8 @@ from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
-from myemails.models import EmailTemplate, EmailSection, CreatedEvent
+from myemails.models import (EmailTemplate, EmailSection, CreatedEvent,
+                             CronEvent, ValueEvent)
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2071,8 +2072,12 @@ def manage_header_footer(request):
 @user_is_allowed()
 def manage_templates(request):
     company = get_company_or_404(request)
-    events = CreatedEvent.objects.filter(owner=company).select_related(
-        'email_template__name')
+    
+    created_events = CreatedEvent.objects.filter(owner=company)
+    cron_events = CronEvent.objects.filter(owner=company)
+    value_events = ValueEvent.objects.filter(owner=company)
+
+    events = list(itertools.chain(created_events, cron_events, value_events))
 
     data_dict = {'events': events}
 
