@@ -2067,11 +2067,11 @@ def event_overview(request):
 
     # grab inactive events
     inactive_created_events = CreatedEvent.objects.filter(owner=company,
-                                                          is_active=True)
+                                                          is_active=False)
     inactive_cron_events = CronEvent.objects.filter(owner=company,
-                                                    is_active=True)
+                                                    is_active=False)
     inactive_value_events = ValueEvent.objects.filter(owner=company,
-                                                      is_active=True)
+                                                      is_active=False)
 
     # combine inactive events
     inactive_events = list(itertools.chain(inactive_created_events,
