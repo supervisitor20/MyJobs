@@ -15,10 +15,6 @@ class Migration(SchemaMigration):
         db.alter_column(u'mypartners_tag', 'created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True))
 
     def backwards(self, orm):
-        # Deleting field 'ContactLogEntry.successful'
-        db.delete_column(u'mypartners_contactlogentry', 'successful')
-
-
         # Changing field 'ContactRecord.created_on'
         db.alter_column(u'mypartners_contactrecord', 'created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now=True))
 
