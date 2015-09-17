@@ -83,24 +83,52 @@ class UserType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class DataType(models.Model):
-    data_type = models.CharField(max_length=100)
+class ReportingType(models.Model):
+    reporting_type = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
+    is_active = models.BooleanField(default=False)
+
+
+class UserReportingType(models.Model):
+    user_type = models.ForeignKey('UserType')
+    reporting_type = models.ForeignKey('ReportingType')
     is_active = models.BooleanField(default=False)
 
 
 class ReportType(models.Model):
     report_type = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
-    data_types = models.ManyToManyField(DataType)
     is_active = models.BooleanField(default=False)
 
 
-class ReportingType(models.Model):
-    reporting_type = models.CharField(max_length=50)
+class ReportingTypeReportType(models.Model):
+    reporting_type = models.ForeignKey('ReportingType')
+    report_type = models.ForeignKey('ReportType')
+    is_active = models.BooleanField(default=False)
+
+
+class DataType(models.Model):
+    data_type = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
-    user_types = models.ManyToManyField(UserType)
-    report_types = models.ManyToManyField(ReportType)
+    is_active = models.BooleanField(default=False)
+
+
+class ReportTypeDataType(models.Model):
+    report_type = models.ForeignKey('ReportType')
+    data_type = models.ForeignKey('DataType')
+    is_active = models.BooleanField(default=False)
+
+
+class Configuration(models.Model):
+    name = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=False)
+
+
+class ReportPresentation(models.Model):
+    report_data = models.ForeignKey('ReportTypeDataType')
+    presentation_type = models.ForeignKey('PresentationType')
+    configuration = models.ForeignKey('Configuration')
+    display_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
 
 
@@ -110,20 +138,9 @@ class PresentationType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class Configuration(models.Model):
-    name = models.CharField(max_length=50)
-    is_active = models.BooleanField(default=False)
-
-
 class Column(models.Model):
     table_name = models.CharField(max_length=50)
     column_name = models.CharField(max_length=50)
-    is_active = models.BooleanField(default=False)
-
-
-class ColumnFormat(models.Model):
-    name = models.CharField(max_length=50)
-    format_code = models.CharField(max_length=2000)
     is_active = models.BooleanField(default=False)
 
 
@@ -134,17 +151,22 @@ class InterfaceElementType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class ColumnFormat(models.Model):
+    name = models.CharField(max_length=50)
+    format_code = models.CharField(max_length=2000)
+    is_active = models.BooleanField(default=False)
+
+
+class ConfigurationColumnFormats(models.Model):
+    column_format = models.ForeignKey('ColumnFormat')
+    configuration_column = models.ForeignKey('ConfigurationColumn')
+    is_active = models.BooleanField(default=False)
+
+
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
     column = models.ForeignKey(Column)
     interface_element_type = models.ForeignKey(InterfaceElementType)
     alias = models.CharField(max_length=100)
     multi_value_expansion = models.PositiveSmallIntegerField()
-    column_formats = models.ManyToManyField(ColumnFormat)
     is_active = models.BooleanField(default=False)
-
-
-class ReportRepresentation(models.Model):
-    presentation_type = models.ForeignKey(PresentationType)
-    data_type = models.ForeignKey(DataType)
-    configuration = models.ForeignKey(Configuration)
