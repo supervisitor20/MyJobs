@@ -864,3 +864,7 @@ class OutreachEmailAddress(models.Model):
     company = models.ForeignKey("seo.Company")
     email = models.EmailField(max_length=255, verbose_name="Email", 
                               help_text="Non-User's email address")
+
+
+class OutreachWorkflowState(models.Model):
+    state = models.CharField(max_length=50)
