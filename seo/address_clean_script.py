@@ -1,5 +1,4 @@
 import re, sys
-import ipdb
 
 from search_transformer import peekable
 from mypartners.models import Location
@@ -707,7 +706,7 @@ numeric_re = re.compile("(\d+)(.*)")
 direction_re = re.compile("\s+(%s)\s+(.*)" % "|".join(direction_terms), re.I)
 add_1_re = re.compile("(%s)(?:$|\s)(.*)" % "|".join(address_line_1_terms), re.I)
 po_box_re = re.compile("(%s)((?:\s*(?:box|bo|b)(?:$|\s))|\s+)(.*)" % "|".join(po_box_terms), re.I)
-add_2_re = re.compile("^((?:(?:%s)(?=\s))|#)(.*)" % "|".join(address_line_2_terms), re.I)
+# add_2_re = re.compile("^((?:(?:%s)(?=\s))|#)(.*)" % "|".join(address_line_2_terms), re.I) #currently unused
 word_re = re.compile("(\S+)(.*)")
 
 
@@ -729,9 +728,6 @@ class Token(object):
 
     def is_add_1(self):
         return self.token_type == 'add1'
-
-    def is_add_2(self):
-        return self.token_type == 'add2'
 
     def is_word(self):
         return self.token_type == 'word'
@@ -774,12 +770,6 @@ def tokenize(input_string):
             yield Token('pob', match.group(1), iterations)
             continue
 
-        match = add_2_re.match(current)
-        if match:
-            current = match.group(2)
-            yield Token('add2', match.group(1), iterations)
-            continue
-
         match = add_1_re.match(current)
         if match:
             current = match.group(2)
@@ -806,37 +796,23 @@ class ScoreTree(object):
             self.children = children
 
     def get_score(self):
-        
         add1_score = 0
         if self.children:
             for child in self.children:
                 add1_score += child.get_score()
 
         if self.node_type == 'add1':
-            if self.head.iterations == 1:
+            if self.head.iterations == 1: #pts for being first word
                 add1_score += 10
-            if self.tail:
-                non_word_child = False
-                for child in self.children:
-                    if child.node_type not in ('word','dir'):
-                        non_word_child = True
-                if not non_word_child:
-                    add1_score += 30
-            if self.get_child_count() > 4:
-                add1_score -= 20
+            if self.tail: #did the number has a connected "street/ave/blvd"
+                if self.children:
+                    add1_score += 20
 
         if self.node_type == 'pob':
             if self.tail:
                 add1_score += 10
 
         return add1_score
-
-    def get_child_count(self):
-        count = 0
-        for child in self.children:
-            count += child.get_child_count()
-
-        return count or 1
 
 class Parser(object):
     def __init__(self, token_stream):
@@ -850,14 +826,8 @@ class Parser(object):
         master_tree = ScoreTree('master','master')
 
         while not self.token_stream.peek().is_eof():
-            master_tree.children.append(self.handle_add2())
+            master_tree.children.append(self.handle_pobox())
         return master_tree
-
-    def handle_add2(self):
-        if self.token_stream.peek().is_add_2():
-            return ScoreTree('add2',self.token_stream.next(), self.token_stream.next(), [])
-        else:
-            return self.handle_pobox()
 
     def handle_pobox(self):
         if self.token_stream.peek().is_po_box():
@@ -865,7 +835,7 @@ class Parser(object):
             po_token = self.token_stream.next()
             if not self.token_stream.peek().is_eof():
                 po_address = self.token_stream.next()
-            return ScoreTree('pob',po_token, po_address, [])
+            return ScoreTree('pob',po_token, po_address)
         else:
             return self.handle_number()
 
@@ -880,7 +850,7 @@ class Parser(object):
         
         if found_number:
             while not (self.token_stream.peek().is_eof() or self.token_stream.peek().is_add_1()):
-                addr_children.append(self.handle_add2())
+                addr_children.append(self.handle_pobox())
         else:
             word = self.handle_word()
 
@@ -916,34 +886,50 @@ def calculate_score(input_string):
     score_transformer = ScoreTransformer(tokenize, Parser)
     return score_transformer.get_total_score(input_string)
 
-def determine_label_is_address():
-    count = 0
-    for location in Location.objects.raw("select * FROM mypartners_location where address_line_two = '' or address_line_one = ''"):
-    # for location in Location.objects.all():
-        addr1_score = calculate_score(location.label)
-        if addr1_score in range(1,51):
-            # output_file.write(location.label + "\n")
-            count += 1
-            # output_file.write('----------BEFORE----------\n')
-            # output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
-            # output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
-            # output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
-            # continue_flag = raw_input("Continue? [y]/n: ")
-            # if continue_flag == 'n':
-            #     break
-            if location.address_line_one:
-                if location.address_line_two:
-                    continue #report not able to be fixed automatically
-                else:
-                    location.address_line_two = location.address_line_one
-            location.address_line_one = location.label
+def shift_address_values(location):
+        if location.address_line_one:
+            if not location.address_line_two:
+                location.address_line_two = location.address_line_one
+        location.address_line_one = location.label
+        return location
 
-            # output_file.write('----------AFTER----------\n')
-            # output_file.write('LABEL:     %s \n' % location.label.encode('utf-8'))
-            # output_file.write('ADDLN1:     %s \n' % location.address_line_one.encode('utf-8'))
-            # output_file.write('ADDLN2:     %s \n' % location.address_line_two.encode('utf-8'))
-    # output_file.write('Count: %s' % count)
-    # output_file.close()
-    print 'Count: %s' % count
+def determine_label_is_address():
+    count_converted = 0
+    count_skipped = 0
+    for location in Location.objects.raw("select * FROM mypartners_location where label != '' and label != address_line_one "
+                                         "and (address_line_two = '' or address_line_one = '')"):
+        addr1_score = calculate_score(location.label)
+        if addr1_score in range(20,999):
+            location = shift_address_values(location)
+            # location.save()
+            count_converted += 1
+        if addr1_score in range(1,11):
+            #manual review for addresses with score of 10 or lower (tentative matches)
+            print '----------BEFORE----------\n'
+            print 'LABEL:     %s \n' % location.label.encode('utf-8')
+            print 'ADDLN1:     %s \n' % location.address_line_one.encode('utf-8')
+            print 'ADDLN2:     %s \n' % location.address_line_two.encode('utf-8')
+
+            location = shift_address_values(location)
+
+            print '----------AFTER----------\n'
+            print 'LABEL:     %s \n' % location.label.encode('utf-8')
+            print 'ADDLN1:     %s \n' % location.address_line_one.encode('utf-8')
+            print 'ADDLN2:     %s \n' % location.address_line_two.encode('utf-8')
+
+            convert_flag = raw_input("Convert? [y]/n/q: ")
+            if convert_flag == 'n':
+                count_skipped += 1
+                print 'SKIPPED'
+                continue
+            if convert_flag == 'q':
+                break
+            # location.save()
+            print 'CONVERTED'
+            count_converted += 1
+
+    print 'Converted: ', count_converted
+    print 'Skipped: ', count_skipped
+
 if __name__ == '__main__':
     print calculate_score(sys.argv[1])
