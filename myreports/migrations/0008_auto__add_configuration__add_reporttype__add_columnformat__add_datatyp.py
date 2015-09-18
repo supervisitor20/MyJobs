@@ -8,15 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'ReportingTypeReportType'
-        db.create_table(u'myreports_reportingtypereporttype', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('reporting_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportingType'])),
-            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'myreports', ['ReportingTypeReportType'])
-
         # Adding model 'Configuration'
         db.create_table(u'myreports_configuration', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -28,7 +19,7 @@ class Migration(SchemaMigration):
         # Adding model 'ReportPresentation'
         db.create_table(u'myreports_reportpresentation', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('report_data', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportTypeDataType'])),
+            ('report_data', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportTypeDataTypes'])),
             ('presentation_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.PresentationType'])),
             ('configuration', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Configuration'])),
             ('display_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
@@ -45,6 +36,15 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'myreports', ['ColumnFormat'])
 
+        # Adding model 'ReportTypeDataTypes'
+        db.create_table(u'myreports_reporttypedatatypes', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
+            ('data_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.DataType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ReportTypeDataTypes'])
+
         # Adding model 'DataType'
         db.create_table(u'myreports_datatype', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -53,15 +53,6 @@ class Migration(SchemaMigration):
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'myreports', ['DataType'])
-
-        # Adding model 'Column'
-        db.create_table(u'myreports_column', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('table_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('column_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'myreports', ['Column'])
 
         # Adding model 'ReportingType'
         db.create_table(u'myreports_reportingtype', (
@@ -81,14 +72,14 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'myreports', ['PresentationType'])
 
-        # Adding model 'UserReportingType'
-        db.create_table(u'myreports_userreportingtype', (
+        # Adding model 'ReportingTypeReportTypes'
+        db.create_table(u'myreports_reportingtypereporttypes', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.UserType'])),
             ('reporting_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportingType'])),
+            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'myreports', ['UserReportingType'])
+        db.send_create_signal(u'myreports', ['ReportingTypeReportTypes'])
 
         # Adding model 'UserType'
         db.create_table(u'myreports_usertype', (
@@ -97,6 +88,15 @@ class Migration(SchemaMigration):
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'myreports', ['UserType'])
+
+        # Adding model 'UserReportingTypes'
+        db.create_table(u'myreports_userreportingtypes', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.UserType'])),
+            ('reporting_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportingType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['UserReportingTypes'])
 
         # Adding model 'ConfigurationColumnFormats'
         db.create_table(u'myreports_configurationcolumnformats', (
@@ -119,14 +119,14 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'myreports', ['ConfigurationColumn'])
 
-        # Adding model 'ReportTypeDataType'
-        db.create_table(u'myreports_reporttypedatatype', (
+        # Adding model 'Column'
+        db.create_table(u'myreports_column', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
-            ('data_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.DataType'])),
+            ('table_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('column_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'myreports', ['ReportTypeDataType'])
+        db.send_create_signal(u'myreports', ['Column'])
 
         # Adding model 'InterfaceElementType'
         db.create_table(u'myreports_interfaceelementtype', (
@@ -149,9 +149,6 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting model 'ReportingTypeReportType'
-        db.delete_table(u'myreports_reportingtypereporttype')
-
         # Deleting model 'Configuration'
         db.delete_table(u'myreports_configuration')
 
@@ -161,11 +158,11 @@ class Migration(SchemaMigration):
         # Deleting model 'ColumnFormat'
         db.delete_table(u'myreports_columnformat')
 
+        # Deleting model 'ReportTypeDataTypes'
+        db.delete_table(u'myreports_reporttypedatatypes')
+
         # Deleting model 'DataType'
         db.delete_table(u'myreports_datatype')
-
-        # Deleting model 'Column'
-        db.delete_table(u'myreports_column')
 
         # Deleting model 'ReportingType'
         db.delete_table(u'myreports_reportingtype')
@@ -173,11 +170,14 @@ class Migration(SchemaMigration):
         # Deleting model 'PresentationType'
         db.delete_table(u'myreports_presentationtype')
 
-        # Deleting model 'UserReportingType'
-        db.delete_table(u'myreports_userreportingtype')
+        # Deleting model 'ReportingTypeReportTypes'
+        db.delete_table(u'myreports_reportingtypereporttypes')
 
         # Deleting model 'UserType'
         db.delete_table(u'myreports_usertype')
+
+        # Deleting model 'UserReportingTypes'
+        db.delete_table(u'myreports_userreportingtypes')
 
         # Deleting model 'ConfigurationColumnFormats'
         db.delete_table(u'myreports_configurationcolumnformats')
@@ -185,8 +185,8 @@ class Migration(SchemaMigration):
         # Deleting model 'ConfigurationColumn'
         db.delete_table(u'myreports_configurationcolumn')
 
-        # Deleting model 'ReportTypeDataType'
-        db.delete_table(u'myreports_reporttypedatatype')
+        # Deleting model 'Column'
+        db.delete_table(u'myreports_column')
 
         # Deleting model 'InterfaceElementType'
         db.delete_table(u'myreports_interfaceelementtype')
@@ -268,6 +268,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'ConfigurationColumn'},
             'alias': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Column']"}),
+            'column_formats': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ColumnFormat']", 'through': u"orm['myreports.ConfigurationColumnFormats']", 'symmetrical': 'False'}),
             'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Configuration']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'interface_element_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.InterfaceElementType']"}),
@@ -322,10 +323,11 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'report_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ReportType']", 'through': u"orm['myreports.ReportingTypeReportTypes']", 'symmetrical': 'False'}),
             'reporting_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'myreports.reportingtypereporttype': {
-            'Meta': {'object_name': 'ReportingTypeReportType'},
+        u'myreports.reportingtypereporttypes': {
+            'Meta': {'object_name': 'ReportingTypeReportTypes'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'report_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportType']"}),
@@ -338,24 +340,25 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'presentation_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.PresentationType']"}),
-            'report_data': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportTypeDataType']"})
+            'report_data': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportTypeDataTypes']"})
         },
         u'myreports.reporttype': {
             'Meta': {'object_name': 'ReportType'},
+            'data_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.DataType']", 'through': u"orm['myreports.ReportTypeDataTypes']", 'symmetrical': 'False'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'report_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'myreports.reporttypedatatype': {
-            'Meta': {'object_name': 'ReportTypeDataType'},
+        u'myreports.reporttypedatatypes': {
+            'Meta': {'object_name': 'ReportTypeDataTypes'},
             'data_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.DataType']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'report_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportType']"})
         },
-        u'myreports.userreportingtype': {
-            'Meta': {'object_name': 'UserReportingType'},
+        u'myreports.userreportingtypes': {
+            'Meta': {'object_name': 'UserReportingTypes'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'reporting_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportingType']"}),
@@ -365,6 +368,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'UserType'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'reporting_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ReportingType']", 'through': u"orm['myreports.UserReportingTypes']", 'symmetrical': 'False'}),
             'user_type': ('django.db.models.fields.CharField', [], {'max_length': '10'})
         },
         u'postajob.package': {

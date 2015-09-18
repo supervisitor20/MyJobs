@@ -81,15 +81,19 @@ class Report(models.Model):
 class UserType(models.Model):
     user_type = models.CharField(max_length=10)
     is_active = models.BooleanField(default=False)
+    reporting_types = models.ManyToManyField(
+        'ReportingType', through='UserReportingTypes')
 
 
 class ReportingType(models.Model):
     reporting_type = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
+    report_types = models.ManyToManyField(
+        'ReportType', through='ReportingTypeReportTypes')
     is_active = models.BooleanField(default=False)
 
 
-class UserReportingType(models.Model):
+class UserReportingTypes(models.Model):
     user_type = models.ForeignKey('UserType')
     reporting_type = models.ForeignKey('ReportingType')
     is_active = models.BooleanField(default=False)
@@ -98,10 +102,12 @@ class UserReportingType(models.Model):
 class ReportType(models.Model):
     report_type = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
+    data_types = models.ManyToManyField(
+        'DataType', through='ReportTypeDataTypes')
     is_active = models.BooleanField(default=False)
 
 
-class ReportingTypeReportType(models.Model):
+class ReportingTypeReportTypes(models.Model):
     reporting_type = models.ForeignKey('ReportingType')
     report_type = models.ForeignKey('ReportType')
     is_active = models.BooleanField(default=False)
@@ -113,7 +119,7 @@ class DataType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class ReportTypeDataType(models.Model):
+class ReportTypeDataTypes(models.Model):
     report_type = models.ForeignKey('ReportType')
     data_type = models.ForeignKey('DataType')
     is_active = models.BooleanField(default=False)
@@ -125,7 +131,7 @@ class Configuration(models.Model):
 
 
 class ReportPresentation(models.Model):
-    report_data = models.ForeignKey('ReportTypeDataType')
+    report_data = models.ForeignKey('ReportTypeDataTypes')
     presentation_type = models.ForeignKey('PresentationType')
     configuration = models.ForeignKey('Configuration')
     display_name = models.CharField(max_length=50)
@@ -169,4 +175,6 @@ class ConfigurationColumn(models.Model):
     interface_element_type = models.ForeignKey(InterfaceElementType)
     alias = models.CharField(max_length=100)
     multi_value_expansion = models.PositiveSmallIntegerField()
+    column_formats = models.ManyToManyField(
+        'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
