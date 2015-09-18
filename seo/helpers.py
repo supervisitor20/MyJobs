@@ -23,6 +23,7 @@ from seo.search_backend import DESearchQuerySet
 from seo.models import BusinessUnit, Company
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.filters import FacetListWidget, CustomFacetListWidget
+from seo.search_transformer import transform_search
 from serializers import JSONExtraValuesSerializer
 from moc_coding.models import Moc
 from xmlparse import text_fields
@@ -790,8 +791,8 @@ def sort_custom_facets_by_group(custom_facets):
              values are a list of custom facets for that facet_group.
 
     """
-    # Right now we know we only have these 3 facet_groups.
-    grouped_facets = {1: [], 2: [], 3: []}
+    # Right now we know we only have these 4 facet_groups.
+    grouped_facets = {1: [], 2: [], 3: [], 4: []}
 
     for facet, count in custom_facets:
         cached_facets = getattr(settings, 'STANDARD_FACET', [])
@@ -1008,7 +1009,7 @@ def prepare_sqs_from_search_params(params, sqs=None):
         # intended as negation.
         # Retail -Sales will search for Retail excluding Sales
         # Retail - Sales will search for 'Retail - Sales'
-        title = "(%s)" % title.replace(' - ', ' \\- ')
+        title = "(%s)" % transform_search(title.replace(' - ', ' \\- '))
         tb = u"({t})^{b}".format(t=title, b=boost_value)
 
         if exact_title:

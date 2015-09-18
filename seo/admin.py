@@ -6,7 +6,6 @@ from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
-from django.contrib.redirects.models import Redirect
 from django.contrib.sites.models import Site
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -42,7 +41,9 @@ from seo.models import (ATSSourceCode, BillboardHotspot, BillboardImage,
                         BusinessUnit, Company, Configuration, CustomFacet,
                         CustomPage, FlatPage, GoogleAnalytics,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
-                        SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource)
+                        SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource,
+                        QueryRedirect, QParameter, LocationParameter,
+                        MocParameter)
 from seo.queryset_copier import copy_following_relationships
 from seo.models import check_message_queue
 
@@ -153,14 +154,14 @@ class ConfigurationAdmin (admin.ModelAdmin):
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget'),
-                             'sites', 'not_found_override']
+                             'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
                 ('title', 'view_all_jobs_detail', 'status',
                  'percent_featured'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', ),
-                'sites', 'not_found_override']}),
+                'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
                  'show_home_social_footer',
@@ -186,6 +187,8 @@ class ConfigurationAdmin (admin.ModelAdmin):
                  'browse_facet_show_2'),
                 ('browse_facet_order_3', 'browse_facet_text_3',
                  'browse_facet_show_3'),
+                ('browse_facet_order_4', 'browse_facet_text_4',
+                 'browse_facet_show_4'),                 
                 ('browse_company_order', 'browse_company_text',
                  'browse_company_show'),
                 ('browse_moc_order', 'browse_moc_text', 'browse_moc_show'),
@@ -206,8 +209,6 @@ class ConfigurationAdmin (admin.ModelAdmin):
             this.base_fields['sites'].queryset = seo_site_qs
             this.base_fields['sites'].initial = [o.pk for o in obj.seosite_set
                                                  .filter(group=obj.group)]
-            this.base_fields['not_found_override'].queryset = (
-                Redirect.objects.filter(site__in=seo_site_qs))
 
             if request.user.is_superuser or request.user.groups.count() >= 1:
                 if not request.user.is_superuser:
@@ -1229,6 +1230,29 @@ class ViewSourceAdmin(admin.ModelAdmin):
         ('Sites Commited', {'fields': ['sites']}),
     ]
 
+
+class QParameterAdmin(admin.TabularInline):
+    model = QParameter
+
+
+class LocationParameterAdmin(admin.TabularInline):
+    model = LocationParameter
+
+
+class MocParameterAdmin(admin.TabularInline):
+    model = MocParameter
+
+
+class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
+    related_search_fields = {
+        'site': ('domain', )
+    }
+    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+
+    class Media:
+        js = ('django_extensions/js/jquery-1.7.2.min.js', )
+
+
 admin.site.register(CustomFacet, CustomFacetAdmin)
 admin.site.register(Configuration, ConfigurationAdmin)
 admin.site.register(BusinessUnit, BusinessUnitAdmin)
@@ -1243,6 +1267,7 @@ admin.site.register(ATSSourceCode, ATSSourceCodeAdmin)
 admin.site.register(ViewSource, ViewSourceAdmin)
 admin.site.register(BillboardImage, BillboardImageAdmin)
 admin.site.register(Company, CompanyAdmin)
+admin.site.register(QueryRedirect, QueryRedirectAdmin)
 
 try:
     admin.site.unregister(FlatPage)
@@ -1277,7 +1302,7 @@ def check_inline_instance(obj, req):
 
 
 def copy_to_qc(modeladmin, request, queryset):
-    # This shouldnt't be used to copy a large number of objects at once.
+    # This shouldn't be used to copy a large number of objects at once.
     if queryset.count() > 5:
         error_message = 'You cannot copy more than 5 items at once.'
         modeladmin.message_user(request, error_message)

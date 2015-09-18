@@ -65,3 +65,29 @@ HAYSTACK_CONNECTIONS = {
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
 )
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': "[%(asctime)s] %(levelname)s "
+                      "[%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['null'],
+            'propagate': True,
+            'level': 'WARN',
+        }
+    }
+}

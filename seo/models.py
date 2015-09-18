@@ -1,7 +1,6 @@
 import operator
 from DNS import DNSError
 from boto.route53.exception import DNSServerError
-from django.core import mail
 from slugify import slugify
 import Queue
 
@@ -13,14 +12,16 @@ from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
 from django.contrib import messages
 from django.core.cache import cache
+from django.core import mail
 from django.core.validators import MaxValueValidator, ValidationError
-from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
 from django.dispatch import Signal, receiver
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 
 from haystack.inputs import Raw
 from haystack.query import SQ
@@ -37,8 +38,11 @@ from myjobs.models import User
 from mypartners.models import Tag
 from universal.helpers import get_domain, get_object_or_none
 
-
 import decimal
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
+add_introspection_rules([], ["^seo\.models\.CommaSeparatedTextField"])
 
 
 class JobsByBuidManager(models.Manager):
@@ -60,6 +64,7 @@ class GoogleAnalyticsBySiteManager(models.Manager):
     def get_query_set(self):
         return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
             seosite__id=settings.SITE_ID)
+
 
 class NonChainedForeignKey(ForeignKey):
     """
@@ -637,7 +642,7 @@ class SeoSiteFacet(models.Model):
     BOOLEAN_CHOICES = (('or', 'OR'), ('and', 'AND'), )
 
     FACET_GROUP_CHOICES = ((1, 'Facet Group 1'), (2, 'Facet Group 2'),
-                           (3, 'Facet Group 3'), )
+                           (3, 'Facet Group 3'), (4, 'Facet Group 4'))
 
     facet_group = models.IntegerField(choices=FACET_GROUP_CHOICES, default=1)
     seosite = models.ForeignKey('SeoSite', verbose_name="Seo Site")
@@ -1092,6 +1097,7 @@ class Configuration(models.Model):
     browse_facet_show = models.BooleanField('Show', default=False)
     browse_facet_show_2 = models.BooleanField('Show', default=False)
     browse_facet_show_3 = models.BooleanField('Show', default=False)
+    browse_facet_show_4 = models.BooleanField('Show', default=False)
     browse_moc_show = models.BooleanField('Show', default=False)
     browse_company_show = models.BooleanField('Show', default=False)
 
@@ -1116,6 +1122,9 @@ class Configuration(models.Model):
     browse_facet_text_3 = models.CharField('Heading for Custom Facet Group 3',
                                            default='Job Profiles',
                                            max_length=50)
+    browse_facet_text_4 = models.CharField('Heading for Custom Facet Group 4',
+                                           default='Job Profiles',
+                                           max_length=50)
     browse_moc_text = models.CharField('Heading for MOC Facet',
                                        default='Military Titles',
                                        max_length=50)
@@ -1131,12 +1140,14 @@ class Configuration(models.Model):
                                             choices=ORDER_CHOICES)
     browse_title_order = models.IntegerField('Order', default=6,
                                              choices=ORDER_CHOICES)
-    browse_facet_order = models.IntegerField('Order', default=2,
+    browse_facet_order = models.IntegerField('Order', default=1,
                                              choices=ORDER_CHOICES)
     browse_facet_order_2 = models.IntegerField('Order', default=2,
                                                choices=ORDER_CHOICES)
-    browse_facet_order_3 = models.IntegerField('Order', default=2,
+    browse_facet_order_3 = models.IntegerField('Order', default=3,
                                                choices=ORDER_CHOICES)
+    browse_facet_order_4 = models.IntegerField('Order', default=4,
+                                               choices=ORDER_CHOICES)                                               
     browse_moc_order = models.IntegerField('Order', default=1,
                                            choices=ORDER_CHOICES)
     browse_company_order = models.IntegerField('Order', default=7,
@@ -1222,8 +1233,67 @@ class Configuration(models.Model):
     what_helptext = models.TextField(blank=True)
     where_helptext = models.TextField(blank=True)
 
-    not_found_override = models.ManyToManyField('redirects.Redirect', null=True,
-                                                blank=True)
+
+to_string = lambda param, values: " or ".join("=".join([param, value])
+                                              for value in values.split('|')
+                                              if value)
+
+
+class QueryParameter(models.Model):
+    value = models.CharField(max_length=200,
+                             help_text=_('The part after the equals sign'))
+
+    class Meta:
+        abstract = True
+
+
+@python_2_unicode_compatible
+class QParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='q')
+
+    def __str__(self):
+        return to_string(param='q', values=self.value)
+
+
+@python_2_unicode_compatible
+class LocationParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='location')
+
+    def __str__(self):
+        return to_string(param='location', values=self.value)
+
+
+@python_2_unicode_compatible
+class MocParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='moc')
+
+    def __str__(self):
+        return to_string(param='moc', values=self.value)
+
+
+@python_2_unicode_compatible
+class QueryRedirect(models.Model):
+    site = models.ForeignKey('sites.Site')
+    old_path = models.CharField(_('redirect from'), max_length=200,
+                                db_index=True,
+                                help_text=_(
+                                    "This should be an absolute path, "
+                                    "excluding the domain name. Example: "
+                                    "'/events/search/'."))
+    new_path = models.CharField(_('redirect to'), max_length=200, blank=True,
+                                help_text=_(
+                                    "This can be either an absolute "
+                                    "path (as above) or a full URL starting "
+                                    "with 'http://' or 'https://'."))
+
+    def __str__(self):
+        return "%s ---> %s" % (self.old_path, self.new_path)
 
 
 class GoogleAnalytics (models.Model):
