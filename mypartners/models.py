@@ -846,7 +846,8 @@ class OutreachEmailDomain(models.Model):
         return "%s for %s" % (self.domain, self.company)
 
     def clean_fields(self, exclude=None):
-        if CommonEmailDomain.objects.filter(domain=self.domain).exists():
+        if CommonEmailDomain.objects.filter(
+                domain__iexact=self.domain).exists():
             raise ValidationError(
                 "%s has been blacklisted as a common domain, please choose "
                 "another." % self.domain)
