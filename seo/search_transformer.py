@@ -107,7 +107,8 @@ NOT_OPS = {"not", "!"}
 class Token(object):
     """Represents a token found by the tokenizer."""
 
-    def __init__(self, token_type, token, flags=[]):
+    def __init__(self, token_type, token, flags=None):
+        if flags is None: flags = []
         self.token_type = token_type
         self.token = token
         self.flags = flags
@@ -272,7 +273,10 @@ class AstTree(object):
     It is primarily responsible for representing value and serization.
     """
 
-    def __init__(self, node_type, head=None, tail=[], flags=[], children=None):
+    def __init__(self, node_type, head=None, tail=None, flags=None, children=None):
+        if tail is None: tail = []
+        if flags is None: flags = []
+
         self.node_type = node_type
         if children is not None:
             self.children = children
