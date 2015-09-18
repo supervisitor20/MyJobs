@@ -73,7 +73,7 @@ class Migration(SchemaMigration):
         },
         u'mypartners.commonemaildomain': {
             'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.contact': {
@@ -148,7 +148,7 @@ class Migration(SchemaMigration):
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.partner': {
