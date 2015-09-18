@@ -823,7 +823,7 @@ class CommonEmailDomain(models.Model):
     class Meta:
         ordering = ["domain"]
 
-    domain = models.CharField(max_length=255, unique=True)
+    domain = models.URLField(unique=True)
 
     def __unicode__(self):
         return self.domain
