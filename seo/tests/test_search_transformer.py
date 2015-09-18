@@ -87,6 +87,8 @@ test_data = [
     ('snow \/ shovel', 'snow AND \/ AND shovel'),
     ('snow / shovel', 'snow AND \/ AND shovel'),
     ('snow/shovel', 'snow AND \/ AND shovel'),
+    ('"nurse maid" and not (plastic or "made man")',
+        '"nurse maid" AND NOT (plastic OR "made man")'),
 ]
 
 

@@ -165,7 +165,7 @@ infix_ops_re = build_op_regex(AND_OPS | OR_OPS)
 dash_re = re.compile(r'(-)(\S.*)')
 prefix_ops_re = build_op_regex(NOT_OPS)
 ws_re = re.compile(r'\s+(.*)')
-quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
+quoted_phrase_re = re.compile(r'\"\s*(.*?)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
 
 # These characters are considered part of a term and can
