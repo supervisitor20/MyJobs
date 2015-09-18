@@ -2,7 +2,6 @@
 # from django.test import TestCase
 from unittest import TestCase
 import logging
-import __main__
 
 from seo.search_transformer import transform_search, \
     SearchTransformer, optimize_tree, Parser, Energy, \
