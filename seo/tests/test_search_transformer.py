@@ -2,7 +2,6 @@
 # from django.test import TestCase
 from unittest import TestCase
 import logging
-import __main__
 
 from seo.search_transformer import transform_search, \
     SearchTransformer, optimize_tree, Parser, Energy, \
@@ -88,6 +87,8 @@ test_data = [
     ('snow \/ shovel', 'snow AND \/ AND shovel'),
     ('snow / shovel', 'snow AND \/ AND shovel'),
     ('snow/shovel', 'snow AND \/ AND shovel'),
+    ('"nurse maid" and not (plastic or "made man")',
+        '"nurse maid" AND NOT (plastic OR "made man")'),
 ]
 
 
