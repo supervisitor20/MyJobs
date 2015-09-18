@@ -61,6 +61,7 @@ from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
+from myjobs.decorators import user_is_allowed
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -747,6 +748,7 @@ def syndication_feed(request, filter_path, feed_type):
     jobs = helpers.get_jobs(default_sqs=sqs,
                             custom_facets=settings.DEFAULT_FACET,
                             jsids=settings.SITE_BUIDS,
+                            additional_fields=['description'],
                             filters=filters, sort_order=sort_order)
 
     job_count = jobs.count()
@@ -1006,7 +1008,7 @@ class BusinessUnitAdminFilter(FSMView):
 
 class SeoSiteAdminFilter(FSMView):
     model = SeoSite
-    fields = ('domain__icontains',) 
+    fields = ('domain__icontains',)
 
     @method_decorator(login_required(login_url='/admin/'))
     def dispatch(self, *args, **kwargs):
@@ -1072,8 +1074,7 @@ def home_page(request):
     returns:
     render_to_response call
 
-    """
-
+    """    
     site_config = get_site_config(request)
     num_facet_items = site_config.num_filter_items_to_show
     custom_facet_counts = []
@@ -1696,7 +1697,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     redirect_url = helpers.determine_redirect(request, filters)
     if redirect_url:
         return redirect_url
-
+    
     query_path = request.META.get('QUERY_STRING', None)
     moc_id_term = request.GET.get('moc_id', None)
     q_term = request.GET.get('q', None)
@@ -1710,7 +1711,20 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
 
+    # checks to ensure that improper URL configurations return the correct
+    # 404 response before executing query for jobs
+    company_data = helpers.get_company_data(filters)
+    if not company_data and filters['company_slug']:
+        raise Http404("No company found for %s" % filters['company_slug'])
+    if filters['moc_slug']:
+        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
+        if not moc:
+            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
+    
     custom_facet_counts = []
+    facet_slugs = []
+    active_facets = []
+    
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1719,7 +1733,11 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             custom_facet_counts = cf_count_tup
         else:
             facet_slugs = filters['facet_slug'].split('/')
+            # retrieve active facet from URL and add it to list of facets
+            # available to given domain
             active_facets = helpers.standard_facets_by_name_slug(facet_slugs)
+            # remove active facet from list of available facets and counts
+            # to prevent display on the available facets list
             custom_facet_counts = [(facet, count) for facet, count
                                    in cf_count_tup
                                    if facet not in active_facets]
@@ -1729,16 +1747,10 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             if len(active_facets) == 1 and active_facets[0].blurb:
                 facet_blurb_facet = active_facets[0]
 
-    # Text uses html_description instead of just description.
-    fl = list(helpers.search_fields)
-    index = fl.index('description')
-    fl.pop(index)
-    # We use the html_description to show highlighted snippets of the
-    # description that match the search term. If there is no search
-    # term there's no reason to even get the html_description.
-    if q_term:
-        fl.append('html_description')
+    if filters['facet_slug'] and not active_facets:
+        raise Http404("No job category found for %s" % filters['facet_slug'])
 
+    fl = list(helpers.search_fields)
     default_jobs, featured_jobs, facet_counts = helpers.jobs_and_counts(
         request, filters, num_jobs, fl=fl)
 
@@ -1749,12 +1761,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
-    if not facet_counts:
-        return redirect("/")
-
-    if num_default_jobs == 0 and num_featured_jobs == 0 and not query_path:
-        return redirect("/")
-
     default_jobs = default_jobs[:num_default_jobs]
     featured_jobs = featured_jobs[:num_featured_jobs]
 
@@ -1764,14 +1770,13 @@ def search_by_results_and_slugs(request, *args, **kwargs):
             helpers.add_text_to_job(job)
     
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
-
-    company_data = helpers.get_company_data(filters)
-
+    
     widgets = helpers.get_widgets(request, site_config, facet_counts,
                                   custom_facet_counts, filters=filters)
-
+    
     location_term = breadbox.location_display_heading()
     moc_term = breadbox.moc_display_heading()
+    
     if not location_term:
         location_term = '\*'
     if not moc_term:
@@ -2031,6 +2036,13 @@ def test_markdown(request):
         }
         return render_to_response('seo/basic_form.html', data_dict,
                                   context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def admin_dashboard(request):
+    data_dict = {}
+    return render_to_response('seo/dashboard/dashboard_base.html', data_dict,
+                              context_instance=RequestContext(request))
 
 
 def seo_states(request):

@@ -99,28 +99,29 @@ def peekable(last):
 
 # Tokenizer -------------------------------
 
-and_ops = set(["and", "&", "-"])
-or_ops = set(["or", ",", "|"])
-not_ops = set(["not", "!"])
+AND_OPS = {"and", "&", "-"}
+OR_OPS = {"or", ",", "|"}
+NOT_OPS = {"not", "!"}
 
 
 class Token(object):
     """Represents a token found by the tokenizer."""
 
-    def __init__(self, token_type, token, flags=[]):
+    def __init__(self, token_type, token, flags=None):
+        if flags is None: flags = []
         self.token_type = token_type
         self.token = token
         self.flags = flags
 
     def is_or(self):
-        return self.token_type == 'op' and self.token in or_ops
+        return self.token_type == 'op' and self.token in OR_OPS
 
     def is_and(self):
-        return self.token_type == 'op' and self.token in and_ops
+        return self.token_type == 'op' and self.token in AND_OPS
 
     def is_not(self):
         return (self.token_type == 'pdash' or
-                self.token_type == 'op' and self.token in not_ops)
+                self.token_type == 'op' and self.token in NOT_OPS)
 
     def is_term(self):
         return self.token_type == 'term'
@@ -159,20 +160,27 @@ def build_op_regex(ops):
                    '|'.join(regex_format_op(op) for op in ops))
     return re.compile(ops_pattern, re.I)
 
-infix_ops_re = build_op_regex(and_ops | or_ops)
+infix_ops_re = build_op_regex(AND_OPS | OR_OPS)
 # dash is not a proper prefix op. No following space allowed.
 dash_re = re.compile(r'(-)(\S.*)')
-prefix_ops_re = build_op_regex(not_ops)
+prefix_ops_re = build_op_regex(NOT_OPS)
 ws_re = re.compile(r'\s+(.*)')
 quoted_phrase_re = re.compile(r'\"\s*(.*)\s*\"(.*)')
 plus_re = re.compile(r'(\+\S*)(.*)')
+
+# These characters are considered part of a term and can
+# start a term. Does not include - which can only appear in
+# the middle of a term.
+term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
+term_punctuation_pattern = "|".join([re.escape(c)
+                                     for c in term_punctuation])
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
 # passed through to solr as well.
 # Also include other non operator symbols. ex: c#, c$
-# Also include \ escaped chars in the middle of terms
-raw_term_pattern = r'\w(?:[\w\-:^$#]|\\.)+'
+raw_term_pattern = (r'(?:\\.|\w|%(punc)s)(?:\\.|\w|%(punc)s|-)*' %
+                    {'punc': term_punctuation_pattern})
 term_re = re.compile(r'(%s)(.*)' % raw_term_pattern, re.U)
 
 token_peekable = peekable(Token('eof', ''))
@@ -182,7 +190,7 @@ token_peekable = peekable(Token('eof', ''))
 def tokenize(input_query):
     current = input_query
     while(current != ''):
-        # eat ws
+        # eat whitespace
         ws_match = ws_re.match(current)
         if ws_match:
             current = ws_match.group(1)
@@ -219,7 +227,7 @@ def tokenize(input_query):
         match = dash_re.match(current)
         if match:
             current = match.group(2)
-            yield Token('pdash', match.group(1).lower())
+            yield Token('pdash', match.group(1))
             continue
 
         # try to match an infix operator
@@ -266,29 +274,15 @@ class AstTree(object):
     """
 
     def __init__(self, node_type, head=None, tail=None, flags=None, children=None):
-        if tail is None:
-            self.tail = []
-        else:
-            self.tail = tail
-
-        if flags is None:
-            self.flags = []
-        else:
-            self.flags = flags
+        if tail is None: tail = []
+        if flags is None: flags = []
 
         self.node_type = node_type
         if children is not None:
             self.children = children
         else:
-            self.children = [head] + self.tail
-
-    # def __init__(self, node_type, head=None, tail=[], flags=[], children=None):
-    #     self.node_type = node_type
-    #     if children is not None:
-    #         self.children = children
-    #     else:
-    #         self.children = [head] + tail
-    #     self.flags = flags
+            self.children = [head] + tail
+        self.flags = flags
 
     def string(self):
         if self.node_type == 'or':
@@ -466,6 +460,12 @@ def drop_standalone_dash(tree, root):
         return AstTree('term', children=new_children)
 
 
+def escape_standalone_slash(tree, root):
+    if (tree.node_type == 'term' and
+            tree.children[0] == '/'):
+        tree.children[0] = '\\/'
+
+
 def prepend_term_prefix(tree, root):
     if (tree.node_type == 'and' and
             len(tree.children) > 1 and
@@ -538,6 +538,7 @@ def optimize_tree(tree, root):
         remove_simple_term_quotes,
         remove_redundant_parens,
         drop_standalone_dash,
+        escape_standalone_slash,
         prepend_term_prefix,
         append_term_suffix,
         escape_prefix_symbol,

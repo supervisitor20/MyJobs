@@ -561,7 +561,7 @@ class ContactRecord(models.Model):
     company_ref = 'partner__owner'
     objects = ContactRecordManager()
 
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
@@ -797,7 +797,7 @@ class Tag(models.Model):
     hex_color = models.CharField(max_length=6, default="d4d4d4", blank=True)
     company = models.ForeignKey('seo.Company')
 
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     objects = SearchParameterManager()
