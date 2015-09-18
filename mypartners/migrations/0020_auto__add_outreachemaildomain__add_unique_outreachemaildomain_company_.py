@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
         db.create_table(u'mypartners_outreachemaildomain', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
         ))
         db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
 
@@ -158,7 +158,7 @@ class Migration(SchemaMigration):
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.partner': {

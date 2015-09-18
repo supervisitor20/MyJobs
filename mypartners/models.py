@@ -840,15 +840,12 @@ class OutreachEmailDomain(models.Model):
         ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
-    domain = models.CharField(max_length=255)
+    domain = models.URLField()
 
     def __unicode__(self):
         return "%s for %s" % (self.domain, self.company)
 
     def clean_fields(self, exclude=None):
-        # strip surrounding whitespace before saving
-        self.domain = self.domain.strip()
-
         if CommonEmailDomain.objects.filter(
                 domain__iexact=self.domain).exists():
             raise ValidationError(
