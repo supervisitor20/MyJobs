@@ -682,7 +682,7 @@ address_line_2_terms = ['apartment','apt',
                         'floor','fl',
                         'basement','bsmt']
 
-po_box_terms = ['po','p.o.', 'p o','po','post office box']
+po_box_terms = ['po','p.o.', 'p o','post office box']
 
 direction_terms = ['n',
                    'ne',
