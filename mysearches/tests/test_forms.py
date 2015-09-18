@@ -16,7 +16,7 @@ from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import UserFactory
 from registration.models import Invitation
 from seo.models import SeoSite
-from seo.tests import CompanyFactory
+from seo.tests.factories import CompanyFactory
 
 
 class SavedSearchFormTests(MyJobsBase):

@@ -9,8 +9,9 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save
+from django.db.models.signals import pre_delete, pre_save, post_save
 from django.dispatch import receiver
 
 from myjobs.models import User
@@ -561,7 +562,7 @@ class ContactRecord(models.Model):
     company_ref = 'partner__owner'
     objects = ContactRecordManager()
 
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
@@ -797,7 +798,7 @@ class Tag(models.Model):
     hex_color = models.CharField(max_length=6, default="d4d4d4", blank=True)
     company = models.ForeignKey('seo.Company')
 
-    created_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     objects = SearchParameterManager()
@@ -811,3 +812,46 @@ class Tag(models.Model):
     class Meta:
         unique_together = ('name', 'company')
         verbose_name = "tag"
+
+
+class CommonEmailDomain(models.Model):
+    """
+    Common email domains which should not be allowed for outreach email
+    domains.
+    """
+
+    class Meta:
+        ordering = ["domain"]
+
+    domain = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return self.domain
+
+
+class OutreachEmailDomain(models.Model):
+    """
+    Email domains from which a comany will accept emails from for the purpose
+    of outreach.
+    """
+
+    class Meta:
+        unique_together = ("company", "domain")
+        ordering = ["company", "domain"]
+
+    company = models.ForeignKey("seo.Company")
+    domain = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return "%s for %s" % (self.domain, self.company)
+
+    def clean_fields(self, exclude=None):
+        if CommonEmailDomain.objects.filter(
+                domain__iexact=self.domain).exists():
+            raise ValidationError(
+                "%s has been blacklisted as a common domain, please choose "
+                "another." % self.domain)
+
+    def save(self, *args, **kwargs):
+        self.clean_fields()
+        super(OutreachEmailDomain, self).save(*args, **kwargs)
