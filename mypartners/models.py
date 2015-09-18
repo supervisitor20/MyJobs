@@ -846,6 +846,9 @@ class OutreachEmailDomain(models.Model):
         return "%s for %s" % (self.domain, self.company)
 
     def clean_fields(self, exclude=None):
+        # strip surrounding whitespace before saving
+        self.domain = self.domain.strip()
+
         if CommonEmailDomain.objects.filter(
                 domain__iexact=self.domain).exists():
             raise ValidationError(
