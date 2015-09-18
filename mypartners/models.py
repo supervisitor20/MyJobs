@@ -858,10 +858,6 @@ class OutreachEmailDomain(models.Model):
 
 
 class OutreachEmailAddress(models.Model):
-    class Meta:
-        unique_together = ("company", "email")
-        ordering = ["company", "email"]
-
     def __unicode__(self):
         return "%s for %s" % (self.email, self.company)
 

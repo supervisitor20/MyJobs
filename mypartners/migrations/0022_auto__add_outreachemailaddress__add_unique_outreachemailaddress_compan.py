@@ -16,14 +16,8 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'mypartners', ['OutreachEmailAddress'])
 
-        # Adding unique constraint on 'OutreachEmailAddress', fields ['company', 'email']
-        db.create_unique(u'mypartners_outreachemailaddress', ['company_id', 'email'])
-
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailAddress', fields ['company', 'email']
-        db.delete_unique(u'mypartners_outreachemailaddress', ['company_id', 'email'])
-
         # Deleting model 'OutreachEmailAddress'
         db.delete_table(u'mypartners_outreachemailaddress')
 
@@ -146,7 +140,7 @@ class Migration(SchemaMigration):
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         u'mypartners.outreachemailaddress': {
-            'Meta': {'ordering': "['company', 'email']", 'unique_together': "(('company', 'email'),)", 'object_name': 'OutreachEmailAddress'},
+            'Meta': {'object_name': 'OutreachEmailAddress'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
