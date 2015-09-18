@@ -124,8 +124,8 @@ class Migration(DataMigration):
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"})
         },
         u'mypartners.commonemaildomain': {
-            'Meta': {'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
+            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.contact': {
@@ -192,9 +192,9 @@ class Migration(DataMigration):
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
         u'mypartners.outreachemaildomain': {
-            'Meta': {'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
+            'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.partner': {
@@ -268,13 +268,6 @@ class Migration(DataMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'blank': 'True'}),
             u'package_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['postajob.Package']", 'unique': 'True', 'primary_key': 'True'}),
             'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['seo.SeoSite']", 'null': 'True', 'symmetrical': 'False'})
-        },
-        u'redirects.redirect': {
-            'Meta': {'ordering': "('old_path',)", 'unique_together': "(('site', 'old_path'),)", 'object_name': 'Redirect', 'db_table': "'django_redirect'"},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'new_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'old_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sites.Site']"})
         },
         u'seo.atssourcecode': {
             'Meta': {'object_name': 'ATSSourceCode'},
@@ -388,7 +381,6 @@ class Migration(DataMigration):
             'moc_label': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'moc_placeholder': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'moc_tag': ('django.db.models.fields.CharField', [], {'default': "'vet-jobs'", 'max_length': '50'}),
-            'not_found_override': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['redirects.Redirect']", 'null': 'True', 'blank': 'True'}),
             'num_filter_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'num_job_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '15'}),
             'num_subnav_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '9'}),
