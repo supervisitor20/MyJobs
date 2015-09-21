@@ -1244,10 +1244,13 @@ class MocParameterAdmin(admin.TabularInline):
 
 
 class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
+    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+    list_display = ('old_path', 'new_path')
+    list_filter = ('site__domain',)
     related_search_fields = {
         'site': ('domain', )
     }
-    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+    search_fields = ('old_path', 'new_path')
 
     class Media:
         js = ('django_extensions/js/jquery-1.7.2.min.js', )
