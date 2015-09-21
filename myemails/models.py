@@ -19,7 +19,6 @@ import tasks
 class EmailSection(models.Model):
     SECTION_TYPES = (
         (1, 'Header'),
-        (2, 'Body'),
         (3, 'Footer'),
     )
 
@@ -36,8 +35,10 @@ class EmailTemplate(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey('seo.Company', blank=True, null=True)
     header = models.ForeignKey('EmailSection', related_name='header_for')
-    body = models.ForeignKey('EmailSection', related_name='body_for')
+    body = models.TextField()
     footer = models.ForeignKey('EmailSection', related_name='footer_for')
+    event = models.ForeignKey('Event', null=True)
+    is_active = models.BooleanField('IsActive', default=False)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.owner or "Global")
@@ -65,23 +66,20 @@ class EmailTemplate(models.Model):
         :return: The rendered email.
         """
         context = self.build_context(for_object)
-        template = Template('\n'.join([self.header.content, self.body.content,
+        template = Template('\n'.join([self.header.content, self.body,
                                        self.footer.content]))
         return template.render(context)
 
 
 class Event(models.Model):
-    email_template = models.ForeignKey('EmailTemplate')
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey('seo.Company')
     sites = models.ManyToManyField('seo.SeoSite')
     name = models.CharField(max_length=255)
+    description = models.TextField()
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.owner)
-
-    class Meta:
-        abstract = True
 
     def schedule_task(self, for_object):
         """
@@ -155,9 +153,22 @@ class Event(models.Model):
         else:
             email_domain = 'my.jobs'
 
-        body = self.email_template.render(for_object)
-        send_mail(subject, body, '%s@%s' % (self.model.model, email_domain),
-                  recipients)
+        template = self.active_template()
+        if template is not None:
+            body = template.render(for_object)
+            send_mail(subject, body, '%s@%s' %
+                      (self.model.model, email_domain),
+                      recipients)
+
+    def active_template(self):
+        templates = EmailTemplate.objects.filter(
+            event=self,
+            is_active=True)
+
+        if len(templates) == 0:
+            return None
+        else:
+            return templates[0]
 
 
 CRON_EVENT_MODELS = ['purchasedjob', 'purchasedproduct']

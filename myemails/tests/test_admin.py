@@ -43,7 +43,7 @@ class AdminTests(MyJobsBase):
             self.user.is_superuser = superuser
             self.user.save()
             form = admin.get_form(self.request)()
-            email_template = form.fields['email_template']
+            email_template = form.fields['active_template']
             query = str(email_template.queryset.query)
             if superuser:
                 self.assertFalse('WHERE' in query)

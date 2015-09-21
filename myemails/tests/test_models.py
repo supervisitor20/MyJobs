@@ -34,6 +34,9 @@ class EventTests(MyJobsBase):
         self.created_event = factories.CreatedEventFactory(
             model=ct, owner=self.product.owner)
 
+        self.created_template = factories.EmailTemplateFactory(
+            event=self.created_event,
+            is_active=True)
         self.purchased_product = posting_factories.PurchasedProductFactory(
             product=self.product, owner=self.product.owner)
 
@@ -44,14 +47,20 @@ class EventTests(MyJobsBase):
             model=ct, field='max_expired_date',
             owner=self.product.owner
         )
+        template = factories.EmailTemplateFactory(
+            event=event,
+            is_active=True)
+        template.save()
         posting_factories.PurchasedJobFactory(
             purchased_product=self.purchased_product,
             owner=self.product.owner, created_by=self.company_user.user)
 
         self.assertEqual(len(mail.outbox), 1)
-        template = event.email_template
-        for part in [template.header, template.body, template.footer]:
-            self.assertTrue(part.content in mail.outbox[0].body)
+        for part in [
+                template.header.content,
+                template.body,
+                template.footer.content]:
+            self.assertTrue(part in mail.outbox[0].body)
 
     def test_generate_value_email(self):
         mail.outbox = []
@@ -59,23 +68,31 @@ class EventTests(MyJobsBase):
         event = factories.ValueEventFactory(model=ct, field='is_approved',
                                             compare_using='eq', value=1,
                                             owner=self.product.owner)
+        template = factories.EmailTemplateFactory(
+            event=event,
+            is_active=True)
+        template.save()
         job = posting_factories.PurchasedJobFactory(
             purchased_product=self.purchased_product,
             owner=self.product.owner, created_by=self.company_user.user)
         job.is_approved = True
         job.save()
         self.assertEqual(len(mail.outbox), 1)
-        template = event.email_template
-        for part in [template.header, template.body, template.footer]:
-            self.assertTrue(part.content in mail.outbox[0].body)
+        for part in [
+                template.header.content,
+                template.body,
+                template.footer.content]:
+            self.assertTrue(part in mail.outbox[0].body)
 
     def test_generate_created_email(self):
         i = Invoice.objects.get()
         i.purchasedproduct_set.add(self.purchased_product)
-        self.assertEqual(len(mail.outbox), 1)
-        template = self.created_event.email_template
-        for part in [template.header, template.body, template.footer]:
-            self.assertTrue(part.content in mail.outbox[0].body)
+        template = self.created_event.active_template()
+        for part in [
+                template.header.content,
+                template.body,
+                template.footer.content]:
+            self.assertTrue(part in mail.outbox[0].body)
 
 
 class CronEventTests(MyJobsBase):

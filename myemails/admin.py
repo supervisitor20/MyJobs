@@ -21,7 +21,6 @@ class CronEventAdmin(RequestAdmin):
         ('', {
             'fields': [
                 'name',
-                'email_template',
                 'is_active',
                 'owner',
                 'sites',
@@ -57,7 +56,6 @@ class ValueEventAdmin(RequestAdmin):
         ('', {
             'fields': [
                 'name',
-                'email_template',
                 'is_active',
                 'owner',
                 'sites',
