@@ -862,9 +862,19 @@ class OutreachEmailAddress(models.Model):
         return "%s for %s" % (self.email, self.company)
 
     company = models.ForeignKey("seo.Company")
-    email = models.EmailField(max_length=255, verbose_name="Email", 
-                              help_text="Non-User's email address")
+    email = models.EmailField(
+        max_length=255, verbose_name="Email", 
+        help_text="Email to send outreach efforts to.")
 
 
 class OutreachWorkflowState(models.Model):
     state = models.CharField(max_length=50)
+
+
+class NonUserOutreach(models.Model):
+    date_added = models.DateTimeField(auto_now_add=True)
+    outreach_email = models.ForeignKey("OutreachEmailAddress")
+    from_email = models.EmailField(max_length=255, verbose_name="Email", 
+                                   help_text="Email outreach effort sent from.")
+    email_body = models.TextField()
+    current_workflow_state = models.ForeignKey("OutreachWorkflowState")

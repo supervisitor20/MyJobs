@@ -15,10 +15,24 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'mypartners', ['OutreachWorkflowState'])
 
+        # Adding model 'NonUserOutreach'
+        db.create_table(u'mypartners_nonuseroutreach', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('date_added', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('outreach_email', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.OutreachEmailAddress'])),
+            ('from_email', self.gf('django.db.models.fields.EmailField')(max_length=255)),
+            ('email_body', self.gf('django.db.models.fields.TextField')()),
+            ('current_workflow_state', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.OutreachWorkflowState'])),
+        ))
+        db.send_create_signal(u'mypartners', ['NonUserOutreach'])
+
 
     def backwards(self, orm):
         # Deleting model 'OutreachWorkflowState'
         db.delete_table(u'mypartners_outreachworkflowstate')
+
+        # Deleting model 'NonUserOutreach'
+        db.delete_table(u'mypartners_nonuseroutreach')
 
 
     models = {
@@ -137,6 +151,15 @@ class Migration(SchemaMigration):
             'label': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'mypartners.nonuseroutreach': {
+            'Meta': {'object_name': 'NonUserOutreach'},
+            'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
+            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'email_body': ('django.db.models.fields.TextField', [], {}),
+            'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"})
         },
         u'mypartners.outreachemailaddress': {
             'Meta': {'object_name': 'OutreachEmailAddress'},
