@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SEO Dashboard</title>
+
+    {% comment "adding additional css files" %}
+        When adding additional css files pull this block (css) and call block.super
+        then add your content before or after the super.
+    {% endcomment %}
+    {% block css %}
+        <link href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet">
+    {% endblock css %}
+
+</head>
+<body>
+    {% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Microsite Dashboard</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Tools</h3>
+                <hr/>
+                <ul>
+                    <li>
+                        <a href="">Event Manager</a>
+                    </li>
+                    <li>
+                        <a href="">Blocks Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}
+
+    {% comment "adding additional js files" %}
+        When adding additional js files pull this block (js) and call block.super
+        then add your content before or after the super.
+    {% endcomment %}
+    {% block js %}
+        <script type="text/javascript" src="{{ STATIC_URL }}bootstrap-3/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}jquery-1.11.3.min.js"></script>
+    {% endblock js %}
+</body>
+</html>

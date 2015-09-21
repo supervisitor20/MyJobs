@@ -122,6 +122,9 @@ urlpatterns += patterns('seo.views.search_views',
     # comes at the end of the url
     url(r'^(?P<filter_path>[/\w-]*)ajax/joblisting/$', 'ajax_get_jobs'),
 
+    # Dashboard URLs
+    url(r'^dashboard/$', 'admin_dashboard'),
+
     # SEO Pages
     url(r'^network/states/$', 'seo_states'),
     url(r'^network/companies/$', 'seo_companies'),
