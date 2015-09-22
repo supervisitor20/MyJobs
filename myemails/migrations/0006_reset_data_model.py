@@ -57,18 +57,11 @@ class Migration(SchemaMigration):
                       keep_default=False)
 
 
-        # Renaming column for 'EmailTemplate.body' to match new field type.
-        db.rename_column(u'myemails_emailtemplate', 'body_id', 'body')
-        # Changing field 'EmailTemplate.body'
-        db.alter_column(u'myemails_emailtemplate', 'body', self.gf('django.db.models.fields.TextField')())
-        # Removing index on 'EmailTemplate', fields ['body']
-        db.delete_index(u'myemails_emailtemplate', ['body_id'])
+        db.add_column(u'myemails_emailtemplate', 'body', self.gf('django.db.models.fields.TextField')())
+        db.delete_column(u'myemails_emailtemplate', 'body_id')
 
 
     def backwards(self, orm):
-        # Adding index on 'EmailTemplate', fields ['body']
-        db.create_index(u'myemails_emailtemplate', ['body_id'])
-
         # Adding model 'CreatedEvent'
         db.create_table(u'myemails_createdevent', (
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
@@ -147,10 +140,8 @@ class Migration(SchemaMigration):
         db.delete_column(u'myemails_emailtemplate', 'is_active')
 
 
-        # Renaming column for 'EmailTemplate.body' to match new field type.
-        db.rename_column(u'myemails_emailtemplate', 'body', 'body_id')
-        # Changing field 'EmailTemplate.body'
-        db.alter_column(u'myemails_emailtemplate', 'body_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailSection']))
+        db.add_column(u'myemails_emailtemplate', 'body', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailSection']))
+        db.delete_column(u'myemails_emailtemplate', 'body')
 
     models = {
         u'auth.group': {
