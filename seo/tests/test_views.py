@@ -2765,6 +2765,9 @@ class StaticPageOverrideTests(DirectSEOBase):
         # TODO: Reimplement test with qs redirects
 
 class FilterTestCase404(DirectSEOTestCase):
+    """
+        Test cases involved in the search filter slugs. Ensure 404 returned under proper conditions.
+    """
     def setUp(self):
         super(FilterTestCase404, self).setUp()
         self.job = solr_settings.SOLR_FIXTURE[1]
