@@ -31,38 +31,9 @@ class EmailTemplateFactory(django.DjangoModelFactory):
     footer = SubFactory(EmailSectionFooterFactory)
 
 
-class ValueEventFactory(django.DjangoModelFactory):
+class EventFactory(django.DjangoModelFactory):
     class Meta:
-        model = 'myemails.ValueEvent'
+        model = 'myemails.Event'
 
     is_active = True
     owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)
-    field = 'pk'
-
-    compare_using = '__gte'
-    value = 1
-
-
-class CronEventFactory(django.DjangoModelFactory):
-    class Meta:
-        model = 'myemails.CronEvent'
-
-    is_active = True
-    owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)
-    field = ''
-
-    minutes = 10
-
-
-class CreatedEventFactory(django.DjangoModelFactory):
-    class Meta:
-        model = 'myemails.CreatedEvent'
-
-    is_active = True
-    owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)
