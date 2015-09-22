@@ -120,11 +120,15 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
 
 class SearchParameterManager(models.Manager):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, archived=False, *args, **kwargs):
         super(SearchParameterManager, self).__init__(*args, **kwargs)
+        self._archived = archived
 
     def get_query_set(self):
-        return SearchParameterQuerySet(self.model, using=self._db)
+        qs = SearchParameterQuerySet(self.model, using=self._db)
+        if 'archived_on' in self.model._meta.get_all_field_names():
+            qs = qs.exclude(archived_on__isnull=self._archived)
+        return qs
 
     def from_search(self, company=None, filters=None):
         return self.get_query_set().from_search(
@@ -132,6 +136,21 @@ class SearchParameterManager(models.Manager):
 
     def sort_by(self, *fields):
         return self.get_query_set().sort_by(*fields)
+
+
+class ArchivedModel(models.Model):
+    archived_on = models.DateTimeField(null=True)
+
+    objects = SearchParameterManager()
+    archived = SearchParameterManager(archived=True)
+
+    class Meta:
+        abstract = True
+
+    def delete(self, *args, **kwargs):
+        print 'in correct delete'
+        self.archived_on = datetime.now()
+        self.save()
 
 
 class Location(models.Model):
@@ -165,7 +184,7 @@ class Location(models.Model):
         super(Location, self).save(**kwargs)
 
 
-class Contact(models.Model):
+class Contact(ArchivedModel):
     """
     Everything here is self explanatory except for one part. With the Contact
     object there is Contact.partner_set and .partners_set
@@ -189,12 +208,10 @@ class Contact(models.Model):
     notes = models.TextField(max_length=1000, verbose_name='Notes',
                              blank=True, default="", 
                              help_text='Any additional information you want to record')
-    archived_on = models.DateTimeField(null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
     company_ref = 'partner__owner'
-    objects = SearchParameterManager()
 
     class Meta:
         verbose_name_plural = 'contacts'
@@ -227,9 +244,9 @@ class Contact(models.Model):
 
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
-        self.archived_on = datetime.now()
         self.primary_contact.clear()
         self.save()
+        super(Contact, self).delete(*args, **kwargs)
 
     def get_contact_url(self):
         base_urls = {
@@ -288,7 +305,7 @@ def save_contact(sender, instance, **kwargs):
             approved_by=instance.user)
 
 
-class Partner(models.Model):
+class Partner(ArchivedModel):
     """
     Object that this whole app is built around.
 
@@ -318,7 +335,6 @@ class Partner(models.Model):
         'mypartners.Status', null=True, verbose_name="Approval Status")
 
     company_ref = 'owner'
-    objects = SearchParameterManager()
 
     def __unicode__(self):
         return self.name
@@ -554,13 +570,14 @@ class ContactRecordManager(SearchParameterManager):
         return self.get_query_set().communication_activity
 
 
-class ContactRecord(models.Model):
+class ContactRecord(ArchivedModel):
     """
     Object for Communication Records
     """
 
     company_ref = 'partner__owner'
     objects = ContactRecordManager()
+    archived = ContactRecordManager(archived=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
@@ -800,8 +817,6 @@ class Tag(models.Model):
 
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
-
-    objects = SearchParameterManager()
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company.name)
