@@ -1713,21 +1713,16 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     sitecommit_str = helpers.make_specialcommit_string(settings.COMMITMENTS.all())
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
-
-    # checks to ensure that improper URL configurations return the correct
-    # 404 response before executing query for jobs
-    company_data = helpers.get_company_data(filters)
-    if not company_data and filters['company_slug']:
-        raise Http404("No company found for %s" % filters['company_slug'])
-    if filters['moc_slug']:
-        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
-        if not moc:
-            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
     
     custom_facet_counts = []
     facet_slugs = []
     active_facets = []
-    
+
+    if filters['moc_slug']:
+        moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
+        if not moc:
+            raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
+
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1764,6 +1759,12 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
+    #if we return no jobs based on the search, verify company information provided
+    if num_default_jobs == 0 and num_featured_jobs == 0:
+        company_obj = Company.objects.filter(company_slug=filters['company_slug'])
+        if not company_obj and filters['company_slug']:
+            raise Http404("No company found for %s" % filters['company_slug'])
+
     default_jobs = default_jobs[:num_default_jobs]
     featured_jobs = featured_jobs[:num_featured_jobs]
 
@@ -1785,6 +1786,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if not moc_term:
         moc_term = '\*'
 
+    company_data = helpers.get_company_data(filters)
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
