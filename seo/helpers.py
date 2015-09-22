@@ -1010,7 +1010,7 @@ def prepare_sqs_from_search_params(params, sqs=None):
         # Retail -Sales will search for Retail excluding Sales
         # Retail - Sales will search for 'Retail - Sales'
         print title
-        print "(%s)" % transform_search(title.replace(' - ', ' \\- '))
+        # print "(%s)" % transform_search(title.replace(' - ', ' \\- '))
         title = "(%s)" % title.replace(' - ', ' \\- ')
         print title
         tb = u"({t})^{b}".format(t=title, b=boost_value)

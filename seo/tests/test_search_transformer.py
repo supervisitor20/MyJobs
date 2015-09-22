@@ -89,6 +89,12 @@ test_data = [
     ('snow/shovel', 'snow AND \/ AND shovel'),
     ('"nurse maid" and not (plastic or "made man")',
         '"nurse maid" AND NOT (plastic OR "made man")'),
+    ('GeoLocation:("45.51115348122337,-122.65618521950462")',
+     'GeoLocation:("45.51115348122337,-122.65618521950462")'),
+    ('GeoLocation:42 nurse',
+     'GeoLocation:42 AND nurse'),
+    ('C a:"b"',
+     'C AND a:"b"'),
 ]
 
 

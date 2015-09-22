@@ -178,7 +178,7 @@ term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
 # Need to identify ':' as delimiter for specific field search term
-field_re = re.compile(r'(\w+:)\s*\"\s*(.*?)\s*\"(.*)')
+field_re = re.compile(r'(\w+:)(.*)')
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
@@ -256,12 +256,12 @@ def tokenize(input_query):
             yield Token('term', match.group(1).lower())
             continue
 
-        # try to match a field specifier
-        match = field_re.match(current)
-        if match:
-            current = match.group(2)
-            yield Token('term', match.group(1), flags=['field'])
-            continue
+        # # try to match a field specifier
+        # match = field_re.match(current)
+        # if match:
+        #     current = match.group(2)
+        #     yield Token('term', match.group(1), ['field'])
+        #     continue
 
         # try to match a term
         match = term_re.match(current)
@@ -418,7 +418,7 @@ class Parser(object):
         self.stepper.step()
         # Eat any garbage
         while self.token_stream.peek().token_type not in ('term', 'eof'):
-            token = self.token_stream.next()
+            self.token_stream.next()
         token = self.token_stream.next()
         return AstTree('term', token.token, flags=token.flags)
 
@@ -464,8 +464,6 @@ def drop_standalone_dash(tree, root):
             tree.children[0].node_type == 'term' and
             tree.children[0].children[0] == '-' and
             tree.children[1].node_type == 'term'):
-        children = [" ".join(child.children[0]
-                    for child in tree.children[1:])]
 
         new_children = [" ".join(child.children[0]
                         for child in tree.children[1:])]
@@ -592,8 +590,9 @@ class SearchTransformer(object):
             tree = parser.parse()
 
             # Optimize
+            print repr(tree)
             optimized_tree = self.optimize(tree, tree)
-
+            print repr(optimized_tree)
             # Serialize
             query = optimized_tree.string()
 
