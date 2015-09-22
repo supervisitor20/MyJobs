@@ -1442,12 +1442,10 @@ def jobs_and_counts(request, filters, num_jobs, fl=search_fields):
 
 
 def get_company_data(filters):
-    '''
-    Return the thumbnail for a company if it exists. Returns None if company does
-    not have a thumbnail.
-    :param filters: dictionary of filters from search
-    :return: Company thumbnails, if exist, otherwise None
-    '''
+    """
+        Return the thumbnail for a company if it exists. Returns None if company does
+        not have a thumbnail.
+    """
     if filters['company_slug']:
         company_obj = Company.objects.filter(member=True)
         company_obj = company_obj.filter(company_slug=filters['company_slug'])
