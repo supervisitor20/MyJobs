@@ -76,7 +76,9 @@ class Peekable(object):
 
     def next(self):
         try:
-            return iter(self).next()
+            next_val = iter(self).next()
+            print next_val.token_type, next_val.token, next_val.flags
+            return next_val
         except StopIteration:
             return self.last
 
@@ -175,6 +177,9 @@ term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
 term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
+# Need to identify ':' as delimiter for specific field search term
+field_re = re.compile(r'(\w+:)\s*\"\s*(.*?)\s*\"(.*)')
+
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
 # passed through to solr as well.
@@ -249,6 +254,13 @@ def tokenize(input_query):
         if match:
             current = match.group(2)
             yield Token('term', match.group(1).lower())
+            continue
+
+        # try to match a field specifier
+        match = field_re.match(current)
+        if match:
+            current = match.group(2)
+            yield Token('term', match.group(1), flags=['field'])
             continue
 
         # try to match a term
