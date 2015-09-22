@@ -298,6 +298,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                                    DEACTIVE_TYPES_AND_NONE),
                                        blank=False,
                                        default=DEACTIVE_TYPES_AND_NONE[0])
+    roles = models.ManyToManyField("Role")
 
     USERNAME_FIELD = 'email'
     objects = CustomUserManager()
@@ -739,3 +740,16 @@ class FAQ(models.Model):
     answer = models.TextField(verbose_name='Answer',
                               help_text='Answers allow use of HTML')
     is_visible = models.BooleanField(default=True, verbose_name='Is visible')
+
+
+class Activity(models.Model):
+    name = models.CharField(max_length=50)
+
+
+class Role(models.Model):
+    class Meta:
+        unique_together = ("company", "name")
+
+    company = models.ForeignKey("seo.Company")
+    name = models.CharField(max_length=50)
+    activities = models.ManyToManyField("Activity")
