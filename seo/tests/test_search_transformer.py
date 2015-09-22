@@ -2,7 +2,6 @@
 # from django.test import TestCase
 from unittest import TestCase
 import logging
-import __main__
 
 from seo.search_transformer import transform_search, \
     SearchTransformer, optimize_tree, Parser, Energy, \
@@ -88,6 +87,8 @@ test_data = [
     ('snow \/ shovel', 'snow AND \/ AND shovel'),
     ('snow / shovel', 'snow AND \/ AND shovel'),
     ('snow/shovel', 'snow AND \/ AND shovel'),
+    ('"nurse maid" and not (plastic or "made man")',
+        '"nurse maid" AND NOT (plastic OR "made man")'),
 ]
 
 
@@ -143,11 +144,3 @@ class TestSearchParserSpecial(TestCase):
         bad_query = 10 * "happy "
         result = transformer.transform(bad_query)
         self.assertEqual(bad_query, result)
-
-# Run just this test very fast:
-# PYTHONPATH=.:seo/tests python -m unittest test_search_transformer
-# or just a single test:
-# PYTHONPATH=.:seo/tests python -m unittest \
-#   test_search_transformer.TestSearchParser.test_002
-if 'unittest/__main__' in __main__.__file__:
-    logging.basicConfig(level=logging.INFO)

@@ -18,7 +18,7 @@ from registration.forms import InvitationForm
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
 from seo.models import CompanyUser
-from seo.tests import CompanyFactory
+from seo.tests.factories import CompanyFactory
 
 
 class RegistrationModelTests(MyJobsBase):

@@ -18,7 +18,7 @@ from myjobs.models import User
 from postajob.models import SitePackage, Job, Product, ProductGrouping, \
     ProductOrder, PurchasedJob
 from seo.models import Company, CompanyUser, SeoSite, Configuration
-from seo.tests import patch_settings
+from seo.tests.setup import patch_settings
 
 
 class Command(NoArgsCommand):
