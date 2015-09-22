@@ -1710,15 +1710,15 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     sitecommit_str = helpers.make_specialcommit_string(settings.COMMITMENTS.all())
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
-    
-    custom_facet_counts = []
-    facet_slugs = []
-    active_facets = []
 
     if filters['moc_slug']:
         moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
         if not moc:
             raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
+
+    custom_facet_counts = []
+    facet_slugs = []
+    active_facets = []
 
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
