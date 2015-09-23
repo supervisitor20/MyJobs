@@ -2080,6 +2080,17 @@ def manage_templates(request):
                               context_instance=RequestContext(request))
 
 
+@user_is_allowed()
+def blocks_overview(request):
+    company = get_company_or_404(request)
+
+    data_dict = {}
+
+    return render_to_response('seo/dashboard/blocks/blocks_overview.html',
+                              data_dict,
+                              context_instance=RequestContext(request))
+
+
 def seo_states(request):
     # Pull jobs from solr, only in the US and group by states.
     search = DESearchQuerySet().narrow('country:United States').facet('state')
