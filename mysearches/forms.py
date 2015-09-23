@@ -9,7 +9,6 @@ from myjobs.forms import BaseUserForm, make_choices
 from mysearches.helpers import validate_dotjobs_url
 from mysearches.models import (SavedSearch, SavedSearchDigest,
                                PartnerSavedSearch)
-from mypartners.forms import PartnerEmailChoices
 from mypartners.models import Contact, ADDITION, CHANGE
 from registration.models import Invitation
 from mypartners.helpers import log_change, tag_get_or_create
@@ -123,9 +122,28 @@ class DigestForm(BaseUserForm):
         model = SavedSearchDigest
 
 
+def partner_email_choices(partner):
+    choices = [(None, '----------')]
+    contacts = Contact.objects.filter(
+        partner=partner, archived_on__isnull=True)
+    for contact in contacts:
+        user = User.objects.filter(email=contact.email).first()
+
+        if user:
+            contact.user = user
+            contact.save()
+
+        if contact.user:
+            choices.append((contact.user.email, contact))
+        else:
+            if contact.email:
+                choices.append((contact.email, contact))
+    return choices
+
+
 class PartnerSavedSearchForm(RequestForm):
     def __init__(self, *args, **kwargs):
-        choices = PartnerEmailChoices(kwargs.pop('partner', None))
+        choices = partner_email_choices(kwargs.pop('partner', None))
         super(PartnerSavedSearchForm, self).__init__(*args, **kwargs)
         self.instance.changed_data = self.changed_data
         self.instance.request = self.request
