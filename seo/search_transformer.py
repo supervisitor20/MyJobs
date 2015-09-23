@@ -131,7 +131,8 @@ class Token(object):
     def is_andable(self):
         return (self.is_and() or
                 self.is_not() or
-                self.is_term())
+                self.is_term() or
+                self.is_openparen())
 
     def is_eof(self):
         return self.token_type == 'eof'
@@ -177,8 +178,8 @@ term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
 term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
-# Need to identify ':' as delimiter for specific field search term
-field_re = re.compile(r'(\w+:)(.*)')
+# Need to identify ':' NOT followed by space as delimiter for specific field search term
+field_re = re.compile(r'(\w+:)(?!\s)(.*)')
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
@@ -256,12 +257,12 @@ def tokenize(input_query):
             yield Token('term', match.group(1).lower())
             continue
 
-        # # try to match a field specifier
-        # match = field_re.match(current)
-        # if match:
-        #     current = match.group(2)
-        #     yield Token('term', match.group(1), ['field'])
-        #     continue
+        # try to match a field specifier
+        match = field_re.match(current)
+        if match:
+            current = match.group(2)
+            yield Token('term', match.group(1), ['field'])
+            continue
 
         # try to match a term
         match = term_re.match(current)
@@ -310,6 +311,8 @@ class AstTree(object):
                 return self.head_string()
         elif self.node_type == 'paren':
             return "(%s)" % self.head_string()
+        elif self.node_type == 'field':
+            return "%s" % "".join(self.child_strings())
 
     def child_strings(self):
         return (c.string() for c in self.children)
@@ -341,6 +344,12 @@ class Energy(object):
 
 
 class Parser(object):
+    """
+        Recursive descent parser. Initialized with token stream and stepper in order to iterate
+        over token stream one item at a time. Returns an ASTTree of ASTTrees to represent each token
+        and their relationships/hierarchy. Stepper monitors "steps" taken by parser to ensure it does
+        not process overlong blocks of data.
+    """
     def __init__(self, token_stream, stepper):
         self.token_stream = token_stream
         self.stepper = stepper
@@ -490,6 +499,23 @@ def prepend_term_prefix(tree, root):
         new_children.extend(tree.children[2:])
         return AstTree('and', children=new_children)
 
+def group_field_statement_and_value(tree, root):
+    if tree.children > 1:
+        enumeration = enumerate(tree.children)
+        new_children = []
+        for i, child in enumeration:
+            if (isinstance(child, AstTree) and
+                    child.node_type == 'term' and
+                    'field' in child.flags and
+                     i < len(tree.children) - 1):
+                child.flags = []
+                value = enumeration.next()[1]
+                new_child_child_list = [child, value]
+                new_child = AstTree('field', children=new_child_child_list)
+                new_children.append(new_child)
+            else:
+                new_children.append(child)
+        return AstTree(tree.node_type, flags=tree.flags, children=new_children)
 
 def append_term_suffix(tree, root):
     if (tree.node_type == 'and' and
@@ -554,6 +580,7 @@ def optimize_tree(tree, root):
         escape_prefix_symbol,
         escape_suffix_symbol,
         escape_plus_term,
+        group_field_statement_and_value,
     ]
 
     for optimization in optimizations:
@@ -580,27 +607,27 @@ class SearchTransformer(object):
         self.stepper_factory = stepper_factory
 
     def transform(self, input_query):
-        try:
-            # Tokenize
-            token_stream = self.tokenize(input_query)
+        # try:
+        # Tokenize
+        token_stream = self.tokenize(input_query)
 
-            # Parse
-            stepper = self.stepper_factory()
-            parser = self.parser(token_stream, stepper)
-            tree = parser.parse()
+        # Parse
+        stepper = self.stepper_factory()
+        parser = self.parser(token_stream, stepper)
+        tree = parser.parse()
 
-            # Optimize
-            print repr(tree)
-            optimized_tree = self.optimize(tree, tree)
-            print repr(optimized_tree)
-            # Serialize
-            query = optimized_tree.string()
+        # Optimize
+        print repr(tree)
+        optimized_tree = self.optimize(tree, tree)
+        print repr(optimized_tree)
+        # Serialize
+        query = optimized_tree.string()
 
-            return query
-        except Exception as e:
-            logging.warn("Could not handle search '%s': %s" %
-                         (input_query, e.message))
-            return input_query
+        return query
+        # except Exception as e:
+        #     logging.warn("Could not handle search '%s': %s" %
+        #                  (input_query, e.message))
+        #     return input_query
 
 
 def transform_search(input_query):
