@@ -174,12 +174,12 @@ plus_re = re.compile(r'(\+\S*)(.*)')
 # These characters are considered part of a term and can
 # start a term. Does not include - which can only appear in
 # the middle of a term.
-term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
+term_punctuation = "#$%&*.:;<>=?@[]^_`{}~'"
 term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
-# Need to identify ':' NOT followed by space as delimiter for specific field search term
-field_re = re.compile(r'(\w+:)(?!\s)(.*)')
+# Need to identify ':' NOT followed by space or controlled character as delimiter for specific field search term
+field_re = re.compile(r'(\w+:)(?!\s|%s)(.*)' % term_punctuation_pattern)
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
@@ -429,6 +429,15 @@ class Parser(object):
         while self.token_stream.peek().token_type not in ('term', 'eof'):
             self.token_stream.next()
         token = self.token_stream.next()
+        additional = None
+        if 'field' in token.flags:
+            if self.token_stream.peek().is_openparen():
+                additional = self.handle_paren()
+            elif self.token_stream.peek().is_term():
+                next_token = self.token_stream.next()
+                additional = AstTree('term', next_token.token, next_token.flags)
+        if additional:
+            return AstTree('field', AstTree('term', token.token), [additional])
         return AstTree('term', token.token, flags=token.flags)
 
 
@@ -580,13 +589,15 @@ def optimize_tree(tree, root):
         escape_prefix_symbol,
         escape_suffix_symbol,
         escape_plus_term,
-        group_field_statement_and_value,
+        # group_field_statement_and_value,
     ]
 
     for optimization in optimizations:
+        print optimization
         new_tree = optimization(tree, root)
         if new_tree is not None:
             tree = new_tree
+        print tree
 
     for i, child in enumerate(tree.children):
         if isinstance(child, AstTree):

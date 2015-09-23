@@ -99,6 +99,12 @@ test_data = [
      'C AND a:b'),
     ('C a:"b c"',
      'C AND a:"b c"'),
+    ("isn't nurse",
+     "isn't AND nurse"),
+    ('nurse title:("this is the end") or practitioner',
+     'nurse AND (title:("this is the end") OR practitioner)'),
+    ('nurse title:"this is the end" or practitioner',
+     'nurse AND (title:"this is the end" OR practitioner)'),
 ]
 
 
