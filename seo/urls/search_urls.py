@@ -130,6 +130,8 @@ urlpatterns += patterns('seo.views.search_views',
         name='manage_header_footer'),
     url(r'^dashboard/events/manage-templates/$', 'manage_templates',
         name='manage_templates'),
+    # Dashboard - Blocks Manager/Admin
+    url(r'dashboard/blocks/$', 'blocks_overview', name='blocks_overview'),
 
     # SEO Pages
     url(r'^network/states/$', 'seo_states'),
