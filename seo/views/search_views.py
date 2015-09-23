@@ -64,6 +64,7 @@ from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
 from myemails.models import EmailTemplate, EmailSection
+from myblocks.models import Page
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2084,7 +2085,13 @@ def manage_templates(request):
 def blocks_overview(request):
     company = get_company_or_404(request)
 
-    data_dict = {}
+    # grab SeoSites associated to company
+    sites = company.get_seo_sites()
+
+    # retrieve pages for any site in sites list
+    pages = Page.objects.filter(sites__in=sites)
+
+    data_dict = {'pages': pages}
 
     return render_to_response('seo/dashboard/blocks/blocks_overview.html',
                               data_dict,
