@@ -120,6 +120,8 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
 
 class SearchParameterManager(models.Manager):
+    use_for_related_fields = True
+
     def __init__(self, archived=False):
         """
         Adds a new argument to the manager constructor to allow us to specify
@@ -132,9 +134,10 @@ class SearchParameterManager(models.Manager):
         """
         super(SearchParameterManager, self).__init__()
         self._archived = archived
+        self._query_set = SearchParameterQuerySet
 
     def get_query_set(self):
-        qs = SearchParameterQuerySet(self.model, using=self._db)
+        qs = self._query_set(self.model, using=self._db)
         # At the time of writing, this manager is used on models that don't
         # have the ability to be archived. This isn't a perfect solution
         # but changing everything is a bit out of scope at the moment.
@@ -256,9 +259,8 @@ class Contact(ArchivedModel):
 
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
-        self.primary_contact.clear()
-        self.save()
         super(Contact, self).delete(*args, **kwargs)
+        self.primary_contact.clear()
 
     def get_contact_url(self):
         base_urls = {
@@ -574,9 +576,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 class ContactRecordManager(SearchParameterManager):
     def __init__(self, *args, **kwargs):
         super(ContactRecordManager, self).__init__(*args, **kwargs)
-
-    def get_query_set(self):
-        return ContactRecordQuerySet(self.model, using=self._db)
+        self._query_set = ContactRecordQuerySet
 
     def communication_activity(self):
         return self.get_query_set().communication_activity
@@ -589,7 +589,7 @@ class ContactRecord(ArchivedModel):
 
     company_ref = 'partner__owner'
     objects = ContactRecordManager()
-    archived = ContactRecordManager(archived=True)
+    all_objects = ContactRecordManager(archived=None)
 
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
