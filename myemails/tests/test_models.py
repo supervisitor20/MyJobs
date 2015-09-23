@@ -1,12 +1,9 @@
-from datetime import datetime, timedelta
-
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
 
 from myemails.tests import factories
 from myjobs.tests.setup import MyJobsBase
-from mysearches.tests.factories import SavedSearchFactory
-from postajob.models import PurchasedJob, Invoice
+from postajob.models import Invoice
 from postajob.tests import factories as posting_factories
 from seo.tests.factories import CompanyUserFactory
 
