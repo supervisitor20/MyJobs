@@ -66,7 +66,7 @@ class Status(models.Model):
 class SearchParameterQuerySet(models.query.QuerySet):
     """
     Defines a query set with a `from_search` method for filtering by query
-    paramenters.
+    parameters.
     """
 
     # TODO: Come up with a better name for this method
@@ -120,13 +120,26 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
 
 class SearchParameterManager(models.Manager):
-    def __init__(self, archived=False, *args, **kwargs):
-        super(SearchParameterManager, self).__init__(*args, **kwargs)
+    def __init__(self, archived=False):
+        """
+        Adds a new argument to the manager constructor to allow us to specify
+        if a given query should include archived models
+
+        Inputs:
+        :archived: True: query archived only, False: exclude
+            archived; None: query all objects
+        :type archived: bool, None
+        """
+        super(SearchParameterManager, self).__init__()
         self._archived = archived
 
     def get_query_set(self):
         qs = SearchParameterQuerySet(self.model, using=self._db)
-        if 'archived_on' in self.model._meta.get_all_field_names():
+        # At the time of writing, this manager is used on models that don't
+        # have the ability to be archived. This isn't a perfect solution
+        # but changing everything is a bit out of scope at the moment.
+        if ('archived_on' in self.model._meta.get_all_field_names()
+                and self._archived is not None):
             qs = qs.exclude(archived_on__isnull=self._archived)
         return qs
 
@@ -142,13 +155,12 @@ class ArchivedModel(models.Model):
     archived_on = models.DateTimeField(null=True)
 
     objects = SearchParameterManager()
-    archived = SearchParameterManager(archived=True)
+    all_objects = SearchParameterManager(archived=None)
 
     class Meta:
         abstract = True
 
     def delete(self, *args, **kwargs):
-        print 'in correct delete'
         self.archived_on = datetime.now()
         self.save()
 
@@ -163,9 +175,9 @@ class Location(models.Model):
                                         blank=True,
                                         help_text='ie Suite 100')
     city = models.CharField(max_length=255, verbose_name='City',
-                                           help_text='ie Chicago, Washington, Dayton')
+                            help_text='ie Chicago, Washington, Dayton')
     state = models.CharField(max_length=200, verbose_name='State/Region',
-                                             help_text='ie NY, WA, DC')
+                             help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, verbose_name='Country',
                                     default='USA')
     postal_code = models.CharField(max_length=12, verbose_name='Postal Code',
@@ -198,11 +210,11 @@ class Contact(ArchivedModel):
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
     name = models.CharField(max_length=255, verbose_name='Full Name',
-                             help_text='Contact\'s full name')
+                            help_text='Contact\'s full name')
     email = models.EmailField(max_length=255, verbose_name='Email', blank=True,
-                             help_text='Contact\'s email address')
+                              help_text='Contact\'s email address')
     phone = models.CharField(max_length=30, verbose_name='Phone', blank=True,
-            default='', help_text='ie (123) 456-7890')
+                             default='', help_text='ie (123) 456-7890')
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',

@@ -164,8 +164,8 @@ class MyPartnerTests(MyJobsBase):
 
         self.assertFalse(self.contact.archived_on)
         self.contact.delete()
-        self.assertEqual(Contact.objects.all().count(), 0)
-        self.assertEqual(Contact.archived.all().count(), 1)
+        self.assertEqual(Contact.objects.count(), 0)
+        self.assertEqual(Contact.all_objects.count(), 1)
         self.assertTrue(self.contact.archived_on)
 
     def test_models_approved(self):
