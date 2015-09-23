@@ -63,8 +63,7 @@ from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
-from myemails.models import (EmailTemplate, EmailSection, CreatedEvent,
-                             CronEvent, ValueEvent)
+from myemails.models import EmailTemplate, EmailSection
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2052,36 +2051,8 @@ def admin_dashboard(request):
 
 @user_is_allowed()
 def event_overview(request):
-    company = get_company_or_404(request)
-
-    # grab active events
-    active_created_events = CreatedEvent.objects.filter(owner=company,
-                                                        is_active=True)
-    active_cron_events = CronEvent.objects.filter(owner=company,
-                                                  is_active=True)
-    active_value_events = ValueEvent.objects.filter(owner=company,
-                                                    is_active=True)
-
-    # combine active events
-    active_events = list(itertools.chain(active_created_events,
-                                         active_cron_events,
-                                         active_value_events))
-
-    # grab inactive events
-    inactive_created_events = CreatedEvent.objects.filter(owner=company,
-                                                          is_active=False)
-    inactive_cron_events = CronEvent.objects.filter(owner=company,
-                                                    is_active=False)
-    inactive_value_events = ValueEvent.objects.filter(owner=company,
-                                                      is_active=False)
-
-    # combine inactive events
-    inactive_events = list(itertools.chain(inactive_created_events,
-                                           inactive_cron_events,
-                                           inactive_value_events))
-
-    data_dict = {'active_events': active_events,
-                 'inactive_events': inactive_events}
+    data_dict = {'active_events': [],
+                 'inactive_events': []}
 
     return render_to_response('myemails/event_overview.html', data_dict,
                               context_instance=RequestContext(request))
@@ -2103,17 +2074,7 @@ def manage_header_footer(request):
 
 @user_is_allowed()
 def manage_templates(request):
-    company = get_company_or_404(request)
-
-    # grab events
-    created_events = CreatedEvent.objects.filter(owner=company)
-    cron_events = CronEvent.objects.filter(owner=company)
-    value_events = ValueEvent.objects.filter(owner=company)
-
-    # combine events
-    events = list(itertools.chain(created_events, cron_events, value_events))
-
-    data_dict = {'events': events}
+    data_dict = {'events': []}
 
     return render_to_response('myemails/manage_templates.html', data_dict,
                               context_instance=RequestContext(request))
