@@ -158,7 +158,7 @@ class Event(models.Model):
                       recipients)
 
     def active_template(self):
-        EmailTemplate.objects.filter(event=self, is_active=True).first()
+        return EmailTemplate.objects.filter(event=self, is_active=True).first()
 
 
 class EmailTask(models.Model):
