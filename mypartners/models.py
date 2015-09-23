@@ -832,7 +832,7 @@ class CommonEmailDomain(models.Model):
 class OutreachEmailDomain(models.Model):
     """
     Email domains from which a comany will accept emails from for the purpose
-    of outreach.
+    of outreach. These email addresses are for non-users.
     """
 
     class Meta:
@@ -855,3 +855,12 @@ class OutreachEmailDomain(models.Model):
     def save(self, *args, **kwargs):
         self.clean_fields()
         super(OutreachEmailDomain, self).save(*args, **kwargs)
+
+
+class OutreachEmailAddress(models.Model):
+    def __unicode__(self):
+        return "%s for %s" % (self.email, self.company)
+
+    company = models.ForeignKey("seo.Company")
+    email = models.EmailField(max_length=255, verbose_name="Email", 
+                              help_text="Non-User's email address")

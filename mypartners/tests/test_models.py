@@ -207,8 +207,8 @@ class MyPartnerTests(MyJobsBase):
 
     def test_outreach_domain_unique_to_company(self):
         """
-        Domains should be unique within a company, but not necessarily across
-        PRM.
+        Allowed domains should be unique within a company, but not necessarily
+        across PRM.
         """
 
         OutreachEmailDomain.objects.create(company=self.company, 
