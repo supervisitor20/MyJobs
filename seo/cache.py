@@ -155,4 +155,11 @@ def get_domain_parent(request):
         # SITE might not be set on the settings object
         site = getattr(settings, 'SITE', None)
 
-    return getattr(site, 'parent_site', None)
+    if site is None:
+        return None
+
+    parent_site = getattr(site, 'parent_site', None)
+    if parent_site is None:
+        return site.domain
+    else:
+        return parent_site

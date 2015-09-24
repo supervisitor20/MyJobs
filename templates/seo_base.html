@@ -33,23 +33,18 @@
     </style>
 
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <script src="{{ STATIC_URL }}dashboard.100-10.js" type="text/javascript"></script>
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
-      {% if domain_parent %}
       $(document).on("ready", function() {
-        // determine whether or not we should use CORS or JSONP
-        $.ajax({
-          type: "OPTIONS",
-          crossDomain: true
-        }).fail(function(xhr, textStatus, error) {
-          // Do JSONP
-          console.log("jsonp");
-        }).done(function() {
-          // Do CORS-enabled AJAX
-          console.log("cors");
+        var dashboard_url = ABSOLUTE_URL + "child-dashboard/";
+
+        dashboard(dashboard_url).fail(function(xhr, text, error) {
+          console.error("dashboard fail: ", xhr, text, error);
+        }).done(function(data, text, xhr) {
+          console.log("dashboard success: ", data, text, xhr);
         });
       });
-      {% endif %}
     </script>
 
     <script type="text/javascript" src="{{ STATIC_URL }}pager.164-21.js"></script>
