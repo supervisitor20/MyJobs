@@ -105,6 +105,8 @@ test_data = [
      'nurse AND (title:("this is the end") OR practitioner)'),
     ('nurse title:"this is the end" or practitioner',
      'nurse AND (title:"this is the end" OR practitioner)'),
+    ('title:and nurse',
+     'title:and AND nurse'),
 ]
 
 

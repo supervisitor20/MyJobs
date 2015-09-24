@@ -76,9 +76,7 @@ class Peekable(object):
 
     def next(self):
         try:
-            next_val = iter(self).next()
-            print next_val.token_type, next_val.token, next_val.flags
-            return next_val
+            return iter(self).next()
         except StopIteration:
             return self.last
 
@@ -179,7 +177,7 @@ term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
 # Need to identify ':' NOT followed by space or controlled character as delimiter for specific field search term
-field_re = re.compile(r'(\w+:)(?!\s|%s)(.*)' % term_punctuation_pattern)
+field_re = re.compile(r'(\w+:)(?=\"|\()(.*)')
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
@@ -574,11 +572,9 @@ def optimize_tree(tree, root):
     ]
 
     for optimization in optimizations:
-        print optimization
         new_tree = optimization(tree, root)
         if new_tree is not None:
             tree = new_tree
-        print tree
 
     for i, child in enumerate(tree.children):
         if isinstance(child, AstTree):
@@ -609,9 +605,7 @@ class SearchTransformer(object):
             tree = parser.parse()
 
             # Optimize
-            print repr(tree)
             optimized_tree = self.optimize(tree, tree)
-            print repr(optimized_tree)
             # Serialize
             query = optimized_tree.string()
 
