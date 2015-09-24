@@ -297,7 +297,7 @@ class AstTree(object):
 
     def string(self):
         if self.node_type == 'or':
-            return "%s" % " OR ".join(self.child_strings())
+            return " OR ".join(self.child_strings())
         elif self.node_type == 'and':
             return " AND ".join(self.child_strings())
         elif self.node_type == 'not':
@@ -310,7 +310,7 @@ class AstTree(object):
         elif self.node_type == 'paren':
             return "(%s)" % self.head_string()
         elif self.node_type == 'field':
-            return "%s" % "".join(self.child_strings())
+            return "".join(self.child_strings())
 
     def child_strings(self):
         return (c.string() for c in self.children)
@@ -505,6 +505,7 @@ def prepend_term_prefix(tree, root):
                      tree.children[1].children[0]))]
         new_children.extend(tree.children[2:])
         return AstTree('and', children=new_children)
+
 
 def append_term_suffix(tree, root):
     if (tree.node_type == 'and' and
