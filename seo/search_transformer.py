@@ -176,7 +176,7 @@ term_punctuation = "#$%&*.:;<>=?@[]^_`{}~'"
 term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
 
-# Need to identify ':' NOT followed by space or controlled character as delimiter for specific field search term
+# Need to identify ':' followed by a open parenthesis or double quote as special field term
 field_re = re.compile(r'(\w+:)(?=\"|\()(.*)')
 
 # Need to include dashes as part of search terms.
