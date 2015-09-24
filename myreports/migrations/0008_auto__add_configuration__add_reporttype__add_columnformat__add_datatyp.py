@@ -111,10 +111,12 @@ class Migration(SchemaMigration):
         db.create_table(u'myreports_configurationcolumn', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('configuration', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Configuration'])),
-            ('column', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Column'])),
+            ('column', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Column'], null=True)),
             ('interface_element_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.InterfaceElementType'])),
             ('alias', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('multi_value_expansion', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
+            ('filter_only', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('default_value', self.gf('django.db.models.fields.CharField')(default='', max_length=500, blank=True)),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'myreports', ['ConfigurationColumn'])
@@ -267,9 +269,11 @@ class Migration(SchemaMigration):
         u'myreports.configurationcolumn': {
             'Meta': {'object_name': 'ConfigurationColumn'},
             'alias': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Column']"}),
+            'column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Column']", 'null': 'True'}),
             'column_formats': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ColumnFormat']", 'through': u"orm['myreports.ConfigurationColumnFormats']", 'symmetrical': 'False'}),
             'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Configuration']"}),
+            'default_value': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '500', 'blank': 'True'}),
+            'filter_only': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'interface_element_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.InterfaceElementType']"}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

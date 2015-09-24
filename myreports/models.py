@@ -171,10 +171,12 @@ class ConfigurationColumnFormats(models.Model):
 
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
-    column = models.ForeignKey(Column)
+    column = models.ForeignKey(Column, null=True)
     interface_element_type = models.ForeignKey(InterfaceElementType)
     alias = models.CharField(max_length=100)
     multi_value_expansion = models.PositiveSmallIntegerField()
+    filter_only = models.BooleanField(default=False)
+    default_value = models.CharField(max_length=500, blank=True, default="")
     column_formats = models.ManyToManyField(
         'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
