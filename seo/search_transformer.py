@@ -508,24 +508,6 @@ def prepend_term_prefix(tree, root):
         new_children.extend(tree.children[2:])
         return AstTree('and', children=new_children)
 
-def group_field_statement_and_value(tree, root):
-    if tree.children > 1:
-        enumeration = enumerate(tree.children)
-        new_children = []
-        for i, child in enumeration:
-            if (isinstance(child, AstTree) and
-                    child.node_type == 'term' and
-                    'field' in child.flags and
-                     i < len(tree.children) - 1):
-                child.flags = []
-                value = enumeration.next()[1]
-                new_child_child_list = [child, value]
-                new_child = AstTree('field', children=new_child_child_list)
-                new_children.append(new_child)
-            else:
-                new_children.append(child)
-        return AstTree(tree.node_type, flags=tree.flags, children=new_children)
-
 def append_term_suffix(tree, root):
     if (tree.node_type == 'and' and
             len(tree.children) > 1 and
@@ -589,7 +571,6 @@ def optimize_tree(tree, root):
         escape_prefix_symbol,
         escape_suffix_symbol,
         escape_plus_term,
-        # group_field_statement_and_value,
     ]
 
     for optimization in optimizations:
@@ -618,27 +599,27 @@ class SearchTransformer(object):
         self.stepper_factory = stepper_factory
 
     def transform(self, input_query):
-        # try:
-        # Tokenize
-        token_stream = self.tokenize(input_query)
+        try:
+            # Tokenize
+            token_stream = self.tokenize(input_query)
 
-        # Parse
-        stepper = self.stepper_factory()
-        parser = self.parser(token_stream, stepper)
-        tree = parser.parse()
+            # Parse
+            stepper = self.stepper_factory()
+            parser = self.parser(token_stream, stepper)
+            tree = parser.parse()
 
-        # Optimize
-        print repr(tree)
-        optimized_tree = self.optimize(tree, tree)
-        print repr(optimized_tree)
-        # Serialize
-        query = optimized_tree.string()
+            # Optimize
+            print repr(tree)
+            optimized_tree = self.optimize(tree, tree)
+            print repr(optimized_tree)
+            # Serialize
+            query = optimized_tree.string()
 
-        return query
-        # except Exception as e:
-        #     logging.warn("Could not handle search '%s': %s" %
-        #                  (input_query, e.message))
-        #     return input_query
+            return query
+        except Exception as e:
+            logging.warn("Could not handle search '%s': %s" %
+                         (input_query, e.message))
+            return input_query
 
 
 def transform_search(input_query):
