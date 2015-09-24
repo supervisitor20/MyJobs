@@ -435,7 +435,7 @@ class Parser(object):
                 additional = self.handle_paren()
             elif self.token_stream.peek().is_term():
                 next_token = self.token_stream.next()
-                additional = AstTree('term', next_token.token, next_token.flags)
+                additional = AstTree('term', next_token.token, flags=next_token.flags)
         if additional:
             return AstTree('field', AstTree('term', token.token), [additional])
         return AstTree('term', token.token, flags=token.flags)
