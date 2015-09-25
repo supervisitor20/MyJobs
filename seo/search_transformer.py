@@ -129,7 +129,8 @@ class Token(object):
     def is_andable(self):
         return (self.is_and() or
                 self.is_not() or
-                self.is_term())
+                self.is_term() or
+                self.is_openparen())
 
     def is_eof(self):
         return self.token_type == 'eof'
@@ -171,9 +172,12 @@ plus_re = re.compile(r'(\+\S*)(.*)')
 # These characters are considered part of a term and can
 # start a term. Does not include - which can only appear in
 # the middle of a term.
-term_punctuation = "#$%&*.:;<>=?@[]^_`{}~"
+term_punctuation = "#$%&*.:;<>=?@[]^_`{}~'"
 term_punctuation_pattern = "|".join([re.escape(c)
                                      for c in term_punctuation])
+
+# Need to identify ':' followed by a open parenthesis or double quote as special field term
+field_re = re.compile(r'(\w+:)(?=\"|\()(.*)')
 
 # Need to include dashes as part of search terms.
 # Also want to include : and ^ just in case those need
@@ -251,6 +255,13 @@ def tokenize(input_query):
             yield Token('term', match.group(1).lower())
             continue
 
+        # try to match a field specifier
+        match = field_re.match(current)
+        if match:
+            current = match.group(2)
+            yield Token('term', match.group(1), ['field'])
+            continue
+
         # try to match a term
         match = term_re.match(current)
         if match:
@@ -286,7 +297,7 @@ class AstTree(object):
 
     def string(self):
         if self.node_type == 'or':
-            return "%s" % " OR ".join(self.child_strings())
+            return " OR ".join(self.child_strings())
         elif self.node_type == 'and':
             return " AND ".join(self.child_strings())
         elif self.node_type == 'not':
@@ -298,6 +309,8 @@ class AstTree(object):
                 return self.head_string()
         elif self.node_type == 'paren':
             return "(%s)" % self.head_string()
+        elif self.node_type == 'field':
+            return "".join(self.child_strings())
 
     def child_strings(self):
         return (c.string() for c in self.children)
@@ -329,6 +342,12 @@ class Energy(object):
 
 
 class Parser(object):
+    """
+        Recursive descent parser. Initialized with token stream and stepper in order to iterate
+        over token stream one item at a time. Returns an ASTTree of ASTTrees to represent each token
+        and their relationships/hierarchy. Stepper monitors "steps" taken by parser to ensure it does
+        not process overlong blocks of data.
+    """
     def __init__(self, token_stream, stepper):
         self.token_stream = token_stream
         self.stepper = stepper
@@ -406,8 +425,17 @@ class Parser(object):
         self.stepper.step()
         # Eat any garbage
         while self.token_stream.peek().token_type not in ('term', 'eof'):
-            token = self.token_stream.next()
+            self.token_stream.next()
         token = self.token_stream.next()
+        additional = None
+        if 'field' in token.flags:
+            if self.token_stream.peek().is_openparen():
+                additional = self.handle_paren()
+            elif self.token_stream.peek().is_term():
+                next_token = self.token_stream.next()
+                additional = AstTree('term', next_token.token, flags=next_token.flags)
+        if additional:
+            return AstTree('field', AstTree('term', token.token), [additional])
         return AstTree('term', token.token, flags=token.flags)
 
 
@@ -452,8 +480,6 @@ def drop_standalone_dash(tree, root):
             tree.children[0].node_type == 'term' and
             tree.children[0].children[0] == '-' and
             tree.children[1].node_type == 'term'):
-        children = [" ".join(child.children[0]
-                    for child in tree.children[1:])]
 
         new_children = [" ".join(child.children[0]
                         for child in tree.children[1:])]
@@ -581,7 +607,6 @@ class SearchTransformer(object):
 
             # Optimize
             optimized_tree = self.optimize(tree, tree)
-
             # Serialize
             query = optimized_tree.string()
 
