@@ -14,7 +14,6 @@ from django.db import models
 from django.db.models.signals import pre_delete, pre_save, post_save
 from django.dispatch import receiver
 
-from myjobs.models import User
 from postajob.location_data import states
 from universal.helpers import json_to_query
 
@@ -171,7 +170,7 @@ class Contact(models.Model):
     object there is Contact.partner_set and .partners_set
 
     """
-    user = models.ForeignKey(User, blank=True, null=True,
+    user = models.ForeignKey('myjobs.User', blank=True, null=True,
                              on_delete=models.SET_NULL)
     partner = models.ForeignKey('Partner', 
                                 null=True, on_delete=models.SET_NULL)
@@ -207,23 +206,6 @@ class Contact(models.Model):
         return 'Contact object'
 
     natural_key = __unicode__
-
-    def save(self, *args, **kwargs):
-        """
-        Checks to see if there is a User that is using self.email add said User
-        to self.user
-
-        """
-        if not self.user:
-            if self.email:
-                try:
-                    user = User.objects.get(email=self.email)
-                except User.DoesNotExist:
-                    pass
-                else:
-                    self.user = user
-
-        return super(Contact, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
@@ -563,7 +545,7 @@ class ContactRecord(models.Model):
     objects = ContactRecordManager()
 
     created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
@@ -757,7 +739,7 @@ class ContactLogEntry(models.Model):
     object_id = models.TextField('object id', blank=True, null=True)
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
     successful = models.NullBooleanField(default=None)
 
     def get_edited_object(self):
@@ -799,7 +781,7 @@ class Tag(models.Model):
     company = models.ForeignKey('seo.Company')
 
     created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
 
     objects = SearchParameterManager()
 
