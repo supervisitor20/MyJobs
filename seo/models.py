@@ -1028,6 +1028,18 @@ class Configuration(models.Model):
         (3, 'Top')
     )
 
+    LANGUAGE_CODES_CHOICES = (
+        (u'zh', 'Chinese'),
+        (u'en', 'English'),
+        (u'fr', 'French'),
+        (u'de', 'German'),
+        (u'hi', 'Hindi'),
+        (u'ja', 'Japanese'),
+        (u'ko', 'Korean'),
+        (u'es', 'Spanish'),
+        (u'ru', 'Russian')
+    )
+
     def __init__(self, *args, **kwargs):
         super(Configuration, self).__init__(*args, **kwargs)
         self._original_browse_moc_show = self.browse_moc_show
@@ -1165,6 +1177,8 @@ class Configuration(models.Model):
     moc_tag = models.CharField(max_length=50, default='vet-jobs')
     company_tag = models.CharField(max_length=50, default='careers')
     # template section
+    language_code = models.CharField(max_length=15,
+                                     choices=LANGUAGE_CODES_CHOICES, default='en-us')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)
