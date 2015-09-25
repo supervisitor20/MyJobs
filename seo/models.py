@@ -1029,15 +1029,24 @@ class Configuration(models.Model):
     )
 
     LANGUAGE_CODES_CHOICES = (
-        (u'zh', 'Chinese'),
-        (u'en', 'English'),
-        (u'fr', 'French'),
-        (u'de', 'German'),
-        (u'hi', 'Hindi'),
-        (u'ja', 'Japanese'),
-        (u'ko', 'Korean'),
-        (u'es', 'Spanish'),
-        (u'ru', 'Russian')
+        ('zh', 'Chinese'),
+        ('da', 'Danish'),
+        ('en', 'English'),
+        ('fr', 'French'),
+        ('de', 'German'),
+        ('hi', 'Hindi'),
+        ('it', 'Italian'),
+        ('ja', 'Japanese'),
+        ('ko', 'Korean'),
+        ('pt', 'Portuguese'),
+        ('ru', 'Russian'),
+        ('es', 'Spanish'),
+    )
+
+    DOCTYPE_CHOICES = (
+        ('HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+         '"http://www.w3.org/TR/html4/loose.dtd"', 'HTML 4.01 Transitional'),
+        ('html', 'HTML 5')
     )
 
     def __init__(self, *args, **kwargs):
@@ -1177,8 +1186,12 @@ class Configuration(models.Model):
     moc_tag = models.CharField(max_length=50, default='vet-jobs')
     company_tag = models.CharField(max_length=50, default='careers')
     # template section
-    language_code = models.CharField(max_length=15,
-                                     choices=LANGUAGE_CODES_CHOICES, default='en-us')
+    doc_type = models.CharField(choices=DOCTYPE_CHOICES,
+                                default='HTML PUBLIC "-//W3C//DTD HTML 4.01 '
+                                        'Transitional//EN" "http://'
+                                        'www.w3.org/TR/html4/loose.dtd"')
+    language_code = models.CharField(choices=LANGUAGE_CODES_CHOICES,
+                                     default='en-us')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)
