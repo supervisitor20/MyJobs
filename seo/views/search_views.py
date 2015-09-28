@@ -61,7 +61,10 @@ from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
+from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
+from myemails.models import EmailTemplate, EmailSection
+from myblocks.models import Page
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -2044,6 +2047,54 @@ def test_markdown(request):
 def admin_dashboard(request):
     data_dict = {}
     return render_to_response('seo/dashboard/dashboard_base.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def event_overview(request):
+    data_dict = {'active_events': [],
+                 'inactive_events': []}
+
+    return render_to_response('myemails/event_overview.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def manage_header_footer(request):
+    headers = EmailSection.objects.filter(section_type=1)
+    footers = EmailSection.objects.filter(section_type=3)
+
+    data_dict = {
+        'headers': headers,
+        'footers': footers
+    }
+
+    return render_to_response('myemails/manage_header_footer.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def manage_templates(request):
+    data_dict = {'events': []}
+
+    return render_to_response('myemails/manage_templates.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def blocks_overview(request):
+    company = get_company_or_404(request)
+
+    # grab SeoSites associated to company
+    sites = company.get_seo_sites()
+
+    # retrieve pages for any site in sites list
+    pages = Page.objects.filter(sites__in=sites)
+
+    data_dict = {'pages': pages}
+
+    return render_to_response('seo/dashboard/blocks/blocks_overview.html',
+                              data_dict,
                               context_instance=RequestContext(request))
 
 

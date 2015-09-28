@@ -16,7 +16,7 @@ from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import UserFactory
 from registration.models import Invitation
 from seo.models import SeoSite
-from seo.tests import CompanyFactory
+from seo.tests.factories import CompanyFactory
 
 
 class SavedSearchFormTests(MyJobsBase):
@@ -136,6 +136,37 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         self.assertTrue(invitation.invitee.in_reserve)
         contact = Contact.objects.get(pk=self.contact.pk)
         self.assertEqual(invitation.invitee, contact.user)
+
+    def test_user_only_linked_to_contact_after_pss_created(self):
+        """
+        A contact who's email so happens to coincide with an existing user's
+        should not be attached to that user until after a partner saved search
+        is created for it.
+        """
+
+        # we don't have a saved search, so the contact shouldn't be associated
+        # with a user
+        contact = ContactFactory(user=None,
+                                 email="some_random_contact@gmail.com",
+                                 partner=self.partner)
+        user = UserFactory(email=contact.email)
+        self.assertFalse(contact.user)
+        self.partner_search_data['email'] = contact.email
+        form = PartnerSavedSearchForm(partner=self.partner,
+                                      data=self.partner_search_data,
+                                      request=self.request)
+
+        instance = form.instance
+        instance.provider = self.company
+        instance.partner = self.partner
+        instance.created_by = self.user
+        instance.custom_message = instance.partner_message
+        self.assertTrue(form.is_valid())
+        form.save()
+        # after the saved search was created, the user should have been
+        # associated automatically
+        contact = Contact.objects.get(id=contact.id)
+        self.assertTrue(contact.user)
 
     def test_initial_email_has_unsubscription_options(self):
         """
