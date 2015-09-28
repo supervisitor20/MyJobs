@@ -80,7 +80,7 @@ class SiteTestCase(DirectSEOBase):
         self.site.save()
         resp = self.client.get("/")
         self.assertEqual(resp.context['domain_parent'],
-                         self.site.domain)
+                         self.site)
 
     def test_parent_domain_context_variable_with_domain_switching(self):
         self.setup_superuser()

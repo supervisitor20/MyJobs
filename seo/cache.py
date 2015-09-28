@@ -160,6 +160,6 @@ def get_domain_parent(request):
 
     parent_site = getattr(site, 'parent_site', None)
     if parent_site is None:
-        return site.domain
+        return site
     else:
         return parent_site
