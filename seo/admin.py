@@ -152,6 +152,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         this = super(ConfigurationAdmin, self).get_form(request, obj, **kwargs)
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
+                             ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget'),
                              'sites', ]
@@ -159,6 +160,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
             ('Basic Info', {'fields': [
                 ('title', 'view_all_jobs_detail', 'status',
                  'percent_featured'),
+                ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', ),
                 'sites']}),
