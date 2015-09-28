@@ -1044,9 +1044,9 @@ class Configuration(models.Model):
     )
 
     DOCTYPE_CHOICES = (
-        ('HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
-         '"http://www.w3.org/TR/html4/loose.dtd"', 'HTML 4.01 Transitional'),
-        ('html', 'HTML 5')
+        ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+         '"http://www.w3.org/TR/html4/loose.dtd">', 'HTML 4.01 Transitional'),
+        ('<!DOCTYPE html>', 'HTML 5')
     )
 
     def __init__(self, *args, **kwargs):
@@ -1188,12 +1188,12 @@ class Configuration(models.Model):
     # template section
     doc_type = models.CharField(max_length=255,
                                 choices=DOCTYPE_CHOICES,
-                                default='HTML PUBLIC "-//W3C//DTD HTML 4.01 '
+                                default='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 '
                                         'Transitional//EN" "http://'
-                                        'www.w3.org/TR/html4/loose.dtd"')
+                                        'www.w3.org/TR/html4/loose.dtd">')
     language_code = models.CharField(max_length=16,
                                      choices=LANGUAGE_CODES_CHOICES,
-                                     default='en-us')
+                                     default='en')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)
