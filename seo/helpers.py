@@ -383,7 +383,7 @@ def bread_box_company_heading(company_slug_value, jobs=None):
     otherwise, return company string from job or company slug itself
     :param company_slug_value: company filter provided
     :param jobs: jobs matching the provided company
-    :return:
+    :return: business unit title or company slug value parameter
     """
     if not company_slug_value:
         return None

@@ -140,7 +140,7 @@ class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
         self.conn.add([self.job])
 
         self.site = SeoSite.objects.get()
-        self.buid = BusinessUnit.objects.get_or_create(pk=self.job['buid'])[0]
+        self.business_unit = BusinessUnit.objects.get_or_create(pk=self.job['buid'])[0]
         self.site.business_units.add(self.job['buid'])
         self.site.save()
 

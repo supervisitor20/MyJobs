@@ -8,7 +8,7 @@ from django.conf import settings
 from seo import helpers
 from seo.models import CustomFacet
 from seo.tests import factories
-from setup import DirectSEOBase
+from setup import DirectSEOBase, DirectSeoTCWithJobAndSite
 
 
 class SeoHelpersTestCase(DirectSEOBase):
@@ -184,3 +184,23 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
                     self.assertNotEqual(query.find(term), -1)
                 for term in missing_terms:
                     self.assertEqual(query.find(term), -1)
+
+
+class HelpersTestsWithJobAndSite(DirectSeoTCWithJobAndSite):
+    """
+        Tests for helpers functions that require a job and/or a site to be configured
+        in order to operate.
+    """
+    def test_company_heading(self):
+        # test company_slug = None returns None
+        self.assertIsNone(helpers.bread_box_company_heading(None))
+        # test company slug w/ valid business unit returns business unit's title
+        company = factories.CompanyFactory()
+        company.company_slug = self.business_unit.title_slug
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.business_unit.title)
+
+        # test company slug that does not match a business unit returns the company slug back
+        company.company_slug = 'thisslugisntvalid'
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), company.company_slug)
+        # extra test to ensure business_unit.title != company_slug
+        self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.business_unit.title)

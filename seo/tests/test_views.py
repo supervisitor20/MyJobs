@@ -2788,23 +2788,6 @@ class FilterTestCase404(DirectSeoTCWithJobAndSite):
         self.assertEqual(resp.status_code, 404)
         resp = self.client.get("/fake/moc/vet-jobs/",
                                HTTP_HOST=self.site.domain)
-        self.assertEqual(resp.status_code, 404)
-
-
-class DisplayFunctionTests(DirectSeoTCWithJobAndSite):
-    def test_company_heading(self):
-        # test company_slug = None returns None
-        self.assertIsNone(helpers.bread_box_company_heading(None))
-        # test company slug w/ valid BUID returns business unit's title
-        company = factories.CompanyFactory()
-        company.company_slug = self.buid.title_slug
-        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.buid.title)
-
-        # test company slug that does not match a BUID returns the company slug back
-        company.company_slug = 'thisslugisntvalid'
-        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), company.company_slug)
-        # extra test to ensure buid.title != company_slug
-        self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.buid.title)
 
 
 class DubaiTests(DirectSEOTestCase):
