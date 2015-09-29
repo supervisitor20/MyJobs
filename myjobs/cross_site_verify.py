@@ -4,7 +4,7 @@ from django.conf import settings
 
 from functools import wraps
 from seo.models import SeoSite
-from urlparse import urlparse, parse_qs
+from urlparse import urlparse
 
 
 XRW = 'XMLHttpRequest'

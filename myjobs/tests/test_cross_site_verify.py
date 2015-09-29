@@ -1,6 +1,3 @@
-import re
-import json
-
 from django.http import HttpResponse
 from django.conf.urls import url
 import django.test
@@ -10,7 +7,6 @@ from seo.tests.factories import SeoSiteFactory
 
 import unittest
 
-from seo.models import SeoSite
 from myjobs.cross_site_verify import cross_site_verify, \
     verify_cross_site_request, DomainRelationshipException, \
     guess_child_domain, parse_request_meta, XRW
