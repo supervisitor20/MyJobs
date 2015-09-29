@@ -105,7 +105,7 @@ def warn_when(condition, feature, message, link=None, link_text=None,
         def wrap(request, *args, **kwargs):
             if request.user.is_anonymous() and redirect:
                 params = {'next': request.get_full_path()}
-                next_url = build_url(reverse('home'), params)
+                next_url = build_url(reverse('login'), params)
                 return HttpResponseRedirect(next_url)
 
             ctx = {'feature': feature,
