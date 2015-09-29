@@ -14,6 +14,7 @@ from django.template import context
 from seo_pysolr import Solr
 from import_jobs import DATA_DIR
 from seo.tests.factories import BusinessUnitFactory
+from seo.models import SeoSite, Configuration, BusinessUnit
 import solr_settings
 
 
@@ -98,20 +99,21 @@ class DirectSEOBase(TestCase):
         setattr(settings, 'MIDDLEWARE_CLASSES',
                 self.base_middleware_classes)
 
+
 class DirectSEOTestCase(DirectSEOBase):
     def setUp(self):
         super(DirectSEOTestCase, self).setUp()
         self.solr_docs = solr_settings.SOLR_FIXTURE
         self.conn.add(self.solr_docs)
 
-        #uids and numjobs in feed file for test business unit 0
+        # uids and numjobs in feed file for test business unit 0
         self.feed_uids = [57621597, 57311147, 60351047, 59891656, 58867671,
                           57495178, 59773973, 59326433, 57311143, 57311166]
         self.feed_numjobs = 14
 
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid_id = self.businessunit.id        
-        #Ensure DATA_DIR used by import_jobs.download_feed_file exists
+        # Ensure DATA_DIR used by import_jobs.download_feed_file exists
         data_path = DATA_DIR
         if not os.path.exists(data_path):
             os.mkdir(data_path)
@@ -120,6 +122,38 @@ class DirectSEOTestCase(DirectSEOBase):
         super(DirectSEOTestCase, self).tearDown()
         self.conn.delete(q="*:*")
         self.assertEqual(self.conn.search(q='*:*').hits, 0)
+
+
+class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
+    """
+        Test case with a job added and site configured
+        Attributes:
+            job - job from solr_settings.SOLR_FIXTURE
+            buid -  business unit id from provided job
+            site - site attached to business unit id from job
+            config - configuration of selected site
+    """
+    def setUp(self):
+        super(DirectSeoTCWithJobAndSite, self).setUp()
+
+        self.job = self.solr_docs[1]
+        self.conn.add([self.job])
+
+        self.site = SeoSite.objects.get()
+        self.buid = BusinessUnit.objects.get_or_create(pk=self.job['buid'])[0]
+        self.site.business_units.add(self.job['buid'])
+        self.site.save()
+
+        self.content = 'This is a content block'
+
+        self.config = Configuration.objects.get(status=2)
+        self.config.home_page_template = 'home_page/home_page_listing.html'
+        self.config.footer = ''
+        self.config.save()
+
+    def tearDown(self):
+        self.conn.delete(q='*:*')
+        super(DirectSeoTCWithJobAndSite, self).tearDown()
 
 
 class SettingDoesNotExist:

@@ -377,18 +377,34 @@ def _page_title(crumbs):
     return " in ".join([info_part, loc_part])
 
 
-def bread_box_company_heading(company_slug_value):
-    # TODO write test to hit this logic
+def bread_box_company_heading(company_slug_value, jobs=None):
+    """
+    Return the company header we have in the DB (if possible),
+    otherwise, return company string from job or company slug itself
+    :param company_slug_value: company filter provided
+    :param jobs: jobs matching the provided company
+    :return:
+    """
     if not company_slug_value:
         return None
-
     kwargs = {'title_slug': company_slug_value}
     business_unit = BusinessUnit.objects.filter(**kwargs)
 
     try:
         return business_unit[0].title
-    except Exception:
-        return None
+    except (IndexError, TypeError):
+        # No business unit found
+        pass
+
+    try:
+        return jobs[0].company
+    except (IndexError, TypeError):
+        # No job provided
+        pass
+
+    # this is unlikely to happen as companies that do not exist in DB
+    # and do not have associated jobs are often 404'd.
+    return company_slug_value
 
 
 def location_from_job(job, num_locations):
@@ -401,6 +417,7 @@ def location_from_job(job, num_locations):
             return job.country
     except IndexError:
         return None
+
 
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
