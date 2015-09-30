@@ -139,13 +139,14 @@ def get_site_config(request):
                 site_config = Configuration.objects.get(id=2)
         cache.set(config_cache_key, site_config, timeout)
     return site_config
-    
-def get_domain_parent(request):
+
+
+def get_secure_blocks_site(request):
     """"
-        Returns the parent site for the currently selected domain (if exists)
-        
+        Returns the secure blocks site for the current site
+
         Returns:
-        - SeoSite object or None
+        - SeoSite object or None if we can't figure out the current site.
     """
     if request.user.is_staff and 'domain' in request.REQUEST:
         # filter() + first() will return None rather than raising an exception
@@ -155,9 +156,11 @@ def get_domain_parent(request):
         # SITE might not be set on the settings object
         site = getattr(settings, 'SITE', None)
 
+    # We can't figure out the current site. Give up.
     if site is None:
         return None
 
+    # Return parent if there is one. This site, otherwise.
     parent_site = getattr(site, 'parent_site', None)
     if parent_site is None:
         return site

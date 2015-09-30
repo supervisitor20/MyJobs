@@ -37,7 +37,7 @@
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       $(document).on("ready", function() {
-        var secuire_block_url = "https://{{ domain_parent }}/child-dashboard/";
+        var secuire_block_url = "https://{{ secure_blocks_domain }}/child-dashboard/";
 
         secure_block(secuire_block_url).fail(function(xhr, text, error) {
           console.error("secure block fail: ", xhr, text, error);
