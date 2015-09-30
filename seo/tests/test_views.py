@@ -114,7 +114,7 @@ class FallbackTestCase(DirectSeoTCWithJobAndSite):
 
         self.make_page(Page.ERROR_404)
 
-        response = self.client.get('/asldfjsadflasjfsdlafj/', follow=True)
+        response = self.client.get('/asldfjsadflasjfsdlafj/', follow=True, HTTP_HOST=self.site.domain)
         # The content block should be present, since there's
         # a Page.
         self.assertIn(self.content, response.content)
