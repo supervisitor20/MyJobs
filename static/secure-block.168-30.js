@@ -32,12 +32,11 @@ function secure_block(secure_block_url) {
 }
 
 function xhr_secure_block(secure_block_url) {
-  var csrftoken = read_cookie("csrftoken");
   return $.ajax({
     url: secure_block_url,
     type: "POST",
     headers: {'X-Requested-With': 'XMLHttpRequest'},
-    data: {csrfmiddlewaretoken: csrftoken},
+    data: {},
     xhrFields: {
       withCredentials: true
     },
