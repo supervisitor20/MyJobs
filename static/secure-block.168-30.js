@@ -12,7 +12,7 @@ function read_cookie(cookie) {
     return null;
 }
 
-function dashboard(dashboard_url) {
+function secure_block(secure_block_url) {
   // need to explicitly marshal the result data into this deferred
   // because we are on old jQuery.
   var result = $.Deferred();
@@ -20,21 +20,21 @@ function dashboard(dashboard_url) {
     type: "OPTIONS",
     crossDomain: true,
   }).done(function(data, textStatus, xhr) {
-    xhr_dashboard(dashboard_url).
+    xhr_secure_block(secure_block_url).
         done(result.resolve).
         fail(result.reject);
   }).fail(function(xhr, textStatus, error) {
-    jsonp_dashboard(dashboard_url).
+    jsonp_secure_block(secure_block_url).
         done(result.resolve).
         fail(result.reject);
   });
   return result.promise();
 }
 
-function xhr_dashboard(dashboard_url) {
+function xhr_secure_block(secure_block_url) {
   var csrftoken = read_cookie("csrftoken");
   return $.ajax({
-    url: dashboard_url,
+    url: secure_block_url,
     type: "POST",
     headers: {'X-Requested-With': 'XMLHttpRequest'},
     data: {csrfmiddlewaretoken: csrftoken},
@@ -44,9 +44,9 @@ function xhr_dashboard(dashboard_url) {
   });
 }
 
-function jsonp_dashboard(dashboard_url) {
+function jsonp_secure_block(secure_block_url) {
   return $.ajax({
-    url: dashboard_url,
+    url: secure_block_url,
     type: "GET",
     dataType: "jsonp",
   });

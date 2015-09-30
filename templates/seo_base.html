@@ -33,16 +33,16 @@
     </style>
 
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <script src="{{ STATIC_URL }}dashboard.100-10.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}secure-block.168-30.js" type="text/javascript"></script>
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       $(document).on("ready", function() {
-        var dashboard_url = "https://{{ domain_parent }}/child-dashboard/";
+        var secuire_block_url = "https://{{ domain_parent }}/child-dashboard/";
 
-        dashboard(dashboard_url).fail(function(xhr, text, error) {
-          console.error("dashboard fail: ", xhr, text, error);
+        secure_block(secuire_block_url).fail(function(xhr, text, error) {
+          console.error("secure block fail: ", xhr, text, error);
         }).done(function(data, text, xhr) {
-          console.log("dashboard success: ", data, text, xhr);
+          console.log("secure block success: ", data, text, xhr);
         });
       });
     </script>
