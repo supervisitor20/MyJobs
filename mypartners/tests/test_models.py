@@ -163,10 +163,29 @@ class MyPartnerTests(MyJobsBase):
         """Test that attempting to delete a contact archives it instead."""
 
         self.assertFalse(self.contact.archived_on)
-        self.contact.delete()
+        self.contact.archive()
         self.assertEqual(Contact.objects.count(), 0)
         self.assertEqual(Contact.all_objects.count(), 1)
         self.assertTrue(self.contact.archived_on)
+
+    def test_archived_manager_weirdness(self):
+        """
+        Demonstrates that archived instances are returned by the
+        ArchivedModel.all_objects manager, not the standard
+        ArchivedModel.objects.
+        """
+        self.partner.archive()
+        # Try retrieving the archived partner using both managers
+        self.assertRaises(Partner.DoesNotExist,
+                          lambda: Partner.objects.get(pk=self.partner.pk))
+        Partner.all_objects.get(pk=self.partner.pk)
+
+        self.contact = Contact.objects.get(pk=self.contact.pk)
+        # The manager used by related objects in this instance excludes
+        # archived partners. As it's basically a Partner.objects.get(id=...),
+        # this fails.
+        self.assertRaises(Partner.DoesNotExist, lambda: self.contact.partner)
+        self.assertEqual(self.contact.partner_id, self.partner.pk)
 
     def test_models_approved(self):
         """

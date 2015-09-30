@@ -11,7 +11,7 @@ from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save, post_save
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 
 from postajob.location_data import states
@@ -124,7 +124,10 @@ class SearchParameterManager(models.Manager):
     def __init__(self, archived=False):
         """
         Adds a new argument to the manager constructor to allow us to specify
-        if a given query should include archived models
+        if a given query should include archived models.
+
+        If this isn't doing what you want, examine the model using it and pay
+        special attention to what value of "archived" is being passed in.
 
         Inputs:
         :archived: True: query archived only, False: exclude
@@ -156,13 +159,21 @@ class SearchParameterManager(models.Manager):
 class ArchivedModel(models.Model):
     archived_on = models.DateTimeField(null=True)
 
+    # These two managers do different things and may not exactly do what you
+    # want unless you're paying attention. The first (objects) retrieves only
+    # objects where archived_on is None. The second (all_objects) retrieves all
+    # objects regardless of the state of archived_on. Managers used by related
+    # objects exhibit some weirdness as shown below.
+    #
+    # A demo is available as test_archived_manager_weirdness in
+    # mypartners/tests/test_models
     objects = SearchParameterManager()
     all_objects = SearchParameterManager(archived=None)
 
     class Meta:
         abstract = True
 
-    def delete(self, *args, **kwargs):
+    def archive(self, *args, **kwargs):
         self.archived_on = datetime.now()
         self.save()
 
@@ -242,7 +253,10 @@ class Contact(ArchivedModel):
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
         super(Contact, self).delete(*args, **kwargs)
-        self.primary_contact.clear()
+
+    def archive(self, *args, **kwargs):
+        pre_delete.send(sender=Contact, instance=self, using='default')
+        super(Contact, self).archive(*args, **kwargs)
 
     def get_contact_url(self):
         base_urls = {
@@ -278,19 +292,6 @@ def delete_contact(sender, instance, using, **kwargs):
                     'has been disabled.').format(name=instance.name)
             pss.notes += note
             pss.save()
-
-
-@receiver(pre_delete, sender=Contact,
-          dispatch_uid='post_delete_contact_signal')
-def delete_contact_locations(sender, instance, **kwargs):
-    """
-    Since locations will more than likely be specific to a contact, we should
-    be able to delete all of a contact's locations when that contact is
-    deleted.
-    """
-    for location in instance.locations.all():
-        if not location.contacts.all():
-            location.delete()
 
 
 @receiver(pre_save, sender=Contact, dispatch_uid='pre_save_contact_signal')
