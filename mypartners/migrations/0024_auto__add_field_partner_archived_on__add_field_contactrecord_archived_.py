@@ -78,7 +78,7 @@ class Migration(SchemaMigration):
         },
         u'mypartners.commonemaildomain': {
             'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.contact': {
@@ -145,11 +145,31 @@ class Migration(SchemaMigration):
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
+        u'mypartners.nonuseroutreach': {
+            'Meta': {'object_name': 'NonUserOutreach'},
+            'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
+            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'email_body': ('django.db.models.fields.TextField', [], {}),
+            'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"})
+        },
+        u'mypartners.outreachemailaddress': {
+            'Meta': {'object_name': 'OutreachEmailAddress'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
+        u'mypartners.outreachworkflowstate': {
+            'Meta': {'object_name': 'OutreachWorkflowState'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'mypartners.partner': {
             'Meta': {'object_name': 'Partner'},
@@ -323,6 +343,7 @@ class Migration(SchemaMigration):
             'defaultBlurb': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'defaultBlurbTitle': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'directemployers_link': ('django.db.models.fields.URLField', [], {'default': "'http://directemployers.org'", 'max_length': '200'}),
+            'doc_type': ('django.db.models.fields.CharField', [], {'default': '\'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\'', 'max_length': '255'}),
             'facet_tag': ('django.db.models.fields.CharField', [], {'default': "'new-jobs'", 'max_length': '50'}),
             'fontColor': ('django.db.models.fields.CharField', [], {'default': "'666666'", 'max_length': '6'}),
             'footer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
@@ -330,6 +351,7 @@ class Migration(SchemaMigration):
             'header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'home_page_template': ('django.db.models.fields.CharField', [], {'default': "'home_page/home_page_listing.html'", 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language_code': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '16'}),
             'location_tag': ('django.db.models.fields.CharField', [], {'default': "'jobs'", 'max_length': '50'}),
             'meta': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'moc_helptext': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
