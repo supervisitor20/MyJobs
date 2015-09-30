@@ -56,7 +56,7 @@ class Status(models.Model):
     approved_by = models.ForeignKey(
         'myjobs.User', null=True, on_delete=models.SET_NULL)
     last_modified = models.DateTimeField(
-        auto_now=True, verbose_name="Last Modified")
+        auto_now=True, verbose_name="Last Modified", default=datetime.now)
 
     def __unicode__(self):
         return dict(Status.CODES)[self.code]
@@ -224,6 +224,7 @@ class Contact(ArchivedModel):
                              help_text='Any additional information you want to record')
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now)
 
     company_ref = 'partner__owner'
 
@@ -329,6 +330,7 @@ class Partner(ArchivedModel):
                               on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now)
 
     company_ref = 'owner'
 
@@ -610,6 +612,7 @@ class ContactRecord(ArchivedModel):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(auto_now=True, default=datetime.now)
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)
