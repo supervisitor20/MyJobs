@@ -19,10 +19,14 @@ function dashboard(dashboard_url) {
   $.ajax({
     type: "OPTIONS",
     crossDomain: true,
-  }).then(function(data, textStatus, xhr) {
-    xhr_dashboard(dashboard_url).then(result.resolve, result.reject);
-  }, function(xhr, textStatus, error) {
-    jsonp_dashboard(dashboard_url).then(result.resolve, result.reject);
+  }).done(function(data, textStatus, xhr) {
+    xhr_dashboard(dashboard_url).
+        done(result.resolve).
+        fail(result.reject);
+  }).fail(function(xhr, textStatus, error) {
+    jsonp_dashboard(dashboard_url).
+        done(result.resolve).
+        fail(result.reject);
   });
   return result.promise();
 }
