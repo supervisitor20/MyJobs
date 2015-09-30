@@ -36,7 +36,7 @@ from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
 from redirect.tests.factories import RedirectFactory
 from seo import helpers
-from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings, DirectSeoTCWithJobAndSite)
+from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings, DirectSeoTCWithSiteAndConfig)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
                         SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
 from seo.templatetags.seo_extras import url_for_sort_field
@@ -45,7 +45,7 @@ import solr_settings
 from universal.helpers import build_url
 
 
-class FallbackTestCase(DirectSeoTCWithJobAndSite):
+class FallbackTestCase(DirectSeoTCWithSiteAndConfig):
     def setUp(self):
         super(FallbackTestCase, self).setUp()
         self.job = self.solr_docs[1]
@@ -2751,7 +2751,7 @@ class StaticPageOverrideTests(DirectSEOBase):
         # TODO: Reimplement test with qs redirects
 
 
-class FilterTestCase404(DirectSeoTCWithJobAndSite):
+class FilterTestCase404(DirectSeoTCWithSiteAndConfig):
     """
         Test cases involved in the search filter slugs. Ensure 404 returned under proper conditions.
     """

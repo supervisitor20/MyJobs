@@ -125,7 +125,7 @@ class DirectSEOTestCase(DirectSEOBase):
         self.assertEqual(self.conn.search(q='*:*').hits, 0)
 
 
-class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
+class DirectSeoTCWithSiteAndConfig(DirectSEOTestCase):
     """
         Test case with a job added and site configured
         Attributes:
@@ -134,7 +134,7 @@ class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
             client - same as default client, but uses test seosite's domain as HTTP_HOST
     """
     def setUp(self):
-        super(DirectSeoTCWithJobAndSite, self).setUp()
+        super(DirectSeoTCWithSiteAndConfig, self).setUp()
         self.site = SeoSiteFactory()
         self.site.business_units.add(self.businessunit)
 
@@ -145,10 +145,6 @@ class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
 
         # ensure tests in this class use the correct domain
         self.client = Client(HTTP_HOST=self.site.domain)
-
-    def tearDown(self):
-        self.conn.delete(q='*:*')
-        super(DirectSeoTCWithJobAndSite, self).tearDown()
 
 
 class SettingDoesNotExist:

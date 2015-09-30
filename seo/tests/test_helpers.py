@@ -8,7 +8,7 @@ from django.conf import settings
 from seo import helpers
 from seo.models import CustomFacet
 from seo.tests import factories
-from setup import DirectSEOBase, DirectSeoTCWithJobAndSite
+from setup import DirectSEOBase, DirectSeoTCWithSiteAndConfig
 
 
 class SeoHelpersTestCase(DirectSEOBase):
@@ -186,7 +186,7 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
                     self.assertEqual(query.find(term), -1)
 
 
-class HelpersTestsWithJobAndSite(DirectSeoTCWithJobAndSite):
+class HelpersTestsWithJobAndSite(DirectSeoTCWithSiteAndConfig):
     """
         Tests for helpers functions that require a job and/or a site to be configured
         in order to operate.
