@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
 from django.test import TestCase
+from django.test.client import Client
 from django.template import context
 
 from seo_pysolr import Solr
@@ -130,43 +131,22 @@ class DirectSeoTCWithJobAndSite(DirectSEOTestCase):
     """
         Test case with a job added and site configured
         Attributes:
-            job - job from solr_settings.SOLR_FIXTURE
-            buid -  business unit id from provided job
-            site - site attached to business unit id from job
-            config - configuration of selected site
+            site - test seosite instance
+            config - config for test seosite
+            client - same as default client, but uses test seosite's domain as HTTP_HOST
     """
     def setUp(self):
         super(DirectSeoTCWithJobAndSite, self).setUp()
-        # import ipdb; ipdb.set_trace()
-        # self.site = SeoSite.objects.get(pk=settings.SITE_ID)
         self.site = SeoSiteFactory()
-        self.site.business_units.add(self.buid_id)
+        self.site.business_units.add(self.businessunit)
 
-        self.config = ConfigurationFactory.build()
-        self.config.status = 2
-        self.config.home_page_template = 'home_page/home_page_listing.html'
-        self.config.footer = ''
+        self.config = ConfigurationFactory.build(status=2)
         self.config.save()
 
         self.site.configurations.add(self.config)
 
-        self.client.HTTP_HOST = self.site.domain
-        # super(DirectSeoTCWithJobAndSite, self).setUp()
-        #
-        # self.job = self.solr_docs[1]
-        # self.conn.add([self.job])
-        #
-        # self.site = SeoSite.objects.get()
-        # self.business_unit = BusinessUnit.objects.get_or_create(pk=self.job['buid'])
-        # self.site.business_units.add(self.job['buid'])
-        # self.site.save()
-        #
-        # self.content = 'This is a content block'
-        #
-        # self.config = Configuration.objects.get(status=2)
-        # self.config.home_page_template = 'home_page/home_page_listing.html'
-        # self.config.footer = ''
-        # self.config.save()
+        # ensure tests in this class use the correct domain
+        self.client = Client(HTTP_HOST=self.site.domain)
 
     def tearDown(self):
         self.conn.delete(q='*:*')
