@@ -1,6 +1,5 @@
 import os.path
 from contextlib import contextmanager
-from haystack import connections as haystack_connections
 
 from django.conf import settings
 from seo.search_backend import DESolrSearchBackend, DESolrEngine
@@ -16,7 +15,6 @@ from seo_pysolr import Solr
 from import_jobs import DATA_DIR
 from seo.tests.factories import BusinessUnitFactory
 from seo.tests.factories import SeoSiteFactory, ConfigurationFactory
-from seo.models import SeoSite, Configuration, BusinessUnit
 import solr_settings
 
 
