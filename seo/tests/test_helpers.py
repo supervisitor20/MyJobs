@@ -196,11 +196,11 @@ class HelpersTestsWithJobAndSite(DirectSeoTCWithJobAndSite):
         self.assertIsNone(helpers.bread_box_company_heading(None))
         # test company slug w/ valid business unit returns business unit's title
         company = factories.CompanyFactory()
-        company.company_slug = self.business_unit.title_slug
-        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.business_unit.title)
+        company.company_slug = self.businessunit.title_slug
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)
 
         # test company slug that does not match a business unit returns the company slug back
         company.company_slug = 'thisslugisntvalid'
         self.assertEqual(helpers.bread_box_company_heading(company.company_slug), company.company_slug)
-        # extra test to ensure business_unit.title != company_slug
-        self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.business_unit.title)
+        # extra test to ensure businessunit.title != company_slug
+        self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)

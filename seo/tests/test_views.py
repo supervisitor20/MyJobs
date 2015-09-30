@@ -46,6 +46,14 @@ from universal.helpers import build_url
 
 
 class FallbackTestCase(DirectSeoTCWithJobAndSite):
+    def setUp(self):
+        super(FallbackTestCase, self).setUp()
+        self.job = self.solr_docs[1]
+        self.content = 'This is a content block'
+        self.config.home_page_template = 'home_page/home_page_listing.html'
+        self.config.footer = ''
+        self.config.save()
+
     def make_page(self, page_type):
         content = 'This is a content block'
         content_block = ContentBlockFactory(template=content)
@@ -2762,12 +2770,13 @@ class FilterTestCase404(DirectSeoTCWithJobAndSite):
             Verify that invalid companies will return a 404 error if they have no jobs,
             200 if they have jobs
         """
-        company_from_job = Company.objects.filter(name__iexact=self.job['company'])
+        job = self.solr_docs[1]
+        company_from_job = Company.objects.filter(name__iexact=job['company'])
         if company_from_job:
             slug_value = company_from_job[0].company_slug
             company_from_job.delete()  # make sure company doesn't exist in DB
         else:
-            slug_value = self.job['company'].lower()
+            slug_value = job['company'].lower()
 
         resp = self.client.get("/%s/careers/" % slug_value,
                                HTTP_HOST=self.site.domain)
