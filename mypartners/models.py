@@ -781,6 +781,8 @@ class Tag(models.Model):
 
     objects = SearchParameterManager()
 
+    objects = SearchParameterManager()
+
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company.name)
 
