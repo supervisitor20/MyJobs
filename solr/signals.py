@@ -18,8 +18,8 @@ def presave_solr(sender, instance, *args, **kwargs):
     we actually care about has been changed.
 
     """
-    ignore_fields = ['last_response', 'last_sent', 'date_updated',
-                     'last_login', 'date_joined']
+    ignore_fields = ['last_modify', 'last_response', 'last_sent',
+                     'date_updated', 'last_login', 'date_joined']
     setattr(instance, 'solr_update', False)
     if instance.pk:
         # The instance might have a pk but still not actually
