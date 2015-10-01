@@ -258,5 +258,5 @@ class MyPartnerTests(MyJobsBase):
         self.assertEqual(records.interviews, 6)
         self.assertEqual(records.hires, 5)
         self.assertEqual(records.emails, 1)
-        self.assertEqual(records.cals, 1)
+        self.assertEqual(records.calls, 1)
 
