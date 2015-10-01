@@ -814,6 +814,8 @@ class Tag(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
 
+    objects = SearchParameterManager()
+
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company.name)
 
