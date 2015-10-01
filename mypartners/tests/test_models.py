@@ -13,7 +13,8 @@ from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
                                         TagFactory, PRMAttachmentFactory)
 from mypartners.models import (Contact, Location, Partner, PRMAttachment, 
-                               Status, OutreachEmailDomain, CommonEmailDomain)
+                               Status, OutreachEmailDomain, CommonEmailDomain,
+                               ContactRecord)
 from mysearches.models import PartnerSavedSearch
 from mysearches.tests.factories import PartnerSavedSearchFactory
 
@@ -29,8 +30,7 @@ class MyPartnerTests(MyJobsBase):
         """
         Tests adding a contact to partner's contacts list and tests
         primary_contact. Also tests if the contact gets deleted the partner
-        stays and turns primary_contact to None.
-
+        stays and turns primary_contact to None.  
         """
         self.assertEqual(Contact.objects.filter(partner=self.partner).count(),
                          1)
@@ -224,3 +224,39 @@ class MyPartnerTests(MyJobsBase):
         with self.assertRaises(IntegrityError):
             OutreachEmailDomain.objects.create(company=self.company, 
                                                domain="foo.bar")
+
+    def test_contact_record_report_numbers(self):
+        """
+        Contact records have properties which represent various aggregated
+        values. This test ensures that given a number of contact records, those
+        aggregated numbers are correct.
+        """
+
+        email_record = ContactRecordFactory(contact_type="email",
+                                           partner=self.partner,
+                                           contact=self.contact)
+
+        job_record = ContactRecordFactory(contact_type="job",
+                                           partner=self.partner,
+                                           contact=self.contact,
+                                           job_applications=10,
+                                           job_interviews=6,
+                                           job_hires=5)
+        phone_record = ContactRecordFactory(contact_type="phone",
+                                            partner=self.partner,
+                                            contact=ContactFactory(name="Joe"))
+
+        records = ContactRecord.objects.all()
+
+        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records.contacts), 2)
+        # job follow ups don't count as comm activity
+        self.assertEqual(len(records.communication_activity), 2)
+        # only job follow ups count as referrals
+        self.assertEqual(records.referrals, 1)
+        self.assertEqual(records.applications, 10)
+        self.assertEqual(records.interviews, 6)
+        self.assertEqual(records.hires, 5)
+        self.assertEqual(records.emails, 1)
+        self.assertEqual(records.cals, 1)
+
