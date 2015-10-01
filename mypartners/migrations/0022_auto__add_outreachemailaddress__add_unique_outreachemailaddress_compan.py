@@ -8,34 +8,18 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachEmailDomain'
-        db.create_table(u'mypartners_outreachemaildomain', (
+        # Adding model 'OutreachEmailAddress'
+        db.create_table(u'mypartners_outreachemailaddress', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
+            ('email', self.gf('django.db.models.fields.EmailField')(max_length=255)),
         ))
-        db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
-
-        # Adding unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.create_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
-
-        # Adding model 'CommonEmailDomain'
-        db.create_table(u'mypartners_commonemaildomain', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.URLField')(unique=True, max_length=200)),
-        ))
-        db.send_create_signal(u'mypartners', ['CommonEmailDomain'])
+        db.send_create_signal(u'mypartners', ['OutreachEmailAddress'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.delete_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
-
-        # Deleting model 'OutreachEmailDomain'
-        db.delete_table(u'mypartners_outreachemaildomain')
-
-        # Deleting model 'CommonEmailDomain'
-        db.delete_table(u'mypartners_commonemaildomain')
+        # Deleting model 'OutreachEmailAddress'
+        db.delete_table(u'mypartners_outreachemailaddress')
 
 
     models = {
@@ -154,6 +138,12 @@ class Migration(SchemaMigration):
             'label': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'mypartners.outreachemailaddress': {
+            'Meta': {'object_name': 'OutreachEmailAddress'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},

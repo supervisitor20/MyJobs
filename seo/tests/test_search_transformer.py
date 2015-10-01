@@ -2,7 +2,6 @@
 # from django.test import TestCase
 from unittest import TestCase
 import logging
-import __main__
 
 from seo.search_transformer import transform_search, \
     SearchTransformer, optimize_tree, Parser, Energy, \
@@ -88,6 +87,26 @@ test_data = [
     ('snow \/ shovel', 'snow AND \/ AND shovel'),
     ('snow / shovel', 'snow AND \/ AND shovel'),
     ('snow/shovel', 'snow AND \/ AND shovel'),
+    ('"nurse maid" and not (plastic or "made man")',
+        '"nurse maid" AND NOT (plastic OR "made man")'),
+    ('GeoLocation:("45.51115348122337,-122.65618521950462")',
+     'GeoLocation:("45.51115348122337,-122.65618521950462")'),
+    ('GeoLocation:"45.51115348122337,-122.65618521950462"',
+     'GeoLocation:"45.51115348122337,-122.65618521950462"'),
+    ('GeoLocation:42 nurse',
+     'GeoLocation:42 AND nurse'),
+    ('C a:"b"',
+     'C AND a:b'),
+    ('C a:"b c"',
+     'C AND a:"b c"'),
+    ("isn't nurse",
+     "isn't AND nurse"),
+    ('nurse title:("this is the end") or practitioner',
+     'nurse AND (title:("this is the end") OR practitioner)'),
+    ('nurse title:"this is the end" or practitioner',
+     'nurse AND (title:"this is the end" OR practitioner)'),
+    ('title:and nurse',
+     'title:and AND nurse'),
 ]
 
 

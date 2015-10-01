@@ -1,17 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
 from django.core.mail import send_mail
-from django.db import models, OperationalError, ProgrammingError
+from django.db import models
 from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
 from django.template import Template, Context
-from django.utils.translation import ugettext_lazy as _
 
-from myemails.signals import (
-    cron_post_save, value_pre_save, value_post_save,  post_add_invoice,
-    pre_add_invoice
-)
 from seo.models import CompanyUser
 import tasks
 
@@ -19,7 +15,6 @@ import tasks
 class EmailSection(models.Model):
     SECTION_TYPES = (
         (1, 'Header'),
-        (2, 'Body'),
         (3, 'Footer'),
     )
 
@@ -36,8 +31,10 @@ class EmailTemplate(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey('seo.Company', blank=True, null=True)
     header = models.ForeignKey('EmailSection', related_name='header_for')
-    body = models.ForeignKey('EmailSection', related_name='body_for')
+    body = models.TextField()
     footer = models.ForeignKey('EmailSection', related_name='footer_for')
+    event = models.ForeignKey('Event', null=True)
+    is_active = models.BooleanField('IsActive', default=False)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.owner or "Global")
@@ -65,23 +62,21 @@ class EmailTemplate(models.Model):
         :return: The rendered email.
         """
         context = self.build_context(for_object)
-        template = Template('\n'.join([self.header.content, self.body.content,
+        template = Template('\n'.join([self.header.content, self.body,
                                        self.footer.content]))
         return template.render(context)
 
 
 class Event(models.Model):
-    email_template = models.ForeignKey('EmailTemplate')
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey('seo.Company')
     sites = models.ManyToManyField('seo.SeoSite')
     name = models.CharField(max_length=255)
+    model = models.ForeignKey(ContentType)
+    description = models.TextField()
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.owner)
-
-    class Meta:
-        abstract = True
 
     def schedule_task(self, for_object):
         """
@@ -155,65 +150,15 @@ class Event(models.Model):
         else:
             email_domain = 'my.jobs'
 
-        body = self.email_template.render(for_object)
-        send_mail(subject, body, '%s@%s' % (self.model.model, email_domain),
-                  recipients)
+        template = self.active_template()
+        if template is not None:
+            body = template.render(for_object)
+            send_mail(subject, body, '%s@%s' %
+                      (self.model.model, email_domain),
+                      recipients)
 
-
-CRON_EVENT_MODELS = ['purchasedjob', 'purchasedproduct']
-VALUE_EVENT_MODELS = ['purchasedjob', 'purchasedproduct', 'request']
-CREATED_EVENT_MODELS = ['invoice']
-ALL_EVENT_MODELS = set().union(CRON_EVENT_MODELS, VALUE_EVENT_MODELS,
-                               CREATED_EVENT_MODELS)
-
-
-class CronEvent(Event):
-    model = models.ForeignKey(ContentType,
-                              limit_choices_to={'model__in': [
-                                  'purchasedjob',
-                                  'purchasedproduct']})
-    field = models.CharField(max_length=255, blank=True)
-    minutes = models.IntegerField()
-
-    def schedule_for(self, for_object):
-        """
-        Determines what time for_object should be scheduled.
-
-        Inputs:
-        :for_object: Object being used to determine send time.
-
-        Returns:
-        :return: The next valid time this Event would be scheduled for.
-        """
-        base_time = getattr(for_object, self.field, datetime.now())
-        if base_time is None or base_time == '':
-            base_time = datetime.now()
-        return base_time + timedelta(minutes=self.minutes)
-
-
-class ValueEvent(Event):
-    COMPARISON_CHOICES = (
-        ('eq', 'is equal to'),
-        ('ge', 'is greater than or equal to'),
-        ('le', 'is less than or equal to'),
-    )
-
-    compare_using = models.CharField(_('Comparison Type'),
-                                     max_length=255, choices=COMPARISON_CHOICES)
-    model = models.ForeignKey(ContentType,
-                              limit_choices_to={'model__in': [
-                                  'purchasedjob',
-                                  'purchasedproduct',
-                                  'request']})
-    field = models.CharField(max_length=255)
-    value = models.PositiveIntegerField()
-
-
-class CreatedEvent(Event):
-    model = models.ForeignKey(ContentType,
-                              limit_choices_to={'model__in': [
-                                  'invoice'
-                              ]})
+    def active_template(self):
+        return EmailTemplate.objects.filter(event=self, is_active=True).first()
 
 
 class EmailTask(models.Model):
@@ -249,50 +194,51 @@ class EmailTask(models.Model):
         self.related_event.send_email(self.act_on)
 
 
-# The receivers used are defined in myemails.signals but bound here. If they
-# were to be bound in myemails.signals as well, we would have a few interesting
-# and infuriating import issues.
-bind_events = lambda type_, sender, pre=None, post=None: [
-    pre_save.connect(pre, sender=sender,
-                     dispatch_uid='pre_save__%s_%s' % (
-                         model, type_)) if pre else None,
-    post_save.connect(post, sender=sender,
-                      dispatch_uid='post_save__%s_%s' % (
-                          model, type_)) if post else None]
-"""
-Binds the provided sender to pre_save and post_save signals.
+def event_receiver(signal, content_type, type_):
+    def event_receiver_decorator(fn):
+        sender = ContentType.objects.get(model=content_type).model_class()
+        dispatch_uid = '%s_%s_%s' % (fn.__name__, content_type, type_)
+        wrapper = receiver(signal, sender=sender, dispatch_uid=dispatch_uid)
+        return wrapper(fn)
+    return event_receiver_decorator
 
-Inputs:
-:type_: Type of event being bound (cron, value, created)
-:sender: Model being bound
-:pre: Method to be bound to the pre_save signal; default: None
-:post: Method to be bound to the post_save signal; default: None
-"""
 
-model_map = {}
-try:
-    for model in ALL_EVENT_MODELS:
-        # Invoice is a foreign key on PurchasedProduct; if we're looking
-        # at an invoice, bind signals on purchased product instead.
-        content_type = model if model != 'invoice' else 'purchasedproduct'
-        model_map[model] = ContentType.objects.get(
-            model=content_type).model_class()
-except (OperationalError, ProgrammingError):
-    # We're running syncdb and the ContentType table doesn't exist yet
-    pass
-else:
-    for model, Model in model_map.items():
-        if model in CRON_EVENT_MODELS:
-            bind_events('cron', Model, post=cron_post_save)
-        if model in VALUE_EVENT_MODELS:
-            bind_events('value', Model, value_pre_save, value_post_save)
-        if model in CREATED_EVENT_MODELS:
-            if model == 'invoice':
-                bind_events('created', Model, pre_add_invoice,
-                            post_add_invoice)
-            else:
-                # There are no other valid models for this choice, but there
-                # likely will be in the future. I'm not writing something that
-                # will certainly be wrong, so let's put it off until it's
-                # relevant. - TP
-                raise NotImplementedError('Add some signals for %s!' % model)
+# I don't really like doing it this way (get from database pre save, set
+# attribute, get again post save), but we need to be able to 1) determine what
+# was changed and 2) only send an email if the save is successful. - TP
+
+@event_receiver(pre_save, 'invoice', 'created')
+@event_receiver(pre_save, 'purchasedproduct', 'created')
+def pre_add_invoice(sender, instance, **kwargs):
+    """
+    Determines if an invoice has been added to the provided instance.
+
+    Inputs:
+    :sender: Which event type is being saved
+    :instance: Specific instance being saved
+    """
+    invoice_added = hasattr(instance, 'invoice')
+    if instance.pk:
+        original = sender.objects.get(pk=instance.pk)
+        invoice_added = not hasattr(original, 'invoice') and invoice_added
+    instance.invoice_added = invoice_added
+
+
+@event_receiver(post_save, 'invoice', 'created')
+@event_receiver(post_save, 'purchasedproduct', 'created')
+def post_add_invoice(sender, instance, **kwargs):
+    """
+    Schedules tasks for the instance if pre_add_invoice determined that an
+    invoice was added.
+
+    Inputs:
+    :sender: Which event type is being saved
+    :instance: Specific instance being saved
+    """
+    if instance.invoice_added:
+        content_type = ContentType.objects.get(model='invoice')
+        events = Event.objects.filter(model=content_type,
+                                      owner=instance.product.owner)
+        for event in events:
+            EmailTask.objects.create(act_on=instance.invoice,
+                                     related_event=event).schedule()

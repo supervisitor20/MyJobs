@@ -164,7 +164,8 @@ class MyPartnerTests(MyJobsBase):
 
         self.assertFalse(self.contact.archived_on)
         self.contact.delete()
-        self.assertEqual(len(Contact.objects.all()), 1)
+        self.assertEqual(Contact.objects.count(), 0)
+        self.assertEqual(Contact.all_objects.count(), 1)
         self.assertTrue(self.contact.archived_on)
 
     def test_models_approved(self):
@@ -207,8 +208,8 @@ class MyPartnerTests(MyJobsBase):
 
     def test_outreach_domain_unique_to_company(self):
         """
-        Domains should be unique within a company, but not necessarily across
-        PRM.
+        Allowed domains should be unique within a company, but not necessarily
+        across PRM.
         """
 
         OutreachEmailDomain.objects.create(company=self.company, 

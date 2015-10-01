@@ -152,6 +152,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         this = super(ConfigurationAdmin, self).get_form(request, obj, **kwargs)
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
+                             ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget'),
                              'sites', ]
@@ -159,6 +160,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
             ('Basic Info', {'fields': [
                 ('title', 'view_all_jobs_detail', 'status',
                  'percent_featured'),
+                ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', ),
                 'sites']}),
@@ -1244,10 +1246,13 @@ class MocParameterAdmin(admin.TabularInline):
 
 
 class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
+    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+    list_display = ('old_path', 'new_path')
+    list_filter = ('site__domain',)
     related_search_fields = {
         'site': ('domain', )
     }
-    inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
+    search_fields = ('old_path', 'new_path')
 
     class Media:
         js = ('django_extensions/js/jquery-1.7.2.min.js', )

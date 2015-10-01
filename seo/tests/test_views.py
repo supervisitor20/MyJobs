@@ -2387,30 +2387,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
         """
         resp = self.client.post("/ajax/data/sites?tag=Fake%20Tag")
         self.assertEqual(resp.status_code, 200)
-    
-    def test_valid_company_200(self):
-        """
-            Verify that a valid company search string returns a 200
-        """
-        new_company = factories.CompanyFactory()
-        resp = self.client.get("/%s/careers/" % new_company.company_slug)
-        self.assertEqual(resp.status_code, 200)
-        
-    def test_invalid_company_404(self):
-        """
-            Verify that invalid companies will return a 404 error
-        """
-        resp = self.client.get("/aslkdjas/careers/")
-        self.assertEqual(resp.status_code, 404)
-
-    def test_invalid_moc_404(self):
-        """
-            Verify that invalid moc url values will return a 404 error
-        """
-        resp = self.client.get("/a/fake/moc/vet-jobs/")
-        self.assertEqual(resp.status_code, 404)
-        resp = self.client.get("/fake/moc/vet-jobs/")
-        self.assertEqual(resp.status_code, 404)
 
     def test_moc_duplicate_search(self):
         """Search by non-unique moc should return all matching jobs."""
@@ -2787,6 +2763,72 @@ class StaticPageOverrideTests(DirectSEOBase):
         #self.assertEqual(response['Location'], redirect.new_path)
         pass
         # TODO: Reimplement test with qs redirects
+
+class FilterTestCase404(DirectSEOTestCase):
+    """
+        Test cases involved in the search filter slugs. Ensure 404 returned under proper conditions.
+    """
+    def setUp(self):
+        super(FilterTestCase404, self).setUp()
+        self.job = solr_settings.SOLR_FIXTURE[1]
+        self.conn.add([self.job])
+
+        self.site = SeoSite.objects.get()
+        self.buid = BusinessUnit.objects.get_or_create(pk=self.job['buid'])
+        self.site.business_units.add(self.job['buid'])
+        self.site.save()
+
+        self.config = Configuration.objects.get(status=2)
+        self.config.home_page_template = 'home_page/home_page_listing.html'
+        self.config.footer = ''
+        self.config.save()
+
+    def tearDown(self):
+        self.conn.delete(q='*:*')
+        super(FilterTestCase404, self).tearDown()
+
+    def test_valid_company_200(self):
+        """
+            Verify that a valid company search string returns a 200
+        """
+
+        new_company = factories.CompanyFactory()
+        resp = self.client.get("/%s/careers/" % new_company.company_slug,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_invalid_company_behavior(self):
+        """
+            Verify that invalid companies will return a 404 error if they have no jobs,
+            200 if they have jobs
+        """
+        company_from_job = Company.objects.filter(name__iexact=self.job['company'])
+        if company_from_job:
+            slug_value = company_from_job[0].company_slug
+            company_from_job.delete() #make sure company doesn't exist in DB
+        else:
+            slug_value = self.job['company'].lower()
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200) #make sure 200 returned if jobs exist
+
+        self.conn.delete(q='*:*') #delete job that was created
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404) #make sure 404 returned if jobs don't exist
+
+    def test_invalid_moc_404(self):
+        """
+            Verify that invalid moc url values will return a 404 error
+        """
+        resp = self.client.get("/a/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get("/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)
 
 
 class DubaiTests(DirectSEOTestCase):

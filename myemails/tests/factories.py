@@ -14,14 +14,6 @@ class EmailSectionHeaderFactory(django.DjangoModelFactory):
     content = 'This is a header.'
 
 
-class EmailSectionBodyFactory(django.DjangoModelFactory):
-    class Meta:
-        model = 'myemails.EmailSection'
-
-    section_type = 2
-    content = 'This is a body.'
-
-
 class EmailSectionFooterFactory(django.DjangoModelFactory):
     class Meta:
         model = 'myemails.EmailSection'
@@ -35,45 +27,13 @@ class EmailTemplateFactory(django.DjangoModelFactory):
         model = 'myemails.EmailTemplate'
 
     header = SubFactory(EmailSectionHeaderFactory)
-    body = SubFactory(EmailSectionBodyFactory)
+    body = 'This is a body.'
     footer = SubFactory(EmailSectionFooterFactory)
 
 
-class ValueEventFactory(django.DjangoModelFactory):
+class EventFactory(django.DjangoModelFactory):
     class Meta:
-        model = 'myemails.ValueEvent'
+        model = 'myemails.Event'
 
-    email_template = SubFactory(EmailTemplateFactory)
     is_active = True
     owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)
-    field = 'pk'
-
-    compare_using = '__gte'
-    value = 1
-
-
-class CronEventFactory(django.DjangoModelFactory):
-    class Meta:
-        model = 'myemails.CronEvent'
-
-    email_template = SubFactory(EmailTemplateFactory)
-    is_active = True
-    owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)
-    field = ''
-
-    minutes = 10
-
-
-class CreatedEventFactory(django.DjangoModelFactory):
-    class Meta:
-        model = 'myemails.CreatedEvent'
-
-    email_template = SubFactory(EmailTemplateFactory)
-    is_active = True
-    owner = SubFactory(CompanyFactory)
-
-    model = ContentType.objects.get_for_model(Event)

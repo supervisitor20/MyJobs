@@ -8,34 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachEmailDomain'
-        db.create_table(u'mypartners_outreachemaildomain', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
-        ))
-        db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
+        # Adding field 'Partner.archived_on'
+        db.add_column(u'mypartners_partner', 'archived_on',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True),
+                      keep_default=False)
 
-        # Adding unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.create_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
-
-        # Adding model 'CommonEmailDomain'
-        db.create_table(u'mypartners_commonemaildomain', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.URLField')(unique=True, max_length=200)),
-        ))
-        db.send_create_signal(u'mypartners', ['CommonEmailDomain'])
+        # Adding field 'ContactRecord.archived_on'
+        db.add_column(u'mypartners_contactrecord', 'archived_on',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.delete_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
+        # Deleting field 'Partner.archived_on'
+        db.delete_column(u'mypartners_partner', 'archived_on')
 
-        # Deleting model 'OutreachEmailDomain'
-        db.delete_table(u'mypartners_outreachemaildomain')
-
-        # Deleting model 'CommonEmailDomain'
-        db.delete_table(u'mypartners_commonemaildomain')
+        # Deleting field 'ContactRecord.archived_on'
+        db.delete_column(u'mypartners_contactrecord', 'archived_on')
 
 
     models = {
@@ -125,6 +114,7 @@ class Migration(SchemaMigration):
         u'mypartners.contactrecord': {
             'Meta': {'object_name': 'ContactRecord'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Contact']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'contact_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'contact_phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
@@ -155,15 +145,36 @@ class Migration(SchemaMigration):
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
+        u'mypartners.nonuseroutreach': {
+            'Meta': {'object_name': 'NonUserOutreach'},
+            'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
+            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'email_body': ('django.db.models.fields.TextField', [], {}),
+            'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"})
+        },
+        u'mypartners.outreachemailaddress': {
+            'Meta': {'object_name': 'OutreachEmailAddress'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
+        u'mypartners.outreachworkflowstate': {
+            'Meta': {'object_name': 'OutreachWorkflowState'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
         u'mypartners.partner': {
             'Meta': {'object_name': 'Partner'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
@@ -332,6 +343,7 @@ class Migration(SchemaMigration):
             'defaultBlurb': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'defaultBlurbTitle': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'directemployers_link': ('django.db.models.fields.URLField', [], {'default': "'http://directemployers.org'", 'max_length': '200'}),
+            'doc_type': ('django.db.models.fields.CharField', [], {'default': '\'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\'', 'max_length': '255'}),
             'facet_tag': ('django.db.models.fields.CharField', [], {'default': "'new-jobs'", 'max_length': '50'}),
             'fontColor': ('django.db.models.fields.CharField', [], {'default': "'666666'", 'max_length': '6'}),
             'footer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
@@ -339,6 +351,7 @@ class Migration(SchemaMigration):
             'header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'home_page_template': ('django.db.models.fields.CharField', [], {'default': "'home_page/home_page_listing.html'", 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language_code': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '16'}),
             'location_tag': ('django.db.models.fields.CharField', [], {'default': "'jobs'", 'max_length': '50'}),
             'meta': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'moc_helptext': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
