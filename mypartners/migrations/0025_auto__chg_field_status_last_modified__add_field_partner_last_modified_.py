@@ -13,17 +13,17 @@ class Migration(SchemaMigration):
         db.alter_column(u'mypartners_status', 'last_modified', self.gf('django.db.models.fields.DateTimeField')())
         # Adding field 'Partner.last_modified'
         db.add_column(u'mypartners_partner', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now),
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
                       keep_default=False)
 
         # Adding field 'Contact.last_modified'
         db.add_column(u'mypartners_contact', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now),
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
                       keep_default=False)
 
         # Adding field 'ContactRecord.last_modified'
         db.add_column(u'mypartners_contactrecord', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now),
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
                       keep_default=False)
 
 
@@ -101,7 +101,7 @@ class Migration(SchemaMigration):
             'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'locations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'contacts'", 'symmetrical': 'False', 'to': u"orm['mypartners.Location']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -142,7 +142,7 @@ class Migration(SchemaMigration):
             'job_hires': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
             'job_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '40', 'blank': 'True'}),
             'job_interviews': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'length': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
             'location': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
@@ -193,7 +193,7 @@ class Migration(SchemaMigration):
             'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
@@ -238,7 +238,7 @@ class Migration(SchemaMigration):
             'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'})
         },
         u'mypartners.tag': {
             'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},
