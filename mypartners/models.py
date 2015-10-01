@@ -225,7 +225,7 @@ class Contact(ArchivedModel):
                              help_text='Any additional information you want to record')
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_modified = models.DateTimeField(default=datetime.now, blank=True, null=True)
 
     company_ref = 'partner__owner'
 
@@ -613,7 +613,7 @@ class ContactRecord(ArchivedModel):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_modified = models.DateTimeField(default=datetime.now, blank=True, null=True)
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)
