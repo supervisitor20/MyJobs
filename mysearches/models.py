@@ -50,7 +50,7 @@ class SavedSearch(models.Model):
                              on_delete=models.DO_NOTHING)
 
     created_on = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True, default=datetime.now)
+    last_modified = models.DateTimeField(default=datetime.now)
     label = models.CharField(max_length=60, verbose_name=_("Search Name"))
     url = models.URLField(max_length=300,
                           verbose_name=_("URL of Search Results"))

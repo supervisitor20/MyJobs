@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'SavedSearch.last_modified'
         db.add_column(u'mysearches_savedsearch', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True),
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now),
                       keep_default=False)
 
 
@@ -200,7 +200,7 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'jobs_per_email': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '5'}),
             'label': ('django.db.models.fields.CharField', [], {'max_length': '60'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_sent': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'sort_by': ('django.db.models.fields.CharField', [], {'default': "'Relevance'", 'max_length': '9'}),
