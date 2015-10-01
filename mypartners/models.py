@@ -546,7 +546,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-        contacts = self.values(
+        all_contacts = self.values(
             'partner__name', 'partner', 'contact__name',
             'contact_email').distinct()
     
@@ -558,11 +558,11 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
             'contact__name').annotate(
                 referrals=models.Count('contact__name')).distinct())
 
-        for contact in contacts:
+        for contact in all_contacts:
             contact['referrals'] = referrals.get(contact['contact__name'], 0)
             contact['records'] = records.get(contact['contact__name'], 0)
 
-        return sorted(contacts, key=lambda c: c['records'], reverse=True)
+        return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
 class ContactRecordManager(SearchParameterManager):
