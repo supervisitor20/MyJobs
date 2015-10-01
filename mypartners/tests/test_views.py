@@ -145,6 +145,60 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
         self.assertEqual(len(soup.select('div.product-card')), 10)
 
+    def count_active_rows(self, url, count, type_='class_',
+                          selector='card-wrapper'):
+        """
+        The three tests that currently use this are all largely identical,
+        differing only in the model being checked, url name, and css
+        selectors.
+
+        Navigate to :url:, look for an element with css matching :type_: and
+        :selector:, and count how many divs are inside that contain the css
+        class "product-card". Compare this number to :count:.
+        """
+        response = self.client.get(url)
+        soup = BeautifulSoup(response.content)
+        records = soup.find(**{type_: selector})
+        self.assertEqual(len(records('div', class_='product-card')), count)
+
+    def test_archived_partners_not_displayed(self):
+        partner = PartnerFactory(owner=self.company, pk=self.partner.pk + 1)
+
+        url = self.get_url('prm')
+
+        self.count_active_rows(url=url, count=2, type_='id',
+                               selector='partner-holder')
+
+        partner.archive()
+
+        self.count_active_rows(url=url, count=1, type_='id',
+                               selector='partner-holder')
+
+    def test_archived_contacts_not_displayed(self):
+        contact = ContactFactory(partner=self.partner,
+                                 user=self.contact_user,
+                                 email='contact2@user.com')
+        url = self.get_url('partner_details', company=self.company.id,
+                           partner=self.partner.id)
+
+        self.count_active_rows(url=url, count=2)
+
+        contact.archive()
+
+        self.count_active_rows(url=url, count=1)
+
+    def test_archived_records_not_displayed(self):
+        contact_records = ContactRecordFactory.create_batch(
+            2, partner=self.partner)
+        url = self.get_url('partner_records', company=self.company.id,
+                           partner=self.partner.id)
+
+        self.count_active_rows(url=url, count=2)
+
+        contact_records[0].archive()
+
+        self.count_active_rows(url=url, count=1)
+
 
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view functio. 
