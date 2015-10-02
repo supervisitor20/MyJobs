@@ -538,21 +538,31 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
     @property
     def contacts(self):
-        contacts = self.exclude(
-            contact_type='job').values(
-                'partner__name', 'partner', 'contact__name',
-                'contact_email').annotate(
-                    records=models.Count('contact__name')).distinct().order_by(
-                        '-records')
+        """ 
+        Returns a queryset annotated by the number of referrals (contact_type =
+        'job') and number of records (contact_type != 'job'). Django doesn't
+        allow annotated values to be filtered without also filtering the base
+        result set, which is why we annotate separately then attach the values
+        to the resulting objects.
+        """
+
+        all_contacts = self.values(
+            'partner__name', 'partner', 'contact__name',
+            'contact_email').distinct()
+    
+        records = dict(self.exclude(contact_type='job').values_list(
+            'contact__name').annotate(
+                records=models.Count('contact__name')).distinct())
 
         referrals = dict(self.filter(contact_type='job').values_list(
             'contact__name').annotate(
                 referrals=models.Count('contact__name')).distinct())
 
-        for contact in contacts:
+        for contact in all_contacts:
             contact['referrals'] = referrals.get(contact['contact__name'], 0)
+            contact['records'] = records.get(contact['contact__name'], 0)
 
-        return contacts
+        return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
 class ContactRecordManager(SearchParameterManager):
