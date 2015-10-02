@@ -145,6 +145,93 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
         self.assertEqual(len(soup.select('div.product-card')), 10)
 
+    def count_active_rows(self, url, count, type_='class_',
+                          selector='card-wrapper'):
+        """
+        The three tests that currently use this are all largely identical,
+        differing only in the model being checked, url name, and css
+        selectors.
+
+        Navigate to :url:, look for an element with css matching :type_: and
+        :selector:, and count how many divs are inside that contain the css
+        class "product-card". Compare this number to :count:.
+        """
+        response = self.client.get(url)
+        soup = BeautifulSoup(response.content)
+        records = soup.find(**{type_: selector})
+        if records is None:
+            actual = 0
+        else:
+            actual = len(records('div', class_='product-card'))
+        self.assertEqual(actual, count)
+
+    def test_archived_partners_not_displayed(self):
+        partner = PartnerFactory(owner=self.company, pk=self.partner.pk + 1)
+
+        url = self.get_url('prm')
+
+        self.count_active_rows(url=url, count=2, type_='id',
+                               selector='partner-holder')
+
+        partner.archive()
+
+        self.count_active_rows(url=url, count=1, type_='id',
+                               selector='partner-holder')
+
+    def test_archived_contacts_not_displayed(self):
+        contact = ContactFactory(partner=self.partner,
+                                 user=self.contact_user,
+                                 email='contact2@user.com')
+        url = self.get_url('partner_details', company=self.company.id,
+                           partner=self.partner.id)
+
+        self.count_active_rows(url=url, count=2)
+
+        contact.archive()
+
+        self.count_active_rows(url=url, count=1)
+
+    def test_archived_records_not_displayed(self):
+        contact_records = ContactRecordFactory.create_batch(
+            2, partner=self.partner, contact=self.contact)
+        overview_url = self.get_url('partner_records', company=self.company.id,
+                                    partner=self.partner.id)
+        add_url = self.get_url('partner_edit_record', partner=self.partner.id)
+
+        def count_contacts_on_form(count):
+            """
+            Counts contacts on communication record forms, ignoring the
+            auto-added blank value.
+            """
+            response = self.client.get(add_url)
+            soup = BeautifulSoup(response.content)
+            contacts = soup.find(id='id_contact')
+            contacts = contacts('option')
+            values = [contact.attrs['value'] for contact in contacts
+                      if contact.attrs['value']]
+            self.assertEqual(len(values), count)
+
+        count_contacts_on_form(count=1)
+        self.count_active_rows(url=overview_url, count=2)
+
+        contact_records[0].archive()
+
+        self.count_active_rows(url=overview_url, count=1)
+
+        # Archiving a contact should also treat that contact's communication
+        # records as archived regardless of their archived status.
+        self.contact.archive()
+
+        # The previous archived contact should no longer appear on communication
+        # record forms.
+        count_contacts_on_form(count=0)
+        self.count_active_rows(url=overview_url, count=0)
+        # Grab an unarchived contact record again and ensure it hasn't been
+        # archived.
+        record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
+        self.assertFalse(record.archived_on)
+
+
 
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view functio. 
