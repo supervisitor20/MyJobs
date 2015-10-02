@@ -8,7 +8,6 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 
 from seo.tests.setup import DirectSEOBase
-from seo.tests.factories import ConfigurationFactory
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          CompanyUserFactory, SeoSiteFactory)
 from myjobs.tests.factories import UserFactory
@@ -37,8 +36,6 @@ class PostajobTestBase(DirectSEOBase):
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(product_access=True, posting_access=True)
 
-        #configuration = ConfigurationFactory(
-        #    home_page_template='home_page/home_page_listing.html')
         self.site = SeoSiteFactory(canonical_company=self.company)
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
