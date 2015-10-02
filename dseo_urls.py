@@ -121,3 +121,8 @@ urlpatterns += patterns(
     '',
     url(r'^message/', include('mymessages.urls'))
 )
+
+urlpatterns += patterns(
+    'myjobs.child_dashboard',
+    url(r'^child-dashboard/$', 'child_dashboard', name='child_dashboard'),
+)
