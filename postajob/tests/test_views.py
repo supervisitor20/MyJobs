@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 
-from myjobs.tests.setup import MyJobsBase
+from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          CompanyUserFactory, SeoSiteFactory)
 from myjobs.tests.factories import UserFactory
@@ -23,11 +23,14 @@ from postajob.models import (CompanyProfile, Job, OfflinePurchase, Package,
                              Product, ProductGrouping, PurchasedJob,
                              PurchasedProduct, Request, SitePackage,
                              ProductOrder, JobLocation)
+from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
+                                      RowFactory, RowOrderFactory,
+                                      BlockOrderFactory, LoginBlockFactory)
 from seo.models import Company, SeoSite
 from universal.helpers import build_url
 
 
-class PostajobTestBase(MyJobsBase):
+class PostajobTestBase(DirectSEOBase):
     def setUp(self):
         super(PostajobTestBase, self).setUp()
         self.user = UserFactory(password='5UuYquA@')
@@ -169,6 +172,30 @@ class ViewTests(PostajobTestBase):
 
         for form_data in [self.job_form_data, self.purchasedjob_form_data]:
             form_data.update(self.location_management_form_data)
+
+    def test_redirected_when_login_required(self):
+        """
+        When visiting a page that requires authentication, the user should be
+        redirected to the login page. When a login block isn't properly
+        associated with the site in question, the redirect should still happen
+        and a 404.
+        """
+
+        self.client.logout()
+        # create a login block so that the redirect works
+        block = LoginBlockFactory()
+        row = RowFactory()
+        BlockOrderFactory(block=block, row=row, order=1)
+        page = PageFactory(sites=[self.site])
+        RowOrderFactory(row=row, page=page, order=1)
+
+        response = self.client.get(
+            reverse("purchasedmicrosite_admin_overview"),
+            HTTP_HOST='test.jobs',
+            follow=True)
+        self.assertRedirects(
+            response, 
+            "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
 
     def test_job_access_not_company_user(self):
         self.company_user.delete()

@@ -121,4 +121,3 @@ urlpatterns += patterns(
     '',
     url(r'^message/', include('mymessages.urls'))
 )
-
