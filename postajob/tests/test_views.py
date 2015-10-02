@@ -8,6 +8,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 
 from seo.tests.setup import DirectSEOBase
+from seo.tests.factories import ConfigurationFactory
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          CompanyUserFactory, SeoSiteFactory)
 from myjobs.tests.factories import UserFactory
@@ -36,6 +37,8 @@ class PostajobTestBase(DirectSEOBase):
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(product_access=True, posting_access=True)
 
+        #configuration = ConfigurationFactory(
+        #    home_page_template='home_page/home_page_listing.html')
         self.site = SeoSiteFactory(canonical_company=self.company)
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
@@ -875,7 +878,8 @@ class ViewTests(PostajobTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(OfflinePurchase.objects.all().count(), 1)
         offline_purchase = OfflinePurchase.objects.get()
-        self.assertIn(offline_purchase.redemption_uid, response.content)
+        self.assertIn(offline_purchase.redemption_uid,
+                      response.content.decode('utf-8'))
 
     @skip('Feature disabled for now.')
     def test_offlinepurchase_add_with_company(self):
@@ -959,12 +963,13 @@ class ViewTests(PostajobTestBase):
 
         response = self.client.get(reverse('product_listing'),
                                    HTTP_HOST='test.jobs')
+
         for text in [productgrouping.display_title, productgrouping.explanation,
                      unicode(self.product)]:
             # When the entire chain of objects exists, the return HTML should
             # include elements from the relevant ProductGrouping and Product
             # instances
-            self.assertTrue(text in response.content)
+            self.assertTrue(text in response.content.decode('utf-8'))
     
     def test_job_add_and_remove_locations(self):
         location = {
