@@ -17,7 +17,12 @@ urlpatterns = patterns(
 
     url(r'^$', 'home', name='home'),
     url(r'^login$',
-        RedirectView.as_view(url='/'), name='login'),
+        RedirectView.as_view(url='/')),
+    # Url is duplicated so that we can also easily refer to it as the
+    # login url. This might mess with things if you try to resolve a url
+    # and use url_name, since it could be either home or login.
+    url(r'^$', 'home', name='login'),
+
     url(r'^about/$', About.as_view(), name='about'),
     url(r'^privacy/$', Privacy.as_view(), name='privacy'),
     url(r'^terms/$', Terms.as_view(), name='terms'),
