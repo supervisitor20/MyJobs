@@ -63,7 +63,7 @@ class PostajobTestBase(DirectSEOBase):
 
     def login_user(self, user=None, password=None):
         user = user or self.user
-        password = password = '5UuYquA@'
+        password = password or '5UuYquA@'
 
         return self.client.login(username=user.email, password=password)
 
