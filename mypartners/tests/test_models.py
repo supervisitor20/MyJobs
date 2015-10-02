@@ -175,12 +175,20 @@ class MyPartnerTests(MyJobsBase):
         ArchivedModel.objects.
         """
         self.partner.archive()
-        # Try retrieving the archived partner using both managers
+        # Try retrieving the archived partner using both managers. The "objects"
+        # manager excludes archived instances so an exception is raised.
         self.assertRaises(Partner.DoesNotExist,
                           lambda: Partner.objects.get(pk=self.partner.pk))
         Partner.all_objects.get(pk=self.partner.pk)
 
-        self.contact = Contact.objects.get(pk=self.contact.pk)
+        # This contact has not been archived (as we demonstrate in a few lines)
+        # but is excluded by the "objects" manager as its partner has been
+        # archived.
+        self.assertRaises(Contact.DoesNotExist,
+                          lambda: Contact.objects.get(pk=self.contact.pk))
+        self.contact = Contact.all_objects.get(pk=self.contact.pk)
+        self.assertFalse(self.contact.archived_on)
+
         # The manager used by related objects in this instance excludes
         # archived partners. As it's basically a Partner.objects.get(id=...),
         # this fails.

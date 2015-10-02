@@ -159,7 +159,11 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         response = self.client.get(url)
         soup = BeautifulSoup(response.content)
         records = soup.find(**{type_: selector})
-        self.assertEqual(len(records('div', class_='product-card')), count)
+        if records is None:
+            actual = 0
+        else:
+            actual = len(records('div', class_='product-card'))
+        self.assertEqual(actual, count)
 
     def test_archived_partners_not_displayed(self):
         partner = PartnerFactory(owner=self.company, pk=self.partner.pk + 1)
@@ -189,15 +193,44 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
     def test_archived_records_not_displayed(self):
         contact_records = ContactRecordFactory.create_batch(
-            2, partner=self.partner)
-        url = self.get_url('partner_records', company=self.company.id,
-                           partner=self.partner.id)
+            2, partner=self.partner, contact=self.contact)
+        overview_url = self.get_url('partner_records', company=self.company.id,
+                                    partner=self.partner.id)
+        add_url = self.get_url('partner_edit_record', partner=self.partner.id)
 
-        self.count_active_rows(url=url, count=2)
+        def count_contacts_on_form(count):
+            """
+            Counts contacts on communication record forms, ignoring the
+            auto-added blank value.
+            """
+            response = self.client.get(add_url)
+            soup = BeautifulSoup(response.content)
+            contacts = soup.find(id='id_contact')
+            contacts = contacts('option')
+            values = [contact.attrs['value'] for contact in contacts
+                      if contact.attrs['value']]
+            self.assertEqual(len(values), count)
+
+        count_contacts_on_form(count=1)
+        self.count_active_rows(url=overview_url, count=2)
 
         contact_records[0].archive()
 
-        self.count_active_rows(url=url, count=1)
+        self.count_active_rows(url=overview_url, count=1)
+
+        # Archiving a contact should also treat that contact's communication
+        # records as archived regardless of their archived status.
+        self.contact.archive()
+
+        # The previous archived contact should no longer appear on communication
+        # record forms.
+        count_contacts_on_form(count=0)
+        self.count_active_rows(url=overview_url, count=0)
+        # Grab an unarchived contact record again and ensure it hasn't been
+        # archived.
+        record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
+        self.assertFalse(record.archived_on)
+
 
 
 class EditItemTests(MyPartnersTestCase):

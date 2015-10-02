@@ -146,6 +146,10 @@ class SearchParameterManager(models.Manager):
         if ('archived_on' in self.model._meta.get_all_field_names()
                 and self._archived is not None):
             qs = qs.exclude(archived_on__isnull=self._archived)
+            if self.model in [ContactRecord, Contact]:
+                qs = qs.exclude(partner__archived_on__isnull=self._archived)
+                if self.model == ContactRecord:
+                    qs = qs.exclude(contact__archived_on__isnull=self._archived)
         return qs
 
     def from_search(self, company=None, filters=None):
