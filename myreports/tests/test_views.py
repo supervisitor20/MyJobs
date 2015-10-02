@@ -9,9 +9,7 @@ from django.core.urlresolvers import reverse
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        LocationFactory, PartnerFactory,
-                                        TagFactory)
-from mypartners.models import ContactRecord
+                                        PartnerFactory)
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
@@ -136,7 +134,6 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(
             5, partner=self.partner, contact__name='Jane Doe')
 
-
         self.client.path += '/partner'
         filters = json.dumps({
             'name': {
@@ -156,7 +153,6 @@ class TestViewRecords(MyReportsTestCase):
         self.assertEqual(response.status_code, 200)
         # We look for distinct records
         self.assertEqual(len(output), 1)
-
 
     def test_list_query_params(self):
         """Test that query parameters that are lists are parsed correctly."""
@@ -311,7 +307,7 @@ class TestDownloadReport(MyReportsTestCase):
 
         # specifying export values shouldn't modify the underlying report
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
-        
+
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
@@ -380,7 +376,7 @@ class TestRegenerate(MyReportsTestCase):
         report = Report.objects.get(pk=report.pk)
         self.assertEqual(report.json, u'{}')
         self.assertEqual(report.python, {})
-    
+
         # regenerate the report even though the file is physically missing
         report.regenerate()
         self.assertTrue(report.results)
