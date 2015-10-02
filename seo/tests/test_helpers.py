@@ -199,8 +199,9 @@ class HelpersTestsWithJobAndSite(DirectSeoTCWithSiteAndConfig):
         company.company_slug = self.businessunit.title_slug
         self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)
 
-        # test company slug that does not match a business unit returns the company slug back
+        # test company slug that does not match a business unit returns the company slug back, but "deslugified"
         company.company_slug = 'thisslugisntvalid'
-        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), company.company_slug)
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug),
+                         company.company_slug.replace('-', ' ').title())
         # extra test to ensure businessunit.title != company_slug
         self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)

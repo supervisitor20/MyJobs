@@ -24,6 +24,7 @@ from BeautifulSoup import BeautifulSoup
 from lxml import etree
 
 from import_jobs import clear_solr, download_feed_file, update_solr
+from slugify import slugify
 from xmlparse import DEv2JobFeed
 from moc_coding import models as moc_models
 from moc_coding.tests import factories as moc_factories
@@ -2776,7 +2777,7 @@ class FilterTestCase404(DirectSeoTCWithSiteAndConfig):
             slug_value = company_from_job[0].company_slug
             company_from_job.delete()  # make sure company doesn't exist in DB
         else:
-            slug_value = job['company'].lower()
+            slug_value = slugify(job['company'])
 
         resp = self.client.get("/%s/careers/" % slug_value,
                                HTTP_HOST=self.site.domain)

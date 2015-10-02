@@ -388,13 +388,10 @@ def bread_box_company_heading(company_slug_value, jobs=None):
     if not company_slug_value:
         return None
     kwargs = {'title_slug': company_slug_value}
-    business_unit = BusinessUnit.objects.filter(**kwargs)
+    business_unit = BusinessUnit.objects.filter(**kwargs).first()
 
-    try:
-        return business_unit[0].title
-    except (IndexError, TypeError):
-        # No business unit found
-        pass
+    if business_unit:
+        return business_unit.title
 
     try:
         return jobs[0].company
@@ -404,7 +401,7 @@ def bread_box_company_heading(company_slug_value, jobs=None):
 
     # this is unlikely to happen as companies that do not exist in DB
     # and do not have associated jobs are often 404'd.
-    return company_slug_value
+    return company_slug_value.replace('-', ' ').title()
 
 
 def location_from_job(job, num_locations):
