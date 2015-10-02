@@ -541,7 +541,7 @@ def get_bread_box_headings(filters=None, jobs=None):
             bread_box_headings['moc_slug'] = moc
 
         company_slug_value = filters.get("company_slug")
-        company = bread_box_company_heading(company_slug_value)
+        company = bread_box_company_heading(company_slug_value, jobs)
         if company:
             bread_box_headings['company_slug'] = company
 
