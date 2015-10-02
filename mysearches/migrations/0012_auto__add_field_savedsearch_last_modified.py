@@ -164,7 +164,7 @@ class Migration(SchemaMigration):
             'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'})
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'null': 'True', 'blank': 'True'})
         },
         u'mypartners.tag': {
             'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},

@@ -10,36 +10,12 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
 
         # Changing field 'Status.last_modified'
-        db.alter_column(u'mypartners_status', 'last_modified', self.gf('django.db.models.fields.DateTimeField')())
-        # Adding field 'Partner.last_modified'
-        db.add_column(u'mypartners_partner', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
-        # Adding field 'Contact.last_modified'
-        db.add_column(u'mypartners_contact', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, null=True, blank=True),
-                      keep_default=False)
-
-        # Adding field 'ContactRecord.last_modified'
-        db.add_column(u'mypartners_contactrecord', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, null=True, blank=True),
-                      keep_default=False)
-
+        db.alter_column(u'mypartners_status', 'last_modified', self.gf('django.db.models.fields.DateTimeField')(null=True))
 
     def backwards(self, orm):
 
         # Changing field 'Status.last_modified'
-        db.alter_column(u'mypartners_status', 'last_modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True))
-        # Deleting field 'Partner.last_modified'
-        db.delete_column(u'mypartners_partner', 'last_modified')
-
-        # Deleting field 'Contact.last_modified'
-        db.delete_column(u'mypartners_contact', 'last_modified')
-
-        # Deleting field 'ContactRecord.last_modified'
-        db.delete_column(u'mypartners_contactrecord', 'last_modified')
-
+        db.alter_column(u'mypartners_status', 'last_modified', self.gf('django.db.models.fields.DateTimeField')())
 
     models = {
         u'auth.group': {
@@ -238,7 +214,7 @@ class Migration(SchemaMigration):
             'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'null': 'True', 'blank': 'True'})
         },
         u'mypartners.tag': {
             'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},

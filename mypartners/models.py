@@ -57,7 +57,8 @@ class Status(models.Model):
         'myjobs.User', null=True, on_delete=models.SET_NULL)
     last_modified = models.DateTimeField(verbose_name="Last Modified",
                                          default=datetime.now,
-                                         blank=True)
+                                         blank=True,
+                                         null=True)
 
     def __unicode__(self):
         return dict(Status.CODES)[self.code]
