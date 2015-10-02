@@ -6,8 +6,8 @@ from myjobs.tests.setup import MyJobsBase
 
 
 class TestChildDashboard(MyJobsBase):
-    def test_child_dashboard(self):
-        url = reverse('child_dashboard')
+    def test_secure_blocks(self):
+        url = reverse('secure_blocks')
         resp = self.client.post(
             url, '{"blocks": {}}',
             HTTP_HOST='jobs.directemployers.org',
