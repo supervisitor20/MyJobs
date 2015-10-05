@@ -900,7 +900,23 @@ class OutreachWorkflowState(models.Model):
 class NonUserOutreach(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     outreach_email = models.ForeignKey("OutreachEmailAddress")
-    from_email = models.EmailField(max_length=255, verbose_name="Email", 
-                                   help_text="Email outreach effort sent from.")
+    from_email = models.EmailField(
+        max_length=255, verbose_name="Email",
+        help_text="Email outreach effort sent from.")
     email_body = models.TextField()
     current_workflow_state = models.ForeignKey("OutreachWorkflowState")
+
+
+class OutreachPartner(models.Model):
+    outreach = models.ForeignKey("NonUserOutreach")
+    partners = models.ManyToManyField("Partner")
+
+
+class OutreachContact(models.Model):
+    outreach = models.ForeignKey("NonUserOutreach")
+    contacts = models.ManyToManyField("Contact")
+
+
+class OutreachCommunicationRecord(models.Model):
+    partner = models.ForeignKey("Partner")
+    communication_records = models.ForeignKey("ContactRecord")
