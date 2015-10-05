@@ -1,6 +1,4 @@
 """Tests associated with myreports views."""
-from datetime import datetime
-
 import json
 import os
 
@@ -11,7 +9,7 @@ from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        PartnerFactory, StatusFactory)
+                                        PartnerFactory)
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
