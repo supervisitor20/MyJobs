@@ -88,7 +88,7 @@ class SavedSearchForm(BaseUserForm):
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
             'sort_by': RadioSelect(renderer=HorizontalRadioRenderer)
         }
-        exclude = ['custom_message']
+        exclude = ['custom_message', 'last_modified']
 
 
 class DigestForm(BaseUserForm):
