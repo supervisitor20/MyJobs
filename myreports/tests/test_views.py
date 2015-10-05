@@ -1,4 +1,5 @@
 """Tests associated with myreports views."""
+from datetime import datetime
 
 import json
 import os
@@ -8,8 +9,9 @@ from django.core.urlresolvers import reverse
 
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
+from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        PartnerFactory)
+                                        PartnerFactory, StatusFactory)
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
@@ -184,13 +186,18 @@ class TestReportView(MyReportsTestCase):
             'app': 'mypartners', 'model': 'contactrecord'}))
         self.client.login_user(self.user)
 
-        ContactRecordFactory.create_batch(5, partner__owner=self.company)
+        ContactRecordFactory.create_batch(5, partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job', job_applications=1,
-            partner__owner=self.company)
+            partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job',
-            job_hires=1, partner__owner=self.company)
+            job_hires=1, partner=self.partner)
+
+        # Despite explicitly passing an already-created partner to create_batch,
+        # factory boy creates another partner for each of these and then does
+        # not use it. Clean up after it.
+        Partner.objects.exclude(pk=self.partner.pk).delete()
 
     def test_create_report(self):
         """Test that a report model instance is properly created."""
@@ -222,6 +229,26 @@ class TestReportView(MyReportsTestCase):
         # check contact stats
         self.assertEqual(data['contacts'][0]['records'], 5)
         self.assertEqual(data['contacts'][0]['referrals'], 10)
+
+    def test_reports_exclude_archived(self):
+        self.client.path = reverse('view_records', kwargs={
+            'app': 'mypartners', 'model': 'contactrecord'})
+
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 15)
+
+        ContactRecord.objects.last().archive()
+
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 14)
+
+        Partner.objects.last().archive()
+
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 0)
 
 
 class TestDownloads(MyReportsTestCase):
