@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+{{ site_config.doc_type|safe }}
 {% load seo_extras %}
 {% load i18n %}
 
@@ -9,7 +9,7 @@
     {% get_custom_page flatpage as custom_page %}
 {% endif %}
 
-<html xmlns:fb="http://ogp.me/ns/fb#" lang="en">
+<html xmlns:fb="http://ogp.me/ns/fb#" lang="{{ site_config.language_code|default:'en' }}">
 <head>
     {% block myblocks_css_extras %}{% endblock %}
 

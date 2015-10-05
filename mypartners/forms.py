@@ -331,19 +331,6 @@ class PartnerForm(NormalizedModelForm):
         return instance
 
 
-def PartnerEmailChoices(partner):
-    choices = [(None, '----------')]
-    contacts = Contact.objects.filter(
-        partner=partner, archived_on__isnull=True)
-    for contact in contacts:
-        if contact.user:
-            choices.append((contact.user.email, contact))
-        else:
-            if contact.email:
-                choices.append((contact.email, contact))
-    return choices
-
-
 class ContactRecordForm(NormalizedModelForm):
     date_time = SplitDateTimeDropDownField(label='Date & Time')
     length = TimeDropDownField()

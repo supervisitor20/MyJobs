@@ -1,8 +1,8 @@
 import operator
 from DNS import DNSError
 from boto.route53.exception import DNSServerError
-from django.core import mail
 from slugify import slugify
+import Queue
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -10,21 +10,21 @@ from django.contrib.contenttypes import generic
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
+from django.contrib import messages
 from django.core.cache import cache
+from django.core import mail
 from django.core.validators import MaxValueValidator, ValidationError
-from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
-from django.dispatch import receiver
+from django.dispatch import Signal, receiver
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import ugettext_lazy as _
 
 from haystack.inputs import Raw
 from haystack.query import SQ
-
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
 
 from saved_search.models import BaseSavedSearch, SOLR_ESCAPE_CHARS
 from taggit.managers import TaggableManager
@@ -38,8 +38,11 @@ from myjobs.models import User
 from mypartners.models import Tag
 from universal.helpers import get_domain, get_object_or_none
 
-
 import decimal
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
+add_introspection_rules([], ["^seo\.models\.CommaSeparatedTextField"])
 
 
 class JobsByBuidManager(models.Manager):
@@ -61,6 +64,7 @@ class GoogleAnalyticsBySiteManager(models.Manager):
     def get_query_set(self):
         return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
             seosite__id=settings.SITE_ID)
+
 
 class NonChainedForeignKey(ForeignKey):
     """
@@ -1024,6 +1028,27 @@ class Configuration(models.Model):
         (3, 'Top')
     )
 
+    LANGUAGE_CODES_CHOICES = (
+        ('zh', 'Chinese'),
+        ('da', 'Danish'),
+        ('en', 'English'),
+        ('fr', 'French'),
+        ('de', 'German'),
+        ('hi', 'Hindi'),
+        ('it', 'Italian'),
+        ('ja', 'Japanese'),
+        ('ko', 'Korean'),
+        ('pt', 'Portuguese'),
+        ('ru', 'Russian'),
+        ('es', 'Spanish'),
+    )
+
+    DOCTYPE_CHOICES = (
+        ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+         '"http://www.w3.org/TR/html4/loose.dtd">', 'HTML 4.01 Transitional'),
+        ('<!DOCTYPE html>', 'HTML 5')
+    )
+
     def __init__(self, *args, **kwargs):
         super(Configuration, self).__init__(*args, **kwargs)
         self._original_browse_moc_show = self.browse_moc_show
@@ -1161,6 +1186,14 @@ class Configuration(models.Model):
     moc_tag = models.CharField(max_length=50, default='vet-jobs')
     company_tag = models.CharField(max_length=50, default='careers')
     # template section
+    doc_type = models.CharField(max_length=255,
+                                choices=DOCTYPE_CHOICES,
+                                default='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 '
+                                        'Transitional//EN" "http://'
+                                        'www.w3.org/TR/html4/loose.dtd">')
+    language_code = models.CharField(max_length=16,
+                                     choices=LANGUAGE_CODES_CHOICES,
+                                     default='en')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)
@@ -1229,8 +1262,67 @@ class Configuration(models.Model):
     what_helptext = models.TextField(blank=True)
     where_helptext = models.TextField(blank=True)
 
-    not_found_override = models.ManyToManyField('redirects.Redirect', null=True,
-                                                blank=True)
+
+to_string = lambda param, values: " or ".join("=".join([param, value])
+                                              for value in values.split('|')
+                                              if value)
+
+
+class QueryParameter(models.Model):
+    value = models.CharField(max_length=200,
+                             help_text=_('The part after the equals sign'))
+
+    class Meta:
+        abstract = True
+
+
+@python_2_unicode_compatible
+class QParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='q')
+
+    def __str__(self):
+        return to_string(param='q', values=self.value)
+
+
+@python_2_unicode_compatible
+class LocationParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='location')
+
+    def __str__(self):
+        return to_string(param='location', values=self.value)
+
+
+@python_2_unicode_compatible
+class MocParameter(QueryParameter):
+    redirect = models.OneToOneField('QueryRedirect', null=True,
+                                    on_delete=models.CASCADE,
+                                    related_name='moc')
+
+    def __str__(self):
+        return to_string(param='moc', values=self.value)
+
+
+@python_2_unicode_compatible
+class QueryRedirect(models.Model):
+    site = models.ForeignKey('sites.Site')
+    old_path = models.CharField(_('redirect from'), max_length=200,
+                                db_index=True,
+                                help_text=_(
+                                    "This should be an absolute path, "
+                                    "excluding the domain name. Example: "
+                                    "'/events/search/'."))
+    new_path = models.CharField(_('redirect to'), max_length=200, blank=True,
+                                help_text=_(
+                                    "This can be either an absolute "
+                                    "path (as above) or a full URL starting "
+                                    "with 'http://' or 'https://'."))
+
+    def __str__(self):
+        return "%s ---> %s" % (self.old_path, self.new_path)
 
 
 class GoogleAnalytics (models.Model):
@@ -1431,3 +1523,130 @@ def remove_user_from_group(sender, instance, **kwargs):
     if not CompanyUser.objects.filter(user=instance.user):
         instance.user.groups.remove(Group.objects.get(name='Employer'))
         instance.user.save()
+
+# We're a using queue to store messages until they can be read by their handler
+# In admin, we check this queue so that warning messages can be sent to the user
+# using django.contrib.messages and the request object
+# We may be able to implement this behavior in a custom logger
+class MessageQueue():
+    """
+    A queue for storing messages until they can be handled
+    Methods should be accessed through the class itself, not instances
+    MessageQueue.put(message)
+    MessageQueue.send_messages(request)
+    """
+    message_queue = Queue.Queue()
+    
+    @classmethod
+    def send_messages(self, request):
+        """
+        Sends all messages in queue to current user based on input request object
+        This currently sends a flash message using django.contrib.messages
+
+        """
+        while not self.message_queue.empty():
+            messages.warning(request, self.message_queue.get())
+
+    @classmethod
+    def put(self, message):
+        """Store the input message string in queue to be sent later """
+        self.message_queue.put(message)
+
+
+moc_toggled_on = Signal()
+moc_toggled_off = Signal()
+
+# Microsite signals should take Site instances for the sender argument
+microsite_disabled = Signal()
+microsite_moved = Signal(['old_domain'])
+
+
+def check_message_queue(f):
+    """
+    A decorator that will send messages from the signal MessageQueue in
+    functions with a request object
+
+    We currently use this in the admin and assume that the 2nd argument on the
+    decorated function is a request object. If there is no request object,
+    messages are not sent.
+
+    """
+    def send_message(self, request=None, *args, **kwargs):
+        retval = f(self, request, *args, **kwargs)
+        if request is not None:
+            MessageQueue.send_messages(request)
+        return retval
+    return send_message
+
+@receiver(microsite_moved)
+def update_canonical_microsites(sender, old_domain, **kwargs):
+    """
+    Updates company's canonical microsite when an seosite domain is
+    changed
+    
+    """
+    companies = Company.objects.filter(
+            canonical_microsite='http://%s' % old_domain)
+    #Log messages now because the queryset becomes empty after the update
+    for company in companies:
+        MessageQueue.put(
+          'Canonical microsite for {0} changed from {1} to {2}'.format(
+             company.name, old_domain, sender.domain))
+    companies.update(canonical_microsite='http://%s' % sender.domain)
+
+@receiver(microsite_disabled)
+def remove_canonical_microsite(sender, **kwargs):
+    """
+    Removes a company's canonical microsite when a SeoSite is disabled
+    
+    """
+    companies = Company.objects.filter(
+            canonical_microsite='http://%s' % sender.domain)
+    for company in companies:
+        MessageQueue.put(
+          'Canonical microsite for {0} removed, default is www.my.jobs'.format(
+             company.name, sender.domain))
+    companies.update(canonical_microsite=None)
+
+
+@receiver(post_save, sender=Configuration, dispatch_uid='seo.config_change_monitor')
+def config_change_monitor(sender, instance, **kwargs):
+    """
+    Checks if a configuration change results in a disabled microsite
+
+    """
+    for site in instance.seosite_set.all():
+        production_configs =  site.configurations.filter(status=2)
+        if not production_configs.exists():
+            microsite_disabled.send(sender=site)
+
+@receiver(pre_delete, sender=Configuration, dispatch_uid='seo.config_delete_monitor')
+def config_delete_monitor(sender, instance, **kwargs):
+    """
+    Checks if a configuration deletion results in a disabled microsite
+
+    """
+
+    for site in instance.seosite_set.all():
+        production_configs =  site.configurations.filter(
+                status=2).exclude(id=instance.id)
+        if not production_configs.exists():
+            microsite_disabled.send(sender=site)
+
+@receiver(pre_delete, sender=SeoSite, dispatch_uid='seo.seosite_delete_monitor')
+def seosite_delete_monitor(sender, instance, **kwargs):
+    microsite_disabled.send(sender=instance)
+
+@receiver(pre_save, sender=SeoSite, dispatch_uid='seo.seosite_change_monitor')
+def seosite_change_monitor(sender, instance, **kwargs):
+    """
+    Checks for changes to an SeoSite domain and sends the appropriate signal
+
+    """
+    pk = instance.pk
+    try:
+        old_instance = SeoSite.objects.get(id=pk)
+    except sender.DoesNotExist:
+        return None
+    if old_instance.domain != instance.domain:
+        microsite_moved.send(sender=instance, old_domain=old_instance.domain) 

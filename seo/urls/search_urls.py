@@ -124,6 +124,14 @@ urlpatterns += patterns('seo.views.search_views',
 
     # Dashboard URLs
     url(r'^dashboard/$', 'admin_dashboard'),
+    # Dashboard - Event Manager
+    url(r'^dashboard/events/$', 'event_overview', name='event_overview'),
+    url(r'^dashboard/events/manage-header-footer', 'manage_header_footer',
+        name='manage_header_footer'),
+    url(r'^dashboard/events/manage-templates/$', 'manage_templates',
+        name='manage_templates'),
+    # Dashboard - Blocks Manager/Admin
+    url(r'dashboard/blocks/$', 'blocks_overview', name='blocks_overview'),
 
     # SEO Pages
     url(r'^network/states/$', 'seo_states'),

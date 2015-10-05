@@ -214,23 +214,29 @@ def process_user_events(email):
     Processes all email events for a given user.
     """
     user = User.objects.get_email_owner(email=email)
-    logs = EmailLog.objects.filter(email=email,
-                                   processed=False).order_by('-received')
+
+    logs = EmailLog.objects.filter(email=email).order_by('-received')
     newest_log = logs[0]
 
-    filter_by_event = lambda x: [log for log in logs if log.event in x]
+    filter_by_event = lambda x, num=None: [log for log in logs[:num]
+                                           if log.event in x]
 
-    # The presence of deactivate or stop_sending determines what kind (if any)
-    # of My.jobs message the user will receive. deactivate takes precedence.
-    # The logs query set has already been evaluated, so the only overhead
-    # is the list comprehension
-    deactivate = filter_by_event(BAD_EMAIL)
+    max_errors = 3
+    # The presence (and number of events) of deactivate or stop_sending
+    # determines what kind (if any) of My.jobs message the user will receive.
+    # deactivate takes precedence. The logs query set has already been
+    # evaluated, so the only overhead is the list comprehension
+    deactivate = filter_by_event(BAD_EMAIL, num=3)
+    num_errors = len(deactivate)
     stop_sending = filter_by_event(STOP_SENDING)
     update_fields = []
     if user:
-        if (deactivate or stop_sending) and user.opt_in_myjobs:
+        if (num_errors == max_errors
+                or stop_sending) and user.opt_in_myjobs:
             user.opt_in_myjobs = False
-            if deactivate:
+            if num_errors == max_errors:
+                # Only deactivate the user if the previous "max_deactivations"
+                # communications fail, not for one-off failures.
                 user.is_verified = False
                 user.deactivate_type = deactivate[0].event
                 update_fields.append('is_verified')
@@ -260,7 +266,7 @@ def process_user_events(email):
         # This doesn't hit the DB unless a field has changed
         user.save(update_fields=update_fields)
 
-    logs.update(processed=True)
+    logs.filter(processed=False).update(processed=True)
 
 
 @task(name='tasks.process_batch_events', ignore_result=True)

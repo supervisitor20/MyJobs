@@ -2,6 +2,8 @@
 from os import path
 
 from django.core.files import File
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.models import User
@@ -10,7 +12,8 @@ from mydashboard.tests.factories import CompanyFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
                                         TagFactory, PRMAttachmentFactory)
-from mypartners.models import Contact, Location, Partner, PRMAttachment, Status
+from mypartners.models import (Contact, Location, Partner, PRMAttachment, 
+                               Status, OutreachEmailDomain, CommonEmailDomain)
 from mysearches.models import PartnerSavedSearch
 from mysearches.tests.factories import PartnerSavedSearchFactory
 
@@ -161,7 +164,8 @@ class MyPartnerTests(MyJobsBase):
 
         self.assertFalse(self.contact.archived_on)
         self.contact.delete()
-        self.assertEqual(len(Contact.objects.all()), 1)
+        self.assertEqual(Contact.objects.count(), 0)
+        self.assertEqual(Contact.all_objects.count(), 1)
         self.assertTrue(self.contact.archived_on)
 
     def test_models_approved(self):
@@ -190,3 +194,33 @@ class MyPartnerTests(MyJobsBase):
         self.assertEqual("Chicago, IL; St. Louis, MO; Albany, NY", 
                          "; ".join(self.partner.get_contact_locations()))
 
+    def test_uncommon_outreach_email_domain(self):
+        """
+        Adding an uncommon email domain for outreach to a company should  work.
+        """
+
+        # data migrations aren't run during tests, so we populate manually
+        CommonEmailDomain.objects.create(domain="gmail.com")
+
+        with self.assertRaises(ValidationError):
+            OutreachEmailDomain.objects.create(company=self.company,
+                                               domain="gmail.com")
+
+    def test_outreach_domain_unique_to_company(self):
+        """
+        Allowed domains should be unique within a company, but not necessarily
+        across PRM.
+        """
+
+        OutreachEmailDomain.objects.create(company=self.company, 
+                                           domain="foo.bar")
+
+        # duplicate domains allowed between companies
+        company = CompanyFactory.create(name="A Whole New World")
+        OutreachEmailDomain.objects.create(company=company,
+                                           domain="foo.bar")
+
+        # dupliate domains disallowed within the same company
+        with self.assertRaises(IntegrityError):
+            OutreachEmailDomain.objects.create(company=self.company, 
+                                               domain="foo.bar")
