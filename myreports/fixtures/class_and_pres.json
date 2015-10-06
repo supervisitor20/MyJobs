@@ -1,0 +1,164 @@
+[
+    {
+        "model": "myreports.UserType",
+        "pk": 1,
+        "fields": {"user_type": "MEMBER", "is_active": false}
+    },
+
+    {
+        "model": "myreports.UserType",
+        "pk": 2,
+        "fields": {"user_type": "MEMBER", "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingType",
+        "pk": 1,
+        "fields": {"reporting_type": "PRM",
+                   "description": "PRM Reports",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingType",
+        "pk": 2,
+        "fields": {"reporting_type": "Compliance",
+                   "description": "Compliance Reports",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingType",
+        "pk": 3,
+        "fields": {"reporting_type": "Dead",
+                   "description": "Dead Reports",
+                   "is_active": false}
+    },
+
+    {
+        "model": "myreports.ReportingType",
+        "pk": 4,
+        "fields": {"reporting_type": "Maybe Dead",
+                   "description": "Maybe Dead Reports",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingType",
+        "pk": 5,
+        "fields": {"reporting_type": "Wrong UT",
+                   "description": "Wrong UserType",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.UserReportingTypes",
+        "fields": {"user_type": 2, "reporting_type": 1, "is_active": true}
+    },
+
+    {
+        "model": "myreports.UserReportingTypes",
+        "fields": {"user_type": 2, "reporting_type": 3, "is_active": true}
+    },
+
+    {
+        "model": "myreports.UserReportingTypes",
+        "fields": {"user_type": 2, "reporting_type": 4, "is_active": false}
+    },
+
+    {
+        "model": "myreports.UserReportingTypes",
+        "fields": {"user_type": 1, "reporting_type": 5, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 1,
+        "fields": {"report_type": "Partners",
+                   "description": "Partners Report",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 2,
+        "fields": {"report_type": "Communication Records",
+                   "description": "Communication Records Report",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 3,
+        "fields": {"report_type": "State",
+                   "description": "State Report",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 4,
+        "fields": {"report_type": "Screenshots",
+                   "description": "Screenshots Report",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 5,
+        "fields": {"report_type": "Dead",
+                   "description": "Dead Report",
+                   "is_active": false}
+    },
+
+    {
+        "model": "myreports.ReportType",
+        "pk": 6,
+        "fields": {"report_type": "Maybe Dead",
+                   "description": "Maybe Dead Report",
+                   "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 1, "reporting_type": 1, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 2, "reporting_type": 1, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 5, "reporting_type": 1, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 6, "reporting_type": 1, "is_active": false}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 3, "reporting_type": 2, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 4, "reporting_type": 2, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 5, "reporting_type": 2, "is_active": true}
+    },
+
+    {
+        "model": "myreports.ReportingTypeReportTypes",
+        "fields": {"report_type": 6, "reporting_type": 2, "is_active": false}
+    }
+
+]
+
+
