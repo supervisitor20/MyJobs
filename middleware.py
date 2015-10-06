@@ -257,7 +257,7 @@ class RedirectOverrideMiddleware(object):
     strings, and any entries in the QueryRedirect table for the current domain.
     """
     def process_request(self, request):
-        if not settings.SITE.queryredirect_set.exists():
+        if not settings.SITE.queryredirect_set.all():
             return
         paths = [request.path,
                  (request.path[:-1] if request.path.endswith('/')
