@@ -160,7 +160,8 @@ class MultiHostMiddleware:
                                                                       'business_units',
                                                                       'featured_companies',
                                                                       'site_tags',
-                                                                      'google_analytics')
+                                                                      'google_analytics',
+                                                                      'queryredirect_set')
             # the cache didn't have it, so lets get it and set the cache
             try:
                 my_site = sites.get(domain=host)
@@ -256,6 +257,8 @@ class RedirectOverrideMiddleware(object):
     strings, and any entries in the QueryRedirect table for the current domain.
     """
     def process_request(self, request):
+        if not settings.SITE.queryredirect_set.exists():
+            return
         paths = [request.path,
                  (request.path[:-1] if request.path.endswith('/')
                   else request.path + '/')]
