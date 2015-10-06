@@ -8,34 +8,31 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachEmailDomain'
-        db.create_table(u'mypartners_outreachemaildomain', (
+        # Adding model 'OutreachWorkflowState'
+        db.create_table(u'mypartners_outreachworkflowstate', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
+            ('state', self.gf('django.db.models.fields.CharField')(max_length=50)),
         ))
-        db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
+        db.send_create_signal(u'mypartners', ['OutreachWorkflowState'])
 
-        # Adding unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.create_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
-
-        # Adding model 'CommonEmailDomain'
-        db.create_table(u'mypartners_commonemaildomain', (
+        # Adding model 'NonUserOutreach'
+        db.create_table(u'mypartners_nonuseroutreach', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.URLField')(unique=True, max_length=200)),
+            ('date_added', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('outreach_email', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.OutreachEmailAddress'])),
+            ('from_email', self.gf('django.db.models.fields.EmailField')(max_length=255)),
+            ('email_body', self.gf('django.db.models.fields.TextField')()),
+            ('current_workflow_state', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.OutreachWorkflowState'])),
         ))
-        db.send_create_signal(u'mypartners', ['CommonEmailDomain'])
+        db.send_create_signal(u'mypartners', ['NonUserOutreach'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.delete_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
+        # Deleting model 'OutreachWorkflowState'
+        db.delete_table(u'mypartners_outreachworkflowstate')
 
-        # Deleting model 'OutreachEmailDomain'
-        db.delete_table(u'mypartners_outreachemaildomain')
-
-        # Deleting model 'CommonEmailDomain'
-        db.delete_table(u'mypartners_commonemaildomain')
+        # Deleting model 'NonUserOutreach'
+        db.delete_table(u'mypartners_nonuseroutreach')
 
 
     models = {
@@ -155,11 +152,31 @@ class Migration(SchemaMigration):
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
+        u'mypartners.nonuseroutreach': {
+            'Meta': {'object_name': 'NonUserOutreach'},
+            'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
+            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'email_body': ('django.db.models.fields.TextField', [], {}),
+            'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"})
+        },
+        u'mypartners.outreachemailaddress': {
+            'Meta': {'object_name': 'OutreachEmailAddress'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
+        u'mypartners.outreachworkflowstate': {
+            'Meta': {'object_name': 'OutreachWorkflowState'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'mypartners.partner': {
             'Meta': {'object_name': 'Partner'},

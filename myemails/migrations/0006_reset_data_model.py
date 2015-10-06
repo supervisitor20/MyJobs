@@ -8,35 +8,140 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachEmailDomain'
-        db.create_table(u'mypartners_outreachemaildomain', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
-        ))
-        db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
+        # Deleting model 'CreatedEvent'
+        db.delete_table(u'myemails_createdevent')
 
-        # Adding unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.create_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
+        # Removing M2M table for field sites on 'CreatedEvent'
+        db.delete_table(db.shorten_name(u'myemails_createdevent_sites'))
 
-        # Adding model 'CommonEmailDomain'
-        db.create_table(u'mypartners_commonemaildomain', (
+        # Deleting model 'ValueEvent'
+        db.delete_table(u'myemails_valueevent')
+
+        # Removing M2M table for field sites on 'ValueEvent'
+        db.delete_table(db.shorten_name(u'myemails_valueevent_sites'))
+
+        # Deleting model 'CronEvent'
+        db.delete_table(u'myemails_cronevent')
+
+        # Removing M2M table for field sites on 'CronEvent'
+        db.delete_table(db.shorten_name(u'myemails_cronevent_sites'))
+
+        # Adding model 'Event'
+        db.create_table(u'myemails_event', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.URLField')(unique=True, max_length=200)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('model', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('description', self.gf('django.db.models.fields.TextField')()),
         ))
-        db.send_create_signal(u'mypartners', ['CommonEmailDomain'])
+        db.send_create_signal(u'myemails', ['Event'])
+
+        # Adding M2M table for field sites on 'Event'
+        m2m_table_name = db.shorten_name(u'myemails_event_sites')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('event', models.ForeignKey(orm[u'myemails.event'], null=False)),
+            ('seosite', models.ForeignKey(orm[u'seo.seosite'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['event_id', 'seosite_id'])
+
+        # Adding field 'EmailTemplate.event'
+        db.add_column(u'myemails_emailtemplate', 'event',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.Event'], null=True),
+                      keep_default=False)
+
+        # Adding field 'EmailTemplate.is_active'
+        db.add_column(u'myemails_emailtemplate', 'is_active',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+
+        db.add_column(u'myemails_emailtemplate', 'body', self.gf('django.db.models.fields.TextField')())
+        db.delete_column(u'myemails_emailtemplate', 'body_id')
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.delete_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
+        # Adding model 'CreatedEvent'
+        db.create_table(u'myemails_createdevent', (
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('email_template', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailTemplate'])),
+            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
+            ('model', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal(u'myemails', ['CreatedEvent'])
 
-        # Deleting model 'OutreachEmailDomain'
-        db.delete_table(u'mypartners_outreachemaildomain')
+        # Adding M2M table for field sites on 'CreatedEvent'
+        m2m_table_name = db.shorten_name(u'myemails_createdevent_sites')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('createdevent', models.ForeignKey(orm[u'myemails.createdevent'], null=False)),
+            ('seosite', models.ForeignKey(orm[u'seo.seosite'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['createdevent_id', 'seosite_id'])
 
-        # Deleting model 'CommonEmailDomain'
-        db.delete_table(u'mypartners_commonemaildomain')
+        # Adding model 'ValueEvent'
+        db.create_table(u'myemails_valueevent', (
+            ('compare_using', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('email_template', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailTemplate'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('value', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('field', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('model', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
+        ))
+        db.send_create_signal(u'myemails', ['ValueEvent'])
 
+        # Adding M2M table for field sites on 'ValueEvent'
+        m2m_table_name = db.shorten_name(u'myemails_valueevent_sites')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('valueevent', models.ForeignKey(orm[u'myemails.valueevent'], null=False)),
+            ('seosite', models.ForeignKey(orm[u'seo.seosite'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['valueevent_id', 'seosite_id'])
+
+        # Adding model 'CronEvent'
+        db.create_table(u'myemails_cronevent', (
+            ('field', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('email_template', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailTemplate'])),
+            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
+            ('minutes', self.gf('django.db.models.fields.IntegerField')()),
+            ('model', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal(u'myemails', ['CronEvent'])
+
+        # Adding M2M table for field sites on 'CronEvent'
+        m2m_table_name = db.shorten_name(u'myemails_cronevent_sites')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('cronevent', models.ForeignKey(orm[u'myemails.cronevent'], null=False)),
+            ('seosite', models.ForeignKey(orm[u'seo.seosite'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['cronevent_id', 'seosite_id'])
+
+        # Deleting model 'Event'
+        db.delete_table(u'myemails_event')
+
+        # Removing M2M table for field sites on 'Event'
+        db.delete_table(db.shorten_name(u'myemails_event_sites'))
+
+        # Deleting field 'EmailTemplate.event'
+        db.delete_column(u'myemails_emailtemplate', 'event_id')
+
+        # Deleting field 'EmailTemplate.is_active'
+        db.delete_column(u'myemails_emailtemplate', 'is_active')
+
+
+        db.add_column(u'myemails_emailtemplate', 'body', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myemails.EmailSection']))
+        db.delete_column(u'myemails_emailtemplate', 'body')
 
     models = {
         u'auth.group': {
@@ -58,6 +163,47 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'myemails.emailsection': {
+            'Meta': {'object_name': 'EmailSection'},
+            'content': ('django.db.models.fields.TextField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'blank': 'True'}),
+            'section_type': ('django.db.models.fields.PositiveIntegerField', [], {})
+        },
+        u'myemails.emailtask': {
+            'Meta': {'object_name': 'EmailTask'},
+            'completed_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'event_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'event_model': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'email_type'", 'to': u"orm['contenttypes.ContentType']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'object_model': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'email_model'", 'to': u"orm['contenttypes.ContentType']"}),
+            'scheduled_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'scheduled_for': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'task_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '36', 'blank': 'True'})
+        },
+        u'myemails.emailtemplate': {
+            'Meta': {'object_name': 'EmailTemplate'},
+            'body': ('django.db.models.fields.TextField', [], {}),
+            'event': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myemails.Event']", 'null': 'True'}),
+            'footer': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'footer_for'", 'to': u"orm['myemails.EmailSection']"}),
+            'header': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'header_for'", 'to': u"orm['myemails.EmailSection']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'blank': 'True'})
+        },
+        u'myemails.event': {
+            'Meta': {'object_name': 'Event'},
+            'description': ('django.db.models.fields.TextField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'model': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['seo.SeoSite']", 'symmetrical': 'False'})
         },
         u'myjobs.user': {
             'Meta': {'object_name': 'User'},
@@ -86,140 +232,6 @@ class Migration(SchemaMigration):
             'timezone': ('django.db.models.fields.CharField', [], {'default': "'America/New_York'", 'max_length': '255'}),
             'user_guid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"})
-        },
-        u'mypartners.commonemaildomain': {
-            'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.contact': {
-            'Meta': {'object_name': 'Contact'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'locations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'contacts'", 'symmetrical': 'False', 'to': u"orm['mypartners.Location']"}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
-        },
-        u'mypartners.contactlogentry': {
-            'Meta': {'object_name': 'ContactLogEntry'},
-            'action_flag': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'action_time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'change_message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'contact_identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
-            'delta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'successful': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
-        },
-        u'mypartners.contactrecord': {
-            'Meta': {'object_name': 'ContactRecord'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Contact']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'contact_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'contact_phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
-            'contact_type': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date_time': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'job_applications': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'job_hires': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'job_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '40', 'blank': 'True'}),
-            'job_interviews': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'length': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
-            'location': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'subject': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'})
-        },
-        u'mypartners.location': {
-            'Meta': {'object_name': 'Location'},
-            'address_line_one': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'address_line_two': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'country_code': ('django.db.models.fields.CharField', [], {'default': "'USA'", 'max_length': '3'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'label': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
-        },
-        u'mypartners.outreachemaildomain': {
-            'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
-            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.partner': {
-            'Meta': {'object_name': 'Partner'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'primary_contact': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'primary_contact'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['mypartners.Contact']"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
-            'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'})
-        },
-        u'mypartners.partnerlibrary': {
-            'Meta': {'object_name': 'PartnerLibrary'},
-            'alt_phone': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'area': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'contact_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'data_source': ('django.db.models.fields.CharField', [], {'default': "'Employment Referral Resource Directory'", 'max_length': '255'}),
-            'email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'fax': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_disabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_disabled_veteran': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_female': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_minority': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_veteran': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'phone': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'phone_ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'region': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'st': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'street1': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'street2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'zip_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'})
-        },
-        u'mypartners.prmattachment': {
-            'Meta': {'object_name': 'PRMAttachment'},
-            'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '767', 'null': 'True', 'blank': 'True'}),
-            'contact_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.ContactRecord']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.status': {
-            'Meta': {'object_name': 'Status'},
-            'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'mypartners.tag': {
-            'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},
-            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'hex_color': ('django.db.models.fields.CharField', [], {'default': "'d4d4d4'", 'max_length': '6', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'postajob.package': {
             'Meta': {'object_name': 'Package'},
@@ -478,4 +490,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['mypartners']
+    complete_apps = ['myemails']

@@ -13,7 +13,8 @@ from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
                                         TagFactory, PRMAttachmentFactory)
 from mypartners.models import (Contact, Location, Partner, PRMAttachment, 
-                               Status, OutreachEmailDomain, CommonEmailDomain)
+                               Status, OutreachEmailDomain, CommonEmailDomain,
+                               ContactRecord)
 from mysearches.models import PartnerSavedSearch
 from mysearches.tests.factories import PartnerSavedSearchFactory
 
@@ -29,8 +30,7 @@ class MyPartnerTests(MyJobsBase):
         """
         Tests adding a contact to partner's contacts list and tests
         primary_contact. Also tests if the contact gets deleted the partner
-        stays and turns primary_contact to None.
-
+        stays and turns primary_contact to None.  
         """
         self.assertEqual(Contact.objects.filter(partner=self.partner).count(),
                          1)
@@ -163,9 +163,37 @@ class MyPartnerTests(MyJobsBase):
         """Test that attempting to delete a contact archives it instead."""
 
         self.assertFalse(self.contact.archived_on)
-        self.contact.delete()
-        self.assertEqual(len(Contact.objects.all()), 1)
+        self.contact.archive()
+        self.assertEqual(Contact.objects.count(), 0)
+        self.assertEqual(Contact.all_objects.count(), 1)
         self.assertTrue(self.contact.archived_on)
+
+    def test_archived_manager_weirdness(self):
+        """
+        Demonstrates that archived instances are returned by the
+        ArchivedModel.all_objects manager, not the standard
+        ArchivedModel.objects.
+        """
+        self.partner.archive()
+        # Try retrieving the archived partner using both managers. The "objects"
+        # manager excludes archived instances so an exception is raised.
+        self.assertRaises(Partner.DoesNotExist,
+                          lambda: Partner.objects.get(pk=self.partner.pk))
+        Partner.all_objects.get(pk=self.partner.pk)
+
+        # This contact has not been archived (as we demonstrate in a few lines)
+        # but is excluded by the "objects" manager as its partner has been
+        # archived.
+        self.assertRaises(Contact.DoesNotExist,
+                          lambda: Contact.objects.get(pk=self.contact.pk))
+        self.contact = Contact.all_objects.get(pk=self.contact.pk)
+        self.assertFalse(self.contact.archived_on)
+
+        # The manager used by related objects in this instance excludes
+        # archived partners. As it's basically a Partner.objects.get(id=...),
+        # this fails.
+        self.assertRaises(Partner.DoesNotExist, lambda: self.contact.partner)
+        self.assertEqual(self.contact.partner_id, self.partner.pk)
 
     def test_models_approved(self):
         """
@@ -207,8 +235,8 @@ class MyPartnerTests(MyJobsBase):
 
     def test_outreach_domain_unique_to_company(self):
         """
-        Domains should be unique within a company, but not necessarily across
-        PRM.
+        Allowed domains should be unique within a company, but not necessarily
+        across PRM.
         """
 
         OutreachEmailDomain.objects.create(company=self.company, 
@@ -223,3 +251,39 @@ class MyPartnerTests(MyJobsBase):
         with self.assertRaises(IntegrityError):
             OutreachEmailDomain.objects.create(company=self.company, 
                                                domain="foo.bar")
+
+    def test_contact_record_report_numbers(self):
+        """
+        Contact records have properties which represent various aggregated
+        values. This test ensures that given a number of contact records, those
+        aggregated numbers are correct.
+        """
+
+        email_record = ContactRecordFactory(contact_type="email",
+                                           partner=self.partner,
+                                           contact=self.contact)
+
+        job_record = ContactRecordFactory(contact_type="job",
+                                           partner=self.partner,
+                                           contact=self.contact,
+                                           job_applications=10,
+                                           job_interviews=6,
+                                           job_hires=5)
+        phone_record = ContactRecordFactory(contact_type="phone",
+                                            partner=self.partner,
+                                            contact=ContactFactory(name="Joe"))
+
+        records = ContactRecord.objects.all()
+
+        self.assertEqual(len(records), 3)
+        self.assertEqual(len(records.contacts), 2)
+        # job follow ups don't count as comm activity
+        self.assertEqual(len(records.communication_activity), 2)
+        # only job follow ups count as referrals
+        self.assertEqual(records.referrals, 1)
+        self.assertEqual(records.applications, 10)
+        self.assertEqual(records.interviews, 6)
+        self.assertEqual(records.hires, 5)
+        self.assertEqual(records.emails, 1)
+        self.assertEqual(records.calls, 1)
+

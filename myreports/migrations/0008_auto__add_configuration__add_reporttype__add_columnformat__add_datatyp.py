@@ -8,34 +8,193 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachEmailDomain'
-        db.create_table(u'mypartners_outreachemaildomain', (
+        # Adding model 'Configuration'
+        db.create_table(u'myreports_configuration', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('company', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.Company'])),
-            ('domain', self.gf('django.db.models.fields.URLField')(max_length=200)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'mypartners', ['OutreachEmailDomain'])
+        db.send_create_signal(u'myreports', ['Configuration'])
 
-        # Adding unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.create_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
-
-        # Adding model 'CommonEmailDomain'
-        db.create_table(u'mypartners_commonemaildomain', (
+        # Adding model 'ReportPresentation'
+        db.create_table(u'myreports_reportpresentation', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('domain', self.gf('django.db.models.fields.URLField')(unique=True, max_length=200)),
+            ('report_data', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportTypeDataTypes'])),
+            ('presentation_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.PresentationType'])),
+            ('configuration', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Configuration'])),
+            ('display_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal(u'mypartners', ['CommonEmailDomain'])
+        db.send_create_signal(u'myreports', ['ReportPresentation'])
+
+        # Adding model 'ColumnFormat'
+        db.create_table(u'myreports_columnformat', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('format_code', self.gf('django.db.models.fields.CharField')(max_length=2000)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ColumnFormat'])
+
+        # Adding model 'ReportTypeDataTypes'
+        db.create_table(u'myreports_reporttypedatatypes', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
+            ('data_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.DataType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ReportTypeDataTypes'])
+
+        # Adding model 'DataType'
+        db.create_table(u'myreports_datatype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('data_type', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['DataType'])
+
+        # Adding model 'ReportingType'
+        db.create_table(u'myreports_reportingtype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('reporting_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ReportingType'])
+
+        # Adding model 'PresentationType'
+        db.create_table(u'myreports_presentationtype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('presentation_type', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['PresentationType'])
+
+        # Adding model 'ReportingTypeReportTypes'
+        db.create_table(u'myreports_reportingtypereporttypes', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('reporting_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportingType'])),
+            ('report_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ReportingTypeReportTypes'])
+
+        # Adding model 'UserType'
+        db.create_table(u'myreports_usertype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user_type', self.gf('django.db.models.fields.CharField')(max_length=10)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['UserType'])
+
+        # Adding model 'UserReportingTypes'
+        db.create_table(u'myreports_userreportingtypes', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.UserType'])),
+            ('reporting_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ReportingType'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['UserReportingTypes'])
+
+        # Adding model 'ConfigurationColumnFormats'
+        db.create_table(u'myreports_configurationcolumnformats', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('column_format', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ColumnFormat'])),
+            ('configuration_column', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ConfigurationColumn'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ConfigurationColumnFormats'])
+
+        # Adding model 'ConfigurationColumn'
+        db.create_table(u'myreports_configurationcolumn', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('configuration', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Configuration'])),
+            ('column', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Column'], null=True)),
+            ('interface_element_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.InterfaceElementType'])),
+            ('alias', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('multi_value_expansion', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
+            ('filter_only', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('default_value', self.gf('django.db.models.fields.CharField')(default='', max_length=500, blank=True)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ConfigurationColumn'])
+
+        # Adding model 'Column'
+        db.create_table(u'myreports_column', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('table_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('column_name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['Column'])
+
+        # Adding model 'InterfaceElementType'
+        db.create_table(u'myreports_interfaceelementtype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('interface_element_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('element_code', self.gf('django.db.models.fields.CharField')(max_length=2000)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['InterfaceElementType'])
+
+        # Adding model 'ReportType'
+        db.create_table(u'myreports_reporttype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('report_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal(u'myreports', ['ReportType'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'OutreachEmailDomain', fields ['company', 'domain']
-        db.delete_unique(u'mypartners_outreachemaildomain', ['company_id', 'domain'])
+        # Deleting model 'Configuration'
+        db.delete_table(u'myreports_configuration')
 
-        # Deleting model 'OutreachEmailDomain'
-        db.delete_table(u'mypartners_outreachemaildomain')
+        # Deleting model 'ReportPresentation'
+        db.delete_table(u'myreports_reportpresentation')
 
-        # Deleting model 'CommonEmailDomain'
-        db.delete_table(u'mypartners_commonemaildomain')
+        # Deleting model 'ColumnFormat'
+        db.delete_table(u'myreports_columnformat')
+
+        # Deleting model 'ReportTypeDataTypes'
+        db.delete_table(u'myreports_reporttypedatatypes')
+
+        # Deleting model 'DataType'
+        db.delete_table(u'myreports_datatype')
+
+        # Deleting model 'ReportingType'
+        db.delete_table(u'myreports_reportingtype')
+
+        # Deleting model 'PresentationType'
+        db.delete_table(u'myreports_presentationtype')
+
+        # Deleting model 'ReportingTypeReportTypes'
+        db.delete_table(u'myreports_reportingtypereporttypes')
+
+        # Deleting model 'UserType'
+        db.delete_table(u'myreports_usertype')
+
+        # Deleting model 'UserReportingTypes'
+        db.delete_table(u'myreports_userreportingtypes')
+
+        # Deleting model 'ConfigurationColumnFormats'
+        db.delete_table(u'myreports_configurationcolumnformats')
+
+        # Deleting model 'ConfigurationColumn'
+        db.delete_table(u'myreports_configurationcolumn')
+
+        # Deleting model 'Column'
+        db.delete_table(u'myreports_column')
+
+        # Deleting model 'InterfaceElementType'
+        db.delete_table(u'myreports_interfaceelementtype')
+
+        # Deleting model 'ReportType'
+        db.delete_table(u'myreports_reporttype')
 
 
     models = {
@@ -87,139 +246,134 @@ class Migration(SchemaMigration):
             'user_guid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"})
         },
-        u'mypartners.commonemaildomain': {
-            'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.contact': {
-            'Meta': {'object_name': 'Contact'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'blank': 'True'}),
+        u'myreports.column': {
+            'Meta': {'object_name': 'Column'},
+            'column_name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'locations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'contacts'", 'symmetrical': 'False', 'to': u"orm['mypartners.Location']"}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'table_name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'mypartners.contactlogentry': {
-            'Meta': {'object_name': 'ContactLogEntry'},
-            'action_flag': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'action_time': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'change_message': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'contact_identifier': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
-            'delta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+        u'myreports.columnformat': {
+            'Meta': {'object_name': 'ColumnFormat'},
+            'format_code': ('django.db.models.fields.CharField', [], {'max_length': '2000'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'object_id': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'object_repr': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'successful': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'mypartners.contactrecord': {
-            'Meta': {'object_name': 'ContactRecord'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Contact']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'contact_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'contact_phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
-            'contact_type': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+        u'myreports.configuration': {
+            'Meta': {'object_name': 'Configuration'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        u'myreports.configurationcolumn': {
+            'Meta': {'object_name': 'ConfigurationColumn'},
+            'alias': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Column']", 'null': 'True'}),
+            'column_formats': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ColumnFormat']", 'through': u"orm['myreports.ConfigurationColumnFormats']", 'symmetrical': 'False'}),
+            'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Configuration']"}),
+            'default_value': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '500', 'blank': 'True'}),
+            'filter_only': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'interface_element_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.InterfaceElementType']"}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'multi_value_expansion': ('django.db.models.fields.PositiveSmallIntegerField', [], {})
+        },
+        u'myreports.configurationcolumnformats': {
+            'Meta': {'object_name': 'ConfigurationColumnFormats'},
+            'column_format': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ColumnFormat']"}),
+            'configuration_column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ConfigurationColumn']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        u'myreports.datatype': {
+            'Meta': {'object_name': 'DataType'},
+            'data_type': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        u'myreports.interfaceelementtype': {
+            'Meta': {'object_name': 'InterfaceElementType'},
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
+            'element_code': ('django.db.models.fields.CharField', [], {'max_length': '2000'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'interface_element_type': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        u'myreports.presentationtype': {
+            'Meta': {'object_name': 'PresentationType'},
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'presentation_type': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'myreports.report': {
+            'Meta': {'object_name': 'Report'},
+            'app': ('django.db.models.fields.CharField', [], {'default': "'mypartners'", 'max_length': '50'}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'date_time': ('django.db.models.fields.DateTimeField', [], {'blank': 'True'}),
+            'filters': ('django.db.models.fields.TextField', [], {'default': "'{}'"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'job_applications': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'job_hires': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'job_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '40', 'blank': 'True'}),
-            'job_interviews': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
-            'length': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
-            'location': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'subject': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'})
+            'model': ('django.db.models.fields.CharField', [], {'default': "'contactrecord'", 'max_length': '50'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            'order_by': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '50', 'blank': 'True'}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'results': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
+            'values': ('django.db.models.fields.CharField', [], {'default': "'[]'", 'max_length': '500'})
         },
-        u'mypartners.location': {
-            'Meta': {'object_name': 'Location'},
-            'address_line_one': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'address_line_two': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'country_code': ('django.db.models.fields.CharField', [], {'default': "'USA'", 'max_length': '3'}),
+        u'myreports.reportingtype': {
+            'Meta': {'object_name': 'ReportingType'},
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'label': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'report_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ReportType']", 'through': u"orm['myreports.ReportingTypeReportTypes']", 'symmetrical': 'False'}),
+            'reporting_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'mypartners.outreachemaildomain': {
-            'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
-            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.partner': {
-            'Meta': {'object_name': 'Partner'},
-            'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
-            'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+        u'myreports.reportingtypereporttypes': {
+            'Meta': {'object_name': 'ReportingTypeReportTypes'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'primary_contact': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'primary_contact'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': u"orm['mypartners.Contact']"}),
-            'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Tag']", 'null': 'True', 'symmetrical': 'False'}),
-            'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'report_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportType']"}),
+            'reporting_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportingType']"})
         },
-        u'mypartners.partnerlibrary': {
-            'Meta': {'object_name': 'PartnerLibrary'},
-            'alt_phone': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'area': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'city': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'contact_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'data_source': ('django.db.models.fields.CharField', [], {'default': "'Employment Referral Resource Directory'", 'max_length': '255'}),
-            'email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'fax': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+        u'myreports.reportpresentation': {
+            'Meta': {'object_name': 'ReportPresentation'},
+            'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Configuration']"}),
+            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_disabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_disabled_veteran': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_female': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_minority': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_veteran': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'phone': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'phone_ext': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'region': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'st': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'state': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'street1': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'street2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'uri': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'zip_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'presentation_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.PresentationType']"}),
+            'report_data': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportTypeDataTypes']"})
         },
-        u'mypartners.prmattachment': {
-            'Meta': {'object_name': 'PRMAttachment'},
-            'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '767', 'null': 'True', 'blank': 'True'}),
-            'contact_record': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.ContactRecord']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.status': {
-            'Meta': {'object_name': 'Status'},
-            'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
+        u'myreports.reporttype': {
+            'Meta': {'object_name': 'ReportType'},
+            'data_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.DataType']", 'through': u"orm['myreports.ReportTypeDataTypes']", 'symmetrical': 'False'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'report_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'mypartners.tag': {
-            'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},
-            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'hex_color': ('django.db.models.fields.CharField', [], {'default': "'d4d4d4'", 'max_length': '6', 'blank': 'True'}),
+        u'myreports.reporttypedatatypes': {
+            'Meta': {'object_name': 'ReportTypeDataTypes'},
+            'data_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.DataType']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'report_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportType']"})
+        },
+        u'myreports.userreportingtypes': {
+            'Meta': {'object_name': 'UserReportingTypes'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'reporting_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportingType']"}),
+            'user_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.UserType']"})
+        },
+        u'myreports.usertype': {
+            'Meta': {'object_name': 'UserType'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'reporting_types': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ReportingType']", 'through': u"orm['myreports.UserReportingTypes']", 'symmetrical': 'False'}),
+            'user_type': ('django.db.models.fields.CharField', [], {'max_length': '10'})
         },
         u'postajob.package': {
             'Meta': {'object_name': 'Package'},
@@ -232,6 +386,13 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'blank': 'True'}),
             u'package_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['postajob.Package']", 'unique': 'True', 'primary_key': 'True'}),
             'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['seo.SeoSite']", 'null': 'True', 'symmetrical': 'False'})
+        },
+        u'redirects.redirect': {
+            'Meta': {'ordering': "('old_path',)", 'unique_together': "(('site', 'old_path'),)", 'object_name': 'Redirect', 'db_table': "'django_redirect'"},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'new_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
+            'old_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sites.Site']"})
         },
         u'seo.atssourcecode': {
             'Meta': {'object_name': 'ATSSourceCode'},
@@ -345,6 +506,7 @@ class Migration(SchemaMigration):
             'moc_label': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'moc_placeholder': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'moc_tag': ('django.db.models.fields.CharField', [], {'default': "'vet-jobs'", 'max_length': '50'}),
+            'not_found_override': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['redirects.Redirect']", 'null': 'True', 'blank': 'True'}),
             'num_filter_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'num_job_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '15'}),
             'num_subnav_items_to_show': ('django.db.models.fields.IntegerField', [], {'default': '9'}),
@@ -478,4 +640,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['mypartners']
+    complete_apps = ['myreports']

@@ -1028,6 +1028,27 @@ class Configuration(models.Model):
         (3, 'Top')
     )
 
+    LANGUAGE_CODES_CHOICES = (
+        ('zh', 'Chinese'),
+        ('da', 'Danish'),
+        ('en', 'English'),
+        ('fr', 'French'),
+        ('de', 'German'),
+        ('hi', 'Hindi'),
+        ('it', 'Italian'),
+        ('ja', 'Japanese'),
+        ('ko', 'Korean'),
+        ('pt', 'Portuguese'),
+        ('ru', 'Russian'),
+        ('es', 'Spanish'),
+    )
+
+    DOCTYPE_CHOICES = (
+        ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+         '"http://www.w3.org/TR/html4/loose.dtd">', 'HTML 4.01 Transitional'),
+        ('<!DOCTYPE html>', 'HTML 5')
+    )
+
     def __init__(self, *args, **kwargs):
         super(Configuration, self).__init__(*args, **kwargs)
         self._original_browse_moc_show = self.browse_moc_show
@@ -1165,6 +1186,14 @@ class Configuration(models.Model):
     moc_tag = models.CharField(max_length=50, default='vet-jobs')
     company_tag = models.CharField(max_length=50, default='careers')
     # template section
+    doc_type = models.CharField(max_length=255,
+                                choices=DOCTYPE_CHOICES,
+                                default='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 '
+                                        'Transitional//EN" "http://'
+                                        'www.w3.org/TR/html4/loose.dtd">')
+    language_code = models.CharField(max_length=16,
+                                     choices=LANGUAGE_CODES_CHOICES,
+                                     default='en')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)
