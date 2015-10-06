@@ -104,9 +104,14 @@ class RedirectOverrideMiddlewareTestCase(DirectSEOBase):
 
     def test_query_redirect_without_queries(self):
         """
-        Requests for a given site/path should redirect on that site but
-        not others.
+        Requests for a given site/path should redirect on that site if the
+        request doesn't contain query parameters and should not occur for
+        other sites.
         """
+        response = self.client.get(self.redirect.old_path + '?q=foo',
+                                   HTTP_HOST=self.site.domain)
+        self.assertEqual(response.status_code, 200)
+
         response = self.client.get(self.redirect.old_path,
                                    HTTP_HOST=self.site.domain)
         self.assertEqual(response.status_code, 301)
@@ -119,11 +124,21 @@ class RedirectOverrideMiddlewareTestCase(DirectSEOBase):
     def test_query_redirect_with_queries(self):
         """
         Requests for a given site/path and a number of query strings should
-        redirect only on that site and only if all query strings are present.
+        redirect only on that site, only if all query strings are present, and
+        only if the request doesn't contain additional query parameters that
+        we look for.
         """
         q = QParameter.objects.create(redirect=self.redirect, value="sales")
         location = LocationParameter.objects.create(redirect=self.redirect,
                                                     value="Indianapolis")
+
+        response = self.client.get(
+            self.redirect.old_path + '?moc=foo&location=' + location.value +
+            '&q=' + q.value,
+            HTTP_HOST=self.site.domain
+        )
+        self.assertEqual(response.status_code, 200,
+                         "Query redirect took place with too many parameters")
 
         # q.value.upper() is not required but it also shows that this check
         # is case-insensitive.
