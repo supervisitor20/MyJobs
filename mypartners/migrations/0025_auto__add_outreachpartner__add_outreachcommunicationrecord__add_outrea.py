@@ -8,62 +8,43 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OutreachPartner'
-        db.create_table(u'mypartners_outreachpartner', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('outreach', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.NonUserOutreach'])),
-        ))
-        db.send_create_signal(u'mypartners', ['OutreachPartner'])
-
-        # Adding M2M table for field partners on 'OutreachPartner'
-        m2m_table_name = db.shorten_name(u'mypartners_outreachpartner_partners')
+        # Adding M2M table for field partners on 'NonUserOutreach'
+        m2m_table_name = db.shorten_name(u'mypartners_nonuseroutreach_partners')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('outreachpartner', models.ForeignKey(orm[u'mypartners.outreachpartner'], null=False)),
+            ('nonuseroutreach', models.ForeignKey(orm[u'mypartners.nonuseroutreach'], null=False)),
             ('partner', models.ForeignKey(orm[u'mypartners.partner'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['outreachpartner_id', 'partner_id'])
+        db.create_unique(m2m_table_name, ['nonuseroutreach_id', 'partner_id'])
 
-        # Adding model 'OutreachCommunicationRecord'
-        db.create_table(u'mypartners_outreachcommunicationrecord', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('partner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.Partner'])),
-            ('communication_records', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.ContactRecord'])),
-        ))
-        db.send_create_signal(u'mypartners', ['OutreachCommunicationRecord'])
-
-        # Adding model 'OutreachContact'
-        db.create_table(u'mypartners_outreachcontact', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('outreach', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mypartners.NonUserOutreach'])),
-        ))
-        db.send_create_signal(u'mypartners', ['OutreachContact'])
-
-        # Adding M2M table for field contacts on 'OutreachContact'
-        m2m_table_name = db.shorten_name(u'mypartners_outreachcontact_contacts')
+        # Adding M2M table for field contacts on 'NonUserOutreach'
+        m2m_table_name = db.shorten_name(u'mypartners_nonuseroutreach_contacts')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('outreachcontact', models.ForeignKey(orm[u'mypartners.outreachcontact'], null=False)),
+            ('nonuseroutreach', models.ForeignKey(orm[u'mypartners.nonuseroutreach'], null=False)),
             ('contact', models.ForeignKey(orm[u'mypartners.contact'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['outreachcontact_id', 'contact_id'])
+        db.create_unique(m2m_table_name, ['nonuseroutreach_id', 'contact_id'])
+
+        # Adding M2M table for field communication_records on 'NonUserOutreach'
+        m2m_table_name = db.shorten_name(u'mypartners_nonuseroutreach_communication_records')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('nonuseroutreach', models.ForeignKey(orm[u'mypartners.nonuseroutreach'], null=False)),
+            ('contactrecord', models.ForeignKey(orm[u'mypartners.contactrecord'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['nonuseroutreach_id', 'contactrecord_id'])
 
 
     def backwards(self, orm):
-        # Deleting model 'OutreachPartner'
-        db.delete_table(u'mypartners_outreachpartner')
+        # Removing M2M table for field partners on 'NonUserOutreach'
+        db.delete_table(db.shorten_name(u'mypartners_nonuseroutreach_partners'))
 
-        # Removing M2M table for field partners on 'OutreachPartner'
-        db.delete_table(db.shorten_name(u'mypartners_outreachpartner_partners'))
+        # Removing M2M table for field contacts on 'NonUserOutreach'
+        db.delete_table(db.shorten_name(u'mypartners_nonuseroutreach_contacts'))
 
-        # Deleting model 'OutreachCommunicationRecord'
-        db.delete_table(u'mypartners_outreachcommunicationrecord')
-
-        # Deleting model 'OutreachContact'
-        db.delete_table(u'mypartners_outreachcontact')
-
-        # Removing M2M table for field contacts on 'OutreachContact'
-        db.delete_table(db.shorten_name(u'mypartners_outreachcontact_contacts'))
+        # Removing M2M table for field communication_records on 'NonUserOutreach'
+        db.delete_table(db.shorten_name(u'mypartners_nonuseroutreach_communication_records'))
 
 
     models = {
@@ -186,24 +167,15 @@ class Migration(SchemaMigration):
         },
         u'mypartners.nonuseroutreach': {
             'Meta': {'object_name': 'NonUserOutreach'},
+            'communication_records': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.ContactRecord']", 'symmetrical': 'False'}),
+            'contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Contact']", 'symmetrical': 'False'}),
             'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
             'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'email_body': ('django.db.models.fields.TextField', [], {}),
             'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"})
-        },
-        u'mypartners.outreachcommunicationrecord': {
-            'Meta': {'object_name': 'OutreachCommunicationRecord'},
-            'communication_records': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.ContactRecord']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'partner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Partner']"})
-        },
-        u'mypartners.outreachcontact': {
-            'Meta': {'object_name': 'OutreachContact'},
-            'contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Contact']", 'symmetrical': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'outreach': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.NonUserOutreach']"})
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"}),
+            'partners': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Partner']", 'symmetrical': 'False'})
         },
         u'mypartners.outreachemailaddress': {
             'Meta': {'object_name': 'OutreachEmailAddress'},
@@ -216,12 +188,6 @@ class Migration(SchemaMigration):
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'mypartners.outreachpartner': {
-            'Meta': {'object_name': 'OutreachPartner'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'outreach': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.NonUserOutreach']"}),
-            'partners': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Partner']", 'symmetrical': 'False'})
         },
         u'mypartners.outreachworkflowstate': {
             'Meta': {'object_name': 'OutreachWorkflowState'},
