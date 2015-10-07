@@ -16,6 +16,8 @@ urlpatterns = patterns(
     'myjobs.views',
 
     url(r'^$', 'home', name='home'),
+    url(r'^login$',
+        RedirectView.as_view(url='/')),
     # Url is duplicated so that we can also easily refer to it as the
     # login url. This might mess with things if you try to resolve a url
     # and use url_name, since it could be either home or login.

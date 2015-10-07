@@ -1168,7 +1168,8 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
-                               ('enhanced'), ('digital_strategies_customer')]}),
+                               ('posting_access'), ('enhanced'),
+                               ('digital_strategies_customer')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
                                    ('og_img')]}),

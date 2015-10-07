@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 
-from myjobs.tests.setup import MyJobsBase
+from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          CompanyUserFactory, SeoSiteFactory)
 from myjobs.tests.factories import UserFactory
@@ -23,11 +23,14 @@ from postajob.models import (CompanyProfile, Job, OfflinePurchase, Package,
                              Product, ProductGrouping, PurchasedJob,
                              PurchasedProduct, Request, SitePackage,
                              ProductOrder, JobLocation)
+from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
+                                      RowFactory, RowOrderFactory,
+                                      BlockOrderFactory, LoginBlockFactory)
 from seo.models import Company, SeoSite
 from universal.helpers import build_url
 
 
-class PostajobTestBase(MyJobsBase):
+class PostajobTestBase(DirectSEOBase):
     def setUp(self):
         super(PostajobTestBase, self).setUp()
         self.user = UserFactory(password='5UuYquA@')
@@ -36,28 +39,30 @@ class PostajobTestBase(MyJobsBase):
         self.site = SeoSiteFactory(canonical_company=self.company)
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
-        self.site.save()
         self.company.job_source_ids.add(self.bu)
-        self.company.save()
         self.company_user = CompanyUserFactory(user=self.user,
                                                company=self.company)
+
         SitePackageFactory(owner=self.company)
         self.package = Package.objects.get()
         self.sitepackage = SitePackage.objects.get()
         self.sitepackage.sites.add(self.site)
         self.product = ProductFactory(package=self.package, owner=self.company)
 
+        # create a login block so that the redirect works
+        block = LoginBlockFactory()
+        row = RowFactory()
+        BlockOrderFactory(block=block, row=row, order=1)
+        page = PageFactory(sites=[self.site])
+        RowOrderFactory(row=row, page=page, order=1)
+
         self.login_user()
 
-    def login_user(self, user=None):
-        if not user:
-            user = self.user
-        self.client.post(reverse('home'),
-                         data={
-                             'username': user.email,
-                             'password': '5UuYquA@',
-                             'action': 'login',
-                             })
+    def login_user(self, user=None, password=None):
+        user = user or self.user
+        password = password or '5UuYquA@'
+
+        return self.client.login(username=user.email, password=password)
 
 
 class ViewTests(PostajobTestBase):
@@ -169,6 +174,24 @@ class ViewTests(PostajobTestBase):
 
         for form_data in [self.job_form_data, self.purchasedjob_form_data]:
             form_data.update(self.location_management_form_data)
+
+    def test_redirected_when_login_required(self):
+        """
+        When visiting a page that requires authentication, the user should be
+        redirected to the login page. When a login block isn't properly
+        associated with the site in question, the redirect should still happen
+        and a 404.
+        """
+
+        self.client.logout()
+
+        response = self.client.get(
+            reverse("purchasedmicrosite_admin_overview"),
+            HTTP_HOST='test.jobs',
+            follow=True)
+        self.assertRedirects(
+            response, 
+            "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
 
     def test_job_access_not_company_user(self):
         self.company_user.delete()
@@ -852,7 +875,8 @@ class ViewTests(PostajobTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(OfflinePurchase.objects.all().count(), 1)
         offline_purchase = OfflinePurchase.objects.get()
-        self.assertIn(offline_purchase.redemption_uid, response.content)
+        self.assertIn(offline_purchase.redemption_uid,
+                      response.content.decode('utf-8'))
 
     @skip('Feature disabled for now.')
     def test_offlinepurchase_add_with_company(self):
@@ -936,12 +960,13 @@ class ViewTests(PostajobTestBase):
 
         response = self.client.get(reverse('product_listing'),
                                    HTTP_HOST='test.jobs')
+
         for text in [productgrouping.display_title, productgrouping.explanation,
                      unicode(self.product)]:
             # When the entire chain of objects exists, the return HTML should
             # include elements from the relevant ProductGrouping and Product
             # instances
-            self.assertTrue(text in response.content)
+            self.assertTrue(text in response.content.decode('utf-8'))
     
     def test_job_add_and_remove_locations(self):
         location = {
@@ -1141,8 +1166,10 @@ class PurchasedJobActionTests(PostajobTestBase):
         profile.blocked_users.add(self.user)
         add_job_link = reverse('purchasedjob_add',
                                args=[self.purchased_product.pk])
-        for url in [reverse('purchasedjobs_overview',
-                            args=[self.purchased_product.pk])]:
-            response = self.client.get(url, HTTP_HOST='test.jobs')
-            self.assertFalse(add_job_link in response.content)
-            self.assertTrue('id="block-modal"' in response.content)
+        url = reverse('purchasedjobs_overview',
+                      args=[self.purchased_product.pk])
+        response = self.client.get(url, HTTP_HOST='test.jobs')
+
+        self.assertFalse(add_job_link in response.content)
+        self.assertTrue('id="block-modal"' in response.content)
+
