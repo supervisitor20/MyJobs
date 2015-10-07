@@ -382,18 +382,16 @@ class SavedSearchWidgetBlock(Block):
         user = request.user if request.user.is_authenticated() else None
 
         if user:
-            try:
-                search = SavedSearch.objects.filter(user=user,
-                                                    url=saved_search_url)[0]
-            except IndexError:
-                pass
+            search = (SavedSearch.objects
+                      .filter(user=user,
+                              url=saved_search_url)
+                      .first())
 
         if success_email and not search:
-            try:
-                search = SavedSearch.objects.filter(user__email=success_email,
-                                                    url=saved_search_url)[0]
-            except IndexError:
-                pass
+            search = (SavedSearch.objects
+                      .filter(user__email=success_email,
+                              url=saved_search_url)
+                      .first())
 
         return {
             'user': user,
