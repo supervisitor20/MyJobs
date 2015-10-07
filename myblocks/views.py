@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.core.exceptions import SuspiciousOperation
 from django.conf import settings
 from django.http import Http404, HttpResponse
 
@@ -88,12 +89,11 @@ def secure_blocks(request):
             blocks = json.loads(request.body)[u'blocks']
         else:
             blocks = json.loads(request.GET['blocks'])
-    except:
-        logger.warn('secure block parse error: %r %r',
-                    request.body,
-                    request.GET,
-                    exc_info=True)
-        return {"error": "failed to parse request"}
+    except ValueError:
+        message = ('secure block parse error: %r %r' %
+                   (request.body,
+                    request.GET))
+        raise SuspiciousOperation(message)
 
     response = {}
 
