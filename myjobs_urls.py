@@ -7,6 +7,7 @@ from django.core.files.storage import default_storage
 from tastypie.api import Api
 
 from myjobs.api import UserResource, SavedSearchResource
+from myblocks.views import secure_blocks
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 
 admin.autodiscover()
@@ -53,3 +54,8 @@ urlpatterns += patterns(
 
 if repr(getattr(default_storage, 'connection', '')) != 'S3Connection:s3.amazonaws.com':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += patterns(
+    'myblocks.views',
+    url(r'^secure-blocks/$', 'secure_blocks', name='secure_blocks'),
+)

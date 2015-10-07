@@ -37,13 +37,8 @@
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       $(document).on("ready", function() {
-        var secure_block_url = "https://{{ secure_blocks_domain }}/child-dashboard/";
-
-        secure_block(secure_block_url).fail(function(xhr, text, error) {
-          console.error("secure block fail: ", xhr, text, error);
-        }).done(function(data, text, xhr) {
-          console.log("secure block success: ", data, text, xhr);
-        });
+        var secure_block_url = "https://{{ secure_blocks_domain }}/secure-blocks/";
+        load_secure_blocks(secure_block_url);
       });
     </script>
 
