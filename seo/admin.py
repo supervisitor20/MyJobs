@@ -98,6 +98,10 @@ class SeoCeleryTaskAdmin(djcelery.admin.TaskMonitor):
                     args = ast.literal_eval(state.args)
                     kwargs = ast.literal_eval(state.kwargs)
                     tasks.task_update_solr.delay(*args, **kwargs)
+                if "etl_to_solr" in state.name:
+                    args = ast.literal_eval(state.args)
+                    kwargs = ast.literal_eval(state.kwargs)
+                    tasks.task_priority_etl_to_solr.delay(*args, **kwargs)
                 else:
                     messages.info(request,
                                   u"Resend not supported for that task type")
