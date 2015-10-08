@@ -23,7 +23,7 @@ from seo.search_backend import DESearchQuerySet
 from seo.models import BusinessUnit, Company
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.filters import FacetListWidget, CustomFacetListWidget
-# from seo.search_transformer import transform_search
+from seo.search_transformer import transform_search
 from serializers import JSONExtraValuesSerializer
 from moc_coding.models import Moc
 from xmlparse import text_fields
@@ -1009,8 +1009,7 @@ def prepare_sqs_from_search_params(params, sqs=None):
         # intended as negation.
         # Retail -Sales will search for Retail excluding Sales
         # Retail - Sales will search for 'Retail - Sales'
-        # title = "(%s)" % transform_search(title.replace(' - ', ' \\- '))
-        title = "(%s)" % title.replace(' - ', ' \\- ')
+        title = "(%s)" % transform_search(title.replace(' - ', ' \\- '))
         tb = u"({t})^{b}".format(t=title, b=boost_value)
 
         if exact_title:
@@ -1443,10 +1442,6 @@ def jobs_and_counts(request, filters, num_jobs, fl=search_fields):
 
 
 def get_company_data(filters):
-    """
-        Return the thumbnail for a company if it exists. Returns None if company does
-        not have a thumbnail.
-    """
     if filters['company_slug']:
         company_obj = Company.objects.filter(member=True)
         company_obj = company_obj.filter(company_slug=filters['company_slug'])
