@@ -1,7 +1,6 @@
 from authorize import AuthorizeInvalidError, AuthorizeResponseError
 from datetime import date
 import random
-import sys
 
 from django.conf import settings
 
@@ -40,7 +39,7 @@ class PaymentTests(MyJobsBase):
 
     def test_charge_card(self):
         card = get_card(**self.card_info)
-        charge_card(random.randint(1, sys.maxint), card)
+        charge_card(random.randint(1, 5000), card)
 
     def test_get_card_invalid_card(self):
         self.card_info['card_num'] = 1
