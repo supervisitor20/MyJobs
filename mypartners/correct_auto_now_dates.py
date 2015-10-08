@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 from time import time
 
-from mypartners.models import ContactRecord, ContactLogEntry
+from mypartners.models import ContactRecord
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,14 +25,16 @@ def fix_dates():
         csv_writer.writerow(['ContRecord ID', 'CreateDate Before', 'CreateDate After', 'ModDate Before',
                              'ModDate After', 'Change Notes'])
         for log in all_logs:
+            count_iterations += 1
             try:
                 contact_record = ContactRecord.objects.get(pk=log[2])
             except ObjectDoesNotExist:
                 continue
 
-            count_iterations += 1
+            # Heartbeat every 1000 iterations with percent complete
             if count_iterations % 1000 == 0:
-                print 'Heartbeat: ', datetime.now()
+                print 'Time: %s -  Complete: %s %' % (datetime.now(), round(count_iterations / len(all_logs) * 100, 2))
+
             modified = False
             # create csv array with placeholder data for "after" columns
             csv_line = [contact_record.pk, contact_record.created_on,
@@ -41,7 +43,7 @@ def fix_dates():
             change_notes = []
 
             # check if created_on is greater than last_modified, if so, assign it
-            if not (contact_record.last_modified and contact_record.last_modified > contact_record.created_on):
+            if not (contact_record.last_modified and contact_record.last_modified >= contact_record.created_on):
                 modified = True
                 count_cd_gt_lm += 1
                 contact_record.last_modified = contact_record.created_on
