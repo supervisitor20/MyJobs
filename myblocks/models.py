@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from slugify import slugify
 
 from django.conf import settings
@@ -18,9 +19,12 @@ from myblocks import context_tools
 from myblocks.helpers import success_url
 from myjobs.helpers import expire_login
 from myjobs.models import User
+from mysearches.models import SavedSearch
 from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
+
+logger = logging.getLogger(__name__)
 
 
 # Attempt to use a secondary cache for blocks. This
@@ -72,6 +76,7 @@ class Block(models.Model):
     base_head = None
 
     content_type = models.ForeignKey(ContentType, editable=False)
+    element_id = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255)
     offset = models.PositiveIntegerField()
     span = models.PositiveIntegerField()
@@ -118,6 +123,14 @@ class Block(models.Model):
         return '<div class="block-%s %s">%s</div>' % (self.id,
                                                       self.bootstrap_classes(),
                                                       self.template)
+
+    def render_for_ajax(raw_self, request, params):
+        self = raw_self.cast()
+        context = self.context(request, **params)
+        full_template = templatetag_library() + self.template
+        template = Template(full_template)
+        rendered_template = template.render(RequestContext(request, context))
+        return rendered_template
 
     def required_js(self):
         """
@@ -362,9 +375,35 @@ class RegistrationBlock(Block):
 class SavedSearchWidgetBlock(Block):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
+    def context(self, request, **kwargs):
+        saved_search_url = kwargs.get('url')
+        success_email = kwargs.get('success_email')
+        search = None
+        user = request.user if request.user.is_authenticated() else None
+
+        if user:
+            try:
+                search = SavedSearch.objects.filter(user=user,
+                                                    url=saved_search_url)[0]
+            except IndexError:
+                pass
+
+        if success_email and not search:
+            try:
+                search = SavedSearch.objects.filter(user__email=success_email,
+                                                    url=saved_search_url)[0]
+            except IndexError:
+                pass
+
+        return {
+            'user': user,
+            'search': search,
+            'success': success_email,
+            'is_pss': hasattr(search, 'partnersavedsearch'),
+        }
+
     def required_js(self):
         return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
-
 
 class SearchBoxBlock(Block):
     base_template = 'myblocks/blocks/searchbox.html'

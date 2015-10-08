@@ -98,6 +98,10 @@ class SeoCeleryTaskAdmin(djcelery.admin.TaskMonitor):
                     args = ast.literal_eval(state.args)
                     kwargs = ast.literal_eval(state.kwargs)
                     tasks.task_update_solr.delay(*args, **kwargs)
+                if "etl_to_solr" in state.name:
+                    args = ast.literal_eval(state.args)
+                    kwargs = ast.literal_eval(state.kwargs)
+                    tasks.task_priority_etl_to_solr.delay(*args, **kwargs)
                 else:
                     messages.info(request,
                                   u"Resend not supported for that task type")
@@ -1168,7 +1172,8 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
-                               ('enhanced'), ('digital_strategies_customer')]}),
+                               ('posting_access'), ('enhanced'),
+                               ('digital_strategies_customer')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
                                    ('og_img')]}),
