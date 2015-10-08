@@ -570,8 +570,8 @@ class ViewTests(PostajobTestBase):
         response = self.client.post(reverse('purchasedproduct_add',
                                             kwargs=product),
                                     data=self.purchasedproduct_form_data,
-                                    follow=True,
                                     HTTP_HOST='test.jobs')
+        import ipdb; ipdb.set_trace()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(PurchasedProduct.objects.count(), 1)
         purchase = PurchasedProduct.objects.get()
