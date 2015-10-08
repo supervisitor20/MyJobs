@@ -7,6 +7,7 @@ from urlparse import urlparse, urlunparse
 
 from django.db.models.loading import get_model
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import EmailMessage
@@ -190,8 +191,11 @@ def send_email(email_body, email_type=settings.GENERIC,
 
     if site:
         domain = site.email_domain
-        if site.canonical_company:
+        try:
             company_name = site.canonical_company.name
+        # using object instead of Company to avoid circular imports
+        except (ObjectDoesNotExist, AttributeError):
+            pass
 
     kwargs['company_name'] = company_name
     kwargs['domain'] = domain.lower()

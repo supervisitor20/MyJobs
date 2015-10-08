@@ -1,9 +1,19 @@
+import json
+import logging
+
 from django.conf import settings
 from django.http import Http404, HttpResponse
 
 from django.views.generic import View
+from django.views.decorators.csrf import (
+    csrf_exempt as django_csrf_exempt)
 
-from myblocks.models import Page
+from myjobs.autoserialize import autoserialize
+from myjobs.cross_site_verify import cross_site_verify
+
+from myblocks.models import Page, Block
+
+logger = logging.getLogger(__name__)
 
 
 class BlockView(View):
@@ -66,3 +76,33 @@ class BlockView(View):
             except IndexError:
                 raise Http404
         setattr(self, 'page', page)
+
+
+# The django csrf exemption should stay first in this list.
+@django_csrf_exempt
+@cross_site_verify
+@autoserialize
+def secure_blocks(request):
+    try:
+        if request.method == 'POST':
+            blocks = json.loads(request.body)[u'blocks']
+        else:
+            blocks = json.loads(request.GET['blocks'])
+    except:
+        logger.warn('secure block parse error: %r %r',
+                    request.body,
+                    request.GET,
+                    exc_info=True)
+        return {"error": "failed to parse request"}
+
+    response = {}
+
+    for element_id in blocks:
+        block = Block.objects.filter(element_id=element_id).first()
+        if block is None:
+            logger.warn("Failed block lookup: %s", element_id)
+        else:
+            rendered = block.render_for_ajax(request, blocks[element_id])
+            response[element_id] = rendered
+
+    return response

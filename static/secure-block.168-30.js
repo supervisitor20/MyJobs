@@ -12,7 +12,7 @@ function read_cookie(cookie) {
     return null;
 }
 
-function secure_block(secure_block_url) {
+function secure_block(secure_block_url, request) {
   // need to explicitly marshal the result data into this deferred
   // because we are on old jQuery.
   var result = $.Deferred();
@@ -20,34 +20,52 @@ function secure_block(secure_block_url) {
     type: "OPTIONS",
     crossDomain: true,
   }).done(function(data, textStatus, xhr) {
-    xhr_secure_block(secure_block_url).
+    xhr_secure_block(secure_block_url, request).
         done(result.resolve).
         fail(result.reject);
   }).fail(function(xhr, textStatus, error) {
-    jsonp_secure_block(secure_block_url).
+    jsonp_secure_block(secure_block_url, request).
         done(result.resolve).
         fail(result.reject);
   });
   return result.promise();
 }
 
-function xhr_secure_block(secure_block_url) {
+function xhr_secure_block(secure_block_url, data) {
   return $.ajax({
     url: secure_block_url,
     type: "POST",
     headers: {'X-Requested-With': 'XMLHttpRequest'},
-    data: {},
+    data: JSON.stringify({'blocks': data}),
+    contentType: "application/json",
     xhrFields: {
       withCredentials: true
     },
   });
 }
 
-function jsonp_secure_block(secure_block_url) {
+function jsonp_secure_block(secure_block_url, data) {
+  var json = JSON.stringify(data);
   return $.ajax({
     url: secure_block_url,
     type: "GET",
     dataType: "jsonp",
+    data: {'blocks': json},
   });
 }
 
+function load_secure_blocks(dashboard_url) {
+  var request = {};
+  $("*[data-secure-block-id]").each(function(i, block) {
+    element_id = $(block).data('secure-block-id');
+    request[element_id] = $(block).data();
+  });
+
+  secure_block(dashboard_url, request).fail(function(xhr, text, error) {
+    console.error("dashboard fail: ", xhr, text, error);
+  }).done(function(data, text, xhr) {
+    $.each(data, function(key, value) {
+      $("[data-secure-block-id=" + key + "]").html(value);
+    });
+  });
+}
