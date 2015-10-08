@@ -229,6 +229,10 @@ class TestReportView(MyReportsTestCase):
         self.assertEqual(data['contacts'][0]['referrals'], 10)
 
     def test_reports_exclude_archived(self):
+        """
+        Test that reports exclude archived records as appropriate. This
+        includes non-archived records associated with archived records.
+        """
         self.client.path = reverse('view_records', kwargs={
             'app': 'mypartners', 'model': 'contactrecord'})
 
@@ -238,12 +242,17 @@ class TestReportView(MyReportsTestCase):
 
         ContactRecord.objects.last().archive()
 
+        # Archiving one communication record should result in one fewer entry
+        # in the returned json.
         response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         content = json.loads(response.content)
         self.assertEqual(len(content), 14)
 
         Partner.objects.last().archive()
 
+        # Archiving the partner governing these communication records should
+        # exclude all of them from the returned json even if they aren't
+        # archived.
         response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         content = json.loads(response.content)
         self.assertEqual(len(content), 0)
