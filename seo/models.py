@@ -36,6 +36,7 @@ from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
 from myjobs.models import User
 from mypartners.models import Tag
+from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 from universal.helpers import get_domain, get_object_or_none
 
 import decimal
@@ -1026,27 +1027,6 @@ class Configuration(models.Model):
         (1, 'None'),
         (2, 'Bottom'),
         (3, 'Top')
-    )
-
-    LANGUAGE_CODES_CHOICES = (
-        ('zh', 'Chinese'),
-        ('da', 'Danish'),
-        ('en', 'English'),
-        ('fr', 'French'),
-        ('de', 'German'),
-        ('hi', 'Hindi'),
-        ('it', 'Italian'),
-        ('ja', 'Japanese'),
-        ('ko', 'Korean'),
-        ('pt', 'Portuguese'),
-        ('ru', 'Russian'),
-        ('es', 'Spanish'),
-    )
-
-    DOCTYPE_CHOICES = (
-        ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
-         '"http://www.w3.org/TR/html4/loose.dtd">', 'HTML 4.01 Transitional'),
-        ('<!DOCTYPE html>', 'HTML 5')
     )
 
     def __init__(self, *args, **kwargs):
