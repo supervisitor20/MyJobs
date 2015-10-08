@@ -14,11 +14,7 @@ class PaymentTests(MyJobsBase):
         self.card_info = {
             'card_num': random.choice([
                 6011000000000012,
-                3088000000000017,
-                38000000000006,
                 4007000000027,
-                4012888818888,
-                4111111111111111,
                 5424000000000015]),
             'city': 'Indianapolis',
             'country': 'USA',
