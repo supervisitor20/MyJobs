@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 def fix_dates():
     time_start = time()
-    count_iterations = 0
+    count_iterations = 0.0
     count_cd_gt_lm = 0
     count_cd_gt_at = 0
     count_lm_lt_at = 0
@@ -33,7 +33,7 @@ def fix_dates():
 
             # Heartbeat every 1000 iterations with percent complete
             if count_iterations % 1000 == 0:
-                print 'Time: %s -  Complete: %s %' % (datetime.now(), round(count_iterations / len(all_logs) * 100, 2))
+                print 'Time: %s -  Complete: %s percent' % (datetime.now(), round(count_iterations / len(all_logs) * 100, 2))
 
             modified = False
             # create csv array with placeholder data for "after" columns
