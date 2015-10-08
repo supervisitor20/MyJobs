@@ -232,7 +232,6 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         self.assertFalse(record.archived_on)
 
 
-
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view functio. 
         
