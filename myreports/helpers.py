@@ -126,3 +126,14 @@ def serialize(fmt, data, values=None, order_by=None):
         return output.getvalue()
     else:
         return data
+
+
+def determine_user_type(user):
+    if user is None:
+        return None
+
+    if user.groups.filter(name='Employer').exists():
+        return 'EMPLOYER'
+
+    if user.is_staff:
+        return 'STAFF'

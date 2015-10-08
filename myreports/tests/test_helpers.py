@@ -3,12 +3,14 @@
 import csv
 import json
 from cStringIO import StringIO
-from django.test.client import RequestFactory
 
+from myjobs.tests.factories import UserFactory
+from seo.tests.factories import CompanyUserFactory
 from mypartners.tests.factories import ContactRecordFactory, TagFactory
 from mypartners.models import ContactRecord
 from myreports.tests.test_views import MyReportsTestCase
 from myreports import helpers
+from myreports.helpers import determine_user_type
 
 
 class TestHelpers(MyReportsTestCase):
@@ -125,3 +127,32 @@ class TestHelpers(MyReportsTestCase):
 
             # ensure communication type was converted
             self.assertTrue(record['contact_type'] == 'Email')
+
+
+class TestUserType(MyReportsTestCase):
+    def test_none(self):
+        self.assert_user_type(None, None)
+
+    def test_jobseeker(self):
+        user = UserFactory.create()
+        self.assert_user_type(None, user)
+
+    def test_employer(self):
+        cuser = CompanyUserFactory.create()
+        user = cuser.user
+        self.assert_user_type('EMPLOYER', user)
+
+    def test_staff(self):
+        user = UserFactory.create()
+        user.is_staff = True
+        self.assert_user_type('STAFF', user)
+
+    def test_both(self):
+        cuser = CompanyUserFactory.create()
+        user = cuser.user
+        user.is_staff = True
+        self.assert_user_type('EMPLOYER', user)
+
+    def assert_user_type(self, expected, user):
+        self.assertEqual(expected,
+                         determine_user_type(user))

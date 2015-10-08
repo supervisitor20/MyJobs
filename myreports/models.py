@@ -3,7 +3,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.loading import get_model
 
-from myreports.helpers import serialize
+from myreports.helpers import serialize, determine_user_type
 from mypartners.models import SearchParameterManager
 
 
@@ -80,8 +80,9 @@ class Report(models.Model):
 
 class UserTypeManager(models.Manager):
     def for_user(self, user):
-        # XXX: calculate type based on user properties
-        user_type = "MEMBER"
+        user_type = determine_user_type(user)
+        if user_type is None:
+            return None
         return UserType.objects.filter(user_type=user_type,
                                        is_active=True).first()
 

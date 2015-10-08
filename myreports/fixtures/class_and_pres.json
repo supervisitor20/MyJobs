@@ -2,13 +2,19 @@
     {
         "model": "myreports.UserType",
         "pk": 1,
-        "fields": {"user_type": "MEMBER", "is_active": false}
+        "fields": {"user_type": "EMPLOYER", "is_active": false}
     },
 
     {
         "model": "myreports.UserType",
         "pk": 2,
-        "fields": {"user_type": "MEMBER", "is_active": true}
+        "fields": {"user_type": "EMPLOYER", "is_active": true}
+    },
+
+    {
+        "model": "myreports.UserType",
+        "pk": 3,
+        "fields": {"user_type": "STAFF", "is_active": true}
     },
 
     {
