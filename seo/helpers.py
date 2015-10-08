@@ -1455,7 +1455,7 @@ def jobs_and_counts(request, filters, num_jobs, fl=search_fields):
     return default_jobs, featured_jobs, facet_counts
 
 
-def get_company_data(filters):
+def get_company_thumbnail(filters):
     """
         Return the thumbnail for a company if it exists. Returns None if company does
         not have a thumbnail.
