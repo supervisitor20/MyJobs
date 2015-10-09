@@ -61,11 +61,13 @@ function load_secure_blocks(dashboard_url) {
     request[element_id] = $(block).data();
   });
 
-  secure_block(dashboard_url, request).fail(function(xhr, text, error) {
-    console.error("dashboard fail: ", xhr, text, error);
-  }).done(function(data, text, xhr) {
-    $.each(data, function(key, value) {
-      $("[data-secure-block-id=" + key + "]").html(value);
+  if (!$.isEmptyObject(request)) {
+    secure_block(dashboard_url, request).fail(function(xhr, text, error) {
+        console.error("dashboard fail: ", xhr, text, error);
+    }).done(function(data, text, xhr) {
+        $.each(data, function(key, value) {
+        $("[data-secure-block-id=" + key + "]").html(value);
+        });
     });
-  });
+  }
 }
