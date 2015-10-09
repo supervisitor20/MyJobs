@@ -1,5 +1,4 @@
 """Tests associated with myreports views."""
-
 import json
 import os
 
@@ -8,10 +7,9 @@ from django.core.urlresolvers import reverse
 
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
+from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        LocationFactory, PartnerFactory,
-                                        TagFactory)
-from mypartners.models import ContactRecord
+                                        PartnerFactory)
 from myreports.models import Report
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
@@ -136,7 +134,6 @@ class TestViewRecords(MyReportsTestCase):
         ContactRecordFactory.create_batch(
             5, partner=self.partner, contact__name='Jane Doe')
 
-
         self.client.path += '/partner'
         filters = json.dumps({
             'name': {
@@ -156,7 +153,6 @@ class TestViewRecords(MyReportsTestCase):
         self.assertEqual(response.status_code, 200)
         # We look for distinct records
         self.assertEqual(len(output), 1)
-
 
     def test_list_query_params(self):
         """Test that query parameters that are lists are parsed correctly."""
@@ -188,13 +184,18 @@ class TestReportView(MyReportsTestCase):
             'app': 'mypartners', 'model': 'contactrecord'}))
         self.client.login_user(self.user)
 
-        ContactRecordFactory.create_batch(5, partner__owner=self.company)
+        ContactRecordFactory.create_batch(5, partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job', job_applications=1,
-            partner__owner=self.company)
+            partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job',
-            job_hires=1, partner__owner=self.company)
+            job_hires=1, partner=self.partner)
+
+        # Despite explicitly passing an already-created partner to create_batch,
+        # factory boy creates another partner for each of these and then does
+        # not use it. Clean up after it.
+        Partner.objects.exclude(pk=self.partner.pk).delete()
 
     def test_create_report(self):
         """Test that a report model instance is properly created."""
@@ -226,6 +227,35 @@ class TestReportView(MyReportsTestCase):
         # check contact stats
         self.assertEqual(data['contacts'][0]['records'], 5)
         self.assertEqual(data['contacts'][0]['referrals'], 10)
+
+    def test_reports_exclude_archived(self):
+        """
+        Test that reports exclude archived records as appropriate. This
+        includes non-archived records associated with archived records.
+        """
+        self.client.path = reverse('view_records', kwargs={
+            'app': 'mypartners', 'model': 'contactrecord'})
+
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 15)
+
+        ContactRecord.objects.last().archive()
+
+        # Archiving one communication record should result in one fewer entry
+        # in the returned json.
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 14)
+
+        Partner.objects.last().archive()
+
+        # Archiving the partner governing these communication records should
+        # exclude all of them from the returned json even if they aren't
+        # archived.
+        response = self.client.post(HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        content = json.loads(response.content)
+        self.assertEqual(len(content), 0)
 
 
 class TestDownloads(MyReportsTestCase):
@@ -311,7 +341,7 @@ class TestDownloadReport(MyReportsTestCase):
 
         # specifying export values shouldn't modify the underlying report
         self.assertEqual(len(python[0].keys()), len(report.python[0].keys()))
-        
+
 
 class TestRegenerate(MyReportsTestCase):
     """Tests the reports can be regenerated."""
@@ -380,7 +410,7 @@ class TestRegenerate(MyReportsTestCase):
         report = Report.objects.get(pk=report.pk)
         self.assertEqual(report.json, u'{}')
         self.assertEqual(report.python, {})
-    
+
         # regenerate the report even though the file is physically missing
         report.regenerate()
         self.assertTrue(report.results)
