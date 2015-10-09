@@ -155,7 +155,8 @@ class Breadbox(object):
 
     def build_company_breadcrumbs_from_slugs(self):
         company_slug_value = self.filters.get('company_slug')
-        display_title = helpers.bread_box_company_heading(company_slug_value)
+        display_title = helpers.bread_box_company_heading(company_slug_value,
+                                                          self.jobs)
         breadcrumb = self.build_breadcrumb_for_slug_type('company_slug',
                                                          display_title)
         if breadcrumb:

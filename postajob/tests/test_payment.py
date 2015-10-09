@@ -18,7 +18,7 @@ class PaymentTests(MyJobsBase):
                 5424000000000015]),
             'city': 'Indianapolis',
             'country': 'USA',
-            'cvn': random.randint(100, 999),
+            'cvn': str(random.randint(0, 999)).zfill(3),
             'exp_month': (date.today().month + 1) % 12 or 12,
             'exp_year': date.today().year + 5,
             'fname': 'John',
@@ -35,7 +35,7 @@ class PaymentTests(MyJobsBase):
 
     def test_charge_card(self):
         card = get_card(**self.card_info)
-        charge_card(1, card)
+        charge_card(random.randint(1, 5000), card)
 
     def test_get_card_invalid_card(self):
         self.card_info['card_num'] = 1

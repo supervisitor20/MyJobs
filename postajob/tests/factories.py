@@ -1,4 +1,5 @@
 import datetime
+import random
 
 import factory
 
@@ -66,7 +67,8 @@ class ProductFactory(factory.django.DjangoModelFactory):
     package = factory.SubFactory(SitePackageFactory)
     owner = factory.SubFactory(CompanyFactory)
     name = 'Test Product'
-    cost = '5'
+    # prevent duplicate transactions by not using the same cost
+    cost = str(random.randint(1, 5000))
     posting_window_length = 30
     max_job_length = 30
     num_jobs_allowed = 5

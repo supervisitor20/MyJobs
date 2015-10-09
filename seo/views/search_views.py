@@ -1786,7 +1786,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if not moc_term:
         moc_term = '\*'
 
-    company_data = helpers.get_company_data(filters)
+    company_data = helpers.get_company_thumbnail(filters)
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
