@@ -2,33 +2,14 @@
 import json
 import os
 
-from django.test import TestCase
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import UserFactory
 from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         PartnerFactory)
 from myreports.models import Report
-from seo.tests.factories import CompanyFactory, CompanyUserFactory
-
-
-class MyReportsTestCase(TestCase):
-    """
-    Base class for all MyReports Tests. Identical to `django.test.TestCase`
-    except that it provides a MyJobs TestClient instance and a logged in user.
-    """
-    def setUp(self):
-        self.client = TestClient()
-        self.user = UserFactory(email='testuser@directemployers.org')
-        self.company = CompanyFactory(name='Test Company')
-        self.partner = PartnerFactory(name='Test Partner', owner=self.company)
-
-        # associate company to user
-        CompanyUserFactory(user=self.user, company=self.company)
-
-        self.client.login_user(self.user)
+from myreports.tests.setup import MyReportsTestCase
 
 
 class TestOverview(MyReportsTestCase):
@@ -414,3 +395,33 @@ class TestRegenerate(MyReportsTestCase):
         # regenerate the report even though the file is physically missing
         report.regenerate()
         self.assertTrue(report.results)
+
+
+class TestReportsApi(MyReportsTestCase):
+    fixtures = ['class_and_pres.json']
+
+    def test_reporting_types_api_fail_get(self):
+        resp = self.client.get(reverse('reporting_types_api'))
+        self.assertEquals(405, resp.status_code)
+
+    def test_reporting_types_api(self):
+        resp = self.client.post(reverse('reporting_types_api'))
+        data = json.loads(resp.content)['reporting_type']
+        self.assertEquals(1, len(data))
+        self.assertEquals('PRM', data['1']['name'])
+        self.assertEquals('PRM Reports', data['1']['description'])
+
+    def test_report_types_api_fail_get(self):
+        resp = self.client.get(reverse('report_types_api'))
+        self.assertEquals(405, resp.status_code)
+
+    def test_report_types_api(self):
+        resp = self.client.post(reverse('report_types_api'),
+                                data={'reporting_type_id': '1'})
+        data = json.loads(resp.content)['report_type']
+        self.assertEquals(2, len(data))
+        self.assertEquals("Partners", data['1']['name'])
+        self.assertEquals("Partners Report", data['1']['description'])
+        self.assertEquals("Communication Records", data['2']['name'])
+        self.assertEquals("Communication Records Report",
+                          data['2']['description'])

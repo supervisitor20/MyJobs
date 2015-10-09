@@ -3,7 +3,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.loading import get_model
 
-from myreports.helpers import serialize
+from myreports.helpers import serialize, determine_user_type
 from mypartners.models import SearchParameterManager
 
 
@@ -78,11 +78,29 @@ class Report(models.Model):
         self._results = contents
 
 
+class UserTypeManager(models.Manager):
+    def for_user(self, user):
+        user_type = determine_user_type(user)
+        if user_type is None:
+            return None
+        return UserType.objects.filter(user_type=user_type,
+                                       is_active=True).first()
+
+
 class UserType(models.Model):
     user_type = models.CharField(max_length=10)
     is_active = models.BooleanField(default=False)
     reporting_types = models.ManyToManyField(
         'ReportingType', through='UserReportingTypes')
+    objects = UserTypeManager()
+
+
+class ReportingTypeManager(models.Manager):
+    def active_for_user(self, user):
+        user_type = UserType.objects.for_user(user)
+        return (ReportingType.objects.filter(is_active=True)
+                .filter(userreportingtypes__is_active=True,
+                        userreportingtypes__user_type=user_type))
 
 
 class ReportingType(models.Model):
@@ -91,6 +109,7 @@ class ReportingType(models.Model):
     report_types = models.ManyToManyField(
         'ReportType', through='ReportingTypeReportTypes')
     is_active = models.BooleanField(default=False)
+    objects = ReportingTypeManager()
 
 
 class UserReportingTypes(models.Model):
@@ -99,12 +118,22 @@ class UserReportingTypes(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class ReportTypeManager(models.Manager):
+    def active_for_reporting_type(self, reporting_type):
+        query_filter = dict(
+            is_active=True,
+            reportingtypereporttypes__reporting_type=reporting_type,
+            reportingtypereporttypes__is_active=True)
+        return ReportType.objects.filter(**query_filter)
+
+
 class ReportType(models.Model):
     report_type = models.CharField(max_length=50)
     description = models.CharField(max_length=500)
     data_types = models.ManyToManyField(
         'DataType', through='ReportTypeDataTypes')
     is_active = models.BooleanField(default=False)
+    objects = ReportTypeManager()
 
 
 class ReportingTypeReportTypes(models.Model):
