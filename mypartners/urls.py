@@ -49,4 +49,7 @@ urlpatterns = patterns('mypartners.views',
     url(r'^view/reports/details/records/', 'prm_records',
         name='prm_report_records'),
     url(r'^email$', 'process_email', name='process_email'),
+
+    # Non-user Outreach URLs
+    url(r'^view/outreach$', 'manage_outreach', name='manage_outreach'),
 )
