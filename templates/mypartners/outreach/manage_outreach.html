@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block site-title %}
+    <title>{{ company.name }} - Manage Outreach</title>
+    <meta name="title" content="{{ company.name }} Manage Outreach">
+{% endblock site-title %}
+
+{% block meta-extra %}
+{% endblock meta-extra %}
+
+{% block content %}
+    {% include "mypartners/includes/prm_header.html" with page_title="Manage Outreach" back_to="Back to Partner Relationship Manager" back_to_url="prm" %}
+
+    {% include "mypartners/outreach/content_list.html" %}
+{% endblock content %}
+
+{% block extra-js %}
+
+{% endblock extra-js %}
