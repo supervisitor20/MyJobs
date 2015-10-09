@@ -1298,3 +1298,17 @@ def add_tags(request):
     data = request.GET.get('data').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
+
+
+@has_access('prm')
+def manage_outreach(request):
+    company = get_company_or_404(request)
+
+    # content will be a paginated list of objects
+    content = ''
+
+    ctx = {'company': company,
+           'content': content}
+
+    return render_to_response('mypartners/outreach/manage_outreach.html', ctx,
+                              RequestContext(request))
