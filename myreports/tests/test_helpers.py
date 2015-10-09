@@ -130,29 +130,36 @@ class TestHelpers(MyReportsTestCase):
 
 
 class TestUserType(MyReportsTestCase):
+    """Test the usertype determination end to end."""
     def test_none(self):
+        """No user at all."""
         self.assert_user_type(None, None)
 
     def test_jobseeker(self):
+        """User object exists but has no relevant privileges."""
         user = UserFactory.create()
         self.assert_user_type(None, user)
 
     def test_employer(self):
+        """User is an employer."""
         cuser = CompanyUserFactory.create()
         user = cuser.user
         self.assert_user_type('EMPLOYER', user)
 
     def test_staff(self):
+        """User is staff."""
         user = UserFactory.create()
         user.is_staff = True
         self.assert_user_type('STAFF', user)
 
     def test_both(self):
+        """User is both employer and staff."""
         cuser = CompanyUserFactory.create()
         user = cuser.user
         user.is_staff = True
         self.assert_user_type('EMPLOYER', user)
 
     def assert_user_type(self, expected, user):
+        """Handle details of determining and checking user_type."""
         self.assertEqual(expected,
                          determine_user_type(user))
