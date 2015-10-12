@@ -16,6 +16,7 @@ from django.template.loaders.filesystem import Loader
 from django.utils.safestring import mark_safe
 
 from myblocks import context_tools
+from myblocks.context_tools import get_site_config
 from myblocks.helpers import success_url
 from myjobs.helpers import expire_login
 from myjobs.models import User
@@ -23,6 +24,7 @@ from mysearches.models import SavedSearch
 from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
+from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -617,6 +619,15 @@ class Page(models.Model):
 
     updated = models.DateTimeField(auto_now=True)
 
+    add_blank = lambda choices: (('', 'Inherit from Configuration'),) + choices
+
+    doc_type = models.CharField(max_length=255, blank=False,
+                                choices=add_blank(DOCTYPE_CHOICES),
+                                default='')
+    language_code = models.CharField(max_length=16, blank=False,
+                                     choices=add_blank(LANGUAGE_CODES_CHOICES),
+                                     default='')
+
     def __unicode__(self):
         return self.name
 
@@ -638,8 +649,13 @@ class Page(models.Model):
         for block in self.all_blocks():
             context.update(block.context(request, **kwargs))
 
-        context['site_title'] = settings.SITE_TITLE
-        context['site_description'] = settings.SITE_DESCRIPTION
+        site_config = get_site_config(request)
+
+        context.update({'site_title': settings.SITE_TITLE,
+                        'site_description': settings.SITE_DESCRIPTION,
+                        'doctype': self.doc_type or site_config.doc_type,
+                        'language_code': (self.language_code
+                                          or site_config.language_code)})
 
         return context
 
@@ -677,7 +693,8 @@ class Page(models.Model):
     def get_template(self, request):
         filters = context_tools.get_filters(request)
 
-        context = {
+        context = self.context(request)
+        context.update({
             'body': mark_safe(self.get_body()),
             'google_analytics': context_tools.get_google_analytics(request),
             'head': mark_safe(self.get_head()),
@@ -685,7 +702,7 @@ class Page(models.Model):
             'num_filters': len([k for (k, v) in filters.iteritems() if v]),
             'page': self,
             'STATIC_URL': settings.STATIC_URL,
-        }
+        })
         template = Template(raw_base_template(self))
         return template.render(Context(context))
 
