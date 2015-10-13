@@ -11,10 +11,9 @@ from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save, post_save
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 
-from myjobs.models import User
 from postajob.location_data import states
 from universal.helpers import json_to_query
 
@@ -56,8 +55,9 @@ class Status(models.Model):
         default=APPROVED, choices=CODES.items(), verbose_name="Status Code")
     approved_by = models.ForeignKey(
         'myjobs.User', null=True, on_delete=models.SET_NULL)
-    last_modified = models.DateTimeField(
-        auto_now=True, verbose_name="Last Modified")
+    last_modified = models.DateTimeField(verbose_name="Last Modified",
+                                         default=datetime.now,
+                                         blank=True)
 
     def __unicode__(self):
         return dict(Status.CODES)[self.code]
@@ -66,7 +66,7 @@ class Status(models.Model):
 class SearchParameterQuerySet(models.query.QuerySet):
     """
     Defines a query set with a `from_search` method for filtering by query
-    paramenters.
+    parameters.
     """
 
     # TODO: Come up with a better name for this method
@@ -120,11 +120,38 @@ class SearchParameterQuerySet(models.query.QuerySet):
 
 
 class SearchParameterManager(models.Manager):
-    def __init__(self, *args, **kwargs):
-        super(SearchParameterManager, self).__init__(*args, **kwargs)
+    use_for_related_fields = True
+
+    def __init__(self, archived=False):
+        """
+        Adds a new argument to the manager constructor to allow us to specify
+        if a given query should include archived models.
+
+        If this isn't doing what you want, examine the model using it and pay
+        special attention to what value of "archived" is being passed in.
+
+        Inputs:
+        :archived: True: query archived only, False: exclude
+            archived; None: query all objects
+        :type archived: bool, None
+        """
+        super(SearchParameterManager, self).__init__()
+        self._archived = archived
+        self._query_set = SearchParameterQuerySet
 
     def get_query_set(self):
-        return SearchParameterQuerySet(self.model, using=self._db)
+        qs = self._query_set(self.model, using=self._db)
+        # At the time of writing, this manager is used on models that don't
+        # have the ability to be archived. This isn't a perfect solution
+        # but changing everything is a bit out of scope at the moment.
+        if ('archived_on' in self.model._meta.get_all_field_names()
+                and self._archived is not None):
+            qs = qs.exclude(archived_on__isnull=self._archived)
+            if self.model in [ContactRecord, Contact]:
+                qs = qs.exclude(partner__archived_on__isnull=self._archived)
+                if self.model == ContactRecord:
+                    qs = qs.exclude(contact__archived_on__isnull=self._archived)
+        return qs
 
     def from_search(self, company=None, filters=None):
         return self.get_query_set().from_search(
@@ -132,6 +159,28 @@ class SearchParameterManager(models.Manager):
 
     def sort_by(self, *fields):
         return self.get_query_set().sort_by(*fields)
+
+
+class ArchivedModel(models.Model):
+    archived_on = models.DateTimeField(null=True)
+
+    # These two managers do different things and may not exactly do what you
+    # want unless you're paying attention. The first (objects) retrieves only
+    # objects where archived_on is None. The second (all_objects) retrieves all
+    # objects regardless of the state of archived_on. Managers used by related
+    # objects exhibit some weirdness as shown below.
+    #
+    # A demo is available as test_archived_manager_weirdness in
+    # mypartners/tests/test_models
+    objects = SearchParameterManager()
+    all_objects = SearchParameterManager(archived=None)
+
+    class Meta:
+        abstract = True
+
+    def archive(self, *args, **kwargs):
+        self.archived_on = datetime.now()
+        self.save()
 
 
 class Location(models.Model):
@@ -144,9 +193,9 @@ class Location(models.Model):
                                         blank=True,
                                         help_text='ie Suite 100')
     city = models.CharField(max_length=255, verbose_name='City',
-                                           help_text='ie Chicago, Washington, Dayton')
+                            help_text='ie Chicago, Washington, Dayton')
     state = models.CharField(max_length=200, verbose_name='State/Region',
-                                             help_text='ie NY, WA, DC')
+                             help_text='ie NY, WA, DC')
     country_code = models.CharField(max_length=3, verbose_name='Country',
                                     default='USA')
     postal_code = models.CharField(max_length=12, verbose_name='Postal Code',
@@ -165,13 +214,13 @@ class Location(models.Model):
         super(Location, self).save(**kwargs)
 
 
-class Contact(models.Model):
+class Contact(ArchivedModel):
     """
     Everything here is self explanatory except for one part. With the Contact
     object there is Contact.partner_set and .partners_set
 
     """
-    user = models.ForeignKey(User, blank=True, null=True,
+    user = models.ForeignKey('myjobs.User', blank=True, null=True,
                              on_delete=models.SET_NULL)
     partner = models.ForeignKey('Partner', 
                                 null=True, on_delete=models.SET_NULL)
@@ -179,22 +228,21 @@ class Contact(models.Model):
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
     name = models.CharField(max_length=255, verbose_name='Full Name',
-                             help_text='Contact\'s full name')
+                            help_text='Contact\'s full name')
     email = models.EmailField(max_length=255, verbose_name='Email', blank=True,
-                             help_text='Contact\'s email address')
+                              help_text='Contact\'s email address')
     phone = models.CharField(max_length=30, verbose_name='Phone', blank=True,
-            default='', help_text='ie (123) 456-7890')
+                             default='', help_text='ie (123) 456-7890')
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',
                              blank=True, default="", 
                              help_text='Any additional information you want to record')
-    archived_on = models.DateTimeField(null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'partner__owner'
-    objects = SearchParameterManager()
 
     class Meta:
         verbose_name_plural = 'contacts'
@@ -208,28 +256,13 @@ class Contact(models.Model):
 
     natural_key = __unicode__
 
-    def save(self, *args, **kwargs):
-        """
-        Checks to see if there is a User that is using self.email add said User
-        to self.user
-
-        """
-        if not self.user:
-            if self.email:
-                try:
-                    user = User.objects.get(email=self.email)
-                except User.DoesNotExist:
-                    pass
-                else:
-                    self.user = user
-
-        return super(Contact, self).save(*args, **kwargs)
-
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
-        self.archived_on = datetime.now()
-        self.primary_contact.clear()
-        self.save()
+        super(Contact, self).delete(*args, **kwargs)
+
+    def archive(self, *args, **kwargs):
+        pre_delete.send(sender=Contact, instance=self, using='default')
+        super(Contact, self).archive(*args, **kwargs)
 
     def get_contact_url(self):
         base_urls = {
@@ -267,19 +300,6 @@ def delete_contact(sender, instance, using, **kwargs):
             pss.save()
 
 
-@receiver(pre_delete, sender=Contact,
-          dispatch_uid='post_delete_contact_signal')
-def delete_contact_locations(sender, instance, **kwargs):
-    """
-    Since locations will more than likely be specific to a contact, we should
-    be able to delete all of a contact's locations when that contact is
-    deleted.
-    """
-    for location in instance.locations.all():
-        if not location.contacts.all():
-            location.delete()
-
-
 @receiver(pre_save, sender=Contact, dispatch_uid='pre_save_contact_signal')
 def save_contact(sender, instance, **kwargs):
     if not instance.approval_status:
@@ -288,7 +308,7 @@ def save_contact(sender, instance, **kwargs):
             approved_by=instance.user)
 
 
-class Partner(models.Model):
+class Partner(ArchivedModel):
     """
     Object that this whole app is built around.
 
@@ -316,9 +336,9 @@ class Partner(models.Model):
                               on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'owner'
-    objects = SearchParameterManager()
 
     def __unicode__(self):
         return self.name
@@ -526,44 +546,53 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
     @property
     def contacts(self):
-        contacts = self.exclude(
-            contact_type='job').values(
-                'partner__name', 'partner', 'contact__name',
-                'contact_email').annotate(
-                    records=models.Count('contact__name')).distinct().order_by(
-                        '-records')
+        """ 
+        Returns a queryset annotated by the number of referrals (contact_type =
+        'job') and number of records (contact_type != 'job'). Django doesn't
+        allow annotated values to be filtered without also filtering the base
+        result set, which is why we annotate separately then attach the values
+        to the resulting objects.
+        """
+
+        all_contacts = self.values(
+            'partner__name', 'partner', 'contact__name',
+            'contact_email').distinct()
+    
+        records = dict(self.exclude(contact_type='job').values_list(
+            'contact__name').annotate(
+                records=models.Count('contact__name')).distinct())
 
         referrals = dict(self.filter(contact_type='job').values_list(
             'contact__name').annotate(
                 referrals=models.Count('contact__name')).distinct())
 
-        for contact in contacts:
+        for contact in all_contacts:
             contact['referrals'] = referrals.get(contact['contact__name'], 0)
+            contact['records'] = records.get(contact['contact__name'], 0)
 
-        return contacts
+        return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
 class ContactRecordManager(SearchParameterManager):
     def __init__(self, *args, **kwargs):
         super(ContactRecordManager, self).__init__(*args, **kwargs)
-
-    def get_query_set(self):
-        return ContactRecordQuerySet(self.model, using=self._db)
+        self._query_set = ContactRecordQuerySet
 
     def communication_activity(self):
         return self.get_query_set().communication_activity
 
 
-class ContactRecord(models.Model):
+class ContactRecord(ArchivedModel):
     """
     Object for Communication Records
     """
 
     company_ref = 'partner__owner'
     objects = ContactRecordManager()
+    all_objects = ContactRecordManager(archived=None)
 
     created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
     contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
@@ -599,6 +628,7 @@ class ContactRecord(models.Model):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
+    last_modified = models.DateTimeField(default=datetime.now, blank=True)
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)
@@ -757,7 +787,7 @@ class ContactLogEntry(models.Model):
     object_id = models.TextField('object id', blank=True, null=True)
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
     successful = models.NullBooleanField(default=None)
 
     def get_edited_object(self):
@@ -799,7 +829,7 @@ class Tag(models.Model):
     company = models.ForeignKey('seo.Company')
 
     created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
 
     objects = SearchParameterManager()
 
@@ -823,7 +853,7 @@ class CommonEmailDomain(models.Model):
     class Meta:
         ordering = ["domain"]
 
-    domain = models.CharField(max_length=255, unique=True)
+    domain = models.URLField(unique=True)
 
     def __unicode__(self):
         return self.domain
@@ -832,7 +862,7 @@ class CommonEmailDomain(models.Model):
 class OutreachEmailDomain(models.Model):
     """
     Email domains from which a comany will accept emails from for the purpose
-    of outreach.
+    of outreach. These email addresses are for non-users.
     """
 
     class Meta:
@@ -840,7 +870,7 @@ class OutreachEmailDomain(models.Model):
         ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
-    domain = models.CharField(max_length=255)
+    domain = models.URLField()
 
     def __unicode__(self):
         return "%s for %s" % (self.domain, self.company)
@@ -855,3 +885,37 @@ class OutreachEmailDomain(models.Model):
     def save(self, *args, **kwargs):
         self.clean_fields()
         super(OutreachEmailDomain, self).save(*args, **kwargs)
+
+
+class OutreachEmailAddress(models.Model):
+    def __unicode__(self):
+        return "%s for %s" % (self.email, self.company)
+
+    company = models.ForeignKey("seo.Company")
+    email = models.EmailField(
+        max_length=255, verbose_name="Email", 
+        help_text="Email to send outreach efforts to.")
+
+
+class OutreachWorkflowState(models.Model):
+    state = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return self.state
+
+
+class NonUserOutreach(models.Model):
+    date_added = models.DateTimeField(auto_now_add=True)
+    outreach_email = models.ForeignKey("OutreachEmailAddress")
+    from_email = models.EmailField(
+        max_length=255, verbose_name="Email",
+        help_text="Email outreach effort sent from.")
+    email_body = models.TextField()
+    current_workflow_state = models.ForeignKey("OutreachWorkflowState")
+    partners = models.ManyToManyField("Partner")
+    contacts = models.ManyToManyField("Contact")
+    communication_records = models.ManyToManyField("ContactRecord")
+
+    def __unicode__(self):
+        return "Outreach email from %s sent to %s." % (
+            self.from_email, self.outreach_email)

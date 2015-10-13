@@ -63,8 +63,8 @@ from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
-from myemails.models import (EmailTemplate, EmailSection, CreatedEvent,
-                             CronEvent, ValueEvent)
+from myemails.models import EmailTemplate, EmailSection
+from myblocks.models import Page
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -1714,20 +1714,15 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
 
-    # checks to ensure that improper URL configurations return the correct
-    # 404 response before executing query for jobs
-    company_data = helpers.get_company_data(filters)
-    if not company_data and filters['company_slug']:
-        raise Http404("No company found for %s" % filters['company_slug'])
     if filters['moc_slug']:
         moc = helpers.pull_moc_object_via_slug(filters['moc_slug'])
         if not moc:
             raise Http404("No MOC object found for url input %s" % filters['moc_slug'])
-    
+
     custom_facet_counts = []
     facet_slugs = []
     active_facets = []
-    
+
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1764,6 +1759,12 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
+    #if we return no jobs based on the search, verify company information provided
+    if num_default_jobs == 0 and num_featured_jobs == 0:
+        company_obj = Company.objects.filter(company_slug=filters['company_slug'])
+        if not company_obj and filters['company_slug']:
+            raise Http404("No company found for %s" % filters['company_slug'])
+
     default_jobs = default_jobs[:num_default_jobs]
     featured_jobs = featured_jobs[:num_featured_jobs]
 
@@ -1785,6 +1786,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if not moc_term:
         moc_term = '\*'
 
+    company_data = helpers.get_company_thumbnail(filters)
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
@@ -2050,36 +2052,8 @@ def admin_dashboard(request):
 
 @user_is_allowed()
 def event_overview(request):
-    company = get_company_or_404(request)
-
-    # grab active events
-    active_created_events = CreatedEvent.objects.filter(owner=company,
-                                                        is_active=True)
-    active_cron_events = CronEvent.objects.filter(owner=company,
-                                                  is_active=True)
-    active_value_events = ValueEvent.objects.filter(owner=company,
-                                                    is_active=True)
-
-    # combine active events
-    active_events = list(itertools.chain(active_created_events,
-                                         active_cron_events,
-                                         active_value_events))
-
-    # grab inactive events
-    inactive_created_events = CreatedEvent.objects.filter(owner=company,
-                                                          is_active=False)
-    inactive_cron_events = CronEvent.objects.filter(owner=company,
-                                                    is_active=False)
-    inactive_value_events = ValueEvent.objects.filter(owner=company,
-                                                      is_active=False)
-
-    # combine inactive events
-    inactive_events = list(itertools.chain(inactive_created_events,
-                                           inactive_cron_events,
-                                           inactive_value_events))
-
-    data_dict = {'active_events': active_events,
-                 'inactive_events': inactive_events}
+    data_dict = {'active_events': [],
+                 'inactive_events': []}
 
     return render_to_response('myemails/event_overview.html', data_dict,
                               context_instance=RequestContext(request))
@@ -2101,19 +2075,26 @@ def manage_header_footer(request):
 
 @user_is_allowed()
 def manage_templates(request):
-    company = get_company_or_404(request)
-
-    # grab events
-    created_events = CreatedEvent.objects.filter(owner=company)
-    cron_events = CronEvent.objects.filter(owner=company)
-    value_events = ValueEvent.objects.filter(owner=company)
-
-    # combine events
-    events = list(itertools.chain(created_events, cron_events, value_events))
-
-    data_dict = {'events': events}
+    data_dict = {'events': []}
 
     return render_to_response('myemails/manage_templates.html', data_dict,
+                              context_instance=RequestContext(request))
+
+
+@user_is_allowed()
+def blocks_overview(request):
+    company = get_company_or_404(request)
+
+    # grab SeoSites associated to company
+    sites = company.get_seo_sites()
+
+    # retrieve pages for any site in sites list
+    pages = Page.objects.filter(sites__in=sites)
+
+    data_dict = {'pages': pages}
+
+    return render_to_response('seo/dashboard/blocks/blocks_overview.html',
+                              data_dict,
                               context_instance=RequestContext(request))
 
 

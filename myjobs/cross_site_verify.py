@@ -4,7 +4,7 @@ from django.conf import settings
 
 from functools import wraps
 from seo.models import SeoSite
-from urlparse import urlparse, parse_qs
+from urlparse import urlparse
 
 
 XRW = 'XMLHttpRequest'
@@ -31,25 +31,15 @@ def parse_request_meta(meta):
 
     xrw = meta.get('HTTP_X_REQUESTED_WITH')
 
-    qs = meta.get('QUERY_STRING', '')
-
-    qsreferer = parse_qs(qs).get('referer', [None])[0]
-
-    return (method, origin, referer, qsreferer, xrw)
+    return (method, origin, referer, xrw)
 
 
-def guess_child_domain(host, origin, referer, qsreferer):
+def guess_child_domain(host, origin, referer):
     if origin is not None:
         return origin
 
     if referer is not None:
         return referer
-
-    if qsreferer is not None:
-        if qsreferer == host:
-            return qsreferer
-        else:
-            raise DomainRelationshipException('qsreferer-not-host')
 
     raise DomainRelationshipException('no-child-info')
 
@@ -93,7 +83,7 @@ def get_site(domain):
 
 
 def verify_cross_site_request(site_loader, method, host_site, origin,
-                              referer, xrw, qsreferer):
+                              referer, xrw):
     if not is_permitted_method(method):
         raise DomainRelationshipException('method')
 
@@ -103,8 +93,7 @@ def verify_cross_site_request(site_loader, method, host_site, origin,
     if not is_parent(host_site):
         raise DomainRelationshipException('host-not-parent')
 
-    child = guess_child_domain(host_site.domain, origin, referer,
-                               qsreferer)
+    child = guess_child_domain(host_site.domain, origin, referer)
 
     child_site = site_loader(child)
     if not is_self_or_child(host_site, child_site):
@@ -118,19 +107,18 @@ def verify_cross_site_request(site_loader, method, host_site, origin,
 def cross_site_verify(fn):
     @wraps(fn)
     def verify(request):
-        method, origin, referer, qsreferer, xrw = (
+        method, origin, referer, xrw = (
             parse_request_meta(request.META))
 
         host_site = settings.SITE
 
         try:
             verify_cross_site_request(get_site, method, host_site, origin,
-                                      referer, xrw, qsreferer)
+                                      referer, xrw)
         except DomainRelationshipException as e:
             data = (("method: %r, host %r, origin %r, " +
-                     "referer %r, qsreferer %r, xrw %r") %
-                    (method, host_site.domain, origin, referer,
-                     qsreferer, xrw))
+                     "referer %r, xrw %r") %
+                    (method, host_site.domain, origin, referer, xrw))
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)

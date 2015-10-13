@@ -36,6 +36,7 @@ from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
 from myjobs.models import User
 from mypartners.models import Tag
+from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 from universal.helpers import get_domain, get_object_or_none
 
 import decimal
@@ -1165,6 +1166,14 @@ class Configuration(models.Model):
     moc_tag = models.CharField(max_length=50, default='vet-jobs')
     company_tag = models.CharField(max_length=50, default='careers')
     # template section
+    doc_type = models.CharField(max_length=255,
+                                choices=DOCTYPE_CHOICES,
+                                default='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 '
+                                        'Transitional//EN" "http://'
+                                        'www.w3.org/TR/html4/loose.dtd">')
+    language_code = models.CharField(max_length=16,
+                                     choices=LANGUAGE_CODES_CHOICES,
+                                     default='en')
     meta = models.TextField(null=True, blank=True)
     wide_header = models.TextField(null=True, blank=True)
     header = models.TextField(null=True, blank=True)

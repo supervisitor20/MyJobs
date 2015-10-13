@@ -307,10 +307,9 @@ def delete_prm_item(request):
 
     if content_id == ContentType.objects.get_for_model(Partner).id:
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
-        Contact.objects.filter(partner=partner).delete()
         log_change(partner, None, request.user, partner, partner.name,
                    action_type=DELETION)
-        partner.delete()
+        partner.archive()
         return HttpResponseRedirect(reverse('prm') + '?company=' +
                                     str(company.id))
     elif content_id == ContentType.objects.get_for_model(ContactRecord).id:
@@ -319,7 +318,7 @@ def delete_prm_item(request):
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
         log_change(contact_record, None, request.user, partner,
                    contact_record.contact.name, action_type=DELETION)
-        contact_record.delete()
+        contact_record.archive()
         return HttpResponseRedirect(reverse('partner_records')+'?company=' +
                                     str(company.id)+'&partner=' +
                                     str(partner_id))
@@ -337,7 +336,7 @@ def delete_prm_item(request):
         contact = get_object_or_404(Contact, id=contact_id)
         log_change(contact, None, request.user, partner, contact.name,
                    action_type=DELETION)
-        contact.delete()
+        contact.archive()
         return HttpResponseRedirect(reverse('partner_details')+'?company=' +
                                     str(company.id)+'&partner=' +
                                     str(partner_id))

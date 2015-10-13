@@ -98,6 +98,10 @@ class SeoCeleryTaskAdmin(djcelery.admin.TaskMonitor):
                     args = ast.literal_eval(state.args)
                     kwargs = ast.literal_eval(state.kwargs)
                     tasks.task_update_solr.delay(*args, **kwargs)
+                if "etl_to_solr" in state.name:
+                    args = ast.literal_eval(state.args)
+                    kwargs = ast.literal_eval(state.kwargs)
+                    tasks.task_priority_etl_to_solr.delay(*args, **kwargs)
                 else:
                     messages.info(request,
                                   u"Resend not supported for that task type")
@@ -152,6 +156,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         this = super(ConfigurationAdmin, self).get_form(request, obj, **kwargs)
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
+                             ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget'),
                              'sites', ]
@@ -159,6 +164,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
             ('Basic Info', {'fields': [
                 ('title', 'view_all_jobs_detail', 'status',
                  'percent_featured'),
+                ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', ),
                 'sites']}),
@@ -1166,7 +1172,8 @@ class CompanyAdmin(admin.ModelAdmin):
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
-                               ('enhanced'), ('digital_strategies_customer')]}),
+                               ('posting_access'), ('enhanced'),
+                               ('digital_strategies_customer')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
                                    ('og_img')]}),

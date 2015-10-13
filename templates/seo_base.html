@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+{{ site_config.doc_type|safe }}
 {% load seo_extras %}
 {% load i18n %}
 
@@ -9,7 +9,7 @@
     {% get_custom_page flatpage as custom_page %}
 {% endif %}
 
-<html xmlns:fb="http://ogp.me/ns/fb#" lang="en">
+<html xmlns:fb="http://ogp.me/ns/fb#" lang="{{ site_config.language_code|default:'en' }}">
 <head>
     {% block myblocks_css_extras %}{% endblock %}
 
@@ -33,23 +33,13 @@
     </style>
 
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <script src="{{ STATIC_URL }}secure-block.168-30.js" type="text/javascript"></script>
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
-      {% if domain_parent %}
       $(document).on("ready", function() {
-        // determine whether or not we should use CORS or JSONP
-        $.ajax({
-          type: "OPTIONS",
-          crossDomain: true
-        }).fail(function(xhr, textStatus, error) {
-          // Do JSONP
-          console.log("jsonp");
-        }).done(function() {
-          // Do CORS-enabled AJAX
-          console.log("cors");
-        });
+        var secure_block_url = "https://{{ secure_blocks_domain }}/secure-blocks/";
+        load_secure_blocks(secure_block_url);
       });
-      {% endif %}
     </script>
 
     <script type="text/javascript" src="{{ STATIC_URL }}pager.164-21.js"></script>
