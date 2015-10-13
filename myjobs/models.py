@@ -753,3 +753,8 @@ class Role(models.Model):
     company = models.ForeignKey("seo.Company")
     name = models.CharField(max_length=50)
     activities = models.ManyToManyField("Activity")
+
+
+class AppLevelPermission(models.Model):
+    name = models.CharField(max_length=50)
+    activities = models.ManyToManyField("Activity")

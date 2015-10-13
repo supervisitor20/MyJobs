@@ -8,6 +8,22 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'AppLevelPermission'
+        db.create_table(u'myjobs_applevelpermission', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal(u'myjobs', ['AppLevelPermission'])
+
+        # Adding M2M table for field activities on 'AppLevelPermission'
+        m2m_table_name = db.shorten_name(u'myjobs_applevelpermission_activities')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('applevelpermission', models.ForeignKey(orm[u'myjobs.applevelpermission'], null=False)),
+            ('activity', models.ForeignKey(orm[u'myjobs.activity'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['applevelpermission_id', 'activity_id'])
+
         # Adding model 'Activity'
         db.create_table(u'myjobs_activity', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -49,6 +65,12 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'Role', fields ['company', 'name']
         db.delete_unique(u'myjobs_role', ['company_id', 'name'])
 
+        # Deleting model 'AppLevelPermission'
+        db.delete_table(u'myjobs_applevelpermission')
+
+        # Removing M2M table for field activities on 'AppLevelPermission'
+        db.delete_table(db.shorten_name(u'myjobs_applevelpermission_activities'))
+
         # Deleting model 'Activity'
         db.delete_table(u'myjobs_activity')
 
@@ -85,6 +107,12 @@ class Migration(SchemaMigration):
         },
         u'myjobs.activity': {
             'Meta': {'object_name': 'Activity'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+        },
+        u'myjobs.applevelpermission': {
+            'Meta': {'object_name': 'AppLevelPermission'},
+            'activities': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Activity']", 'symmetrical': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
@@ -166,6 +194,7 @@ class Migration(SchemaMigration):
             'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'locations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'contacts'", 'symmetrical': 'False', 'to': u"orm['mypartners.Location']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -178,6 +207,7 @@ class Migration(SchemaMigration):
         u'mypartners.contactrecord': {
             'Meta': {'object_name': 'ContactRecord'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Contact']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'contact_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'contact_phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
@@ -190,6 +220,7 @@ class Migration(SchemaMigration):
             'job_hires': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
             'job_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '40', 'blank': 'True'}),
             'job_interviews': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'length': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
             'location': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
@@ -211,8 +242,10 @@ class Migration(SchemaMigration):
         u'mypartners.partner': {
             'Meta': {'object_name': 'Partner'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
@@ -251,7 +284,7 @@ class Migration(SchemaMigration):
             'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'})
         },
         u'mypartners.tag': {
             'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},
@@ -387,6 +420,7 @@ class Migration(SchemaMigration):
             'defaultBlurb': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'defaultBlurbTitle': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'directemployers_link': ('django.db.models.fields.URLField', [], {'default': "'http://directemployers.org'", 'max_length': '200'}),
+            'doc_type': ('django.db.models.fields.CharField', [], {'default': '\'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\'', 'max_length': '255'}),
             'facet_tag': ('django.db.models.fields.CharField', [], {'default': "'new-jobs'", 'max_length': '50'}),
             'fontColor': ('django.db.models.fields.CharField', [], {'default': "'666666'", 'max_length': '6'}),
             'footer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
@@ -394,6 +428,7 @@ class Migration(SchemaMigration):
             'header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'home_page_template': ('django.db.models.fields.CharField', [], {'default': "'home_page/home_page_listing.html'", 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language_code': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '16'}),
             'location_tag': ('django.db.models.fields.CharField', [], {'default': "'jobs'", 'max_length': '50'}),
             'meta': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'moc_helptext': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
