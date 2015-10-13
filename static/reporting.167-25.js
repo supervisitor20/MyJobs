@@ -42,9 +42,9 @@ window.onpopstate = function(event) {
           renderNavigation(true);
         },
         render = {
-          contact: function() {return renderViewContact(state.reportId);},
-          partner: function() {return renderViewPartner(state.reportId);},
-          contactrecord: function() {return renderGraphs(state.reportId, callback);}
+          contact: function() {return renderViewContact(state.reportId, state.reportName);},
+          partner: function() {return renderViewPartner(state.reportId, state.reportName);},
+          contactrecord: function() {return renderGraphs(state.reportId, state.reportName, callback);}
         };
     navigation = true;
     render[state.model]();
@@ -1113,19 +1113,21 @@ $(document).ready(function() {
 
   // View Report
   $subpage.on("click", ".report-row > a:not(.disabled), .fa-eye:not(.disabled), .view-report:not(.disabled)", function() {
-    var report_id = $(this).parents("tr, .report-row").data("report"),
+    var reportId = $(this).parents("tr, .report-row").data("report"),
+        reportName = $(this).parents("tr > td:first, .report-row").find('a').text(),
         model = $(this).parents("tr, .report-row").data("model"),
         callback = function() {
           renderNavigation(true);
         },
         views = {
-          partner: function() {return renderViewPartner(report_id);},
-          contact: function() {return renderViewContact(report_id);},
-          contactrecord: function() {return renderGraphs(report_id, callback);}
+          partner: function() {return renderViewPartner(reportId, reportName);},
+          contact: function() {return renderViewContact(reportId, reportName);},
+          contactrecord: function() {return renderGraphs(reportId, reportName, callback);}
         };
 
     if (modernBrowser) {
-      history.pushState({page: 'view-report', model: model, reportId: report_id}, 'View Report');
+      history.pushState({page: 'view-report', model: model,
+                         reportId: reportId, reportName: reportName}, 'View Report');
     }
 
     views[model]();
@@ -1705,7 +1707,7 @@ function renderDownload(report_id) {
 }
 
 
-function renderGraphs(report_id, callback) {
+function renderGraphs(report_id, reportName, callback) {
   var data = {'id': report_id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
@@ -1766,7 +1768,8 @@ function renderGraphs(report_id, callback) {
               contactContainer,
               i;
 
-          $mainContainer.html('').append("<div class='span6'><h4>Communication Activity</h4><div id='d-chart'></div>" +
+          $mainContainer.html('').append("<div class='span12'><h2>" + reportName + "</h2></div>" +
+                                         "<div class='span6'><h4>Communication Activity</h4><div id='d-chart'></div>" +
                                          "</div><div class='span6'><h4>Referral Activity</h4><div id='b-chart'></div></div>");
 
           for (pKey in pChartInfo) {
@@ -1913,7 +1916,7 @@ function renderGraphs(report_id, callback) {
 }
 
 
-function renderViewPartner(id) {
+function renderViewPartner(id, name) {
   var data = {id: id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
@@ -1922,7 +1925,7 @@ function renderViewPartner(id) {
     url: url + "/reports/view/mypartners/partner",
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"></div>'),
+      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Name</th><th>Primary Contact</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
@@ -1940,7 +1943,7 @@ function renderViewPartner(id) {
 }
 
 
-function renderViewContact(id) {
+function renderViewContact(id, name) {
    var data = {id: id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
@@ -1949,7 +1952,7 @@ function renderViewContact(id) {
     url: url + "/reports/view/mypartners/contact",
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"></div>'),
+      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Partner</th><th>Name</th><th>Phone</th><th>Email</th><th>State(s)</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
