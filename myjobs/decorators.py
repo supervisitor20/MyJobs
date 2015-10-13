@@ -2,7 +2,7 @@ from functools import wraps
 
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User
@@ -96,3 +96,36 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
             return view_func(request, *args, **kwargs)
         return wraps(view_func)(wrap)
     return decorator
+
+
+def requires(activities, callback=None):
+    """
+    Protects a view by activity, optionally envoking a callback. 
+
+    This decorator checks if the request's user is assigned to roles which
+    include the given activities. If so, the view is processed as it would
+    have without this decorator. If not, either the callback is invoked, or a
+    403 (Forbidden) response is returned. 
+
+    Inputs:
+    :*activities*: Positional arguments are the names of the required
+    activities as strings.
+    :callback: A callback to be used as the view response when the user isn't
+    associated with the correct subset of activities.
+    """
+
+    def decorator(view_func):
+
+        @wraps(view_func)
+        def wrap(request, *args, **kwargs):
+            user_activities = request.user.roles.values_list(
+                "activities__name", flat=True)
+
+            if set(user_activities).issubset(activities):
+                return view_func(request, *args, **kwargs)
+            else:
+                if callback:
+                    return callback()
+                else:
+                    raise HttpResponseForbidden(
+                        "User's roles missing required activities.")
