@@ -231,6 +231,25 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
         self.assertFalse(record.archived_on)
 
+    def test_archive_communication_records(self):
+        self.client.login_user(self.staff_user)
+        communication_record = ContactRecordFactory(partner=self.partner,
+                                                    contact=self.contact)
+        url = self.get_url('delete_prm_item',
+                           partner=self.partner.pk,
+                           id=communication_record.pk,
+                           ct=ContentType.objects.get_for_model(ContactRecord).pk)
+
+        self.contact.delete()
+
+        response = self.client.get(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 302)
+        with self.assertRaises(ContactRecord.DoesNotExist):
+            ContactRecord.objects.get(pk=communication_record.pk)
+        communication_record = ContactRecord.all_objects.get(
+            pk=communication_record.pk)
+        self.assertTrue(communication_record.archived_on)
+
 
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view functio. 

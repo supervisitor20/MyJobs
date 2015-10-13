@@ -316,8 +316,13 @@ def delete_prm_item(request):
         contact_record = get_object_or_404(ContactRecord, partner=partner_id,
                                            id=item_id)
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
+        contact_name = getattr(getattr(contact_record,
+                                       'contact',
+                                       None),
+                               'name',
+                               '')
         log_change(contact_record, None, request.user, partner,
-                   contact_record.contact.name, action_type=DELETION)
+                   contact_name, action_type=DELETION)
         contact_record.archive()
         return HttpResponseRedirect(reverse('partner_records')+'?company=' +
                                     str(company.id)+'&partner=' +
