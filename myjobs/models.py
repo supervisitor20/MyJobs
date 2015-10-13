@@ -313,6 +313,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
+    @property
+    def activities(self):
+        return self.roles.values_list("activities__name", flat=True)
+
     natural_key = __unicode__
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -745,6 +749,9 @@ class FAQ(models.Model):
 class Activity(models.Model):
     name = models.CharField(max_length=50)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Role(models.Model):
     class Meta:
@@ -753,6 +760,9 @@ class Role(models.Model):
     company = models.ForeignKey("seo.Company")
     name = models.CharField(max_length=50)
     activities = models.ManyToManyField("Activity")
+
+    def __unicode__(self):
+        return "%s for %s" % (self.name, self.company)
 
 
 class AppLevelPermission(models.Model):

@@ -114,18 +114,19 @@ def requires(activities, callback=None):
     associated with the correct subset of activities.
     """
 
+    callback = callback or HttpResponseForbidden
+
     def decorator(view_func):
 
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            user_activities = request.user.roles.values_list(
-                "activities__name", flat=True)
+            user_activities = set(request.user.roles.values_list(
+                "activities__name", flat=True))
 
-            if set(user_activities).issubset(activities):
+            if bool(user_activities) and user_activities.issubset(activities):
                 return view_func(request, *args, **kwargs)
             else:
-                if callback:
-                    return callback()
-                else:
-                    raise HttpResponseForbidden(
-                        "User's roles missing required activities.")
+                return callback()
+
+        return wrap
+    return decorator
