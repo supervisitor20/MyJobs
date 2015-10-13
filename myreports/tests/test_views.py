@@ -398,8 +398,6 @@ class TestRegenerate(MyReportsTestCase):
 
 
 class TestReportsApi(MyReportsTestCase):
-    fixtures = ['class_and_pres.json']
-
     def test_reporting_types_api_fail_get(self):
         resp = self.client.get(reverse('reporting_types_api'))
         self.assertEquals(405, resp.status_code)
@@ -419,9 +417,31 @@ class TestReportsApi(MyReportsTestCase):
         resp = self.client.post(reverse('report_types_api'),
                                 data={'reporting_type_id': '1'})
         data = json.loads(resp.content)['report_type']
-        self.assertEquals(2, len(data))
+        self.assertEquals(3, len(data))
         self.assertEquals("Partners", data['1']['name'])
         self.assertEquals("Partners Report", data['1']['description'])
-        self.assertEquals("Communication Records", data['2']['name'])
+        self.assertEquals("Contacts", data['2']['name'])
+        self.assertEquals("Contacts Report", data['2']['description'])
+        self.assertEquals("Communication Records", data['3']['name'])
         self.assertEquals("Communication Records Report",
-                          data['2']['description'])
+                          data['3']['description'])
+
+
+class TestDynamicReports(MyReportsTestCase):
+    def test_dynamic_report(self):
+        """Create some test data, run, and download a report."""
+        self.client.login_user(self.user)
+
+        partner = PartnerFactory(owner=self.company)
+        for i in range(0, 10):
+            ContactFactory.create(name="name-%s" % i, partner=partner)
+
+        resp = self.client.post(reverse('run_dynamic_report'), {'rp_id': 3})
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        lines = resp.content.splitlines()
+        self.assertEquals(11, len(lines))

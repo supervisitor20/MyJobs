@@ -11,6 +11,8 @@ urlpatterns = patterns(
     url(r'^ajax/(?P<app>\w+)/(?P<model>\w+)$',
         'view_records',
         name='view_records'),
+    url(r'^view/dynamicdownload$', 'download_dynamic_report',
+        name='download_dynamic_report'),
     url(r'download$', 'download_report', name='download_report'),
     url(r'view/downloads$', 'downloads', name='downloads'),
     url(r'^view/dynamicoverview$', 'dynamicoverview', name='dynamicoverview'),
@@ -18,4 +20,5 @@ urlpatterns = patterns(
         name='reporting_types_api'),
     url(r'^api/report_types$', 'report_types_api',
         name='report_types_api'),
+    url(r'^api/run_report$', 'run_dynamic_report', name='run_dynamic_report')
 )

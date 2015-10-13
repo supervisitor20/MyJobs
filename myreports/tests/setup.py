@@ -3,6 +3,7 @@ from django.test import TestCase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory
+from myreports.tests.factories import create_full_fixture
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
@@ -22,3 +23,5 @@ class MyReportsTestCase(TestCase):
         CompanyUserFactory(user=self.user, company=self.company)
 
         self.client.login_user(self.user)
+
+        create_full_fixture()
