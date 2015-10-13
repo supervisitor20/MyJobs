@@ -105,6 +105,16 @@ class RowFactory(django.DjangoModelFactory):
         model = 'myblocks.Row'
 
 
+class RowOrderFactory(django.DjangoModelFactory):
+    class Meta:
+        model = 'myblocks.RowOrder'
+
+
+class BlockOrderFactory(django.DjangoModelFactory):
+    class Meta:
+        model = 'myblocks.BlockOrder'
+
+
 class PageFactory(django.DjangoModelFactory):
     class Meta:
         model = 'myblocks.Page'

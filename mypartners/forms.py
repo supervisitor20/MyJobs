@@ -39,7 +39,7 @@ class ContactForm(NormalizedModelForm):
         'label', 'address_line_one', 'address_line_two', 
         'city', 'state', 'postal_code')
     # similarly for partner information
-    __PARTNER_FIELDS = ('parnter-tags', 'partner_id', 'partnername')
+    __PARTNER_FIELDS = ('partner-tags', 'partner_id', 'partnername')
 
     def __init__(self, *args, **kwargs):
         super(ContactForm, self).__init__(*args, **kwargs)
@@ -70,7 +70,7 @@ class ContactForm(NormalizedModelForm):
         form_name = "Contact Information"
         model = Contact
         exclude = ['user', 'partner', 'locations', 'library', 'archived_on',
-                   'approval_status']
+                   'approval_status', 'last_modified']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -190,7 +190,7 @@ class NewPartnerForm(NormalizedModelForm):
         form_name = "Partner Information"
         model = Contact
         exclude = ['user', 'partner', 'tags', 'locations', 'library',
-                   'approval_status', 'archived_on']
+                   'approval_status', 'archived_on', 'last_modified']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,

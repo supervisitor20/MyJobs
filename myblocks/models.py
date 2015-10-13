@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from slugify import slugify
 
 from django.conf import settings
@@ -15,12 +16,17 @@ from django.template.loaders.filesystem import Loader
 from django.utils.safestring import mark_safe
 
 from myblocks import context_tools
+from myblocks.context_tools import get_site_config
 from myblocks.helpers import success_url
 from myjobs.helpers import expire_login
 from myjobs.models import User
+from mysearches.models import SavedSearch
 from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
+from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
+
+logger = logging.getLogger(__name__)
 
 
 # Attempt to use a secondary cache for blocks. This
@@ -72,6 +78,7 @@ class Block(models.Model):
     base_head = None
 
     content_type = models.ForeignKey(ContentType, editable=False)
+    element_id = models.CharField(max_length=255, null=True)
     name = models.CharField(max_length=255)
     offset = models.PositiveIntegerField()
     span = models.PositiveIntegerField()
@@ -118,6 +125,14 @@ class Block(models.Model):
         return '<div class="block-%s %s">%s</div>' % (self.id,
                                                       self.bootstrap_classes(),
                                                       self.template)
+
+    def render_for_ajax(raw_self, request, params):
+        self = raw_self.cast()
+        context = self.context(request, **params)
+        full_template = templatetag_library() + self.template
+        template = Template(full_template)
+        rendered_template = template.render(RequestContext(request, context))
+        return rendered_template
 
     def required_js(self):
         """
@@ -362,9 +377,33 @@ class RegistrationBlock(Block):
 class SavedSearchWidgetBlock(Block):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
+    def context(self, request, **kwargs):
+        saved_search_url = kwargs.get('url')
+        success_email = kwargs.get('success_email')
+        search = None
+        user = request.user if request.user.is_authenticated() else None
+
+        if user:
+            search = (SavedSearch.objects
+                      .filter(user=user,
+                              url=saved_search_url)
+                      .first())
+
+        if success_email and not search:
+            search = (SavedSearch.objects
+                      .filter(user__email=success_email,
+                              url=saved_search_url)
+                      .first())
+
+        return {
+            'user': user,
+            'search': search,
+            'success': success_email,
+            'is_pss': hasattr(search, 'partnersavedsearch'),
+        }
+
     def required_js(self):
         return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
-
 
 class SearchBoxBlock(Block):
     base_template = 'myblocks/blocks/searchbox.html'
@@ -580,6 +619,15 @@ class Page(models.Model):
 
     updated = models.DateTimeField(auto_now=True)
 
+    add_blank = lambda choices: (('', 'Inherit from Configuration'),) + choices
+
+    doc_type = models.CharField(max_length=255, blank=False,
+                                choices=add_blank(DOCTYPE_CHOICES),
+                                default='')
+    language_code = models.CharField(max_length=16, blank=False,
+                                     choices=add_blank(LANGUAGE_CODES_CHOICES),
+                                     default='')
+
     def __unicode__(self):
         return self.name
 
@@ -601,8 +649,13 @@ class Page(models.Model):
         for block in self.all_blocks():
             context.update(block.context(request, **kwargs))
 
-        context['site_title'] = settings.SITE_TITLE
-        context['site_description'] = settings.SITE_DESCRIPTION
+        site_config = get_site_config(request)
+
+        context.update({'site_title': settings.SITE_TITLE,
+                        'site_description': settings.SITE_DESCRIPTION,
+                        'doctype': self.doc_type or site_config.doc_type,
+                        'language_code': (self.language_code
+                                          or site_config.language_code)})
 
         return context
 
@@ -640,7 +693,8 @@ class Page(models.Model):
     def get_template(self, request):
         filters = context_tools.get_filters(request)
 
-        context = {
+        context = self.context(request)
+        context.update({
             'body': mark_safe(self.get_body()),
             'google_analytics': context_tools.get_google_analytics(request),
             'head': mark_safe(self.get_head()),
@@ -648,7 +702,7 @@ class Page(models.Model):
             'num_filters': len([k for (k, v) in filters.iteritems() if v]),
             'page': self,
             'STATIC_URL': settings.STATIC_URL,
-        }
+        })
         template = Template(raw_base_template(self))
         return template.render(Context(context))
 

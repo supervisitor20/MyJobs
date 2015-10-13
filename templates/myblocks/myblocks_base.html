@@ -1,8 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-
+{{ doctype|safe }}
 {{ page.templatetag_library|safe }}
 
-<html xmlns:fb="http://ogp.me/ns/fb#" lang="en">
+<html xmlns:fb="http://ogp.me/ns/fb#" lang="{{ language_code|default:'en' }}">
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />

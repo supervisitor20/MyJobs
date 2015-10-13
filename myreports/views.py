@@ -9,9 +9,10 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.generic import View
+from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize
-from myreports.models import Report
+from myreports.models import Report, ReportingType, ReportType
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -344,3 +345,56 @@ def download_report(request):
     response.write(serialize('csv', records, values=values, order_by=order_by))
 
     return response
+
+
+@has_access('prm')
+@require_http_methods(['GET'])
+def dynamicoverview(request):
+    """The Dynamic Reports page."""
+    company = get_company_or_404(request)
+    states = OrderedDict(
+        sorted((v, k) for k, v in location_data.states.inv.iteritems()))
+
+    ctx = {
+        "company": company,
+        "states": json.dumps(states),
+    }
+
+    return render_to_response('myreports/dynamicreports.html', ctx,
+                              RequestContext(request))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def reporting_types_api(request):
+    reporting_types = (ReportingType.objects
+                       .active_for_user(request.user))
+
+    def entry(reporting_type):
+        return (str(reporting_type.id),
+                {'name': reporting_type.reporting_type,
+                 'description': reporting_type.description})
+
+    data = {'reporting_type':
+            dict(entry(rt) for rt in reporting_types)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def report_types_api(request):
+
+    reporting_type_id = request.POST['reporting_type_id']
+    report_types = (ReportType.objects
+                    .active_for_reporting_type(reporting_type_id))
+
+    def entry(report_type):
+        return (str(report_type.id),
+                {'name': report_type.report_type,
+                 'description': report_type.description})
+
+    data = {'report_type':
+            dict(entry(rt) for rt in report_types)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
