@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.util import ErrorList
@@ -90,6 +92,7 @@ class ContactForm(NormalizedModelForm):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
+        self.instance.last_modified = datetime.now()
 
         contact = None
         if not self.instance.pk:
@@ -207,7 +210,7 @@ class NewPartnerForm(NormalizedModelForm):
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
-
+        print 'PARTNER-NEW: ', partner.last_modified
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
 
@@ -227,6 +230,7 @@ class NewPartnerForm(NormalizedModelForm):
 
             self.instance.partner = partner
             instance = super(NewPartnerForm, self).save(commit)
+            print 'CONTACT-NEW: ', instance.last_modified
             partner.primary_contact = instance
             
             if create_location:
@@ -316,6 +320,7 @@ class PartnerForm(NormalizedModelForm):
 
     def save(self, user, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
+        self.instance.last_modified = datetime.now()
 
         instance = super(PartnerForm, self).save(commit)
         # Explicity set the primary_contact for the partner and re-save.
@@ -327,7 +332,7 @@ class PartnerForm(NormalizedModelForm):
         instance.save()
         log_change(instance, self, user, instance, instance.name,
                    action_type=new_or_change)
-
+        print 'PARTNER NORMAL FORM: ', instance.last_modified
         return instance
 
 
@@ -418,6 +423,7 @@ class ContactRecordForm(NormalizedModelForm):
     def save(self, user, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.partner = partner
+        self.instance.last_modified = datetime.now()
 
         if new_or_change == ADDITION:
             self.instance.created_by = user
@@ -437,6 +443,7 @@ class ContactRecordForm(NormalizedModelForm):
         log_change(instance, self, user, partner, identifier,
                    action_type=new_or_change)
 
+        print 'CONTACT RECORD: ', instance.last_modified
         return instance
 
 
@@ -477,6 +484,9 @@ class LocationForm(NormalizedModelForm):
 
     def save(self, request, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
+
+        for contact in self.instance.contacts.all():
+            contact.last_modified = datetime.now()
 
         instance = super(LocationForm, self).save(commit)
         _, partner, _ = prm_worthy(request)

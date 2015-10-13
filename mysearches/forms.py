@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.forms import (BooleanField, CharField, CheckboxInput, ChoiceField,
                           HiddenInput, RadioSelect, Select,
                           TextInput, Textarea, URLField, ValidationError)
@@ -80,6 +81,7 @@ class SavedSearchForm(BaseUserForm):
 
     def save(self, commit=True):
         self.instance.feed = self.cleaned_data['feed']
+        self.instance.last_modified = datetime.now()
         return super(SavedSearchForm, self).save(commit)
 
     class Meta:
@@ -262,6 +264,7 @@ class PartnerSavedSearchForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.feed = self.cleaned_data.get('feed')
+        self.instance.last_modified = datetime.now()
         is_new_or_change = CHANGE if self.instance.pk else ADDITION
         if not self.instance.pk:
             self.instance.sort_by = 'Date'
