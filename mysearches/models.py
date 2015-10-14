@@ -358,6 +358,11 @@ class SavedSearch(models.Model):
 
         SavedSearchLog.objects.create(**log_kwargs)
 
+    def update_last_modified(self, save=True):
+        self.last_modified = datetime.now()
+        if save:
+            self.save()
+
     def create(self, *args, **kwargs):
         """
         On creation, check if that same URL exists for the user and raise

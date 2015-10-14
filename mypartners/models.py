@@ -264,6 +264,11 @@ class Contact(ArchivedModel):
         pre_delete.send(sender=Contact, instance=self, using='default')
         super(Contact, self).archive(*args, **kwargs)
 
+    def update_last_modified(self, save=True):
+        self.last_modified = datetime.now()
+        if save:
+            self.save()
+
     def get_contact_url(self):
         base_urls = {
             'contact': reverse('edit_contact'),
@@ -419,6 +424,10 @@ class Partner(ArchivedModel):
 
         return tags
 
+    def update_last_modified(self, save=True):
+        self.last_modified = datetime.now()
+        if save:
+            self.save()
 
 @receiver(pre_save, sender=Partner, dispatch_uid='pre_save_partner_signal')
 def save_partner(sender, instance, **kwargs):
@@ -688,6 +697,11 @@ class ContactRecord(ArchivedModel):
 
     def shorten_date_time(self):
         return self.date_time.strftime('%b %e, %Y')
+
+    def update_last_modified(self, save=True):
+        self.last_modified = datetime.now()
+        if save:
+            self.save()
 
     @property
     def contactlogentry(self):
