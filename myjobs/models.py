@@ -746,8 +746,15 @@ class FAQ(models.Model):
     is_visible = models.BooleanField(default=True, verbose_name='Is visible')
 
 
+class AppAccess(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+
 class Activity(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     app_access = models.ForeignKey('AppAccess')
 
     def __unicode__(self):
@@ -764,7 +771,3 @@ class Role(models.Model):
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company)
-
-
-class AppAccess(models.Model):
-    name = models.CharField(max_length=50, unique=True)

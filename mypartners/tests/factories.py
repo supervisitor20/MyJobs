@@ -43,9 +43,8 @@ class ContactFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        if extracted:
-            for location in extracted:
-                self.locations.add(location)
+        locations = extracted or []
+        self.locations.add(*locations)
 
 
 class ContactRecordFactory(factory.django.DjangoModelFactory):

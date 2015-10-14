@@ -18,7 +18,7 @@ class Migration(SchemaMigration):
         # Adding model 'Activity'
         db.create_table(u'myjobs_activity', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=50)),
             ('app_access', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myjobs.AppAccess'])),
         ))
         db.send_create_signal(u'myjobs', ['Activity'])
@@ -98,7 +98,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Activity'},
             'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
         },
         u'myjobs.appaccess': {
             'Meta': {'object_name': 'AppAccess'},
@@ -345,6 +345,7 @@ class Migration(SchemaMigration):
         u'seo.company': {
             'Meta': {'ordering': "['name']", 'unique_together': "(('name', 'user_created'),)", 'object_name': 'Company'},
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.User']", 'through': u"orm['seo.CompanyUser']", 'symmetrical': 'False'}),
+            'app_access': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.AppAccess']", 'symmetrical': 'False'}),
             'canonical_microsite': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'company_slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'digital_strategies_customer': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
