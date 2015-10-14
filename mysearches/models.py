@@ -50,7 +50,7 @@ class SavedSearch(models.Model):
                              on_delete=models.DO_NOTHING)
 
     created_on = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
     label = models.CharField(max_length=60, verbose_name=_("Search Name"))
     url = models.URLField(max_length=300,
                           verbose_name=_("URL of Search Results"))
@@ -358,8 +358,8 @@ class SavedSearch(models.Model):
 
         SavedSearchLog.objects.create(**log_kwargs)
 
-    def update_last_modified(self, save=True):
-        self.last_modified = datetime.now()
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
         if save:
             self.save()
 

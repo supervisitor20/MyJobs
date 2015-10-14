@@ -240,7 +240,7 @@ class Contact(ArchivedModel):
                              help_text='Any additional information you want to record')
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'partner__owner'
 
@@ -264,8 +264,8 @@ class Contact(ArchivedModel):
         pre_delete.send(sender=Contact, instance=self, using='default')
         super(Contact, self).archive(*args, **kwargs)
 
-    def update_last_modified(self, save=True):
-        self.last_modified = datetime.now()
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
         if save:
             self.save()
 
@@ -343,7 +343,7 @@ class Partner(ArchivedModel):
                               on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'owner'
 
@@ -424,8 +424,8 @@ class Partner(ArchivedModel):
 
         return tags
 
-    def update_last_modified(self, save=True):
-        self.last_modified = datetime.now()
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
         if save:
             self.save()
 
@@ -639,7 +639,7 @@ class ContactRecord(ArchivedModel):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)
@@ -698,8 +698,8 @@ class ContactRecord(ArchivedModel):
     def shorten_date_time(self):
         return self.date_time.strftime('%b %e, %Y')
 
-    def update_last_modified(self, save=True):
-        self.last_modified = datetime.now()
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
         if save:
             self.save()
 

@@ -88,7 +88,7 @@ class SavedSearchForm(BaseUserForm):
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
             'sort_by': RadioSelect(renderer=HorizontalRadioRenderer)
         }
-        exclude = ['custom_message', 'last_modified']
+        exclude = ['custom_message', 'last_action_time']
 
 
 class DigestForm(BaseUserForm):
@@ -262,7 +262,7 @@ class PartnerSavedSearchForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.feed = self.cleaned_data.get('feed')
-        self.instance.update_last_modified(False)
+        self.instance.update_last_action_time(False)
         is_new_or_change = CHANGE if self.instance.pk else ADDITION
         if not self.instance.pk:
             self.instance.sort_by = 'Date'
@@ -311,5 +311,5 @@ class PartnerSubSavedSearchForm(RequestForm):
         }
 
     def save(self, commit=True):
-        self.instance.update_last_modified(False)
+        self.instance.update_last_action_time(False)
         return super(self, PartnerSavedSearch).save()

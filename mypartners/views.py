@@ -445,8 +445,8 @@ def edit_location(request):
 
             if location not in contact.locations.all():
                 contact.locations.add(location)
-                contact.update_last_modified()
-                print 'CONTACT_LOC_ADD: ', contact, contact.last_modified
+                contact.update_last_action_time()
+                print 'CONTACT_LOC_ADD: ', contact, contact.last_action_time
 
             content_id = ContentType.objects.get_for_model(contact.__class__).pk
             return HttpResponseRedirect(
@@ -477,9 +477,9 @@ def delete_location(request):
     location = get_object_or_404(
         Location, pk=request.REQUEST.get('location', 0))
 
-    contact.update_last_modified()
+    contact.update_last_action_time()
     contact.locations.remove(location)
-    print 'LOCATION-DELETE: ', contact.last_modified
+    print 'LOCATION-DELETE: ', contact.last_action_time
 
     content_id = ContentType.objects.get_for_model(contact.__class__).pk
     return HttpResponseRedirect(
