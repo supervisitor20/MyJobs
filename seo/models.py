@@ -759,6 +759,7 @@ class Company(models.Model):
                                                     blank=True)
 
     # Permissions
+    app_access = models.ManyToManyField('myjobs.AppAccess')
     prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)

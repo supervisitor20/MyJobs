@@ -53,7 +53,7 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@has_access("prm")
+@requires(["create partner", "edit partner"])
 def prm(request):
     """
     Partner Relationship Manager

@@ -5,7 +5,8 @@ from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User
+from myjobs.models import User, Activity, AppAccess 
+from universal.helpers import get_company_or_404
 
 
 def user_is_allowed(model=None, pk_name=None, pass_user=False):
@@ -98,7 +99,7 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
     return decorator
 
 
-def requires(activities, callback=None):
+def requires(activity_names, callback=None):
     """
     Protects a view by activity, optionally envoking a callback. 
 
@@ -108,7 +109,7 @@ def requires(activities, callback=None):
     403 (Forbidden) response is returned. 
 
     Inputs:
-    :*activities*: Positional arguments are the names of the required
+    :*activity_names*: Positional arguments are the names of the required
     activities as strings.
     :callback: A callback to be used as the view response when the user isn't
     associated with the correct subset of activities.
@@ -120,13 +121,23 @@ def requires(activities, callback=None):
 
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            user_activities = set(request.user.roles.values_list(
-                "activities__name", flat=True))
+            company = get_company_or_404(request)
+            company_perms = company.app_permissions.values_list(
+                'name', flat=True)
+            permissions = AppAccess.objects.filter(
+                activity__name__in=activity_names).values_list(
+                    'name', flat=True)
+            activities = request.user.roles.values_list(
+                'activities__name', flat=True)
 
-            if bool(user_activities) and user_activities.issubset(activities):
-                return view_func(request, *args, **kwargs)
-            else:
+            if not bool(company_perms) or not set(permissions).issubset(
+                    company_perms):
+                raise Http404("This is not the page you are looking for")
+            elif not bool(activities) or not set(activity_names).issubset(
+                    activities):
                 return callback()
+            else:
+                return view_func(request, *args, **kwargs)
 
         return wrap
     return decorator

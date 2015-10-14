@@ -748,6 +748,7 @@ class FAQ(models.Model):
 
 class Activity(models.Model):
     name = models.CharField(max_length=50)
+    app_access = models.ForeignKey('AppAccess')
 
     def __unicode__(self):
         return self.name
@@ -765,6 +766,5 @@ class Role(models.Model):
         return "%s for %s" % (self.name, self.company)
 
 
-class AppLevelPermission(models.Model):
-    name = models.CharField(max_length=50)
-    activities = models.ManyToManyField("Activity")
+class AppAccess(models.Model):
+    name = models.CharField(max_length=50, unique=True)
