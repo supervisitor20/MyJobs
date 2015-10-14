@@ -316,6 +316,11 @@ def delete_prm_item(request):
         contact_record = get_object_or_404(ContactRecord, partner=partner_id,
                                            id=item_id)
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
+        # At one point, contacts could be deleted. The previous functionality
+        # at this location couldn't handle that, accessing
+        # contact_record.contact.name directly. Chaining getattr may not be
+        # pretty but it ensures that we will never be accessing nonexistent
+        # attributes.
         contact_name = getattr(getattr(contact_record,
                                        'contact',
                                        None),

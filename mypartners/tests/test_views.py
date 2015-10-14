@@ -231,7 +231,13 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
         self.assertFalse(record.archived_on)
 
-    def test_archive_communication_records(self):
+    def test_archive_communication_records_without_contact(self):
+        """
+        Test that trying to archive a communication record without an
+        associated contact works correctly. This should not happen very often
+        and the number of records for which this is an issue should never
+        increase as we no longer allow deleting of contacts.
+        """
         self.client.login_user(self.staff_user)
         communication_record = ContactRecordFactory(partner=self.partner,
                                                     contact=self.contact)
