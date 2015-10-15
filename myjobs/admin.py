@@ -1,12 +1,8 @@
 from django.contrib import admin
 from django.contrib.sites.models import Site
 
-from django_extensions.admin import ForeignKeyAutocompleteAdmin
-
-from myjobs.models import (User, CustomHomepage, EmailLog, FAQ, Role)
+from myjobs.models import User, CustomHomepage, EmailLog, FAQ
 from myjobs.forms import UserAdminForm
-
-from mydashboard.admin import company_user_name
 
 
 class EmailLogAdmin(admin.ModelAdmin):
@@ -60,27 +56,8 @@ class FAQAdmin(admin.ModelAdmin):
     list_display = ['question', 'is_visible']
     search_fields = ['question', ]
 
-
-class RoleAdmin(ForeignKeyAutocompleteAdmin):
-    related_search_fields = {
-        'company': ('name',)
-    }
-
-    related_string_functions = {
-        'company': company_user_name
-    }
-
-    search_fields = ['company__name', 'domain']
-
-    class Meta:
-        model = Role
-
-    class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
-
 admin.site.register(User, UserAdmin)
 admin.site.register(CustomHomepage)
 admin.site.register(EmailLog, EmailLogAdmin)
 admin.site.register(FAQ, FAQAdmin)
-admin.site.register(Role, RoleAdmin)
 admin.site.unregister(Site)
