@@ -313,10 +313,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
-    @property
-    def activities(self):
-        return self.roles.values_list("activities__name", flat=True)
-
     natural_key = __unicode__
 
     def save(self, force_insert=False, force_update=False, using=None,
