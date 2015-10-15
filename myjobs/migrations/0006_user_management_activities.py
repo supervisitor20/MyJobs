@@ -5,43 +5,26 @@ from south.v2 import DataMigration
 from django.db import models
 
 class Migration(DataMigration):
-
     def forwards(self, orm):
-        """Create default PRM Activities."""
+        """Create User Management Activities."""
 
-        app = orm.AppAccess.objects.create(name="PRM")
+        app = orm.AppAccess.objects.create(name="User Management")
         orm.Activity.objects.bulk_create([
             orm.Activity(name=args[0], description=args[1], app_access=app)
             for args in [
-                ("create contact", "Add new contacts."),
-                ("read contact", "View existing contacts."),
-                ("update contact", "Edit existing contacts."),
-                ("delete contact", "Remove existing contacts."),
-                ("create partner", "Add new partners."),
-                ("read partner", "View existing partners."),
-                ("update partner", "Edit existing contacts."),
-                ("delete partner", "Remove existing contacts."),
-                ("create communication record",
-                 "Add new communication records."),
-                ("read communication record",
-                 "View existing communication records."),
-                ("update communication record",
-                 "Edit existing communication records."),
-                ("delete communication record",
-                 "Remove existing communication records."),
-                ("create partner saved search",
-                 "Add new patner saved searches."),
-                ("read partner saved search",
-                 "View existing partner saved searches."),
-                ("update partner saved search",
-                 "Edit existing partner saved searches."),
-                ("delete partner saved search",
-                 "remove existing partner saved searches.")]])
+                ("create role", "Create new roles."),
+                ("read role", "View existing roles."),
+                ("update role", "Edit existing roles."),
+                ("delete role", "Remove existing roles."),
+                ("create user", "Create new users."),
+                ("read user", "View existing users."),
+                ("update user", "Edit existing users."),
+                ("delete user", "Remove existing users.")]])
 
     def backwards(self, orm):
-        """Remove default PRM Activities."""
+        """Remove User Management Activities."""
 
-        app_access = orm.AppAccess.objects.get(name="PRM")
+        app_access = orm.AppAccess.objects.get(name="User Management")
         orm.Activity.objects.filter(app_access=app_access).delete()
         app_access.delete()
 
