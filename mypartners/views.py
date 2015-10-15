@@ -17,7 +17,7 @@ from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
@@ -31,7 +31,6 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User
-from myjobs.decorators import requires
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -51,14 +50,9 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
 
-def fail():
-    response = HttpResponseForbidden()
-    response.reason_phrase = "Nope"
-
-    return response
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(["create partner", "edit partner"], fail)
+@has_access('prm')
 def prm(request):
     """
     Partner Relationship Manager
@@ -95,6 +89,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
+@has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
 
