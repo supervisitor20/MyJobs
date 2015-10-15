@@ -17,7 +17,7 @@ from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
@@ -51,9 +51,14 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
 
+def fail():
+    response = HttpResponseForbidden()
+    response.reason_phrase = "Nope"
+
+    return response
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(["create partner", "edit partner"])
+@requires(["create partner", "edit partner"], fail)
 def prm(request):
     """
     Partner Relationship Manager

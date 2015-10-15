@@ -743,6 +743,10 @@ class FAQ(models.Model):
 
 
 class AppAccess(models.Model):
+    """
+    App access represents a logical grouping of activities. While an activity
+    may belong to many roles, it may only be assigned one app access. 
+    """
     name = models.CharField(max_length=50, unique=True)
 
     def __unicode__(self):
@@ -750,6 +754,10 @@ class AppAccess(models.Model):
 
 
 class Activity(models.Model):
+    """
+    An activity represents an individual task that can be performed by a
+    user.
+    """
     name = models.CharField(max_length=50, unique=True)
     app_access = models.ForeignKey('AppAccess')
 
@@ -758,6 +766,12 @@ class Activity(models.Model):
 
 
 class Role(models.Model):
+    """
+    A role represents a group of activities which are arbitrarily connected.
+    Rather than be assigned individual activities, users will be assigned
+    roles. The grouping is arbitrary in that they are determined by the
+    individual creating the role.
+    """
     class Meta:
         unique_together = ("company", "name")
 

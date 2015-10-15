@@ -6,7 +6,7 @@ from django.http import HttpResponse, Http404, HttpResponseForbidden
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
-from myjobs.decorators import requires
+from myjobs.decorators import requires, MissingAppAccess, MissingActivity
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 from seo.models import SeoSite
 
@@ -53,12 +53,10 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.company.app_access.clear()
+        response = requires([self.activity.name])(dummy_view)(self.request)
 
-        with self.assertRaises(Http404) as cm:
-            response = requires([self.activity.name])(dummy_view)(self.request)
-
-        self.assertEqual(
-            cm.exception.message, "This is not the page you are looking for.")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(type(response), MissingAppAccess)
 
     def test_user_with_wrong_activities(self):
         """
@@ -67,9 +65,10 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.user.roles.clear()
-
         response = requires([self.activity.name])(dummy_view)(self.request)
+
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(type(response), MissingActivity)
 
     def test_user_with_wrong_number_of_activities(self):
         """
@@ -82,6 +81,7 @@ class DecoratorTests(MyJobsBase):
             [self.activity.name, activity.name])(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(type(response), MissingActivity)
 
     def test_user_with_extra_activities(self):
         """
@@ -92,5 +92,6 @@ class DecoratorTests(MyJobsBase):
         activity = ActivityFactory(app_access=self.app_access)
         self.role.activities.add(activity)
         response = requires([self.activity.name])(dummy_view)(self.request)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, self.user.email)

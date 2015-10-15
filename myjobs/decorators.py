@@ -98,44 +98,82 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
         return wraps(view_func)(wrap)
     return decorator
 
-
-def requires(activity_names, callback=None):
+class MissingAppAccess(HttpResponseForbidden):
     """
-    Protects a view by activity, optionally envoking a callback. 
+    MissingAppAccess is raised when a company user access a view but that
+    company doesn't have the app access required for that view. It is no
+    different than an HttpResponseForbidden, other than it's name, which we can
+    use to assert that the correct response type was returned without leaking
+    information to the user.
+    """
 
-    This decorator checks if the request's user is assigned to roles which
-    include the given activities. If so, the view is processed as it would
-    have without this decorator. If not, either the callback is invoked, or a
-    403 (Forbidden) response is returned. 
+
+class MissingActivity(HttpResponseForbidden):
+    """
+    MissingActivity is raised when a company user access a view but that
+    user hasn't been assigned roles which include the required activities. It
+    is no different than an HttpResponseForbidden, other than it's name, which
+    we can use to assert that the correct response type was returned without
+    leaking information to the user.
+    """
+
+
+def requires(activities, activity_callback=None, access_callback=None):
+    """
+    Protects a view by activity and app access, optionally envoking callbacks.
+
+    This decorator determines from the list of passed in :activities: what app
+    access is needed to continue processing the decorated view. If the user
+    belongs to a company who doesn't have the right app access, a
+    `MissingAppAccess` response is returned. If the company has the right app
+    access but the user's roles don't include the enumerated activities, a
+    `MissingActivity` response is returned instead. If both activities and app
+    access constraints are met, the decorated view is processed as normal (ie.
+    as though it werent' decorated at all). 
+
+    `MissingAppAccess` and `MissingActivity` are simply aliases for
+    `HttpResponseForbidden'. They are made distinct so that in testing the
+    reason for a 403 response is clearer, without actually having to leak
+    information back to the user. 
 
     Inputs:
-    :*activity_names*: Positional arguments are the names of the required
-    activities as strings.
-    :callback: A callback to be used as the view response when the user isn't
-    associated with the correct subset of activities.
+    :activities: A list of activity names that the decorated view should
+                   check against.
+    :activity_callback: A callable to be used as the view response when the
+                        user isn't associated with the correct subset of
+                        activities.
+    :access_callback: A callable to be used as the view response when the
+                      user's company doesn't have the appropriate app access
+                      (as determined by the passed in activities).
     """
 
-    callback = callback or HttpResponseForbidden
+
+    activity_callback = activity_callback or MissingActivity
+    access_callback = access_callback or MissingAppAccess
 
     def decorator(view_func):
 
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
             company = get_company_or_404(request)
-            company_perms = company.app_access.values_list(
-                'name', flat=True)
-            permissions = AppAccess.objects.filter(
-                activity__name__in=activity_names).values_list(
-                    'name', flat=True)
-            activities = request.user.roles.values_list(
+            # the required_access we have
+            company_access = company.app_access.values_list( 'name', flat=True)
+            user_activities = request.user.roles.values_list(
                 'activities__name', flat=True)
 
-            if not bool(company_perms) or not set(permissions).issubset(
-                    company_perms):
-                raise Http404("This is not the page you are looking for.")
-            elif not bool(activities) or not set(activity_names).issubset(
-                    activities):
-                return callback()
+            # the required_access we need
+            required_access = AppAccess.objects.filter(
+                activity__name__in=activities).values_list(
+                    'name', flat=True)
+
+            # company should have at least the access required by the view
+            if not bool(company_access) or not set(required_access).issubset(
+                    company_access):
+                return access_callback()
+            # the user should have at least the activities required by the view
+            elif not bool(user_activities) or not set(activities).issubset(
+                    user_activities):
+                return activity_callback()
             else:
                 return view_func(request, *args, **kwargs)
 
