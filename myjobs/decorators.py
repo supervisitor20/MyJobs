@@ -122,7 +122,7 @@ def requires(activity_names, callback=None):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
             company = get_company_or_404(request)
-            company_perms = company.app_permissions.values_list(
+            company_perms = company.app_access.values_list(
                 'name', flat=True)
             permissions = AppAccess.objects.filter(
                 activity__name__in=activity_names).values_list(
@@ -132,7 +132,7 @@ def requires(activity_names, callback=None):
 
             if not bool(company_perms) or not set(permissions).issubset(
                     company_perms):
-                raise Http404("This is not the page you are looking for")
+                raise Http404("This is not the page you are looking for.")
             elif not bool(activities) or not set(activity_names).issubset(
                     activities):
                 return callback()
