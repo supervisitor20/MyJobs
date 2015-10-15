@@ -27,7 +27,8 @@ from seo.models import Company, SeoSite, BusinessUnit
 from myjobs.models import EmailLog, User, STOP_SENDING, BAD_EMAIL
 from myjobs.helpers import log_to_jira
 from mymessages.models import Message
-from mysearches.models import SavedSearch, SavedSearchDigest, SavedSearchLog
+from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
+                               DOM_CHOICES, DOW_CHOICES)
 from mypartners.models import PartnerLibrary
 from mypartners.helpers import get_library_partners
 import import_jobs
@@ -147,6 +148,66 @@ def update_partner_library():
             added, skipped, source)
 
 
+@task(name='tasks.requeue_missed_searches', ignore_result=True)
+def requeue_missed_searches():
+    """
+    Determine which saved searches should have been sent in the past but have
+    not. Send those individually or in digests as appropriate.
+    """
+    today = datetime.today()
+    day_of_week = str(today.isoweekday())
+    day_of_month = today.day
+
+    # We have lists of every day in the week and every day of the month.
+    # To exclude searches that will be sent later today, we need to filter
+    # today out of those lists.
+    not_today = lambda day: (lambda choice: choice != day)
+    days_of_week = filter(not_today(day_of_week),
+                          [choice[0] for choice in DOW_CHOICES])
+    days_of_month = filter(not_today(day_of_month),
+                           [choice[0] for choice in DOM_CHOICES])
+
+    q = Q()
+    for day in days_of_week:
+        days_ago = today.isoweekday() - int(day)
+        if days_ago < 0:
+            days_ago = 7 - days_ago
+        q = q | (Q(frequency='W', day_of_week=day) &
+                 (Q(last_sent__lt=today - timedelta(days=days_ago)) |
+                  Q(last_sent__isnull=True)))
+    for day in days_of_month:
+        days_ago = day_of_month - day
+        if days_ago < 0:
+            days_ago = 31 - days_ago
+        # As a happy little side effect of requeuing saved searches, this will
+        # resend monthly searches for, for example, the 31st of the month
+        # on the first day of the following month if the previous month doesn't
+        # have that many days in it.
+        q = q | (Q(frequency='M', day_of_month=day) &
+                 (Q(last_sent__lt=today - timedelta(days=days_ago)) |
+                  Q(last_sent__isnull=True)))
+
+    all_searches = SavedSearch.objects.filter(user__opt_in_myjobs=True,
+                                              user__is_disabled=False,
+                                              is_active=True)
+    all_searches = all_searches.filter(q)
+
+    # Grabbing digests via saved search is the opposite of what we do when
+    # sending saved searches normally but this makes joining between tables
+    # possible as digests don't have a last_sent attribute.
+    digests = all_searches.values_list('user__savedsearchdigest',
+                                       flat=True).distinct()
+    digests = SavedSearchDigest.objects.filter(pk__in=digests)
+
+    for digest in digests.filter(is_active=True):
+        send_search_digest.s(digest).apply_async()
+
+    for digest in digests.filter(is_active=False):
+        searches = all_searches.filter(user=digest.user)
+        for search in searches:
+            send_search_digest.s(search).apply_async()
+
+
 @task(name='tasks.send_search_digests', ignore_result=True)
 def send_search_digests():
     """
@@ -172,6 +233,8 @@ def send_search_digests():
         weekly = qs.filter(frequency='W', day_of_week=str(day_of_week))
         monthly = qs.filter(frequency='M', day_of_month=today.day)
         return chain(daily, weekly, monthly)
+
+    requeue_missed_searches.apply_async()
 
     digests = SavedSearchDigest.objects.filter(is_active=True,
                                                user__opt_in_myjobs=True,
