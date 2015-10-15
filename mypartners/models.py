@@ -282,8 +282,10 @@ class Contact(ArchivedModel):
 def delete_contact(sender, instance, using, **kwargs):
     """
     Signalled when a Contact is deleted to deactivate associated partner saved
-    searches, if any exist
+    searches, if any exist, in addition to clearing that Contact from the
+    partners that it is the primary contact for.
     """
+    instance.primary_contact.clear()
 
     if instance.user is not None:
         # user.partnersavedsearch_set filters on partnersavedsearch.owner, not

@@ -195,6 +195,17 @@ class MyPartnerTests(MyJobsBase):
         self.assertRaises(Partner.DoesNotExist, lambda: self.contact.partner)
         self.assertEqual(self.contact.partner_id, self.partner.pk)
 
+    def test_archive_primary_contacts(self):
+        """
+        Archiving a primary contact should clear that contact's status as the
+        partner's primary contact. Doing otherwise raises exceptions.
+        """
+        self.partner.primary_contact = self.contact
+        self.partner.save()
+        self.partner.primary_contact.archive()
+        self.partner = Partner.objects.get(pk=self.partner.pk)
+        self.partner.primary_contact
+
     def test_models_approved(self):
         """
         By default, new partners, contacts, and contactrecords should be
