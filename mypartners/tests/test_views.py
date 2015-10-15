@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
 import random
 import requests
@@ -15,7 +15,6 @@ from django.http import Http404
 from django.test.client import RequestFactory 
 from django.template import Context, Template
 from django.utils.timezone import utc
-from myprofile.models import SecondaryEmail
 from myprofile.tests.factories import SecondaryEmailFactory
 from seo.models import SeoSite
 
@@ -942,14 +941,20 @@ class SearchEditTests(MyPartnersTestCase):
                                  (v, getattr(search, k), k))
 
     def test_update_existing_saved_search(self):
+        """
+            Verify that form can update existing saved search information. Ensure last_action_time is
+            also updated properly
+        """
+        self.search.last_action_time = datetime.now() - timedelta(days=1)
+        self.search.save()
+        self.assertNotEqual(self.search.last_action_time.date(), datetime.now().date())
         url = self.get_url('partner_savedsearch_save',
                            company=self.company.id,
                            partner=self.partner.id,
                            id=self.search.id)
-
-        data = {'feed': 'http://www.jobs.jobs/jobs/rss/jobs',
+        data = {'feed': 'http://indiana.jobs/jobs/feed/rss?q=Fun',
                 'label': 'Test',
-                'url': 'http://www.jobs.jobs/jobs',
+                'url': 'http://indiana.jobs/jobs?q=Fun',
                 'url_extras': '',
                 'email': self.contact.user.email,
                 'frequency': 'W',
@@ -974,6 +979,9 @@ class SearchEditTests(MyPartnersTestCase):
             self.assertEqual(v, getattr(search, k),
                              msg="%s != %s for field %s" %
                                  (v, getattr(search, k), k))
+
+        self.assertEqual(search.last_action_time.date(), datetime.now().date())
+
 
     def test_deactivate_partner_search(self):
         mail.outbox = []

@@ -312,4 +312,4 @@ class PartnerSubSavedSearchForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.update_last_action_time(False)
-        return super(self, PartnerSavedSearch).save()
+        return super(PartnerSubSavedSearchForm, self).save()
