@@ -20,6 +20,7 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=50)),
             ('app_access', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myjobs.AppAccess'])),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=150)),
         ))
         db.send_create_signal(u'myjobs', ['Activity'])
 
@@ -97,6 +98,7 @@ class Migration(SchemaMigration):
         u'myjobs.activity': {
             'Meta': {'object_name': 'Activity'},
             'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '150'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
         },

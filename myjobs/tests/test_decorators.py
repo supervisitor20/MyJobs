@@ -58,6 +58,25 @@ class DecoratorTests(MyJobsBase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(type(response), MissingAppAccess)
 
+    def test_access_callback(self):
+        """
+        When app access is sufficient and a callback is supplied, the response
+        of that callback should be returned rather than a `MissingAppAccess`
+        response.
+        """
+
+        self.company.app_access.clear()
+
+        def callback():
+            raise Http404("This app doesn't exist.")
+
+        with self.assertRaises(Http404) as cm:
+            response = requires(
+                [self.activity.name], 
+                access_callback=callback)(dummy_view)(self.request)
+
+        self.assertEqual(cm.exception.message, "This app doesn't exist.")
+
     def test_user_with_wrong_activities(self):
         """
         When a user's roles don't include all of the activities required by a
@@ -69,6 +88,25 @@ class DecoratorTests(MyJobsBase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(type(response), MissingActivity)
+
+    def test_activity_callback(self):
+        """
+        When app access is sufficient and a callback is supplied, the response
+        of that callback should be returned rather than a `MissingAppAccess`
+        response.
+        """
+
+        self.user.roles.clear()
+
+        def callback():
+            raise Http404("Required activities missing.")
+
+        with self.assertRaises(Http404) as cm:
+            response = requires(
+                [self.activity.name], 
+                activity_callback=callback)(dummy_view)(self.request)
+
+        self.assertEqual(cm.exception.message, "Required activities missing.")
 
     def test_user_with_wrong_number_of_activities(self):
         """
@@ -95,3 +133,4 @@ class DecoratorTests(MyJobsBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, self.user.email)
+
