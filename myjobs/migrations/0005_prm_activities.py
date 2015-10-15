@@ -8,17 +8,34 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Create default PRM Activities."""
-        app_access = orm.AppAccess.objects.create(name="PRM")
+        app = orm.AppAccess.objects.create(name="PRM")
         orm.Activity.objects.bulk_create([
-            orm.Activity(name=name, app_access=app_access) for name in [
-                "create contact", "read contact", "update contact", 
-                "delete contact",
-                "create partner", "read partner", "update partner",
-                "delete partner",
-                "create communication record", "read communication record",
-                "update communication record", "delete communication record",
-                "create partner saved search", "read partner saved search",
-                "update partner saved search", "delete partner saved search"]])
+            orm.Activity(name=args[0], description=args[1], app_access=app)
+            for args in [
+                ("create contact", "Add new contacts."),
+                ("read contact", "View existing contacts."),
+                ("update contact", "Edit existing contacts."),
+                ("delete contact", "Remove existing contacts."),
+                ("create partner", "Add new partners."),
+                ("read partner", "View existing partners."),
+                ("update partner", "Edit existing contacts."),
+                ("delete partner", "Remove existing contacts."),
+                ("create communication record",
+                 "Add new communication records."),
+                ("read communication record",
+                 "View existing communication records."),
+                ("update communication record",
+                 "Edit existing communication records."),
+                ("delete communication record",
+                 "Remove existing communication records."),
+                ("create partner saved search",
+                 "Add new patner saved searches."),
+                ("read partner saved search",
+                 "View existing partner saved searches."),
+                ("update partner saved search",
+                 "Edit existing partner saved searches."),
+                ("delete partner saved search",
+                 "remove existing partner saved searches.")]])
 
     def backwards(self, orm):
         """Remove default PRM Activities."""
