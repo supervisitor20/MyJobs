@@ -759,7 +759,9 @@ class Company(models.Model):
                                                     blank=True)
 
     # Permissions
-    app_access = models.ManyToManyField('myjobs.AppAccess')
+    app_access = models.ManyToManyField(
+        'myjobs.AppAccess', 
+        blank=True, verbose_name="App-Level Access")
     prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
