@@ -199,9 +199,9 @@ def requeue_missed_searches():
                                        flat=True).distinct()
     digests = SavedSearchDigest.objects.filter(pk__in=digests)
 
-    for digest in digests.filter(is_active=True):
-        send_search_digest.s(digest).apply_async()
-
+    # Accounting for digests greatly increases the complexity of preventing
+    # duplicate emails and there are plans to remove them eventually. As such,
+    # we are ignoring digests here.
     for digest in digests.filter(is_active=False):
         searches = all_searches.filter(user=digest.user)
         for search in searches:

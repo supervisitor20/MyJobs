@@ -68,19 +68,27 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue("Your profile is %s%% complete" %
                         self.user.profile_completion in email.body)
 
-    def requeue(self, search):
+    def requeue(self, search, digest):
         """
         Asserts that the given search has a last_sent of None and there are no
         emails in mail.outbox. Requeues the provided search and then asserts
-        that last_sent was updated and a mail was sent.
+        that last_sent was updated and a mail was sent if the provided digest is
+        not active, otherwise reasserts that last_sent is None and no emails
+        have been sent.
         """
         self.assertIsNone(search.last_sent)
         self.assertEqual(len(mail.outbox), 0)
         requeue_missed_searches()
         search = SavedSearch.objects.get(pk=search.pk)
-        self.assertEqual(search.last_sent.date(),
-                         datetime.date.today())
-        self.assertEqual(len(mail.outbox), 1)
+        date = datetime.date.today()
+        outbox_count = 1
+        if digest.is_active:
+            date = None
+            outbox_count = 0
+
+        self.assertEqual(search.last_sent.date() if search.last_sent else None,
+                         date)
+        self.assertEqual(len(mail.outbox), outbox_count)
 
     def test_requeue_weekly_saved_search(self):
         """
@@ -96,7 +104,7 @@ class SavedSearchModelsTests(MyJobsBase):
         search = SavedSearchFactory(user=self.user, is_active=True,
                                     frequency='W', day_of_week=two_days_ago)
 
-        self.requeue(search)
+        self.requeue(search, digest)
 
         digest.is_active = False
         digest.save()
@@ -104,7 +112,7 @@ class SavedSearchModelsTests(MyJobsBase):
         search.save()
         mail.outbox = []
 
-        self.requeue(search)
+        self.requeue(search, digest)
 
     def test_requeue_monthly_saved_search(self):
         """
@@ -120,7 +128,7 @@ class SavedSearchModelsTests(MyJobsBase):
         search = SavedSearchFactory(user=self.user, is_active=True,
                                     frequency='M', day_of_month=last_week)
 
-        self.requeue(search)
+        self.requeue(search, digest)
 
         digest.is_active = False
         digest.save()
@@ -128,10 +136,10 @@ class SavedSearchModelsTests(MyJobsBase):
         search.save()
         mail.outbox = []
 
-        self.requeue(search)
+        self.requeue(search, digest)
 
     def test_send_search_digest_email(self):
-        digest = SavedSearchDigestFactory(user=self.user)
+        SavedSearchDigestFactory(user=self.user)
         send_search_digests()
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(SavedSearchLog.objects.count(), 1)
@@ -139,7 +147,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue('No saved searches' in log.reason)
         self.assertFalse(log.was_sent)
 
-        search1 = SavedSearchFactory(user=self.user, frequency=digest.frequency)
+        search1 = SavedSearchFactory(user=self.user)
         self.assertIsNone(search1.last_sent)
         send_search_digests()
         self.assertIsNotNone(SavedSearch.objects.get(pk=search1.pk).last_sent)
@@ -148,7 +156,7 @@ class SavedSearchModelsTests(MyJobsBase):
         log = SavedSearchLog.objects.last()
         self.assertTrue(log.was_sent)
 
-        search2 = SavedSearchFactory(user=self.user, frequency=digest.frequency)
+        search2 = SavedSearchFactory(user=self.user)
         self.assertIsNone(search2.last_sent)
         send_search_digests()
         self.assertIsNotNone(SavedSearch.objects.get(pk=search2.pk).last_sent)
@@ -165,11 +173,11 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue(email.to[0] in email.body)
 
     def test_send_search_digest_send_if_none(self):
-        digest = SavedSearchDigestFactory(user=self.user, send_if_none=True)
+        SavedSearchDigestFactory(user=self.user, send_if_none=True)
         send_search_digests()
         self.assertEqual(len(mail.outbox), 0)
 
-        SavedSearchFactory(user=self.user, frequency=digest.frequency)
+        SavedSearchFactory(user=self.user)
         send_search_digests()
         self.assertEqual(len(mail.outbox), 1)
     
