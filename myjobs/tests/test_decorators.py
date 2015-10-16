@@ -1,21 +1,19 @@
 from django.conf import settings
 from django.test import RequestFactory
-from django.test.utils import override_settings
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
 from myjobs.decorators import requires, MissingAppAccess, MissingActivity
-from seo.tests.factories import CompanyFactory, CompanyUserFactory
-from seo.models import SeoSite
+from seo.tests.factories import (CompanyFactory, CompanyUserFactory,
+                                 SeoSiteFactory)
 
 def dummy_view(request):
     """View used during various decorator tests."""
     return HttpResponse(request.user.email)
 
 # middleware isn't run when using a request factory
-@override_settings(SITE=SeoSite.objects.first())
 class DecoratorTests(MyJobsBase):
     """Tests that the various decorators in MyJobs work as expected."""
 
