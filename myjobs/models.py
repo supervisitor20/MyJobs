@@ -760,7 +760,7 @@ class Activity(models.Model):
     """
     name = models.CharField(max_length=50, unique=True)
     app_access = models.ForeignKey('AppAccess')
-    description = models.CharField(max_length=150)
+    description = models.CharField(max_length=150, blank=False)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.description)
