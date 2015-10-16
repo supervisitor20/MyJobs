@@ -1125,5 +1125,5 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         actual_company_names = [company.name for company in self.companies]
 
         # Test if the lists of company names match!
-        self.assertEqual(jsond_company_names, actual_company_names)
+        self.assertItemsEqual(jsond_company_names, actual_company_names)
 
