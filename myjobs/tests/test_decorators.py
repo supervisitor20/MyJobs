@@ -7,7 +7,8 @@ from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
 from myjobs.decorators import requires, MissingAppAccess, MissingActivity
-from seo.tests.factories import CompanyFactory, CompanyUserFactory
+from seo.tests.factories import (CompanyFactory, CompanyUserFactory,
+                                 SeoSiteFactory)
 from seo.models import SeoSite
 
 def dummy_view(request):
@@ -15,7 +16,7 @@ def dummy_view(request):
     return HttpResponse(request.user.email)
 
 # middleware isn't run when using a request factory
-@override_settings(SITE=SeoSite.objects.first())
+@override_settings(SITE=SeoSiteFactory())
 class DecoratorTests(MyJobsBase):
     """Tests that the various decorators in MyJobs work as expected."""
 
