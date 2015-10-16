@@ -15,8 +15,11 @@ def dummy_view(request):
     """View used during various decorator tests."""
     return HttpResponse(request.user.email)
 
+
+SITE = SeoSiteFactory()
+
 # middleware isn't run when using a request factory
-@override_settings(SITE=SeoSiteFactory())
+@override_settings(SITE=SITE)
 class DecoratorTests(MyJobsBase):
     """Tests that the various decorators in MyJobs work as expected."""
 
