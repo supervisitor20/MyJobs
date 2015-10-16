@@ -156,12 +156,12 @@ def requires(activities, activity_callback=None, access_callback=None):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
             company = get_company_or_404(request)
-            # the required_access we have
-            company_access = company.app_access.values_list( 'name', flat=True)
+            # the app_access we have, determined by the current company
+            company_access = company.app_access.values_list('name', flat=True)
             user_activities = request.user.roles.values_list(
                 'activities__name', flat=True)
 
-            # the required_access we need
+            # the app_access we need, determined by the activities passed in
             required_access = AppAccess.objects.filter(
                 activity__name__in=activities).values_list(
                     'name', flat=True)
