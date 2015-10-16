@@ -10,11 +10,12 @@ class Migration(DataMigration):
         """Create a 'Role Admin' role for existing companies."""
 
         # create the required roles
-        roles = orm.Role.objects.bulk_create([
-            Role(name="Role Admin", company=company)
+        orm.Role.objects.bulk_create([
+            orm.Role(name="Role Admin", company=company)
             for company in orm["seo.Company"].objects.all()])
 
-        activities = Activity.objects.all()
+        roles = orm.Role.objects.all()
+        activities = orm.Activity.objects.all()
 
         # maps to myjobs_role_activities
         RoleActivities = orm.Role.activities.through
