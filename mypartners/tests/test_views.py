@@ -52,8 +52,6 @@ class MyPartnersTestCase(MyJobsBase):
         self.admin = CompanyUserFactory(user=self.staff_user,
                                         company=self.company)
         mail.outbox = []
-        self.client = TestClient()
-        self.client.login_user(self.staff_user)
 
         # Create a partner
         self.partner = PartnerFactory(owner=self.company, pk=1)
@@ -232,7 +230,7 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
 
 class EditItemTests(MyPartnersTestCase):
-    """ Test the `edit_item` view functio. 
+    """ Test the `edit_item` view function.
         
         In particular, it tests that the appropriate HTTP response is reached
         depending on the URL that the user navigates to.
@@ -940,6 +938,8 @@ class SearchEditTests(MyPartnersTestCase):
                              msg="%s != %s for field %s" %
                                  (v, getattr(search, k), k))
 
+        self.assertEqual(search.last_action_time.date(), datetime.now().date())
+
     def test_update_existing_saved_search(self):
         """
             Verify that form can update existing saved search information. Ensure last_action_time is
@@ -952,9 +952,10 @@ class SearchEditTests(MyPartnersTestCase):
                            company=self.company.id,
                            partner=self.partner.id,
                            id=self.search.id)
-        data = {'feed': 'http://indiana.jobs/jobs/feed/rss?q=Fun',
+
+        data = {'feed': 'http://www.jobs.jobs/jobs/rss/jobs',
                 'label': 'Test',
-                'url': 'http://indiana.jobs/jobs?q=Fun',
+                'url': 'http://www.jobs.jobs/jobs',
                 'url_extras': '',
                 'email': self.contact.user.email,
                 'frequency': 'W',
@@ -981,7 +982,6 @@ class SearchEditTests(MyPartnersTestCase):
                                  (v, getattr(search, k), k))
 
         self.assertEqual(search.last_action_time.date(), datetime.now().date())
-
 
     def test_deactivate_partner_search(self):
         mail.outbox = []
@@ -1051,6 +1051,10 @@ class SearchEditTests(MyPartnersTestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_location_form_update_last_action_time(self):
+        self.data = dict(label='Home', address_line_one='123 Fake St', address_line_two='Ste 321', city='Somewhere',
+                         state='NM')
 
 
 class EmailTests(MyPartnersTestCase):
@@ -1561,9 +1565,11 @@ class ContactLogEntryTests(MyPartnersTestCase):
         self.assertEqual(data['name'], delta['name']['new'])
 
     def test_location_update(self):
+        """
+            Verify log is created when location is edited.
+        """
         location = LocationFactory()
         self.contact.locations.add(location)
-        self.contact.save()
 
         url = self.get_url(partner=self.partner.id, company=self.company.pk,
                            id=self.contact.id, location=location.id,
@@ -1580,9 +1586,64 @@ class ContactLogEntryTests(MyPartnersTestCase):
         response = self.client.post(url, data=data, follow=True)
 
         self.assertEqual(response.status_code, 200)
+
         log = ContactLogEntry.objects.get()
 
         delta = json.loads(log.delta)
 
         self.assertEqual(location.city, delta['city']['initial'])
         self.assertEqual(data['city'], delta['city']['new'])
+
+
+class LocationViewTests(MyPartnersTestCase):
+    def test_location_update(self):
+        """
+            Verify that modifications of locations properly update the last_action_time of the connected Contact
+        """
+        location = LocationFactory()
+        self.contact.locations.add(location)
+        # backdate last action date for comparison
+        self.contact.last_action_time = datetime.now() - timedelta(days=30)
+        self.contact.save()
+        original_action_time = self.contact.last_action_time
+
+        url = self.get_url(partner=self.partner.id, company=self.company.pk,
+                           id=self.contact.id, location=location.id,
+                           view='edit_location')
+
+        data = {
+            'company_id': self.company.pk,
+            'partner': self.partner.pk,
+            'label': 'The label has changed.',
+            'city': 'Fargo',
+            'state': 'ND',
+        }
+
+        response = self.client.post(url, data=data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        # reload contact from DB, as it is holds "expired" data
+        reload_contact = Contact.objects.get(pk=self.contact.pk)
+        self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
+
+    def test_location_delete(self):
+        """
+            Verify that deleting locations causes their connected Contact's last_action_time to be updated
+        """
+        location = LocationFactory()
+        self.contact.locations.add(location)
+        # backdate last action date for comparison
+        self.contact.last_action_time = datetime.now() - timedelta(days=30)
+        self.contact.save()
+        original_action_time = self.contact.last_action_time
+
+        url = self.get_url(partner=self.partner.id, company=self.company.pk,
+                           id=self.contact.id, location=location.id,
+                           view='delete_location')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        # reload contact from DB, as it is holds "expired" data
+        reload_contact = Contact.objects.get(pk=self.contact.pk)
+        self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())

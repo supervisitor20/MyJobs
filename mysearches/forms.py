@@ -191,7 +191,7 @@ class PartnerSavedSearchForm(RequestForm):
         fields = ('label', 'url', 'url_extras', 'is_active', 'email',
                   'frequency', 'day_of_month', 'day_of_week', 'jobs_per_email',
                   'partner_message', 'notes')
-        exclude = ('provider', 'sort_by', 'unsubscriber', 'unsubscribed')
+        exclude = ('provider', 'sort_by', 'unsubscriber', 'unsubscribed', 'last_action_time')
         widgets = {
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
             'url_extras': TextInput(attrs={
@@ -301,7 +301,8 @@ class PartnerSubSavedSearchForm(RequestForm):
         exclude = ('provider', 'url_extras', 'partner_message',
                    'created_by', 'user',
                    'created_on', 'label', 'url', 'feed', 'email', 'notes',
-                   'custom_message', 'tags', 'unsubscriber', 'unsubscribed')
+                   'custom_message', 'tags', 'unsubscriber', 'unsubscribed',
+                   'last_action_time')
         widgets = {
             'sort_by': RadioSelect(renderer=HorizontalRadioRenderer,
                                    attrs={'id': 'sort_by'}),
