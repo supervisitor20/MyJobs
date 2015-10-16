@@ -93,6 +93,18 @@ class InterfaceElementTypeFactory(DjangoModelFactory):
 
 
 def create_full_fixture():
+    """This fixture fills out all the dynamic reporting tables.
+
+    Its purpose is to support unit and UI testing.
+
+    Note existing data is deleted from the tables to preserve stable ids and
+    test behavior.
+
+    It covers:
+        * Standard known reports.
+        * All known forms of inactive records for every table.
+
+    """
     UserTypeFactory._meta.model.objects.all().delete()
     ut_emp_dead = UserTypeFactory.create(
         id=1, user_type="EMPLOYER", is_active=False)
