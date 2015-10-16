@@ -145,8 +145,37 @@ def requires(activities, activity_callback=None, access_callback=None):
     :access_callback: A callable to be used as the view response when the
                       user's company doesn't have the appropriate app access
                       (as determined by the passed in activities).
+                      
+    Examples:
+    
+    Let's assume that the activities "create user", "read user", "update user", and "delete user" exist with an 
+    app access of "User Management". Let us further assume that a `modify_user` view exists. Finally, lets assume
+    that the current user belongs to a company, `TestCompany`. We might want to decorate that view as follows:
+    
+    @requires(["read user", "update user"])
+    def modify_user(request):
+        ...
+        
+    If `TestCompany` doesn't have access to "User Management", then attempting to navigate to `modify_user`
+    would result in a `MissingAppAccess` response. If that company does have "User Management" access, but
+    the user's roles don't include both the "read user" and "update user" activities, a `MissingActivity` 
+    response would returned instead. If both conditions are met, the `modify_user` view will proceed as though it
+    weren't decorated at all. 
+    
+    If a `MissingActivity` response is insufficient (because you want to give the user some useful information)
+    you may additionally pass an `activity_callback`, which will return the appropriate response:
+    
+    def contact_admin():
+        return HttpResponse("<strong>Insufficient permissions. Please contact your administrator</strong>")
+        
+    @requires(["read user", "update user"], activity_callback=contact_admin)
+    def modify_user(request):
+        ...
+        
+    In this case, the user will see the appropriate message in bold, with a status code of 200. A similar
+    strategy can be used for customizing the response used when app access is missing by passing 
+    `access_callback`.
     """
-
 
     activity_callback = activity_callback or MissingActivity
     access_callback = access_callback or MissingAppAccess
