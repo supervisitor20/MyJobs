@@ -9,6 +9,24 @@ class Migration(DataMigration):
     def forwards(self, orm):
         """Create a 'Role Admin' role for existing companies."""
 
+        # create the required roles
+        roles = orm.Role.objects.bulk_create([
+            Role(name="Role Admin", company=company)
+            for company in orm["seo.Company"].objects.all()])
+
+        activities = Activity.objects.all()
+
+        # maps to myjobs_role_activities
+        RoleActivities = orm.Role.activities.through
+
+        # associate every activity to those roles; using the through table
+        # directly to reduce queries to one
+        RoleActivities.objects.bulk_create([
+            RoleActivities(role=role, activity=activity)
+            for role in roles for activity in activities])
+
+        # assign the first company user of each company to that role
+
     def backwards(self, orm):
         "Write your backwards methods here."
 
