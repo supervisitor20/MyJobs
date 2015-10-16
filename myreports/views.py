@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from myreports.helpers import humanize, serialize
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    Column)
+    Column, DataType)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -398,6 +398,25 @@ def report_types_api(request):
 
     data = {'report_type':
             dict(entry(rt) for rt in report_types)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def data_types_api(request):
+
+    report_type_id = request.POST['report_type_id']
+    data_types = (DataType.objects
+                  .active_for_report_type(report_type_id))
+
+    def entry(data_type):
+        return (str(data_type.id),
+                {'name': data_type.data_type,
+                 'description': data_type.description})
+
+    data = {'data_type':
+            dict(entry(rt) for rt in data_types)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
 

@@ -111,6 +111,17 @@ function ajaxReportTypes(reportingType) {
     });
 }
 
+function ajaxDataTypes(reportType) {
+    return $.ajax({
+        url: "/reports/api/data_types",
+        type: "POST",
+        dataType: "json",
+        data: {csrfmiddlewaretoken: csrf,
+               report_type_id: reportType},
+        withCredentials: true,
+    });
+}
+
 function domButtonRow(buttonText, text, onclick) {
     var linkDom = $('<div class="span3" style="text-align: right"><a class="btn" href="#">' + buttonText + '</a></div>');
     linkDom.on('click', onclick);
@@ -140,7 +151,9 @@ function domReportTypes(data) {
     $('#select-content').empty();
     $.each(data['report_type'], function(rtId, rt) {
         function onclick() {
-            domYay(rtId);
+            ajaxDataTypes(rtId).done(function(dt) {
+                domDataTypes(dt);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
             return false;
         };
         var dom = domButtonRow(rt['name'], rt['description'], onclick);
@@ -149,12 +162,26 @@ function domReportTypes(data) {
     });
 }
 
-function domYay(rtId) {
+function domDataTypes(data) {
+    $('#select-content').empty();
+    $.each(data['data_type'], function(dtId, dt) {
+        function onclick() {
+            domYay("data type", dtId);
+            return false;
+        };
+        var dom = domButtonRow(dt['name'], dt['description'], onclick);
+        $('#select-content').append(dom);
+        $('#select-container').show();
+    });
+}
+
+function domYay(label, rtId) {
     $('#select-content').empty();
     function onclick() {
         resetReportingTypes();
     };
-    var dom = domButtonRow('Reset', 'About to proceed with report id:' + rtId, onclick);
+    var dom = domButtonRow('Reset', 'About to proceed with ' + label
+                           + ' id:' + rtId, onclick);
     $('#select-content').append(dom);
     $('#select-container').show();
 

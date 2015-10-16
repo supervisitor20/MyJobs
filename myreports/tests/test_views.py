@@ -426,6 +426,14 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals("Communication Records Report",
                           data['3']['description'])
 
+    def test_data_types_api(self):
+        resp = self.client.post(reverse('data_types_api'),
+                                data={'report_type_id': '2'})
+        data = json.loads(resp.content)['data_type']
+        self.assertEquals(1, len(data))
+        self.assertEquals("Unaggregated", data['3']['name'])
+        self.assertEquals("Unaggregated Data Type", data['3']['description'])
+
 
 class TestDynamicReports(MyReportsTestCase):
     def test_dynamic_report(self):
