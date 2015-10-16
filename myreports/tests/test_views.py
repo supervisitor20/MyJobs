@@ -434,6 +434,14 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals("Unaggregated", data['3']['name'])
         self.assertEquals("Unaggregated Data Type", data['3']['description'])
 
+    def test_presentation_api(self):
+        resp = self.client.post(reverse('presentation_types_api'),
+                                data={'report_type_id': '2',
+                                      'data_type_id': '3'})
+        data = json.loads(resp.content)['report_presentation']
+        self.assertEquals(1, len(data))
+        self.assertEquals("Contact CSV", data['3']['name'])
+
 
 class TestDynamicReports(MyReportsTestCase):
     def test_dynamic_report(self):

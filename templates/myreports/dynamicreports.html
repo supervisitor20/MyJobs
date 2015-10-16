@@ -25,21 +25,7 @@
             <div id="select-content"></div>
         </div>
     </div>
-    <div id="report-types-container" class="row">
-        <div class="span12">
-            <div id="report-types-content"></div>
-        </div>
-    </div>
 
-    <hr>
-    <h3>Run trivial contact records report</h3>
-    <div class="row">
-        <div class="span12">
-            <input id="trivial-report-contact-id"
-                placeholder="Configuration Id; Try 3">
-            <a id="trivial-report-run" class="btn" href="#">Run</a>
-        </div>
-    </div>
     <div class="row">
         <div class="span12">
             <ul id='report-links-list'></ul>
@@ -55,17 +41,6 @@
 <script type="text/javascript">
 var csrf = read_cookie("csrftoken");
 
-function runReport() {
-    var rpId = $('#trivial-report-contact-id').val();
-    ajaxRunReport(rpId).done(function(data) {
-        var reportId = data['id'];
-        var list = $('#report-links-list');
-        var href = '/reports/view/dynamicdownload?id=' + reportId;
-        var dom = $('<li><a href="' + href + '">Report: ' + reportId + '</a></li>');
-        list.append(dom);
-    }).fail(function(xhr, text, error) { console.error(text, error, xhr) });
-}
-
 function ajaxRunReport(rpId) {
     return $.ajax({
         url: "/reports/api/run_report",
@@ -76,13 +51,6 @@ function ajaxRunReport(rpId) {
         withCredentials: true,
     });
 }
-
-$(document).on('ready', function() {
-    $('#trivial-report-run').click(function() {
-        runReport();
-        return false;
-    });
-});
 
 function resetReportingTypes() {
     ajaxReportingTypes().done(function(data) {
@@ -122,6 +90,18 @@ function ajaxDataTypes(reportType) {
     });
 }
 
+function ajaxReportPresentations(reportType, dataType) {
+    return $.ajax({
+        url: "/reports/api/report_presentations",
+        type: "POST",
+        dataType: "json",
+        data: {csrfmiddlewaretoken: csrf,
+               data_type_id: dataType,
+               report_type_id: reportType},
+        withCredentials: true,
+    });
+}
+
 function domButtonRow(buttonText, text, onclick) {
     var linkDom = $('<div class="span3" style="text-align: right"><a class="btn" href="#">' + buttonText + '</a></div>');
     linkDom.on('click', onclick);
@@ -152,7 +132,7 @@ function domReportTypes(data) {
     $.each(data['report_type'], function(rtId, rt) {
         function onclick() {
             ajaxDataTypes(rtId).done(function(dt) {
-                domDataTypes(dt);
+                domDataTypes(dt, rtId);
             }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
             return false;
         };
@@ -162,11 +142,13 @@ function domReportTypes(data) {
     });
 }
 
-function domDataTypes(data) {
+function domDataTypes(data, rtId) {
     $('#select-content').empty();
     $.each(data['data_type'], function(dtId, dt) {
         function onclick() {
-            domYay("data type", dtId);
+            ajaxReportPresentations(rtId, dtId).done(function(rp) {
+                domReportPresentations(rp);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
             return false;
         };
         var dom = domButtonRow(dt['name'], dt['description'], onclick);
@@ -175,12 +157,38 @@ function domDataTypes(data) {
     });
 }
 
+function domReportPresentations(data) {
+    $('#select-content').empty();
+    $.each(data['report_presentation'], function(rpId, rp) {
+        function onclick() {
+            ajaxRunReport(rpId).done(function(dr) {
+                domRunReport(dr);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
+            return false;
+        };
+        var dom = domButtonRow(rp['name'], rp['name'], onclick);
+        $('#select-content').append(dom);
+        $('#select-container').show();
+    });
+}
+
+function domRunReport(data) {
+    var reportId = data['id'];
+    var list = $('#report-links-list');
+    var href = '/reports/view/dynamicdownload?id=' + reportId;
+    var dom = $('<li><a href="' + href + '">Report: ' + reportId + '</a></li>');
+    list.append(dom);
+
+    domYay("report presentation", reportId);
+
+}
+
 function domYay(label, rtId) {
     $('#select-content').empty();
     function onclick() {
         resetReportingTypes();
     };
-    var dom = domButtonRow('Reset', 'About to proceed with ' + label
+    var dom = domButtonRow('Reset', 'Done with ' + label
                            + ' id:' + rtId, onclick);
     $('#select-content').append(dom);
     $('#select-container').show();

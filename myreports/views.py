@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from myreports.helpers import humanize, serialize
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    Column, DataType)
+    Column, DataType, ReportTypeDataTypes)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -378,6 +378,7 @@ def reporting_types_api(request):
                  'description': reporting_type.description})
 
     data = {'reporting_type':
+
             dict(entry(rt) for rt in reporting_types)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
@@ -417,6 +418,28 @@ def data_types_api(request):
 
     data = {'data_type':
             dict(entry(rt) for rt in data_types)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def presentation_types_api(request):
+
+    report_type_id = request.POST['report_type_id']
+    data_type_id = request.POST['data_type_id']
+    rpdt = (ReportTypeDataTypes.objects
+            .get(report_type_id=report_type_id,
+                 data_type_id=data_type_id))
+    rps = (ReportPresentation.objects
+           .active_for_report_type_data_type(rpdt))
+
+    def entry(rp):
+        return (str(rp.id),
+                {'name': rp.display_name})
+
+    data = {'report_presentation':
+            dict(entry(rp) for rp in rps)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
 
