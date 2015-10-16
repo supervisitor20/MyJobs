@@ -4,7 +4,8 @@ import string
 import urllib
 import uuid
 from django.db.models import Q
-from django.db.models.signals import pre_delete
+from django.db.models.loading import get_model
+from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 import pytz
@@ -764,6 +765,20 @@ class Activity(models.Model):
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.description)
+
+
+@receiver(post_save, sender=Activity, dispatch_uid='post_save_activity')
+def update_role_admins(sender, instance, created, *args, **kwargs):
+    """
+    When a new activity is created, that activity should immediately be
+    associated with the Role Admin role.
+    """
+
+    if created:
+        roles = Role.objects.filter(name="Role Admin")
+        RoleActivities = Role.activities.through
+        RoleActivities.objects.bulk_create([
+            RoleActivities(role=role, activity=instance) for role in roles])
 
 
 class Role(models.Model):
