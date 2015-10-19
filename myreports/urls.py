@@ -13,4 +13,9 @@ urlpatterns = patterns(
         name='view_records'),
     url(r'download$', 'download_report', name='download_report'),
     url(r'view/downloads$', 'downloads', name='downloads'),
+    url(r'^view/dynamicoverview$', 'dynamicoverview', name='dynamicoverview'),
+    url(r'^api/reporting_types$', 'reporting_types_api',
+        name='reporting_types_api'),
+    url(r'^api/report_types$', 'report_types_api',
+        name='report_types_api'),
 )

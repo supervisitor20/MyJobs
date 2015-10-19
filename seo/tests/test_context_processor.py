@@ -71,7 +71,16 @@ class SiteTestCase(DirectSEOBase):
         self.site.parent_site = parent_site
         self.site.save()
         resp = self.client.get("/")
-        self.assertEqual(resp.context['domain_parent'],parent_site) 
+        self.assertEqual(resp.context['secure_blocks_domain'], parent_site)
+
+    def test_parent_domain_context_variable_visit_parent_site(self):
+        child_site = factories.SeoSiteFactory()
+        child_site.domain = "zz." + child_site.domain
+        child_site.parent_site = self.site
+        self.site.save()
+        resp = self.client.get("/")
+        self.assertEqual(resp.context['secure_blocks_domain'],
+                         self.site)
 
     def test_parent_domain_context_variable_with_domain_switching(self):
         self.setup_superuser()
@@ -81,4 +90,4 @@ class SiteTestCase(DirectSEOBase):
         child_site.domain="parentchildtest"
         child_site.save()
         resp = self.client.get("/?domain=parentchildtest")
-        self.assertEqual(resp.context['domain_parent'],parent_site)
+        self.assertEqual(resp.context['secure_blocks_domain'], parent_site)

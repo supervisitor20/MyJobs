@@ -7,6 +7,7 @@ from seo.views.search_views import (BusinessUnitAdminFilter, SeoSiteAdminFilter,
                                     Dseo404)
 from seo.views.settings_views import secure_redirect
 from registration import views as registration_views
+from myblocks.views import secure_blocks
 
 # This is a bit of code pulled from a Django TRAC ticket describing a problem
 # I was seeing when working with the inline model forms:
@@ -122,3 +123,7 @@ urlpatterns += patterns(
     url(r'^message/', include('mymessages.urls'))
 )
 
+urlpatterns += patterns(
+    'myblocks.views',
+    url(r'^secure-blocks/$', 'secure_blocks', name='secure_blocks'),
+)
