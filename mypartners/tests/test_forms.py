@@ -278,26 +278,3 @@ class ContactRecordFormTests(MyPartnersTestCase):
         self.assertIsNone(new_form.fields.get('last_action_time'))
         saved_form_instance = new_form.save(user=self.contact_user, partner=self.partner)
         self.assertIsNotNone(saved_form_instance.last_action_time)
-
-
-class LocationFormTests(MyPartnersTestCase):
-    def setUp(self):
-        super(LocationFormTests, self).setUp()
-        self.data = dict(label='Home', address_line_one='123 Fake St', address_line_two='Ste 321', city='Somewhere',
-                         state='NM')
-        self.data['contacts'] = [self.contact]
-
-    def test_contact_last_action_time_updated(self):
-        """
-            Verify last action time is created when partner form is saved
-        """
-        # import ipdb; ipdb.set_trace()
-        request = self.request_factory.request()
-        request.user = self.staff_user
-        original_time = self.contact.last_action_time
-        new_form = LocationForm(data=self.data)
-        self.assertTrue(new_form.is_valid())
-        new_instance = new_form.save(request=request)
-        self.assertIsNotNone(new_instance.contacts.all()[0].last_action_time)
-
-
