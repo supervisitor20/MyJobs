@@ -1,6 +1,5 @@
 import json
 import urllib2
-from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core import mail
@@ -15,7 +14,6 @@ from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory, ContactFactory
 
 from mysearches import forms, models
-from mysearches.tests.local.fake_feed_data import jobs, no_jobs
 from mysearches.tests.test_helpers import return_file
 from mysearches.tests.factories import (SavedSearchDigestFactory,
                                         SavedSearchFactory,
