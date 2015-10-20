@@ -1255,8 +1255,8 @@ class EmailTests(MyPartnersTestCase):
             self.assertEqual(self.data['text'], record.notes)
             self.assertEqual(Contact.objects.all().count(), 2)
 
-            Contact.objects.filter(email=record.contact_email).delete()
-            ContactRecord.objects.filter(id=record.pk).delete()
+            Contact.objects.get(email=record.contact_email).delete()
+            record.delete()
 
     def test_double_escape_forward(self):
         self.data['to'] = 'prm@my.jobs'

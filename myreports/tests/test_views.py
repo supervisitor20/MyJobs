@@ -173,11 +173,6 @@ class TestReportView(MyReportsTestCase):
             5, contact_type='job',
             job_hires=1, partner=self.partner)
 
-        # Despite explicitly passing an already-created partner to create_batch,
-        # factory boy creates another partner for each of these and then does
-        # not use it. Clean up after it.
-        Partner.objects.exclude(pk=self.partner.pk).delete()
-
     def test_create_report(self):
         """Test that a report model instance is properly created."""
 

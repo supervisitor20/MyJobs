@@ -58,7 +58,8 @@ class ContactRecordFactory(factory.django.DjangoModelFactory):
     notes = 'Some notes go here.'
     date_time = datetime.now()
 
-    contact = factory.SubFactory(ContactFactory, name='example-contact')
+    contact = factory.SubFactory(ContactFactory, name='example-contact',
+                                 partner=factory.SelfAttribute('..partner'))
     partner = factory.SubFactory(PartnerFactory)
     approval_status = factory.SubFactory(StatusFactory)
 
