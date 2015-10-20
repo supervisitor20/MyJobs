@@ -154,7 +154,7 @@ def requeue_missed_searches():
     Determine which saved searches should have been sent in the past but have
     not. Send those individually or in digests as appropriate.
     """
-    today = datetime.today()
+    today = date.today()
     day_of_week = str(today.isoweekday())
     day_of_month = today.day
 
