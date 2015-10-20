@@ -262,10 +262,10 @@ def downloads(request):
         report = get_object_or_404(
             get_model('myreports', 'report'), pk=report_id)
 
-        common_blacklist = ['pk', 'approval_status']
+        common_blacklist = ['pk', 'approval_status', 'archived_on']
         blacklist = {
             'contactrecord': common_blacklist,
-            'contact': common_blacklist + ['archived_on', 'library', 'user'],
+            'contact': common_blacklist + ['library', 'user'],
             'partner': common_blacklist + ['library', 'owner']}
 
         if report.python:
