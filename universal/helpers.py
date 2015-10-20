@@ -98,7 +98,7 @@ def get_company(request):
 
     # If settings.SITE is set we're on a microsite, so get the company
     # based on the microsite we're on instead.
-    if settings.SITE.canonical_company:
+    if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
         if company.companyuser_set.filter(user=request.user).exists():

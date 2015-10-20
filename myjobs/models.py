@@ -298,6 +298,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                                    DEACTIVE_TYPES_AND_NONE),
                                        blank=False,
                                        default=DEACTIVE_TYPES_AND_NONE[0])
+    roles = models.ManyToManyField("Role")
 
     USERNAME_FIELD = 'email'
     objects = CustomUserManager()
@@ -739,3 +740,45 @@ class FAQ(models.Model):
     answer = models.TextField(verbose_name='Answer',
                               help_text='Answers allow use of HTML')
     is_visible = models.BooleanField(default=True, verbose_name='Is visible')
+
+
+class AppAccess(models.Model):
+    """
+    App access represents a logical grouping of activities. While an activity
+    may belong to many roles, it may only be assigned one app access. 
+    """
+    name = models.CharField(max_length=50, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+
+class Activity(models.Model):
+    """
+    An activity represents an individual task that can be performed by a
+    user.
+    """
+    name = models.CharField(max_length=50, unique=True)
+    app_access = models.ForeignKey('AppAccess')
+    description = models.CharField(max_length=150, blank=False)
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.description)
+
+
+class Role(models.Model):
+    """
+    A role represents a group of activities which are arbitrarily connected.
+    Rather than be assigned individual activities, users will be assigned
+    roles. The grouping is arbitrary in that they are determined by the
+    individual creating the role.
+    """
+    class Meta:
+        unique_together = ("company", "name")
+
+    company = models.ForeignKey("seo.Company")
+    name = models.CharField(max_length=50)
+    activities = models.ManyToManyField("Activity")
+
+    def __unicode__(self):
+        return "%s for %s" % (self.name, self.company)
