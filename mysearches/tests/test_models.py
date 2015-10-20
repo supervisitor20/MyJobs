@@ -97,8 +97,8 @@ class SavedSearchModelsTests(MyJobsBase):
         """
         today = datetime.date.today().isoweekday()
         two_days_ago = today - 2
-        if two_days_ago < 0:
-            two_days_ago = 7 - two_days_ago
+        if two_days_ago <= 0:
+            two_days_ago += 7
         digest = SavedSearchDigestFactory(user=self.user,
                                           is_active=True)
         search = SavedSearchFactory(user=self.user, is_active=True,
@@ -121,8 +121,8 @@ class SavedSearchModelsTests(MyJobsBase):
         """
         today = datetime.date.today().day
         last_week = today - 7
-        if last_week < 0:
-            last_week = 31 - last_week
+        if last_week <= 0:
+            last_week += 31
         digest = SavedSearchDigestFactory(user=self.user,
                                           is_active=True)
         search = SavedSearchFactory(user=self.user, is_active=True,
