@@ -159,13 +159,12 @@ def requeue_missed_searches():
     day_of_month = today.day
 
     # We have lists of every day in the week and every day of the month.
-    # To exclude searches that will be sent later today, we need to filter
-    # today out of those lists.
-    not_today = lambda day: (lambda choice: choice != day)
-    days_of_week = filter(not_today(day_of_week),
-                          [choice[0] for choice in DOW_CHOICES])
-    days_of_month = filter(not_today(day_of_month),
-                           [choice[0] for choice in DOM_CHOICES])
+    # To exclude searches that will be sent later today, we need to remove
+    # today from those lists.
+    days_of_week = [choice[0] for choice in DOW_CHOICES]
+    days_of_week.remove(day_of_week)
+    days_of_month = [choice[0] for choice in DOM_CHOICES]
+    days_of_month.remove(day_of_month)
 
     q = Q()
     # There are 36 distinct last_sent dates we need to check - the six previous
@@ -173,18 +172,18 @@ def requeue_missed_searches():
     # searches. We can combine all of these into a single Q.
     for day in days_of_week:
         # Math: today is Monday (1) and the search should have sent on
-        # Saturday (6). 1 - 6 = -5. -5 + 7 = 2 days ago.
-        # Keep in mind that isoweekday is 1-indexed and starts on Monday.
-        days_ago = today.isoweekday() - int(day)
-        if days_ago <= 0:
-            days_ago += 7
+        # Saturday (6). 1 - 6 = -5. -5 % 7 = 2 days ago. A similar calculation
+        # occurs for days of the month.
+        # Keep in mind that isoweekday is 1-indexed and starts on Monday. If
+        # we weren't already removing today from the list of options, we would
+        # be forced to use something other than modulo: 1 - 1 = 0, 0 % 7 = 0,
+        # 0 isn't a valid return value for isoweekday.
+        days_ago = (today.isoweekday() - int(day)) % 7
         q = q | (Q(frequency='W', day_of_week=day) &
                  (Q(last_sent__lt=today - timedelta(days=days_ago)) |
                   Q(last_sent__isnull=True)))
     for day in days_of_month:
-        days_ago = day_of_month - day
-        if days_ago <= 0:
-            days_ago += 31
+        days_ago = (day_of_month - day) % 31
         # As a happy little side effect of requeuing saved searches, this will
         # resend monthly searches for, for example, the 31st of the month
         # on the first day of the following month if the previous month doesn't
