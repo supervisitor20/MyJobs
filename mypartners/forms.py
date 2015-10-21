@@ -91,7 +91,6 @@ class ContactForm(NormalizedModelForm):
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
         self.instance.update_last_action_time(False)
-        print 'CONTACT EDIT: ', self.instance.last_action_time
         contact = None
         if not self.instance.pk:
             contact = Contact.objects.filter(
@@ -208,7 +207,6 @@ class NewPartnerForm(NormalizedModelForm):
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
-        print 'PARTNER-NEW: ', partner.last_action_time
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
 
@@ -228,7 +226,6 @@ class NewPartnerForm(NormalizedModelForm):
 
             self.instance.partner = partner
             instance = super(NewPartnerForm, self).save(commit)
-            print 'CONTACT-NEW: ', instance.last_action_time
             partner.primary_contact = instance
             
             if create_location:
@@ -319,7 +316,6 @@ class PartnerForm(NormalizedModelForm):
     def save(self, user, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.update_last_action_time(False)
-        print 'PARTNER-EDIT: ', self.instance.last_action_time
         instance = super(PartnerForm, self).save(commit)
         # Explicity set the primary_contact for the partner and re-save.
         try:
@@ -440,7 +436,6 @@ class ContactRecordForm(NormalizedModelForm):
         log_change(instance, self, user, partner, identifier,
                    action_type=new_or_change)
 
-        print 'CONTACT RECORD: ', instance.last_action_time
         return instance
 
 
@@ -485,7 +480,6 @@ class LocationForm(NormalizedModelForm):
         instance = super(LocationForm, self).save(commit)
         for contact in instance.contacts.all():
             contact.update_last_action_time()
-            print 'CONTACT_LOC_UPDT: ', contact, contact.last_action_time
 
         _, partner, _ = prm_worthy(request)
         log_change(instance, self, request.user, partner, instance.label,
