@@ -66,6 +66,8 @@
                             {% if company.posting_access %}
                                 <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
                             {% endif %}
+                            <!-- TO DO : display based on access -->
+                            <li><a id="manage-tab" href="{{ ABSOLUTE_URL }}manage">{% trans "Manage" %}</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -348,7 +350,7 @@
                     menu_company_name = data[0].name;
                 }
             }
-            
+
             var list_item = document.createElement("li");
             list_item.setAttribute("id", "company_" + String(company.id));
             list_item.setAttribute("style", "cursor: pointer");

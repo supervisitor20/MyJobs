@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block site-title %}
+    <title>My.jobs - Manage - {{ company.name }} (beta)</title>
+    <meta name="title" content="My.jobs - Manage - {{ company.name }}">
+{% endblock %}
+
+{% block meta-extra %}
+<link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.css" id="theme_base">
+<link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.date.css" id="theme_date">
+<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+      <div class="span12">
+          <h1 class="bottom-bordered">{{ company.name }} <small>Manage</small></h1>
+      </div>
+  </div>
+  <div class="row">
+
+    <div id="" class="span8 panel">
+
+      <p>Account information could go here.</p>
+
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Roles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>5</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Users</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pending</td>
+            <td>Active</td>
+            <td>Total</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>10</td>
+            <td>14</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="clearfix"></div>
+    </div>
+
+    {% include "manage/includes/manage_sidebar.html" %}
+
+  </div>
+
+{% endblock %}
+
+{% block extra-js %}
+{% autoescape off %}
+
+{% endautoescape %}
+<!--[if IE]>
+<script src="{{ STATIC_URL }}es5-sham.min.js"></script>
+<![endif]-->
+<script src="{{ STATIC_URL }}bootstrap/bootstrap-modalmanager.js"></script>
+<script src="{{ STATIC_URL }}bootstrap/bootstrap-modal.js"></script>
+<script src="{{ STATIC_URL }}reporting.167-25.js"></script>
+<script src="{{ STATIC_URL }}pickadate/picker.js"></script>
+<script src="{{ STATIC_URL }}pickadate/picker.date.js"></script>
+<script src="{{ STATIC_URL }}pickadate/legacy.js"></script>
+<!-- SteelToe: https://github.com/jclem/steeltoe -->
+<script src="{{ STATIC_URL }}steeltoe.js"></script>
+{% endblock %}
