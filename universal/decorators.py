@@ -85,7 +85,7 @@ def activate_user(view_func):
 # Rather than write a few different decorators, I decided to go with a
 # decorator factory and write partials to handle repetitive cases.
 def warn_when(condition, feature, message, link=None, link_text=None,
-              exception=None, redirect=True, enabled=False):
+              exception=None, redirect=True, enabled=True):
     """
     A decorator which displays a warning page for :feature: with :message: when
     the :condition: isn't met. If a :link: is provided, a button with that link
@@ -143,8 +143,7 @@ warn_when_inactive = partial(
         (not req.user.is_verified or not req.user.is_active),
     message='You have yet to activate your account.',
     link='/accounts/register/resend',
-    link_text='Resend Activation',
-    enabled=True)
+    link_text='Resend Activation')
 
 
 def has_access(feature):
@@ -172,4 +171,4 @@ def has_access(feature):
     return not_found_when(
         condition=lambda req: all(c(req) for c in conditions.get(feature, [])),
         message="Must have %s access to proceed." % feature,
-        feature=feature)
+        feature=feature, enabled=False)
