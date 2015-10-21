@@ -31,6 +31,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User
+from myjobs.decorators import requires
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -50,8 +51,14 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
 
+def missing_access():
+    raise Http404("App level permissions are missing.")
+
+def missing_activity():
+    raise Http404("Activities are missing.")
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires(['read partner'], missing_activity, missing_access)
 @has_access('prm')
 def prm(request):
     """

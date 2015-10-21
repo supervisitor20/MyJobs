@@ -1,6 +1,7 @@
 from functools import wraps
 
 from django.contrib.auth import logout
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
@@ -188,6 +189,12 @@ def requires(activities, activity_callback=None, access_callback=None):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
+            #TODO: Remove this logic once feature is rolled out. for the
+            #      moment, we only want this decorator factory to work in QC
+            #      and Staging.
+            if not settings.DEBUG:
+                return view_func(request, *args, **kwargs)
+
             company = get_company_or_404(request)
             # the app_access we have, determined by the current company
             company_access = company.app_access.values_list('name', flat=True)
