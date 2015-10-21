@@ -937,7 +937,7 @@ input.picker-right {
 }
 
 .contact-record-tr > td {
-    word-break: break-word;
+    word-wrap: break-word;
     font-size: 0.9em;
 }
 
@@ -2589,7 +2589,7 @@ input[name="password2"] {
 }
 
 #newAccountInfo {
-    height: 100%:
+    height: 100%;
 }
 
 #newAccountData {
@@ -2603,7 +2603,7 @@ input[name="password2"] {
     padding: 10px;
     margin-bottom: 10px;
     -moz-border-radius: 4px;
-    -webkit-order-radius: 4px;
+    -webkit-border-radius: 4px;
     border-radius: 4px;
 }
 
@@ -3220,7 +3220,7 @@ td .gravatar-blank,
 
     .date-range-select-form {
         background: inherit;
-        box-shadow: inherit;
+        box-shadow: none;
         position: inherit;
         margin-left: 0;
     }
@@ -3277,13 +3277,11 @@ td .gravatar-blank,
 
     #profileTitleBar h1{
         font-size: 1.5em;
-        line-height: auto;
         margin: 0;
     }
 
     #profileTitleBar h3{
         font-size: .8em;
-        line-height: auto;
         margin: 0;
     }
 
