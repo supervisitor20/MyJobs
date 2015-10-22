@@ -399,10 +399,12 @@ class TestRegenerate(MyReportsTestCase):
 
 class TestReportsApi(MyReportsTestCase):
     def test_reporting_types_api_fail_get(self):
+        """Try an invalid method on reporting types."""
         resp = self.client.get(reverse('reporting_types_api'))
         self.assertEquals(405, resp.status_code)
 
     def test_reporting_types_api(self):
+        """Test that we get only active reporting types."""
         resp = self.client.post(reverse('reporting_types_api'))
         data = json.loads(resp.content)['reporting_type']
         self.assertEquals(1, len(data))
@@ -410,10 +412,12 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals('PRM Reports', data['1']['description'])
 
     def test_report_types_api_fail_get(self):
+        """Try an invalid method on report types."""
         resp = self.client.get(reverse('report_types_api'))
         self.assertEquals(405, resp.status_code)
 
     def test_report_types_api(self):
+        """Test that we get only active report types."""
         resp = self.client.post(reverse('report_types_api'),
                                 data={'reporting_type_id': '1'})
         data = json.loads(resp.content)['report_type']
@@ -427,6 +431,7 @@ class TestReportsApi(MyReportsTestCase):
                           data['3']['description'])
 
     def test_data_types_api(self):
+        """Test that we get only active data types."""
         resp = self.client.post(reverse('data_types_api'),
                                 data={'report_type_id': '2'})
         data = json.loads(resp.content)['data_type']
@@ -435,6 +440,7 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals("Unaggregated Data Type", data['3']['description'])
 
     def test_presentation_api(self):
+        """Test that we get only active presentation types."""
         resp = self.client.post(reverse('presentation_types_api'),
                                 data={'report_type_id': '2',
                                       'data_type_id': '3'})
