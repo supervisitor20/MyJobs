@@ -10,6 +10,7 @@ import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
 
+from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
@@ -40,7 +41,7 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location)
+                               Location, OutreachEmailAddress)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1278,6 +1279,17 @@ def process_email(request):
                                        None, admin_email)
     return HttpResponse(status=200)
 
+@has_access('prm')
+def manage_outreach_inboxes(request):
+    if request.method == 'GET':
+        company = get_company_or_404(request)
+        email_address_formset = modelformset_factory(OutreachEmailAddress, exclude=('company',), extra=0,
+                                                     queryset=OutreachEmailAddress.objects.filter(company=company))
+        return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
+                                  {'formset': email_address_formset},
+                                  RequestContext(request))
+    if request.method == 'POST':
+        pass
 
 @has_access('prm')
 def tag_names(request):
