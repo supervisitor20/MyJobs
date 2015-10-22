@@ -466,4 +466,7 @@ class TestDynamicReports(MyReportsTestCase):
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
         lines = resp.content.splitlines()
+        first_found_name = lines[1].split(',')[0]
+        expected_name = u'name-0 \u2019'.encode('utf-8')
+        self.assertEqual(expected_name, first_found_name)
         self.assertEquals(11, len(lines))
