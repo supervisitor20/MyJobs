@@ -456,7 +456,7 @@ class TestDynamicReports(MyReportsTestCase):
 
         partner = PartnerFactory(owner=self.company)
         for i in range(0, 10):
-            ContactFactory.create(name="name-%s" % i, partner=partner)
+            ContactFactory.create(name=u"name-%s \u2019" % i, partner=partner)
 
         resp = self.client.post(reverse('run_dynamic_report'), {'rp_id': 3})
         self.assertEqual(200, resp.status_code)
