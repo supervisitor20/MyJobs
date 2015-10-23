@@ -8,56 +8,24 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting field 'Partner.last_modified'
-        db.delete_column(u'mypartners_partner', 'last_modified')
+        # rename last_modified to last_action_time
+        db.rename_column(u'mypartners_partner', 'last_modified', 'last_action_time')
 
-        # Adding field 'Partner.last_action_time'
-        db.add_column(u'mypartners_partner', 'last_action_time',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
+        # rename last_modified to last_action_time
+        db.rename_column(u'mypartners_contact', 'last_modified', 'last_action_time')
 
-        # Deleting field 'Contact.last_modified'
-        db.delete_column(u'mypartners_contact', 'last_modified')
-
-        # Adding field 'Contact.last_action_time'
-        db.add_column(u'mypartners_contact', 'last_action_time',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
-        # Deleting field 'ContactRecord.last_modified'
-        db.delete_column(u'mypartners_contactrecord', 'last_modified')
-
-        # Adding field 'ContactRecord.last_action_time'
-        db.add_column(u'mypartners_contactrecord', 'last_action_time',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
+        # rename last_modified to last_action_time
+        db.rename_column(u'mypartners_contactrecord', 'last_modified', 'last_action_time')
 
     def backwards(self, orm):
-        # Adding field 'Partner.last_modified'
-        db.add_column(u'mypartners_partner', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
+        # rename last_action_time to last_modified
+        db.rename_column(u'mypartners_partner', 'last_action_time', 'last_modified')
 
-        # Deleting field 'Partner.last_action_time'
-        db.delete_column(u'mypartners_partner', 'last_action_time')
+        # rename last_action_time to last_modified
+        db.rename_column(u'mypartners_contact', 'last_action_time', 'last_modified')
 
-        # Adding field 'Contact.last_modified'
-        db.add_column(u'mypartners_contact', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
-        # Deleting field 'Contact.last_action_time'
-        db.delete_column(u'mypartners_contact', 'last_action_time')
-
-        # Adding field 'ContactRecord.last_modified'
-        db.add_column(u'mypartners_contactrecord', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
-        # Deleting field 'ContactRecord.last_action_time'
-        db.delete_column(u'mypartners_contactrecord', 'last_action_time')
-
+        # rename last_action_time to last_modified
+        db.rename_column(u'mypartners_contactrecord', 'last_action_time', 'last_modified')
 
     models = {
         u'auth.group': {
