@@ -29,7 +29,7 @@ class Migration(DataMigration):
         # assign the first company user of each company to that role
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        orm.Role.objects.filter(name="Admin").delete()
 
     models = {
         u'auth.group': {
