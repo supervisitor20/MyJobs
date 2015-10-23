@@ -99,4 +99,11 @@
 
 {% block extra-js %}
 <script src="{{ STATIC_URL }}saved-search-main.151-01.js{{ gz }}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".product-card:not(.no-highlight)").on("click", function() {
+           window.location = $(this).find("a.btn").attr("href");
+        });
+    });
+</script>
 {% endblock %}
