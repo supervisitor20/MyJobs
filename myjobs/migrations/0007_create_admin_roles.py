@@ -7,11 +7,11 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        """Create a 'Role Admin' role for existing companies."""
+        """Create a 'Admin' role for existing companies."""
 
         # create the required roles
         orm.Role.objects.bulk_create([
-            orm.Role(name="Role Admin", company=company)
+            orm.Role(name="Admin", company=company)
             for company in orm["seo.Company"].objects.all()])
 
         roles = orm.Role.objects.all()
@@ -24,12 +24,12 @@ class Migration(DataMigration):
         # directly to reduce queries to one
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=activity)
-            for role in roles for activity in activities])
+            for role in roles for activity in activities], 450)
 
         # assign the first company user of each company to that role
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        orm.Role.objects.filter(name="Admin").delete()
 
     models = {
         u'auth.group': {

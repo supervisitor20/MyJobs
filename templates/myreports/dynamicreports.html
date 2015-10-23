@@ -19,14 +19,16 @@
     </div>
     <!-- This UI is a placeholder for QA purposes.
          It is not intended to set any precedent. -->
+    <h3>Walk through report types API</h3>
     <div id="select-container" class="row">
         <div class="span12">
             <div id="select-content"></div>
         </div>
     </div>
-    <div id="report-types-container" class="row">
+
+    <div class="row">
         <div class="span12">
-            <div id="report-types-content"></div>
+            <ul id='report-links-list'></ul>
         </div>
     </div>
 {% endblock %}
@@ -38,6 +40,17 @@
 </script>
 <script type="text/javascript">
 var csrf = read_cookie("csrftoken");
+
+function ajaxRunReport(rpId) {
+    return $.ajax({
+        url: "/reports/api/run_report",
+        type: "POST",
+        dataType: "json",
+        data: {csrfmiddlewaretoken: csrf,
+            rp_id: rpId},
+        withCredentials: true,
+    });
+}
 
 function resetReportingTypes() {
     ajaxReportingTypes().done(function(data) {
@@ -62,6 +75,29 @@ function ajaxReportTypes(reportingType) {
         dataType: "json",
         data: {csrfmiddlewaretoken: csrf,
                reporting_type_id: reportingType},
+        withCredentials: true,
+    });
+}
+
+function ajaxDataTypes(reportType) {
+    return $.ajax({
+        url: "/reports/api/data_types",
+        type: "POST",
+        dataType: "json",
+        data: {csrfmiddlewaretoken: csrf,
+               report_type_id: reportType},
+        withCredentials: true,
+    });
+}
+
+function ajaxReportPresentations(reportType, dataType) {
+    return $.ajax({
+        url: "/reports/api/report_presentations",
+        type: "POST",
+        dataType: "json",
+        data: {csrfmiddlewaretoken: csrf,
+               data_type_id: dataType,
+               report_type_id: reportType},
         withCredentials: true,
     });
 }
@@ -95,7 +131,9 @@ function domReportTypes(data) {
     $('#select-content').empty();
     $.each(data['report_type'], function(rtId, rt) {
         function onclick() {
-            domYay(rtId);
+            ajaxDataTypes(rtId).done(function(dt) {
+                domDataTypes(dt, rtId);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
             return false;
         };
         var dom = domButtonRow(rt['name'], rt['description'], onclick);
@@ -104,12 +142,54 @@ function domReportTypes(data) {
     });
 }
 
-function domYay(rtId) {
+function domDataTypes(data, rtId) {
+    $('#select-content').empty();
+    $.each(data['data_type'], function(dtId, dt) {
+        function onclick() {
+            ajaxReportPresentations(rtId, dtId).done(function(rp) {
+                domReportPresentations(rp);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
+            return false;
+        };
+        var dom = domButtonRow(dt['name'], dt['description'], onclick);
+        $('#select-content').append(dom);
+        $('#select-container').show();
+    });
+}
+
+function domReportPresentations(data) {
+    $('#select-content').empty();
+    $.each(data['report_presentation'], function(rpId, rp) {
+        function onclick() {
+            ajaxRunReport(rpId).done(function(dr) {
+                domRunReport(dr);
+            }).fail(function(xhr, text, error) { console.error(text, error, xhr); });
+            return false;
+        };
+        var dom = domButtonRow(rp['name'], rp['name'], onclick);
+        $('#select-content').append(dom);
+        $('#select-container').show();
+    });
+}
+
+function domRunReport(data) {
+    var reportId = data['id'];
+    var list = $('#report-links-list');
+    var href = '/reports/view/dynamicdownload?id=' + reportId;
+    var dom = $('<li><a href="' + href + '">Report: ' + reportId + '</a></li>');
+    list.append(dom);
+
+    domYay("report presentation", reportId);
+
+}
+
+function domYay(label, rtId) {
     $('#select-content').empty();
     function onclick() {
         resetReportingTypes();
     };
-    var dom = domButtonRow('Reset', 'About to proceed with report id:' + rtId, onclick);
+    var dom = domButtonRow('Reset', 'Done with ' + label
+                           + ' id:' + rtId, onclick);
     $('#select-content').append(dom);
     $('#select-container').show();
 

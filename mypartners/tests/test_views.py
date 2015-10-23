@@ -231,6 +231,31 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
         self.assertFalse(record.archived_on)
 
+    def test_archive_communication_records_without_contact(self):
+        """
+        Test that trying to archive a communication record without an
+        associated contact works correctly. This should not happen very often
+        and the number of records for which this is an issue should never
+        increase as we no longer allow deleting of contacts.
+        """
+        self.client.login_user(self.staff_user)
+        communication_record = ContactRecordFactory(partner=self.partner,
+                                                    contact=self.contact)
+        url = self.get_url('delete_prm_item',
+                           partner=self.partner.pk,
+                           id=communication_record.pk,
+                           ct=ContentType.objects.get_for_model(ContactRecord).pk)
+
+        self.contact.delete()
+
+        response = self.client.get(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 302)
+        with self.assertRaises(ContactRecord.DoesNotExist):
+            ContactRecord.objects.get(pk=communication_record.pk)
+        communication_record = ContactRecord.all_objects.get(
+            pk=communication_record.pk)
+        self.assertTrue(communication_record.archived_on)
+
 
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view functio. 
@@ -1230,8 +1255,8 @@ class EmailTests(MyPartnersTestCase):
             self.assertEqual(self.data['text'], record.notes)
             self.assertEqual(Contact.objects.all().count(), 2)
 
-            Contact.objects.filter(email=record.contact_email).delete()
-            ContactRecord.objects.filter(id=record.pk).delete()
+            Contact.objects.get(email=record.contact_email).delete()
+            record.delete()
 
     def test_double_escape_forward(self):
         self.data['to'] = 'prm@my.jobs'

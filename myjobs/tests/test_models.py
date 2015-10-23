@@ -224,24 +224,24 @@ class ActivityTests(MyJobsBase):
 
     def test_automatic_role_admin_activities(self):
         """
-        New activities should be added to all Role Admin roles automatically.
+        New activities should be added to all Admin roles automatically.
         """
 
         # add role to existing company
-        RoleFactory(company=self.company, name="Role Admin",
+        RoleFactory(company=self.company, name="Admin",
                     activities=self.activities)
         role_admins = RoleFactory.create_batch(
-            50, name="Role Admin", activities=self.activities)
+            50, name="Admin", activities=self.activities)
 
         # sanity check for initial numbers
-        for admin in Role.objects.filter(name="Role Admin"):
+        for admin in Role.objects.filter(name="Admin"):
             self.assertEqual(admin.activities.count(), 5)
 
         new_activity =  ActivityFactory(
             name="new activity", description="Just a new test activity.")
 
         # new activity should be available for admins
-        for admin in Role.objects.filter(name="Role Admin"):
+        for admin in Role.objects.filter(name="Admin"):
             self.assertIn(new_activity, admin.activities.all())
 
         # existing role should not have new activity
