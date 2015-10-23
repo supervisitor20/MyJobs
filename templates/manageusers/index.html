@@ -46,19 +46,9 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
 
 
-
-
-
-
-
-
 <script type="text/babel">
 
   var CancelRoleButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     handleClick: function(event) {
       console.log("User clicked CancelRoleButton");
 
@@ -74,11 +64,25 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
-  var SaveRoleButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
+  var DeleteRoleButton = React.createClass({
+    handleClick: function(event) {
+      console.log("User clicked DeleteRoleButton");
+
+      {/* TODO: Actually delete role */}
+
+      ReactDOM.render(
+        <Container page="Roles" name={this.props.name} company={this.props.company}/>,
+          document.getElementById('content')
+      );
     },
+    render: function() {
+      return (
+        <a className="btn pull-right" onClick={this.handleClick}><span>Delete Role</span></a>
+      );
+    }
+  });
+
+  var SaveRoleButton = React.createClass({
     handleClick: function(event) {
       console.log("User clicked SaveRoleButton");
 
@@ -92,10 +96,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var AddRoleButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     handleClick: function(event) {
       console.log("User clicked AddRoleButton");
 
@@ -111,13 +111,9 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
-  var CancelUsersButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
+  var CancelUserButton = React.createClass({
     handleClick: function(event) {
-      console.log("User clicked CancelUsersButton");
+      console.log("User clicked CancelUserButton");
 
       ReactDOM.render(
         <Container page="Users" name={this.props.name} company={this.props.company}/>,
@@ -131,11 +127,25 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
-  var SaveUserButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
+  var DeleteUserButton = React.createClass({
+    handleClick: function(event) {
+      console.log("User clicked DeleteUserButton");
+
+      {/* TODO: Actually delete user */}
+
+      ReactDOM.render(
+        <Container page="Users" name={this.props.name} company={this.props.company}/>,
+          document.getElementById('content')
+      );
     },
+    render: function() {
+      return (
+        <a className="btn pull-right" onClick={this.handleClick}><span>Delete User</span></a>
+      );
+    }
+  });
+
+  var SaveUserButton = React.createClass({
     handleClick: function(event) {
       console.log("User clicked SaveUserButton");
 
@@ -149,10 +159,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var AddUserButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     handleClick: function(event) {
       console.log("User clicked AddUserButton");
 
@@ -169,10 +175,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var RolesButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     handleClick: function(event) {
       console.log("User clicked RolesButton");
 
@@ -189,10 +191,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var UsersButton = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     handleClick: function(event) {
       console.log("User clicked UsersButton");
 
@@ -209,10 +207,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var UserInvitationEmailForm = React.createClass({
-    getInitialState: function() {
-      return {
-      };
-    },
     render: function() {
 
       var user_invitation_email_template = "You were invited to be a user in an application by DirectEmployers Association.\n\nPlease click the following link to confirm:\n\n[DYNAMIC LINK WILL GO HERE]";
@@ -222,8 +216,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <div className="row">
             <div className="col-xs-12">
               <label htmlFor="id_invitation_email">Invitation Email to User:</label>
-              <textarea id="id_invitation_email" name="id_invitation_email" type="textarea" rows="10" aria-describedby="invitation_email_help">
-                {user_invitation_email_template}
+              <textarea id="id_invitation_email" name="id_invitation_email" type="textarea" rows="10" defaultValue={user_invitation_email_template} aria-describedby="invitation_email_help">
+
               </textarea>
               <p id="inivitation_email_help" className="help-text">The invitation will automatically include a link for this user to confirm their account.</p>
             </div>
@@ -234,16 +228,41 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
+  var UserEmailAddressTextField = React.createClass({
+    render: function() {
+      if (this.props.action == "Add"){
+        return (
+          <input id="id_user_name" maxLength="255" name="id_user_name" editable type="email" size="35"/>
+        );
+      }
+      else if (this.props.action == "Edit"){
+        return (
+          <input id="id_user_name" maxLength="255" name="id_user_name" type="email" readOnly value={this.props.user_to_edit} size="35"/>
+        );
+      }
+    }
+  });
+
   var EditUserPage = React.createClass({
     render: function() {
       var user_invitation_email_form = "";
+      var delete_user_button = "";
       if (this.props.action == "Add") {
         user_invitation_email_form = <UserInvitationEmailForm />;
-      };
+
+      }
+      else if (this.props.action == "Edit"){
+        delete_user_button = <DeleteUserButton action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
+      }
 
       {/* Needed because, apparently, no way to make height of multiselect variable to fill contents */}
       {/* TODO: Update value dynamically */}
       var roles_count = 4;
+
+      {/* Needed because, both EditUserPage and EditRolePage components can handle editing or adding,
+        depending on value of this.props.action (e.g. Edit, Add)
+        Roles can always be editted, but we don't want emails to be editted. */}
+      var user_email_text_field = <UserEmailAddressTextField action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
 
       return (
         <div>
@@ -261,7 +280,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
               <label htmlFor="id_user_name">User Email Address*:</label>
               <div className="input-group">
                 <div className="input-group-addon">@</div>
-                <input id="id_user_name" maxLength="255" name="name" type="email" size="35"/>
+                {user_email_text_field}
               </div>
             </div>
           </div>
@@ -290,7 +309,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <div className="row">
             <div className="col-xs-12">
               <SaveUserButton />
-              <CancelUsersButton />
+              {delete_user_button}
+              <CancelUserButton />
             </div>
           </div>
         </div>
@@ -298,23 +318,49 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
+  var ActivitiesAssignedToThisRoleMultiselect = React.createClass({
+     render: function() {
+
+       var default_value = [];
+
+       if(this.props.action == "Edit"){
+         {/* TODO: Does this role already have acitivites assigned to it? If so, add them to default_value array */}
+         default_value.push('Edit Analytics Settings', 'Activate Analytics Settings');
+       }
+
+       {/* TODO: Generate options dynamically */}
+       return (
+        <div>
+          <select multiple="multiple" size="10" id="id_site_packages_from" defaultValue={default_value} aria-describedby="role_select_help">
+            <option value="Access Analytics">Access Analytics</option>
+            <option value="Edit Analytics Settings">Edit Analytics Settings</option>
+            <option value="Activate Analytics Settings">Activate Analytics Settings</option>
+            <option value="Delete Analytics">Delete Analytics</option>
+            <option value="Read PRM Settings">Read PRM Settings</option>
+            <option value="Read PRM Reports">Read PRM Reports</option>
+            <option value="Edit PRM Settings">Edit PRM Settings</option>
+            <option value="Activate PRM Settings">Activate PRM Settings</option>
+            <option value="Delete PRM">Delete PRM</option>
+          </select>
+        </div>
+       );
+     }
+  });
 
   var UsersAssignedToThisRoleMultiselect = React.createClass({
-     getInitialState: function() {
-       return {
-       };
-     },
      render: function() {
        {/* Needed because, apparently, no way to make height of multiselect variable to fill contents */}
        {/* TODO: Update value dynamically */}
        var users_count = 4;
 
        var default_value = [];
+
        if(this.props.action == "Edit"){
          {/* TODO: Does this role already have users? If so, add them to default_value array */}
          default_value.push('dpoynter@apps.directemployers.org');
        }
 
+       {/* TODO: Generate options dynamically */}
        return (
         <div>
           <select name="id_users" size={users_count} multiple defaultValue={default_value}>
@@ -331,7 +377,16 @@ SteelToe: https://github.com/jclem/steeltoe -->
   var EditRolePage = React.createClass({
     render: function() {
 
+      var delete_role_button = "";
+      if (this.props.action == "Add") {
+
+      }
+      else if (this.props.action == "Edit"){
+        delete_role_button = <DeleteRoleButton action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
+      }
+
       var users_assigned_to_this_role = <UsersAssignedToThisRoleMultiselect action={this.props.action}/>;
+      var activities_assigned_to_this_role = <ActivitiesAssignedToThisRoleMultiselect action={this.props.action}/>;
 
       return (
         <div>
@@ -346,20 +401,14 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <div className="row">
             <div className="col-xs-12">
               <label htmlFor="id_role_name">Role Name*:</label>
-              <input id="id_role_name" maxLength="255" name="name" type="text" size="35"/>
+              <input id="id_role_name" maxLength="255" name="name" type="text" defaultValue={this.props.role_to_edit} size="35"/>
             </div>
           </div>
           <hr/>
           <div className="row">
             <div className="col-xs-5">
               <label>Available Activities:</label>
-
-              <select multiple="multiple" size="10" id="id_site_packages_from" aria-describedby="role_select_help">
-                  <option value="Analytics Setup">Analytics Setup</option>
-                  <option value="Analytics User">Analytics User</option>
-                  <option value="PRM - Read">PRM - Read</option>
-                  <option value="PRM - Full Access">PRM - Full Access</option>
-              </select>
+              {activities_assigned_to_this_role}
               <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
             </div>
             <div className="col-xs-1">
@@ -375,18 +424,18 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <div className="row">
             <div className="col-xs-12">
 
-              <label htmlFor="id_users">Users:</label>
-
-              {/* TODO This page is dynamic and either Edit Role or Add Role. How to handle defaultValue if this.props.action ==  Add and defaultValue should be empty? */}
+              <label htmlFor="id_users">Associated Users:</label>
               {users_assigned_to_this_role}
 
             </div>
           </div>
 
+          <hr />
 
           <div className="row">
-            <div className="col-xs-5 col-xs-offset-7">
+            <div className="col-xs-12">
               <SaveRoleButton />
+              {delete_role_button}
               <CancelRoleButton />
             </div>
           </div>
@@ -396,13 +445,14 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var RolesPage = React.createClass({
-    handleEditClick: function(event) {
-      console.log("User clicked edit user link");
+    handleEditClick: function(role_to_edit) {
+      console.log("User clicked edit role link for this role: " + role_to_edit);
 
       ReactDOM.render(
-        <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit"/>,
+        <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_to_edit={role_to_edit}/>,
           document.getElementById('content')
       );
+
     },
     render: function() {
       return (
@@ -421,7 +471,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
                 <thead>
                   <tr>
                     <th>Role</th>
-                    <th>User Email</th>
+                    <th>Associated Activities</th>
+                    <th>Associated Users</th>
                     <th className="col-md-1"></th>
                   </tr>
                 </thead>
@@ -430,33 +481,60 @@ SteelToe: https://github.com/jclem/steeltoe -->
                     <td>Analytics Setup</td>
                     <td>
                       <ul>
+                        <li>Access Analytics</li>
+                        <li>Edit Analytics Settings</li>
+                      </ul>
+                    </td>
+                    <td>
+                      <ul>
                         <li>david@apps.directemployers.org</li>
                         <li>edwin@apps.directemployers.org</li>
                       </ul>
                     </td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "Analytics Setup")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>Analytics User</td>
                     <td>
                       <ul>
+                        <li>Access Analytics</li>
+                        <li>Edit Analytics Settings</li>
+                        <li>Activate Analytics Settings</li>
+                        <li>Delete Analytics</li>
+                      </ul>
+                    </td>
+                    <td>
+                      <ul>
                         <li>david@apps.directemployers.org</li>
                       </ul>
                     </td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "Analytics User")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>PRM - Full Access</td>
+                    <td>
+                      <ul>
+                        <li>Edit PRM Settings</li>
+                        <li>Activate PRM Settings</li>
+                        <li>Delete PRM</li>
+                      </ul>
+                    </td>
                     <td>
                       <ul>
                         <li>david@apps.directemployers.org</li>
                         <li>jkoons@apps.directemployers.org</li>
                       </ul>
                     </td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "PRM - Full Access")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>PRM - Read</td>
+                    <td>
+                      <ul>
+                        <li>Read PRM Settings</li>
+                        <li>Read PRM Reports</li>
+                      </ul>
+                    </td>
                     <td>
                       <ul>
                         <li>david@apps.directemployers.org</li>
@@ -464,7 +542,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
                         <li>jkoons@apps.directemployers.org</li>
                       </ul>
                     </td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "PRM - Read")}>Edit</a></td>
                   </tr>
                 </tbody>
               </table>
@@ -484,13 +562,14 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var UsersPage = React.createClass({
-    handleEditClick: function(event) {
-      console.log("User clicked user edit link");
+    handleEditClick: function(user_to_edit) {
+      console.log("User clicked edit user link for this user: " + user_to_edit);
 
       ReactDOM.render(
-        <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" />,
+        <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
           document.getElementById('content')
       );
+
     },
     render: function() {
       return (
@@ -526,7 +605,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
                       </ul>
                     </td>
                     <td><span className="label label-warning">Pending</span></td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "david@apps.directemployers.org")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>dpoynter@apps.directemployers.org</td>
@@ -536,7 +615,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
                       </ul>
                     </td>
                     <td><span className="label label-success">Active</span></td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "dpoynter@apps.directemployers.org")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>edwin@apps.directemployers.org</td>
@@ -546,7 +625,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
                       </ul>
                     </td>
                     <td><span className="label label-success">Active</span></td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "edwin@apps.directemployers.org")}>Edit</a></td>
                   </tr>
                   <tr>
                     <td>jkoons@apps.directemployers.org</td>
@@ -557,7 +636,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
                       </ul>
                     </td>
                     <td><span className="label label-success">Active</span></td>
-                    <td><a onClick={this.handleEditClick}>Edit</a></td>
+                    <td><a onClick={this.handleEditClick.bind(this, "jkoons@apps.directemployers.org")}>Edit</a></td>
                   </tr>
                 </tbody>
               </table>
@@ -589,42 +668,37 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <hr />
 
           <div className="row">
-            <div className="col-xs-12">
+            <div className="col-xs-4">
 
               {/* <p>{this.props.name} works with {this.props.company}.</p> */}
 
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Roles</th>
-                  </tr>
-                </thead>
+              <table className="table">
                 <tbody>
                   <tr>
-                    <td>5</td>
+                    <td><strong>Roles:</strong></td>
+                    <td>4</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Users:</strong></td>
+                    <td>4</td>
+                  </tr>
+                  <tr>
+                    <td>Pending</td>
+                    <td>
+                      <span className="label label-warning">1</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Active</td>
+                    <td>
+                      <span className="label label-success">3</span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
 
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Users</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Pending</td>
-                    <td>Active</td>
-                    <td>Total</td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td>10</td>
-                    <td>14</td>
-                  </tr>
-                </tbody>
-              </table>
+
 
             </div>
           </div>
@@ -647,10 +721,10 @@ SteelToe: https://github.com/jclem/steeltoe -->
         page = <UsersPage name={this.props.name} company={this.props.company}/>;
       }
       else if (page == "EditRole") {
-        page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action}/>;
+        page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
       }
       else if (page == "EditUser") {
-        page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action}/>;
+        page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
       }
       return (
         <div className="col-sm-8 panel">
@@ -695,7 +769,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
           <div className="row">
 
             <Menu />
-            <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action}/>
+            <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
 
           </div>
           <div className="clearfix"></div>
@@ -705,7 +779,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   ReactDOM.render(
-  	<Container page="Overview" name="Daniel" company="DirectEmployers" action=""/>,
+  	<Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" user_to_edit=""/>,
       document.getElementById('content')
   );
 

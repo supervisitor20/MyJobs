@@ -2867,10 +2867,6 @@ input[name="password2"] {
     background-color: #cccccc;
 }
 
-.btn.pull-right + .btn {
-    margin-right: 10px;
-}
-
 .btn.primary {
     background-color: #5f6c82;
     background-image: none;
@@ -2880,7 +2876,6 @@ input[name="password2"] {
     background-image: -o-linear-gradient(#8c96a1,#5f6c82);
     background-image: linear-gradient(#8c96a1,#5f6c82);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#8c96a1', endColorstr='#5f6c82', GradientType=0);
-    margin-top: 2px;
     padding-left: 25px;
     padding-right: 25px;
     font-weight:bold;
@@ -3991,8 +3986,13 @@ span.helptext {
   text-decoration: none;
   text-shadow: rgba(114, 114, 114, 0.74902) 0px 1px 1px;
   vertical-align: middle;
+  margin-left: 10px;
 }
 
 .sidebar .navigation .btn {
   width: 100%;
+}
+
+.sidebar .navigation .btn {
+  margin-left: 0px;
 }
