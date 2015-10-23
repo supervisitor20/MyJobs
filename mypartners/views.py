@@ -286,6 +286,7 @@ def save_item(request):
             return HttpResponse(status=200)
         else:
             return HttpResponse(json.dumps(form.errors))
+    raise Http404('Problem saving form. Please reload and try again')
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
@@ -454,11 +455,12 @@ def edit_location(request):
 
             if location not in contact.locations.all():
                 contact.locations.add(location)
-                contact.save()
+                contact.update_last_action_time()
 
+            content_id = ContentType.objects.get_for_model(contact.__class__).pk
             return HttpResponseRedirect(
-                reverse('edit_contact') + "?partner=%s&id=%s" % (
-                    partner.id, contact.id))
+                reverse('edit_contact') + "?partner=%s&id=%s&ct=%s" % (
+                    partner.id, contact.id, content_id))
     else:
         form = LocationForm(instance=location)
 
@@ -484,11 +486,13 @@ def delete_location(request):
     location = get_object_or_404(
         Location, pk=request.REQUEST.get('location', 0))
 
+    contact.update_last_action_time()
     contact.locations.remove(location)
 
+    content_id = ContentType.objects.get_for_model(contact.__class__).pk
     return HttpResponseRedirect(
-        reverse('edit_contact') + "?partner=%s&id=%s" % (
-            partner.id, contact.id))
+        reverse('edit_contact') + "?partner=%s&id=%s&ct=%s" % (
+            partner.id, contact.id, content_id))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
