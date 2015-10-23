@@ -12,7 +12,9 @@ from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize
-from myreports.models import Report, ReportingType, ReportType
+from myreports.models import (
+    Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
+    Column, DataType, ReportTypeDataTypes)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -376,6 +378,7 @@ def reporting_types_api(request):
                  'description': reporting_type.description})
 
     data = {'reporting_type':
+
             dict(entry(rt) for rt in reporting_types)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
@@ -398,3 +401,107 @@ def report_types_api(request):
             dict(entry(rt) for rt in report_types)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def data_types_api(request):
+
+    report_type_id = request.POST['report_type_id']
+    data_types = (DataType.objects
+                  .active_for_report_type(report_type_id))
+
+    def entry(data_type):
+        return (str(data_type.id),
+                {'name': data_type.data_type,
+                 'description': data_type.description})
+
+    data = {'data_type':
+            dict(entry(rt) for rt in data_types)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def presentation_types_api(request):
+
+    report_type_id = request.POST['report_type_id']
+    data_type_id = request.POST['data_type_id']
+    rpdt = (ReportTypeDataTypes.objects
+            .get(report_type_id=report_type_id,
+                 data_type_id=data_type_id))
+    rps = (ReportPresentation.objects
+           .active_for_report_type_data_type(rpdt))
+
+    def entry(rp):
+        return (str(rp.id),
+                {'name': rp.display_name})
+
+    data = {'report_presentation':
+            dict(entry(rp) for rp in rps)}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['POST'])
+def run_dynamic_report(request):
+    rp_id = request.POST['rp_id']
+    report_pres = ReportPresentation.objects.get(id=rp_id)
+
+    company = request.user.companyuser_set.first().company
+
+    report = DynamicReport.objects.create(
+        report_presentation=report_pres,
+        owner=company)
+
+    report.regenerate()
+    report.save()
+
+    data = {'id': report.id}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))
+
+
+@has_access('prm')
+@require_http_methods(['GET'])
+def download_dynamic_report(request):
+    """
+    Download dynamic report as CSV.
+
+    Query String Parameters:
+        :id: ID of the report to download
+        :values: Fields to include in the resulting CSV, as well as the order
+                 in which to include them.
+        :order_by: The sort order for the resulting CSV.
+
+    Outputs:
+        The report with the specified options rendered as a CSV file.
+    """
+
+    report_id = request.GET.get('id', 0)
+    values = request.GET.getlist('values', None)
+    order_by = request.GET.get('order_by', None)
+
+    report = DynamicReport.objects.get(id=report_id)
+
+    if order_by:
+        report.order_by = order_by
+        report.save()
+
+    configuration = report.report_presentation.configuration
+    columns = Column.objects.active_for_configuration(configuration)
+    values = [c.column_name for c in columns]
+
+    records = (dict((v, unicode(rec.get(v))) for v in values)
+               for rec in report.python)
+
+    response = HttpResponse(content_type='text/csv')
+    content_disposition = "attachment; filename=%s-%s.csv"
+    response['Content-Disposition'] = content_disposition % (
+        report.name.replace(' ', '_'), report.pk)
+
+    response.write(serialize('csv', records, values=values, order_by=order_by))
+
+    return response
