@@ -16,8 +16,7 @@
 </div>
 
 <div class="row">
-    <div class="span12">
-
+    <div class="span8">
         {% if updated %}
 
         <div class="alert alert-success">
@@ -31,52 +30,70 @@
 
         {% endif %}
 
-        <div id="saved-search-list">
-
-            {% if saved_searches or partner_saved_searches %}
-
-            {% include 'mysearches/saved_search_table.html' %}
-
-            {% else %}
-
-            <p>No Saved Searches!</p>
-
-            {% endif %}
-
-            <div class="actions">
-                <a id="new_btn" class="btn" href={% url 'edit_search' %}>{% trans 'New Saved Search' %}</a>
+        <div class="card-wrapper">
+            <div class="wrapper-header">
+                <h4>Saved Searches</h4>
             </div>
+            {% for search in saved_searches %}
+                {% include "mysearches/saved_search_card.html" %}
+            {% empty %}
+            <div class="product-card no-highlight">
+                You currently have no Saved Searches. <a href="{% url 'edit_search' %}">Create a Saved Search!</a>
+            </div>
+            {% endfor %}
+            <div class="wrapper-footer"></div>
+        </div>
+
+        {% if partner_saved_searches %}
+
+        <div class="card-wrapper">
+            <div class="wrapper-header">
+                <h4>Partner Saved Searches</h4>
+            </div>
+            {% for search in partner_saved_searches %}
+                {% include "mysearches/saved_search_pss_card.html" %}
+            {% endfor %}
+            <div class="wrapper-footer"></div>
+        </div>
+
+        {% endif %}
+    </div>
+
+    <div class="span4">
+        <div class="sidebar">
+            <h2 class="top">
+                Create New
+            </h2>
+            <div class="navigation">
+                <a class="btn" href="{% url 'edit_search' %}">Saved Search</a>
+            </div>
+            <h2>Digest Options</h2>
+            {% if saved_searches or partner_saved_searches %}
+                <p>
+                Check the box below if you would like to receive a single digest email
+                containing the results of each of your saved searches. This will be in place
+                of separate emails for each active saved search.
+                </p>
+                <form method="post" action="{% url 'save_digest_form' %}" id="digest-option">
+                    {% csrf_token %}
+                    {{ form.as_ul }}
+                    <div class="clear"></div>
+                    <div class="pull-right">
+                        <span id="saved"></span>
+                        <button type="submit" class="btn primary" id="digest_submit">{% trans 'Save' %}</button>
+                    </div>
+                    <div class="clear"></div>
+                </form>
+            {% else %}
+                <p>
+                    Saved search digests allow you to receive multiple saved search
+                    results in a single email instead of receiving each separately.
+                    These options become available once you have at least one saved
+                    search on your account.
+                </p>
+            {% endif %}
         </div>
     </div>
-</div>
-
-<div class="row">
-    <div class="formBox span7">
-    <h5>Digest Options</h5>
-    {% if saved_searches or partner_saved_searches %}
-        <p>
-        Check the box below if you would like to receive a single digest email
-        containing the results of each of your saved searches. This will be in place
-        of separate emails for each active saved search.
-        </p>
-        <form method="post" action="{% url 'save_digest_form' %}" id="digest-option">
-            {% csrf_token %}
-            {% include 'includes/form-error-highlight.html' %}
-            <div class="clear"></div>
-            <div class="pull-right">
-                <span id="saved"></span>
-                <button type="submit" class="btn primary" id="digest_submit">{% trans 'Save' %}</button>
-            </div>
-            <div class="clear"></div>
-        </form>
-    {% else %}
-        <p>
-            Saved search digests allow you to receive multiple saved search
-            results in a single email instead of receiving each separately.
-            These options become available once you have at least one saved
-            search on your account.
-        </p>
-    {% endif %}
 </div>
 {% endblock content %}
 
