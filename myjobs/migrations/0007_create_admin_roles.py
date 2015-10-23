@@ -24,7 +24,7 @@ class Migration(DataMigration):
         # directly to reduce queries to one
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=activity)
-            for role in roles for activity in activities])
+            for role in roles for activity in activities], 450)
 
         # assign the first company user of each company to that role
 
