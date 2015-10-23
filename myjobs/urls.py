@@ -34,4 +34,5 @@ urlpatterns = patterns(
     url(r'^toolbar/$', 'toolbar', name='toolbar'),
     url(r'^cas/$', 'cas', name='cas'),
     url(r'^topbar/$', 'topbar', name='topbar'),
+    url(r'^manage-users/$', 'manage_users', name='manage_users'),
 )

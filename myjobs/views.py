@@ -31,6 +31,7 @@ from myprofile.forms import (InitialNameForm, InitialEducationForm,
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
+from universal.helpers import get_company_or_404
 
 logger = logging.getLogger('__name__')
 
@@ -592,3 +593,16 @@ def topbar(request):
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 
     return response
+
+
+def manage_users(request):
+    """
+    View for manage users
+    """
+    company = get_company_or_404(request)
+    ctx = {
+        "company": company
+        }
+
+    return render_to_response('manageusers/index.html', ctx,
+                                RequestContext(request))
