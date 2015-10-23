@@ -190,6 +190,22 @@ SteelToe: https://github.com/jclem/steeltoe -->
     }
   });
 
+  var ActivitiesButton = React.createClass({
+    handleClick: function(event) {
+      console.log("User clicked ActivitiesButton");
+
+      ReactDOM.render(
+      	<Container page="Activities" name={this.props.name} company={this.props.company}/>,
+          document.getElementById('content')
+      );
+    },
+    render: function() {
+      return (
+        <a className="btn" onClick={this.handleClick}>Activities</a>
+      );
+    }
+  });
+
   var UsersButton = React.createClass({
     handleClick: function(event) {
       console.log("User clicked UsersButton");
@@ -375,6 +391,14 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var EditRolePage = React.createClass({
+    handleActivityDefinitionsClick: function(event) {
+      console.log("User clicked activity definitions link");
+
+      ReactDOM.render(
+        <Container page="Activities" name={this.props.name} company={this.props.company}/>,
+          document.getElementById('content')
+      );
+    },
     render: function() {
 
       var delete_role_button = "";
@@ -410,6 +434,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
               <label>Available Activities:</label>
               {activities_assigned_to_this_role}
               <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
+              <p id="role_select_help" className="help-text">Reference <a onClick={this.handleActivityDefinitionsClick}>Activity definitions</a> for more information.</p>
             </div>
             <div className="col-xs-1">
             </div>
@@ -556,6 +581,76 @@ SteelToe: https://github.com/jclem/steeltoe -->
               <AddRoleButton />
             </div>
           </div>
+        </div>
+      );
+    }
+  });
+
+
+  var ActivitiesPage = React.createClass({
+    render: function() {
+      return (
+        <div>
+          <div className="row">
+            <div className="col-xs-12">
+              <h2>Activities</h2>
+            </div>
+          </div>
+
+          <hr />
+
+          <div className="row">
+            <div className="col-xs-12">
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Access Analytics</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Edit Analytics Settings</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Activate Analytics Settings</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Delete Analytics</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Read PRM Settings</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Read PRM Reports</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Edit PRM Settings</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Activate PRM Settings</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                  <tr>
+                    <td>Delete PRM</td>
+                    <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
         </div>
       );
     }
@@ -717,6 +812,9 @@ SteelToe: https://github.com/jclem/steeltoe -->
       else if (page == "Roles") {
         page = <RolesPage name={this.props.name} company={this.props.company}/>;
       }
+      else if (page == "Activities") {
+        page = <ActivitiesPage name={this.props.name} company={this.props.company}/>;
+      }
       else if (page == "Users") {
         page = <UsersPage name={this.props.name} company={this.props.company}/>;
       }
@@ -742,6 +840,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
             <div className="navigation">
               <h2 className="top">Manage</h2>
               <RolesButton name={this.props.name} company={this.props.company}/>
+              <ActivitiesButton />
               <UsersButton />
             </div>
           </div>
