@@ -1283,10 +1283,10 @@ def process_email(request):
 def manage_outreach_inboxes(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
-        email_address_formset = modelformset_factory(OutreachEmailAddress, exclude=('company',), extra=0,
-                                                     queryset=OutreachEmailAddress.objects.filter(company=company))
+        OutreachEmailInboxFormset = modelformset_factory(OutreachEmailAddress, exclude=('company',), extra=0)
+        formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
         return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
-                                  {'formset': email_address_formset},
+                                  {'formset': formset},
                                   RequestContext(request))
     if request.method == 'POST':
         pass
