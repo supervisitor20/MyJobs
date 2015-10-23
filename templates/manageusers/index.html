@@ -391,14 +391,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
   });
 
   var EditRolePage = React.createClass({
-    handleActivityDefinitionsClick: function(event) {
-      console.log("User clicked activity definitions link");
-
-      ReactDOM.render(
-        <Container page="Activities" name={this.props.name} company={this.props.company}/>,
-          document.getElementById('content')
-      );
-    },
     render: function() {
 
       var delete_role_button = "";
@@ -434,7 +426,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
               <label>Available Activities:</label>
               {activities_assigned_to_this_role}
               <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
-              <p id="role_select_help" className="help-text">Reference <a onClick={this.handleActivityDefinitionsClick}>Activity definitions</a> for more information.</p>
             </div>
             <div className="col-xs-1">
             </div>
@@ -825,8 +816,10 @@ SteelToe: https://github.com/jclem/steeltoe -->
         page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
       }
       return (
-        <div className="col-sm-8 panel">
-          {page}
+        <div className="col-sm-8">
+          <div className="panel">
+            {page}
+          </div>
         </div>
       );
     }
@@ -835,14 +828,12 @@ SteelToe: https://github.com/jclem/steeltoe -->
   var Menu = React.createClass({
     render: function() {
       return (
-        <div className="col-sm-4 menu">
+        <div className="col-sm-4">
           <div className="sidebar">
-            <div className="navigation">
-              <h2 className="top">Manage</h2>
-              <RolesButton name={this.props.name} company={this.props.company}/>
-              <ActivitiesButton />
-              <UsersButton />
-            </div>
+            <h2 className="top">Manage</h2>
+            <RolesButton name={this.props.name} company={this.props.company}/>
+            <ActivitiesButton />
+            <UsersButton />
           </div>
         </div>
       );
@@ -862,14 +853,24 @@ SteelToe: https://github.com/jclem/steeltoe -->
         <div>
           <div className="row">
             <div className="col-sm-12">
-              <h1 className="bottom-bordered">DirectEmployers <small>Manage</small></h1>
+              <h1><a href="/manage" title="Back to Manage Users">DirectEmployers</a></h1>
             </div>
           </div>
+
+          <div className="row">
+            <div className="col-sm-12">
+              <div className="breadcrumbs">
+                Manage Users
+              </div>
+            </div>
+          </div>
+
           <div className="row">
 
-            <Menu />
-            <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
 
+            <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
+            <Menu />
+            
           </div>
           <div className="clearfix"></div>
         </div>
