@@ -855,7 +855,7 @@ class CommonEmailDomain(models.Model):
     class Meta:
         ordering = ["domain"]
 
-    domain = models.URLField(unique=True)
+    domain = models.CharField(max_length=200, unique=True)
 
     def __unicode__(self):
         return self.domain
@@ -872,7 +872,7 @@ class OutreachEmailDomain(models.Model):
         ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
-    domain = models.URLField()
+    domain = models.CharField(max_length=200, unique=True)
 
     def __unicode__(self):
         return "%s for %s" % (self.domain, self.company)
