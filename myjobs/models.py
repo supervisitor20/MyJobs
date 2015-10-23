@@ -775,7 +775,7 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
     """
 
     if created:
-        roles = Role.objects.filter(name="Role Admin")
+        roles = Role.objects.filter(name="Admin")
         RoleActivities = Role.activities.through
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=instance) for role in roles])
