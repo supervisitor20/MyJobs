@@ -8,23 +8,13 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting field 'SavedSearch.last_modified'
-        db.delete_column(u'mysearches_savedsearch', 'last_modified')
-
-        # Adding field 'PartnerSavedSearch.last_action_time'
-        db.add_column(u'mysearches_partnersavedsearch', 'last_action_time',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
+        # rename last_modified to last_action_time
+        db.rename_column(u'mysearches_savedsearch', 'last_modified', 'last_action_time')
 
 
     def backwards(self, orm):
-        # Adding field 'SavedSearch.last_modified'
-        db.add_column(u'mysearches_savedsearch', 'last_modified',
-                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
-                      keep_default=False)
-
-        # Deleting field 'PartnerSavedSearch.last_action_time'
-        db.delete_column(u'mysearches_partnersavedsearch', 'last_action_time')
+        # rename last_action_time to last_modified
+        db.rename_column(u'mysearches_savedsearch', 'last_action_time', 'last_modified')
 
 
     models = {
