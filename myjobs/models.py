@@ -771,7 +771,7 @@ class Activity(models.Model):
 def update_role_admins(sender, instance, created, *args, **kwargs):
     """
     When a new activity is created, that activity should immediately be
-    associated with the Role Admin role.
+    associated with the Admin role.
     """
 
     if created:
