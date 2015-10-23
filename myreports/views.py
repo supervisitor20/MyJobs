@@ -12,6 +12,8 @@ from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize
+from myjobs.decorators import requires
+from mypartners.views import PRM, missing_access, missing_activity
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
     Column, DataType, ReportTypeDataTypes)
