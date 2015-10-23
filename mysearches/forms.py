@@ -263,7 +263,6 @@ class PartnerSavedSearchForm(RequestForm):
     def save(self, commit=True):
         self.instance.feed = self.cleaned_data.get('feed')
         self.instance.update_last_action_time(False)
-        print 'PSS FORM SAVED: ', self.instance.last_action_time
         is_new_or_change = CHANGE if self.instance.pk else ADDITION
         if not self.instance.pk:
             self.instance.sort_by = 'Date'
@@ -314,5 +313,4 @@ class PartnerSubSavedSearchForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.update_last_action_time(False)
-        print 'PSS SUB FORM SAVED: ', self.instance.last_action_time
         return super(PartnerSubSavedSearchForm, self).save()
