@@ -872,7 +872,7 @@ class OutreachEmailDomain(models.Model):
         ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
-    domain = models.CharField(max_length=200, unique=True)
+    domain = models.CharField(max_length=200)
 
     def __unicode__(self):
         return "%s for %s" % (self.domain, self.company)
