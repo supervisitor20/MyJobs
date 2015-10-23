@@ -24,7 +24,7 @@ class TestAdminRoleCreation(TestCase):
 
         with self.assertNumQueries(2):
             Role.objects.bulk_create([
-                Role(name="Role Admin", company=company)
+                Role(name="Admin", company=company)
                 for company in Company.objects.all()])
 
         self.assertEqual(Role.objects.count(), 100)
@@ -35,7 +35,7 @@ class TestAdminRoleCreation(TestCase):
         single query.
         """
 
-        roles = [RoleFactory(name="Role Admin", company=company)
+        roles = [RoleFactory(name="Admin", company=company)
                  for company in self.companies]
 
         with self.assertNumQueries(1):
