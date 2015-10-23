@@ -1,6 +1,4 @@
-from collections import defaultdict
 import operator
-import random
 import pytz
 
 from django import http

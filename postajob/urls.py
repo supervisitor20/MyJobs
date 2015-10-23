@@ -1,4 +1,4 @@
-from django.conf.urls import *
+from django.conf.urls import patterns, url
 
 from postajob import models, views
 from postajob.decorators import (message_when_site_misconfigured,

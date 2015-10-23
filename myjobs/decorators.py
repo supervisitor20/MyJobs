@@ -2,10 +2,10 @@ from functools import wraps
 
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, Activity, AppAccess 
+from myjobs.models import User, AppAccess
 from universal.helpers import get_company_or_404
 
 

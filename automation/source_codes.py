@@ -1,4 +1,3 @@
-import re
 from django.db import transaction
 
 import xlrd

@@ -1,4 +1,4 @@
-from django.conf.urls import *
+from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.db.models.loading import cache as model_cache
 from django.views.generic import RedirectView
@@ -7,7 +7,6 @@ from seo.views.search_views import (BusinessUnitAdminFilter, SeoSiteAdminFilter,
                                     Dseo404)
 from seo.views.settings_views import secure_redirect
 from registration import views as registration_views
-from myblocks.views import secure_blocks
 
 # This is a bit of code pulled from a Django TRAC ticket describing a problem
 # I was seeing when working with the inline model forms:
@@ -24,28 +23,28 @@ if not model_cache.loaded:
     model_cache.get_models()
 
 from tastypie.api import Api
-from seo.api.resources import *
+from seo.api import resources
 
 v1_api = Api(api_name="v1")
-v1_api.register(SeoSiteResource())
-v1_api.register(ATSResource())
-v1_api.register(GroupResource())
-v1_api.register(ViewSourceResource())
-v1_api.register(BusinessUnitResource())
-v1_api.register(GoogleAnalyticsResource())
-v1_api.register(GoogleAnalyticsCampaignResource())
-v1_api.register(SpecialCommitmentResource())
-v1_api.register(CustomFacetResource())
-v1_api.register(ConfigurationResource())
-v1_api.register(FeaturedCompanyResource())
-v1_api.register(CompanyResource())
-v1_api.register(BillboardImageResource())
-v1_api.register(BillboardHotspotResource())
-v1_api.register(MocResource())
-v1_api.register(MocDetailResource())
-v1_api.register(OnetResource())
-v1_api.register(JobSearchResource())
-v1_api.register(JobResource())
+v1_api.register(resources.SeoSiteResource())
+v1_api.register(resources.ATSResource())
+v1_api.register(resources.GroupResource())
+v1_api.register(resources.ViewSourceResource())
+v1_api.register(resources.BusinessUnitResource())
+v1_api.register(resources.GoogleAnalyticsResource())
+v1_api.register(resources.GoogleAnalyticsCampaignResource())
+v1_api.register(resources.SpecialCommitmentResource())
+v1_api.register(resources.CustomFacetResource())
+v1_api.register(resources.ConfigurationResource())
+v1_api.register(resources.FeaturedCompanyResource())
+v1_api.register(resources.CompanyResource())
+v1_api.register(resources.BillboardImageResource())
+v1_api.register(resources.BillboardHotspotResource())
+v1_api.register(resources.MocResource())
+v1_api.register(resources.MocDetailResource())
+v1_api.register(resources.OnetResource())
+v1_api.register(resources.JobSearchResource())
+v1_api.register(resources.JobResource())
 
 admin.autodiscover()
 handler404 = Dseo404.as_view()

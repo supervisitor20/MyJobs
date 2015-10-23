@@ -75,15 +75,6 @@ class ATSSourceCodeFactory(django.DjangoModelFactory):
     parameter_value = 'indeed_test'
 
 
-class RedirectActionFactory(django.DjangoModelFactory):
-    class Meta:
-        model = models.RedirectAction
-
-    buid = 0
-    view_source_id = 0
-    action = models.RedirectAction.SOURCECODETAG_ACTION
-
-
 class DestinationManipulationFactory(django.DjangoModelFactory):
     class Meta:
         model = models.DestinationManipulation

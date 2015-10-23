@@ -1,11 +1,12 @@
 from django.core.urlresolvers import reverse
+
 from myjobs.tests.factories import UserFactory
 from mypartners.forms import ContactForm, ContactRecordForm
 from mypartners.models import Contact, Location, ContactRecord
 from mypartners.tests.factories import ContactFactory, ContactRecordFactory
 from mypartners.tests.test_views import MyPartnersTestCase
 from mysearches.tests.factories import PartnerSavedSearchFactory
-from mysearches.forms import PartnerSavedSearchForm 
+
 
 class ContactFormTests(MyPartnersTestCase):
     def setUp(self):
@@ -70,6 +71,7 @@ class ContactFormTests(MyPartnersTestCase):
         form.save(self.staff_user, self.partner.pk)
 
         self.assertTrue(Location.objects.filter(**address_info).exists())
+
 
 class PartnerSavedSearchFormTests(MyPartnersTestCase):
     def test_partner_saved_search_form_from_instance(self):

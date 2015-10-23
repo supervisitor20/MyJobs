@@ -1,7 +1,7 @@
 import bleach
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import resolve
 from django.template import Library
 from django.template.loader import render_to_string
 from django.utils.text import slugify
