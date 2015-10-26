@@ -4427,7 +4427,6 @@ table td, table th {
 
 #saved-search-listing-table td:hover {
     background: #D5FACF;
-    cursor: pointer;
 }
 
 #saved-search-listing-details > div,
