@@ -31,7 +31,7 @@ class MyProfileViewsTests(MyJobsBase):
 
         # The existing name object should be rendered on the main content
         # section
-        self.assertIsNotNone(soup.find('tr',
+        self.assertIsNotNone(soup.find('div',
                                        id='name-' + str(item_id) + '-item'))
         # profile-section contains the name of a profile section that has no
         # information filled out yet and shows up in the sidebar
