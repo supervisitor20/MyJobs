@@ -4425,6 +4425,10 @@ table td, table th {
     font-weight: bold;
 }
 
+#saved-search-listing-table td:hover {
+    background: #D5FACF;
+}
+
 #saved-search-listing-details > div,
 #saved-search-listing-details > h2 {
     padding-left: 10px;
