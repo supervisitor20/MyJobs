@@ -27,6 +27,7 @@ class Migration(SchemaMigration):
         # rename last_action_time to last_modified
         db.rename_column(u'mypartners_contactrecord', 'last_action_time', 'last_modified')
 
+
     models = {
         u'auth.group': {
             'Meta': {'object_name': 'Group'},
@@ -47,6 +48,25 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'myjobs.activity': {
+            'Meta': {'object_name': 'Activity'},
+            'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '150'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.appaccess': {
+            'Meta': {'object_name': 'AppAccess'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.role': {
+            'Meta': {'unique_together': "(('company', 'name'),)", 'object_name': 'Role'},
+            'activities': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Activity']", 'symmetrical': 'False'}),
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'myjobs.user': {
             'Meta': {'object_name': 'User'},
@@ -71,6 +91,7 @@ class Migration(SchemaMigration):
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'password_change': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'profile_completion': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'roles': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Role']", 'symmetrical': 'False'}),
             'source': ('django.db.models.fields.CharField', [], {'default': "'https://secure.my.jobs'", 'max_length': '255'}),
             'timezone': ('django.db.models.fields.CharField', [], {'default': "'America/New_York'", 'max_length': '255'}),
             'user_guid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
@@ -78,7 +99,7 @@ class Migration(SchemaMigration):
         },
         u'mypartners.commonemaildomain': {
             'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
+            'domain': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.contact': {
@@ -168,7 +189,7 @@ class Migration(SchemaMigration):
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            'domain': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.outreachworkflowstate': {
@@ -285,6 +306,7 @@ class Migration(SchemaMigration):
         u'seo.company': {
             'Meta': {'ordering': "['name']", 'unique_together': "(('name', 'user_created'),)", 'object_name': 'Company'},
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.User']", 'through': u"orm['seo.CompanyUser']", 'symmetrical': 'False'}),
+            'app_access': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.AppAccess']", 'symmetrical': 'False', 'blank': 'True'}),
             'canonical_microsite': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'company_slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'digital_strategies_customer': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
