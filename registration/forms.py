@@ -27,7 +27,6 @@ class CustomSetPasswordForm(SetPasswordForm):
                                               'Password is required.'},
                                   label=('Password'), required=True,
                                   widget=forms.PasswordInput(attrs={
-                                      'placeholder': _('Password'),
                                       'id': 'id_password1',
                                       'autocomplete': 'off'}),
                                   help_text="Must contain an uppercase "
@@ -37,8 +36,7 @@ class CustomSetPasswordForm(SetPasswordForm):
     new_password2 = forms.CharField(error_messages={'required':
                                                 'Password is required.'},
                                     label=_("Password (again)"), required=True,
-                                    widget=forms.PasswordInput(
-                                        attrs={'placeholder': _('Password (again)'),
+                                    widget=forms.PasswordInput(attrs={
                                                'id': 'id_password2',
                                                'autocomplete': 'off'},
                                         render_value=False))
@@ -83,20 +81,18 @@ class CustomAuthForm(AuthenticationForm):
     """
     username = forms.CharField(error_messages={'required':'Email is required.'},
                                label=_("Email"), required=True,
-                               widget=forms.TextInput(
-                                   attrs={'placeholder': _('Email'),
+                               widget=forms.TextInput(attrs={
                                           'id':'id_username'}))
     password = forms.CharField(error_messages={'required':'Password is required.'},
                                label=_("Password"), required=True,
-                               widget=forms.PasswordInput(
-                                   attrs={'placeholder':_('Password'),
+                               widget=forms.PasswordInput(attrs={
                                           'id':'id_password'},
                                    render_value=False,))
 
     remember_me = forms.BooleanField(label=_('Keep me logged in for 2 weeks'),
                                      required=False,
-                                     widget=forms.CheckboxInput(
-                                         attrs={'id': 'id_remember_me'}))
+                                     widget=forms.CheckboxInput(attrs={
+                                         'id': 'id_remember_me'}))
 
     def __init__(self, request=None, *args, **kwargs):
         super(CustomAuthForm, self).__init__(request, *args, **kwargs)
@@ -141,8 +137,7 @@ class CustomPasswordResetForm(PasswordResetForm):
     """
     email = forms.CharField(error_messages={'required': 'Email is required.'},
                             label=_("Email"), required=True,
-                            widget=forms.TextInput(
-                                attrs={'placeholder': _('Email'),
+                            widget=forms.TextInput(attrs={
                                        'id': 'id_email',
                                        'class': 'reset-pass-input'}))
 
@@ -178,7 +173,6 @@ class RegistrationForm(forms.Form):
     email = forms.EmailField(error_messages={'required':'Email is required.'},
                              label=_("Email"), required=True,
                              widget=forms.TextInput(attrs={
-                                 'placeholder': _('Email'),
                                  'id':'id_email',
                                  'autocomplete': 'off'}),
                              max_length=255)
@@ -186,7 +180,6 @@ class RegistrationForm(forms.Form):
                                               'Password is required.'},
                               label=('Password'), required=True,
                               widget=forms.PasswordInput(attrs={
-                                  'placeholder': _('Password'),
                                   'id': 'id_password1',
                                   'autocomplete': 'off'}),
                               help_text="Must contain an uppercase "
@@ -195,8 +188,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(error_messages={'required':
                                                 'Password is required.'},
                                 label=_("Password (again)"), required=True,
-                                widget=forms.PasswordInput(
-                                    attrs={'placeholder': _('Password (again)'),
+                                widget=forms.PasswordInput(attrs={
                                            'id': 'id_password2',
                                            'autocomplete': 'off'},
                                     render_value=False))
