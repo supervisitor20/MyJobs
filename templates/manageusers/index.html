@@ -1,8 +1,8 @@
 {% extends "base-new.html" %}
 
 {% block site-title %}
-    <title>My.jobs - {{ company.name }} - Manage - (beta)</title>
-    <meta name="title" content="My.jobs - Manage - {{ company.name }}">
+    <title>My.jobs - {{ company.name }} - Manage Users</title>
+    <meta name="title" content="My.jobs - Manage Users">
 {% endblock %}
 
 {% block meta-extra %}
@@ -783,9 +783,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
                   </tr>
                 </tbody>
               </table>
-
-
-
             </div>
           </div>
         </div>
@@ -795,10 +792,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
   var Content = React.createClass({
     render: function() {
-
       var page = this.props.page;
-
-
       switch(page) {
           case "Overview":
               page = <OverviewPage name={this.props.name} company={this.props.company}/>;
@@ -806,8 +800,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
           case "Roles":
               page = <RolesPage name={this.props.name} company={this.props.company}/>;
               break;
-
-
           case "Activities":
               page = <ActivitiesPage name={this.props.name} company={this.props.company}/>;
               break;
@@ -822,7 +814,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
               page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
               break;
       }
-      
+
       return (
         <div className="col-sm-8">
           <div className="panel">
@@ -874,11 +866,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
           </div>
 
           <div className="row">
-
-
             <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
             <Menu />
-
           </div>
           <div className="clearfix"></div>
         </div>
