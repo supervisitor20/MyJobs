@@ -8,13 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # rename last_modified to last_action_time
-        db.rename_column(u'mysearches_savedsearch', 'last_modified', 'last_action_time')
+        # Deleting field 'SavedSearch.last_modified'
+        db.delete_column(u'mysearches_savedsearch', 'last_modified')
+
+        # Adding field 'PartnerSavedSearch.last_action_time'
+        db.add_column(u'mysearches_partnersavedsearch', 'last_action_time',
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # rename last_action_time to last_modified
-        db.rename_column(u'mysearches_savedsearch', 'last_action_time', 'last_modified')
+        # Adding field 'SavedSearch.last_modified'
+        db.add_column(u'mysearches_savedsearch', 'last_modified',
+                      self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True),
+                      keep_default=False)
+
+        # Deleting field 'PartnerSavedSearch.last_action_time'
+        db.delete_column(u'mysearches_partnersavedsearch', 'last_action_time')
 
 
     models = {
@@ -37,6 +47,25 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'myjobs.activity': {
+            'Meta': {'object_name': 'Activity'},
+            'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '150'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.appaccess': {
+            'Meta': {'object_name': 'AppAccess'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.role': {
+            'Meta': {'unique_together': "(('company', 'name'),)", 'object_name': 'Role'},
+            'activities': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Activity']", 'symmetrical': 'False'}),
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'myjobs.user': {
             'Meta': {'object_name': 'User'},
@@ -61,6 +90,7 @@ class Migration(SchemaMigration):
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'password_change': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'profile_completion': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'roles': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Role']", 'symmetrical': 'False'}),
             'source': ('django.db.models.fields.CharField', [], {'default': "'https://secure.my.jobs'", 'max_length': '255'}),
             'timezone': ('django.db.models.fields.CharField', [], {'default': "'America/New_York'", 'max_length': '255'}),
             'user_guid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
@@ -277,6 +307,7 @@ class Migration(SchemaMigration):
         u'seo.company': {
             'Meta': {'ordering': "['name']", 'unique_together': "(('name', 'user_created'),)", 'object_name': 'Company'},
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.User']", 'through': u"orm['seo.CompanyUser']", 'symmetrical': 'False'}),
+            'app_access': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.AppAccess']", 'symmetrical': 'False', 'blank': 'True'}),
             'canonical_microsite': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'company_slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'digital_strategies_customer': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
