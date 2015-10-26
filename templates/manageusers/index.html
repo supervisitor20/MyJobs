@@ -797,24 +797,32 @@ SteelToe: https://github.com/jclem/steeltoe -->
     render: function() {
 
       var page = this.props.page;
-      if (page == "Overview") {
-        page = <OverviewPage name={this.props.name} company={this.props.company}/>;
+
+
+      switch(page) {
+          case "Overview":
+              page = <OverviewPage name={this.props.name} company={this.props.company}/>;
+              break;
+          case "Roles":
+              page = <RolesPage name={this.props.name} company={this.props.company}/>;
+              break;
+
+
+          case "Activities":
+              page = <ActivitiesPage name={this.props.name} company={this.props.company}/>;
+              break;
+          case "Users":
+              page = <UsersPage name={this.props.name} company={this.props.company}/>;
+              break;
+
+          case "EditRole":
+              page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
+              break;
+          case "EditUser":
+              page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
+              break;
       }
-      else if (page == "Roles") {
-        page = <RolesPage name={this.props.name} company={this.props.company}/>;
-      }
-      else if (page == "Activities") {
-        page = <ActivitiesPage name={this.props.name} company={this.props.company}/>;
-      }
-      else if (page == "Users") {
-        page = <UsersPage name={this.props.name} company={this.props.company}/>;
-      }
-      else if (page == "EditRole") {
-        page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
-      }
-      else if (page == "EditUser") {
-        page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
-      }
+      
       return (
         <div className="col-sm-8">
           <div className="panel">
@@ -870,7 +878,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
             <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
             <Menu />
-            
+
           </div>
           <div className="clearfix"></div>
         </div>
