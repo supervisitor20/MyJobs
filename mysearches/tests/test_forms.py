@@ -113,7 +113,7 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         instance.created_by = self.user
         instance.custom_message = instance.partner_message
         self.assertTrue(form.is_valid())
-        form.save()
+        self.instance = form.save()
 
         self.patcher = patch('urllib2.urlopen', return_file())
         self.mock_urlopen = self.patcher.start()
@@ -211,3 +211,26 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         self.assertFalse(form.fields['is_active'].widget.attrs.get('disabled',
                                                                    False))
         self.assertTrue(form.is_valid())
+
+    def pssform_last_action_time_updated_on_edit(self):
+        """
+            Verify saving partner saved search form causes last_action_time to update
+        """
+        original_time = self.instance.last_action_time
+        new_form = PartnerSavedSearchForm(instance=self.instance, request=self.request, data=self.partner_search_data)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save()
+        self.assertEqual(self.instance.pk, new_instance.pk)
+        self.assertNotEqual(new_instance.last_action_time, original_time)
+
+    def pss_sub_form_last_action_time_updated_on_edit(self):
+        """
+            Verify saving partner saved search sub form causes last_action_time to update
+        """
+        original_time = self.instance.last_action_time
+        new_form = PartnerSubSavedSearchForm(instance=self.instance, request=self.request,
+                                             data=self.partner_search_data)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save()
+        self.assertEqual(self.instance.pk, new_instance.pk)
+        self.assertNotEqual(new_instance.last_action_time, original_time)
