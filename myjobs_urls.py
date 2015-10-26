@@ -36,13 +36,6 @@ urlpatterns = patterns(
     url(r'^emails/', include('myemails.urls')),
 )
 
-
-urlpatterns += patterns(
-    'myjobs.views',
-    url(r'^manage-users/$', 'manage_users', name='manage_users'),
-)
-
-
 urlpatterns += patterns(
     '',
     url(r'^accounts/', include('registration.urls')),
