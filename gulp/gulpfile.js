@@ -88,7 +88,7 @@ gulp.task('manageusers', function() {
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest));
+    .pipe(gulp.dest(dest))
 });
 
 gulp.task('build', ['vendor', 'manageusers']);

@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
+import Button from 'react-bootstrap/lib/Button';
+
 // This is the entry point of the application. Bundling begins here.
 
 var CancelRoleButton = React.createClass({
@@ -14,7 +16,7 @@ var CancelRoleButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn pull-right" onClick={this.handleClick}><span>Cancel</span></a>
+      <Button className="pull-right" onClick={this.handleClick}>Cancel</Button>
     );
   }
 });
@@ -33,7 +35,7 @@ var DeleteRoleButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn pull-right" onClick={this.handleClick}><span>Delete Role</span></a>
+      <Button className="pull-right" onClick={this.handleClick}>Delete Role</Button>
     );
   }
 });
@@ -48,7 +50,7 @@ var SaveRoleButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn primary pull-right" onClick={this.handleClick}><span>Save Role</span></a>
+      <Button className="primary pull-right" onClick={this.handleClick}>Save Role</Button>
     );
   }
 });
@@ -64,7 +66,7 @@ var AddRoleButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn primary pull-right" onClick={this.handleClick}><span>Add Role</span></a>
+      <Button className="primary pull-right" onClick={this.handleClick}>Add Role</Button>
     );
   }
 });
@@ -80,7 +82,7 @@ var CancelUserButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn pull-right" onClick={this.handleClick}><span>Cancel</span></a>
+      <Button className="pull-right" onClick={this.handleClick}>Cancel</Button>
     );
   }
 });
@@ -99,7 +101,7 @@ var DeleteUserButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn pull-right" onClick={this.handleClick}><span>Delete User</span></a>
+      <Button className="pull-right" onClick={this.handleClick}>Delete Users</Button>
     );
   }
 });
@@ -112,7 +114,7 @@ var SaveUserButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn primary pull-right" onClick={this.handleClick}><span>Save User</span></a>
+      <Button className="primary pull-right" onClick={this.handleClick}>Save Users</Button>
     );
   }
 });
@@ -128,7 +130,7 @@ var AddUserButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn primary pull-right" onClick={this.handleClick}><span>Add User</span></a>
+      <Button className="primary pull-right"  onClick={this.handleClick}>Add Users</Button>
     );
   }
 });
@@ -144,7 +146,7 @@ var RolesButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn" onClick={this.handleClick}>Roles</a>
+      <Button onClick={this.handleClick}>Roles</Button>
     );
   }
 });
@@ -160,7 +162,7 @@ var ActivitiesButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn" onClick={this.handleClick}>Activities</a>
+      <Button onClick={this.handleClick}>Activities</Button>
     );
   }
 });
@@ -176,7 +178,7 @@ var UsersButton = React.createClass({
   },
   render: function() {
     return (
-      <a className="btn" onClick={this.handleClick}>Users</a>
+      <Button onClick={this.handleClick}>Users</Button>
     );
   }
 });
