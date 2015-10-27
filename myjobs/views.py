@@ -604,5 +604,5 @@ def manage_users(request):
         "company": company
         }
 
-    return render_to_response('manageusers/index-gulp.html', ctx,
+    return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
