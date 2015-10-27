@@ -6,6 +6,9 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
+var es5shim = require('es5-shim');
+
+
 
 var vendor_libs = [
     'react',
@@ -14,6 +17,7 @@ var vendor_libs = [
     'react-redux',
     'babel/polyfill',
     'es6-promise',
+    'es5-shim'
 ];
 
 var dest = '../static/bundle';
