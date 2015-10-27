@@ -9,4 +9,12 @@ import 'fetch-polyfill';
 export function bootstrap() {
     // This gives us the Promise API.
     es6PromisePolyfill();
+
+    // IE8 doesn't define console unless the debugger is active.
+    if (!window.console) {
+        window.console = {
+            log: () => {},
+            error: () => {},
+        };
+    }
 }
