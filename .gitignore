@@ -16,6 +16,10 @@ dev_*
 CACHE
 static/redirect.css
 
+Gulp stuff
+gulp/node_modules/
+static/bundle/
+
 # Editor aritfacts
 *~
 *-
