@@ -296,70 +296,11 @@ var EditUserPage = React.createClass({
   }
 });
 
-var ActivitiesAssignedToThisRoleMultiselect = React.createClass({
-   render: function() {
-
-     var default_value = [];
-
-     if(this.props.action == "Edit"){
-       {/* TODO: Does this role already have acitivites assigned to it? If so, add them to default_value array */}
-       default_value.push('Edit Analytics Settings', 'Activate Analytics Settings');
-     }
-
-     {/* TODO: Generate options dynamically */}
-     return (
-      <div>
-        <select multiple="multiple" size="10" id="id_roles_from" defaultValue={default_value} aria-describedby="role_select_help">
-          <option value="Access Analytics">Access Analytics</option>
-          <option value="Edit Analytics Settings">Edit Analytics Settings</option>
-          <option value="Activate Analytics Settings">Activate Analytics Settings</option>
-          <option value="Delete Analytics">Delete Analytics</option>
-          <option value="Read PRM Settings">Read PRM Settings</option>
-          <option value="Read PRM Reports">Read PRM Reports</option>
-          <option value="Edit PRM Settings">Edit PRM Settings</option>
-          <option value="Activate PRM Settings">Activate PRM Settings</option>
-          <option value="Delete PRM">Delete PRM</option>
-        </select>
-      </div>
-     );
-   }
-});
-
-var UsersAssignedToThisRoleMultiselect = React.createClass({
-   render: function() {
-     {/* Needed because, apparently, no way to make height of multiselect variable to fill contents */}
-     {/* TODO: Update value dynamically */}
-     var users_count = 4;
-
-     var default_value = [];
-
-     if(this.props.action == "Edit"){
-       {/* TODO: Does this role already have users? If so, add them to default_value array */}
-       default_value.push('dpoynter@apps.directemployers.org');
-     }
-
-     {/* TODO: Generate options dynamically */}
-     return (
-       <div>
-         <select multiple="multiple" size="10" id="id_users_from" defaultValue={default_value}>
-           <option value="david@apps.directemployers.org">david@apps.directemployers.org</option>
-           <option value="dpoynter@apps.directemployers.org">dpoynter@apps.directemployers.org</option>
-           <option value="edwin@apps.directemployers.org">edwin@apps.directemployers.org</option>
-           <option value="jkoons@apps.directemployers.org">jkoons@apps.directemployers.org</option>
-         </select>
-       </div>
-     );
-   }
-});
-
-
-
-
-
-
-
 var bootstrapClasses = {
-  filter: 'form-control', select: 'form-control', button: 'btn btn btn-block btn-default', buttonActive: 'btn btn btn-block btn-primary'
+  filter: 'form-control',
+  select: 'form-control',
+  button: 'btn btn btn-block btn-default',
+  buttonActive: 'btn btn btn-block btn-primary'
 }
 
 var AVAILABLE_ACTIVITIES = [
@@ -397,7 +338,7 @@ var ActivitiesMultiselect = React.createClass({
     return (
         <div className="row">
 
-          <div className="col-xs-5">
+          <div className="col-xs-6">
             <label>Available Activities:</label>
             <FilteredMultiSelect
               buttonText="Add"
@@ -409,7 +350,7 @@ var ActivitiesMultiselect = React.createClass({
               valueProp="id"
             />
           </div>
-          <div className="col-xs-5">
+          <div className="col-xs-6">
             <label>Activities Assigned to this Role:</label>
             <FilteredMultiSelect
               buttonText="Remove"
@@ -460,7 +401,7 @@ var UsersMultiselect = React.createClass({
     return (
         <div className="row">
 
-          <div className="col-xs-5">
+          <div className="col-xs-6">
             <label>Available Activities:</label>
             <FilteredMultiSelect
               buttonText="Add"
@@ -472,7 +413,7 @@ var UsersMultiselect = React.createClass({
               valueProp="id"
             />
           </div>
-          <div className="col-xs-5">
+          <div className="col-xs-6">
             <label>Activities Assigned to this Role:</label>
             <FilteredMultiSelect
               buttonText="Remove"
@@ -502,10 +443,6 @@ var EditRolePage = React.createClass({
     else if (this.props.action == "Edit"){
       delete_role_button = <DeleteRoleButton action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
     }
-
-    {/*TODO Phase these old multiselect components out*/}
-    var users_assigned_to_this_role = <UsersAssignedToThisRoleMultiselect action={this.props.action}/>;
-    var activities_assigned_to_this_role = <ActivitiesAssignedToThisRoleMultiselect action={this.props.action}/>;
 
     return (
       <div>
