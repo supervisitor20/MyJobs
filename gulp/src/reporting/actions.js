@@ -29,8 +29,8 @@ export class ActionCreators {
     }
 
     async reset() {
-        this.dispatch(Actions.loading(true));
         try {
+            this.dispatch(Actions.loading(true));
             const rts = await this.api.getReportingTypes();
             this.dispatch(Actions.nextPage("reportingTypes", rts, "reportingTypes"));
         } catch(e) {
