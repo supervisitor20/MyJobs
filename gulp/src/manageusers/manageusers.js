@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import Button from 'react-bootstrap/lib/Button';
+import FilteredMultiSelect from "react-filtered-multiselect"
 
 // This is the entry point of the application. Bundling begins here.
 
@@ -351,9 +352,149 @@ var UsersAssignedToThisRoleMultiselect = React.createClass({
    }
 });
 
+
+
+
+
+
+
+var bootstrapClasses = {
+  filter: 'form-control', select: 'form-control', button: 'btn btn btn-block btn-default', buttonActive: 'btn btn btn-block btn-primary'
+}
+
+var AVAILABLE_ACTIVITIES = [
+  {id: 1, name: "Access Analytics"},
+  {id: 2, name: "Edit Analytics Settings"},
+  {id: 3, name: "Activate Analytics Settings"},
+  {id: 4, name: "Delete Analytics"},
+  {id: 5, name: "Read PRM Settings"},
+  {id: 6, name: "Read PRM Reports"},
+  {id: 7, name: "Edit PRM Settings"},
+  {id: 8, name: "Activate PRM Settings"},
+  {id: 9, name: "Delete PRM"}
+]
+
+var ActivitiesMultiselect = React.createClass({
+  getInitialState() {
+    return {
+      selectedOptions: []
+    }
+  },
+  _onSelect(selectedOptions) {
+    selectedOptions.sort((a, b) => a.id - b.id)
+    this.setState({selectedOptions})
+  },
+  _onDeselect(deselectedOptions) {
+    var selectedOptions = this.state.selectedOptions.slice()
+    deselectedOptions.forEach(option => {
+      selectedOptions.splice(selectedOptions.indexOf(option), 1)
+    })
+    this.setState({selectedOptions})
+  },
+  render: function() {
+    var {selectedOptions} = this.state
+
+    return (
+        <div className="row">
+
+          <div className="col-xs-5">
+            <label>Available Activities:</label>
+            <FilteredMultiSelect
+              buttonText="Add"
+              classNames={bootstrapClasses}
+              onChange={this._onSelect}
+              options={AVAILABLE_ACTIVITIES}
+              selectedOptions={selectedOptions}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+          <div className="col-xs-5">
+            <label>Activities Assigned to this Role:</label>
+            <FilteredMultiSelect
+              buttonText="Remove"
+              classNames={{
+                filter: 'form-control'
+              , select: 'form-control'
+              , button: 'btn btn btn-block btn-default'
+              , buttonActive: 'btn btn btn-block btn-danger'
+              }}
+              onChange={this._onDeselect}
+              options={selectedOptions}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+        </div>
+    );
+  }
+});
+
+var AVAILABLE_USERS = [
+  {id: 1, name: "david@apps.directemployers.org"},
+  {id: 2, name: "dpoynter@apps.directemployers.org"},
+  {id: 3, name: "edwin@apps.directemployers.org"},
+  {id: 4, name: "jkoons@apps.directemployers.org"},
+]
+
+var UsersMultiselect = React.createClass({
+  getInitialState() {
+    return {
+      selectedOptions: []
+    }
+  },
+  _onSelect(selectedOptions) {
+    selectedOptions.sort((a, b) => a.id - b.id)
+    this.setState({selectedOptions})
+  },
+  _onDeselect(deselectedOptions) {
+    var selectedOptions = this.state.selectedOptions.slice()
+    deselectedOptions.forEach(option => {
+      selectedOptions.splice(selectedOptions.indexOf(option), 1)
+    })
+    this.setState({selectedOptions})
+  },
+  render: function() {
+    var {selectedOptions} = this.state
+
+    return (
+        <div className="row">
+
+          <div className="col-xs-5">
+            <label>Available Activities:</label>
+            <FilteredMultiSelect
+              buttonText="Add"
+              classNames={bootstrapClasses}
+              onChange={this._onSelect}
+              options={AVAILABLE_USERS}
+              selectedOptions={selectedOptions}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+          <div className="col-xs-5">
+            <label>Activities Assigned to this Role:</label>
+            <FilteredMultiSelect
+              buttonText="Remove"
+              classNames={{
+                filter: 'form-control'
+              , select: 'form-control'
+              , button: 'btn btn btn-block btn-default'
+              , buttonActive: 'btn btn btn-block btn-danger'
+              }}
+              onChange={this._onDeselect}
+              options={selectedOptions}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+        </div>
+    );
+  }
+});
+
 var EditRolePage = React.createClass({
   render: function() {
-
     var delete_role_button = "";
     if (this.props.action == "Add") {
 
@@ -362,6 +503,7 @@ var EditRolePage = React.createClass({
       delete_role_button = <DeleteRoleButton action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
     }
 
+    {/*TODO Phase these old multiselect components out*/}
     var users_assigned_to_this_role = <UsersAssignedToThisRoleMultiselect action={this.props.action}/>;
     var activities_assigned_to_this_role = <ActivitiesAssignedToThisRoleMultiselect action={this.props.action}/>;
 
@@ -381,51 +523,14 @@ var EditRolePage = React.createClass({
             <input id="id_role_name" maxLength="255" name="name" type="text" defaultValue={this.props.role_to_edit} size="35"/>
           </div>
         </div>
-        <hr/>
-        <div className="row">
-          <div className="col-xs-5">
-            <label>Available Activities:</label>
-            {activities_assigned_to_this_role}
-            <a title="Choose all" className="multiselect-choose-all">Choose all</a>
-            <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
-          </div>
-          <div className="col-xs-1">
-            <div className="multiselect-controls">
-              <a title="Remove" className="multiselect-add"></a>
-              <a title="Remove" className="multiselect-remove"></a>
-            </div>
-          </div>
-          <div className="col-xs-5">
-            <label>Activities Assigned to this Role:</label>
-            <select multiple="multiple" size="10" id="id_site_packages_to">
-            </select>
-            <a title="Remove all" className="multiselect-remove-all">Remove all</a>
-          </div>
-        </div>
+
         <hr/>
 
+        <ActivitiesMultiselect/>
 
-
-        <div className="row">
-          <div className="col-xs-5">
-            <label>Available Users:</label>
-            {users_assigned_to_this_role}
-            <a title="Choose all" className="multiselect-choose-all">Choose all</a>
-          </div>
-          <div className="col-xs-1">
-            <div className="multiselect-controls">
-              <a title="Remove" className="multiselect-add"></a>
-              <a title="Remove" className="multiselect-remove"></a>
-            </div>
-          </div>
-          <div className="col-xs-5">
-            <label>Users Assigned to this Role:</label>
-            <select multiple="multiple" size="10" id="id_users_to">
-            </select>
-            <a title="Remove all" className="multiselect-remove-all">Remove all</a>
-          </div>
-        </div>
         <hr/>
+
+        <UsersMultiselect/>
 
         <hr />
 
@@ -724,8 +829,14 @@ var UsersPage = React.createClass({
   }
 });
 
+
+
+
+
+
 var OverviewPage = React.createClass({
   render: function() {
+
     return (
       <div>
         <div className="row">

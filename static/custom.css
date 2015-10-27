@@ -1,3 +1,9 @@
+
+
+.FilteredMultiSelect select, .FilteredMultiSelect button {
+  margin-top: 15px;
+}
+
 /*Document level classes*/
 
 .topbar h3 a {
@@ -4003,7 +4009,6 @@ h1 a {
   text-decoration: none;
   text-shadow: none !important;
   vertical-align: middle;
-  margin-left: 10px;
 }
 
 .sidebar .btn {
@@ -4055,7 +4060,6 @@ h1 a {
   margin-bottom: 0px;
   margin-left: 10px;
   margin-right: 0px;
-  margin-top: 2px;
   padding-bottom: 7px;
   padding-left: 25px;
   padding-right: 25px;
@@ -4071,7 +4075,9 @@ h1 a {
   -webkit-writing-mode: horizontal-tb;
 }
 
-
+.btn.pull-right {
+  margin-left: 10px;
+}
 
 .multiselect-controls {
   margin-top: 30px;
