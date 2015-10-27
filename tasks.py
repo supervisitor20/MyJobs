@@ -17,6 +17,7 @@ from celery.task import task
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sitemaps import ping_google
 from django.core import mail
 from django.core.urlresolvers import reverse_lazy
 from django.template.loader import render_to_string
@@ -825,6 +826,23 @@ def task_clear_solr(jsid):
 @task(name="tasks.task_force_create", ignore_result=True)
 def task_force_create(jsid):
     import_jobs.force_create_jobs(jsid.id)
+
+
+@task(name="tasks.task_submit_sitemap", ignore_result=True)
+def task_submit_sitemap(domain):
+    """
+    Submits yesterday's sitemap to google for the given domain
+    Input:
+        :domain: sitemap domain
+    """
+    ping_google('http://{d}/sitemap.xml'.format(d=domain))
+
+
+@task(name="tasks.task_submit_all_sitemaps", ignore_result=True)
+def task_submit_all_sitemaps():
+    sites = SeoSite.objects.all()
+    for site in sites:
+        task_submit_sitemap.delay(site.domain)
 
 
 def get_event_list(events):
