@@ -1,0 +1,48 @@
+{% extends "base-new.html" %}
+
+{% block site-title %}
+    <title>My.jobs - {{ company.name }} - Manage Users</title>
+    <meta name="title" content="My.jobs - Manage Users">
+{% endblock %}
+
+{% block meta-extra %}
+<!-- <link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.css" id="theme_base">
+<link rel="stylesheet" href="{{STATIC_URL}}pickadate/themes/classic.date.css" id="theme_date"> -->
+<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
+
+<!-- New ReactJS Shtuff-->
+<!-- <script src="{{ STATIC_URL }}reactjs/react.js"></script>
+<script src="{{ STATIC_URL }}reactjs/react-dom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script> -->
+
+
+{% endblock %}
+
+{% block content %}
+
+<div id="content"></div>
+
+{% endblock %}
+
+{% block extra-js %}
+{% autoescape off %}
+
+{% endautoescape %}
+<!--[if IE]>
+<script src="{{ STATIC_URL }}es5-sham.min.js"></script>
+<![endif]-->
+<!-- <script src="{{ STATIC_URL }}bootstrap/bootstrap-modalmanager.js"></script>
+<script src="{{ STATIC_URL }}bootstrap/bootstrap-modal.js"></script>
+
+<script src="{{ STATIC_URL }}pickadate/picker.js"></script>
+<script src="{{ STATIC_URL }}pickadate/picker.date.js"></script>
+<script src="{{ STATIC_URL }}pickadate/legacy.js"></script>
+SteelToe: https://github.com/jclem/steeltoe -->
+<!-- <script src="{{ STATIC_URL }}steeltoe.js"></script> -->
+
+
+<script src="{{ STATIC_URL }}bundle/vendor.js"></script>
+<script src="{{ STATIC_URL }}bundle/manageusers.js"></script>
+
+
+{% endblock %}
