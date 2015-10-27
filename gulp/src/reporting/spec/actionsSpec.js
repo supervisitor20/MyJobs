@@ -66,7 +66,11 @@ describe("The action creator", () => {
     };
     const actions = []
     const fakeDispatch = (a) => actions.push(a);
-    const creators = new ActionCreators(fakeApi, fakeDispatch);
+    const fakeErrorLog = () => null;
+    const creators = new ActionCreators(
+        fakeApi,
+        fakeDispatch,
+        fakeErrorLog);
 
     const actionByType = (t) => actions.find((a) => a.type === t);
 
@@ -85,6 +89,19 @@ describe("The action creator", () => {
             newData: [1],
             newPage: 'reportingTypes',
         });
+    }));
+
+    it("sends an error action if the api fails.", promiseTest(async () => {
+        fakeApi.getReportingTypes = function() {
+            throw Error("fake error");
+        };
+        spyOn(fakeApi, 'getReportingTypes').and.callThrough();
+
+        await creators.reset();
+
+        expect(fakeApi.getReportingTypes).toHaveBeenCalled();
+        const action = actionByType('ERROR');
+        expect(action).not.toBeNull();
     }));
 
     it("can move next after reporting type", promiseTest(async () => {

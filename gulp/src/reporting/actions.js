@@ -22,9 +22,10 @@ export var initialState = deepFreeze({
 });
 
 export class ActionCreators {
-    constructor(api, dispatch) {
+    constructor(api, dispatch, errorLog) {
         this.api = api;
         this.dispatch = dispatch;
+        this.errorLog = errorLog;
     }
 
     async reset() {
@@ -33,8 +34,7 @@ export class ActionCreators {
             const rts = await this.api.getReportingTypes();
             this.dispatch(Actions.nextPage("reportingTypes", rts, "reportingTypes"));
         } catch(e) {
-            console.error(e);
-            console.error(e.stack);
+            this.errorLog(e);
             this.dispatch(Actions.unexpectedError("Error while getting reporting types."));
         }
     }
@@ -46,7 +46,7 @@ export class ActionCreators {
             const rts = await this.api.getReportTypes(reportingTypeId)
             this.dispatch(Actions.nextPage("reportTypes", rts, "reportTypes"));
         } catch(e) {
-            console.error(e.stack);
+            this.errorLog(e);
             this.dispatch(Actions.unexpectedError("Error while getting report types."));
         }
     }
@@ -58,7 +58,7 @@ export class ActionCreators {
             const dts = await this.api.getDataTypes(reportTypeId)
             this.dispatch(Actions.nextPage("dataTypes", dts, "dataTypes"));
         } catch(e) {
-            console.error(e.stack);
+            this.errorLog(e);
             this.dispatch(Actions.unexpectedError("Error while getting data types."));
         }
     }
@@ -70,7 +70,7 @@ export class ActionCreators {
             const dts = await this.api.getPresentationTypes(reportTypeId, dataTypeId)
             this.dispatch(Actions.nextPage("presentationTypes", dts, "presentationTypes"));
         } catch(e) {
-            console.error(e.stack);
+            this.errorLog(e);
             this.dispatch(Actions.unexpectedError("Error while getting presentationTypes types."));
         }
     }
@@ -83,7 +83,7 @@ export class ActionCreators {
             this.dispatch(Actions.receiveReport(report));
             return this.reset()
         } catch(e) {
-            console.error(e.stack);
+            this.errorLog(e);
             this.dispatch(Actions.unexpectedError("Error while getting presentationTypes types."));
         }
     }

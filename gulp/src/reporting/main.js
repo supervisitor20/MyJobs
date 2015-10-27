@@ -21,7 +21,15 @@ const loggingMiddleware = store => next => action => {
 const store = applyMiddleware(loggingMiddleware)(createStore)(reduce, initialState);
 window.store = store;
 
-const creators = new ActionCreators(api, store.dispatch.bind(store));
+function errorLog(e) {
+    console.log(e);
+    console.log(e.stack);
+}
+
+const creators = new ActionCreators(
+    api,
+    store.dispatch.bind(store),
+    errorLog);
 
 // Hook react up to redux and start react.
 var Connected = connect(s => ({...s, creators}))(DynamicReportApp);
