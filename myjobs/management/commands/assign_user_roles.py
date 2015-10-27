@@ -16,7 +16,8 @@ class Command(BaseCommand):
         Role.objects.bulk_create([
             Role(name="PRM User", company=company) for company in companies])
 
-        roles = Role.objects.filter(name="PRM User")
+        roles = {role.company: role
+                 for role in Role.objects.filter(name="PRM User")}
         activities = Activity.objects.filter(app_access__name="PRM").distinct()
 
         # maps to myjobs_role_activities
@@ -25,14 +26,16 @@ class Command(BaseCommand):
         # asign every PRM activity to each of the newly created roles
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=activity)
-            for role in roles for activity in activities], 450)
+            for role in roles.values() for activity in activities], 450)
 
         # maps to myjobs_user_roles
         UserRoles = User.roles.through
 
-        for company_user in company_users:
-            company_user.user.roles.add(Role.objects.get(
-                name="PRM User", company=company_user.company))
+        UserRoles.objects.bulk_create([
+            UserRoles(
+                role=roles[company_user.company],
+                user=company_user.user)
+            for company_user in company_users])
 
         print "Created %s PRM Users from %s Company Users" % (
             UserRoles.objects.count(), CompanyUser.objects.count())
