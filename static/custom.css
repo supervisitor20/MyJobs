@@ -3883,6 +3883,10 @@ span.helptext {
 /*Manage Users*/
 /*New*/
 
+a:hover {
+ cursor:pointer;
+}
+
 h1 a {
   font-size: 38.5px;
   font-weight: bold;
@@ -4065,4 +4069,27 @@ h1 a {
   word-spacing: 0px;
   writing-mode: lr-tb;
   -webkit-writing-mode: horizontal-tb;
+}
+
+
+
+.multiselect-controls {
+  margin-top: 30px;
+}
+
+.multiselect-add, .multiselect-remove {
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  display: block;
+}
+
+.multiselect-add {
+  border-left: 8px solid #999;
+}
+
+.multiselect-remove {
+  border-right: 8px solid #999;
+  margin-top: 5px;
 }

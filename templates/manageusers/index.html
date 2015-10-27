@@ -68,7 +68,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
     handleClick: function(event) {
       console.log("User clicked DeleteRoleButton");
 
-      {/* TODO: Actually delete role */}
+      {/* TODO: Actually delete role
+          TODO: Warn with a modal, are you sure you want to delete role? */}
 
       ReactDOM.render(
         <Container page="Roles" name={this.props.name} company={this.props.company}/>,
@@ -86,7 +87,9 @@ SteelToe: https://github.com/jclem/steeltoe -->
     handleClick: function(event) {
       console.log("User clicked SaveRoleButton");
 
-      // TODO Submit to server
+      {/* TODO Make sure at least one role is selected
+          TODO Submit to server */}
+          
     },
     render: function() {
       return (
@@ -131,7 +134,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
     handleClick: function(event) {
       console.log("User clicked DeleteUserButton");
 
-      {/* TODO: Actually delete user */}
+      {/* TODO: Actually delete user
+          TODO: Warn with a modal, are you sure you want to delete user? */}
 
       ReactDOM.render(
         <Container page="Users" name={this.props.name} company={this.props.company}/>,
@@ -148,8 +152,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
   var SaveUserButton = React.createClass({
     handleClick: function(event) {
       console.log("User clicked SaveUserButton");
-
-      // TODO Submit to server
+      {/* TODO A user MUST be assigned to at least one role
+          TODO Submit new user to server */}
     },
     render: function() {
       return (
@@ -295,7 +299,6 @@ SteelToe: https://github.com/jclem/steeltoe -->
             <div className="col-xs-10">
               <label htmlFor="id_user_name">User Email Address*:</label>
               <div className="input-group">
-                <div className="input-group-addon">@</div>
                 {user_email_text_field}
               </div>
             </div>
@@ -305,7 +308,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
           <div className="row">
             <div className="col-xs-12">
-              {/* TODO Maybe use this http://projects.skratchdot.com/react-bootstrap-multiselect/ */}
+              {/* TODO Maybe use this https://github.com/insin/react-filtered-multiselect */}
+
               <label htmlFor="id_roles">Role*:</label>
 
               <select name="id_roles" size={roles_count} multiple defaultValue={['Analytics Setup', 'Analytics User']} aria-describedby="role_select_help">
@@ -347,7 +351,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
        {/* TODO: Generate options dynamically */}
        return (
         <div>
-          <select multiple="multiple" size="10" id="id_site_packages_from" defaultValue={default_value} aria-describedby="role_select_help">
+          <select multiple="multiple" size="10" id="id_roles_from" defaultValue={default_value} aria-describedby="role_select_help">
             <option value="Access Analytics">Access Analytics</option>
             <option value="Edit Analytics Settings">Edit Analytics Settings</option>
             <option value="Activate Analytics Settings">Activate Analytics Settings</option>
@@ -378,14 +382,14 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
        {/* TODO: Generate options dynamically */}
        return (
-        <div>
-          <select name="id_users" size={users_count} multiple defaultValue={default_value}>
-            <option value="david@apps.directemployers.org">david@apps.directemployers.org</option>
-            <option value="dpoynter@apps.directemployers.org">dpoynter@apps.directemployers.org</option>
-            <option value="edwin@apps.directemployers.org">edwin@apps.directemployers.org</option>
-            <option value="jkoons@apps.directemployers.org">jkoons@apps.directemployers.org</option>
-          </select>
-        </div>
+         <div>
+           <select multiple="multiple" size="10" id="id_users_from" defaultValue={default_value}>
+             <option value="david@apps.directemployers.org">david@apps.directemployers.org</option>
+             <option value="dpoynter@apps.directemployers.org">dpoynter@apps.directemployers.org</option>
+             <option value="edwin@apps.directemployers.org">edwin@apps.directemployers.org</option>
+             <option value="jkoons@apps.directemployers.org">jkoons@apps.directemployers.org</option>
+           </select>
+         </div>
        );
      }
   });
@@ -425,26 +429,46 @@ SteelToe: https://github.com/jclem/steeltoe -->
             <div className="col-xs-5">
               <label>Available Activities:</label>
               {activities_assigned_to_this_role}
+              <a title="Choose all" className="multiselect-choose-all">Choose all</a>
               <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
             </div>
             <div className="col-xs-1">
+              <div className="multiselect-controls">
+                <a title="Remove" className="multiselect-add"></a>
+                <a title="Remove" className="multiselect-remove"></a>
+              </div>
             </div>
             <div className="col-xs-5">
               <label>Activities Assigned to this Role:</label>
               <select multiple="multiple" size="10" id="id_site_packages_to">
               </select>
+              <a title="Remove all" className="multiselect-remove-all">Remove all</a>
             </div>
           </div>
           <hr/>
 
+
+
           <div className="row">
-            <div className="col-xs-12">
-
-              <label htmlFor="id_users">Associated Users:</label>
+            <div className="col-xs-5">
+              <label>Available Users:</label>
               {users_assigned_to_this_role}
-
+              <a title="Choose all" className="multiselect-choose-all">Choose all</a>
+            </div>
+            <div className="col-xs-1">
+              <div className="multiselect-controls">
+                <a title="Remove" className="multiselect-add"></a>
+                <a title="Remove" className="multiselect-remove"></a>
+              </div>
+            </div>
+            <div className="col-xs-5">
+              <label>Users Assigned to this Role:</label>
+              <select multiple="multiple" size="10" id="id_users_to">
+              </select>
+              <a title="Remove all" className="multiselect-remove-all">Remove all</a>
             </div>
           </div>
+          <hr/>
 
           <hr />
 
@@ -592,6 +616,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
           <div className="row">
             <div className="col-xs-12">
+            {/*TODO Pull in Activities and Activity Descriptions dynamically */}
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -668,6 +693,7 @@ SteelToe: https://github.com/jclem/steeltoe -->
 
           <hr />
 
+          {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
           <div className="row">
             <div className="col-xs-12">
               <table className="table table-hover">
@@ -757,6 +783,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
             <div className="col-xs-4">
 
               {/* <p>{this.props.name} works with {this.props.company}.</p> */}
+
+              {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
 
               <table className="table">
                 <tbody>
