@@ -8,8 +8,6 @@ var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var es5shim = require('es5-shim');
 
-
-
 var vendor_libs = [
     'react',
     'react-dom',
