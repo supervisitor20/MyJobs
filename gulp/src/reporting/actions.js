@@ -107,7 +107,7 @@ export function reduce(state, action) {
     switch(action.type) {
         case 'NEXT_PAGE': {
             const {dataKey, newData, newPage} = action;
-            const newState = {
+            let newState = {
                 ...state,
                 pageIndex: newPage,
                 loading: false,

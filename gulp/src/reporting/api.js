@@ -2,8 +2,15 @@
 // http://stackoverflow.com/questions/24710503/how-do-i-post-urlencoded-form-data-with-http-in-angularjs
 function ancientSerialize(obj) {
     var str = [];
-    for(var p in obj)
-    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    for(var p in obj) {
+        const type = typeof obj[p];
+
+        if (type === "object" || type === "array" || type === "function") {
+            throw new Error(
+                "Tried to serialize non primitive object. key: " + p);
+        }
+        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
     return str.join("&");
 }
 

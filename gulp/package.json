@@ -1,13 +1,13 @@
 {
   "name": "de-build",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Build system for My.jobs JS clients.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "All Rights Reserved",
+  "author": "DirectEmployers Association",
+  "license": "(GPL-2.0 OR GPL-3.0 OR MIT)",
   "devDependencies": {
     "babel": "^5.8.23",
     "babel-runtime": "^5.8.25",
