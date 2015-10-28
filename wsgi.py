@@ -4,7 +4,7 @@ import newrelic.agent
 newrelic.agent.initialize('/home/web/MyJobs/MyJobs-urls/newrelic.ini')
 
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'MyJobs-urls.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.join(PROJECT_DIR, '../')
