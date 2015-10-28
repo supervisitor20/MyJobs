@@ -16,6 +16,7 @@ class Command(BaseCommand):
         Role.objects.bulk_create([
             Role(name="PRM User", company=company) for company in companies])
 
+        # bulk create doesn't assign foreign keys when it's done
         roles = {role.company: role
                  for role in Role.objects.filter(name="PRM User")}
         activities = Activity.objects.filter(app_access__name="PRM").distinct()
@@ -31,10 +32,10 @@ class Command(BaseCommand):
         # maps to myjobs_user_roles
         UserRoles = User.roles.through
 
+        # directly populate the many to many table to avoid additional queries
         UserRoles.objects.bulk_create([
             UserRoles(
-                role=roles[company_user.company],
-                user=company_user.user)
+                role=roles[company_user.company], user=company_user.user)
             for company_user in company_users])
 
         print "Created %s PRM Users from %s Company Users" % (
