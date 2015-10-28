@@ -3,7 +3,7 @@ import json
 import os
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import transaction, IntegrityError
 
 from myjobs.models import User
 from mypartners.models import Partner, Contact, ContactRecord, Tag, Location
@@ -139,12 +139,12 @@ class Command(BaseCommand):
             with open(filename) as json_file:
                 data = json.load(json_file).get('import')
 
+            partners = []
             with transaction.atomic():
                 user = User.objects.get(email=data['importinguser'])
                 company = Company.objects.get(pk=data['owner'])
                 source = data['source']
 
-                partners = []
                 for partner_json in data['partners']:
                     partner = partner_from_json(
                         partner_json, company, user, source)
@@ -154,3 +154,18 @@ class Command(BaseCommand):
 
                 # we are just testing for the moment
                 #raise IntegrityError("Just testing...")
+
+            with open("results.mysql", "w") as sqlfile:
+                partner_ids = [p.pk for p in partners]
+                sqlfile.write(
+                    str(Partner.objects.filter(pk__in=partner_ids).query))
+                sqlfile.write("\n;\n")
+                sqlfile.write(
+                    str(Contact.objects.filter(
+                        partner__in=partners).query))
+                sqlfile.write("\n;\n")
+                sqlfile.write(
+                    str(ContactRecord.objects.filter(
+                        partner__in=partners).query))
+                sqlfile.write("\n;\n")
+
