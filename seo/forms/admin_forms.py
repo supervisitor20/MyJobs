@@ -242,7 +242,7 @@ class SeoSiteForm(RowPermissionsForm):
         # methods of the RowPermissionsAdmin class. That capability is the
         # main (only?) reason for creating a generic class in the first place.
         super(SeoSiteForm, self).__init__(data, user, *args, **kwargs)
-        this = kwargs.get('instance')
+        instance = kwargs.get('instance')
 
         # Override some undesired default behavior
         if hasattr(self, 'errors') and 'domain' in self.errors:
@@ -253,8 +253,8 @@ class SeoSiteForm(RowPermissionsForm):
             except IndexError:
                 pass
 
-        if this:
-            group = getattr(this, 'group') or Group()
+        if instance:
+            group = getattr(instance, 'group') or Group()
         else:
             group = Group()
             
@@ -282,8 +282,9 @@ class SeoSiteForm(RowPermissionsForm):
             inner['qs'] = form_field.queryset
             # If we're changing an existing SeoSite model, filter by its group.
             # Otherwise, filter as normal based on superuser status.
-            if this and field not in ['special_commitments', 'business_units',
-                                      'featured_companies']:
+            if instance and field not in ['special_commitments',
+                                          'business_units',
+                                          'featured_companies']:
                 inner['qs'] = form_field.queryset.filter(group=group)
             elif user and not user.is_superuser:
                 inner['qs'] = form_field.queryset.filter(
