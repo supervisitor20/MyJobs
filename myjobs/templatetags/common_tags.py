@@ -6,7 +6,7 @@ from django.conf import settings
 
 from myjobs import version
 from myjobs.models import User
-from myjobs.helpers import get_completion
+from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
 
@@ -117,6 +117,14 @@ def get_gravatar(user, size=20):
     """
     try:
         return user.get_gravatar_url(size)
+    except:
+        return ''
+
+
+@register.simple_tag
+def get_nonuser_gravatar(email, size=20):
+    try:
+        return make_fake_gravatar(email, size)
     except:
         return ''
 

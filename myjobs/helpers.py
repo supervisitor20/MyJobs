@@ -89,6 +89,18 @@ def log_to_jira(subject, body, issue_dict, from_email):
     return to_jira
 
 
+def make_fake_gravatar(name, size):
+    font_size = int(size)
+    font_size = font_size * .65
+    gravatar_url = mark_safe("<div class='gravatar-blank gravatar-danger'"
+                    " style='height: %spx; width: %spx'>"
+                    "<span class='gravatar-text' style='font-size:"
+                    "%spx;'>%s</span></div>" %
+                    (size, size, font_size, name[0].upper()))
+
+    return gravatar_url
+
+
 def get_title_template(next_url):
     """
     Changes the title text on the My.jobs login page based on the ?next= query
