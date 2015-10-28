@@ -1,4 +1,6 @@
+import sys
 from django.core.management.base import BaseCommand
+from south.models import MigrationHistory
 
 from seo.models import Company, CompanyUser
 from myjobs.models import User, Role, Activity
@@ -8,6 +10,14 @@ class Command(BaseCommand):
     help = "Import Partners, Contacts, and ContactRecords from a JSON files."
 
     def handle(self, *args, **options):
+        if not MigrationHistory.objects.filter(
+                migration="0007_create_admin_roles").exists():
+            sys.stderr.write(
+                "This command should be run after migration "
+                "`0007_create_admin_roles` has been applied. To do so, please "
+                "migrate myjobs forward.")
+            sys.exit(1)
+
         company_users = CompanyUser.objects.all()
         companies = Company.objects.filter(pk__in=company_users.values_list(
             'company', flat=True))
