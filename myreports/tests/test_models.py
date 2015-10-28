@@ -1,8 +1,8 @@
 from myreports.tests.setup import MyReportsTestCase
 
 from myreports.models import (
-    UserType, ReportingType, ReportType, Configuration, DynamicReport,
-    Column, ReportPresentation, DataType, ReportTypeDataTypes)
+    UserType, ReportingType, ReportType, DynamicReport,
+    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes)
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import ContactFactory, PartnerFactory
 from seo.tests.factories import CompanyUserFactory
@@ -77,11 +77,12 @@ class TestActiveModels(MyReportsTestCase):
 
     def test_active_columns(self):
         """Avoid different kinds of inactive column types."""
-        config = Configuration.objects.get(id=3)
-        columns = Column.objects.active_for_configuration(config)
+        rp = ReportPresentation.objects.get(id=3)
+        columns = (ConfigurationColumn.objects
+                   .active_for_report_presentation(rp))
         expected_columns = set([
             u'locations', u'partner', u'tags', u'name', u'email'])
-        actual_columns = set(c.column_name for c in columns)
+        actual_columns = set(c.column.column_name for c in columns)
         self.assertEqual(expected_columns, actual_columns)
 
 

@@ -17,7 +17,7 @@ from myjobs.decorators import requires
 from mypartners.views import PRM, missing_access, missing_activity
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    Column, DataType, ReportTypeDataTypes)
+    ConfigurationColumn, DataType, ReportTypeDataTypes)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -417,6 +417,7 @@ def report_types_api(request):
                         content=json.dumps(data))
 
 
+@requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['POST'])
 def data_types_api(request):
@@ -436,6 +437,7 @@ def data_types_api(request):
                         content=json.dumps(data))
 
 
+@requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['POST'])
 def presentation_types_api(request):
@@ -458,6 +460,37 @@ def presentation_types_api(request):
                         content=json.dumps(data))
 
 
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+@require_http_methods(['POST'])
+def columns_api(request):
+    rp_id = request.POST['rp_id']
+    rp = ReportPresentation.objects.get(id=rp_id)
+    columns = (ConfigurationColumn.objects
+               .active_for_report_presentation(rp))
+
+    data = ({
+        'name': c.column.column_name,
+        'alias': c.alias,
+        'multi_value_expansion': c.multi_value_expansion,
+        'filter_only': c.filter_only,
+        'default': c.default_value,
+        'interface': {
+            'type': c.interface_element_type.interface_element_type,
+            'description': c.interface_element_type.description,
+            'code': c.interface_element_type.element_code,
+        },
+        'format': [{
+            'name': f.name,
+            'code': f.format_code,
+        } for f in c.column_formats.all()],
+    } for c in columns)
+    result = dict((d['name'], d) for d in data)
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(result))
+
+
+@requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
@@ -478,6 +511,7 @@ def run_dynamic_report(request):
                         content=json.dumps(data))
 
 
+@requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['GET'])
 def download_dynamic_report(request):
@@ -504,9 +538,11 @@ def download_dynamic_report(request):
         report.order_by = order_by
         report.save()
 
-    configuration = report.report_presentation.configuration
-    columns = Column.objects.active_for_configuration(configuration)
-    values = [c.column_name for c in columns]
+    columns = (ConfigurationColumn.objects
+               .active_for_report_presentation(
+                    report.report_presentation))
+    print columns.query
+    values = [c.column.column_name for c in columns]
 
     records = (dict((v, unicode(rec.get(v))) for v in values)
                for rec in report.python)

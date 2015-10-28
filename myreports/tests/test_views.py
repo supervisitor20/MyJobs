@@ -443,6 +443,15 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(1, len(data))
         self.assertEquals("Contact CSV", data['3']['name'])
 
+    def test_columns_api(self):
+        """Test that we get descriptions of available columns."""
+        resp = self.client.post(reverse('columns_api'),
+                                data={'rp_id': '3'})
+        result = json.loads(resp.content)
+        expected_keys = set([
+            u'locations', u'partner', u'tags', u'name', u'email'])
+        self.assertEquals(expected_keys, set(result.keys()))
+
 
 class TestDynamicReports(MyReportsTestCase):
     def test_dynamic_report(self):

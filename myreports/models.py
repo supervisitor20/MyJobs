@@ -194,20 +194,10 @@ class PresentationType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class ColumnManager(models.Manager):
-    def active_for_configuration(self, configuration):
-        column_qs = Column.objects.filter(is_active=True)
-        config_col_qs = configuration.configurationcolumn_set.filter(
-            is_active=True)
-
-        return column_qs.filter(id__in=config_col_qs)
-
-
 class Column(models.Model):
     table_name = models.CharField(max_length=50)
     column_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
-    objects = ColumnManager()
 
 
 class InterfaceElementType(models.Model):
@@ -229,6 +219,17 @@ class ConfigurationColumnFormats(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class ConfigurationColumnManager(models.Manager):
+    def active_for_report_presentation(self, rp):
+        return (ConfigurationColumn.objects
+                .filter(configuration__reportpresentation=rp)
+                .filter(is_active=True)
+                .filter(column_formats__is_active=True)
+                .filter(configurationcolumnformats__is_active=True)
+                .select_related()
+                .prefetch_related('column_formats'))
+
+
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
     column = models.ForeignKey(Column, null=True)
@@ -240,6 +241,7 @@ class ConfigurationColumn(models.Model):
     column_formats = models.ManyToManyField(
         'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
+    objects = ConfigurationColumnManager()
 
 
 class DynamicReport(models.Model):

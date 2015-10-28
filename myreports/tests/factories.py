@@ -78,9 +78,23 @@ class ColumnFactory(DjangoModelFactory):
     is_active = True
 
 
+class ColumnFormatFactory(DjangoModelFactory):
+    class Meta:
+        model = 'myreports.ColumnFormat'
+
+    is_active = True
+
+
 class ConfigurationColumnFactory(DjangoModelFactory):
     class Meta:
         model = 'myreports.ConfigurationColumn'
+
+    is_active = True
+
+
+class ConfigurationColumnFormatsFactory(DjangoModelFactory):
+    class Meta:
+        model = 'myreports.ConfigurationColumnFormats'
 
     is_active = True
 

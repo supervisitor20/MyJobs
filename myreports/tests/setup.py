@@ -10,13 +10,15 @@ from myreports.tests.factories import (
     ReportTypeFactory, ReportingTypeReportTypesFactory, DataTypeFactory,
     ReportTypeDataTypesFactory, PresentationTypeFactory,
     ReportPresentationFactory, ConfigurationFactory, ColumnFactory,
-    ConfigurationColumnFactory, InterfaceElementTypeFactory)
+    ConfigurationColumnFactory, InterfaceElementTypeFactory,
+    ColumnFormatFactory, ConfigurationColumnFormatsFactory)
 
 from myreports.models import (
     UserType, ReportingType, UserReportingTypes, ReportType,
     ReportingTypeReportTypes, DataType, ReportTypeDataTypes,
     PresentationType, ReportPresentation, Configuration, Column,
-    ConfigurationColumn, InterfaceElementType)
+    ConfigurationColumn, InterfaceElementType, ColumnFormat,
+    ConfigurationColumnFormats)
 
 
 class MyReportsTestCase(TestCase):
@@ -208,6 +210,37 @@ def create_full_fixture():
         description="Inactive Element Type",
         element_code="div",
         is_active=False)
+    int_maybe_dead = InterfaceElementTypeFactory.create(
+        id=2,
+        interface_element_type="maybe inactive",
+        description="Maybe Inactive Element Type",
+        element_code="div",
+        is_active=True)
+    int_text = InterfaceElementTypeFactory.create(
+        id=3,
+        interface_element_type="Text",
+        description="Text Data",
+        element_code="div",
+        is_active=True)
+# might need this in the future
+#    int_timestamp = InterfaceElementTypeFactory.create(
+#        id=4,
+#        interface_element_type="Timestamp",
+#        description="Date and Time of an Event",
+#        element_code="div",
+#        is_active=True)
+    int_email = InterfaceElementTypeFactory.create(
+        id=5,
+        interface_element_type="Email Address",
+        description="Email Address",
+        element_code="div",
+        is_active=True)
+    int_multi_text = InterfaceElementTypeFactory.create(
+        id=6,
+        interface_element_type="Multi Text",
+        description="Multiple Text Fields Joined by Commas",
+        element_code="div",
+        is_active=True)
 
     Column.objects.all().delete()
     col_1 = ColumnFactory.create(
@@ -234,49 +267,100 @@ def create_full_fixture():
         column_name=u'partner')
 
     ConfigurationColumn.objects.all().delete()
-    ConfigurationColumnFactory.create(
+    ccol_dead = ConfigurationColumnFactory.create(
         id=1,
         configuration=con_con,
         interface_element_type=int_dead,
         column=col_1,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
+    ccol_maybe_dead = ConfigurationColumnFactory.create(
         id=2,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_maybe_dead,
         column=col_2,
         multi_value_expansion=False,
         is_active=False)
-    ConfigurationColumnFactory.create(
+    ccol_name = ConfigurationColumnFactory.create(
         id=4,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_text,
         column=col_4,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
+    ccol_email = ConfigurationColumnFactory.create(
         id=5,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_email,
         column=col_5,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
+    ccol_locations = ConfigurationColumnFactory.create(
         id=6,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_multi_text,
         column=col_6,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
+    ccol_tags = ConfigurationColumnFactory.create(
         id=7,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_multi_text,
         column=col_7,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
+    ccol_partners = ConfigurationColumnFactory.create(
         id=8,
         configuration=con_con,
-        interface_element_type=int_dead,
+        interface_element_type=int_text,
         column=col_8,
         multi_value_expansion=False)
+
+    ColumnFormat.objects.all().delete()
+    colf_dead = ColumnFormatFactory.create(
+        id=1,
+        name='inactive',
+        format_code='text',
+        is_active=False)
+    colf_maybe_dead = ColumnFormatFactory.create(
+        id=2,
+        name='maybe inactive',
+        format_code='text')
+    colf_text = ColumnFormatFactory.create(
+        id=3,
+        name='Text',
+        format_code='text')
+    colf_multi_text = ColumnFormatFactory.create(
+        id=4,
+        name='Multi Text',
+        format_code='multitext')
+
+    ConfigurationColumnFormats.objects.all().delete()
+    ConfigurationColumnFormatsFactory.create(
+        id=1,
+        configuration_column=ccol_dead,
+        column_format=colf_dead,
+        is_active=False)
+    ConfigurationColumnFormatsFactory.create(
+        id=2,
+        configuration_column=ccol_maybe_dead,
+        column_format=colf_maybe_dead,
+        is_active=False)
+    ConfigurationColumnFormatsFactory.create(
+        id=3,
+        configuration_column=ccol_name,
+        column_format=colf_text)
+    ConfigurationColumnFormatsFactory.create(
+        id=4,
+        configuration_column=ccol_email,
+        column_format=colf_text)
+    ConfigurationColumnFormatsFactory.create(
+        id=5,
+        configuration_column=ccol_locations,
+        column_format=colf_multi_text)
+    ConfigurationColumnFormatsFactory.create(
+        id=6,
+        configuration_column=ccol_tags,
+        column_format=colf_multi_text)
+    ConfigurationColumnFormatsFactory.create(
+        id=7,
+        configuration_column=ccol_partners,
+        column_format=colf_text)
 
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(
