@@ -565,15 +565,16 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-        all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name',
-            'contact_email')
-
-        # attempting to iterate over the above will result in the distinct
-        # constraint being lost; thus, we convert to a set to remove duplicates
-        # and convert back to a list of dicts
-        all_contacts = set(tuple(contact.items()) for contact in all_contacts)
-        all_contacts = [dict(contact) for contact in all_contacts]
+        # .disinct() is insufficient as we need to traverse over the results,
+        # which seems to drop the distinct constraint
+        all_contacts = reduce(
+            # fold over a list, ignoring duplicates
+            lambda acc, x: acc if x in acc else acc + [x],
+            # we only need these values from the query set
+            self.values(
+                'partner__name', 'partner', 'contact__name', 'contact_email'),
+            # initial value to pass to the above lambda
+            [])
 
         records = dict(self.exclude(contact_type='job').values_list(
             'contact__name').annotate(
