@@ -97,6 +97,8 @@ def partner_from_json(partner_json, company, user, source):
         for contact in partner_json['contacts']:
             contact_from_json(contact, partner, overwrite_partner, user)
 
+        set_primary_contact(partner, partner_json)
+
     return partner
 
 
