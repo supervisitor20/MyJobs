@@ -4,8 +4,7 @@ from django.conf import settings
 from seo.models import SeoSite
 from seo.tests.setup import DirectSEOBase
 from social_links.models import SocialLinkType
-from social_links.tests.factories import (SocialLinkFactory,
-                                          SocialLinkTypeFactory)
+from social_links.tests.factories import SocialLinkFactory
 
 
 class SocialLinksModelsTetCase(DirectSEOBase):

@@ -3,15 +3,16 @@
     such, they are written such that they test user expectations, rather than
     specific functionality.
 """
-from selenium.common.exceptions import WebDriverException
+from django.test import LiveServerTestCase
+from django.test.utils import override_settings
+
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
+
 from myjobs.tests.factories import UserFactory
 from seo.tests.factories import CompanyUserFactory, CompanyFactory
-from django.test import LiveServerTestCase
-from django.test.utils import override_settings
-from selenium import webdriver
 
 
 @override_settings(DEBUG=True)
@@ -114,8 +115,3 @@ class NewUserTests(SeleniumTestCase):
         self.find('id_username').send_keys(self.user.email)
         self.find('id_password').send_keys("test")
         self.find('login').click()
-
-
-class NormalUserTests(SeleniumTestCase):
-
-    """Tests PRM navigation for existing Users"""

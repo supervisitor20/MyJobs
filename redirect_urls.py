@@ -1,5 +1,4 @@
 from django.conf.urls import patterns, include, url
-from django.views.generic.base import RedirectView
 
 from redirect.views import myjobs_redirect, home, email_redirect, update_buid
 

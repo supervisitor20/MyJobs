@@ -4,7 +4,6 @@ from django.contrib.admin import helpers
 from django.contrib.admin.util import unquote
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.views.main import ChangeList
-from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.contrib import messages
@@ -315,10 +314,6 @@ class BusinessUnitAdmin(admin.ModelAdmin):
             writtenout=_("will be written out and parsed shortly."))
         )
     force_create.short_description = _("Force creation of business unit feed")
-
-
-class MyUserAdmin(UserAdmin):
-    filter_horizontal = ('user_permissions', 'groups')
 
 
 class GoogleAnalyticsForm(forms.ModelForm):

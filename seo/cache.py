@@ -1,8 +1,6 @@
 import hashlib
 
 from django.core.cache import cache
-from django.http import HttpRequest
-from django.utils.cache import get_cache_key
 from seo.helpers import get_jobs, get_solr_facet
 
 from seo.models import Configuration, SeoSite
@@ -22,14 +20,6 @@ def cache_page_prefix(request):
     config = get_site_config(request)
     return "%s-%s-%s-%s" % (request.get_host(), config.id,
                             config.status, config.revision)
-
-
-def expire_site_view(host, path):
-    request = HttpRequest(host=host)
-    request.path = path
-    key = get_cache_key(request, key_prefix=cache_page_prefix)
-    if cache.has_key(key):
-        cache.delete(key)
 
 
 def site_item_key(item_key):

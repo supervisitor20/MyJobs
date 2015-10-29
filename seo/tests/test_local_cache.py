@@ -7,7 +7,6 @@ import middleware
 from seo import cache, models
 from seo.tests.setup import DirectSEOTestCase, patch_settings
 from seo.tests import factories
-from seo.views import search_views as views
 from seo.templatetags import seo_extras
 from tasks import task_clear_bu_cache
 
@@ -26,7 +25,6 @@ class LocalCacheTestCase(DirectSEOTestCase):
         self.cache_modules = [django.core.cache,
                               models,
                               cache,
-                              views,
                               seo_extras,
                               middleware]
         self.cache_patches = []

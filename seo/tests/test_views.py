@@ -39,7 +39,7 @@ from redirect.tests.factories import RedirectFactory
 from seo import helpers
 from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings, DirectSeoTCWithSiteAndConfig)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
-                        SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
+                        SeoSite, SeoSiteFacet, SiteTag, User)
 from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
@@ -2126,8 +2126,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
             self.assertEqual(businessunit.count(), 1)
 
     def test_xml_parse_moc(self):
-        import os
-
         filepath = download_feed_file(self.buid_id)
         moc = moc_factories.MocFactory.build()
         moc.save()

@@ -2,7 +2,7 @@ import datetime
 import hashlib
 import random
 import re
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from pynliner import Pynliner
 
@@ -59,7 +59,7 @@ class RegistrationManager(models.Manager):
                     if not user.is_disabled and not user.is_verified:
                         user.delete()
                         profile.delete()
-            except DoesNotExist:
+            except ObjectDoesNotExist:
                 profile.delete()
 
 

@@ -12,7 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.core import mail
 from django.http import Http404
-from django.test.client import RequestFactory 
+from django.test.client import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
 from myprofile.tests.factories import SecondaryEmailFactory
@@ -30,7 +30,7 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
                                         ContactRecordFactory, TagFactory)
 from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
-from mypartners.models import (Contact, ContactRecord, ContactLogEntry, 
+from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mysearches.models import PartnerSavedSearch

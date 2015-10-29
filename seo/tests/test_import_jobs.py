@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from django.conf import settings
-
 from import_jobs import (DATA_DIR, add_company, remove_expired_jobs, update_solr, get_jobs_from_zipfile,
     filter_current_jobs, update_job_source)
 

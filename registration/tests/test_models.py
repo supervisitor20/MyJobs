@@ -17,7 +17,6 @@ from myprofile.tests.factories import PrimaryNameFactory
 from registration.forms import InvitationForm
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
-from seo.models import CompanyUser
 from seo.tests.factories import CompanyFactory
 
 

@@ -4,13 +4,6 @@ from django.conf import settings
 from seo.classviews.baseview import BaseView
 
 
-def job_listing(request):
-    ## parse the url for other slug values
-    slug_tag_value_dict = _parse_slug_tags(request.path)
-    
-    filters_dict = _map_slugs_to_filters(slug_tag_value_dict)
-    
-     
 def _map_slugs_to_filters(slugs_dict):
     """
     Maps values from slugs_dict to keys from settings.SLUG_TAGS
@@ -66,10 +59,10 @@ def _parse_slug_tags(slug_path):
     return dict([(key, value) for (value, key) in slug_value_list])
 
 
-
 class BaseJobView(BaseView):
     # common Job functionality goes here
     pass
+
 
 class JobDetailView(BaseJobView):
     template = "job_detail.html"
@@ -82,8 +75,7 @@ class JobDetailView(BaseJobView):
         # must return an HTTPResponse out of this method
         # return render_to_response(tmeplate_name, request, context)
         pass
-    
-job_detail_view = JobDetailView()
+
 
 class JobListingBySlugTag(BaseJobView):
     template = "job_listing.html"
