@@ -35,4 +35,11 @@ urlpatterns = patterns(
     url(r'^cas/$', 'cas', name='cas'),
     url(r'^topbar/$', 'topbar', name='topbar'),
     url(r'^manage-users/$', 'manage_users', name='manage_users'),
+    url(r'^manage-users/api/roles/$', 'api_roles', name='api_roles'),
+    url(r'^manage-users/api/roles/(?P<role_id>[0-9]+)/$', 'api_roles', name='api_roles'),
+
+
+
+
+    url(r'^manage-users/api/activities$', 'api_activities', name='api_activities'),
 )

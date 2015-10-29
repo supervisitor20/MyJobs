@@ -6,6 +6,44 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 
 // This is the entry point of the application. Bundling begins here.
 
+
+
+
+
+
+var ActivitiesList = React.createClass({
+  getInitialState: function() {
+    return {
+      username: '',
+      lastGistUrl: ''
+    };
+  },
+
+  componentDidMount: function() {
+    $.get(this.props.source, function(result) {
+      var lastGist = result[0];
+      if (this.isMounted()) {
+        this.setState({
+          username: lastGist.owner.login,
+          lastGistUrl: lastGist.html_url
+        });
+      }
+    }.bind(this));
+  },
+
+  render: function() {
+    return (
+      <div>
+        {this.state.username}s last gist is
+        <a href={this.state.lastGistUrl}>here</a>.
+      </div>
+    );
+  }
+});
+
+
+
+
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
     console.log("User clicked CancelRoleButton");
@@ -324,6 +362,9 @@ var ActivitiesMultiselect = React.createClass({
   _onSelect(selectedOptions) {
     selectedOptions.sort((a, b) => a.id - b.id)
     this.setState({selectedOptions})
+
+    {/* TODO When form is submitted, access selected items in the selectedOptions array */}
+
   },
   _onDeselect(deselectedOptions) {
     var selectedOptions = this.state.selectedOptions.slice()
@@ -387,6 +428,20 @@ var UsersMultiselect = React.createClass({
   _onSelect(selectedOptions) {
     selectedOptions.sort((a, b) => a.id - b.id)
     this.setState({selectedOptions})
+
+    {/* TODO When form is submitted, access selected items in the selectedOptions array It will be of this form:
+
+      [
+        {
+          "id": 4,
+          "name": "Delete Analytics"
+        },
+        {
+          "id": 7,
+          "name": "Edit PRM Settings"
+        }
+      ]
+      */}
   },
   _onDeselect(deselectedOptions) {
     var selectedOptions = this.state.selectedOptions.slice()
@@ -781,6 +836,8 @@ var OverviewPage = React.createClass({
             <h2>Overview</h2>
           </div>
         </div>
+
+        <ActivitiesList source="https://api.github.com/users/octocat/gists" />
 
         <hr />
 

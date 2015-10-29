@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, redirect, render, Http404
 from django.template import RequestContext
@@ -24,7 +25,7 @@ from universal.helpers import get_domain
 from myjobs.decorators import user_is_allowed
 from myjobs.forms import ChangePasswordForm, EditCommunicationForm
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
-from myjobs.models import Ticket, User, FAQ, CustomHomepage
+from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -32,6 +33,7 @@ from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
+from seo.models import Company
 
 logger = logging.getLogger('__name__')
 
@@ -600,9 +602,116 @@ def manage_users(request):
     View for manage users
     """
     company = get_company_or_404(request)
+
     ctx = {
         "company": company
         }
 
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
+
+def api_roles(request, role_id=0):
+    """
+    API for roles
+    """
+
+    # company = get_company_or_404(request)
+    # TODO: Create a helper function like get_company_or_404(request)
+    company_name = "DirectEmployers"
+    company_object = Company.objects.filter(name=company_name)
+    company_id = company_object[0].id
+
+    # GET /roles - Retrieves a role(s)
+    if request.method == "GET":
+
+        print "received GET"
+
+        if role_id:
+            role = Role.objects.filter(id=role_id)
+            return HttpResponse(serializers.serialize("json", role, fields=('name')))
+        roles = Role.objects.filter(company=company_id)
+        return HttpResponse(serializers.serialize("json", roles, fields=('name')))
+
+
+
+
+
+    # POST /roles - Creates a new role
+    #
+    # Inputs:
+    # :role_name:            name of role
+    # :activities:      activities assigned to this role
+    # :users:           users assigned to this role
+    #
+    # Returns:
+    # :role:            JSON of new role
+    if request.method == "POST":
+
+        print "received POST"
+
+        # User only request.POST.get ? If not there, sets it to None
+        if request.POST.get("role_name", ""):
+            role_name = request.POST['role_name']
+
+            print "role_name is:"
+            print role_name
+
+        # To access arrays in the request, use getlist()
+        if request.POST.getlist("activities[]", ""):
+            activities = request.POST.getlist("activities[]", "")
+            # activities is a list
+            print "activities are:"
+            # Create list of activity_ids from names
+            activity_ids = []
+            for i, activity in enumerate(activities):
+                activity_object = Activity.objects.filter(name=activity)
+                activity_id = activity_object[0].id
+                activity_ids.append(activity_id)
+
+                print activity + " has id of: " + str(activity_id)
+
+        # User objects have roles
+        if request.POST.getlist("users[]", ""):
+            users = request.POST.getlist("users[]", "")
+            # users is a list
+            print "users are:"
+            for i, user in enumerate(users):
+                print user
+
+        # Create Role
+        new_role = Role.objects.create(name=role_name, company_id=company_id)
+
+        # Assign activities to this new role
+        new_role.activities.add(*activity_ids)
+
+        # Add role to relevant users
+        for i, user in enumerate(users):
+            user_object = User.objects.filter(email=user)
+            user_object[0].roles.add( new_role.id )
+
+        # Return new role as JSON object
+        # serialize() requires an iterable. I'm sure there's a better way.
+        new_role_iterable = []
+        new_role_iterable.append(new_role)
+        return HttpResponse(serializers.serialize("json", new_role_iterable))
+
+
+    ## PUT /roles - Updates role
+    # if request.method == "PUT":
+    #
+    # # PATCH /roles/12 - Partially updates role
+    # if request.method == "PATCH":
+    #
+    # # DELETE /roles/12 - Deletes roles
+    # if request.method == "DELETE":
+
+
+def api_activities(request):
+    """
+    API for activities
+    """
+
+    # GET /activities - Retrieves a list of activities and their description
+    if request.method == "GET":
+        activities = Activity.objects.all()
+        return HttpResponse(serializers.serialize("json", activities, fields=('id', 'name', 'app_access', 'description')))
