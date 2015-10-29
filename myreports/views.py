@@ -135,7 +135,7 @@ class ReportView(View):
     app = 'mypartners'
     model = 'contactrecord'
 
-    @requires(PRM, missing_activity, missing_access)
+    @method_decorator(requires(PRM, missing_activity, missing_access))
     @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
