@@ -32,8 +32,6 @@ excluded_site_ids = ["1409",
                      "1515",
                      "2820"]
 
-def get_site_info(site):
-    info['name'] = site_a.domain.rstrip('.jobs')
 
 def create_site_facet(site_facet, site):
     """
@@ -45,6 +43,7 @@ def create_site_facet(site_facet, site):
             site_facet.customfacet, facet_type = 'DFT', boolean_operation =
             'and')
     new_site_facet.save()
+
 
 class Command(BaseCommand):
     """

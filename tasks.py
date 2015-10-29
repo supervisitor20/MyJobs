@@ -16,8 +16,8 @@ from celery import group
 from celery.task import task
 
 from django.conf import settings
-from django.contrib.sitemaps import ping_google
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sitemaps import ping_google
 from django.core import mail
 from django.core.urlresolvers import reverse_lazy
 from django.template.loader import render_to_string

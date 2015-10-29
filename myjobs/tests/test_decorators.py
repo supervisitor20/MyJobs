@@ -1,18 +1,18 @@
-from django.conf import settings
 from django.test import RequestFactory
 from django.test.utils import override_settings
-from django.http import HttpResponse, Http404, HttpResponseForbidden
+from django.http import HttpResponse, Http404
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
 from myjobs.decorators import requires, MissingAppAccess, MissingActivity
-from seo.tests.factories import (CompanyFactory, CompanyUserFactory,
-                                 SeoSiteFactory)
+from seo.tests.factories import CompanyFactory, CompanyUserFactory
+
 
 def dummy_view(request):
     """View used during various decorator tests."""
     return HttpResponse(request.user.email)
+
 
 # TODO: remove this when the feature goes live
 @override_settings(DEBUG=True)

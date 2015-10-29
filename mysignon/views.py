@@ -3,7 +3,6 @@ from urllib import urlencode
 from urllib2 import unquote, urlparse
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.sessions.models import Session
 from django.http import HttpResponse, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect

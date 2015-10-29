@@ -4,7 +4,6 @@ from taggit.forms import TagField, TagWidget
 
 from django.conf import settings
 from django import forms
-from django.core import validators
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -243,7 +242,7 @@ class SeoSiteForm(RowPermissionsForm):
         # methods of the RowPermissionsAdmin class. That capability is the
         # main (only?) reason for creating a generic class in the first place.
         super(SeoSiteForm, self).__init__(data, user, *args, **kwargs)
-        this = kwargs.get('instance')
+        instance = kwargs.get('instance')
 
         # Override some undesired default behavior
         if hasattr(self, 'errors') and 'domain' in self.errors:
@@ -254,8 +253,8 @@ class SeoSiteForm(RowPermissionsForm):
             except IndexError:
                 pass
 
-        if this:
-            group = getattr(this, 'group') or Group()
+        if instance:
+            group = getattr(instance, 'group') or Group()
         else:
             group = Group()
             
@@ -280,19 +279,17 @@ class SeoSiteForm(RowPermissionsForm):
             inner = {}
             form_field = self.fields[field]
 
+            inner['qs'] = form_field.queryset
             # If we're changing an existing SeoSite model, filter by its group.
             # Otherwise, filter as normal based on superuser status.
-            if field == 'special_commitments' or field == 'business_units' or\
-            field == 'featured_companies':
-                inner['qs'] = form_field.queryset
-            elif this:
+            if instance and field not in ['special_commitments',
+                                          'business_units',
+                                          'featured_companies']:
                 inner['qs'] = form_field.queryset.filter(group=group)
-            elif user.is_superuser:
-                inner['qs'] = form_field.queryset
-            else:
-                inner['qs'] = form_field.queryset.filter(group__in=request.user\
-                                                         .groups.all())
-                
+            elif user and not user.is_superuser:
+                inner['qs'] = form_field.queryset.filter(
+                    group__in=user.groups.all())
+
             inner['field_type'] = form_field
             inner['widget'] = form_field.widget
             field_querysets[field] = inner
@@ -309,7 +306,6 @@ class SeoSiteForm(RowPermissionsForm):
         if not user.is_superuser and len(grp_qs) <= 1:
             self.fields['group'].empty_label = None
 
-    
     def clean_configurations(self):
         data = self.cleaned_data['configurations']
         if data:

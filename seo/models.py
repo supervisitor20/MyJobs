@@ -15,7 +15,6 @@ from django.core.cache import cache
 from django.core import mail
 from django.core.validators import MaxValueValidator, ValidationError
 from django.db import models
-from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
@@ -94,86 +93,7 @@ class NonChainedForeignKey(ForeignKey):
         return value
 
 
-def term_splitter(terms):
-    """
-    Splits strings representing multiple terms into lists
-    :Inputs:
-        terms: An dictionary of field:values, where values is iterable
-    :Returns:
-        A dictionary of field:values, where each item in values has been split
-        according to its deliminter
-
-    """
-    sep = settings.FACET_RULE_DELIMITER
-    results = {}
-    for field in ('city', 'title', 'country', 'state'):
-        try:
-            results[field] = []
-            for term_string in terms[field]:
-                results[field].extend(term_string.split(sep))
-            terms[field] = results[field]
-        except AttributeError:
-           terms[field] = []
-
-    try:
-        for onet_string in terms['onet']:
-            results[field].extend(term_string.split(','))
-        terms['onet'] = terms['onet']
-    except AttributeError:
-        terms['onet'] = []
-    return terms
-
-
-def sq_from_terms(terms):
-    """
-    Create a SearchQuery() object based on a dictionary of field:values
-    Each of these values will be an iterable (consult saved_search.models module for
-    illustration).
-
-    Inputs:
-    :results: A list of term dictionaries in the form {field_name: search_values}
-
-    Returns:
-    A SearchQuery() object for CustomFacet
-
-    """
-    results = []
-    terms = term_splitter(terms)
-    #First we build an SQ for each term, then we join them into a single SQ
-    for attr,vals in terms.items():
-        sq_attr = CustomFacet.field_to_solr_terms.get(attr, attr)
-        if vals is None:
-            continue;
-        elif attr == 'querystring' and len(vals) > 0:
-            #Query string is a raw query
-            results.append(SQ(content=Raw(vals[0])))
-        elif any(vals):
-            #Build an SQ that joins non empty items in vals with boolean or
-            filt = reduce(operator.or_,
-                          [SQ((u"%s__exact" % sq_attr, i)) for i in vals if i])
-            results.append(filt)
-
-    if results:
-        #Build a SQ that joins each non empty SQ in results with boolean and
-        retval = reduce(operator.and_, filter(lambda x: x, results))
-    else:
-        retval = SQ()
-    return retval
-
-
-class CustomFacetQuerySet(QuerySet):
-    def prod_facets_for_current_site(self):
-        kwargs = {
-            'seositefacet__seosite__id': settings.SITE_ID,
-            'show_production': 1,
-        }
-        return self.filter(**kwargs)
-
-
 class CustomFacetManager(models.Manager):
-    def get_query_set(self):
-        return CustomFacetQuerySet(self.model)
-
     def __getattr__(self, attr, *args):
         if attr.startswith("__"):
             raise AttributeError
@@ -413,9 +333,6 @@ class jobListing (models.Model):
 
     objects = models.Manager()
     this_site = JobsByBuidManager()
-
-    def return_id(self):
-        return self.id
 
     def save(self):
         self.titleSlug = slugify(self.title)
@@ -766,9 +683,6 @@ class Company(models.Model):
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
-
-    def slugified_name(self):
-        return slugify(self.name)
 
     def get_seo_sites(self):
         """
@@ -1415,31 +1329,6 @@ class Country(models.Model):
     class Meta:
         verbose_name = 'Country'
         verbose_name_plural = 'Countries'
-
-
-class State(models.Model):
-    name = models.CharField(max_length=255, db_index=True)
-    nation = models.ForeignKey(Country)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        unique_together = ('name', 'nation')
-        verbose_name = 'State'
-        verbose_name_plural = 'States'
-
-
-class City(models.Model):
-    name = models.CharField(max_length=255, db_index=True)
-    nation = models.ForeignKey(Country)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'City'
-        verbose_name_plural = 'Cities'
 
 
 class CustomPage(FlatPage):
