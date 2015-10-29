@@ -565,15 +565,9 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-        # .disinct() is insufficient as we need to traverse over the results,
-        # which seems to drop the distinct constraint. Instead, we remove
-        # duplicates from the query set manually. Running set() over the
-        # queryset is insufficient as dicts are unhashable types.
-        all_contacts = reduce(
-            lambda acc, x: acc if x in acc else acc + [x],
-            self.values(
-                'partner__name', 'partner', 'contact__name', 'contact_email'),
-            [])
+        all_contacts = self.values(
+            'partner__name', 'partner', 'contact__name',
+            'contact_email').distinct().order_by('partner__name')
 
         records = dict(self.exclude(contact_type='job').values_list(
             'contact__name').annotate(
