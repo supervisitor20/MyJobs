@@ -569,6 +569,9 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
             'partner__name', 'partner', 'contact__name',
             'contact_email')
 
+        # attempting to iterate over the above will result in the distinct
+        # constraint being lost; thus, we convert to a set to remove duplicates
+        # and convert back to a list of dicts
         all_contacts = set(tuple(contact.items()) for contact in all_contacts)
         all_contacts = [dict(contact) for contact in all_contacts]
 
