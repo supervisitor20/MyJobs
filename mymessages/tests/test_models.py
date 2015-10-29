@@ -4,7 +4,6 @@ from django.contrib.auth.models import Group
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
-from myjobs.models import User
 from mymessages.models import Message, MessageInfo
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError, FieldError
+from django.core.exceptions import ValidationError
 
 from seo.tests import factories
 from seo.models import CustomFacet, SeoSite, SiteTag

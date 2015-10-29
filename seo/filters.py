@@ -82,9 +82,6 @@ class FacetListWidget(object):
 
         self.FilterItem = namedtuple('FilterItem', 'name count url')
 
-    def get_req_path(self):
-        return self.request.path
-
     def shown_items(self):
         if self.items_to_show:
             return self.items_to_show

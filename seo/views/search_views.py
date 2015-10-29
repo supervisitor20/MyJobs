@@ -23,7 +23,6 @@ from django.http import (HttpResponse, Http404, HttpResponseNotFound,
                          HttpResponseRedirect, HttpResponseServerError,
                          QueryDict)
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext, loader
 from django.template.defaultfilters import safe
@@ -44,7 +43,7 @@ from import_jobs import add_jobs, delete_by_guid
 from transform import transform_for_postajob
 
 from myblocks.views import BlockView
-from myblocks.models import SearchResultBlock, Page
+from myblocks.models import SearchResultBlock
 from myblocks import context_tools
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.breadbox import Breadbox
@@ -63,7 +62,7 @@ from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
-from myemails.models import EmailTemplate, EmailSection
+from myemails.models import EmailSection
 from myblocks.models import Page
 
 """
