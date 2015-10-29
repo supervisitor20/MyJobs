@@ -541,7 +541,6 @@ def download_dynamic_report(request):
     columns = (ConfigurationColumn.objects
                .active_for_report_presentation(
                     report.report_presentation))
-    print columns.query
     values = [c.column.column_name for c in columns]
 
     records = (dict((v, unicode(rec.get(v))) for v in values)
