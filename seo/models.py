@@ -33,7 +33,7 @@ from registration.models import Invitation
 from social_links import models as social_models
 from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
-from myjobs.models import User
+from myjobs.models import User, Activity
 from mypartners.models import Tag
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 from universal.helpers import get_domain, get_object_or_none
@@ -615,6 +615,10 @@ class Company(models.Model):
             ]
             for tag in default_tags:
                 Tag.objects.get_or_create(company=self, **tag)
+
+            # create the default admin role
+            admin_role = self.role_set.create(name="Admin")
+            admin_role.activities = Activity.objects.all()
 
     def associated_jobs(self):
         b_units = self.job_source_ids.all()
