@@ -160,7 +160,6 @@ class ReportView(View):
         report = Report.objects.get(id=report_id)
 
         if report.model == "contactrecord":
-
             records = report.queryset
             ctx = json.dumps({
                 'emails': records.emails,
