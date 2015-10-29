@@ -485,7 +485,7 @@ def columns_api(request):
             'code': f.format_code,
         } for f in c.column_formats.all()],
     } for c in columns)
-    result = dict((d['name'], d) for d in data)
+    result = {'columns': dict((d['name'], d) for d in data)}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(result))
 

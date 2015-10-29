@@ -450,7 +450,7 @@ class TestReportsApi(MyReportsTestCase):
         result = json.loads(resp.content)
         expected_keys = set([
             u'locations', u'partner', u'tags', u'name', u'email'])
-        self.assertEquals(expected_keys, set(result.keys()))
+        self.assertEquals(expected_keys, set(result['columns'].keys()))
 
 
 class TestDynamicReports(MyReportsTestCase):
