@@ -73,12 +73,11 @@ def partner_from_json(partner_json, company, user, source):
 
     if partner_json['maptoid']:
         partner = Partner.objects.get(pk=partner_json['maptoid'])
-        created = False
     else:
-        partner, created = Partner.objects.get_or_create(
+        partner = Partner.objects.create(
             owner=company, name=partner_json['name'])
 
-    if created or overwrite_partner:
+    if not partner_json['maptoid'] or overwrite_partner:
         partner.data_source = partner_json.get('datasource', source)
         partner.uri = partner_json.get('uri', '')
         partner.last_action_time = partner_json.get('modified', NOW)
