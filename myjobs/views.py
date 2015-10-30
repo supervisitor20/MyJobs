@@ -610,10 +610,62 @@ def manage_users(request):
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
 
-def api_roles(request, role_id=0):
+
+def api_get_activities(request):
     """
-    API for roles
+    API for activities
     """
+
+    activities = Activity.objects.all()
+    return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
+
+
+def api_get_roles(request):
+    """
+    GET /roles/
+    Retrieves all roles for a company
+    """
+
+    # TODO: Use line below
+    # company = get_company_or_404(request)
+    # TODO: Create a helper function like get_company_or_404(request)
+    company_name = "DirectEmployers"
+    company_object = Company.objects.filter(name=company_name)
+    company_id = company_object[0].id
+
+    response_data = {}
+
+    # /api/roles/
+    # Return information about all roles of this company
+    roles = Role.objects.filter(company=company_id)
+    for role in roles:
+        role_id = role.id
+
+        response_data[role_id] = {}
+
+        response_data[role_id]['role'] = {}
+        response_data[role_id]['role']['id'] = role.id
+        response_data[role_id]['role']['name'] = role.name
+
+        activities = role.activities.all()
+        response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
+
+        users = User.objects.filter(roles__id=role_id)
+        response_data[role_id]['users'] = {}
+        response_data[role_id]['users']['available'] = serializers.serialize("json", users, fields=('email'))
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def api_get_specific_role(request, role_id=0):
+    """
+    GET /roles/NUMBER
+    Retrieves specific role
+    """
+
+    # Check if role exists
+    if Role.objects.filter(id=role_id).exists() == False:
+        raise Http404
 
     response_data = {}
 
@@ -624,87 +676,65 @@ def api_roles(request, role_id=0):
     company_object = Company.objects.filter(name=company_name)
     company_id = company_object[0].id
 
-    # GET /roles - Retrieves a role(s)
-    if request.method == "GET":
+    response_data[role_id] = {}
 
-        # /api/roles/NUMBER
-        # Return information about role requested
-        if role_id:
-            response_data[role_id] = {}
+    role = Role.objects.filter(id=role_id).filter(company=company_id)
+    response_data[role_id]['role'] = {}
+    response_data[role_id]['role']['id'] = role[0].id
+    response_data[role_id]['role']['name'] = role[0].name
 
-            role = Role.objects.filter(id=role_id).filter(company=company_id)
-            response_data[role_id]['role'] = {}
-            response_data[role_id]['role']['id'] = role[0].id
-            response_data[role_id]['role']['name'] = role[0].name
+    activities = role[0].activities.all()
+    response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
 
-            activities = role[0].activities.all()
-            response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
+    # Users already assigned to this role
+    users_assigned = User.objects.filter(roles__id=role_id)
+    response_data[role_id]['users'] = {}
+    response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
 
-            # Users already assigned to this role
-            users_assigned = User.objects.filter(roles__id=role_id)
-            response_data[role_id]['users'] = {}
-            response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
+    # Users that can be assigned to this role
+    # This is determined by the users already associated with roles associated with this company
+    users_available = []
+    roles = Role.objects.filter(company=1)
+    for role in roles:
+        role_id_temp = role.id
+        users = User.objects.filter(roles__id=role_id_temp)
+        for user in users:
+            if user not in users_available:
+                users_available.append(user)
+    response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
 
-            # Users that can be assigned to this role
-            # This is determined by the users already associated with roles associated with this company
-            users_available = []
-            roles = Role.objects.filter(company=1)
-            for role in roles:
-                role_id_temp = role.id
-                users = User.objects.filter(roles__id=role_id_temp)
-                for user in users:
-                    if user not in users_available:
-                        users_available.append(user)
-            response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # /api/roles/
-        # Return information about all roles of this company
-        roles = Role.objects.filter(company=company_id)
-        for role in roles:
-            role_id = role.id
+def api_create_role(request):
+    """
+    POST /roles/post
+    Creates a new role
 
-            response_data[role_id] = {}
+    Inputs:
+    :role_name:  name of role
+    :activities:      activities assigned to this role
+    :users:           users assigned to this role
 
-            response_data[role_id]['role'] = {}
-            response_data[role_id]['role']['id'] = role.id
-            response_data[role_id]['role']['name'] = role.name
+    Returns:
+    :role:            JSON of new role
+    """
 
-            activities = role.activities.all()
-            response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
-
-            users = User.objects.filter(roles__id=role_id)
-            response_data[role_id]['users'] = {}
-            response_data[role_id]['users']['available'] = serializers.serialize("json", users, fields=('email'))
-
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-    # POST /roles - Creates a new role
-    #
-    # Inputs:
-    # :role_name:            name of role
-    # :activities:      activities assigned to this role
-    # :users:           users assigned to this role
-    #
-    # Returns:
-    # :role:            JSON of new role
     if request.method == "POST":
-
-        print "received POST"
+        # TODO: Use line below
+        # company = get_company_or_404(request)
+        # TODO: Create a helper function like get_company_or_404(request)
+        company_name = "DirectEmployers"
+        company_object = Company.objects.filter(name=company_name)
+        company_id = company_object[0].id
 
         # User only request.POST.get ? If not there, sets it to None
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
 
-            print "role_name is:"
-            print role_name
-
         # To access arrays in the request, use getlist()
         if request.POST.getlist("activities[]", ""):
             activities = request.POST.getlist("activities[]", "")
-            # activities is a list
-            print "activities are:"
             # Create list of activity_ids from names
             activity_ids = []
             for i, activity in enumerate(activities):
@@ -712,15 +742,9 @@ def api_roles(request, role_id=0):
                 activity_id = activity_object[0].id
                 activity_ids.append(activity_id)
 
-                print activity + " has id of: " + str(activity_id)
-
         # User objects have roles
         if request.POST.getlist("users[]", ""):
             users = request.POST.getlist("users[]", "")
-            # users is a list
-            print "users are:"
-            for i, user in enumerate(users):
-                print user
 
         # Create Role
         new_role = Role.objects.create(name=role_name, company_id=company_id)
@@ -740,22 +764,45 @@ def api_roles(request, role_id=0):
         return HttpResponse(serializers.serialize("json", new_role_iterable, fields=('id')))
 
 
-    ## PUT /roles - Updates role
-    # if request.method == "PUT":
-    #
-    # # PATCH /roles/12 - Partially updates role
-    # if request.method == "PATCH":
-    #
-    # # DELETE /roles/12 - Deletes roles
-    # if request.method == "DELETE":
-
-
-def api_activities(request):
+def api_delete_role(request, role_id=0):
     """
-    API for activities
+    POST /roles/delete/NUMBER
+    Deletes a role
+
+    Inputs:
+    :role_id:  id of role
+
+    Returns:
+    :success:       boolean
     """
 
-    # GET /activities - Retrieves a list of activities and their description
-    if request.method == "GET":
-        activities = Activity.objects.all()
-        return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
+    if request.method == "DELETE":
+
+        response_data = {}
+
+        # TODO: Use line below
+        # company = get_company_or_404(request)
+        # TODO: Create a helper function like get_company_or_404(request)
+        company_name = "DirectEmployers"
+        company_object = Company.objects.filter(name=company_name)
+        company_id = company_object[0].id
+
+        # Check if role exists
+        if Role.objects.filter(id=role_id).exists() == False:
+            response_data = {"success": "false"}
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+        # Check that company manges this role and can therefore delete it
+        company_id_to_delete = Role.objects.filter(id=role_id)[0].company.id
+        if company_id != company_id_to_delete:
+            response_data = {"success": "false"}
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+        # Delete in 3... 2... 1...
+        Role.objects.filter(id=role_id).delete()
+        response_data = {"success": "true"}
+
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+    else:
+        raise Http404
