@@ -118,10 +118,6 @@ def log_change(obj, form, user, partner, contact_identifier,
         change_msg = get_change_message(form) if action_type == CHANGE else ''
     # import ipdb; ipdb.set_trace()
     delta = get_form_delta(form) if action_type == CHANGE else {}
-    # for form_key, form_item in delta.items():
-    #     for inner_key, potential_object in form_item.items():
-    #         if isinstance(potential_object, Model):
-    #             delta[form_key][inner_key] = model_to_dict(potential_object)
     delta = json.dumps(delta, cls=ModelSafeJSONEncoder)
 
     ContactLogEntry.objects.create(
@@ -136,6 +132,7 @@ def log_change(obj, form, user, partner, contact_identifier,
         user=user,
         successful=successful,
     )
+
 
 def get_form_delta(form):
     """
