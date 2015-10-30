@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 
 from seo.tests import factories
-from seo.models import Compnay, CustomFacet, SeoSite, SiteTag
+from seo.models import Company, CustomFacet, SeoSite, SiteTag
 from setup import DirectSEOBase
 
 
