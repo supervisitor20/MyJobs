@@ -5,7 +5,8 @@ import os
 from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
-from django.db.models import Min, Max, Q
+from django.forms.models import model_to_dict
+from django.db.models import Min, Max, Q, Model
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -26,6 +27,13 @@ from universal.helpers import (get_domain, get_company, get_company_or_404,
 from mypartners.models import (Contact, ContactLogEntry, CONTACT_TYPE_CHOICES,
                                CHANGE, Location, Partner, PartnerLibrary, Tag)
 from mypartners.widgets import MultipleFileField
+
+
+class ModelSafeJSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, Model):
+            return "%s: pk:%s desc: %s" % (o.__class__.__name__, o.pk, str(o))
+        return super(ModelSafeJSONEncoder, self).default(o)
 
 
 def prm_worthy(request):
@@ -109,10 +117,15 @@ def log_change(obj, form, user, partner, contact_identifier,
     """
     if not change_msg:
         change_msg = get_change_message(form) if action_type == CHANGE else ''
+    # import ipdb; ipdb.set_trace()
     delta = get_form_delta(form) if action_type == CHANGE else {}
-    delta = json.dumps(delta, cls=DjangoJSONEncoder)
+    # for form_key, form_item in delta.items():
+    #     for inner_key, potential_object in form_item.items():
+    #         if isinstance(potential_object, Model):
+    #             delta[form_key][inner_key] = model_to_dict(potential_object)
+    delta = json.dumps(delta, cls=ModelSafeJSONEncoder)
 
-    ContactLogEntry.objects.create(
+    cle = ContactLogEntry.objects.create(
         action_flag=action_type,
         change_message=change_msg,
         contact_identifier=contact_identifier,
@@ -124,6 +137,7 @@ def log_change(obj, form, user, partner, contact_identifier,
         user=user,
         successful=successful,
     )
+    print cle.pk
 
 
 def get_form_delta(form):
