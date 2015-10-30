@@ -5,7 +5,6 @@ import os
 from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
-from django.forms.models import model_to_dict
 from django.db.models import Min, Max, Q, Model
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
@@ -125,7 +124,7 @@ def log_change(obj, form, user, partner, contact_identifier,
     #             delta[form_key][inner_key] = model_to_dict(potential_object)
     delta = json.dumps(delta, cls=ModelSafeJSONEncoder)
 
-    cle = ContactLogEntry.objects.create(
+    ContactLogEntry.objects.create(
         action_flag=action_type,
         change_message=change_msg,
         contact_identifier=contact_identifier,
@@ -137,8 +136,6 @@ def log_change(obj, form, user, partner, contact_identifier,
         user=user,
         successful=successful,
     )
-    print cle.pk
-
 
 def get_form_delta(form):
     """
