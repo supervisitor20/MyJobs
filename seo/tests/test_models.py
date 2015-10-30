@@ -260,5 +260,6 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         When a new company is created, that company should have an Admin Role
         available to it.
         """
+
         company = Company.objects.create(name="Test Company")
         self.assertIn('Admin', company.role_set.values_list('name', flat=True))
