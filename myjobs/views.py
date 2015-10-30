@@ -615,6 +615,9 @@ def api_roles(request, role_id=0):
     API for roles
     """
 
+    response_data = {}
+
+    # TODO: Use line below
     # company = get_company_or_404(request)
     # TODO: Create a helper function like get_company_or_404(request)
     company_name = "DirectEmployers"
@@ -627,33 +630,55 @@ def api_roles(request, role_id=0):
         # /api/roles/NUMBER
         # Return information about role requested
         if role_id:
+            response_data[role_id] = {}
+
             role = Role.objects.filter(id=role_id).filter(company=company_id)
+            response_data[role_id]['role'] = {}
+            response_data[role_id]['role']['id'] = role[0].id
+            response_data[role_id]['role']['name'] = role[0].name
+
             activities = role[0].activities.all()
-            users = User.objects.filter(roles__id=role_id)
+            response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
 
-            all_objects = list(role) + list(activities) + list(users)
+            # Users already assigned to this role
+            users_assigned = User.objects.filter(roles__id=role_id)
+            response_data[role_id]['users'] = {}
+            response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
 
-            return HttpResponse(serializers.serialize("json", all_objects))
+            # Users that can be assigned to this role
+            # This is determined by the users already associated with roles associated with this company
+            users_available = []
+            roles = Role.objects.filter(company=1)
+            for role in roles:
+                role_id_temp = role.id
+                users = User.objects.filter(roles__id=role_id_temp)
+                for user in users:
+                    if user not in users_available:
+                        users_available.append(user)
+            response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
+
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
         # /api/roles/
         # Return information about all roles of this company
         roles = Role.objects.filter(company=company_id)
-
-
-        content = []
         for role in roles:
-            activities = role.activities.all()
             role_id = role.id
+
+            response_data[role_id] = {}
+
+            response_data[role_id]['role'] = {}
+            response_data[role_id]['role']['id'] = role.id
+            response_data[role_id]['role']['name'] = role.name
+
+            activities = role.activities.all()
+            response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
+
             users = User.objects.filter(roles__id=role_id)
-            content[role].append(activities)
+            response_data[role_id]['users'] = {}
+            response_data[role_id]['users']['available'] = serializers.serialize("json", users, fields=('email'))
 
-
-
-        # users = User.objects.filter(roles__id=role_id)
-
-        # all_objects = list(role) + list(activities) + list(users)
-
-        return HttpResponse(serializers.serialize("json", roles))
-
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     # POST /roles - Creates a new role
     #
@@ -712,7 +737,7 @@ def api_roles(request, role_id=0):
         # serialize() requires an iterable. I'm sure there's a better way.
         new_role_iterable = []
         new_role_iterable.append(new_role)
-        return HttpResponse(serializers.serialize("json", new_role_iterable))
+        return HttpResponse(serializers.serialize("json", new_role_iterable, fields=('id')))
 
 
     ## PUT /roles - Updates role
@@ -733,4 +758,4 @@ def api_activities(request):
     # GET /activities - Retrieves a list of activities and their description
     if request.method == "GET":
         activities = Activity.objects.all()
-        return HttpResponse(serializers.serialize("json", activities, fields=('id', 'name', 'app_access', 'description')))
+        return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
