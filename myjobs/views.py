@@ -634,19 +634,25 @@ def api_roles(request, role_id=0):
             all_objects = list(role) + list(activities) + list(users)
 
             return HttpResponse(serializers.serialize("json", all_objects))
-
         # /api/roles/
         # Return information about all roles of this company
         roles = Role.objects.filter(company=company_id)
 
-        # TODO Since returning MANY roles, need to package roles up with users and activities somehow
-        # activities = role[0].activities.all()
+
+        content = []
+        for role in roles:
+            activities = role.activities.all()
+            role_id = role.id
+            users = User.objects.filter(roles__id=role_id)
+            content[role].append(activities)
+
+
+
         # users = User.objects.filter(roles__id=role_id)
 
         # all_objects = list(role) + list(activities) + list(users)
 
         return HttpResponse(serializers.serialize("json", roles))
-
 
 
     # POST /roles - Creates a new role
