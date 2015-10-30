@@ -29,8 +29,6 @@
     <div class="row">
         <div class="span8" id="moduleColumn">
 
-            {% csrf_token %}
-
             {% for module in profile_config.values %}
 
             {% with module.0|custom_template as c_template %}
@@ -40,27 +38,24 @@
             {% endfor %}
 
         </div>
-        
-        <div class="scroller_anchor"></div>
-        <div class="span4" id="rightColumn">
-            <div class="formBox" id="profile-completion">
+        <div class="span4">
+            <div class="sidebar" id="moduleBank">
+                <h2 class="top">Profile Completion</h2>
                 <div class="pull-right">Your profile is <span id="highlight">{{user.profile_completion}}% complete</span></div><br>
                 <div class="progress"><div class="bar bar-{% completion_level user.profile_completion%}"
                                            style="width: {{ user.profile_completion }}%"></div></div>
-            </div>
-            <div class="formBox right-side-fixed" id="moduleBank">
-                <h3>Add a New Section</h3>
+                <h2>Add a New Section</h2>
                 <table class="table table-bordered tables-striped">
                 {% for module in unit_names %}
                 <tr class="profile-section" {% if module.items %}style="display:none;"{% endif %}><td>
-                    <a class="" id="{{module}}-new-section" href="{% url 'handle_form' %}?module={{module}}&id=new">
+                    <a id="{{module}}-new-section" href="{% url 'handle_form' %}?module={{module}}&id=new">
                         {{ module }}
                     </a>
                 </td></tr>
                 {% endfor %}
                 </table>
-            </div>{# /moduleBank #}
-        </div>{# /span4 #}
+            </div>
+        </div>
     </div>{# /row #}
 </div>{# /wrapper #}
 
@@ -68,4 +63,11 @@
 
 {% block extra-js %}
 <script src="{{ STATIC_URL }}profile.153-10.js{{ gz }}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".product-card:not(.no-highlight)").on("click", function() {
+           window.location = $(this).find("a").attr("href");
+        });
+    });
+</script>
 {% endblock %}

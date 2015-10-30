@@ -11,7 +11,6 @@ from django import template
 from django.conf import settings
 from django.core.cache import cache
 from django.template.defaultfilters import stringfilter
-from django.utils.encoding import smart_str
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
@@ -49,15 +48,6 @@ def append(value, arg):
 
 
 @register.filter
-@stringfilter
-def is_in(value, args):
-    if value.title() == args.values()[0]:
-        return True
-    else:
-        return False
-
-
-@register.filter
 @stringfilter       
 def smart_truncate(content, length=32, suffix='...'):
     if isinstance(content, unicode):
@@ -70,25 +60,6 @@ def smart_truncate(content, length=32, suffix='...'):
     else:
         return content[:length]+suffix
         
-@register.filter
-def need_column(counter, num_subnav_items_to_show):
-    if counter % (num_subnav_items_to_show/3) == 0:
-        return True
-    else:
-        return False
-
-
-@register.filter
-def get_moc_branch(value):
-    branches = {
-        "f": "air-force",
-        "a": "army",
-        "m": "marines",
-        "n": "navy",
-        "c": "coast-guard"
-    }
-    return branches[value]
-
 
 @register.filter
 @stringfilter
@@ -121,76 +92,6 @@ def facet_url(val):
     """
     pieces = val.split("::")
     return pieces[0]
-
-
-@register.simple_tag
-def canonicalize_url(filters, slug, facet_type):
-    """
-    This custom tag is responsible for canonicalizing the links
-    for titles, cities, states, facets, etc.
-    
-    """
-    
-    url = ""
-    
-    # We first parse the filters dict to see what filters are already applied
-    title_slug = filters['title_slug']
-    location_slug = filters['location_slug']
-    facet_slug = filters['facet_slug']
-    moc_slug = filters['moc_slug']
-        
-    # In the second part of this method, we're going to set/override
-    # one of the pieces with the passed in slug value and type
-    if facet_type == "title":
-        # Since we're currently dependent on a 3 letter country code,
-        # we need to strip off any location slugs that have 3 letter
-        # country codes on them when we have a location filter coming in.
-        #
-        # When on the home page, we have no default country, per se, so the
-        # titles are grouped by that title within a country, but after
-        # filtering by a city, state, or country, we have that country data
-        # to get a 3 letter code and full location slug.
-        #
-        # Example: 
-        #     business-operations-professional/jobs-in/hun/jobs/
-        #         --->  business-operations-professional/jobs-in/
-        sliced = slug.split(settings.SLUG_TAGS["title_slug"])
-        if location_slug:
-            slug = sliced[0]
-        else:
-            # location_slug is None, which means we're on the home page, and
-            # we need to make sure we have location on our link, so we'll parse
-            # that off of the passed in title slug and set it
-            location_part = sliced[1]
-            slug = sliced[0]
-            location_slug = location_part.split(
-                settings.SLUG_TAGS["location_slug"])[0]
-        title_slug = slug
-    elif facet_type == "facet":
-        sliced = slug.split(settings.SLUG_TAGS["location_slug"])
-        if location_slug is None:
-            location_slug = sliced[0]
-        facet_slug = sliced[1]
-    elif facet_type == "moc":
-        moc_slug = slug
-    elif (facet_type == "city" or facet_type == "state" or
-          facet_type == "country"):
-        location_slug = slug
-
-    # Finally, we piece the url together, ignoring any part that is not set.
-    # Our canonical form is:
-    #     title_value/title_slug/location_value/location_slug/facet_value/
-    #         facet_slug/moc_value/moc_slug
-    if title_slug is not None:
-        url += "%s%s" % (title_slug, settings.SLUG_TAGS["title_slug"])
-    if location_slug is not None:
-        url += "%s%s" % (location_slug, settings.SLUG_TAGS["location_slug"])
-    if facet_slug is not None:
-        url += "%s%s" % (facet_slug, settings.SLUG_TAGS["facet_slug"])
-    if moc_slug is not None:
-        url += "%s%s" % (moc_slug, settings.SLUG_TAGS["moc_slug"])
-
-    return url
 
 
 @register.tag
@@ -282,11 +183,6 @@ def append_search_querystring(request, feed_path):
         qs = ""
 
     return feed_path+qs    
-
-
-@register.filter
-def subtract(value, arg):
-    return value - arg
 
 
 @register.assignment_tag(takes_context=True)
@@ -463,38 +359,6 @@ def view_all_jobs_label(view_all_jobs_detail):
             label = ugettext(re.sub(r"([ ])+", " ", label))
             
     return label
-
-
-@register.simple_tag
-def breadbox_url(base_url, query_string):
-    from seo.helpers import urlencode_path_and_query_string
-    # Remove the redirect flag from the query string if it's there since
-    # it's no longer relevant
-    query_string = query_string.replace("r=True", '') if query_string else None
-    if base_url == '/' or not base_url:
-        base_url = '/jobs/'
-
-    url = ("%s?%s" % (base_url, query_string.replace("&&", "&"))
-           if query_string else base_url)
-    return urlencode_path_and_query_string(smart_str(url))
-
-
-@register.simple_tag
-def breadbox_location_url(base_url, loc_up, query_string):
-    from seo.helpers import urlencode_path_and_query_string
-    # Remove the redirect flag from the query string if it's there since
-    # it's no longer relevant
-    query_string = query_string if query_string else None
-    url = "%s%s?%s" % (base_url, loc_up, query_string.replace('&&', '&')) \
-        if query_string else "%s%s" % (base_url, loc_up)
-    return urlencode_path_and_query_string(smart_str(url))
-
-
-@register.simple_tag
-def breadbox_qs(qs, remove_param):
-    qs = QueryDict(qs).copy()
-    del qs[remove_param]
-    return "?%s" % qs.urlencode() if qs.urlencode() else ''
 
 
 @register.simple_tag

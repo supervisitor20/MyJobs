@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.loading import get_model
 
 from myreports.helpers import serialize, determine_user_type
+from myreports.report_query import get_report_query
 from mypartners.models import SearchParameterManager
 
 
@@ -142,10 +143,20 @@ class ReportingTypeReportTypes(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class DataTypeManager(models.Manager):
+    def active_for_report_type(self, report_type):
+        query_filter = dict(
+            is_active=True,
+            reporttypedatatypes__report_type=report_type,
+            reporttypedatatypes__is_active=True)
+        return DataType.objects.filter(**query_filter)
+
+
 class DataType(models.Model):
     data_type = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
     is_active = models.BooleanField(default=False)
+    objects = DataTypeManager()
 
 
 class ReportTypeDataTypes(models.Model):
@@ -159,12 +170,22 @@ class Configuration(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class ReportPresentationManager(models.Manager):
+    def active_for_report_type_data_type(self, rtdt):
+        query_filter = dict(
+            presentation_type__is_active=True,
+            configuration__is_active=True,
+            is_active=True)
+        return ReportPresentation.objects.filter(**query_filter)
+
+
 class ReportPresentation(models.Model):
     report_data = models.ForeignKey('ReportTypeDataTypes')
     presentation_type = models.ForeignKey('PresentationType')
     configuration = models.ForeignKey('Configuration')
     display_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
+    objects = ReportPresentationManager()
 
 
 class PresentationType(models.Model):
@@ -173,10 +194,20 @@ class PresentationType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
+class ColumnManager(models.Manager):
+    def active_for_configuration(self, configuration):
+        column_qs = Column.objects.filter(is_active=True)
+        config_col_qs = configuration.configurationcolumn_set.filter(
+            is_active=True)
+
+        return column_qs.filter(id__in=config_col_qs)
+
+
 class Column(models.Model):
     table_name = models.CharField(max_length=50)
     column_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
+    objects = ColumnManager()
 
 
 class InterfaceElementType(models.Model):
@@ -209,3 +240,76 @@ class ConfigurationColumn(models.Model):
     column_formats = models.ManyToManyField(
         'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
+
+
+class DynamicReport(models.Model):
+    """
+    Models a Report which was generated from a Configuration.
+
+    The report can be serialized in various formats.
+
+    A report instance can access it's results in three ways:
+        `json`: returns a JSON string of the results
+        `python`: returns a `dict` of the results
+        `queryset`: returns a queryset obtained by re-running `from_search`
+                    with the report's parameters. Useful for when you need to
+                    use attributes from a related model's instances (eg.
+                    `referrals` from the `ContactRecord` model).
+    """
+    name = models.CharField(max_length=50)
+    created_by = models.ForeignKey(
+        'myjobs.User', null=True, on_delete=models.SET_NULL)
+    created_on = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey('seo.Company')
+    report_presentation = models.ForeignKey('myreports.ReportPresentation')
+    results = models.FileField(upload_to='reports')
+
+    company_ref = 'owner'
+
+    objects = SearchParameterManager()
+
+    def __init__(self, *args, **kwargs):
+        super(DynamicReport, self).__init__(*args, **kwargs)
+        self._results = '{}'
+
+        if self.results:
+            try:
+                self._results = self.results.read()
+            except IOError:
+                # If we are here, the file can't be found, which is usually the
+                # case when testing locally and pointing to
+                # QC/Staging/Production.
+                pass
+
+    @property
+    def json(self):
+        return self._results
+
+    @property
+    def python(self):
+        return json.loads(self._results)
+
+    def get_report_query(self):
+        report_query_name = (
+            self.report_presentation.report_data
+            .report_type.report_type)
+        return get_report_query(report_query_name)
+
+    def queryset(self):
+        self.report_query = self.get_report_query()
+        report_qs = (self.report_query
+                     .report_query_set(self.owner))
+        return report_qs
+
+    def regenerate(self):
+        self.report_query = self.get_report_query()
+        data = [self.report_query.extract(m) for m in self.queryset()]
+        contents = json.dumps(data)
+        results = ContentFile(contents)
+
+        if self.results:
+            self.results.delete()
+
+        name = self.report_presentation.display_name
+        self.results.save('%s-%s.json' % (name, self.pk), results)
+        self._results = contents

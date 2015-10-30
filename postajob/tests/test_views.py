@@ -25,7 +25,7 @@ from postajob.models import (CompanyProfile, Job, OfflinePurchase, Package,
                              ProductOrder, JobLocation)
 from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
                                       RowFactory, RowOrderFactory,
-                                      BlockOrderFactory, LoginBlockFactory)
+                                      BlockOrderFactory)
 from seo.models import Company, SeoSite
 from universal.helpers import build_url
 

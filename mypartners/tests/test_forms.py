@@ -1,11 +1,58 @@
 from django.core.urlresolvers import reverse
+
 from myjobs.tests.factories import UserFactory
-from mypartners.forms import ContactForm, ContactRecordForm
+from mypartners.forms import ContactForm, ContactRecordForm, PartnerForm, NewPartnerForm, LocationForm
 from mypartners.models import Contact, Location, ContactRecord
-from mypartners.tests.factories import ContactFactory, ContactRecordFactory
+from mypartners.tests.factories import ContactFactory, ContactRecordFactory, PartnerFactory
 from mypartners.tests.test_views import MyPartnersTestCase
 from mysearches.tests.factories import PartnerSavedSearchFactory
-from mysearches.forms import PartnerSavedSearchForm 
+
+
+class NewPartnerFormTests(MyPartnersTestCase):
+    def setUp(self):
+        super(NewPartnerFormTests, self).setUp()
+        self.data = {}
+        for field in self.partner._meta.fields:
+            self.data[field.attname] = getattr(self.partner, field.attname,
+                                               None)
+        for field in Contact._meta.fields:
+            self.data[field.attname] = getattr(self.contact, field.attname,
+                                               None)
+        self.data['company_id'] = self.company.pk
+        self.data['primary_contact'] = None
+        self.data['partnername'] = self.partner.name
+
+    def test_add_partner_last_action_time(self):
+        """
+            Verify last action time is created when partner form is saved
+        """
+        new_form = NewPartnerForm(data=self.data, user=self.staff_user)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save()
+        self.assertIsNotNone(new_instance.partner.last_action_time)
+
+
+class PartnerFormTests(MyPartnersTestCase):
+    def setUp(self):
+        super(PartnerFormTests, self).setUp()
+        self.data = {}
+        for field in self.partner._meta.fields:
+            self.data[field.attname] = getattr(self.partner, field.attname,
+                                               None)
+        self.data['company_id'] = 1
+        self.data['primary_contact'] = None
+
+    def test_edit_partner_last_action_time(self):
+        """
+            Verify last action time is created when partner form is saved
+        """
+        original_time = self.partner.last_action_time
+        new_form = PartnerForm(instance=self.partner, data=self.data)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save(user=self.staff_user)
+        self.assertEqual(self.partner.pk, new_instance.pk)
+        self.assertNotEqual(original_time, new_instance.last_action_time)
+
 
 class ContactFormTests(MyPartnersTestCase):
     def setUp(self):
@@ -16,6 +63,7 @@ class ContactFormTests(MyPartnersTestCase):
                                                None)
         self.data['partner'] = self.partner.pk
         self.data['user'] = self.contact.user.pk
+        self.data['company_id'] = 1
 
     def test_disable_email_changing_for_existing_user(self):
         """
@@ -24,7 +72,6 @@ class ContactFormTests(MyPartnersTestCase):
 
         """
         self.data['email'] = 'not@thecontact.email'
-        self.data['company_id'] = 1
         form = ContactForm(instance=self.contact, data=self.data)
         self.assertTrue(form.is_valid())
         form.save(self.staff_user, self.partner.pk)
@@ -39,7 +86,6 @@ class ContactFormTests(MyPartnersTestCase):
         universal.form.NormalizedModelForm.
         """
         self.data['name'] = "                    John    Doe            "
-        self.data['company_id'] = 1
         form = ContactForm(instance=self.contact, data=self.data)
         self.assertTrue(form.is_valid())
         form.save(self.staff_user, self.partner.pk)
@@ -49,13 +95,14 @@ class ContactFormTests(MyPartnersTestCase):
 
     def test_location_from_contact(self):
         """
-        If location information is inputted (include address label/name), then
+        If location information is input (include address label/name), then
         a location should be created along with the contact.
         """
 
         data = {
             "name": "John Doe",
-            "partner": self.partner.pk
+            "partner": self.partner.pk,
+            "company_id": 1
         }
         address_info = {
             'label': 'Home',
@@ -64,14 +111,39 @@ class ContactFormTests(MyPartnersTestCase):
             'city': "Somewhere",
             "state": "NM"}
         data.update(address_info)
-        data['company_id'] = 1
         form = ContactForm(data=data)
         self.assertTrue(form.is_valid())
         form.save(self.staff_user, self.partner.pk)
 
         self.assertTrue(Location.objects.filter(**address_info).exists())
 
+    def test_edit_contact_last_action_time(self):
+        """
+            Verify last action time is updated when contact record form is edited
+        """
+        # save form for base instance
+        original_instance = ContactForm(data=self.data).save(self.contact_user, partner=self.partner)
+        original_time = original_instance.last_action_time
+
+        # resave form to "update" instance
+        edited_instance = ContactForm(data=self.data, instance=original_instance).save(self.contact_user,
+                                                                                       partner=self.partner)
+        self.assertEqual(original_instance.pk, edited_instance.pk)
+        self.assertNotEqual(original_time, edited_instance.last_action_time)
+
+    def test_add_contact_last_action_time(self):
+        """
+            Verify last action time is created when contact record form is saved
+        """
+        new_form = ContactForm(data=self.data)
+        self.assertTrue(new_form.is_valid())
+        self.assertIsNone(new_form.fields.get('last_action_time'))
+        saved_form_instance = new_form.save(user=self.contact_user, partner=self.partner)
+        self.assertIsNotNone(saved_form_instance.last_action_time)
+
+
 class PartnerSavedSearchFormTests(MyPartnersTestCase):
+
     def test_partner_saved_search_form_from_instance(self):
         user = UserFactory(email='user@example.com')
         ContactFactory(user=user, partner=self.partner)
@@ -120,7 +192,6 @@ class ContactRecordFormTests(MyPartnersTestCase):
         self.client.path = reverse(
             "partner_edit_record") + "?partner=%s" % self.partner.pk
 
-
     def test_archived_contacts_not_shown(self):
         """Test that archived contacts aren't selectable."""
 
@@ -146,7 +217,6 @@ class ContactRecordFormTests(MyPartnersTestCase):
 
         self.assertEqual(ContactRecord.objects.count(), record_count + 1)
         self.assertIn("brand new record", response.content)
-
 
     def test_changing_contact_type_redirects_correctly(self):
         """
@@ -191,3 +261,21 @@ class ContactRecordFormTests(MyPartnersTestCase):
 
         self.assertIn("some test notes", response.content)
 
+    def test_edit_contact_record_last_action_time(self):
+        """
+            Verify last action time is updated when contact record form is edited
+        """
+        original_time = self.contact_record.last_action_time
+        self.assertEqual(original_time, self.form.instance.last_action_time)
+        saved_form_instance = self.form.save(user=self.contact_user, partner=self.partner)
+        self.assertNotEqual(original_time, saved_form_instance.last_action_time)
+
+    def test_add_contact_record_last_action_time(self):
+        """
+            Verify last action time is created when contact record form is saved
+        """
+        new_form = ContactRecordForm(data=self.data, partner=self.partner)
+        self.assertTrue(new_form.is_valid())
+        self.assertIsNone(new_form.fields.get('last_action_time'))
+        saved_form_instance = new_form.save(user=self.contact_user, partner=self.partner)
+        self.assertIsNotNone(saved_form_instance.last_action_time)

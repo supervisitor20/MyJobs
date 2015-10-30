@@ -69,8 +69,6 @@ class SavedSearchResourceTests(MyJobsBase):
                   'url': 'www.my.jobs/jobs'})
         create_api_key(User, instance=self.user, created=True)
 
-        self.credentials = (self.user.email, self.user.api_key.key)
-
         self.patcher = patch('urllib2.urlopen', return_file())
         self.patcher.start()
 

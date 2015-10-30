@@ -44,13 +44,14 @@ class ActivityFactory(factory.django.DjangoModelFactory):
 
     app_access = factory.SubFactory(AppAccessFactory)
     name = factory.Sequence(lambda n: 'test activity %s' % n)
+    description = "Just a description of some test activity."
 
 
 class RoleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'myjobs.Role'
 
-    company = factory.SubFactory('myjobs.tests.factories.CompanyFactory')
+    company = factory.SubFactory('seo.tests.factories.CompanyFactory')
     name = factory.Sequence(lambda n: 'test role %s' % n)
 
     @factory.post_generation

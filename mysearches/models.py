@@ -13,7 +13,7 @@ import uuid
 from myjobs.models import User
 from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
-                                url_sort_options, validate_dotjobs_url)
+                                url_sort_options)
 import mypartners.helpers
 from universal.helpers import send_email
 
@@ -50,7 +50,7 @@ class SavedSearch(models.Model):
                              on_delete=models.DO_NOTHING)
 
     created_on = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+
     label = models.CharField(max_length=60, verbose_name=_("Search Name"))
     url = models.URLField(max_length=300,
                           verbose_name=_("URL of Search Results"))
@@ -115,11 +115,6 @@ class SavedSearch(models.Model):
                 IndexError):
             # No match was found, so make the company DirectEmployers.
             return 999999
-
-    def get_verbose_frequency(self):
-        for choice in FREQUENCY_CHOICES:
-            if choice[0] == self.frequency:
-                return choice[1]
 
     def get_verbose_dow(self):
         for choice in DOW_CHOICES:
@@ -553,6 +548,7 @@ class PartnerSavedSearch(SavedSearch):
                                    null=True)
     unsubscriber = models.EmailField(max_length=255, blank=True, editable=False,
                                      verbose_name='Unsubscriber')
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'changed_data') and hasattr(self, 'request'):
@@ -619,6 +615,11 @@ class PartnerSavedSearch(SavedSearch):
                                       change_msg=change_msg,
                                       successful=not bool(failure_message))
         return record
+
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
+        if save:
+            self.save()
 
 
 class SavedSearchLog(models.Model):

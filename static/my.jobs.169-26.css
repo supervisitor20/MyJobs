@@ -56,6 +56,10 @@ h1 > small > a:hover {
     width: 100px;
 }
 
+.wrapper.footer a + a {
+    margin-left: 15px;
+}
+
 .site-progress {
     margin-bottom: 0;
 }
@@ -356,6 +360,14 @@ h1 > small > a:hover {
     -moz-box-sizing: border-box;
 }
 
+.sidebar.homepage-center {
+    margin: 20px 0;
+}
+
+.sidebar.homepage-center-small {
+    margin: 90px 0;
+}
+
 .sidebar h2 {
     background-color: #FFF;
     border: 1px solid #d5d4d0;
@@ -374,19 +386,23 @@ h1 > small > a:hover {
     color: #5e6c82;
     margin-top: 5px;
     margin-bottom: 0;
+    display: inline-block;
 }
 
 .sidebar label:first-of-type {
     margin-top: 0;
 }
 
-.sidebar input {
+.sidebar input[type="text"],
+.sidebar input[type="password"] {
     width: 100%;
     height: 32px;
     padding-left: 8px;
 }
 
-.sidebar ul {
+.sidebar ul,
+.sidebar fieldset,
+.sidebar form {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -518,6 +534,7 @@ h1 > small > a:hover {
     padding: 5px;
     background-color: #FFFFFF;
     border: 1px solid #E5E5E5;
+    min-height: 32px;
 }
 
 .card-tabs {
@@ -937,7 +954,7 @@ input.picker-right {
 }
 
 .contact-record-tr > td {
-    word-break: break-word;
+    word-wrap: break-word;
     font-size: 0.9em;
 }
 
@@ -1806,11 +1823,13 @@ h3.bottom-bordered {
     line-height: 18px;
 }
 
-.table-striped.report-table tbody tr:nth-child(even) td {
+.table-striped.report-table tbody tr:nth-child(even) td,
+.table-striped-light tbody tr:nth-child(even) td {
     background-color: #FFF;
 }
 
-.table-striped.report-table tbody tr:nth-child(odd) td {
+.table-striped.report-table tbody tr:nth-child(odd) td,
+.table-striped-light tbody tr:nth-child(odd) td {
     background-color: #F7F7F7;
 }
 
@@ -2371,10 +2390,6 @@ fieldset textarea,
     border-radius: 5px;
 }
 
-input[name="password2"] {
-    margin-top: 10px;
-}
-
 .formBox h2,
 .formBox h3,
 .formBox h4,
@@ -2528,10 +2543,6 @@ input[name="password2"] {
     text-indent: 4px;
 }
 
-#titleRow input {
-    width: 100%;
-}
-
 #account-page-2 .loginBox input,
 #account-page-2 .initial-profileBox input[type=text] {
     width: 100%;
@@ -2589,7 +2600,7 @@ input[name="password2"] {
 }
 
 #newAccountInfo {
-    height: 100%:
+    height: 100%;
 }
 
 #newAccountData {
@@ -2603,7 +2614,7 @@ input[name="password2"] {
     padding: 10px;
     margin-bottom: 10px;
     -moz-border-radius: 4px;
-    -webkit-order-radius: 4px;
+    -webkit-border-radius: 4px;
     border-radius: 4px;
 }
 
@@ -2777,6 +2788,7 @@ em.pendingText {
     width: 100%;
     padding: 10px 5px;
     font-weight: bold;
+    background-color: white;
 }
 
 #moduleBank td {
@@ -3218,9 +3230,17 @@ td .gravatar-blank,
         padding-top: 70px;
     }
 
+    .wrapper.footer .pull-right {
+        float: none;
+    }
+
+    .wrapper.footer a + a {
+        margin-left: 0;
+    }
+
     .date-range-select-form {
         background: inherit;
-        box-shadow: inherit;
+        box-shadow: none;
         position: inherit;
         margin-left: 0;
     }
@@ -3277,13 +3297,11 @@ td .gravatar-blank,
 
     #profileTitleBar h1{
         font-size: 1.5em;
-        line-height: auto;
         margin: 0;
     }
 
     #profileTitleBar h3{
         font-size: .8em;
-        line-height: auto;
         margin: 0;
     }
 
@@ -3350,11 +3368,13 @@ td .gravatar-blank,
         margin-left: 0;
     }
 
-    .table-striped tbody tr:nth-child(even) td {
+    .table-striped tbody tr:nth-child(even) td,
+    .table-striped-light tbody tr:nth-child(even) td {
         background-color: #FFF !important;
     }
 
-    .table-striped tbody tr:nth-child(odd) td {
+    .table-striped tbody tr:nth-child(odd) td,
+    .table-striped-light tbody tr:nth-child(odd) td {
         background-color: #FFF !important;
     }
 
@@ -3612,6 +3632,11 @@ td .gravatar-blank,
         text-align: center;
     }
 
+    .sidebar.homepage-center,
+    .sidebar.homepage-center-small {
+        margin: 10px 0;
+    }
+
     .product-details {
         margin-top: 5px;
         margin-bottom: 5px;
@@ -3682,6 +3707,10 @@ td .gravatar-blank,
     .step-links .current {
         left: 41%;
         position: absolute;
+    }
+
+    #id_digest_active {
+        float: none;
     }
 
     .blanket {
@@ -4396,6 +4425,10 @@ table td, table th {
     font-weight: bold;
 }
 
+#saved-search-listing-table td:hover {
+    background: #D5FACF;
+}
+
 #saved-search-listing-details > div,
 #saved-search-listing-details > h2 {
     padding-left: 10px;
@@ -4769,4 +4802,9 @@ span.helptext {
 
 .fa-times-circle.red {
     color: red;
+}
+
+a.no-buttonize {
+    border: 0;
+    padding: 0;
 }

@@ -5,7 +5,6 @@ from django.conf.urls import url
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from myjobs.tests.setup import MyJobsBase
 from myjobs.autoserialize import autoserialize
 
 

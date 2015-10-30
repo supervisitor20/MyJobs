@@ -71,7 +71,7 @@ class ContactForm(NormalizedModelForm):
         form_name = "Contact Information"
         model = Contact
         exclude = ['user', 'partner', 'locations', 'library', 'archived_on',
-                   'approval_status', 'last_modified']
+                   'approval_status', 'last_action_time']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -91,7 +91,7 @@ class ContactForm(NormalizedModelForm):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
-
+        self.instance.update_last_action_time(False)
         contact = None
         if not self.instance.pk:
             contact = Contact.objects.filter(
@@ -191,7 +191,7 @@ class NewPartnerForm(NormalizedModelForm):
         form_name = "Partner Information"
         model = Contact
         exclude = ['user', 'partner', 'tags', 'locations', 'library',
-                   'approval_status', 'archived_on', 'last_modified']
+                   'approval_status', 'archived_on', 'last_action_time']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -208,7 +208,6 @@ class NewPartnerForm(NormalizedModelForm):
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
-
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
 
@@ -317,7 +316,7 @@ class PartnerForm(NormalizedModelForm):
 
     def save(self, user, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
-
+        self.instance.update_last_action_time(False)
         instance = super(PartnerForm, self).save(commit)
         # Explicity set the primary_contact for the partner and re-save.
         try:
@@ -328,7 +327,6 @@ class PartnerForm(NormalizedModelForm):
         instance.save()
         log_change(instance, self, user, instance, instance.name,
                    action_type=new_or_change)
-
         return instance
 
 
@@ -419,6 +417,7 @@ class ContactRecordForm(NormalizedModelForm):
     def save(self, user, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.partner = partner
+        self.instance.update_last_action_time(False)
 
         if new_or_change == ADDITION:
             self.instance.created_by = user
@@ -480,6 +479,9 @@ class LocationForm(NormalizedModelForm):
         new_or_change = CHANGE if self.instance.pk else ADDITION
 
         instance = super(LocationForm, self).save(commit)
+        for contact in instance.contacts.all():
+            contact.update_last_action_time()
+
         _, partner, _ = prm_worthy(request)
         log_change(instance, self, request.user, partner, instance.label,
                    action_type=new_or_change)
