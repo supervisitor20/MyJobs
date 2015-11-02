@@ -626,10 +626,7 @@ def api_get_roles(request):
     Retrieves all roles for a company
     """
 
-    # TODO: Use line below
-    # company = get_company_or_404(request)
-    # TODO: Create a helper function like get_company_or_404(request)
-    company_name = "DirectEmployers"
+    company_name = get_company_or_404(request)
     company_object = Company.objects.filter(name=company_name)
     company_id = company_object[0].id
 
@@ -669,10 +666,7 @@ def api_get_specific_role(request, role_id=0):
 
     response_data = {}
 
-    # TODO: Use line below
-    # company = get_company_or_404(request)
-    # TODO: Create a helper function like get_company_or_404(request)
-    company_name = "DirectEmployers"
+    company_name = get_company_or_404(request)
     company_object = Company.objects.filter(name=company_name)
     company_id = company_object[0].id
 
@@ -721,18 +715,14 @@ def api_create_role(request):
     """
 
     if request.method == "POST":
-        # TODO: Use line below
-        # company = get_company_or_404(request)
-        # TODO: Create a helper function like get_company_or_404(request)
+        company_name = get_company_or_404(request)
         company_name = "DirectEmployers"
         company_object = Company.objects.filter(name=company_name)
         company_id = company_object[0].id
 
-        # User only request.POST.get ? If not there, sets it to None
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
 
-        # To access arrays in the request, use getlist()
         activity_ids = []
         if request.POST.getlist("assigned_activities[]", ""):
             activities = request.POST.getlist("assigned_activities[]", "")
@@ -767,7 +757,8 @@ def api_create_role(request):
         new_role_iterable = []
         new_role_iterable.append(new_role)
         return HttpResponse(serializers.serialize("json", new_role_iterable, fields=('id')))
-
+    else:
+        raise Http404
 
 def api_edit_role(request, role_id=0):
     """
@@ -862,7 +853,8 @@ def api_edit_role(request, role_id=0):
         # RETURN - boolean
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
-
+    else:
+        raise Http404
 
 def api_delete_role(request, role_id=0):
     """
@@ -880,7 +872,6 @@ def api_delete_role(request, role_id=0):
 
         response_data = {}
 
-        # company_name = "DirectEmployers"
         company_name = get_company_or_404(request)
         company_object = Company.objects.filter(name=company_name)
         company_id = company_object[0].id
