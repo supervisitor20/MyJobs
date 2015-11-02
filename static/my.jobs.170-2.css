@@ -249,12 +249,7 @@ h1 > small > a:hover {
     border-top: 0;
 }
 
-#inbox #messages > tr:hover {
-    background: #D5FACF;
-    cursor: pointer;
-}
-
-.product-card:hover {
+#inbox #messages > tr:hover, .product-card:hover {
     background: #D5FACF;
     cursor: pointer;
 }
