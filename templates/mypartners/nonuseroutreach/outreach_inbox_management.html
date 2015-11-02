@@ -11,53 +11,77 @@
 
 {% block meta-extra %}
 <link href="{{ STATIC_URL }}jquery.tagit.css" rel="stylesheet" type="text/css">
+<style>
+    .email-input {
+        max-width:35em;
+        width:100%;
+    }
+
+    .errorlist li {
+        color:red;
+    }
+
+    @media all and (max-width: 500px) {
+        #inbox-form input.delete-checkbox {
+            float:right;
+            height:auto;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
     {% include "mypartners/includes/prm_header.html" with page_title="Non-User Outreach Inbox Management" back_to="Back to Partner Relationship Manager" back_to_url="prm" %}
     <div class="row">
         <div class="span8">
-            <form method="post" action="">
+            <form method="post" action="{% url 'manage_outreach_inboxes' %}" id="inbox-form">
                 {{formset.management_form}}
                 {% csrf_token %}
                 {% for form in formset %}
-                <div id="partner-{{partner.id}}" class="product-card">
-                {{ form }}
+                <div class="card-wrapper">
+                    {% if not form.initial %}
+                    <div class="wrapper-header">
+                        <strong>New Outreach Email Inbox</strong>
+                    </div>
+                    {% endif %}
+                    <div class="product-card no-highlight">
+                        <label for="{{form.email.id_for_label">Email:</label>
+                        <input id="{{form.email.id_for_label}}" maxlength="{{form.email.field.max_length}}"
+                               name="{{form.email.html_name}}" type="email" class="email-input"
+                               value="{{form.email.value|default:''}}"></input>
+                        {{ form.id }}
+                        <span>
+                        {{ form.non_field_errors }}
+                        {{ form.email.errors }}
+                        </span>
+                    </div>
+                    <div class="wrapper-footer">
+                        {% if form.initial %}
+                        <div class="pull-right">Delete {{ form.DELETE }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             </form>
-
-
         </div>
+
         <div class="span4">
             <div class="sidebar">
-                <h2 class="top">Tips</h2>
-                Use this module to manage your non-user outreach email inboxes. Your members can use these inbox addresses to send non-user outreach records.
+                <div>
+                    <h2 class="top">Tips</h2>
+                    Use this module to manage your non-user outreach email inboxes. Your members can use these inbox addresses to send records of employment outreach efforts.
+                    <br  /><br  />
+                    Click "Save" to add additional inbox addresses
+                </div>
+                <div class="navigation">
+                    <h2></h2>
+                    <a class="btn" onclick="document.getElementById('inbox-form').submit();">Save</a>
+                    <!--<a class="btn" onclick="location.reload()">Clear Changes</a>-->
+                </div>
             </div>
         </div>
     </div>
-    <!--<div class="row">-->
-        <!--<div class="span12">-->
-            <!--<h3>Create New Tags</h3>-->
-            <!--<input id="p-tags" type="text" />-->
-            <!--<button id="addTags" class="btn pull-right" disabled>Add Tag(s)</button>-->
-            <!--<div class="clearfix"></div>-->
-            <!--<h3>View Existing Tags</h3>-->
-            <!--{% if tags %}-->
-            <!--<div id="tag-holder">-->
-                <!--{% for tag in tags %}-->
-                    <!--<div class="product-card tag" onclick="location.href='{% url 'edit_partner_tag' %}?id={{tag.id}}'">-->
-                        <!--<span class="tag-name" style="background-color: #{{tag.hex_color}}">{{ tag.name }}</span>-->
-                        <!--<a class="btn-link pull-right" href="{% url 'edit_partner_tag' %}?id={{tag.id}}">Edit</a>-->
-                        <!--<div class="clearfix"></div>-->
-                    <!--</div>-->
-                <!--{% endfor %}-->
-            <!--</div>-->
-            <!--{% else %}-->
-            <!--No tags for <b>{{ company.name }}</b>.-->
-            <!--{% endif %}-->
-        <!--</div>-->
-    <!--</div>-->
 {% endblock content %}
 
 {% block extra-js %}
