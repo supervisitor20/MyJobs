@@ -62,7 +62,7 @@ CACHES = {
         'LOCATION': [
             'blocks.qksjst.0001.use1.cache.amazonaws.com:11211',
             'blocks.qksjst.0002.use1.cache.amazonaws.com:11211',
-            ]
+        ]
     }
 }
 
