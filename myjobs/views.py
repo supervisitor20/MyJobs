@@ -732,6 +732,7 @@ def api_create_role(request):
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
 
+        # TODO Throw error if at least one activity isn't selected
         # To access arrays in the request, use getlist()
         if request.POST.getlist("activities[]", ""):
             activities = request.POST.getlist("activities[]", "")
@@ -741,6 +742,11 @@ def api_create_role(request):
                 activity_object = Activity.objects.filter(name=activity)
                 activity_id = activity_object[0].id
                 activity_ids.append(activity_id)
+        # At least one activity must be selected
+        if not activity_ids:
+            response_data = {}
+            response_data = {"success": "false"}
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # User objects have roles
         if request.POST.getlist("users[]", ""):
@@ -806,3 +812,10 @@ def api_delete_role(request, role_id=0):
 
     else:
         raise Http404
+
+
+## PUT /roles - Updates role
+# if request.method == "PUT":
+#
+# # PATCH /roles/12 - Partially updates role
+# if request.method == "PATCH":
