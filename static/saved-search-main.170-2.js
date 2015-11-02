@@ -1,4 +1,8 @@
 $(document).ready(function() {
+    $(".product-card a").on("click", function(e) {
+        e.stopPropagation();
+    });
+
     $('#digest_submit').click(function(e){
         e.preventDefault();
         var form = $(e.target).parents('#digest-option');

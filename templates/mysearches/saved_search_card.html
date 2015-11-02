@@ -6,7 +6,7 @@
         {{ search.label }} {% make_label search.is_active %} {% if search.unsubscribed %}{% make_label search.unsubscribed true_msg="unsubscribed" extra_classes="important-label" %}{% endif %}
     </div>
     <div class="sub-title">
-        Search URL: <a href="{{ search.url }}" target="_blank">{{ search.url }}</a>
+        Search URL: <a href="{{ search.url }}">{{ search.url }}</a>
     </div>
     <div class="product-details">
         Frequency:
