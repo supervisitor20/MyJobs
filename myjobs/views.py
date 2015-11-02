@@ -708,7 +708,7 @@ def api_get_specific_role(request, role_id=0):
 
 def api_create_role(request):
     """
-    POST /roles/post
+    POST /roles/create
     Creates a new role
 
     Inputs:
