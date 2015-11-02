@@ -240,7 +240,7 @@ class Contact(ArchivedModel):
                              help_text='Any additional information you want to record')
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'partner__owner'
 
@@ -264,6 +264,11 @@ class Contact(ArchivedModel):
         pre_delete.send(sender=Contact, instance=self, using='default')
         super(Contact, self).archive(*args, **kwargs)
 
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
+        if save:
+            self.save()
+
     def get_contact_url(self):
         base_urls = {
             'contact': reverse('edit_contact'),
@@ -282,8 +287,10 @@ class Contact(ArchivedModel):
 def delete_contact(sender, instance, using, **kwargs):
     """
     Signalled when a Contact is deleted to deactivate associated partner saved
-    searches, if any exist
+    searches, if any exist, in addition to clearing that Contact from the
+    partners that it is the primary contact for.
     """
+    instance.primary_contact.clear()
 
     if instance.user is not None:
         # user.partnersavedsearch_set filters on partnersavedsearch.owner, not
@@ -336,7 +343,7 @@ class Partner(ArchivedModel):
                               on_delete=models.SET_NULL)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'owner'
 
@@ -417,6 +424,10 @@ class Partner(ArchivedModel):
 
         return tags
 
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
+        if save:
+            self.save()
 
 @receiver(pre_save, sender=Partner, dispatch_uid='pre_save_partner_signal')
 def save_partner(sender, instance, **kwargs):
@@ -628,7 +639,7 @@ class ContactRecord(ArchivedModel):
     tags = models.ManyToManyField('Tag', null=True)
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
-    last_modified = models.DateTimeField(default=datetime.now, blank=True)
+    last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     def __unicode__(self):
         return "%s Communication Record - %s" % (self.contact_type, self.subject)
@@ -686,6 +697,11 @@ class ContactRecord(ArchivedModel):
 
     def shorten_date_time(self):
         return self.date_time.strftime('%b %e, %Y')
+
+    def update_last_action_time(self, save=True):
+        self.last_action_time = datetime.now()
+        if save:
+            self.save()
 
     @property
     def contactlogentry(self):
@@ -853,7 +869,7 @@ class CommonEmailDomain(models.Model):
     class Meta:
         ordering = ["domain"]
 
-    domain = models.URLField(unique=True)
+    domain = models.CharField(max_length=200, unique=True)
 
     def __unicode__(self):
         return self.domain
@@ -870,7 +886,7 @@ class OutreachEmailDomain(models.Model):
         ordering = ["company", "domain"]
 
     company = models.ForeignKey("seo.Company")
-    domain = models.URLField()
+    domain = models.CharField(max_length=200)
 
     def __unicode__(self):
         return "%s for %s" % (self.domain, self.company)

@@ -206,6 +206,14 @@ class CompanyFactory(factory.django.DjangoModelFactory):
     member = True
     company_slug = factory.LazyAttribute(lambda x: slugify(x.name))
 
+    @factory.post_generation
+    def app_access(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        extracted = extracted or []
+        self.app_access.add(*extracted)
+
     @classmethod
     def _setup_next_sequence(cls):
         try:

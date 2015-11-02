@@ -88,7 +88,7 @@ class SavedSearchForm(BaseUserForm):
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
             'sort_by': RadioSelect(renderer=HorizontalRadioRenderer)
         }
-        exclude = ['custom_message', 'last_modified']
+        exclude = ['custom_message', 'last_action_time']
 
 
 class DigestForm(BaseUserForm):
@@ -191,7 +191,7 @@ class PartnerSavedSearchForm(RequestForm):
         fields = ('label', 'url', 'url_extras', 'is_active', 'email',
                   'frequency', 'day_of_month', 'day_of_week', 'jobs_per_email',
                   'partner_message', 'notes')
-        exclude = ('provider', 'sort_by', 'unsubscriber', 'unsubscribed')
+        exclude = ('provider', 'sort_by', 'unsubscriber', 'unsubscribed', 'last_action_time')
         widgets = {
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
             'url_extras': TextInput(attrs={
@@ -262,6 +262,7 @@ class PartnerSavedSearchForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.feed = self.cleaned_data.get('feed')
+        self.instance.update_last_action_time(False)
         is_new_or_change = CHANGE if self.instance.pk else ADDITION
         if not self.instance.pk:
             self.instance.sort_by = 'Date'
@@ -300,7 +301,8 @@ class PartnerSubSavedSearchForm(RequestForm):
         exclude = ('provider', 'url_extras', 'partner_message',
                    'created_by', 'user',
                    'created_on', 'label', 'url', 'feed', 'email', 'notes',
-                   'custom_message', 'tags', 'unsubscriber', 'unsubscribed')
+                   'custom_message', 'tags', 'unsubscriber', 'unsubscribed',
+                   'last_action_time')
         widgets = {
             'sort_by': RadioSelect(renderer=HorizontalRadioRenderer,
                                    attrs={'id': 'sort_by'}),
@@ -308,3 +310,7 @@ class PartnerSubSavedSearchForm(RequestForm):
             'day_of_month': Select(attrs={'id': 'day_of_month'}),
             'day_of_week': Select(attrs={'id': 'day_of_week'})
         }
+
+    def save(self, commit=True):
+        self.instance.update_last_action_time(False)
+        return super(PartnerSubSavedSearchForm, self).save()

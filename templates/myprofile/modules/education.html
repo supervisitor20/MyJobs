@@ -1,19 +1,29 @@
 {% load i18n %}
-<table class="table table-bordered table-striped small-margin">
-    {% for item in module %}
-        <tr id="{{item.get_model_name}}-{{item.id}}-item">
-            <td>
-                <b>{{item.get_education_level_code_display}} - {{item.degree_major}}</b>
-                <br>
-                {{ item.organization_name }}
-            </td>
-            <td>
-                {{ item.degree_date }}
-            </td>
-            <td class="action">
-                <a class="btn-link" href="{% url 'get_details' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Details' %}</a>
-                <a class="btn-link" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+{% for item in module %}
+<div class="product-card" id="{{item.get_model_name}}-{{item.id}}-item">
+    <div class="big-title">
+        {{item.get_education_level_code_display}} - {{item.degree_major}}
+    </div>
+    {% if item.organization_name %}
+    <div class="sub-title">
+        {{ item.organization_name }}
+    </div>
+    {% endif %}
+    {% if item.degree_date %}
+    <div class="product-details">
+        Graduated on {{ item.degree_date }}
+    </div>
+    {% endif %}
+    {% if item.degree_major %}
+    <div class="product-details">
+        Majored in {{ item.degree_name }} {{ item.degree_major }}
+    </div>
+    {% endif %}
+    {% if item.degree_minor %}
+    <div class="product-details">
+        Minored in {{ item.degree_minor }}
+    </div>
+    {% endif %}
+    <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
+</div>
+{% endfor %}

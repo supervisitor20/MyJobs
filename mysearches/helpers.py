@@ -74,7 +74,6 @@ def validate_dotjobs_url(search_url, user):
     """
     if not search_url:
         return None, None
-
     if search_url.find('://') == -1:
         search_url = "http://" + search_url
 

@@ -322,11 +322,9 @@ class MyUserAdmin(UserAdmin):
 
 
 class GoogleAnalyticsForm(forms.ModelForm):
-    sites = MyModelMultipleChoiceField(SeoSite.objects.all(), my_model=SeoSite,
-                                       required=False,
-                                       widget=(admin.widgets\
-                                               .FilteredSelectMultiple('Sites',
-                                                                       False)))
+    sites = MyModelMultipleChoiceField(
+        SeoSite.objects.all(), my_model=SeoSite, required=False,
+        widget=(admin.widgets.FilteredSelectMultiple('Sites', False)))
     group = MyModelChoiceField(Group.objects.order_by('name'), my_model=Group,
                                required=False)
 
@@ -1166,14 +1164,16 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     form = CompanyForm
     save_on_top = True
-    filter_horizontal = ('job_source_ids', 'prm_saved_search_sites')
+    filter_horizontal = ('job_source_ids', 'prm_saved_search_sites',
+                         'app_access')
     list_display = ('name', 'featured_on','company_user_count')
     list_filter = ('enhanced', 'digital_strategies_customer')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
                                ('posting_access'), ('enhanced'),
-                               ('digital_strategies_customer')]}),
+                               ('digital_strategies_customer'),
+                               ('app_access')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
                                    ('og_img')]}),
