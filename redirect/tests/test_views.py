@@ -32,6 +32,7 @@ from redirect.tests.factories import (RedirectFactory, RedirectArchiveFactory,
                                       ViewSourceFactory, ViewSourceGroupFactory)
 from redirect.tests.setup import RedirectBase
 from redirect.views import home
+from seo.tests.factories import SeoSiteFactory, SeoSiteRedirectFactory
 
 GUID_RE = re.compile(r'([{\-}])')
 
@@ -1277,3 +1278,22 @@ class RedirectViewTests(RedirectBase):
         # Don't follow a bad redirect.
         response = self.client.get(reverse('home', args=['1'*32]), follow=True)
         self.assertEqual(response.status_code, 404)
+
+    def test_unnecessary_middleware_isnt_used(self):
+        """
+        At one point, we were using the same middleware as seo. This caused
+        issues as SiteRedirectMiddleware does a 301 redirect that we don't
+        need. Ensure this doesn't happen.
+        """
+        site = SeoSiteFactory(domain='www.my.jobs')
+        guid = uuid.uuid4()
+        redirect = RedirectFactory(guid='{%s}' % guid)
+        guid = guid.hex
+        ssr = SeoSiteRedirectFactory(seosite=site, redirect_url='my.jobs')
+
+        path = reverse('home', args=[guid, '', '+'])
+        response = self.client.get(path,
+                                   HTTP_HOST='my.jobs', follow=True)
+        self.assertEqual(response['Location'],
+                         'http://my.jobs' + path.replace('%2B', '+'))
+        self.assertEqual(response.status_code, 301)
