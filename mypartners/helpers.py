@@ -28,13 +28,6 @@ from mypartners.models import (Contact, ContactLogEntry, CONTACT_TYPE_CHOICES,
 from mypartners.widgets import MultipleFileField
 
 
-class ModelSafeJSONEncoder(DjangoJSONEncoder):
-    def default(self, o):
-        if isinstance(o, Model):
-            return "%s: pk:%s desc: %s" % (o.__class__.__name__, o.pk, str(o))
-        return super(ModelSafeJSONEncoder, self).default(o)
-
-
 def prm_worthy(request):
     """
     Makes sure the User is worthy enough to use PRM.
@@ -116,9 +109,8 @@ def log_change(obj, form, user, partner, contact_identifier,
     """
     if not change_msg:
         change_msg = get_change_message(form) if action_type == CHANGE else ''
-    # import ipdb; ipdb.set_trace()
     delta = get_form_delta(form) if action_type == CHANGE else {}
-    delta = json.dumps(delta, cls=ModelSafeJSONEncoder)
+    delta = json.dumps(delta, cls=DjangoJSONEncoder)
 
     ContactLogEntry.objects.create(
         action_flag=action_type,
@@ -160,7 +152,9 @@ def get_form_delta(form):
             new = [fd.name for fd in new or [] if fd]
 
         if initial or new:
-            delta[field] = {'initial': initial, 'new': new}
+            # do not return complete models for foreign keys, only PK
+            def convert_object(x):  x.pk if isinstance(x, Model) else x
+            delta[field] = {'initial': convert_object(initial), 'new': convert_object(new)}
 
     return delta
 
