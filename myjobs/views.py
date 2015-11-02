@@ -799,21 +799,26 @@ def api_edit_role(request, role_id=0):
 
         # INPUT - role_name
         role_name = request.POST.get("role_name", "")
+        # Role names must be unique
+        matching_roles = Role.objects.filter(name=role_name).exclude(pk=role_id)
+        if matching_roles.exists():
+            response_data["success"] = "false"
+            response_data["message"] = "Another role with this name already exists."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # INPUT - assigned_activites
+        activities = request.POST.getlist("assigned_activities[]", "")
+        # At least one activity must be selected
+        if activities == "" or activities[0] == "":
+            response_data["success"] = "false"
+            response_data["message"] = "At least one activity must be assigned."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+        # Create list of activity_ids from names
         activity_ids = []
-        if request.POST.getlist("assigned_activities[]", ""):
-            activities = request.POST.getlist("assigned_activities[]", "")
-            # At least one activity must be selected
-            if activities[0] == "":
-                response_data["success"] = "false"
-                response_data["message"] = "At least one activity must be assigned."
-                return HttpResponse(json.dumps(response_data), content_type="application/json")
-            # Create list of activity_ids from names
-            for i, activity in enumerate(activities):
-                activity_object = Activity.objects.filter(name=activity)
-                activity_id = activity_object[0].id
-                activity_ids.append(activity_id)
+        for i, activity in enumerate(activities):
+            activity_object = Activity.objects.filter(name=activity)
+            activity_id = activity_object[0].id
+            activity_ids.append(activity_id)
 
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
