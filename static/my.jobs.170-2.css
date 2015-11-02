@@ -249,10 +249,19 @@ h1 > small > a:hover {
     border-top: 0;
 }
 
-.product-card:not(.no-highlight):hover,
 #inbox #messages > tr:hover {
     background: #D5FACF;
     cursor: pointer;
+}
+
+.product-card:hover {
+    background: #D5FACF;
+    cursor: pointer;
+}
+
+.product-card.no-highlight {
+  background: #F7F7F7;
+  cursor: default;
 }
 
 .product-card .big-title {
