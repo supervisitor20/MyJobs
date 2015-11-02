@@ -1,7 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.util import ErrorList
-from django.forms.formsets import formset_factory
 from django.utils.timezone import get_current_timezone_name
 
 from collections import OrderedDict
@@ -10,7 +9,7 @@ import pytz
 from postajob.location_data import states
 from myprofile.forms import generate_custom_widgets
 from mypartners.models import (Contact, Partner, ContactRecord, PRMAttachment,
-                               Status, Tag, Location, OutreachEmailAddress,
+                               Status, Tag, Location,
                                ADDITION, CHANGE, MAX_ATTACHMENT_MB)
 from mypartners.helpers import (log_change, get_attachment_link,
                                 prm_worthy, tag_get_or_create)
