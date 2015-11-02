@@ -153,7 +153,8 @@ def get_form_delta(form):
 
         if initial or new:
             # do not return complete models for foreign keys, only PK
-            def convert_object(x):  x.pk if isinstance(x, Model) else x
+            def convert_object(x):
+                return x.pk if isinstance(x, Model) else x
             delta[field] = {'initial': convert_object(initial), 'new': convert_object(new)}
 
     return delta
