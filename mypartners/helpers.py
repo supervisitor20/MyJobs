@@ -5,7 +5,7 @@ import os
 from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
-from django.db.models import Min, Max, Q
+from django.db.models import Min, Max, Q, Model
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -152,7 +152,10 @@ def get_form_delta(form):
             new = [fd.name for fd in new or [] if fd]
 
         if initial or new:
-            delta[field] = {'initial': initial, 'new': new}
+            # do not return complete models for foreign keys, only PK
+            def convert_object(x):
+                return x.pk if isinstance(x, Model) else x
+            delta[field] = {'initial': convert_object(initial), 'new': convert_object(new)}
 
     return delta
 
