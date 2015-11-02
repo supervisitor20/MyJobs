@@ -800,9 +800,6 @@ def api_edit_role(request, role_id=0):
         # INPUT - assigned_activites
         activities = request.POST.getlist("assigned_activities[]", "")
 
-        print "activities is:"
-        print activities
-
         # At least one activity must be selected
         if activities == "" or activities[0] == "":
             response_data["success"] = "false"
@@ -887,8 +884,6 @@ def api_delete_role(request, role_id=0):
             response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        print "about to delete role"
-        # Delete in 3... 2... 1...
         Role.objects.filter(id=role_id).delete()
         response_data["success"] = "true"
 
