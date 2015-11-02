@@ -694,7 +694,7 @@ def api_get_specific_role(request, role_id=0):
     # Users that can be assigned to this role
     # This is determined by the users already associated with roles associated with this company
     users_available = []
-    roles = Role.objects.filter(company=1)
+    roles = Role.objects.filter(company=company_id)
     for role in roles:
         role_id_temp = role.id
         users = User.objects.filter(roles__id=role_id_temp)
@@ -732,12 +732,11 @@ def api_create_role(request):
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
 
-        # TODO Throw error if at least one activity isn't selected
         # To access arrays in the request, use getlist()
+        activity_ids = []
         if request.POST.getlist("activities[]", ""):
             activities = request.POST.getlist("activities[]", "")
             # Create list of activity_ids from names
-            activity_ids = []
             for i, activity in enumerate(activities):
                 activity_object = Activity.objects.filter(name=activity)
                 activity_id = activity_object[0].id
@@ -745,7 +744,7 @@ def api_create_role(request):
         # At least one activity must be selected
         if not activity_ids:
             response_data = {}
-            response_data = {"success": "false"}
+            response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # User objects have roles
@@ -768,6 +767,92 @@ def api_create_role(request):
         new_role_iterable = []
         new_role_iterable.append(new_role)
         return HttpResponse(serializers.serialize("json", new_role_iterable, fields=('id')))
+
+
+def api_edit_role(request, role_id=0):
+    """
+    POST /roles/edit
+    Edits an existing role
+
+    Inputs:
+    :role_id:                   unique id of role
+    :role_name:                 name of role
+    :assigned_activites:        activities assigned to this role
+    :assigned_users:            users assigned to this role
+
+    Returns:
+    :success:                   boolean
+    """
+
+    if request.method == "POST":
+        response_data = {}
+        # Check if role exists
+        if Role.objects.filter(id=role_id).exists() == False:
+            response_data["success"] = "false"
+            response_data["message"] = "Role not found."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+        # TODO: Create a helper function like get_company_or_404(request)
+        company_name = get_company_or_404(request)
+        company_object = Company.objects.filter(name=company_name)
+        company_id = company_object[0].id
+
+        # INPUT - role_name
+        role_name = request.POST.get("role_name", "")
+
+        # INPUT - assigned_activites
+        activity_ids = []
+        if request.POST.getlist("assigned_activities[]", ""):
+            activities = request.POST.getlist("assigned_activities[]", "")
+            # At least one activity must be selected
+            if activities[0] == "":
+                response_data["success"] = "false"
+                response_data["message"] = "At least one activity must be assigned."
+                return HttpResponse(json.dumps(response_data), content_type="application/json")
+            # Create list of activity_ids from names
+            for i, activity in enumerate(activities):
+                activity_object = Activity.objects.filter(name=activity)
+                activity_id = activity_object[0].id
+                activity_ids.append(activity_id)
+
+        # INPUT - assigned_users
+        assigned_users_emails = request.POST.getlist("assigned_users[]", "")
+
+        # EDIT ROLE
+        role = Role.objects.get(pk=role_id)
+
+        # EDIT ROLE - Name
+        if role_name != "":
+            if role.name != role_name:
+                role.name = role_name
+                role.save()
+
+        # EDIT ROLE - Activities
+        # Remove any currently assigned activities not in new assigned_activites list
+        activities_currently_assigned = role.activities.all()
+        for activity_currently_assigned in activities_currently_assigned:
+            if activity_currently_assigned.id not in activity_ids:
+                role.activities.remove(activity_currently_assigned.id)
+                role.save()
+        # Add activities in new assigned_activites list
+        for activity_id in activity_ids:
+            role.activities.add(activity_id)
+            role.save()
+
+        # EDIT ROLE - Users assigned to this role
+        # Loop through all users. Should each be assigned this role? Or not?
+        all_users = User.objects.all()
+        for user in all_users:
+            if user.email in assigned_users_emails:
+                user.roles.add(int(role_id))
+                user.save()
+            else:
+                user.roles.remove(int(role_id))
+                user.save()
+
+        # RETURN - boolean
+        response_data["success"] = "true"
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def api_delete_role(request, role_id=0):
@@ -795,18 +880,18 @@ def api_delete_role(request, role_id=0):
 
         # Check if role exists
         if Role.objects.filter(id=role_id).exists() == False:
-            response_data = {"success": "false"}
+            response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # Check that company manges this role and can therefore delete it
         company_id_to_delete = Role.objects.filter(id=role_id)[0].company.id
         if company_id != company_id_to_delete:
-            response_data = {"success": "false"}
+            response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # Delete in 3... 2... 1...
         Role.objects.filter(id=role_id).delete()
-        response_data = {"success": "true"}
+        response_data["success"] = "true"
 
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
