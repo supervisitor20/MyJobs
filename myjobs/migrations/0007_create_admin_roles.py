@@ -21,12 +21,11 @@ class Migration(DataMigration):
         RoleActivities = orm.Role.activities.through
 
         # associate every activity to those roles; using the through table
-        # directly to reduce queries to one
+        # directly to reduce the number of queries
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=activity)
             for role in roles for activity in activities], 450)
 
-        # assign the first company user of each company to that role
 
     def backwards(self, orm):
         orm.Role.objects.filter(name="Admin").delete()
