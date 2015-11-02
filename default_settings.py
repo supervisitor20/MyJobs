@@ -155,6 +155,10 @@ CELERY_ROUTES = {
         'queue': 'priority',
         'routing_key': 'priority.update_solr'
     },
+    'tasks.check_solr_count': {
+        'queue': 'solr',
+        'routing_key': 'solr.update_solr'
+    },
     'tasks.task_clear_bu_cache': {
         'queue': 'priority',
         'routing_key': 'priority.clear_cache'
