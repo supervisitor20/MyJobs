@@ -876,9 +876,6 @@ def api_delete_role(request, role_id=0):
     :success:       boolean
     """
 
-    print "inside view"
-    print request
-
     if request.method == "DELETE":
 
         response_data = {}
@@ -893,7 +890,7 @@ def api_delete_role(request, role_id=0):
             response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # Check that company manges this role and can therefore delete it
+        # Check that company manages this role and can therefore delete it
         company_id_to_delete = Role.objects.filter(id=role_id)[0].company.id
         if company_id != company_id_to_delete:
             response_data["success"] = "false"
