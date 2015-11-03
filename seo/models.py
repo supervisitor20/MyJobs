@@ -646,10 +646,11 @@ class Company(models.Model):
         determining which company to map companyusers to when two company
         instances have very similar names.
 
-        It is treated as a property of the model.
-
         """
-        return self.companyuser_set.count()
+        if settings.DEBUG:
+            return self.role_set.values('user').distinct().count()
+        else:
+            return self.companyuser_set.count()
 
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)

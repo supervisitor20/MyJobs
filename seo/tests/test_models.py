@@ -131,6 +131,22 @@ class ModelsTestCase(DirectSEOBase):
         company = Company.objects.create(name="Test Company")
         self.assertIn('Admin', company.role_set.values_list('name', flat=True))
 
+class TestRoles(DirectSEOBase):
+    """
+    These tests are meant to ensure that roles act as a sufficient replacement
+    for company users.
+    """
+
+    def setUp(self):
+        super(TestRoles, self).setUp()
+
+        self.user = factories.UserFactory()
+        self.business_unit = factories.BusinessUnitFactory()
+        self.company = factories.CompanyFactory()
+        self.company.job_source_ids.add(self.business_unit)
+        self.site = factories.SeoSiteFactory()
+        self.site.business_units.add(self.business_unit)
+
     def test_seosite_user_has_access(self):
         """
         When activities are enabled, a user must be assigned a role in the
@@ -140,28 +156,45 @@ class ModelsTestCase(DirectSEOBase):
         one the SeoSite's companies.
         """
 
-        user = factories.UserFactory()
-        business_unit = factories.BusinessUnitFactory()
-        company = factories.CompanyFactory()
-        company.job_source_ids.add(business_unit)
-        site = factories.SeoSiteFactory()
-        site.business_units.add(business_unit)
         # activities enabled
         with self.settings(DEBUG=False):
             # no company user, so shouldn't have access
-            self.assertFalse(site.user_has_access(user))
+            self.assertFalse(self.site.user_has_access(self.user))
 
-            factories.CompanyUserFactory(company=company, user=user)
-            self.assertTrue(site.user_has_access(user))
+            factories.CompanyUserFactory(company=self.company, user=self.user)
+            self.assertTrue(self.site.user_has_access(self.user))
 
         # activities disabled
         with self.settings(DEBUG=True):
             # user not assigned a role in company, so shouldn't have access
-            self.assertFalse(site.user_has_access(user))
+            self.assertFalse(self.site.user_has_access(self.user))
 
-            role = RoleFactory(company=company)
-            user.roles.add(role)
-            self.assertTrue(site.user_has_access(user))
+            role = RoleFactory(company=self.company)
+            self.user.roles.add(role)
+            self.assertTrue(self.site.user_has_access(self.user))
+
+    def test_company_user_count(self):
+        """
+        SeoSite.company_user_count should return the number of users who can be
+        tied back to that company.
+        """
+
+        with self.settings(DEBUG=False):
+            # When activities are disabled, company user count is determined by
+            # the number of appropriate entries in the company user table.
+            self.assertEqual(self.company.company_user_count, 0)
+
+            factories.CompanyUserFactory.create_batch(10, company=self.company)
+            self.assertEqual(self.company.company_user_count, 10)
+
+        with self.settings(DEBUG=True):
+            # When activities are enabled, company user count is determined by
+            # the number distinct users assigned a role within that company
+            self.assertEqual(self.company.company_user_count, 0)
+            role = RoleFactory(company=self.company)
+
+            factories.UserFactory.create_batch(10, roles=[role])
+            self.assertEqual(self.company.company_user_count, 10)
 
 
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
@@ -170,7 +203,6 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         self.company = factories.CompanyFactory()
         self.company_buid = factories.BusinessUnitFactory()
         self.company.job_source_ids.add(self.company_buid)
-        self.company.save()
 
     def create_generic_sites(self):
         sites = []
