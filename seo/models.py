@@ -75,11 +75,11 @@ class NonChainedForeignKey(ForeignKey):
     """
     def clean(self, value, model_instance):
         super(NonChainedForeignKey, self).clean(value, model_instance)
-        
+
         if value:
             object_class = model_instance.__class__
             potential_parent = object_class.objects.get(pk=value)
-            
+
             if value == model_instance.pk:
                 raise ValidationError('%s cannot be at parent entity of itself'
                                         % model_instance)
@@ -448,11 +448,11 @@ class SeoSite(Site):
     canonical_company = models.ForeignKey('Company', blank=True, null=True,
                                           on_delete=models.SET_NULL,
                                           related_name='canonical_company_for')
-    
+
     parent_site = NonChainedForeignKey('self', blank=True, null=True,
                                      on_delete=models.SET_NULL,
-                                     related_name='child_sites')                                      
-                                        
+                                     related_name='child_sites')
+
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
     def clean_domain(self):
@@ -523,7 +523,7 @@ class SeoSite(Site):
         if profile and profile.outgoing_email_domain:
             choices.append((profile.outgoing_email_domain,
                             profile.outgoing_email_domain))
-        return choices    
+        return choices
 
     def save(self, *args, **kwargs):
         #always call clean if the parent_site entry exists to prevent invalid
@@ -531,19 +531,27 @@ class SeoSite(Site):
         if self.parent_site: self.clean_fields()
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
-    
+
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company that owns the SeoSite.
+        In order for a user to have access they must be assigned a role in the
+        Company that owns the SeoSite.*
+
+        * Until activities are activated in production, what determines if a
+        user has access is that they are a company user for one of the
+        companies assigned to the SeoSite's business units (job_source_ids).
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        user_companies = user.get_companies()
-        for company in companies:
-            if company not in user_companies:
-                return False
-        return True
+        if settings.DEBUG:
+            return user.pk in companies.values_list('role__user', flat=True)
+        else:
+
+            user_companies = user.get_companies()
+            for company in companies:
+                if company not in user_companies:
+                    return False
+            return True
 
     def get_companies(self):
         site_buids = self.business_units.all()
@@ -681,7 +689,7 @@ class Company(models.Model):
 
     # Permissions
     app_access = models.ManyToManyField(
-        'myjobs.AppAccess', 
+        'myjobs.AppAccess',
         blank=True, verbose_name="App-Level Access")
     prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
@@ -1069,7 +1077,7 @@ class Configuration(models.Model):
     browse_facet_order_3 = models.IntegerField('Order', default=3,
                                                choices=ORDER_CHOICES)
     browse_facet_order_4 = models.IntegerField('Order', default=4,
-                                               choices=ORDER_CHOICES)                                               
+                                               choices=ORDER_CHOICES)
     browse_moc_order = models.IntegerField('Order', default=1,
                                            choices=ORDER_CHOICES)
     browse_company_order = models.IntegerField('Order', default=7,
@@ -1412,7 +1420,7 @@ class MessageQueue():
     MessageQueue.send_messages(request)
     """
     message_queue = Queue.Queue()
-    
+
     @classmethod
     def send_messages(self, request):
         """
@@ -1459,7 +1467,7 @@ def update_canonical_microsites(sender, old_domain, **kwargs):
     """
     Updates company's canonical microsite when an seosite domain is
     changed
-    
+
     """
     companies = Company.objects.filter(
             canonical_microsite='http://%s' % old_domain)
@@ -1474,7 +1482,7 @@ def update_canonical_microsites(sender, old_domain, **kwargs):
 def remove_canonical_microsite(sender, **kwargs):
     """
     Removes a company's canonical microsite when a SeoSite is disabled
-    
+
     """
     companies = Company.objects.filter(
             canonical_microsite='http://%s' % sender.domain)
@@ -1525,4 +1533,4 @@ def seosite_change_monitor(sender, instance, **kwargs):
     except sender.DoesNotExist:
         return None
     if old_instance.domain != instance.domain:
-        microsite_moved.send(sender=instance, old_domain=old_instance.domain) 
+        microsite_moved.send(sender=instance, old_domain=old_instance.domain)

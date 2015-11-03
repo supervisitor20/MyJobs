@@ -4,7 +4,8 @@ from django.core.exceptions import ValidationError
 
 from seo.tests import factories
 from seo.models import Company, CustomFacet, SeoSite, SiteTag
-from setup import DirectSEOBase
+from myjobs.tests.factories import RoleFactory
+from seo.tests.setup import DirectSEOBase
 
 
 class ModelsTestCase(DirectSEOBase):
@@ -18,10 +19,10 @@ class ModelsTestCase(DirectSEOBase):
         Test to ensure that we can't create a redirect for the same
         SeoSite more than once (enforcing the "unique_together"
         constraint on the SeoSiteRedirect model.
-        
+
         """
         site = factories.SeoSiteFactory()
-        ssr1 = factories.SeoSiteRedirectFactory(seosite=site)
+        factories.SeoSiteRedirectFactory(seosite=site)
         ssr2 = factories.SeoSiteRedirectFactory.build()
         self.assertRaises(IntegrityError, ssr2.save, ())
 
@@ -30,7 +31,7 @@ class ModelsTestCase(DirectSEOBase):
         Test that the Configuration instances associated with a
         particular SeoSite instance have their ``revision`` value
         incremented when the SeoSite is saved.
-        
+
         """
         site = factories.SeoSiteFactory.build()
         site.save()
@@ -61,22 +62,22 @@ class ModelsTestCase(DirectSEOBase):
         """
             Verify that a NonChainedForeignKey field will allow a typical
             one to many relationship with children elements.
-            
+
             Uses SeoSite.parent_site as example field.
         """
         failed = False
         parent_site = factories.SeoSiteFactory()
         child_sites = [factories.SeoSiteFactory() for x in range(0,9)]
         for child in child_sites:
-            child.parent_site = parent_site 
+            child.parent_site = parent_site
             child.clean_fields()
             child.save()
-                    
+
     def test_child_nonchainfk_cant_have_children(self):
         """
-            Verify that a NonChainedForeignKey field that has a parent_site entry 
+            Verify that a NonChainedForeignKey field that has a parent_site entry
             cannot be made the parent of another NonChainedForeignKey field.
-            
+
             Uses SeoSite.parent_site as example field.
         """
         parent_site = factories.SeoSiteFactory()
@@ -92,11 +93,11 @@ class ModelsTestCase(DirectSEOBase):
 
     def test_parent_nonchainfk_cannot_become_child(self):
         """
-            Verify that a NonChainedForeignKey field that has child sites cannot 
-            become the child of another NonChainedForeignKey field. 
-            
+            Verify that a NonChainedForeignKey field that has child sites cannot
+            become the child of another NonChainedForeignKey field.
+
             Uses SeoSite.parent_site as example field.
-        """        
+        """
         initial_parent_site = factories.SeoSiteFactory()
         child_site = factories.SeoSiteFactory()
         super_parent_site = factories.SeoSiteFactory()
@@ -111,16 +112,58 @@ class ModelsTestCase(DirectSEOBase):
     def test_nonchainfk_cant_be_its_own_parent(self):
         """
             Verify that a NonChainedForeignKey field cannot be its own parent.
-            
+
             Uses SeoSite.parent_site as example field.
-        """        
+        """
         orphan_site = factories.SeoSiteFactory()
         orphan_site.parent_site = orphan_site
         with self.assertRaises(ValidationError):
             orphan_site.clean_fields()
         with self.assertRaises(ValidationError):
-            orphan_site.save()        
-        
+            orphan_site.save()
+
+    def test_new_company_gets_admin_role(self):
+        """
+        When a new company is created, that company should have an Admin Role
+        available to it.
+        """
+
+        company = Company.objects.create(name="Test Company")
+        self.assertIn('Admin', company.role_set.values_list('name', flat=True))
+
+    def test_seosite_user_has_access(self):
+        """
+        When activities are enabled, a user must be assigned a role in the
+        company owned by an SeoSite in order to gain access.
+
+        When activities are disabled, that user mus instead be company user for
+        one the SeoSite's companies.
+        """
+
+        user = factories.UserFactory()
+        business_unit = factories.BusinessUnitFactory()
+        company = factories.CompanyFactory()
+        company.job_source_ids.add(business_unit)
+        site = factories.SeoSiteFactory()
+        site.business_units.add(business_unit)
+        # activities enabled
+        with self.settings(DEBUG=False):
+            # no company user, so shouldn't have access
+            self.assertFalse(site.user_has_access(user))
+
+            factories.CompanyUserFactory(company=company, user=user)
+            self.assertTrue(site.user_has_access(user))
+
+        # activities disabled
+        with self.settings(DEBUG=True):
+            # user not assigned a role in company, so shouldn't have access
+            self.assertFalse(site.user_has_access(user))
+
+            role = RoleFactory(company=company)
+            user.roles.add(role)
+            self.assertTrue(site.user_has_access(user))
+
+
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
     def setUp(self):
         super(SeoSitePostAJobFiltersTestCase, self).setUp()
@@ -255,11 +298,3 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
 
-    def test_new_company_gets_admin_role(self):
-        """
-        When a new company is created, that company should have an Admin Role
-        available to it.
-        """
-
-        company = Company.objects.create(name="Test Company")
-        self.assertIn('Admin', company.role_set.values_list('name', flat=True))
