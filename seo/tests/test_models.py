@@ -207,7 +207,11 @@ class TestRoles(DirectSEOBase):
             self.assertEqual(self.company.company_user_count, 0)
             role = RoleFactory(company=self.company)
 
-            factories.UserFactory.create_batch(10, roles=[role])
+            # can't use create_batch since emails need to be unique and
+            # updating the User model disrupts other tests
+            for i in range(10):
+                factories.UserFactory(
+                    email="alice%s@gmail.com" % i, roles=[role])
             self.assertEqual(self.company.company_user_count, 10)
 
 

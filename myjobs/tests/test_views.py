@@ -13,13 +13,14 @@ from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.http import HttpRequest
+from django.template import Context, Template
 from django.test.client import Client, MULTIPART_CONTENT
 from mymessages.models import Message
 from mymessages.tests.factories import MessageInfoFactory
 
 from setup import MyJobsBase
 from myjobs.models import User, EmailLog, FAQ
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from mypartners.tests.factories import PartnerFactory
 from mysearches.models import PartnerSavedSearch
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
@@ -859,7 +860,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -890,7 +891,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -1126,4 +1127,31 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         # Test if the lists of company names match!
         self.assertItemsEqual(jsond_company_names, actual_company_names)
+
+    def test_get_company_name(self):
+        """
+        The get_company_name` template tag should return the list of companies
+        to which a user belongs
+        """
+
+
+        template = """{% load common_tags %}
+                      {% get_company_name user as company_name %}
+                      {{ company_name }}"""
+
+        with self.settings(DEBUG=False):
+            context = Context({'user': self.user})
+            rendered = Template(template).render(context)
+            self.assertItemsEqual(
+                context['company_name'], self.user.company_set.all())
+
+        with self.settings(DEBUG=True):
+            roles = [RoleFactory(company=c) for c in self.companies]
+
+            self.user.roles = roles
+
+            context = Context({'user': self.user})
+            rendered = Template(template).render(context)
+            self.assertItemsEqual(
+                context['company_name'], self.user.company_set.all())
 
