@@ -718,7 +718,10 @@ class Company(models.Model):
         In order for a user to have access they must be a CompanyUser
         for the Company.
         """
-        return user in self.admins.all()
+        if settings.DEBUG:
+            return user.pk in self.values_list('role__user', flat=True)
+        else:
+            return user in self.admins.all()
 
     @property
     def has_packages(self):
