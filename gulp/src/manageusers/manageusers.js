@@ -504,8 +504,14 @@ var AVAILABLE_ACTIVITIES = [
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
     return {
-      selectedOptions: [],
+      selectedOptions: this.props.assigned_activities,
     }
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      selectedOptions: nextProps.assigned_activities
+    });
+
   },
   _onSelect(selectedOptions) {
     selectedOptions.sort((a, b) => a.id - b.id)
@@ -592,11 +598,9 @@ var UsersMultiselect = React.createClass({
   },
   render: function() {
     var {selectedOptions} = this.state
-    var {test} = this.props
 
     return (
         <div className="row">
-          {test}
           <div className="col-xs-6">
             <label>Available Users:</label>
             <FilteredMultiSelect
@@ -635,7 +639,8 @@ var EditRolePage = React.createClass({
 
     return {
       role_name: '',
-      assigned_users: []
+      assigned_users: [],
+      assigned_activities: []
     };
   },
   componentDidMount: function() {
@@ -643,24 +648,22 @@ var EditRolePage = React.createClass({
 
       var role_object = results[this.props.role_id]
 
-
       if (this.isMounted()) {
-
         var role_name = role_object.role.name;
         {/* TODO Fix API to return available activities (right now it's just assigned activities) */}
-        var assigned_activities = JSON.parse(role_object.activities);
+        {/* var assigned_activities = JSON.parse(role_object.activities); */}
         var available_users = JSON.parse(role_object.users.available);
         {/* TODO pull real list of assigned_users, format properly */}
         var assigned_users = [{id: 2, name: "dpoynter@apps.directemployers.org"}];
+        var assigned_activities = [{id: 1, name: "Access Analytics"},{id: 2, name: "Edit Analytics Settings"},]
+
 
         this.setState({
           role_name: role_name,
-          assigned_users: assigned_users
+          assigned_users: assigned_users,
+          assigned_activities: assigned_activities
         });
-
-
       }
-
     }.bind(this));
   },
 
@@ -697,7 +700,7 @@ var EditRolePage = React.createClass({
 
         <hr/>
 
-        <ActivitiesMultiselect/>
+        <ActivitiesMultiselect assigned_activities={this.state.assigned_activities}/>
 
         <hr/>
 
