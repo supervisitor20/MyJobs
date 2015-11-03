@@ -643,9 +643,8 @@ class Company(models.Model):
     def company_user_count(self):
         """
         Counts how many users are mapped to this company. This is useful for
-        determining which company to map companyusers to when two company
-        instances have very similar names.
-
+        determining which user to map a company to when two company instances
+        have very similar names.
         """
         if settings.DEBUG:
             return self.role_set.values('user').distinct().count()
@@ -715,11 +714,11 @@ class Company(models.Model):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company.
+        Returns whether or not the given user can be tied back to the company.
         """
+
         if settings.DEBUG:
-            return user.pk in self.values_list('role__user', flat=True)
+            return user.pk in self.role_set.values_list('user', flat=True)
         else:
             return user in self.admins.all()
 

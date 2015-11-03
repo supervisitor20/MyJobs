@@ -149,14 +149,10 @@ class TestRoles(DirectSEOBase):
 
     def test_seosite_user_has_access(self):
         """
-        When activities are enabled, a user must be assigned a role in the
-        company owned by an SeoSite in order to gain access.
-
-        When activities are disabled, that user mus instead be company user for
-        one the SeoSite's companies.
+        Tests that a user has access if that user can be tied back to one of
+        the companies associated with an seo site's business units.
         """
 
-        # activities enabled
         with self.settings(DEBUG=False):
             # no company user, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
@@ -164,7 +160,6 @@ class TestRoles(DirectSEOBase):
             factories.CompanyUserFactory(company=self.company, user=self.user)
             self.assertTrue(self.site.user_has_access(self.user))
 
-        # activities disabled
         with self.settings(DEBUG=True):
             # user not assigned a role in company, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
@@ -172,6 +167,25 @@ class TestRoles(DirectSEOBase):
             role = RoleFactory(company=self.company)
             self.user.roles.add(role)
             self.assertTrue(self.site.user_has_access(self.user))
+
+    def test_company_user_has_access(self):
+        """
+        Test that a user has access if the user can be tied to a company.
+        """
+
+        with self.settings(DEBUG=False):
+            self.assertFalse(self.company.user_has_access(self.user))
+
+            factories.CompanyUserFactory(company=self.company, user=self.user)
+            self.assertTrue(self.company.user_has_access(self.user))
+
+        with self.settings(DEBUG=True):
+            # user not assigned a role in company, so shouldn't have access
+            self.assertFalse(self.company.user_has_access(self.user))
+
+            role = RoleFactory(company=self.company)
+            self.user.roles.add(role)
+            self.assertTrue(self.company.user_has_access(self.user))
 
     def test_company_user_count(self):
         """
