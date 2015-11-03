@@ -647,9 +647,22 @@ def api_get_roles(request):
         activities = role.activities.all()
         response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
 
-        users = User.objects.filter(roles__id=role_id)
+        # Users already assigned to this role
+        users_assigned = User.objects.filter(roles__id=role_id)
         response_data[role_id]['users'] = {}
-        response_data[role_id]['users']['available'] = serializers.serialize("json", users, fields=('email'))
+        response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
+
+        # Users that can be assigned to this role
+        # This is determined by the users already associated with roles associated with this company
+        users_available = []
+        roles = Role.objects.filter(company=company_id)
+        for role in roles:
+            role_id_temp = role.id
+            users = User.objects.filter(roles__id=role_id_temp)
+            for user in users:
+                if user not in users_available:
+                    users_available.append(user)
+        response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
