@@ -19,17 +19,10 @@ var AssociatedUsersList = React.createClass({
   componentDidMount: function() {
     if (this.isMounted()) {
       var associated_users_list = [];
-      console.log("this.props.users is:");
-      console.log(this.props.users);
-
       for (var key in this.props.users) {
         associated_users_list.push(
           <li key={key}>
-            daniel
-
-            {/*
-{this.props.users[key].fields.name}
-              */}
+              {this.props.users[key].fields.email}
           </li>
         );
       };
@@ -78,9 +71,6 @@ var AssociatedActivitiesList = React.createClass({
   }
 });
 
-
-
-
 var RolesList = React.createClass({
   getInitialState: function() {
     return {
@@ -94,13 +84,7 @@ var RolesList = React.createClass({
         var table_rows = [];
         for (var key in results) {
           results[key].activities = JSON.parse(results[key].activities);
-
-
-
-
-          console.log(results[key])
-
-
+          results[key].users.assigned = JSON.parse(results[key].users.assigned);
 
           table_rows.push(
             <tr key={results[key].role.id}>
@@ -109,57 +93,12 @@ var RolesList = React.createClass({
                 <AssociatedActivitiesList activities={results[key].activities}/>
               </td>
               <td>
-                <AssociatedUsersList users={results[key].users}/>
+                <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td>Edit</td>
             </tr>
           );
-
-
-
-          {/*
-
-
-          if(results[key].activities.length > 0){
-
-
-
-
-            var activities_list = "";
-            for (var activity in results[key].activities){
-              activities_list += results[key].activities[activity].fields.name;
-              activities_list += ",";
-            }
-          }
-
-
-
-
-
-
-
-
-          table_rows.push(
-            <tr key={results[key].role.id}>
-              <td>{results[key].role.name}</td>
-              <td>
-
-                {activities_list}
-              </td>
-              <td></td>
-              <td>Edit</td>
-            </tr>
-          );
-
-          */}
-
-
-
-
-
-
         }
-
         this.setState({
           table_rows: table_rows
         });
