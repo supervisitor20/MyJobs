@@ -91,7 +91,7 @@ def prm(request):
         'company': company,
         'user': request.user,
         'partner_ct': ContentType.objects.get_for_model(Partner).id,
-        'view_name': 'PRM',
+        'view_name': 'PRM'
     }
 
     return render_to_response('mypartners/prm.html', ctx,

@@ -567,8 +567,8 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
         all_contacts = self.values(
             'partner__name', 'partner', 'contact__name',
-            'contact_email').distinct()
-    
+            'contact_email').distinct().order_by('partner__name')
+
         records = dict(self.exclude(contact_type='job').values_list(
             'contact__name').annotate(
                 records=models.Count('contact__name')).distinct())
