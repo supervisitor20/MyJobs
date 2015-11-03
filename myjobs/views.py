@@ -706,12 +706,12 @@ def api_create_role(request):
     Creates a new role
 
     Inputs:
-    :role_name:  name of role
-    :activities:      activities assigned to this role
-    :users:           users assigned to this role
+    :role_name:                 name of role
+    :activities:                activities assigned to this role
+    :users:                     users assigned to this role
 
     Returns:
-    :role:            JSON of new role
+    :role:                      JSON of new role
     """
 
     if request.method == "POST":
@@ -859,10 +859,10 @@ def api_delete_role(request, role_id=0):
     Deletes a role
 
     Inputs:
-    :role_id:  id of role
+    :role_id:                   id of role
 
     Returns:
-    :success:       boolean
+    :success:                   boolean
     """
 
     if request.method == "DELETE":
