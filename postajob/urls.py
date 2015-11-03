@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from postajob import models, views
 from postajob.decorators import (message_when_site_misconfigured,
                                  error_when_site_misconfigured)
-from universal.decorators import company_in_sitepackages 
+from universal.decorators import company_in_sitepackages
 
 
 urlpatterns = patterns(
@@ -13,9 +13,6 @@ urlpatterns = patterns(
     url(r'^order/',
         views.order_postajob,
         name="order_postajob"),
-    url(r'^companyuser/',
-        views.is_company_user,
-        name="is_company_user"),
     url(r'list/$',
         error_when_site_misconfigured(feature='Job Listing', redirect=False)(
             views.product_listing),
