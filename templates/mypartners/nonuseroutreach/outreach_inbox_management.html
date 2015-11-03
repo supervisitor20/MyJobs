@@ -14,7 +14,7 @@
 <style>
     .email-input {
         max-width:35em;
-        width:100%;
+        width:60%;
     }
 
     .errorlist li {
@@ -46,9 +46,12 @@
                     {% endif %}
                     <div class="product-card no-highlight">
                         <label for="{{form.email.id_for_label">Email:</label>
-                        <input id="{{form.email.id_for_label}}" maxlength="{{form.email.field.max_length}}"
-                               name="{{form.email.html_name}}" type="email" class="email-input"
-                               value="{{form.email.value|default:''}}"></input>
+                        <div class="input-append">
+                            <input id="{{form.email.id_for_label}}" maxlength="{{form.email.field.max_length}}"
+                                   name="{{form.email.html_name}}" type="email" class="email-input"
+                                   value="{{form.email.value|default:''}}"></input>
+                            <span class="add-on">@my.jobs</span>
+                        </div>
                         {{ form.id }}
                         <span>
                         {{ form.non_field_errors }}

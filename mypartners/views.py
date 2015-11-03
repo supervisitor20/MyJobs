@@ -1333,6 +1333,7 @@ def manage_outreach_inboxes(request):
         formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
 
     if request.method == 'POST':
+        print request.POST
         formset = OutreachEmailInboxFormset(request.POST)
         if formset.is_valid():
             for form in formset:

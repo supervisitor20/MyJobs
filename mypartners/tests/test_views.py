@@ -31,7 +31,7 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
 from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
-                               Partner, PartnerLibrary, ADDITION)
+                               Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mysearches.models import PartnerSavedSearch
 
@@ -1672,3 +1672,30 @@ class LocationViewTests(MyPartnersTestCase):
         # reload contact from DB, as it is holds "expired" data
         reload_contact = Contact.objects.get(pk=self.contact.pk)
         self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
+
+
+class OutreachViewTests(MyPartnersTestCase):
+    """
+        These tests relate to views involved in Non-User Outreach functionality
+    """
+    def test_get_form_outreach_email(self):
+        """
+            Test that GET requests to the non user outreach inbox management system yields a 200
+        """
+        response = self.client.get(reverse('manage_outreach_inboxes'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_form_outreach_email(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': 'WOOO@oops.com',
+                'form-0-id': [u'']
+                }
+        self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        new_email = OutreachEmailAddress.objects.get()
+        self.assertEqual(new_email.email, "WOOO@oops.com")
