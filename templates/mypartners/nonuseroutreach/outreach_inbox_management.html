@@ -10,7 +10,6 @@
 {% load i18n %}
 
 {% block meta-extra %}
-<link href="{{ STATIC_URL }}jquery.tagit.css" rel="stylesheet" type="text/css">
 <style>
     .email-input {
         min-width:60%;
@@ -79,14 +78,8 @@
                 <div class="navigation">
                     <h2></h2>
                     <a class="btn" onclick="document.getElementById('inbox-form').submit();">Save</a>
-                    <!--<a class="btn" onclick="location.reload()">Clear Changes</a>-->
                 </div>
             </div>
         </div>
     </div>
 {% endblock content %}
-
-{% block extra-js %}
-<script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
-<!--<script src="{{ STATIC_URL }}partner_tagging.156-09.js{{ gz }}"></script>-->
-{% endblock %}
