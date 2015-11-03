@@ -7,9 +7,6 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 // This is the entry point of the application. Bundling begins here.
 
 
-
-
-
 var AssociatedUsersList = React.createClass({
   getInitialState: function() {
     return {
@@ -39,7 +36,6 @@ var AssociatedUsersList = React.createClass({
     );
   }
 });
-
 
 var AssociatedActivitiesList = React.createClass({
   getInitialState: function() {
@@ -72,6 +68,14 @@ var AssociatedActivitiesList = React.createClass({
 });
 
 var RolesList = React.createClass({
+  handleEditClick: function(role_id) {
+    console.log("User clicked edit role link for this role: " + role_id);
+
+    ReactDOM.render(
+      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_id={role_id}/>,
+        document.getElementById('content')
+    );
+  },
   getInitialState: function() {
     return {
       table_rows: ''
@@ -95,7 +99,7 @@ var RolesList = React.createClass({
               <td>
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
-              <td>Edit</td>
+              <td><a onClick={this.handleEditClick.bind(this, results[key].role.id)}>Edit</a></td>
             </tr>
           );
         }
@@ -210,8 +214,25 @@ var SaveRoleButton = React.createClass({
   handleClick: function(event) {
     console.log("User clicked SaveRoleButton");
 
-    {/* TODO Make sure at least one role is selected
-        TODO Submit to server  */}
+    {/* TODO: Grab role_name */}
+
+    {/* TODO: Grab assigned_activities */}
+
+    {/* " use refs to get the value when I submit.
+      https://facebook.github.io/react/docs/forms.html
+      https://facebook.github.io/react/docs/working-with-the-browser.html
+      "*/}
+
+    {/* TODO: Require at least one activity be selected */}
+
+    {/* TODO: Grab assigned_users */}
+
+
+
+    {/* TODO: Format properly */}
+
+    {/* TODO: Submit to server */}
+
 
   },
   render: function() {
@@ -483,7 +504,7 @@ var AVAILABLE_ACTIVITIES = [
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
     return {
-      selectedOptions: []
+      selectedOptions: [],
     }
   },
   _onSelect(selectedOptions) {
@@ -541,13 +562,22 @@ var AVAILABLE_USERS = [
   {id: 2, name: "dpoynter@apps.directemployers.org"},
   {id: 3, name: "edwin@apps.directemployers.org"},
   {id: 4, name: "jkoons@apps.directemployers.org"},
+  {id: 5, name: "bob@apps.directemployers.org"},
 ]
+
+
 
 var UsersMultiselect = React.createClass({
   getInitialState() {
     return {
-      selectedOptions: []
+      selectedOptions: this.props.assigned_users,
     }
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      selectedOptions: nextProps.assigned_users
+    });
+
   },
   _onSelect(selectedOptions) {
     selectedOptions.sort((a, b) => a.id - b.id)
@@ -562,12 +592,13 @@ var UsersMultiselect = React.createClass({
   },
   render: function() {
     var {selectedOptions} = this.state
+    var {test} = this.props
 
     return (
         <div className="row">
-
+          {test}
           <div className="col-xs-6">
-            <label>Available Activities:</label>
+            <label>Available Users:</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={bootstrapClasses}
@@ -579,7 +610,7 @@ var UsersMultiselect = React.createClass({
             />
           </div>
           <div className="col-xs-6">
-            <label>Activities Assigned to this Role:</label>
+            <label>Users Assigned to this Role:</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
@@ -600,6 +631,44 @@ var UsersMultiselect = React.createClass({
 });
 
 var EditRolePage = React.createClass({
+  getInitialState: function() {
+
+    return {
+      role_name: '',
+      assigned_users: []
+    };
+  },
+  componentDidMount: function() {
+    $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
+
+      var role_object = results[this.props.role_id]
+
+
+      if (this.isMounted()) {
+
+        var role_name = role_object.role.name;
+        {/* TODO Fix API to return available activities (right now it's just assigned activities) */}
+        var assigned_activities = JSON.parse(role_object.activities);
+        var available_users = JSON.parse(role_object.users.available);
+        {/* TODO pull real list of assigned_users, format properly */}
+        var assigned_users = [{id: 2, name: "dpoynter@apps.directemployers.org"}];
+
+        this.setState({
+          role_name: role_name,
+          assigned_users: assigned_users
+        });
+
+
+      }
+
+    }.bind(this));
+  },
+
+  onTextChange: function (event) {
+    this.state.role_name = event.target.value;
+    this.setState({role_name: this.state.role_name});
+  },
+
   render: function() {
     var delete_role_button = "";
     if (this.props.action == "Add") {
@@ -622,7 +691,7 @@ var EditRolePage = React.createClass({
         <div className="row">
           <div className="col-xs-12">
             <label htmlFor="id_role_name">Role Name*:</label>
-            <input id="id_role_name" maxLength="255" name="name" type="text" defaultValue={this.props.role_to_edit} size="35"/>
+            <input id="id_role_name" maxLength="255" name="name" type="text" value={this.state.role_name} size="35" onChange={this.onTextChange}/>
           </div>
         </div>
 
@@ -632,7 +701,7 @@ var EditRolePage = React.createClass({
 
         <hr/>
 
-        <UsersMultiselect/>
+        <UsersMultiselect assigned_users={this.state.assigned_users}/>
 
         <hr />
 
@@ -649,15 +718,6 @@ var EditRolePage = React.createClass({
 });
 
 var RolesPage = React.createClass({
-  handleEditClick: function(role_to_edit) {
-    console.log("User clicked edit role link for this role: " + role_to_edit);
-
-    ReactDOM.render(
-      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_to_edit={role_to_edit}/>,
-        document.getElementById('content')
-    );
-
-  },
   render: function() {
     return (
       <div>
@@ -671,9 +731,7 @@ var RolesPage = React.createClass({
 
         <div className="row">
           <div className="col-xs-12">
-
             <RolesList source="/manage-users/api/roles/" />
-
           </div>
         </div>
 
@@ -884,9 +942,8 @@ var Content = React.createClass({
         case "Users":
             page = <UsersPage name={this.props.name} company={this.props.company}/>;
             break;
-
         case "EditRole":
-            page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
+            page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id}/>;
             break;
         case "EditUser":
             page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
@@ -945,7 +1002,7 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} user_to_edit={this.props.user_to_edit}/>
+          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit}/>
           <Menu />
         </div>
         <div className="clearfix"></div>
@@ -956,6 +1013,6 @@ var Container = React.createClass({
 
 
 ReactDOM.render(
-  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" user_to_edit=""/>,
+  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_to_edit=""/>,
     document.getElementById('content')
 );
