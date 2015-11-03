@@ -738,8 +738,8 @@ def api_create_role(request):
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # User objects have roles
-        if request.POST.getlist("users[]", ""):
-            users = request.POST.getlist("users[]", "")
+        if request.POST.getlist("assigned_users[]", ""):
+            users = request.POST.getlist("assigned_users[]", "")
 
         # Create Role
         new_role = Role.objects.create(name=role_name, company_id=company_id)

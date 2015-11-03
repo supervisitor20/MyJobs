@@ -9,8 +9,186 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 
 
 
-var ActivitiesList = React.createClass({
 
+var AssociatedUsersList = React.createClass({
+  getInitialState: function() {
+    return {
+      associated_users_list: ''
+    };
+  },
+  componentDidMount: function() {
+    if (this.isMounted()) {
+      var associated_users_list = [];
+      console.log("this.props.users is:");
+      console.log(this.props.users);
+
+      for (var key in this.props.users) {
+        associated_users_list.push(
+          <li key={key}>
+            daniel
+
+            {/*
+{this.props.users[key].fields.name}
+              */}
+          </li>
+        );
+      };
+      this.setState({
+        associated_users_list: associated_users_list
+      });
+    }
+  },
+  render: function() {
+    return (
+      <ul>
+        {this.state.associated_users_list}
+      </ul>
+    );
+  }
+});
+
+
+var AssociatedActivitiesList = React.createClass({
+  getInitialState: function() {
+    return {
+      associated_activities_list: ''
+    };
+  },
+  componentDidMount: function() {
+    if (this.isMounted()) {
+      var associated_activities_list = [];
+      for (var key in this.props.activities) {
+        associated_activities_list.push(
+          <li key={this.props.activities[key].pk}>
+            {this.props.activities[key].fields.name}
+          </li>
+        );
+      };
+      this.setState({
+        associated_activities_list: associated_activities_list
+      });
+    }
+  },
+  render: function() {
+    return (
+      <ul>
+        {this.state.associated_activities_list}
+      </ul>
+    );
+  }
+});
+
+
+
+
+var RolesList = React.createClass({
+  getInitialState: function() {
+    return {
+      table_rows: ''
+    };
+  },
+  componentDidMount: function() {
+    $.get(this.props.source, function(results) {
+
+      if (this.isMounted()) {
+        var table_rows = [];
+        for (var key in results) {
+          results[key].activities = JSON.parse(results[key].activities);
+
+
+
+
+          console.log(results[key])
+
+
+
+          table_rows.push(
+            <tr key={results[key].role.id}>
+              <td>{results[key].role.name}</td>
+              <td>
+                <AssociatedActivitiesList activities={results[key].activities}/>
+              </td>
+              <td>
+                <AssociatedUsersList users={results[key].users}/>
+              </td>
+              <td>Edit</td>
+            </tr>
+          );
+
+
+
+          {/*
+
+
+          if(results[key].activities.length > 0){
+
+
+
+
+            var activities_list = "";
+            for (var activity in results[key].activities){
+              activities_list += results[key].activities[activity].fields.name;
+              activities_list += ",";
+            }
+          }
+
+
+
+
+
+
+
+
+          table_rows.push(
+            <tr key={results[key].role.id}>
+              <td>{results[key].role.name}</td>
+              <td>
+
+                {activities_list}
+              </td>
+              <td></td>
+              <td>Edit</td>
+            </tr>
+          );
+
+          */}
+
+
+
+
+
+
+        }
+
+        this.setState({
+          table_rows: table_rows
+        });
+      }
+
+    }.bind(this));
+  },
+  render: function() {
+    return (
+      <div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Associated Activities</th>
+              <th>Associated Users</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.state.table_rows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+});
+
+var ActivitiesList = React.createClass({
   getInitialState: function() {
     return {
       table_rows: ''
@@ -35,7 +213,6 @@ var ActivitiesList = React.createClass({
       }
     }.bind(this));
   },
-
   render: function() {
     return (
       <div>
@@ -555,85 +732,9 @@ var RolesPage = React.createClass({
 
         <div className="row">
           <div className="col-xs-12">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Role</th>
-                  <th>Associated Activities</th>
-                  <th>Associated Users</th>
-                  <th className="col-md-1"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Analytics Setup</td>
-                  <td>
-                    <ul>
-                      <li>Access Analytics</li>
-                      <li>Edit Analytics Settings</li>
-                    </ul>
-                  </td>
-                  <td>
-                    <ul>
-                      <li>david@apps.directemployers.org</li>
-                      <li>edwin@apps.directemployers.org</li>
-                    </ul>
-                  </td>
-                  <td><a onClick={this.handleEditClick.bind(this, "Analytics Setup")}>Edit</a></td>
-                </tr>
-                <tr>
-                  <td>Analytics User</td>
-                  <td>
-                    <ul>
-                      <li>Access Analytics</li>
-                      <li>Edit Analytics Settings</li>
-                      <li>Activate Analytics Settings</li>
-                      <li>Delete Analytics</li>
-                    </ul>
-                  </td>
-                  <td>
-                    <ul>
-                      <li>david@apps.directemployers.org</li>
-                    </ul>
-                  </td>
-                  <td><a onClick={this.handleEditClick.bind(this, "Analytics User")}>Edit</a></td>
-                </tr>
-                <tr>
-                  <td>PRM - Full Access</td>
-                  <td>
-                    <ul>
-                      <li>Edit PRM Settings</li>
-                      <li>Activate PRM Settings</li>
-                      <li>Delete PRM</li>
-                    </ul>
-                  </td>
-                  <td>
-                    <ul>
-                      <li>david@apps.directemployers.org</li>
-                      <li>jkoons@apps.directemployers.org</li>
-                    </ul>
-                  </td>
-                  <td><a onClick={this.handleEditClick.bind(this, "PRM - Full Access")}>Edit</a></td>
-                </tr>
-                <tr>
-                  <td>PRM - Read</td>
-                  <td>
-                    <ul>
-                      <li>Read PRM Settings</li>
-                      <li>Read PRM Reports</li>
-                    </ul>
-                  </td>
-                  <td>
-                    <ul>
-                      <li>david@apps.directemployers.org</li>
-                      <li>dpoynter@apps.directemployers.org</li>
-                      <li>jkoons@apps.directemployers.org</li>
-                    </ul>
-                  </td>
-                  <td><a onClick={this.handleEditClick.bind(this, "PRM - Read")}>Edit</a></td>
-                </tr>
-              </tbody>
-            </table>
+
+            <RolesList source="/manage-users/api/roles/" />
+
           </div>
         </div>
 
@@ -665,12 +766,7 @@ var ActivitiesPage = React.createClass({
         <div className="row">
           <div className="col-xs-12">
 
-
-
             <ActivitiesList source="/manage-users/api/activities/" />
-
-
-
 
           </div>
         </div>
