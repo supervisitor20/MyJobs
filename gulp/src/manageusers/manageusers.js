@@ -6,6 +6,55 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 
 // This is the entry point of the application. Bundling begins here.
 
+
+
+
+var ActivitiesList = React.createClass({
+
+  getInitialState: function() {
+    return {
+      table_rows: ''
+    };
+  },
+  componentDidMount: function() {
+    $.get(this.props.source, function(results) {
+      var results = JSON.parse(results)
+      if (this.isMounted()) {
+        var table_rows = [];
+        for (var i = 0; i < results.length; i++) {
+          table_rows.push(
+            <tr key={results[i].pk}>
+              <td>{results[i].fields.name}</td>
+              <td>{results[i].fields.description}</td>
+            </tr>
+          );
+        }
+        this.setState({
+          table_rows: table_rows
+        });
+      }
+    }.bind(this));
+  },
+
+  render: function() {
+    return (
+      <div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Activity</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.state.table_rows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+});
+
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
     console.log("User clicked CancelRoleButton");
@@ -615,53 +664,14 @@ var ActivitiesPage = React.createClass({
 
         <div className="row">
           <div className="col-xs-12">
-          {/*TODO Pull in Activities and Activity Descriptions dynamically */}
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Activity</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Access Analytics</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Edit Analytics Settings</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Activate Analytics Settings</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Delete Analytics</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Read PRM Settings</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Read PRM Reports</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Edit PRM Settings</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Activate PRM Settings</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-                <tr>
-                  <td>Delete PRM</td>
-                  <td>Ideally, activity names will be self-explanatory. If not, a further description could be useful.</td>
-                </tr>
-              </tbody>
-            </table>
+
+
+
+            <ActivitiesList source="/manage-users/api/activities/" />
+
+
+
+
           </div>
         </div>
 
