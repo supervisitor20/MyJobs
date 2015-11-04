@@ -87,7 +87,7 @@ var RolesList = React.createClass({
       if (this.isMounted()) {
         var table_rows = [];
         for (var key in results) {
-          results[key].activities = JSON.parse(results[key].activities);
+          results[key].activities = JSON.parse(results[key].activities.assigned);
           results[key].users.assigned = JSON.parse(results[key].users.assigned);
 
           table_rows.push(
@@ -641,44 +641,37 @@ var EditRolePage = React.createClass({
 
         var role_name = role_object.role.name;
 
-        var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
-        var assigned_users = [];
-        for (var i = 0; i < assigned_users_unformatted.length; i++) {
-          var user = {}
-          user['id'] = assigned_users_unformatted[i].pk;
-          user['name'] = assigned_users_unformatted[i].fields.email;
-          assigned_users.push(user);
-        }
-
         var available_users_unformatted = JSON.parse(role_object.users.available);
-        var available_users = [];
-        for (var i = 0; i < available_users_unformatted.length; i++) {
-          var user = {}
-          user['id'] = available_users_unformatted[i].pk;
-          user['name'] = available_users_unformatted[i].fields.email;
-          available_users.push(user);
-        }
+        var available_users = available_users_unformatted.map(function(obj){
+           var user = {};
+           user['id'] = obj.pk;
+           user['name'] = obj.fields.email;
+           return user;
+        });
 
-
-
-
-        {/* TODO Fix API to return available activities (right now it's just assigned activities) */}
+        var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
+        var assigned_users = assigned_users_unformatted.map(function(obj){
+           var user = {};
+           user['id'] = obj.pk;
+           user['name'] = obj.fields.email;
+           return user;
+        });
         
-        var available_activities = [
-          {id: 1, name: "Access Analytics"},
-          {id: 2, name: "Edit Analytics Settings"},
-          {id: 3, name: "Activate Analytics Settings"},
-          {id: 4, name: "Delete Analytics"},
-          {id: 5, name: "Read PRM Settings"},
-          {id: 6, name: "Read PRM Reports"},
-          {id: 7, name: "Edit PRM Settings"},
-          {id: 8, name: "Activate PRM Settings"},
-          {id: 9, name: "Delete PRM"}
-        ];
+        var available_activities_unformatted = JSON.parse(role_object.activities.available);
+        var available_activities = available_activities_unformatted.map(function(obj){
+           var activity = {};
+           activity['id'] = obj.pk;
+           activity['name'] = obj.fields.name;
+           return activity;
+        });
 
-        var assigned_activities = [{id: 1, name: "Access Analytics"},{id: 2, name: "Edit Analytics Settings"},]
-
-
+        var assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
+        var assigned_activities = assigned_activities_unformatted.map(function(obj){
+           var activity = {};
+           activity['id'] = obj.pk;
+           activity['name'] = obj.fields.name;
+           return activity;
+        });
 
         this.setState({
           role_name: role_name,
