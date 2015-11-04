@@ -6,6 +6,7 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
+var stripDebug = require('gulp-strip-debug');
 // var es5shim = require('es5-shim');
 
 var vendor_libs = [
@@ -89,6 +90,8 @@ gulp.task('manageusers', function() {
     .pipe(sourcemaps.init({loadMaps: true}))
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
+    // stripDebug() must come before sourcemaps.write()
+    .pipe(stripDebug())
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
 });
