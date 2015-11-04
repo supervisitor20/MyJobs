@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 import json
 import random
 
-from django.core.urlresolvers import reverse
-
-
 from mypartners import helpers
 from mypartners.forms import ContactRecordForm
 from mypartners.tests.test_views import (MyPartnersTestCase,
@@ -13,7 +10,6 @@ from mypartners.tests.test_views import (MyPartnersTestCase,
 from mypartners.tests.factories import (ContactRecordFactory, PartnerFactory,
                                         PRMAttachmentFactory)
 from mypartners.models import ContactLogEntry
-
 
 
 class HelpersTests(MyPartnersTestCase):

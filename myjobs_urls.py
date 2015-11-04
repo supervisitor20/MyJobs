@@ -1,4 +1,4 @@
-from django.conf.urls import *
+from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -7,7 +7,6 @@ from django.core.files.storage import default_storage
 from tastypie.api import Api
 
 from myjobs.api import UserResource, SavedSearchResource
-from myblocks.views import secure_blocks
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 
 admin.autodiscover()

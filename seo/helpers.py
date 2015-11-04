@@ -11,7 +11,6 @@ from urlparse import urljoin, urlparse, parse_qs, parse_qsl
 
 from django.conf import settings
 from django.shortcuts import redirect
-from django.template.defaultfilters import safe
 from django.utils.html import strip_tags
 from haystack.backends.solr_backend import SolrSearchQuery
 from haystack.inputs import Raw
@@ -21,7 +20,6 @@ from ordereddict import OrderedDict
 from seo_pysolr import Solr
 from seo.search_backend import DESearchQuerySet
 from seo.models import BusinessUnit, Company
-from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.filters import FacetListWidget, CustomFacetListWidget
 from seo.search_transformer import transform_search
 from serializers import JSONExtraValuesSerializer
@@ -146,13 +144,6 @@ def build_filter_dict(slug_path):
                         for key, value in sorted(settings.SLUG_TAGS.items())])
 
 
-def canonical_path_from_filter_dict(filters):
-    """Builds a canonical url path from a dictionary of filter terms"""
-    term_paths = [''.join([filters[key], slug]) for key, slug in
-                  settings.SLUG_TAGS.items() if slug is not None]
-    return ''.join(term_paths)
-
-
 def build_results_heading(breadbox):
     """
     Builds a sensible, human-readable heading for the results page in the
@@ -240,57 +231,6 @@ def parse_location_slug(location_slug):
         locations["country_short"] = location_pieces[0]
 
     return locations
-
-
-def parse_moc_slug(moc_slug):
-    """
-    Return {'moc': <moc_code>} dictionary.
-
-    """
-    moc_slug = moc_slug.strip('/').split('/')
-    return {'moc': moc_slug[1]}
-
-
-def get_nav_type(filters):
-    """
-    This method determines which type of primary nav we should build.
-    It's pretty heavy on business logic, so it makes sense to keep
-    it self contained within here.
-
-    Business Logic:
-        # if we have a moc_slug, build that nav
-        # if we have a facet_slug, build that nav
-        # else if we have a title_slug, build that nav
-        # else if we have a location_slug, build that nav
-            # if we have 3 location pieces, build city
-            # if we have 2 location pieces, build state
-            # if we have 1 piece, build country
-
-    """
-    nav_type = ''
-    moc_slug = filters["moc_slug"]
-    facet_slug = filters["facet_slug"]
-    title_slug = filters["title_slug"]
-    location_slug = filters["location_slug"]
-
-    if moc_slug:
-        nav_type = 'moc'
-    elif facet_slug:
-        nav_type = 'facet'
-    elif title_slug:
-        nav_type = 'title'
-    elif location_slug:
-        location_slug = location_slug.strip('/')
-        location_pieces = location_slug.split('/')
-        location_length = len(location_pieces)
-        if location_length == 3:
-            nav_type = 'city'
-        elif location_length == 2:
-            nav_type = 'state'
-        else:
-            nav_type = 'country'
-
-    return nav_type
 
 
 def job_breadcrumbs(job, company=False):
@@ -884,36 +824,6 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
     return widgets
 
 
-def split_locs(facet):
-    for f in facet:
-        loc_tuples = f[0].split('@@')
-        for atom in loc_tuples:
-            loc_tuples[loc_tuples.index(atom)] = atom.split('::')
-        facet[facet.index(f)] = dict(loc_tuples)
-
-    return facet
-
-
-def facet_data(jsids):
-    sqs = DESearchQuerySet().facet_limit(-1).facet_sort("count").\
-        facet_mincount(1)
-    sqs = sqs.facet("full_loc").facet("title").facet("country").facet("state")
-    sqs = _sqs_narrow_by_buid_and_site_package(sqs)
-    return sqs.facet_counts()['fields']
-
-
-def more_custom_facets(custom_facets, offset=0, num_items=0):
-    """Generates AJAX response for more custom_facets."""
-    custom_facets = combine_groups(custom_facets)[offset:offset+num_items]
-    items = []
-    for i in custom_facets:
-        url = i[0].url_slab.split("::")[0]
-        name = safe(smart_truncate(facet_text(i[0].url_slab)))
-        items.append({'url': url, 'name': name, 'count': i[1]})
-
-    return items
-
-
 def sqs_apply_custom_facets(custom_facets, sqs=None, exclude_facets=None):
     """
     Return a DESearchQuerySet filtered by the input list of saved searches and
@@ -1095,10 +1005,6 @@ def _sqs_narrow_by_buid_and_site_package(sqs, buids=None, site_packages=None):
     return sqs
 
 
-def related_jobs(job):
-    return _sqs_narrow_by_buid_and_site_package(DESearchQuerySet()).more_like_this(job)[0:10]
-
-
 def take(n, seq):
     "Return first n items of the seq as a list"
     return list(islice(seq, n))
@@ -1209,10 +1115,6 @@ def make_specialcommit_string(special_commits):
 
     """
     return ' '.join(special_commits.values_list('commit', flat=True))
-
-
-def make_sitetag_string(site_tags):
-    return ' '.join(site_tags)
 
 
 def determine_redirect(request, filters):

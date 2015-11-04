@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils.http import urlquote
 
 from setup import MyJobsBase
-from myjobs.models import User
+from myjobs.models import User, Role
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory)
@@ -199,7 +199,7 @@ class ActivityTests(MyJobsBase):
 
         try:
             # This should be allowed since the company is different
-            RoleFactory(name=self.role.name, company=CompanyFactory())
+            RoleFactory(name=self.role.name)
         except IntegrityError:
             self.fail("Creating a similar role for a different company should " 
                       "be allowed, but it isn't.")
@@ -221,3 +221,29 @@ class ActivityTests(MyJobsBase):
 
         with self.assertRaises(IntegrityError):
             AppAccessFactory(name=self.app_access.name)
+
+    def test_automatic_role_admin_activities(self):
+        """
+        New activities should be added to all Admin roles automatically.
+        """
+
+        # add role to existing company
+        RoleFactory(company=self.company, name="Admin",
+                    activities=self.activities)
+        role_admins = RoleFactory.create_batch(
+            50, name="Admin", activities=self.activities)
+
+        # sanity check for initial numbers
+        for admin in Role.objects.filter(name="Admin"):
+            self.assertEqual(admin.activities.count(), 5)
+
+        new_activity =  ActivityFactory(
+            name="new activity", description="Just a new test activity.")
+
+        # new activity should be available for admins
+        for admin in Role.objects.filter(name="Admin"):
+            self.assertIn(new_activity, admin.activities.all())
+
+        # existing role should not have new activity
+        self.assertNotIn(new_activity, self.role.activities.all())
+

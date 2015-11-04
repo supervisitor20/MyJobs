@@ -1,58 +1,15 @@
 {% load i18n %}
 {% load model_fields %}
 
-<div class="formBox profile-mobile" id="{{module.0.get_model_name}}_items">
-    <h4 id="{{module.0.get_model_name}}-verbose">{{ module.0.get_verbose }}</h4>
-
-    {% if c_template %}
-        {% include c_template %}
-    {% else %}
-
-    <table class="table table-bordered table-striped small-margin">
-        <thead>
-            <tr>
-
-                {% for label, value, type in module.0.get_fields|slice:":3" %}
-
-                <th>{{label}}</th>
-
-                {% endfor %}
-
-                <th class="action"></th>
-            </tr>
-        </thead>
-        <tbody>
-
-            {% for item in module %}
-
-            <tr id="{{module.0.get_model_name}}-{{module.0.id}}-item">
-
-                {% with item|process_field_types as fields %}
-                    {% for label, value, type in fields|slice:":3" %}
-
-                    <td data-title="{{label}}">{{ value }}&nbsp;</td>
-
-                    {% endfor %}
-                {% endwith %}
-                <td class="action">
-                    <a class="btn-link" href="{% url 'get_details' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">
-                        {% trans 'Details' %}</a>
-                    <a class="btn-link" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">
-                        {% trans 'Edit' %}
-                    </a>
-                </td>
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-    </table>
-
+<div class="card-wrapper">
+    <div class="wrapper-header">
+        <h4>{{ module.0.get_verbose }}</h4>
+    </div>
+    {% include c_template %}
+    {% if not module.0.get_verbose == "Summary" %}
+    <div class="wrapper-footer">
+        <a class="pull-right" href="{% url 'handle_form' %}?module={{ module.0.get_verbose.title }}">Add {{ module.0.get_verbose }}</a>
+        <div class="clearfix"></div>
+    </div>
     {% endif %}
-
-    <a class="btn primary pull-right add-module-btn"
-        href="{% url 'handle_form' %}?module={{ module.0.get_verbose.title }}">
-        {% trans 'Add' %} <span>{{ module.0.get_verbose.title }}</span>
-    </a>
-    <div class="clear"></div>
 </div>

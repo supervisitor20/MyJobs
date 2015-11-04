@@ -2,7 +2,6 @@ import itertools
 
 from django.core.cache import cache
 from django.conf import settings
-from django.db.models import Q
 from social_links.models import SocialLink
 from social_links.helpers import (get_microsite_carousel,
                                   create_carousel_cycle_string)
