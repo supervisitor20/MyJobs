@@ -7,6 +7,7 @@ var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var stripDebug = require('gulp-strip-debug');
+var gulpif = require('gulp-if');
 // var es5shim = require('es5-shim');
 
 var vendor_libs = [
@@ -20,6 +21,8 @@ var vendor_libs = [
 ];
 
 var dest = '../static/bundle';
+
+var strip_debug = true;
 
 // Splitting vendor libs into a separate bundle improves rebuild time from 8
 // seconds to <500ms.
@@ -91,7 +94,8 @@ gulp.task('manageusers', function() {
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
     // stripDebug() must come before sourcemaps.write()
-    .pipe(stripDebug())
+    // .pipe(stripDebug())
+    .pipe(gulpif(strip_debug, stripDebug()))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
 });
@@ -100,7 +104,22 @@ gulp.task('build', ['vendor', 'manageusers']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
+    console.log("By default, gulp watch strips console and debugger statements.");
+    console.log("To keep them, run: gulp watch-no-strip");
     gulp.watch('src/**/*', ['manageusers']);
 });
+
+
+gulp.task('watch-no-strip', function() {
+    console.log("Keeping console and debugger statements.");
+    strip_debug = false;
+    gulp.watch('src/**/*', ['manageusers']);
+});
+
+
+strip_debug
+
+
+
 
 gulp.task('default', ['build']);
