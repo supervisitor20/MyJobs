@@ -10,7 +10,7 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 var AssociatedUsersList = React.createClass({
   getInitialState: function() {
     return {
-      associated_users_list: ''
+      associated_users_list: []
     };
   },
   componentDidMount: function() {
@@ -40,7 +40,7 @@ var AssociatedUsersList = React.createClass({
 var AssociatedActivitiesList = React.createClass({
   getInitialState: function() {
     return {
-      associated_activities_list: ''
+      associated_activities_list: []
     };
   },
   componentDidMount: function() {
@@ -206,39 +206,6 @@ var DeleteRoleButton = React.createClass({
   render: function() {
     return (
       <Button className="pull-right" onClick={this.handleClick}>Delete Role</Button>
-    );
-  }
-});
-
-var SaveRoleButton = React.createClass({
-  handleClick: function(event) {
-    console.info("User clicked SaveRoleButton");
-
-    {/* TODO: Grab role_name */}
-
-
-    {/* TODO: Grab assigned_activities */}
-
-    {/* " use refs to get the value when I submit.
-      https://facebook.github.io/react/docs/forms.html
-      https://facebook.github.io/react/docs/working-with-the-browser.html
-      "*/}
-
-    {/* TODO: Require at least one activity be selected */}
-
-    {/* TODO: Grab assigned_users */}
-
-
-
-    {/* TODO: Format properly */}
-
-    {/* TODO: Submit to server */}
-
-
-  },
-  render: function() {
-    return (
-      <Button className="primary pull-right" onClick={this.handleClick}>Save Role</Button>
     );
   }
 });
@@ -504,7 +471,6 @@ var ActivitiesMultiselect = React.createClass({
       available_activities: nextProps.available_activities,
       assigned_activities: nextProps.assigned_activities
     });
-
   },
   _onSelect(assigned_activities) {
     assigned_activities.sort((a, b) => a.id - b.id)
@@ -624,16 +590,18 @@ var UsersMultiselect = React.createClass({
 
 var EditRolePage = React.createClass({
   getInitialState: function() {
-
+    {/* TODO Remove this awful code once using redux with more intelligent passing of data between child/parent */}
     return {
+      help_message: '',
       role_name: '',
       available_activities: [],
       assigned_activities: [],
       available_users: [],
-      assigned_users: [],
+      assigned_users: []
     };
   },
   componentDidMount: function() {
+
     $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
       if (this.isMounted()) {
 
@@ -656,7 +624,7 @@ var EditRolePage = React.createClass({
            user['name'] = obj.fields.email;
            return user;
         });
-        
+
         var available_activities_unformatted = JSON.parse(role_object.activities.available);
         var available_activities = available_activities_unformatted.map(function(obj){
            var activity = {};
@@ -674,6 +642,7 @@ var EditRolePage = React.createClass({
         });
 
         this.setState({
+          help_message: '',
           role_name: role_name,
           available_activities: available_activities,
           assigned_activities: assigned_activities,
@@ -683,11 +652,122 @@ var EditRolePage = React.createClass({
       }
     }.bind(this));
   },
-
-  onTextChange: function (event) {
+  onTextChange: function(event) {
     this.state.role_name = event.target.value;
-    this.setState({role_name: this.state.role_name});
+
+    {/* I know this is awful. setState overrides some states because they are n-levels deep.
+      Look into immutability: http://facebook.github.io/react/docs/update.html */}
+
+    this.setState({
+      help_message: this.state.help_message,
+      role_name: this.state.role_name,
+      available_activities: this.refs.activities.state.available_activities,
+      assigned_activities: this.refs.activities.state.assigned_activities,
+      available_users:  this.refs.users.state.available_users,
+      assigned_users:  this.refs.users.state.assigned_users
+    })
+
   },
+  handleSaveRoleClick: function (event) {
+
+    {/* Grab form fields and validate */}
+
+    var assigned_users = this.refs.users.state.assigned_users;
+
+    var role_name = this.state.role_name;
+    if(role_name == ""){
+      this.setState({
+          help_message: "Role name can not be empty",
+          role_name: this.state.role_name,
+          available_activities: this.refs.activities.state.available_activities,
+          assigned_activities: this.refs.activities.state.assigned_activities,
+          available_users:  this.refs.users.state.available_users,
+          assigned_users:  this.refs.users.state.assigned_users
+      });
+      return;
+    }
+
+    var assigned_activities = this.refs.activities.state.assigned_activities;
+    if(assigned_activities.length < 1){
+      this.setState({
+          help_message: "At least one activity must be assigned to each role.",
+          role_name: this.state.role_name,
+          available_activities: this.refs.activities.state.available_activities,
+          assigned_activities: this.refs.activities.state.assigned_activities,
+          available_users:  this.refs.users.state.available_users,
+          assigned_users:  this.refs.users.state.assigned_users
+      });
+      return;
+    }
+
+    {/* No errors? Clear help text */}
+
+    this.setState({
+        help_message: "",
+        role_name: this.state.role_name,
+        available_activities: this.refs.activities.state.available_activities,
+        assigned_activities: this.refs.activities.state.assigned_activities,
+        available_users:  this.refs.users.state.available_users,
+        assigned_users:  this.refs.users.state.assigned_users
+    });
+
+    {/* Format properly */}
+
+    assigned_activities = assigned_activities.map(function(obj){
+       return obj.name;
+    });
+
+    assigned_users = assigned_users.map(function(obj){
+       return obj.name;
+    });
+
+
+
+    {/* Grab csrf */}
+
+    {/* TODO: Temporary. Use standard cookie function */}
+
+    function read_cookie(cookie) {
+        var nameEQ = cookie + "=",
+            ca = document.cookie.split(';');
+        for (var i=0; i< ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ')
+                c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0)
+                return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function getCsrf() {
+        return read_cookie("csrftoken");
+    }
+
+    var csrf = getCsrf();
+
+
+    {/* Submit to server */}
+
+    $.post( "/manage-users/api/roles/edit/8/",
+      {
+        csrfmiddlewaretoken: csrf,
+        role_name: role_name,
+        assigned_activities: assigned_activities,
+        assigned_users: assigned_users
+      },
+      function( data ) {
+        console.log( data );
+    });
+
+
+
+
+
+  },
+
+
+
 
   render: function() {
     var delete_role_button = "";
@@ -717,17 +797,24 @@ var EditRolePage = React.createClass({
 
         <hr/>
 
-        <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities}/>
+        <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
 
         <hr/>
 
-        <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users}/>
+        <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users} ref="users"/>
 
         <hr />
 
         <div className="row">
+
+
           <div className="col-xs-12">
-            <SaveRoleButton />
+            <span className="primary pull-right">
+              {this.state.help_message}
+            </span>
+          </div>
+          <div className="col-xs-12">
+            <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
             {delete_role_button}
             <CancelRoleButton />
           </div>

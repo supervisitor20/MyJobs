@@ -760,7 +760,7 @@ def api_create_role(request):
             users = request.POST.getlist("assigned_users[]", "")
 
         # Create Role
-        new_role = Role.objects.create(name=role_name, company_id=company)
+        new_role = Role.objects.create(name=role_name, company_id=company.id)
 
         # Assign activities to this new role
         new_role.activities.add(*activity_ids)
