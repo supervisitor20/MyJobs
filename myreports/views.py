@@ -11,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
+from myreports.decorators import restrict_to_staff
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
 from mypartners.views import PRM, missing_access, missing_activity
@@ -20,6 +21,7 @@ from myreports.models import (
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
+
 
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
@@ -357,6 +359,7 @@ def download_report(request):
     return response
 
 
+@restrict_to_staff()
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['GET'])
