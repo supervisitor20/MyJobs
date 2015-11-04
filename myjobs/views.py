@@ -626,19 +626,13 @@ def api_get_roles(request):
     Retrieves all roles for a company
     """
 
-    # TODO: This kind of thing is unncessary. get_company_or_404 returns an object, not just a name as I thought
-    company_name = get_company_or_404(request)
-    company_object = Company.objects.filter(name=company_name)
-
     company = get_company_or_404(request)
-
-    company_id = company_object[0].id
 
     response_data = {}
 
     # /api/roles/
     # Return information about all roles of this company
-    roles = Role.objects.filter(company=company_id)
+    roles = Role.objects.filter(company=company.id)
     for role in roles:
         role_id = role.id
 
@@ -665,7 +659,7 @@ def api_get_roles(request):
         # Users that can be assigned to this role
         # This is determined by the users already associated with roles associated with this company
         users_available = []
-        roles = Role.objects.filter(company=company_id)
+        roles = Role.objects.filter(company=company.id)
         for role in roles:
             role_id_temp = role.id
             users = User.objects.filter(roles__id=role_id_temp)
@@ -687,16 +681,13 @@ def api_get_specific_role(request, role_id=0):
     if Role.objects.filter(id=role_id).exists() == False:
         raise Http404
 
-    response_data = {}
-
-    company_name = get_company_or_404(request)
     company = get_company_or_404(request)
-    company_object = Company.objects.filter(name=company_name)
-    company_id = company_object[0].id
+
+    response_data = {}
 
     response_data[role_id] = {}
 
-    role = Role.objects.filter(id=role_id).filter(company=company_id)
+    role = Role.objects.filter(id=role_id).filter(company=company.id)
     response_data[role_id]['role'] = {}
     response_data[role_id]['role']['id'] = role[0].id
     response_data[role_id]['role']['name'] = role[0].name
@@ -718,7 +709,7 @@ def api_get_specific_role(request, role_id=0):
     # Users that can be assigned to this role
     # This is determined by the users already associated with roles associated with this company
     users_available = []
-    roles = Role.objects.filter(company=company_id)
+    roles = Role.objects.filter(company=company.id)
     for role in roles:
         role_id_temp = role.id
         users = User.objects.filter(roles__id=role_id_temp)
@@ -745,10 +736,7 @@ def api_create_role(request):
     """
 
     if request.method == "POST":
-        company_name = get_company_or_404(request)
-        company_name = "DirectEmployers"
-        company_object = Company.objects.filter(name=company_name)
-        company_id = company_object[0].id
+        company = get_company_or_404(request)
 
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
@@ -772,7 +760,7 @@ def api_create_role(request):
             users = request.POST.getlist("assigned_users[]", "")
 
         # Create Role
-        new_role = Role.objects.create(name=role_name, company_id=company_id)
+        new_role = Role.objects.create(name=role_name, company_id=company)
 
         # Assign activities to this new role
         new_role.activities.add(*activity_ids)
@@ -813,10 +801,8 @@ def api_edit_role(request, role_id=0):
             response_data["message"] = "Role not found."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # TODO: Create a helper function like get_company_or_404(request)
-        company_name = get_company_or_404(request)
-        company_object = Company.objects.filter(name=company_name)
-        company_id = company_object[0].id
+        # TODO Check that the company the user is apart of, managed this role
+        company = get_company_or_404(request)
 
         # INPUT - role_name
         role_name = request.POST.get("role_name", "")
@@ -897,11 +883,9 @@ def api_delete_role(request, role_id=0):
 
     if request.method == "DELETE":
 
-        response_data = {}
+        company = get_company_or_404(request)
 
-        company_name = get_company_or_404(request)
-        company_object = Company.objects.filter(name=company_name)
-        company_id = company_object[0].id
+        response_data = {}
 
         # Check if role exists
         if Role.objects.filter(id=role_id).exists() == False:
@@ -910,7 +894,7 @@ def api_delete_role(request, role_id=0):
 
         # Check that company manages this role and can therefore delete it
         company_id_to_delete = Role.objects.filter(id=role_id)[0].company.id
-        if company_id != company_id_to_delete:
+        if company.id != company_id_to_delete:
             response_data["success"] = "false"
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
