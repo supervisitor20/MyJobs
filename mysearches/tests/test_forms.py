@@ -81,6 +81,9 @@ class SavedSearchFormTests(MyJobsBase):
 class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
+        self.patcher = patch('urllib2.urlopen', return_file())
+        self.patcher.start()
+
         self.user = UserFactory()
         self.company = CompanyFactory()
         self.partner = PartnerFactory(owner=self.company)
@@ -114,9 +117,6 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         instance.custom_message = instance.partner_message
         self.assertTrue(form.is_valid())
         self.instance = form.save()
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
 
     def tearDown(self):
         super(PartnerSavedSearchFormTests, self).tearDown()
