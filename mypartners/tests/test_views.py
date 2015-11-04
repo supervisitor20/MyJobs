@@ -7,8 +7,6 @@ import random
 import requests
 from StringIO import StringIO
 
-from mock import patch
-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
@@ -31,7 +29,6 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
                                         ContactLogEntryFactory, LocationFactory,
                                         ContactRecordFactory, TagFactory)
 from mysearches.tests.factories import PartnerSavedSearchFactory
-from mysearches.tests.helpers import return_file
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION)
@@ -855,12 +852,6 @@ class SearchEditTests(MyPartnersTestCase):
                                                 created_by=self.staff_user,
                                                 user=self.contact.user,
                                                 partner=self.partner,)
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        self.patcher.stop()
-
     def test_render_new_form(self):
         url = self.get_url(company=self.company.id,
                            partner=self.partner.id)
@@ -1470,15 +1461,6 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
 
 class ContactLogEntryTests(MyPartnersTestCase):
-    def setUp(self):
-        super(ContactLogEntryTests, self).setUp()
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        self.patcher.stop()
-
     def test_contact_record_update(self):
         record = ContactRecordFactory(contact=self.contact)
 

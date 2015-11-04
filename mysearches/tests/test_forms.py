@@ -1,5 +1,3 @@
-from mock import patch
-
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -11,7 +9,6 @@ from mypartners.tests.factories import ContactFactory, PartnerFactory
 from mysearches.forms import SavedSearchForm, PartnerSavedSearchForm, \
     PartnerSubSavedSearchForm
 from mysearches.forms import PartnerSavedSearch
-from mysearches.tests.helpers import return_file
 from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import UserFactory
 from registration.models import Invitation
@@ -30,13 +27,6 @@ class SavedSearchFormTests(MyJobsBase):
                      'jobs_per_email': 5,
                      'label': 'All jobs from www.my.jobs',
                      'sort_by': 'Relevance'}
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchFormTests, self).tearDown()
-        self.patcher.stop()
 
     def test_successful_form(self):
         form = SavedSearchForm(user=self.user, data=self.data)
@@ -81,9 +71,6 @@ class SavedSearchFormTests(MyJobsBase):
 class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
         self.user = UserFactory()
         self.company = CompanyFactory()
         self.partner = PartnerFactory(owner=self.company)
@@ -117,14 +104,6 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         instance.custom_message = instance.partner_message
         self.assertTrue(form.is_valid())
         self.instance = form.save()
-
-    def tearDown(self):
-        super(PartnerSavedSearchFormTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_partner_saved_search_form_creates_invitation(self):
         """

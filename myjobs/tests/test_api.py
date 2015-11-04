@@ -2,8 +2,6 @@ import json
 from django.core import mail
 from django.core.urlresolvers import reverse
 
-
-from mock import patch
 from tastypie.models import create_api_key
 
 from myjobs.models import User
@@ -11,7 +9,6 @@ from myjobs.tests.factories import UserFactory
 from myjobs.tests.test_views import TestClient
 from myprofile.models import SecondaryEmail
 from mysearches.models import SavedSearch
-from mysearches.tests.helpers import return_file
 from setup import MyJobsBase
 
 
@@ -68,13 +65,6 @@ class SavedSearchResourceTests(MyJobsBase):
             data={'email': 'alice@example.com',
                   'url': 'www.my.jobs/jobs'})
         create_api_key(User, instance=self.user, created=True)
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchResourceTests, self).tearDown()
-        self.patcher.stop()
 
     def test_new_search_existing_user(self):
         for data in [('alice@example.com', 'www.my.jobs/search?q=django'),
