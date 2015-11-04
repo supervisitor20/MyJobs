@@ -69,7 +69,7 @@ var AssociatedActivitiesList = React.createClass({
 
 var RolesList = React.createClass({
   handleEditClick: function(role_id) {
-    console.log("User clicked edit role link for this role: " + role_id);
+    console.info("User clicked edit role link for this role: " + role_id);
 
     ReactDOM.render(
       <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_id={role_id}/>,
@@ -177,7 +177,7 @@ var ActivitiesList = React.createClass({
 
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked CancelRoleButton");
+    console.info("User clicked CancelRoleButton");
 
     ReactDOM.render(
       <Container page="Roles" name={this.props.name} company={this.props.company}/>,
@@ -193,7 +193,7 @@ var CancelRoleButton = React.createClass({
 
 var DeleteRoleButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked DeleteRoleButton");
+    console.info("User clicked DeleteRoleButton");
 
     {/* TODO: Actually delete role
         TODO: Warn with a modal, are you sure you want to delete role? */}
@@ -212,9 +212,10 @@ var DeleteRoleButton = React.createClass({
 
 var SaveRoleButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked SaveRoleButton");
+    console.info("User clicked SaveRoleButton");
 
     {/* TODO: Grab role_name */}
+
 
     {/* TODO: Grab assigned_activities */}
 
@@ -244,7 +245,7 @@ var SaveRoleButton = React.createClass({
 
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked AddRoleButton");
+    console.info("User clicked AddRoleButton");
 
     ReactDOM.render(
       <Container page="EditRole" name={this.props.name} company={this.props.company} action="Add"/>,
@@ -260,7 +261,7 @@ var AddRoleButton = React.createClass({
 
 var CancelUserButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked CancelUserButton");
+    console.info("User clicked CancelUserButton");
 
     ReactDOM.render(
       <Container page="Users" name={this.props.name} company={this.props.company}/>,
@@ -276,7 +277,7 @@ var CancelUserButton = React.createClass({
 
 var DeleteUserButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked DeleteUserButton");
+    console.info("User clicked DeleteUserButton");
 
     {/* TODO: Actually delete user
         TODO: Warn with a modal, are you sure you want to delete user? */}
@@ -295,7 +296,7 @@ var DeleteUserButton = React.createClass({
 
 var SaveUserButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked SaveUserButton");
+    console.info("User clicked SaveUserButton");
     {/* TODO A user MUST be assigned to at least one role
         TODO Submit new user to server */}
   },
@@ -308,7 +309,7 @@ var SaveUserButton = React.createClass({
 
 var AddUserButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked AddUserButton");
+    console.info("User clicked AddUserButton");
 
     ReactDOM.render(
     	<Container page="EditUser" name={this.props.name} company={this.props.company} action="Add" />,
@@ -324,7 +325,7 @@ var AddUserButton = React.createClass({
 
 var RolesButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked RolesButton");
+    console.info("User clicked RolesButton");
 
     ReactDOM.render(
     	<Container page="Roles" name={this.props.name} company={this.props.company}/>,
@@ -340,7 +341,7 @@ var RolesButton = React.createClass({
 
 var ActivitiesButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked ActivitiesButton");
+    console.info("User clicked ActivitiesButton");
 
     ReactDOM.render(
     	<Container page="Activities" name={this.props.name} company={this.props.company}/>,
@@ -356,7 +357,7 @@ var ActivitiesButton = React.createClass({
 
 var UsersButton = React.createClass({
   handleClick: function(event) {
-    console.log("User clicked UsersButton");
+    console.info("User clicked UsersButton");
 
     ReactDOM.render(
     	<Container page="Users" name={this.props.name} company={this.props.company}/>,
@@ -489,43 +490,45 @@ var bootstrapClasses = {
   buttonActive: 'btn btn btn-block btn-primary'
 }
 
-var AVAILABLE_ACTIVITIES = [
-  {id: 1, name: "Access Analytics"},
-  {id: 2, name: "Edit Analytics Settings"},
-  {id: 3, name: "Activate Analytics Settings"},
-  {id: 4, name: "Delete Analytics"},
-  {id: 5, name: "Read PRM Settings"},
-  {id: 6, name: "Read PRM Reports"},
-  {id: 7, name: "Edit PRM Settings"},
-  {id: 8, name: "Activate PRM Settings"},
-  {id: 9, name: "Delete PRM"}
-]
+
 
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
+
+    console.log("inside ActivitiesMultiselect initial state");
+    console.log(this.props.available_activities);
+
+
     return {
-      selectedOptions: this.props.assigned_activities,
+      available_activities: this.props.available_activities,
+      assigned_activities: this.props.assigned_activities,
     }
   },
   componentWillReceiveProps: function(nextProps) {
+
+    console.log("inside ActivitiesMultiselect initial state");
+    console.log(nextProps.available_activities);
+
+
     this.setState({
-      selectedOptions: nextProps.assigned_activities
+      available_activities: nextProps.available_activities,
+      assigned_activities: nextProps.assigned_activities
     });
 
   },
-  _onSelect(selectedOptions) {
-    selectedOptions.sort((a, b) => a.id - b.id)
-    this.setState({selectedOptions})
+  _onSelect(assigned_activities) {
+    assigned_activities.sort((a, b) => a.id - b.id)
+    this.setState({assigned_activities})
   },
   _onDeselect(deselectedOptions) {
-    var selectedOptions = this.state.selectedOptions.slice()
+    var assigned_activities = this.state.assigned_activities.slice()
     deselectedOptions.forEach(option => {
-      selectedOptions.splice(selectedOptions.indexOf(option), 1)
+      assigned_activities.splice(assigned_activities.indexOf(option), 1)
     })
-    this.setState({selectedOptions})
+    this.setState({assigned_activities})
   },
   render: function() {
-    var {selectedOptions} = this.state
+    var {assigned_activities, available_activities} = this.state
 
     return (
         <div className="row">
@@ -536,8 +539,8 @@ var ActivitiesMultiselect = React.createClass({
               buttonText="Add"
               classNames={bootstrapClasses}
               onChange={this._onSelect}
-              options={AVAILABLE_ACTIVITIES}
-              selectedOptions={selectedOptions}
+              options={available_activities}
+              selectedOptions={assigned_activities}
               textProp="name"
               valueProp="id"
             />
@@ -553,7 +556,7 @@ var ActivitiesMultiselect = React.createClass({
               , buttonActive: 'btn btn btn-block btn-danger'
               }}
               onChange={this._onDeselect}
-              options={selectedOptions}
+              options={assigned_activities}
               textProp="name"
               valueProp="id"
             />
@@ -563,41 +566,44 @@ var ActivitiesMultiselect = React.createClass({
   }
 });
 
-var AVAILABLE_USERS = [
-  {id: 1, name: "david@apps.directemployers.org"},
-  {id: 2, name: "dpoynter@apps.directemployers.org"},
-  {id: 3, name: "edwin@apps.directemployers.org"},
-  {id: 4, name: "jkoons@apps.directemployers.org"},
-  {id: 5, name: "bob@apps.directemployers.org"},
-]
+
 
 
 
 var UsersMultiselect = React.createClass({
   getInitialState() {
+
+    console.log("Inside UsersMultiselect initial state");
+    console.log(this.props);
+
     return {
-      selectedOptions: this.props.assigned_users,
+      assigned_users: this.props.assigned_users,
+      available_users: this.props.available_users,
     }
   },
   componentWillReceiveProps: function(nextProps) {
-    this.setState({
-      selectedOptions: nextProps.assigned_users
-    });
 
+    console.log("Inside UsersMultiselect componentWillReceiveProps");
+    console.log(this.props.available_users);
+
+    this.setState({
+      available_users: nextProps.available_users,
+      assigned_users: nextProps.assigned_users
+    });
   },
-  _onSelect(selectedOptions) {
-    selectedOptions.sort((a, b) => a.id - b.id)
-    this.setState({selectedOptions})
+  _onSelect(assigned_users) {
+    assigned_users.sort((a, b) => a.id - b.id)
+    this.setState({assigned_users})
   },
   _onDeselect(deselectedOptions) {
-    var selectedOptions = this.state.selectedOptions.slice()
+    var assigned_users = this.state.assigned_users.slice()
     deselectedOptions.forEach(option => {
-      selectedOptions.splice(selectedOptions.indexOf(option), 1)
+      assigned_users.splice(assigned_users.indexOf(option), 1)
     })
-    this.setState({selectedOptions})
+    this.setState({assigned_users})
   },
   render: function() {
-    var {selectedOptions} = this.state
+    var {assigned_users, available_users} = this.state
 
     return (
         <div className="row">
@@ -607,8 +613,8 @@ var UsersMultiselect = React.createClass({
               buttonText="Add"
               classNames={bootstrapClasses}
               onChange={this._onSelect}
-              options={AVAILABLE_USERS}
-              selectedOptions={selectedOptions}
+              options={available_users}
+              selectedOptions={assigned_users}
               textProp="name"
               valueProp="id"
             />
@@ -624,7 +630,7 @@ var UsersMultiselect = React.createClass({
               , buttonActive: 'btn btn btn-block btn-danger'
               }}
               onChange={this._onDeselect}
-              options={selectedOptions}
+              options={assigned_users}
               textProp="name"
               valueProp="id"
             />
@@ -639,29 +645,65 @@ var EditRolePage = React.createClass({
 
     return {
       role_name: '',
+      available_activities: [],
+      assigned_activities: [],
+      available_users: [],
       assigned_users: [],
-      assigned_activities: []
     };
   },
   componentDidMount: function() {
     $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
-
-      var role_object = results[this.props.role_id]
-
       if (this.isMounted()) {
+
+        var role_object = results[this.props.role_id];
+        var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
+        var assigned_users = [];
+        for (var i = 0; i < assigned_users_unformatted.length; i++) {
+          var user = {}
+          user['id'] = assigned_users_unformatted[i].pk;
+          user['name'] = assigned_users_unformatted[i].fields.email;
+          assigned_users.push(user);
+        }
+
+        {/*
+        var available_users_unformatted = JSON.parse(role_object.users.available);
+        var available_users = [];
+        for (var i = 0; i < available_users_unformatted.length; i++) {
+          var user = {}
+          user['id'] = available_users_unformatted[i].pk;
+          user['name'] = available_users_unformatted[i].fields.email;
+          available_users.push(user);
+        }
+
+        */}
+
+        var available_users = [
+          {id: 1, name: "dpoynter@apps.directemployers.org"},
+          {id: 2, name: "bob@apps.directemployers.org"},
+        ];
+
         var role_name = role_object.role.name;
         {/* TODO Fix API to return available activities (right now it's just assigned activities) */}
-        {/* var assigned_activities = JSON.parse(role_object.activities); */}
-        var available_users = JSON.parse(role_object.users.available);
-        {/* TODO pull real list of assigned_users, format properly */}
-        var assigned_users = [{id: 2, name: "dpoynter@apps.directemployers.org"}];
         var assigned_activities = [{id: 1, name: "Access Analytics"},{id: 2, name: "Edit Analytics Settings"},]
 
+        var available_activities = [
+          {id: 1, name: "Access Analytics"},
+          {id: 2, name: "Edit Analytics Settings"},
+          {id: 3, name: "Activate Analytics Settings"},
+          {id: 4, name: "Delete Analytics"},
+          {id: 5, name: "Read PRM Settings"},
+          {id: 6, name: "Read PRM Reports"},
+          {id: 7, name: "Edit PRM Settings"},
+          {id: 8, name: "Activate PRM Settings"},
+          {id: 9, name: "Delete PRM"}
+        ];
 
         this.setState({
           role_name: role_name,
+          available_activities: available_activities,
+          assigned_activities: assigned_activities,
+          available_users: available_users,
           assigned_users: assigned_users,
-          assigned_activities: assigned_activities
         });
       }
     }.bind(this));
@@ -700,11 +742,11 @@ var EditRolePage = React.createClass({
 
         <hr/>
 
-        <ActivitiesMultiselect assigned_activities={this.state.assigned_activities}/>
+        <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities}/>
 
         <hr/>
 
-        <UsersMultiselect assigned_users={this.state.assigned_users}/>
+        <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users}/>
 
         <hr />
 
@@ -779,7 +821,7 @@ var ActivitiesPage = React.createClass({
 
 var UsersPage = React.createClass({
   handleEditClick: function(user_to_edit) {
-    console.log("User clicked edit user link for this user: " + user_to_edit);
+    console.info("User clicked edit user link for this user: " + user_to_edit);
 
     ReactDOM.render(
       <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
@@ -981,13 +1023,6 @@ var Menu = React.createClass({
 
 var Container = React.createClass({
   render: function() {
-
-    if(this.props.name && this.props.company){
-      console.log("Welcome. User information passed to ReactJS:");
-      console.log(this.props.name);
-      console.log(this.props.company);
-    }
-
     return (
       <div>
         <div className="row">
