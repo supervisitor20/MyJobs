@@ -94,7 +94,7 @@ gulp.task('manageusers', function() {
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
     // stripDebug() must come before sourcemaps.write()
-    // .pipe(stripDebug())
+    // You should remove logging before committing, but this confirms logging won't be in production
     .pipe(gulpif(strip_debug, stripDebug()))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
@@ -104,22 +104,14 @@ gulp.task('build', ['vendor', 'manageusers']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    console.log("By default, gulp watch strips console and debugger statements.");
-    console.log("To keep them, run: gulp watch-no-strip");
     gulp.watch('src/**/*', ['manageusers']);
 });
 
-
+// By default, we strip logging. This disables that functionality.
 gulp.task('watch-no-strip', function() {
     console.log("Keeping console and debugger statements.");
     strip_debug = false;
     gulp.watch('src/**/*', ['manageusers']);
 });
-
-
-strip_debug
-
-
-
 
 gulp.task('default', ['build']);
