@@ -629,6 +629,9 @@ def api_get_roles(request):
     # TODO: This kind of thing is unncessary. get_company_or_404 returns an object, not just a name as I thought
     company_name = get_company_or_404(request)
     company_object = Company.objects.filter(name=company_name)
+
+    company = get_company_or_404(request)
+
     company_id = company_object[0].id
 
     response_data = {}
@@ -646,15 +649,14 @@ def api_get_roles(request):
         response_data[role_id]['role']['name'] = role.name
 
         response_data[role_id]['activities'] = {}
-
-        # TODO: Redo this using Edwin's logic
+        # This company has access to various apps by means of multiple app_access_id's
+        # Retrieve all activities with these app_access_id's
+        available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
+        response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+        # Retrieve all activities assigned to this role
         assigned_activities = role.activities.all()
         response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
 
-        # TODO: Redo this using Edwin's logic
-        available_activities = role.activities.all()
-        response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
-        
         # Users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
         response_data[role_id]['users'] = {}
@@ -688,6 +690,7 @@ def api_get_specific_role(request, role_id=0):
     response_data = {}
 
     company_name = get_company_or_404(request)
+    company = get_company_or_404(request)
     company_object = Company.objects.filter(name=company_name)
     company_id = company_object[0].id
 
@@ -698,8 +701,14 @@ def api_get_specific_role(request, role_id=0):
     response_data[role_id]['role']['id'] = role[0].id
     response_data[role_id]['role']['name'] = role[0].name
 
-    activities = role[0].activities.all()
-    response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
+    response_data[role_id]['activities'] = {}
+    # This company has access to various apps by means of multiple app_access_id's
+    # Retrieve all activities with these app_access_id's
+    available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
+    response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+    # Retrieve all activities assigned to this role
+    assigned_activities = role[0].activities.all()
+    response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
 
     # Users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)
