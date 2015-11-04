@@ -494,22 +494,12 @@ var bootstrapClasses = {
 
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
-
-    console.log("inside ActivitiesMultiselect initial state");
-    console.log(this.props.available_activities);
-
-
     return {
       available_activities: this.props.available_activities,
       assigned_activities: this.props.assigned_activities,
     }
   },
   componentWillReceiveProps: function(nextProps) {
-
-    console.log("inside ActivitiesMultiselect initial state");
-    console.log(nextProps.available_activities);
-
-
     this.setState({
       available_activities: nextProps.available_activities,
       assigned_activities: nextProps.assigned_activities
@@ -572,20 +562,12 @@ var ActivitiesMultiselect = React.createClass({
 
 var UsersMultiselect = React.createClass({
   getInitialState() {
-
-    console.log("Inside UsersMultiselect initial state");
-    console.log(this.props);
-
     return {
       assigned_users: this.props.assigned_users,
       available_users: this.props.available_users,
     }
   },
   componentWillReceiveProps: function(nextProps) {
-
-    console.log("Inside UsersMultiselect componentWillReceiveProps");
-    console.log(this.props.available_users);
-
     this.setState({
       available_users: nextProps.available_users,
       assigned_users: nextProps.assigned_users
@@ -656,6 +638,9 @@ var EditRolePage = React.createClass({
       if (this.isMounted()) {
 
         var role_object = results[this.props.role_id];
+
+        var role_name = role_object.role.name;
+
         var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
         var assigned_users = [];
         for (var i = 0; i < assigned_users_unformatted.length; i++) {
@@ -665,7 +650,6 @@ var EditRolePage = React.createClass({
           assigned_users.push(user);
         }
 
-        {/*
         var available_users_unformatted = JSON.parse(role_object.users.available);
         var available_users = [];
         for (var i = 0; i < available_users_unformatted.length; i++) {
@@ -675,17 +659,11 @@ var EditRolePage = React.createClass({
           available_users.push(user);
         }
 
-        */}
 
-        var available_users = [
-          {id: 1, name: "dpoynter@apps.directemployers.org"},
-          {id: 2, name: "bob@apps.directemployers.org"},
-        ];
 
-        var role_name = role_object.role.name;
+
         {/* TODO Fix API to return available activities (right now it's just assigned activities) */}
-        var assigned_activities = [{id: 1, name: "Access Analytics"},{id: 2, name: "Edit Analytics Settings"},]
-
+        
         var available_activities = [
           {id: 1, name: "Access Analytics"},
           {id: 2, name: "Edit Analytics Settings"},
@@ -697,6 +675,10 @@ var EditRolePage = React.createClass({
           {id: 8, name: "Activate PRM Settings"},
           {id: 9, name: "Delete PRM"}
         ];
+
+        var assigned_activities = [{id: 1, name: "Access Analytics"},{id: 2, name: "Edit Analytics Settings"},]
+
+
 
         this.setState({
           role_name: role_name,

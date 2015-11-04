@@ -626,6 +626,7 @@ def api_get_roles(request):
     Retrieves all roles for a company
     """
 
+    # TODO: This kind of thing is unncessary. get_company_or_404 returns an object, not just a name as I thought
     company_name = get_company_or_404(request)
     company_object = Company.objects.filter(name=company_name)
     company_id = company_object[0].id
@@ -644,9 +645,16 @@ def api_get_roles(request):
         response_data[role_id]['role']['id'] = role.id
         response_data[role_id]['role']['name'] = role.name
 
-        activities = role.activities.all()
-        response_data[role_id]['activities'] = serializers.serialize("json", activities, fields=('name', 'description'))
+        response_data[role_id]['activities'] = {}
 
+        # TODO: Redo this using Edwin's logic
+        assigned_activities = role.activities.all()
+        response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
+
+        # TODO: Redo this using Edwin's logic
+        available_activities = role.activities.all()
+        response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+        
         # Users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
         response_data[role_id]['users'] = {}
