@@ -4,8 +4,9 @@ import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 import FilteredMultiSelect from "react-filtered-multiselect"
 
-// This is the entry point of the application. Bundling begins here.
 
+
+// This is the entry point of the application. Bundling begins here.
 
 var AssociatedUsersList = React.createClass({
   render: function() {
@@ -207,18 +208,6 @@ var DeleteUserButton = React.createClass({
   }
 });
 
-var SaveUserButton = React.createClass({
-  handleClick: function(event) {
-    {/* TODO A user MUST be assigned to at least one role
-        TODO Submit new user to server */}
-  },
-  render: function() {
-    return (
-      <Button className="primary pull-right" onClick={this.handleClick}>Save Users</Button>
-    );
-  }
-});
-
 var AddUserButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
@@ -232,6 +221,19 @@ var AddUserButton = React.createClass({
     );
   }
 });
+
+var SaveUserButton = React.createClass({
+  handleClick: function(event) {
+    {/* TODO A user MUST be assigned to at least one role
+        TODO Submit new user to server */}
+  },
+  render: function() {
+    return (
+      <Button className="primary pull-right" onClick={this.handleClick}>Save Users</Button>
+    );
+  }
+});
+
 
 var RolesButton = React.createClass({
   handleClick: function(event) {
@@ -525,6 +527,12 @@ var UsersMultiselect = React.createClass({
   }
 });
 
+
+
+
+
+
+
 var EditRolePage = React.createClass({
   getInitialState: function() {
     {/* TODO Remove this awful code once using redux with more intelligent passing of data between child/parent */}
@@ -817,62 +825,6 @@ var EditRolePage = React.createClass({
   }
 });
 
-var RolesPage = React.createClass({
-  render: function() {
-    return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
-            <h2>Roles</h2>
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
-            <RolesList source="/manage-users/api/roles/" />
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
-            <AddRoleButton />
-          </div>
-        </div>
-      </div>
-    );
-  }
-});
-
-
-var ActivitiesPage = React.createClass({
-  render: function() {
-    return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
-            <h2>Activities</h2>
-          </div>
-        </div>
-
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
-
-            <ActivitiesList source="/manage-users/api/activities/" />
-
-          </div>
-        </div>
-
-
-      </div>
-    );
-  }
-});
 
 var UsersPage = React.createClass({
   handleEditClick: function(user_to_edit) {
@@ -967,9 +919,62 @@ var UsersPage = React.createClass({
   }
 });
 
+var RolesPage = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <div className="row">
+          <div className="col-xs-12">
+            <h2>Roles</h2>
+          </div>
+        </div>
+
+        <hr />
+
+        <div className="row">
+          <div className="col-xs-12">
+            <RolesList source="/manage-users/api/roles/" />
+          </div>
+        </div>
+
+        <hr />
+
+        <div className="row">
+          <div className="col-xs-12">
+            <AddRoleButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
 
 
+var ActivitiesPage = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <div className="row">
+          <div className="col-xs-12">
+            <h2>Activities</h2>
+          </div>
+        </div>
 
+        <hr />
+
+        <div className="row">
+          <div className="col-xs-12">
+
+            <ActivitiesList source="/manage-users/api/activities/" />
+
+          </div>
+        </div>
+
+
+      </div>
+    );
+  }
+});
 
 
 var OverviewPage = React.createClass({
@@ -1072,7 +1077,6 @@ var Menu = React.createClass({
   }
 });
 
-
 var Container = React.createClass({
   render: function() {
     return (
@@ -1100,7 +1104,6 @@ var Container = React.createClass({
     );
   }
 });
-
 
 ReactDOM.render(
   <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_to_edit=""/>,
