@@ -57,7 +57,6 @@ var RolesList = React.createClass({
   },
   componentDidMount: function() {
     $.get(this.props.source, function(results) {
-
       if (this.isMounted()) {
         var table_rows = [];
         for (var key in results) {
