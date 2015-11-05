@@ -738,8 +738,16 @@ def api_create_role(request):
     if request.method == "POST":
         company = get_company_or_404(request)
 
+        response_data = {}
+
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
+
+        matching_roles = Role.objects.filter(name=role_name)
+        if matching_roles.exists():
+            response_data["success"] = "false"
+            response_data["message"] = "Another role with this name already exists."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         activity_ids = []
         if request.POST.getlist("assigned_activities[]", ""):
@@ -751,13 +759,12 @@ def api_create_role(request):
                 activity_ids.append(activity_id)
         # At least one activity must be selected
         if not activity_ids:
-            response_data = {}
             response_data["success"] = "false"
+            response_data["message"] = "Each role must have at least one activity."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # User objects have roles
-        if request.POST.getlist("assigned_users[]", ""):
-            users = request.POST.getlist("assigned_users[]", "")
+        users = request.POST.getlist("assigned_users[]", [])
 
         # Create Role
         new_role = Role.objects.create(name=role_name, company_id=company.id)
@@ -766,15 +773,13 @@ def api_create_role(request):
         new_role.activities.add(*activity_ids)
 
         # Add role to relevant users
-        for i, user in enumerate(users):
-            user_object = User.objects.filter(email=user)
-            user_object[0].roles.add( new_role.id )
+        if users:
+            for i, user in enumerate(users):
+                user_object = User.objects.filter(email=user)
+                user_object[0].roles.add( new_role.id )
 
-        # Return new role as JSON object
-        # serialize() requires an iterable. I'm sure there's a better way.
-        new_role_iterable = []
-        new_role_iterable.append(new_role)
-        return HttpResponse(serializers.serialize("json", new_role_iterable, fields=('id')))
+        response_data["success"] = "true"
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
         raise Http404
 

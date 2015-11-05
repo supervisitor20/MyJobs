@@ -191,25 +191,6 @@ var CancelRoleButton = React.createClass({
   }
 });
 
-var DeleteRoleButton = React.createClass({
-  handleClick: function(event) {
-    console.info("User clicked DeleteRoleButton");
-
-    {/* TODO: Actually delete role
-        TODO: Warn with a modal, are you sure you want to delete role? */}
-
-    ReactDOM.render(
-      <Container page="Roles" name={this.props.name} company={this.props.company}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <Button className="pull-right" onClick={this.handleClick}>Delete Role</Button>
-    );
-  }
-});
-
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
     console.info("User clicked AddRoleButton");
@@ -601,56 +582,93 @@ var EditRolePage = React.createClass({
     };
   },
   componentDidMount: function() {
+    if(this.props.action == "Edit"){
+      $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
+        if (this.isMounted()) {
 
-    $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
-      if (this.isMounted()) {
+          var role_object = results[this.props.role_id];
 
-        var role_object = results[this.props.role_id];
+          var role_name = role_object.role.name;
 
-        var role_name = role_object.role.name;
+          var available_users_unformatted = JSON.parse(role_object.users.available);
+          var available_users = available_users_unformatted.map(function(obj){
+             var user = {};
+             user['id'] = obj.pk;
+             user['name'] = obj.fields.email;
+             return user;
+          });
 
-        var available_users_unformatted = JSON.parse(role_object.users.available);
-        var available_users = available_users_unformatted.map(function(obj){
-           var user = {};
-           user['id'] = obj.pk;
-           user['name'] = obj.fields.email;
-           return user;
-        });
+          var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
+          var assigned_users = assigned_users_unformatted.map(function(obj){
+             var user = {};
+             user['id'] = obj.pk;
+             user['name'] = obj.fields.email;
+             return user;
+          });
 
-        var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
-        var assigned_users = assigned_users_unformatted.map(function(obj){
-           var user = {};
-           user['id'] = obj.pk;
-           user['name'] = obj.fields.email;
-           return user;
-        });
+          var available_activities_unformatted = JSON.parse(role_object.activities.available);
+          var available_activities = available_activities_unformatted.map(function(obj){
+             var activity = {};
+             activity['id'] = obj.pk;
+             activity['name'] = obj.fields.name;
+             return activity;
+          });
 
-        var available_activities_unformatted = JSON.parse(role_object.activities.available);
-        var available_activities = available_activities_unformatted.map(function(obj){
-           var activity = {};
-           activity['id'] = obj.pk;
-           activity['name'] = obj.fields.name;
-           return activity;
-        });
+          var assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
+          var assigned_activities = assigned_activities_unformatted.map(function(obj){
+             var activity = {};
+             activity['id'] = obj.pk;
+             activity['name'] = obj.fields.name;
+             return activity;
+          });
 
-        var assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
-        var assigned_activities = assigned_activities_unformatted.map(function(obj){
-           var activity = {};
-           activity['id'] = obj.pk;
-           activity['name'] = obj.fields.name;
-           return activity;
-        });
+          this.setState({
+            help_message: '',
+            role_name: role_name,
+            available_activities: available_activities,
+            assigned_activities: assigned_activities,
+            available_users: available_users,
+            assigned_users: assigned_users,
+          });
+        }
+      }.bind(this));
+    }
+    else if(this.props.action == "Add"){
+      $.get("/manage-users/api/roles/", function(results) {
+        if (this.isMounted()) {
 
-        this.setState({
-          help_message: '',
-          role_name: role_name,
-          available_activities: available_activities,
-          assigned_activities: assigned_activities,
-          available_users: available_users,
-          assigned_users: assigned_users,
-        });
-      }
-    }.bind(this));
+          {/* Objects in results don't have predictable keys */}
+          {/* It doesn't matter which one we get */}
+          var role_object = {};
+          for (var key in results) {
+            role_object = results[key];
+            break;
+          }
+
+          var available_users_unformatted = JSON.parse(role_object.users.available);
+          var available_users = available_users_unformatted.map(function(obj){
+             var user = {};
+             user['id'] = obj.pk;
+             user['name'] = obj.fields.email;
+             return user;
+          });
+
+          var available_activities_unformatted = JSON.parse(role_object.activities.available);
+          var available_activities = available_activities_unformatted.map(function(obj){
+             var activity = {};
+             activity['id'] = obj.pk;
+             activity['name'] = obj.fields.name;
+             return activity;
+          });
+
+          this.setState({
+            available_activities: available_activities,
+            available_users: available_users,
+          });
+        }
+
+      }.bind(this));
+    }
   },
   onTextChange: function(event) {
     this.state.role_name = event.target.value;
@@ -672,6 +690,10 @@ var EditRolePage = React.createClass({
 
     {/* Grab form fields and validate */}
 
+    {/* TODO: Warn user. If they remove a user from all roles, they will have to reinvite him. */}
+
+    var role_id = this.props.role_id;
+
     var assigned_users = this.refs.users.state.assigned_users;
 
     var role_name = this.state.role_name;
@@ -690,7 +712,7 @@ var EditRolePage = React.createClass({
     var assigned_activities = this.refs.activities.state.assigned_activities;
     if(assigned_activities.length < 1){
       this.setState({
-          help_message: "At least one activity must be assigned to each role.",
+          help_message: "Each role must have at least one activity.",
           role_name: this.state.role_name,
           available_activities: this.refs.activities.state.available_activities,
           assigned_activities: this.refs.activities.state.assigned_activities,
@@ -747,21 +769,91 @@ var EditRolePage = React.createClass({
     var csrf = getCsrf();
 
 
+    {/* Determine URL based on action */}
+    var url = "";
+    if ( this.props.action == "Edit" ){
+      url = "/manage-users/api/roles/edit/" + role_id + "/";
+    }
+    else if ( this.props.action == "Add" ){
+      url = "/manage-users/api/roles/create/";
+    }
+
+    {/* Build data to send */}
+    var data_to_send = {};
+    data_to_send['csrfmiddlewaretoken'] = csrf;
+    data_to_send['role_name'] = role_name;
+    data_to_send['assigned_activities'] = assigned_activities;
+    data_to_send['assigned_users'] = assigned_users;
+
+    {/* Submit to server */}
+    $.post(url, data_to_send, function(response) {
+      if ( response.success == "true" ){
+        ReactDOM.render(
+          <Container page="Roles" disappear_text="Role created successfully"/>,
+            document.getElementById('content')
+        );
+      }
+      else if ( response.success == "false" ){
+        this.setState({
+            help_message: response.message,
+            role_name: this.state.role_name,
+            available_activities: this.refs.activities.state.available_activities,
+            assigned_activities: this.refs.activities.state.assigned_activities,
+            available_users:  this.refs.users.state.available_users,
+            assigned_users:  this.refs.users.state.assigned_users
+        });
+      }
+    }.bind(this));
+  },
+  handleDeleteRoleClick: function (event) {
+    if (confirm('Are you sure you want to delete this role?')) {
+    } else {
+        return;
+    }
+
+    var role_id = this.props.role_id;
+
+    {/* Grab csrf */}
+
+    {/* TODO: Temporary. Use standard cookie function */}
+
+    function read_cookie(cookie) {
+        var nameEQ = cookie + "=",
+            ca = document.cookie.split(';');
+        for (var i=0; i< ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ')
+                c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0)
+                return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function getCsrf() {
+        return read_cookie("csrftoken");
+    }
+
+    var csrf = getCsrf();
+
     {/* Submit to server */}
 
-    $.post( "/manage-users/api/roles/edit/8/",
+    $.ajax( "/manage-users/api/roles/delete/" + role_id + "/",
       {
-        csrfmiddlewaretoken: csrf,
-        role_name: role_name,
-        assigned_activities: assigned_activities,
-        assigned_users: assigned_users
-      },
-      function( data ) {
-        console.log( data );
-    });
+        type: "DELETE",
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrf);
+        },
+     success: function( response ) {
+       console.log("Role deleted.")
+       console.log( response );
 
+       ReactDOM.render(
+         <Container page="Roles" />,
+           document.getElementById('content')
+       );
 
-
+    }});
 
 
   },
@@ -775,7 +867,7 @@ var EditRolePage = React.createClass({
 
     }
     else if (this.props.action == "Edit"){
-      delete_role_button = <DeleteRoleButton action={this.props.action} role_to_edit={this.props.role_to_edit}/>;
+      delete_role_button = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>
     }
 
     return (
@@ -1038,22 +1130,22 @@ var Content = React.createClass({
     var page = this.props.page;
     switch(page) {
         case "Overview":
-            page = <OverviewPage name={this.props.name} company={this.props.company}/>;
+            page = <OverviewPage disappear_text={this.props.disappear_text}/>;
             break;
         case "Roles":
-            page = <RolesPage name={this.props.name} company={this.props.company}/>;
+            page = <RolesPage disappear_text={this.props.disappear_text}/>;
             break;
         case "Activities":
-            page = <ActivitiesPage name={this.props.name} company={this.props.company}/>;
+            page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
             break;
         case "Users":
-            page = <UsersPage name={this.props.name} company={this.props.company}/>;
+            page = <UsersPage disappear_text={this.props.disappear_text}/>;
             break;
         case "EditRole":
-            page = <EditRolePage name={this.props.name} company={this.props.company}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id}/>;
+            page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
             break;
         case "EditUser":
-            page = <EditUserPage name={this.props.name} company={this.props.company} action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
+            page = <EditUserPage action={this.props.action} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>;
             break;
     }
 
@@ -1102,7 +1194,7 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit}/>
+          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>
         <div className="clearfix"></div>
