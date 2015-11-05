@@ -783,6 +783,7 @@ def api_create_role(request):
     else:
         raise Http404
 
+
 def api_edit_role(request, role_id=0):
     """
     POST /roles/edit
@@ -873,6 +874,7 @@ def api_edit_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
         raise Http404
+
 
 def api_delete_role(request, role_id=0):
     """

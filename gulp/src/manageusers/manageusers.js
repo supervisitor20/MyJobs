@@ -69,8 +69,6 @@ var AssociatedActivitiesList = React.createClass({
 
 var RolesList = React.createClass({
   handleEditClick: function(role_id) {
-    console.info("User clicked edit role link for this role: " + role_id);
-
     ReactDOM.render(
       <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_id={role_id}/>,
         document.getElementById('content')
@@ -177,8 +175,6 @@ var ActivitiesList = React.createClass({
 
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked CancelRoleButton");
-
     ReactDOM.render(
       <Container page="Roles" name={this.props.name} company={this.props.company}/>,
         document.getElementById('content')
@@ -193,8 +189,6 @@ var CancelRoleButton = React.createClass({
 
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked AddRoleButton");
-
     ReactDOM.render(
       <Container page="EditRole" name={this.props.name} company={this.props.company} action="Add"/>,
         document.getElementById('content')
@@ -209,8 +203,6 @@ var AddRoleButton = React.createClass({
 
 var CancelUserButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked CancelUserButton");
-
     ReactDOM.render(
       <Container page="Users" name={this.props.name} company={this.props.company}/>,
         document.getElementById('content')
@@ -225,8 +217,6 @@ var CancelUserButton = React.createClass({
 
 var DeleteUserButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked DeleteUserButton");
-
     {/* TODO: Actually delete user
         TODO: Warn with a modal, are you sure you want to delete user? */}
 
@@ -244,7 +234,6 @@ var DeleteUserButton = React.createClass({
 
 var SaveUserButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked SaveUserButton");
     {/* TODO A user MUST be assigned to at least one role
         TODO Submit new user to server */}
   },
@@ -257,8 +246,6 @@ var SaveUserButton = React.createClass({
 
 var AddUserButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked AddUserButton");
-
     ReactDOM.render(
     	<Container page="EditUser" name={this.props.name} company={this.props.company} action="Add" />,
         document.getElementById('content')
@@ -273,8 +260,6 @@ var AddUserButton = React.createClass({
 
 var RolesButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked RolesButton");
-
     ReactDOM.render(
     	<Container page="Roles" name={this.props.name} company={this.props.company}/>,
         document.getElementById('content')
@@ -289,8 +274,6 @@ var RolesButton = React.createClass({
 
 var ActivitiesButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked ActivitiesButton");
-
     ReactDOM.render(
     	<Container page="Activities" name={this.props.name} company={this.props.company}/>,
         document.getElementById('content')
@@ -305,8 +288,6 @@ var ActivitiesButton = React.createClass({
 
 var UsersButton = React.createClass({
   handleClick: function(event) {
-    console.info("User clicked UsersButton");
-
     ReactDOM.render(
     	<Container page="Users" name={this.props.name} company={this.props.company}/>,
         document.getElementById('content')
@@ -743,8 +724,6 @@ var EditRolePage = React.createClass({
        return obj.name;
     });
 
-
-
     {/* Grab csrf */}
 
     {/* TODO: Temporary. Use standard cookie function */}
@@ -845,22 +824,14 @@ var EditRolePage = React.createClass({
             xhr.setRequestHeader("X-CSRFToken", csrf);
         },
      success: function( response ) {
-       console.log("Role deleted.")
-       console.log( response );
-
        ReactDOM.render(
          <Container page="Roles" />,
            document.getElementById('content')
        );
-
     }});
 
 
   },
-
-
-
-
   render: function() {
     var delete_role_button = "";
     if (this.props.action == "Add") {
@@ -975,8 +946,6 @@ var ActivitiesPage = React.createClass({
 
 var UsersPage = React.createClass({
   handleEditClick: function(user_to_edit) {
-    console.info("User clicked edit user link for this user: " + user_to_edit);
-
     ReactDOM.render(
       <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
         document.getElementById('content')
