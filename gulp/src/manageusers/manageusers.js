@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-
+import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 import FilteredMultiSelect from "react-filtered-multiselect"
 
@@ -724,30 +724,6 @@ var EditRolePage = React.createClass({
        return obj.name;
     });
 
-    {/* Grab csrf */}
-
-    {/* TODO: Temporary. Use standard cookie function */}
-
-    function read_cookie(cookie) {
-        var nameEQ = cookie + "=",
-            ca = document.cookie.split(';');
-        for (var i=0; i< ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) === ' ')
-                c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0)
-                return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-
-    function getCsrf() {
-        return read_cookie("csrftoken");
-    }
-
-    var csrf = getCsrf();
-
-
     {/* Determine URL based on action */}
     var url = "";
     if ( this.props.action == "Edit" ){
@@ -759,7 +735,7 @@ var EditRolePage = React.createClass({
 
     {/* Build data to send */}
     var data_to_send = {};
-    data_to_send['csrfmiddlewaretoken'] = csrf;
+    data_to_send['csrfmiddlewaretoken'] = getCsrf();
     data_to_send['role_name'] = role_name;
     data_to_send['assigned_activities'] = assigned_activities;
     data_to_send['assigned_users'] = assigned_users;
@@ -791,27 +767,6 @@ var EditRolePage = React.createClass({
     }
 
     var role_id = this.props.role_id;
-
-    {/* Grab csrf */}
-
-    {/* TODO: Temporary. Use standard cookie function */}
-
-    function read_cookie(cookie) {
-        var nameEQ = cookie + "=",
-            ca = document.cookie.split(';');
-        for (var i=0; i< ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) === ' ')
-                c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0)
-                return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-
-    function getCsrf() {
-        return read_cookie("csrftoken");
-    }
 
     var csrf = getCsrf();
 
@@ -1044,7 +999,6 @@ var UsersPage = React.createClass({
 
 var OverviewPage = React.createClass({
   render: function() {
-
     return (
       <div>
         <div className="row">
