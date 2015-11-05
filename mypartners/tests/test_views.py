@@ -1684,6 +1684,8 @@ class OutreachViewTests(MyPartnersTestCase):
         """
         response = self.client.get(reverse('manage_outreach_inboxes'))
         self.assertEqual(response.status_code, 200)
+        # check that response contains part of the rendered template, ensure we're getting the correct page
+        self.assertContains(response, 'id="inbox-form"')
 
     def test_post_form_outreach_email(self):
         """
