@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 
 from seo.tests import factories
-from seo.models import CustomFacet, SeoSite, SiteTag
+from seo.models import Company, CustomFacet, SeoSite, SiteTag
 from setup import DirectSEOBase
 
 
@@ -254,5 +254,12 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         # postajob_sites = company_sites + network_sites + generic_sites +
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
-        
-        
+
+    def test_new_company_gets_admin_role(self):
+        """
+        When a new company is created, that company should have an Admin Role
+        available to it.
+        """
+
+        company = Company.objects.create(name="Test Company")
+        self.assertIn('Admin', company.role_set.values_list('name', flat=True))
