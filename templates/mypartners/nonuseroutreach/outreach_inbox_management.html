@@ -42,19 +42,26 @@
                         <strong>New Outreach Email Inbox</strong>
                     </div>
                     {% endif %}
+
                     <div class="product-card no-highlight">
-                        <label for="{{form.email.id_for_label">Email:</label>
+                        {% if form.email.errors %}
+                            <span class="required">
+                            <div class="error-box">
+                            </div>
+                            {% for error in form.email.errors %}
+                                <div class="error-text">* {{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
                         <div class="input-append">
                             <input id="{{form.email.id_for_label}}" maxlength="{{form.email.field.max_length}}"
                                    name="{{form.email.html_name}}" type="email" class="email-input"
                                    value="{{form.email.value|default:''}}"></input>
                             <span class="add-on">@my.jobs</span>
                         </div>
+                            {% if form.email.errors %}
+                            </span>
+                            {% endif %}
                         {{ form.id }}
-                        <span>
-                        {{ form.non_field_errors }}
-                        {{ form.email.errors }}
-                        </span>
                     </div>
                     <div class="wrapper-footer">
                         {% if form.initial %}
