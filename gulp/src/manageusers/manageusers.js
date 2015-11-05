@@ -8,60 +8,36 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 
 
 var AssociatedUsersList = React.createClass({
-  getInitialState: function() {
-    return {
-      associated_users_list: []
-    };
-  },
-  componentDidMount: function() {
-    if (this.isMounted()) {
-      var associated_users_list = [];
-      for (var key in this.props.users) {
-        associated_users_list.push(
-          <li key={key}>
-              {this.props.users[key].fields.email}
-          </li>
-        );
-      };
-      this.setState({
-        associated_users_list: associated_users_list
-      });
-    }
-  },
   render: function() {
+    var associated_users_list = [];
+    for (var key in this.props.users) {
+      associated_users_list.push(
+        <li key={key}>
+            {this.props.users[key].fields.email}
+        </li>
+      );
+    };
     return (
       <ul>
-        {this.state.associated_users_list}
+        {associated_users_list}
       </ul>
     );
   }
 });
 
 var AssociatedActivitiesList = React.createClass({
-  getInitialState: function() {
-    return {
-      associated_activities_list: []
-    };
-  },
-  componentDidMount: function() {
-    if (this.isMounted()) {
-      var associated_activities_list = [];
-      for (var key in this.props.activities) {
-        associated_activities_list.push(
-          <li key={this.props.activities[key].pk}>
-            {this.props.activities[key].fields.name}
-          </li>
-        );
-      };
-      this.setState({
-        associated_activities_list: associated_activities_list
-      });
-    }
-  },
   render: function() {
+    var associated_activities_list = [];
+    for (var key in this.props.activities) {
+      associated_activities_list.push(
+        <li key={this.props.activities[key].pk}>
+          {this.props.activities[key].fields.name}
+        </li>
+      );
+    };
     return (
       <ul>
-        {this.state.associated_activities_list}
+        {associated_activities_list}
       </ul>
     );
   }

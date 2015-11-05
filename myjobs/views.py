@@ -632,7 +632,7 @@ def api_get_roles(request):
 
     # /api/roles/
     # Return information about all roles of this company
-    roles = Role.objects.filter(company=company.id)
+    roles = Role.objects.filter(company=company)
     for role in roles:
         role_id = role.id
 
@@ -659,7 +659,7 @@ def api_get_roles(request):
         # Users that can be assigned to this role
         # This is determined by the users already associated with roles associated with this company
         users_available = []
-        roles = Role.objects.filter(company=company.id)
+        roles = Role.objects.filter(company=company)
         for role in roles:
             role_id_temp = role.id
             users = User.objects.filter(roles__id=role_id_temp)
@@ -687,7 +687,8 @@ def api_get_specific_role(request, role_id=0):
 
     response_data[role_id] = {}
 
-    role = Role.objects.filter(id=role_id).filter(company=company.id)
+    role = Role.objects.filter(id=role_id).filter(company=company)
+
     response_data[role_id]['role'] = {}
     response_data[role_id]['role']['id'] = role[0].id
     response_data[role_id]['role']['name'] = role[0].name
@@ -709,7 +710,7 @@ def api_get_specific_role(request, role_id=0):
     # Users that can be assigned to this role
     # This is determined by the users already associated with roles associated with this company
     users_available = []
-    roles = Role.objects.filter(company=company.id)
+    roles = Role.objects.filter(company=company)
     for role in roles:
         role_id_temp = role.id
         users = User.objects.filter(roles__id=role_id_temp)
