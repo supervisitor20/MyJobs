@@ -607,6 +607,7 @@ def prm_edit_saved_search(request):
         'microsites': set(microsites),
         'content_type': ContentType.objects.get_for_model(PartnerSavedSearch).id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
 
     return render_to_response('mypartners/partner_edit_search.html', ctx,
