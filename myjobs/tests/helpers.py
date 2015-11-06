@@ -15,8 +15,8 @@ def return_file(time_=None):
     """
     def _inner(url, *args, **kwargs):
         """
-        Translate a url into a known local file. Reduces the time that tests take
-        to complete if they do network access. Replaces `urllib.urlopen`
+        Translate a url into a known local file. Reduces the time that tests
+        take to complete if they do network access. Replaces `urllib.urlopen`
 
         Inputs:
         :url: URL to be retrieved
@@ -38,13 +38,19 @@ def return_file(time_=None):
         elif 'mcdonalds/careers/' in url or \
                 url.endswith('?location=chicago&q=nurse'):
             file_ = 'careers.html'
-        elif 'www.my.jobs/jobs' in url or 'www.my.jobs/search' in url:
+        elif any(domain+path in url
+                 for domain in ['www.my.jobs', 'www.jobs.jobs']
+                 for path in ['/search', '/jobs']):
             file_ = 'jobs.html'
         else:
             return StringIO(requests.get(url).text)
 
         target = 'mysearches/tests/local/'
         target += file_
+
+        def apply_string_format(dict_):
+            contents = open(target).read() % dict_
+            return StringIO(contents)
 
         if feed:
             date_dict = {'old_date': datetime.strftime(datetime.now() -
@@ -55,8 +61,14 @@ def return_file(time_=None):
             else:
                 date_dict['date'] = datetime.strftime(datetime.now(),
                                                       '%c -0300')
-            contents = open(target).read() % date_dict
-            stream = StringIO(contents)
+            stream = apply_string_format(date_dict)
+        elif file_ == 'jobs.html':
+            feed_qs = {'qs': ''}
+            qs = url.split('?')
+            if len(qs) > 1:
+                feed_qs['qs'] = '?' + qs[1]
+
+            stream = apply_string_format(feed_qs)
         else:
             stream = open(target)
 

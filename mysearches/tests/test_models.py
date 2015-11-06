@@ -12,6 +12,7 @@ from mock import patch, Mock
 from myjobs.tests.setup import MyJobsBase
 from mydashboard.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
+from myjobs.tests.helpers import return_file
 from mymessages.models import MessageInfo
 from mypartners.models import ContactRecord
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
@@ -23,7 +24,6 @@ from mysearches.tests.local.fake_feed_data import jobs, no_jobs
 from mysearches.tests.factories import (SavedSearchFactory,
                                         SavedSearchDigestFactory,
                                         PartnerSavedSearchFactory)
-from mysearches.tests.test_helpers import return_file
 from registration.models import ActivationProfile, Invitation
 from tasks import send_search_digests, requeue_missed_searches
 
@@ -32,17 +32,6 @@ class SavedSearchModelsTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchModelsTests, self).setUp()
         self.user = UserFactory()
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchModelsTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -436,8 +425,6 @@ class PartnerSavedSearchTests(MyJobsBase):
                    inviting_company=self.partner_search.partner.owner,
                    added_saved_search=self.partner_search).save()
 
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
         self.num_occurrences = lambda text, search_str: [match.start()
                                                          for match
                                                          in re.finditer(
@@ -446,14 +433,6 @@ class PartnerSavedSearchTests(MyJobsBase):
         # all jobs contain a default (blank) icon, so we can search for that if
         # we want a job count
         self.job_icon = 'http://png.nlx.org/100x50/logo.gif'
-
-    def tearDown(self):
-        super(PartnerSavedSearchTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_send_partner_saved_search_as_saved_search(self):
         """
