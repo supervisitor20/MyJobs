@@ -147,9 +147,8 @@ class Event(models.Model):
             recipients = Role.objects.filter(company=company).values_list(
                 'user__email', flat=True)
         else:
-            recipients = CompanyUser.objects.filter(
-                company=recipient_company).values_list(
-                    'user__email', flat=True)
+            recipients = User.objects.filter(
+                company=recipent_company).values_list('email', flat=True)
 
         if hasattr(sending_company, 'companyprofile'):
             email_domain = sending_company.companyprofile.outgoing_email_domain
