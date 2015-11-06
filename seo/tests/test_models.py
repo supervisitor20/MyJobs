@@ -193,12 +193,19 @@ class TestRoles(DirectSEOBase):
         tied back to that company.
         """
 
+        # can't use create_batch since emails need to be unique and
+        # updating the User model disrupts other tests
+        users = [factories.UserFactory(email="alice%s@gmail.com" % i)
+                 for i in range(10)]
+
         with self.settings(DEBUG=False):
             # When activities are disabled, company user count is determined by
             # the number of appropriate entries in the company user table.
             self.assertEqual(self.company.company_user_count, 0)
 
-            factories.CompanyUserFactory.create_batch(10, company=self.company)
+            for user in users:
+                factories.CompanyUserFactory(user=user, company=self.company)
+
             self.assertEqual(self.company.company_user_count, 10)
 
         with self.settings(DEBUG=True):
@@ -207,11 +214,12 @@ class TestRoles(DirectSEOBase):
             self.assertEqual(self.company.company_user_count, 0)
             role = RoleFactory(company=self.company)
 
-            # can't use create_batch since emails need to be unique and
-            # updating the User model disrupts other tests
-            for i in range(10):
-                factories.UserFactory(
-                    email="alice%s@gmail.com" % i, roles=[role])
+            # delete company users to prevent the possibility of a false
+            # positive
+            self.company.companyuser_set.all().delete()
+
+            for user in users:
+                user.roles = [role]
             self.assertEqual(self.company.company_user_count, 10)
 
 

@@ -93,7 +93,7 @@ def get_company_name(user):
         if settings.DEBUG:
             return Company.objects.filter(role__user=user)
         else:
-            return user.company_set.filter(companyuser__user=user)
+            return user.comapny_set.all()
     except ValueError:
         return Company.objects.none()
 
