@@ -677,13 +677,15 @@ def api_get_specific_role(request, role_id=0):
     Retrieves specific role
     """
 
+    response_data = {}
+
     # Check if role exists
     if Role.objects.filter(id=role_id).exists() == False:
-        raise Http404
+        response_data["success"] = "false"
+        response_data["message"] = "Role does not exist."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     company = get_company_or_404(request)
-
-    response_data = {}
 
     response_data[role_id] = {}
 
@@ -736,10 +738,10 @@ def api_create_role(request):
     :role:                      JSON of new role
     """
 
+    response_data = {}
+
     if request.method == "POST":
         company = get_company_or_404(request)
-
-        response_data = {}
 
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
@@ -782,7 +784,9 @@ def api_create_role(request):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
-        raise Http404
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def api_edit_role(request, role_id=0):
@@ -800,12 +804,13 @@ def api_edit_role(request, role_id=0):
     :success:                   boolean
     """
 
+    response_data = {}
+
     if request.method == "POST":
-        response_data = {}
         # Check if role exists
         if Role.objects.filter(id=role_id).exists() == False:
             response_data["success"] = "false"
-            response_data["message"] = "Role not found."
+            response_data["message"] = "Role does note exist."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # TODO Check that the company the user is apart of, managed this role
@@ -874,7 +879,9 @@ def api_edit_role(request, role_id=0):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     else:
-        raise Http404
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def api_delete_role(request, role_id=0):
@@ -889,11 +896,11 @@ def api_delete_role(request, role_id=0):
     :success:                   boolean
     """
 
+    response_data = {}
+
     if request.method == "DELETE":
 
         company = get_company_or_404(request)
-
-        response_data = {}
 
         # Check if role exists
         if Role.objects.filter(id=role_id).exists() == False:
@@ -912,11 +919,6 @@ def api_delete_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     else:
-        raise Http404
-
-
-## PUT /roles - Updates role
-# if request.method == "PUT":
-#
-# # PATCH /roles/12 - Partially updates role
-# if request.method == "PATCH":
+        response_data["success"] = "false"
+        response_data["message"] = "DELETE method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
