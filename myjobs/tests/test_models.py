@@ -181,11 +181,11 @@ class UserManagerTests(MyJobsBase):
         self.assertIn(report, Report.objects.all())
 
 
-class ActivityTests(MyJobsBase):
+class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""
 
     def setUp(self):
-        super(ActivityTests, self).setUp()
+        super(TestActivities, self).setUp()
 
         self.company = CompanyFactory()
         self.app_access = AppAccessFactory()
@@ -201,7 +201,7 @@ class ActivityTests(MyJobsBase):
             # This should be allowed since the company is different
             RoleFactory(name=self.role.name)
         except IntegrityError:
-            self.fail("Creating a similar role for a different company should " 
+            self.fail("Creating a similar role for a different company should "
                       "be allowed, but it isn't.")
 
         # we shouldn't be allowed to create a role wit the same name in the
@@ -246,4 +246,24 @@ class ActivityTests(MyJobsBase):
 
         # existing role should not have new activity
         self.assertNotIn(new_activity, self.role.activities.all())
+
+    def test_can_method(self):
+        """
+        `User.can` should return False when a user isn't associated with the
+        correct activities and True when they are.
+        """
+
+        user = UserFactory(roles=[self.role])
+        activities = self.role.activities.values_list('name', flat=True)
+
+        # check for a single activity
+        self.assertTrue(user.can(self.company, activities[0]))
+        self.assertFalse(user.can(self.company, "eat a burrito"))
+
+        # check for multiple activities
+        self.assertTrue(user.can(
+            self.company, *activities))
+
+        self.assertFalse(user.can(
+            self.company, activities[0], "eat a burrito"))
 
