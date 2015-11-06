@@ -9,6 +9,8 @@ from os.path import abspath, dirname, basename, join
 
 from secrets import *
 
+ROLES_ENABLED = False
+
 djcelery.setup_loader()
 
 _PATH = PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))

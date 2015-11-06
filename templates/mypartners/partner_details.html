@@ -90,13 +90,15 @@
 
 {% block extra-js %}
 <script type="text/javascript">
-$(document).ready(function() {
-    $(".product-card:not(.no-highlight)").on("click", function() {
-       window.location = $(this).find("a").attr("href");
-    });
-    create_tags = {{ create_tags }};
-});
+  var create_tags = {{ create_tags }};
+
+  $(document).ready(function() {
+      $(".product-card:not(.no-highlight)").on("click", function() {
+         window.location = $(this).find("a").attr("href");
+      });
+  });
 </script>
 <script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
 <script src="{{ STATIC_URL }}prm.170-6.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}tags.170-6.js{{ gz }}"></script>
 {% endblock %}

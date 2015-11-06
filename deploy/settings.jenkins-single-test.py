@@ -2,6 +2,7 @@ from default_settings import *
 from secrets import REDIRECT_QC
 
 DEBUG = True
+ROLES_ENABLED = True
 
 ABSOLUTE_URL = "/"
 

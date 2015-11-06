@@ -543,7 +543,7 @@ class SeoSite(Site):
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             return user.pk in companies.values_list('role__user', flat=True)
         else:
 
@@ -646,7 +646,7 @@ class Company(models.Model):
         determining which user to map a company to when two company instances
         have very similar names.
         """
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             return self.role_set.values('user').distinct().count()
         else:
             return self.companyuser_set.count()
@@ -717,7 +717,7 @@ class Company(models.Model):
         Returns whether or not the given user can be tied back to the company.
         """
 
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             return user.pk in self.role_set.values_list('user', flat=True)
         else:
             return user in self.admins.all()

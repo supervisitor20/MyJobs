@@ -153,14 +153,14 @@ class TestRoles(DirectSEOBase):
         the companies associated with an seo site's business units.
         """
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             # no company user, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
 
             factories.CompanyUserFactory(company=self.company, user=self.user)
             self.assertTrue(self.site.user_has_access(self.user))
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # user not assigned a role in company, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
 

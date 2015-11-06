@@ -101,7 +101,7 @@ def get_company(request):
     if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             if company.role_set.filter(user=request.user).exists():
                 return company
         else:

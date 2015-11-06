@@ -645,6 +645,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def can(self, company, *activity_names):
         """
+        Note: Until the activities feature is deployed, this method only
+        returns true when the company is a member company and the user is a
+        company user for that copmany.
+
         Checks if a user may perform certain activities.
 
         Inputs:
@@ -673,16 +677,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             # results
             user.can(company, "create example") == True
             user.can(company, "delete example") == False
-            user.can(
-                "create example", "delete_example", company=company) == False
+            user.can(company, "create example", "delete_example") == False
         """
 
         if not company:
             return False
 
-        return set(activity_names).issubset(
-            self.roles.filter(company=company).values_list(
-                'activities__name', flat=True))
+        if settings.ROLES_ENABLED:
+            return set(activity_names).issubset(
+                self.roles.filter(company=company).values_list(
+                    'activities__name', flat=True))
+        else:
+            return company.member and company in self.company_set.all()
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')

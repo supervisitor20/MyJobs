@@ -821,6 +821,7 @@ def prm_edit_records(request):
         'content_type': ContentType.objects.get_for_model(ContactRecord).id,
         'item_id': record_id,
         'form': form,
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
     return render_to_response('mypartners/edit_record.html', ctx,
                               RequestContext(request))

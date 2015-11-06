@@ -143,7 +143,7 @@ class Event(models.Model):
         if not subject:
             subject = 'An update on your %s' % self.model.name
 
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             recipients = Role.objects.filter(company=company).values_list(
                 'user__email', flat=True)
         else:
