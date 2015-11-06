@@ -89,13 +89,14 @@
 {% endblock %}
 
 {% block extra-js %}
-<script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}prm.163-29.js{{ gz }}"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     $(".product-card:not(.no-highlight)").on("click", function() {
        window.location = $(this).find("a").attr("href");
     });
+    create_tags = {{ create_tags }};
 });
 </script>
+<script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}prm.170-6.js{{ gz }}"></script>
 {% endblock %}

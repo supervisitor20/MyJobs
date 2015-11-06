@@ -25,7 +25,9 @@ def init_tags(self):
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
         help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.',
-        widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
+        widget=forms.TextInput(attrs={
+            'id': 'p-tags',
+            'autocomplete': 'off'})
     )
 
 
@@ -36,7 +38,7 @@ class ContactForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'label', 'address_line_one', 'address_line_two', 
+        'label', 'address_line_one', 'address_line_two',
         'city', 'state', 'postal_code')
     # similarly for partner information
     __PARTNER_FIELDS = ('partner-tags', 'partner_id', 'partnername')
@@ -107,11 +109,11 @@ class ContactForm(NormalizedModelForm):
 
         contact = contact or super(ContactForm, self).save(commit)
 
-        if any(self.cleaned_data.get(field) 
+        if any(self.cleaned_data.get(field)
                for field in self.__LOCATION_FIELDS
                if self.cleaned_data.get(field)):
             location = Location.objects.create(**{
-                field: self.cleaned_data[field] 
+                field: self.cleaned_data[field]
                 for field in self.__LOCATION_FIELDS})
 
             if location not in contact.locations.all():
@@ -216,7 +218,7 @@ class NewPartnerForm(NormalizedModelForm):
                                          'company_id', 'ct'])
 
         create_contact = any(self.cleaned_data.get(field)
-                             for field in self.__CONTACT_FIELDS 
+                             for field in self.__CONTACT_FIELDS
                              if self.cleaned_data.get(field))
 
         if create_contact:
@@ -227,10 +229,10 @@ class NewPartnerForm(NormalizedModelForm):
             self.instance.partner = partner
             instance = super(NewPartnerForm, self).save(commit)
             partner.primary_contact = instance
-            
+
             if create_location:
                 location = Location.objects.create(**{
-                    field: self.cleaned_data[field] 
+                    field: self.cleaned_data[field]
                     for field in self.__LOCATION_FIELDS})
 
                 if location not in instance.locations.all():
@@ -278,7 +280,7 @@ class PartnerForm(NormalizedModelForm):
     """
     def __init__(self, *args, **kwargs):
         super(PartnerForm, self).__init__(*args, **kwargs)
-        contacts = Contact.objects.filter(partner=kwargs['instance'], 
+        contacts = Contact.objects.filter(partner=kwargs['instance'],
                                           archived_on__isnull=True)
         choices = [(contact.id, contact.name) for contact in contacts]
 

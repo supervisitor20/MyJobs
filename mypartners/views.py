@@ -169,6 +169,7 @@ def partner_details(request):
         'contact_ct': contact_ct_id,
         'partner_ct': partner_ct_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     return render_to_response('mypartners/partner_details.html', ctx,
                               RequestContext(request))
