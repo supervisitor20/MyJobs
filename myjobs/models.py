@@ -643,6 +643,47 @@ class User(AbstractBaseUser, PermissionsMixin):
         return not packages.exists() or packages.filter(
             owner__in=self.company_set.all()).exists()
 
+    def can(self, company, *activity_names):
+        """
+        Checks if a user may perform certain activities.
+
+        Inputs:
+            :company: The company who's role activities to check.
+            :activity_names: Positional arguments are the names of the
+                             activities the user wants to perform.
+             belonging to the given company
+
+        Output:
+            A boolean signifying whether the provided actions may be performed.
+
+        Example:
+
+            # given
+            app_access = AppAccess.objects.create(name="Example")
+            company = Company.objects.first()
+            activities = Activity.objects.bulk_create([
+                Activity(name="create example", app_access=app_access),
+                Activity(name="delete example", app_access=app_access)])
+
+            role = Role.objects.create(name="Example Role", company=company)
+            role.activities.add(activities[0])
+            user = User.objects.first()
+            user.roles.add(role)
+
+            # results
+            user.can(company, "create example") == True
+            user.can(company, "delete example") == False
+            user.can(
+                "create example", "delete_example", company=company) == False
+        """
+
+        if not company:
+            return False
+
+        return set(activity_names).issubset(
+            self.roles.filter(company=company).values_list(
+                'activities__name', flat=True))
+
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
 def delete_user(sender, instance, using, **kwargs):

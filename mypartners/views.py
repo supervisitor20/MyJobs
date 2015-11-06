@@ -52,7 +52,8 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 find_partner_from_email, tag_get_or_create)
 
 PRM = Activity.objects.filter(
-    app_access__name='PRM').values_list('name', flat=True)
+    app_access__name='PRM').exclude(
+        name__icontains='tag').values_list('name', flat=True)
 
 def missing_access():
     raise Http404("App level permissions are missing.")
