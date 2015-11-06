@@ -232,6 +232,7 @@ def edit_item(request):
         'contacts': json.dumps(contacts),
         'content_id': content_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     if item_id:
         ctx['locations'] = Contact.objects.get(pk=item_id).locations.all()

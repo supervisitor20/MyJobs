@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    console.log(create_tags);
     $("#p-tags").hide();
     $("#p-tags").tagit({
         allowSpaces: true,
