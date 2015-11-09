@@ -68,6 +68,10 @@ h2 {
     color: #333;
 }
 
+.wrapper h2 {
+  font-weight: bold;
+}
+
 .h2block {
     background-color: #fff;
     padding: 5px 20px;
@@ -3889,6 +3893,10 @@ span.helptext {
 /*Manage Users*/
 /*New*/
 
+section {
+  border: 1px solid #333333;
+}
+
 a:hover {
  cursor:pointer;
 }
@@ -3906,6 +3914,10 @@ h1 a {
   border: 1px solid #d5d4d0;
 }
 
+.breadcrumbs > span {
+  padding-left: 10px;
+}
+
 .submenu{
   padding-left: 0px;
 }
@@ -3913,22 +3925,35 @@ h1 a {
 .panel {
 }
 
-.panel label, .panel .label {
+.product-card-full {
+  padding: 15px;
+}
+
+.wrapper-header + .product-card-full {
+  border-top: 0;
+}
+
+
+.product-card-full label, .product-card-full .label {
   display: block;
   font-weight: normal;
   font-size: 100%;
 }
 
-.panel table ul {
+.product-card-full table ul {
   padding: 0px;
   list-style-type: none;
 }
 
-.panel select[multiple] {
+.product-card-full table>thead>tr>th {
+    border-bottom: 1px solid #ddd;
+}
+
+.product-card-full select[multiple] {
     width: 100%;
 }
 
-.panel input {
+.product-card-full input {
   background-color: #fff;
   border: 1px solid #ccc;
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
@@ -3945,7 +3970,7 @@ h1 a {
   border-radius: 4px;
 }
 
-.panel textarea {
+.product-card-full textarea {
   background-color: #fff;
   border: 1px solid #ccc;
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
@@ -3964,13 +3989,13 @@ h1 a {
   width: 100%;
 }
 
-.panel .help-text {
+.product-card-full .help-text {
   font-style: italic;
   padding: 0px;
   margin-top: 10px;
 }
 
-.panel .btn, .sidebar .btn {
+.product-card-full .btn, .sidebar .btn {
   background-color: rgb(204, 204, 204);
   background-image: linear-gradient(rgb(255, 255, 255), rgb(230, 230, 230));
   background-repeat: repeat-x;
@@ -4076,6 +4101,14 @@ h1 a {
   word-spacing: 0px;
   writing-mode: lr-tb;
   -webkit-writing-mode: horizontal-tb;
+}
+
+.product-card-full {
+  background-color: #F7F7F7;
+  box-sizing: border-box;
+  padding: 15 15 15 10px;
+  border: 1px solid #E5E5E5;
+  position: relative;
 }
 
 .btn.pull-right {

@@ -336,55 +336,65 @@ var EditUserPage = React.createClass({
     var user_email_text_field = <UserEmailAddressTextField action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
 
     return (
-      <div>
 
-        <div className="row">
-          <div className="col-xs-12">
+
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
             <h2>{this.props.action} User</h2>
           </div>
-        </div>
+          <div className="product-card-full no-highlight">
 
-        <hr />
 
-        <div className="row">
-          <div className="col-xs-10">
-            <label htmlFor="id_user_name">User Email Address*:</label>
-            <div className="input-group">
-              {user_email_text_field}
+
+
+
+            <div className="row">
+              <div className="col-xs-10">
+                <label htmlFor="id_user_name">User Email Address*:</label>
+                <div className="input-group">
+                  {user_email_text_field}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <hr/>
+            <hr/>
 
-        <div className="row">
-          <div className="col-xs-12">
-            {/* TODO Maybe use this https://github.com/insin/react-filtered-multiselect */}
+            <div className="row">
+              <div className="col-xs-12">
+                {/* TODO Maybe use this https://github.com/insin/react-filtered-multiselect */}
 
-            <label htmlFor="id_roles">Role*:</label>
+                <label htmlFor="id_roles">Role*:</label>
 
-            <select name="id_roles" size={roles_count} multiple defaultValue={['Analytics Setup', 'Analytics User']} aria-describedby="role_select_help">
-              <option value="Analytics Setup">Analytics Setup</option>
-              <option value="Analytics User">Analytics User</option>
-              <option value="PRM - Read">PRM - Read</option>
-              <option value="PRM - Full Access">PRM - Full Access</option>
-            </select>
-            <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
-          </div>
-        </div>
+                <select name="id_roles" size={roles_count} multiple defaultValue={['Analytics Setup', 'Analytics User']} aria-describedby="role_select_help">
+                  <option value="Analytics Setup">Analytics Setup</option>
+                  <option value="Analytics User">Analytics User</option>
+                  <option value="PRM - Read">PRM - Read</option>
+                  <option value="PRM - Full Access">PRM - Full Access</option>
+                </select>
+                <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
+              </div>
+            </div>
 
-        <hr/>
+            <hr/>
 
-        {user_invitation_email_form}
+            {user_invitation_email_form}
 
-        <div className="row">
-          <div className="col-xs-12">
-            <SaveUserButton />
-            {delete_user_button}
-            <CancelUserButton />
+            <div className="row">
+              <div className="col-xs-12">
+                <SaveUserButton />
+                {delete_user_button}
+                <CancelUserButton />
+              </div>
+            </div>
+
+
           </div>
         </div>
       </div>
+
+
+
     );
   }
 });
@@ -771,6 +781,11 @@ var EditRolePage = React.createClass({
 
   },
   render: function() {
+
+
+
+
+
     var delete_role_button = "";
     if (this.props.action == "Add") {
 
@@ -781,45 +796,51 @@ var EditRolePage = React.createClass({
 
     return (
       <div>
+
         <div className="row">
-          <div className="col-xs-12">
-            <h2>{this.props.action} Role</h2>
+          <div className="col-xs-12 ">
+            <div className="wrapper-header">
+              <h2>{this.props.action} Role</h2>
+            </div>
+            <div className="product-card-full no-highlight">
+
+              <div className="row">
+                <div className="col-xs-12">
+                  <label htmlFor="id_role_name">Role Name*:</label>
+                  <input id="id_role_name" maxLength="255" name="name" type="text" value={this.state.role_name} size="35" onChange={this.onTextChange}/>
+                </div>
+              </div>
+
+              <hr/>
+
+              {/* <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p> */}
+
+              <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
+
+              <hr/>
+
+              <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users} ref="users"/>
+
+              <hr />
+
+              <div className="row">
+
+                <div className="col-xs-12">
+                  <span className="primary pull-right">
+                    {this.state.help_message}
+                  </span>
+                </div>
+                <div className="col-xs-12">
+                  <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
+                  {delete_role_button}
+                  <CancelRoleButton />
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
-            <label htmlFor="id_role_name">Role Name*:</label>
-            <input id="id_role_name" maxLength="255" name="name" type="text" value={this.state.role_name} size="35" onChange={this.onTextChange}/>
-          </div>
-        </div>
-
-        <hr/>
-
-        <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
-
-        <hr/>
-
-        <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users} ref="users"/>
-
-        <hr />
-
-        <div className="row">
-
-
-          <div className="col-xs-12">
-            <span className="primary pull-right">
-              {this.state.help_message}
-            </span>
-          </div>
-          <div className="col-xs-12">
-            <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
-            {delete_role_button}
-            <CancelRoleButton />
-          </div>
-        </div>
       </div>
     );
   }
@@ -836,18 +857,13 @@ var UsersPage = React.createClass({
   },
   render: function() {
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
             <h2>Users</h2>
           </div>
-        </div>
+          <div className="product-card-full no-highlight">
 
-        <hr />
-
-        {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
-        <div className="row">
-          <div className="col-xs-12">
             <table className="table table-hover">
               <thead>
                 <tr>
@@ -904,14 +920,14 @@ var UsersPage = React.createClass({
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
 
-        <hr/>
+            <hr/>
 
-        <div className="row">
-          <div className="col-xs-12">
-            <AddUserButton />
+            <div className="row">
+              <div className="col-xs-12">
+                <AddUserButton />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -922,26 +938,22 @@ var UsersPage = React.createClass({
 var RolesPage = React.createClass({
   render: function() {
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
             <h2>Roles</h2>
           </div>
-        </div>
+          <div className="product-card-full no-highlight">
 
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
             <RolesList source="/manage-users/api/roles/" />
-          </div>
-        </div>
 
-        <hr />
+            <hr/>
 
-        <div className="row">
-          <div className="col-xs-12">
-            <AddRoleButton />
+            <div className="row">
+              <div className="col-xs-12">
+                <AddRoleButton />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -953,24 +965,22 @@ var RolesPage = React.createClass({
 var ActivitiesPage = React.createClass({
   render: function() {
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
             <h2>Activities</h2>
           </div>
-        </div>
-
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-12">
+          <div className="product-card-full no-highlight">
 
             <ActivitiesList source="/manage-users/api/activities/" />
 
+            {/*
+              <hr/>
+              <AddRoleButton />
+              */}
+
           </div>
         </div>
-
-
       </div>
     );
   }
@@ -980,33 +990,19 @@ var ActivitiesPage = React.createClass({
 var OverviewPage = React.createClass({
   render: function() {
     return (
-
-
-
-
       <div className="row">
         <div className="col-xs-12 ">
-
           <div className="wrapper-header">
             <h2>Overview</h2>
           </div>
-
           <div className="product-card no-highlight">
-
             {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
-
             <p>asdfasdfasd asdf asdf </p>
             <p>asdfasdfasd asdf asdf </p>
             <p>asdfasdfasd asdf asdf </p>
-
           </div>
         </div>
       </div>
-
-
-
-
-
     );
   }
 });
@@ -1073,7 +1069,9 @@ var Container = React.createClass({
         <div className="row">
           <div className="col-sm-12">
             <div className="breadcrumbs">
-              Manage Users
+              <span>
+                Manage Users
+              </span>
             </div>
           </div>
         </div>
