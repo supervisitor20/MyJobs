@@ -812,8 +812,14 @@ def api_edit_role(request, role_id=0):
             response_data["message"] = "Role does note exist."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # TODO Check that the company the user is apart of, managed this role
         company = get_company_or_404(request)
+
+        # Check if the company the user is associated with manages this role
+        role = Role.objects.get(pk=role_id)
+        if role.company.id != company.id:
+            response_data["success"] = "false"
+            response_data["message"] = "The company you are associated with does not manage this role."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         # INPUT - role_name
         role_name = request.POST.get("role_name", "")
@@ -841,9 +847,6 @@ def api_edit_role(request, role_id=0):
 
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
-
-        # EDIT ROLE
-        role = Role.objects.get(pk=role_id)
 
         # EDIT ROLE - Name
         if role_name != "":
