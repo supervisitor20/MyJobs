@@ -23,6 +23,10 @@
             height:auto;
         }
     }
+
+    .actions {
+        margin-top:15px;
+    }
 </style>
 {% endblock %}
 
@@ -51,7 +55,7 @@
                         {% endif %}
                         <div class="input-append">
                             <input id="{{form.email.id_for_label}}" maxlength="{{form.email.field.max_length}}"
-                                   name="{{form.email.html_name}}" type="email" class="email-input"
+                                   name="{{form.email.html_name}}" type="text" class="email-input"
                                    value="{{form.email.value|default:''}}"></input>
                             <span class="add-on">@my.jobs</span>
                         </div>
@@ -69,6 +73,10 @@
                     </div>
                 </div>
                 {% endfor %}
+                <div class="actions pull-right">
+                    <a class="btn" href="{% url 'prm' %}">{% trans 'Cancel' %}</a>
+                    <button type="submit" class="btn primary" id="location-save">{% trans 'Save' %}</button>
+                </div>
             </form>
         </div>
 
