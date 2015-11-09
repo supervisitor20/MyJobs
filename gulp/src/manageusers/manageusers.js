@@ -980,50 +980,33 @@ var ActivitiesPage = React.createClass({
 var OverviewPage = React.createClass({
   render: function() {
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
+
+
+
+
+      <div className="row">
+        <div className="col-xs-12 ">
+
+          <div className="wrapper-header">
             <h2>Overview</h2>
           </div>
-        </div>
 
-        <hr />
-
-        <div className="row">
-          <div className="col-xs-4">
-
-            {/* <p>{this.props.name} works with {this.props.company}.</p> */}
+          <div className="product-card no-highlight">
 
             {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
 
-            <table className="table">
-              <tbody>
-                <tr>
-                  <td><strong>Roles:</strong></td>
-                  <td>4</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td><strong>Users:</strong></td>
-                  <td>4</td>
-                </tr>
-                <tr>
-                  <td>Pending</td>
-                  <td>
-                    <span className="label label-warning">1</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Active</td>
-                  <td>
-                    <span className="label label-success">3</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <p>asdfasdfasd asdf asdf </p>
+            <p>asdfasdfasd asdf asdf </p>
+            <p>asdfasdfasd asdf asdf </p>
+
           </div>
         </div>
       </div>
+
+
+
+
+
     );
   }
 });
@@ -1054,7 +1037,7 @@ var Content = React.createClass({
 
     return (
       <div className="col-sm-8">
-        <div className="panel">
+        <div className="card-wrapper">
           {page}
         </div>
       </div>
@@ -1067,7 +1050,7 @@ var Menu = React.createClass({
     return (
       <div className="col-sm-4">
         <div className="sidebar">
-          <h2 className="top">Manage Users</h2>
+          <h2 className="top">Navigation</h2>
           <RolesButton name={this.props.name} company={this.props.company}/>
           <ActivitiesButton />
           <UsersButton />
