@@ -13,6 +13,10 @@
         min-width:60%;
     }
 
+    .delete-label {
+        display:inline;
+    }
+
     @media all and (max-width: 500px) {
         #inbox-form input[type='checkbox'] {
             float:right;
@@ -59,7 +63,7 @@
                     </div>
                     <div class="wrapper-footer">
                         {% if form.initial %}
-                        <div class="pull-right">Delete {{ form.DELETE }}
+                        <div class="pull-right"><label for="{{form.DELETE.id_for_label}}" class="delete-label">Delete</label> {{ form.DELETE }}
                         </div>
                         {% endif %}
                     </div>
