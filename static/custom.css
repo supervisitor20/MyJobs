@@ -3520,11 +3520,27 @@ table td, table th {
 }
 
 [class^="icon-"], [class*=" icon-"] {
-    background-image: url("http://d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/glyphicons-halflings.png");
+    background-image: url("//d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/glyphicons-halflings.png");
 }
 
 .icon-white {
-    background-image: url("http://d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/glyphicons-halflings-white.png");
+     background-image: url("//d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/glyphicons-halflings-white.png");
+}
+
+[class^="icon-"], [class*=" icon-"] {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-top: 1px;
+    line-height: 14px;
+    vertical-align: text-top;
+    background-image: url("../img/glyphicons-halflings.png");
+    background-position: 14px 14px;
+    background-repeat: no-repeat;
+}
+
+.icon-envelope {
+  background-position: -72px 0;
 }
 
 body.modal-open {
@@ -4136,4 +4152,27 @@ h1 a {
 .multiselect-remove {
   border-right: 8px solid #999;
   margin-top: 5px;
+}
+
+@media(max-width:767px){
+
+}
+@media(min-width:768px){
+
+}
+@media(max-width:992px){
+  .topbar-inner {
+    height: 70px !important;
+  }
+  #nav .main-nav{
+    height: 50px !important;
+  }
+}
+@media(min-width:992px){
+  .topbar-inner {
+    height: 30px !important;
+    }
+}
+@media(min-width:1200px){
+
 }

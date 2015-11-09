@@ -83,7 +83,6 @@ var RolesList = React.createClass({
           table_rows: table_rows
         });
       }
-
     }.bind(this));
   },
   render: function() {
@@ -236,7 +235,6 @@ var SaveUserButton = React.createClass({
   }
 });
 
-
 var RolesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
@@ -347,10 +345,6 @@ var EditUserPage = React.createClass({
           </div>
           <div className="product-card-full no-highlight">
 
-
-
-
-
             <div className="row">
               <div className="col-xs-10">
                 <label htmlFor="id_user_name">User Email Address*:</label>
@@ -390,13 +384,9 @@ var EditUserPage = React.createClass({
               </div>
             </div>
 
-
           </div>
         </div>
       </div>
-
-
-
     );
   }
 });
@@ -407,8 +397,6 @@ var bootstrapClasses = {
   button: 'btn btn btn-block btn-default',
   buttonActive: 'btn btn btn-block btn-primary'
 }
-
-
 
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
@@ -473,10 +461,6 @@ var ActivitiesMultiselect = React.createClass({
   }
 });
 
-
-
-
-
 var UsersMultiselect = React.createClass({
   getInitialState() {
     return {
@@ -538,12 +522,6 @@ var UsersMultiselect = React.createClass({
     );
   }
 });
-
-
-
-
-
-
 
 var EditRolePage = React.createClass({
   getInitialState: function() {
@@ -783,11 +761,6 @@ var EditRolePage = React.createClass({
 
   },
   render: function() {
-
-
-
-
-
     var delete_role_button = "";
     if (this.props.action == "Add") {
 
@@ -848,14 +821,12 @@ var EditRolePage = React.createClass({
   }
 });
 
-
 var UsersPage = React.createClass({
   handleEditClick: function(user_to_edit) {
     ReactDOM.render(
       <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
         document.getElementById('content')
     );
-
   },
   render: function() {
     return (
@@ -971,7 +942,6 @@ var RolesPage = React.createClass({
   }
 });
 
-
 var ActivitiesPage = React.createClass({
   render: function() {
     return (
@@ -983,11 +953,6 @@ var ActivitiesPage = React.createClass({
           <div className="product-card-full no-highlight">
 
             <ActivitiesList source="/manage-users/api/activities/" />
-
-            {/*
-              <hr/>
-              <AddRoleButton />
-              */}
 
           </div>
         </div>
