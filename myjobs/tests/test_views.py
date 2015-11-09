@@ -859,7 +859,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -890,7 +890,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -1126,4 +1126,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         # Test if the lists of company names match!
         self.assertItemsEqual(jsond_company_names, actual_company_names)
-

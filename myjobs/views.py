@@ -613,7 +613,7 @@ def manage_users(request):
 
 def api_get_activities(request):
     """
-    API for activities
+    Retrieves all activities
     """
 
     activities = Activity.objects.all()
@@ -622,16 +622,14 @@ def api_get_activities(request):
 
 def api_get_roles(request):
     """
-    GET /roles/
-    Retrieves all roles for a company
+    GET /manage-users/api/roles/
+    Retrieves all roles associated with a company
     """
-
-    company = get_company_or_404(request)
 
     response_data = {}
 
-    # /api/roles/
-    # Return information about all roles of this company
+    company = get_company_or_404(request)
+
     roles = Role.objects.filter(company=company)
     for role in roles:
         role_id = role.id
@@ -651,13 +649,13 @@ def api_get_roles(request):
         assigned_activities = role.activities.all()
         response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
 
-        # Users already assigned to this role
+        # Retrieve users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
         response_data[role_id]['users'] = {}
         response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
 
-        # Users that can be assigned to this role
-        # This is determined by the users already associated with roles associated with this company
+        # Retrieve users that can be assigned to this role
+        # This is simply a list of all users already assigned to roles associated with this company
         users_available = []
         roles = Role.objects.filter(company=company)
         for role in roles:
@@ -673,7 +671,7 @@ def api_get_roles(request):
 
 def api_get_specific_role(request, role_id=0):
     """
-    GET /roles/NUMBER
+    GET /manage-users/api/roles/NUMBER
     Retrieves specific role
     """
 
@@ -704,13 +702,13 @@ def api_get_specific_role(request, role_id=0):
     assigned_activities = role[0].activities.all()
     response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
 
-    # Users already assigned to this role
+    # Retrieve users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)
     response_data[role_id]['users'] = {}
     response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
 
-    # Users that can be assigned to this role
-    # This is determined by the users already associated with roles associated with this company
+    # Retrieve users that can be assigned to this role
+    # This is simply a list of all users already assigned to roles associated with this company
     users_available = []
     roles = Role.objects.filter(company=company)
     for role in roles:
@@ -726,16 +724,17 @@ def api_get_specific_role(request, role_id=0):
 
 def api_create_role(request):
     """
-    POST /roles/create
+    POST /manage-users/api/roles/create
     Creates a new role
 
     Inputs:
     :role_name:                 name of role
-    :activities:                activities assigned to this role
-    :users:                     users assigned to this role
+    :assigned_activities:       activities assigned to this role
+    :assigned_users:            users assigned to this role
 
     Returns:
     :role:                      JSON of new role
+    :success:                   boolean
     """
 
     response_data = {}
@@ -791,7 +790,7 @@ def api_create_role(request):
 
 def api_edit_role(request, role_id=0):
     """
-    POST /roles/edit
+    POST /manage-users/api/roles/edit
     Edits an existing role
 
     Inputs:
@@ -886,7 +885,7 @@ def api_edit_role(request, role_id=0):
 
 def api_delete_role(request, role_id=0):
     """
-    POST /roles/delete/NUMBER
+    POST /manage-users/api/roles/delete/NUMBER
     Deletes a role
 
     Inputs:
@@ -914,8 +913,12 @@ def api_delete_role(request, role_id=0):
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
         Role.objects.filter(id=role_id).delete()
-        response_data["success"] = "true"
+        if Role.objects.filter(id=32).exists() == False:
+            response_data["success"] = "true"
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+        response_data["success"] = "false"
+        response_data["message"] = "Role not deleted."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     else:
