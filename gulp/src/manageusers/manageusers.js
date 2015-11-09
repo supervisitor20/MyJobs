@@ -73,7 +73,9 @@ var RolesList = React.createClass({
               <td>
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
-              <td><a onClick={this.handleEditClick.bind(this, results[key].role.id)}>Edit</a></td>
+              <td>
+                <Button onClick={this.handleEditClick.bind(this, results[key].role.id)}>Edit</Button>
+              </td>
             </tr>
           );
         }
@@ -885,7 +887,9 @@ var UsersPage = React.createClass({
                     </ul>
                   </td>
                   <td><span className="label label-warning">Pending</span></td>
-                  <td><a onClick={this.handleEditClick.bind(this, "david@apps.directemployers.org")}>Edit</a></td>
+                  <td>
+                    <Button onClick={this.handleEditClick.bind(this, "david@apps.directemployers.org")}>Edit</Button>
+                  </td>
                 </tr>
                 <tr>
                   <td>dpoynter@apps.directemployers.org</td>
@@ -895,7 +899,9 @@ var UsersPage = React.createClass({
                     </ul>
                   </td>
                   <td><span className="label label-success">Active</span></td>
-                  <td><a onClick={this.handleEditClick.bind(this, "dpoynter@apps.directemployers.org")}>Edit</a></td>
+                  <td>
+                    <Button onClick={this.handleEditClick.bind(this, "dpoynter@apps.directemployers.org")}>Edit</Button>
+                  </td>
                 </tr>
                 <tr>
                   <td>edwin@apps.directemployers.org</td>
@@ -905,7 +911,9 @@ var UsersPage = React.createClass({
                     </ul>
                   </td>
                   <td><span className="label label-success">Active</span></td>
-                  <td><a onClick={this.handleEditClick.bind(this, "edwin@apps.directemployers.org")}>Edit</a></td>
+                  <td>
+                    <Button onClick={this.handleEditClick.bind(this, "edwin@apps.directemployers.org")}>Edit</Button>
+                  </td>
                 </tr>
                 <tr>
                   <td>jkoons@apps.directemployers.org</td>
@@ -916,7 +924,9 @@ var UsersPage = React.createClass({
                     </ul>
                   </td>
                   <td><span className="label label-success">Active</span></td>
-                  <td><a onClick={this.handleEditClick.bind(this, "jkoons@apps.directemployers.org")}>Edit</a></td>
+                  <td>
+                    <Button onClick={this.handleEditClick.bind(this, "jkoons@apps.directemployers.org")}>Edit</Button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -997,9 +1007,9 @@ var OverviewPage = React.createClass({
           </div>
           <div className="product-card no-highlight">
             {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
-            <p>asdfasdfasd asdf asdf </p>
-            <p>asdfasdfasd asdf asdf </p>
-            <p>asdfasdfasd asdf asdf </p>
+            <p>What should go here?</p>
+            <p>What should go here?</p>
+            <p>What should go here?</p>
           </div>
         </div>
       </div>
