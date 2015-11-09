@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, EmailValidator
 from django.db import models
 from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
@@ -40,8 +40,8 @@ ACTIVITY_TYPES = {
     4: 'sent',
 }
 
-email_validator_local = RegexValidator('^([0-9a-zA-Z]+[\.\_]?[0-9a-zA-Z]+)*$',
-                                       'Invalid email identifier. Allowed characters [A-Z] [0-9] [ _ . ]')
+email_validator_username_only = RegexValidator(EmailValidator.user_regex,
+                                               'Enter a valid email username.')
 
 
 class Status(models.Model):
@@ -912,7 +912,7 @@ class OutreachEmailAddress(models.Model):
         return "%s for %s" % (self.email, self.company)
 
     company = models.ForeignKey("seo.Company")
-    email = models.CharField(validators=[email_validator_local], unique=True,
+    email = models.CharField(validators=[email_validator_username_only], unique=True,
                              max_length=255, verbose_name="Email",
                              help_text="Email to send outreach efforts to.")
 

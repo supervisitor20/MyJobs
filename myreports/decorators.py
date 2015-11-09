@@ -1,5 +1,4 @@
 from functools import partial
-
 from universal.decorators import not_found_when
 
 restrict_to_staff = partial(
