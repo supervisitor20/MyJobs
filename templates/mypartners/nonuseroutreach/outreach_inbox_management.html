@@ -31,11 +31,10 @@
                 {% csrf_token %}
                 {% for form in formset %}
                 <div class="card-wrapper">
-                    {% if not form.initial %}
                     <div class="wrapper-header">
-                        <strong>New Outreach Email Inbox</strong>
+                        <strong>{% if not form.initial %}New{% else%}Existing{% endif %} Outreach Email Inbox</strong>
                     </div>
-                    {% endif %}
+
 
                     <div class="product-card no-highlight">
                         {% if form.email.errors %}
@@ -78,7 +77,7 @@
                     Click "Save" to add additional inbox addresses
                 </div>
                 <div class="navigation">
-                    <h2></h2>
+                    <h2>Navigation</h2>
                     <a class="btn" onclick="document.getElementById('inbox-form').submit();">Save</a>
                 </div>
             </div>

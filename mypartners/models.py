@@ -43,6 +43,7 @@ ACTIVITY_TYPES = {
 email_validator_local = RegexValidator('^([0-9a-zA-Z]+[\.\_]?[0-9a-zA-Z]+)*$',
                                        'Invalid email identifier. Allowed characters [A-Z] [0-9] [ _ . ]')
 
+
 class Status(models.Model):
     """
     Keeps track of a particular model's approval status.
