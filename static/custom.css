@@ -4001,13 +4001,12 @@ h1 a {
   display: block;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
-  height: 35px;
+  height: 42px;
   line-height: 20px;
   margin: 10 0 10 0;
-  padding: 10px;
+  padding: 10 10 50 10px;
   text-align: center;
   text-decoration: none;
-  text-shadow: none !important;
   vertical-align: middle;
 }
 
@@ -4015,6 +4014,10 @@ h1 a {
   width: 100%;
   margin-left: 0px;
   margin-top: 10px;
+}
+
+.sidebar h2 {
+  font-weight: bold;
 }
 
 .btn.primary {

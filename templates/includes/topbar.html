@@ -66,6 +66,7 @@
                             {% if company.posting_access %}
                                 <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
                             {% endif %}
+                            <li><a id="posted-jobs-tab" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
                         </ul>
                     </li>
                     {% endif %}

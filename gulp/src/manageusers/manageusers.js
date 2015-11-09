@@ -1067,7 +1067,7 @@ var Menu = React.createClass({
     return (
       <div className="col-sm-4">
         <div className="sidebar">
-          <h2 className="top">Manage</h2>
+          <h2 className="top">Manage Users</h2>
           <RolesButton name={this.props.name} company={this.props.company}/>
           <ActivitiesButton />
           <UsersButton />
