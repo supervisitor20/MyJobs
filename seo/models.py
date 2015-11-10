@@ -534,16 +534,24 @@ class SeoSite(Site):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company that owns the SeoSite.
+        In order for a user to have access they must be assigned a role in the
+        Company that owns the SeoSite.*
+
+        * Until activities are activated in production, what determines if a
+        user has access is that they are a company user for one of the
+        companies assigned to the SeoSite's business units (job_source_ids).
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        user_companies = user.get_companies()
-        for company in companies:
-            if company not in user_companies:
-                return False
-        return True
+        if settings.DEBUG:
+            return user.pk in companies.values_list('role__user', flat=True)
+        else:
+
+            user_companies = user.get_companies()
+            for company in companies:
+                if company not in user_companies:
+                    return False
+            return True
 
     def get_companies(self):
         site_buids = self.business_units.all()
@@ -635,13 +643,13 @@ class Company(models.Model):
     def company_user_count(self):
         """
         Counts how many users are mapped to this company. This is useful for
-        determining which company to map companyusers to when two company
-        instances have very similar names.
-
-        It is treated as a property of the model.
-
+        determining which user to map a company to when two company instances
+        have very similar names.
         """
-        return self.companyuser_set.count()
+        if settings.DEBUG:
+            return self.role_set.values('user').distinct().count()
+        else:
+            return self.companyuser_set.count()
 
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
@@ -706,10 +714,13 @@ class Company(models.Model):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company.
+        Returns whether or not the given user can be tied back to the company.
         """
-        return user in self.admins.all()
+
+        if settings.DEBUG:
+            return user.pk in self.role_set.values_list('user', flat=True)
+        else:
+            return user in self.admins.all()
 
     @property
     def has_packages(self):
