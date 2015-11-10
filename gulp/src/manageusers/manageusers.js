@@ -47,7 +47,7 @@ var AssociatedActivitiesList = React.createClass({
 var RolesList = React.createClass({
   handleEditClick: function(role_id) {
     ReactDOM.render(
-      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_id={role_id}/>,
+      <Container page="EditRole" action="Edit" role_id={role_id}/>,
         document.getElementById('content')
     );
   },
@@ -153,7 +153,7 @@ var ActivitiesList = React.createClass({
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="Roles" name={this.props.name} company={this.props.company}/>,
+      <Container page="Roles"/>,
         document.getElementById('content')
     );
   },
@@ -167,7 +167,7 @@ var CancelRoleButton = React.createClass({
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Add"/>,
+      <Container page="EditRole" action="Add"/>,
         document.getElementById('content')
     );
   },
@@ -181,7 +181,7 @@ var AddRoleButton = React.createClass({
 var RolesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="Roles" name={this.props.name} company={this.props.company}/>,
+    	<Container page="Roles" />,
         document.getElementById('content')
     );
   },
@@ -195,7 +195,7 @@ var RolesButton = React.createClass({
 var ActivitiesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="Activities" name={this.props.name} company={this.props.company}/>,
+    	<Container page="Activities" />,
         document.getElementById('content')
     );
   },
@@ -734,7 +734,7 @@ var Menu = React.createClass({
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <RolesButton name={this.props.name} company={this.props.company}/>
+          <RolesButton />
           <ActivitiesButton />
         </div>
       </div>
@@ -763,7 +763,7 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>
+          <Content page={this.props.page} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>
         <div className="clearfix"></div>
