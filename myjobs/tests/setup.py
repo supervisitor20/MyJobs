@@ -32,12 +32,8 @@ class MyJobsBase(TestCase):
         self.ms_solr.delete(q='*:*')
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
                 self.base_context_processors)
-<<<<<<< HEAD
-=======
-
         try:
             self.patcher.stop()
         except RuntimeError:
             # patcher was stopped in a test
             pass
->>>>>>> 996ed2dbed29687728cbcedb767c6bc197427353
