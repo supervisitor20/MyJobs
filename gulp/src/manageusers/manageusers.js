@@ -971,9 +971,6 @@ var OverviewPage = React.createClass({
             <h2>Overview</h2>
           </div>
           <div className="product-card no-highlight">
-            {/* TODO: Use a Component like this: https://github.com/facebook/fixed-data-table */}
-            <p>What should go here?</p>
-            <p>What should go here?</p>
             <p>What should go here?</p>
           </div>
         </div>
