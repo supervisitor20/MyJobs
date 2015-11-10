@@ -35,3 +35,33 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(resolver.view_name, 'api_delete_role')
         resolver = resolve('/manage-users/api/activities/')
         self.assertEqual(resolver.view_name, 'api_get_activities')
+
+    # Simply check that they all return 200
+    # Don't actually modify data
+    def test_apis_up(self):
+        response = self.client.get('/manage-users/api/activities/')
+        self.assertEqual(response.status_code, 200)
+
+        # TODO How do you get a normal request to the view so that the view can pull out a company?
+        # Or would it bet better to pass a company object directly?
+
+
+        # response = self.client.get('/manage-users/api/roles/',  request)
+        # print response.status_code
+        # self.assertEqual(response.status_code, 200)
+
+        # for x in range(0, 10):
+        #     response = self.client.get('/manage-users/api/roles/' + randint(0,50) + '/')
+        #     self.assertEqual(response.status_code, 200)
+        #
+        #     # Won't edit data. Requires POST method.
+        #     response = self.client.get('/manage-users/api/roles/edit/' + randint(0,50) + '/')
+        #     self.assertEqual(response.status_code, 200)
+        #
+        #     # Won't edit data. Requires DELETE method.
+        #     response = self.client.get('/manage-users/api/roles/delete/' + randint(0,50) + '/')
+        #     self.assertEqual(response.status_code, 200)
+        #
+        # # Won't edit data. Requires POST method.
+        # response = self.client.get('/manage-users/api/roles/create/')
+        # self.assertEqual(response.status_code, 200)

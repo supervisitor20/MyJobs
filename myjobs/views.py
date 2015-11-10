@@ -928,3 +928,72 @@ def api_delete_role(request, role_id=0):
         response_data["success"] = "false"
         response_data["message"] = "DELETE method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+
+
+
+
+
+
+
+def api_get_users(request):
+    """
+    GET /manage-users/api/users/
+    Retrieves all users associated with a company
+    """
+
+    response_data = {}
+
+    company = get_company_or_404(request)
+
+    users = User.objects.filter(company=company)
+
+
+
+
+    for user in users:
+
+        response_data[role.id] = {}
+
+
+        # email
+        # roles
+        # status
+        # role.id
+
+
+
+
+        #
+        # response_data[role_id]['role'] = {}
+        # response_data[role_id]['role']['id'] = role.id
+        # response_data[role_id]['role']['name'] = role.name
+        #
+        # response_data[role_id]['activities'] = {}
+        # # This company has access to various apps by means of multiple app_access_id's
+        # # Retrieve all activities with these app_access_id's
+        # available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
+        # response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+        # # Retrieve all activities assigned to this role
+        # assigned_activities = role.activities.all()
+        # response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
+        #
+        # # Retrieve users already assigned to this role
+        # users_assigned = User.objects.filter(roles__id=role_id)
+        # response_data[role_id]['users'] = {}
+        # response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
+        #
+        # # Retrieve users that can be assigned to this role
+        # # This is simply a list of all users already assigned to roles associated with this company
+        # users_available = []
+        # roles = Role.objects.filter(company=company)
+        # for role in roles:
+        #     role_id_temp = role.id
+        #     users = User.objects.filter(roles__id=role_id_temp)
+        #     for user in users:
+        #         if user not in users_available:
+        #             users_available.append(user)
+        # response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
+    #
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
