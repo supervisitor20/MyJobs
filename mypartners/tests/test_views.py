@@ -44,7 +44,7 @@ class MyPartnersTestCase(MyJobsBase):
         self.request_factory = RequestFactory()
 
         # Create a user to login as
-        self.staff_user = UserFactory()
+        self.staff_user = UserFactory(is_staff=True)
 
         # Create a company
         self.company = CompanyFactory()
@@ -1716,6 +1716,6 @@ class OutreachViewTests(MyPartnersTestCase):
                 }
         response = self.client.post(reverse('manage_outreach_inboxes'), data)
 
-        self.assertContains(response, "Invalid email identifier")
+        self.assertContains(response, "Enter a valid email username")
         count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
         self.assertEqual(count_emails, 0)
