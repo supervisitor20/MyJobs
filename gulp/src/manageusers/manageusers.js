@@ -561,6 +561,7 @@ var EditRolePage = React.createClass({
 
     {/* Submit to server */}
 
+    {/* TODO Integrate Darrin's nice abstracted util here for easier testing */}
     $.ajax( "/manage-users/api/roles/delete/" + role_id + "/",
       {
         type: "DELETE",
