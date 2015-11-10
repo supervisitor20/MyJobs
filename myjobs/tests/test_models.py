@@ -12,6 +12,7 @@ from myjobs.models import User, Role
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory)
+from seo.tests.factories import CompanyUserFactory
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
 from myreports.models import Report
@@ -254,16 +255,25 @@ class TestActivities(MyJobsBase):
         """
 
         user = UserFactory(roles=[self.role])
+        CompanyUserFactory(user=user, company=self.company)
         activities = self.role.activities.values_list('name', flat=True)
 
         # check for a single activity
         self.assertTrue(user.can(self.company, activities[0]))
-        self.assertFalse(user.can(self.company, "eat a burrito"))
+
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(self.company, "eat a burrito"))
+
+        with self.settings(ROLES_ENABLED=False):
+            self.company.member = False
+            self.company.save()
+
+            self.assertFalse(user.can(self.company, activities[0]))
 
         # check for multiple activities
-        self.assertTrue(user.can(
-            self.company, *activities))
+        self.assertTrue(user.can( self.company, *activities))
 
-        self.assertFalse(user.can(
-            self.company, activities[0], "eat a burrito"))
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(
+                self.company, activities[0], "eat a burrito"))
 
