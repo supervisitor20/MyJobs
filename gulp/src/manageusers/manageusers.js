@@ -340,7 +340,7 @@ var UsersMultiselect = React.createClass({
 
 var EditRolePage = React.createClass({
   getInitialState: function() {
-    {/* TODO Refactor to use basic Actions and the Dispatchers */}
+    {/* TODO Refactor to use basic Actions and Dispatchers */}
     return {
       help_message: '',
       role_name: '',
@@ -529,6 +529,7 @@ var EditRolePage = React.createClass({
     data_to_send['assigned_users'] = assigned_users;
 
     {/* Submit to server */}
+    {/* TODO Integrate Darrin's nice abstracted util here for easier testing */}
     $.post(url, data_to_send, function(response) {
       if ( response.success == "true" ){
         ReactDOM.render(
