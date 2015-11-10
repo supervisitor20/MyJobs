@@ -101,8 +101,12 @@ def get_company(request):
     if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
-        if company.companyuser_set.filter(user=request.user).exists():
-            return company
+        if settings.DEBUG:
+            if company.role_set.filter(user=request.user).exists():
+                return company
+        else:
+            if company.companyuser_set.filter(user=request.user).exists():
+                return company
 
     # If the current hit is for a non-microsite admin, we don't know what
     # company we should be using; don't guess.

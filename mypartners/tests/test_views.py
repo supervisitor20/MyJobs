@@ -852,7 +852,6 @@ class SearchEditTests(MyPartnersTestCase):
                                                 created_by=self.staff_user,
                                                 user=self.contact.user,
                                                 partner=self.partner,)
-
     def test_render_new_form(self):
         url = self.get_url(company=self.company.id,
                            partner=self.partner.id)
@@ -967,12 +966,13 @@ class SearchEditTests(MyPartnersTestCase):
 
     def test_update_existing_saved_search(self):
         """
-            Verify that form can update existing saved search information. Ensure last_action_time is
-            also updated properly
+        Verify that form can update existing saved search information. Ensure
+        last_action_time is also updated properly
         """
         self.search.last_action_time = datetime.now() - timedelta(days=1)
         self.search.save()
-        self.assertNotEqual(self.search.last_action_time.date(), datetime.now().date())
+        self.assertNotEqual(self.search.last_action_time.date(),
+                            datetime.now().date())
         url = self.get_url('partner_savedsearch_save',
                            company=self.company.id,
                            partner=self.partner.id,

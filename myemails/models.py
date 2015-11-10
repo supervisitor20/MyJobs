@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
 from django.core.mail import send_mail
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -142,9 +143,13 @@ class Event(models.Model):
         if not subject:
             subject = 'An update on your %s' % self.model.name
 
-        recipients = CompanyUser.objects.filter(
-            company=recipient_company).values_list('user__email',
-                                                   flat=True)
+        if settings.DEBUG:
+            recipients = Role.objects.filter(company=company).values_list(
+                'user__email', flat=True)
+        else:
+            recipients = User.objects.filter(
+                company=recipent_company).values_list('email', flat=True)
+
         if hasattr(sending_company, 'companyprofile'):
             email_domain = sending_company.companyprofile.outgoing_email_domain
         else:
