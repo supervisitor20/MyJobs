@@ -3934,6 +3934,10 @@ h1 a {
   padding-left: 10px;
 }
 
+.menu {
+  float: right;
+}
+
 .submenu{
   padding-left: 0px;
 }

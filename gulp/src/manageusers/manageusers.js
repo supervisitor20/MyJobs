@@ -1003,7 +1003,7 @@ var Content = React.createClass({
     }
 
     return (
-      <div className="col-sm-8">
+      <div className="col-xs-8">
         <div className="card-wrapper">
           {page}
         </div>
@@ -1015,7 +1015,7 @@ var Content = React.createClass({
 var Menu = React.createClass({
   render: function() {
     return (
-      <div className="col-sm-4">
+      <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
           <RolesButton name={this.props.name} company={this.props.company}/>
@@ -1048,6 +1048,9 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
+
+
+
           <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>
