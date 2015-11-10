@@ -1,7 +1,7 @@
 from default_settings import *
 
 DEBUG = True
-ROLES_ENABLED = True
+ROLES_ENABLED = False
 
 ABSOLUTE_URL = "/"
 
