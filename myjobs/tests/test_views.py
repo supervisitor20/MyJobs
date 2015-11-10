@@ -1119,6 +1119,7 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         # this particular string has been json dumped twice because
         # the template tag returns a json dump of companies and when the view
         # is hit it too returns a json dump of response.content
+        import ipdb; ipdb.set_trace()
         jsond = json.loads(response.content[begin:end].replace('\\', ''))
 
         # Pull company names from json and self.companies

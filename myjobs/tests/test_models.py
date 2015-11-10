@@ -270,6 +270,9 @@ class TestActivities(MyJobsBase):
 
             self.assertFalse(user.can(self.company, activities[0]))
 
+            self.company.member = True
+            self.company.save()
+
         # check for multiple activities
         self.assertTrue(user.can( self.company, *activities))
 

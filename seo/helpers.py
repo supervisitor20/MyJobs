@@ -238,7 +238,7 @@ def job_breadcrumbs(job, company=False):
     Generate breadcrumbs for job detail pages.
     Inputs:
         :job: Job document from Haystack
-        :company: Boolean, set to True to include comapny information in output
+        :company: Boolean, set to True to include company information in output
 
     Outputs:
         A list of dictionaries for each field in the breadbox
