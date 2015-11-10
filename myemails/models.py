@@ -9,8 +9,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.template import Template, Context
 
-from seo.models import CompanyUser
-from myjobs.models import User
+from myjobs.models import User, Role
 import tasks
 
 
