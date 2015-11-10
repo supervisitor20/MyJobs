@@ -1,9 +1,12 @@
+from mock import patch
 from seo_pysolr import Solr
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.test import TestCase
+
+from myjobs.tests.helpers import return_file
 
 
 class MyJobsBase(TestCase):
@@ -22,7 +25,19 @@ class MyJobsBase(TestCase):
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS', context_processors)
         setattr(settings, 'MEMOIZE', False)
 
+        self.patcher = patch('urllib2.urlopen', return_file())
+        self.mock_urlopen = self.patcher.start()
+
     def tearDown(self):
         self.ms_solr.delete(q='*:*')
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
                 self.base_context_processors)
+<<<<<<< HEAD
+=======
+
+        try:
+            self.patcher.stop()
+        except RuntimeError:
+            # patcher was stopped in a test
+            pass
+>>>>>>> 996ed2dbed29687728cbcedb767c6bc197427353

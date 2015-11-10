@@ -16,7 +16,11 @@ dev_*
 CACHE
 static/redirect.css
 
+<<<<<<< HEAD
 Gulp stuff
+=======
+# Gulp stuff
+>>>>>>> 996ed2dbed29687728cbcedb767c6bc197427353
 gulp/node_modules/
 static/bundle/
 

@@ -1,6 +1,9 @@
+require('babel/register');
+
 var gulp = require('gulp');
 var browserify = require('browserify');
-var babelify= require('babelify');
+var babelify = require('babelify');
+var babel = require('gulp-babel');
 var util = require('gulp-util');
 var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
@@ -8,7 +11,7 @@ var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var stripDebug = require('gulp-strip-debug');
 var gulpif = require('gulp-if');
-// var es5shim = require('es5-shim');
+var jasmine = require('gulp-jasmine');
 
 var vendor_libs = [
     'react',
@@ -17,7 +20,6 @@ var vendor_libs = [
     'react-redux',
     'babel/polyfill',
     'es6-promise',
-    // 'es5-shim'
 ];
 
 var dest = '../static/bundle';
@@ -50,7 +52,7 @@ gulp.task('reporting', function() {
     })
     .external(vendor_libs)
     .add('src/reporting/main.js')
-    .transform(babelify)
+    .transform(babelify.configure({optional: 'runtime'}))
     .bundle()
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
@@ -100,18 +102,27 @@ gulp.task('manageusers', function() {
     .pipe(gulp.dest(dest))
 });
 
-gulp.task('build', ['vendor', 'manageusers']);
-
-// Leave this running in development for a pleasant experience.
-gulp.task('watch', function() {
-    gulp.watch('src/**/*', ['manageusers']);
-});
-
 // By default, we strip logging. This disables that functionality.
 gulp.task('watch-no-strip', function() {
     console.log("Keeping console and debugger statements.");
     strip_debug = false;
-    gulp.watch('src/**/*', ['manageusers']);
+    gulp.watch('src/**/*', ['reporting', 'manageusers']);
 });
 
 gulp.task('default', ['build']);
+
+gulp.task('test', function() {
+    return gulp.src(['./src/**/spec/*.js'])
+        .pipe(jasmine({
+            includeStackTrace: false,
+        }));
+});
+
+gulp.task('build', ['vendor', 'reporting', 'manageusers']);
+
+// Leave this running in development for a pleasant experience.
+gulp.task('watch', function() {
+    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers']);
+});
+
+gulp.task('default', ['build', 'test']);

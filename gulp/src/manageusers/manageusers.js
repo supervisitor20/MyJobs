@@ -1021,6 +1021,7 @@ var Menu = React.createClass({
           <RolesButton name={this.props.name} company={this.props.company}/>
           <ActivitiesButton />
           <UsersButton />
+
         </div>
       </div>
     );
@@ -1048,9 +1049,6 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-
-
-
           <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>

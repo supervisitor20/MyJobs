@@ -10,20 +10,6 @@ from django.test.utils import override_settings
 from datetime import datetime
 import pytz
 
-admin_seo_links = ["atssourcecode",
-                   "billboardimage",
-                   "businessunit",
-                   "company",
-                   "configuration",
-                   "customfacet",
-                   "custompage",
-                   "googleanalytics",
-                   "googleanalyticscampaign",
-                   "seositefacet",
-                   "seosite",
-                   "specialcommitment",
-                   "viewsource"]
-
 
 class SeoAdminTestCase(DirectSEOBase):
     def setUp(self):
@@ -35,18 +21,6 @@ class SeoAdminTestCase(DirectSEOBase):
         self.client.login(email=self.user.email,
                           password=self.password)
 
-    def test_add(self):
-        """Tests seo admin add views"""
-        for link in admin_seo_links:
-            resp = self.client.get('/admin/seo/%s/add/' % link)
-            self.assertEqual(resp.status_code, 200)
-
-    def test_change(self):
-        """Tests seo admin list views"""
-        for link in admin_seo_links:
-            resp = self.client.get('/admin/seo/%s/' % link)
-            self.assertEqual(resp.status_code, 200)
-            
     def test_seo_site_can_be_child(self):
         """
             Ensure SEO Site can be added as a child via the admin form
