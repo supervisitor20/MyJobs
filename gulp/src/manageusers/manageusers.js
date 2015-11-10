@@ -178,63 +178,6 @@ var AddRoleButton = React.createClass({
   }
 });
 
-var CancelUserButton = React.createClass({
-  handleClick: function(event) {
-    ReactDOM.render(
-      <Container page="Users" name={this.props.name} company={this.props.company}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <Button className="pull-right" onClick={this.handleClick}>Cancel</Button>
-    );
-  }
-});
-
-var DeleteUserButton = React.createClass({
-  handleClick: function(event) {
-    {/* TODO: Actually delete user
-        TODO: Warn with a modal, are you sure you want to delete user? */}
-
-    ReactDOM.render(
-      <Container page="Users" name={this.props.name} company={this.props.company}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <Button className="pull-right" onClick={this.handleClick}>Delete Users</Button>
-    );
-  }
-});
-
-var AddUserButton = React.createClass({
-  handleClick: function(event) {
-    ReactDOM.render(
-    	<Container page="EditUser" name={this.props.name} company={this.props.company} action="Add" />,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <Button className="primary pull-right"  onClick={this.handleClick}>Add Users</Button>
-    );
-  }
-});
-
-var SaveUserButton = React.createClass({
-  handleClick: function(event) {
-    {/* TODO A user MUST be assigned to at least one role
-        TODO Submit new user to server */}
-  },
-  render: function() {
-    return (
-      <Button className="primary pull-right" onClick={this.handleClick}>Save Users</Button>
-    );
-  }
-});
-
 var RolesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
@@ -259,133 +202,6 @@ var ActivitiesButton = React.createClass({
   render: function() {
     return (
       <Button onClick={this.handleClick}>Activities</Button>
-    );
-  }
-});
-
-var UsersButton = React.createClass({
-  handleClick: function(event) {
-    ReactDOM.render(
-    	<Container page="Users" name={this.props.name} company={this.props.company}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <Button onClick={this.handleClick}>Users</Button>
-    );
-  }
-});
-
-var UserInvitationEmailForm = React.createClass({
-  render: function() {
-
-    var user_invitation_email_template = "You were invited to be a user in an application by DirectEmployers Association.\n\nPlease click the following link to confirm:\n\n[DYNAMIC LINK WILL GO HERE]";
-
-    return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
-            <label htmlFor="id_invitation_email">Invitation Email to User:</label>
-            <textarea id="id_invitation_email" name="id_invitation_email" type="textarea" rows="10" defaultValue={user_invitation_email_template} aria-describedby="invitation_email_help">
-
-            </textarea>
-            <p id="inivitation_email_help" className="help-text">The invitation will automatically include a link for this user to confirm their account.</p>
-          </div>
-        </div>
-        <hr/>
-      </div>
-    );
-  }
-});
-
-var UserEmailAddressTextField = React.createClass({
-  render: function() {
-    if (this.props.action == "Add"){
-      return (
-        <input id="id_user_name" maxLength="255" name="id_user_name" editable type="email" size="35"/>
-      );
-    }
-    else if (this.props.action == "Edit"){
-      return (
-        <input id="id_user_name" maxLength="255" name="id_user_name" type="email" readOnly value={this.props.user_to_edit} size="35"/>
-      );
-    }
-  }
-});
-
-var EditUserPage = React.createClass({
-  render: function() {
-    var user_invitation_email_form = "";
-    var delete_user_button = "";
-    if (this.props.action == "Add") {
-      user_invitation_email_form = <UserInvitationEmailForm />;
-
-    }
-    else if (this.props.action == "Edit"){
-      delete_user_button = <DeleteUserButton action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
-    }
-
-    {/* Needed because, apparently, no way to make height of multiselect variable to fill contents */}
-    {/* TODO: Update value dynamically */}
-    var roles_count = 4;
-
-    {/* Needed because, both EditUserPage and EditRolePage components can handle editing or adding,
-      depending on value of this.props.action (e.g. Edit, Add)
-      Roles can always be editted, but we don't want emails to be editted. */}
-    var user_email_text_field = <UserEmailAddressTextField action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
-
-    return (
-
-
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>{this.props.action} User</h2>
-          </div>
-          <div className="product-card-full no-highlight">
-
-            <div className="row">
-              <div className="col-xs-10">
-                <label htmlFor="id_user_name">User Email Address*:</label>
-                <div className="input-group">
-                  {user_email_text_field}
-                </div>
-              </div>
-            </div>
-
-            <hr/>
-
-            <div className="row">
-              <div className="col-xs-12">
-
-                <label htmlFor="id_roles">Role*:</label>
-
-                <select name="id_roles" size={roles_count} multiple defaultValue={['Analytics Setup', 'Analytics User']} aria-describedby="role_select_help">
-                  <option value="Analytics Setup">Analytics Setup</option>
-                  <option value="Analytics User">Analytics User</option>
-                  <option value="PRM - Read">PRM - Read</option>
-                  <option value="PRM - Full Access">PRM - Full Access</option>
-                </select>
-                <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
-              </div>
-            </div>
-
-            <hr/>
-
-            {user_invitation_email_form}
-
-            <div className="row">
-              <div className="col-xs-12">
-                <SaveUserButton />
-                {delete_user_button}
-                <CancelUserButton />
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
     );
   }
 });
@@ -820,101 +636,6 @@ var EditRolePage = React.createClass({
   }
 });
 
-var UsersPage = React.createClass({
-  handleEditClick: function(user_to_edit) {
-    ReactDOM.render(
-      <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Users</h2>
-          </div>
-          <div className="product-card-full no-highlight">
-
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>User Email</th>
-                  <th>Associated Roles</th>
-                  <th>Status</th>
-                  <th className="col-md-1"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>david@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                      <li>PRM - Full Access</li>
-                      <li>Analytics Setup</li>
-                      <li>Analytics User</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-warning">Pending</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "david@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>dpoynter@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "dpoynter@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>edwin@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>Analytics Setup</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "edwin@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>jkoons@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                      <li>PRM - Full Access</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "jkoons@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <hr/>
-
-            <div className="row">
-              <div className="col-xs-12">
-                <AddUserButton />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-});
-
 var RolesPage = React.createClass({
   render: function() {
     return (
@@ -960,7 +681,6 @@ var ActivitiesPage = React.createClass({
   }
 });
 
-
 var OverviewPage = React.createClass({
   render: function() {
     return (
@@ -991,14 +711,8 @@ var Content = React.createClass({
         case "Activities":
             page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
             break;
-        case "Users":
-            page = <UsersPage disappear_text={this.props.disappear_text}/>;
-            break;
         case "EditRole":
             page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
-            break;
-        case "EditUser":
-            page = <EditUserPage action={this.props.action} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>;
             break;
     }
 
@@ -1020,8 +734,6 @@ var Menu = React.createClass({
           <h2 className="top">Navigation</h2>
           <RolesButton name={this.props.name} company={this.props.company}/>
           <ActivitiesButton />
-          <UsersButton />
-
         </div>
       </div>
     );
@@ -1034,7 +746,7 @@ var Container = React.createClass({
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1><a href="/manage" title="Back to Manage Users">DirectEmployers</a></h1>
+            <h1><a href="/manage-users/" title="Back to Manage Users">DirectEmployers</a></h1>
           </div>
         </div>
 
@@ -1049,7 +761,7 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>
+          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>
         <div className="clearfix"></div>
@@ -1059,6 +771,6 @@ var Container = React.createClass({
 });
 
 ReactDOM.render(
-  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_to_edit=""/>,
+  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id=""/>,
     document.getElementById('content')
 );
