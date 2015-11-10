@@ -43,31 +43,6 @@ class MultipleFileInputWidget(FileInput):
         return [files.get(name, None)]
 
 
-class SplitDateDropDownWidget(MultiWidget):
-    def __init__(self, attrs=None):
-        widgets = (
-            Select(attrs=attrs, choices=month_choices),
-            Select(attrs=attrs, choices=day_choices),
-            Select(attrs=attrs, choices=year_choices),
-        )
-        super(SplitDateDropDownWidget, self).__init__(widgets, attrs)
-
-    def decompress(self, value):
-        if not value:
-            value = localtime(now())
-        month = datetime.strftime(value, '%b')
-        day = datetime.strftime(value, '%d')
-        year = datetime.strftime(value, '%Y')
-        return [month, day, year]
-
-    def format_output(self, rendered_widgets):
-        return ''.join([
-            '<div class="date-time">',
-            rendered_widgets[0], rendered_widgets[1], rendered_widgets[2],
-            '</div>'
-        ])
-
-
 class SplitDateTimeDropDownWidget(MultiWidget):
     def __init__(self, attrs=None):
         widgets = (
@@ -146,28 +121,6 @@ class SplitDateTimeDropDownField(MultiValueField):
         date_string = " ".join(decompressed_date_time)
         try:
             date_time = datetime.strptime(date_string, "%b %d %Y %I %M %p")
-        except ValueError:
-            raise ValidationError('Invalid date format.')
-        return date_time
-
-class SplitDateDropDownField(MultiValueField):
-    widget = SplitDateDropDownWidget
-
-    def __init__(self, *args, **kwargs):
-        list_fields = (
-            fields.ChoiceField(choices=month_choices),
-            fields.ChoiceField(choices=day_choices),
-            fields.ChoiceField(choices=year_choices),
-        )
-        super(SplitDateDropDownField, self). __init__(
-            fields=list_fields,
-            *args, **kwargs
-        )
-
-    def compress(self, decompressed_date_time):
-        date_string = " ".join(decompressed_date_time)
-        try:
-            date_time = datetime.strptime(date_string, "%b %d %Y")
         except ValueError:
             raise ValidationError('Invalid date format.')
         return date_time

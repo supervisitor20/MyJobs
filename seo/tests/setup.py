@@ -2,8 +2,6 @@ import os.path
 from contextlib import contextmanager
 
 from django.conf import settings
-from seo.search_backend import DESolrSearchBackend, DESolrEngine
-from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
@@ -11,10 +9,12 @@ from django.test import TestCase
 from django.test.client import Client
 from django.template import context
 
-from seo_pysolr import Solr
 from import_jobs import DATA_DIR
+from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
+from seo.search_backend import DESolrSearchBackend, DESolrEngine
 from seo.tests.factories import BusinessUnitFactory
 from seo.tests.factories import SeoSiteFactory, ConfigurationFactory
+from seo_pysolr import Solr
 import solr_settings
 
 

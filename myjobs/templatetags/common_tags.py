@@ -90,7 +90,10 @@ def get_company_name(user):
 
     # Only return companies for which the user is a company user
     try:
-        return user.company_set.filter(companyuser__user=user)
+        if settings.DEBUG:
+            return Company.objects.filter(role__user=user)
+        else:
+            return user.company_set.all()
     except ValueError:
         return Company.objects.none()
 
@@ -117,14 +120,6 @@ def get_gravatar(user, size=20):
     """
     try:
         return user.get_gravatar_url(size)
-    except:
-        return ''
-
-
-@register.simple_tag
-def get_gravatar_by_id(user_id, size=20):
-    try:
-        return User.objects.get(id=user_id).get_gravatar_url(size)
     except:
         return ''
 

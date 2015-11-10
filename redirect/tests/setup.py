@@ -21,8 +21,6 @@ class RedirectBase(TransactionTestCase):
         # settings.
         settings.ROOT_URLCONF = 'redirect_urls'
         settings.PROJECT = 'redirect'
-        settings.EXCLUDED_VIEW_SOURCE_CACHE_KEY = redirect_settings.EXCLUDED_VIEW_SOURCE_CACHE_KEY
-        settings.CUSTOM_EXCLUSION_CACHE_KEY = redirect_settings.CUSTOM_EXCLUSION_CACHE_KEY
         settings.MIDDLEWARE_CLASSES = redirect_settings.MIDDLEWARE_CLASSES
         settings.SOLR['default'] = 'http://127.0.0.1:8983/solr/seo/'
         settings.options = secrets.options
@@ -31,10 +29,12 @@ class RedirectBase(TransactionTestCase):
 
         stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')
+        fixture = os.path.join(settings.PROJECT_PATH,
+                               'redirect/migrations/excluded_view_sources.json')
         try:
             # This makes lots of output that we don't care about; suppress it.
             call_command("loaddata",
-                         "redirect/migrations/excluded_view_sources.json")
+                         fixture)
         finally:
             sys.stdout.close()
             sys.stdout = stdout

@@ -3,7 +3,6 @@ import datetime
 
 from django.conf import settings
 
-from seo_pysolr import Solr
 from seo.models import SeoSite
 from seo.tests.solr_settings import SOLR_FIXTURE
 from setup import DirectSEOBase

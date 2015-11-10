@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator, EmailValidator
 from django.db import models
 from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
@@ -38,6 +39,9 @@ ACTIVITY_TYPES = {
     3: 'deleted',
     4: 'sent',
 }
+
+email_validator_username_only = RegexValidator(EmailValidator.user_regex,
+                                               'Enter a valid email username.')
 
 
 class Status(models.Model):
@@ -567,8 +571,8 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
         all_contacts = self.values(
             'partner__name', 'partner', 'contact__name',
-            'contact_email').distinct()
-    
+            'contact_email').distinct().order_by('partner__name')
+
         records = dict(self.exclude(contact_type='job').values_list(
             'contact__name').annotate(
                 records=models.Count('contact__name')).distinct())
@@ -908,9 +912,9 @@ class OutreachEmailAddress(models.Model):
         return "%s for %s" % (self.email, self.company)
 
     company = models.ForeignKey("seo.Company")
-    email = models.EmailField(
-        max_length=255, verbose_name="Email", 
-        help_text="Email to send outreach efforts to.")
+    email = models.CharField(validators=[email_validator_username_only], unique=True,
+                             max_length=255, verbose_name="Email",
+                             help_text="Email to send outreach efforts to.")
 
 
 class OutreachWorkflowState(models.Model):

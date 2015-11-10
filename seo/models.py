@@ -15,7 +15,6 @@ from django.core.cache import cache
 from django.core import mail
 from django.core.validators import MaxValueValidator, ValidationError
 from django.db import models
-from django.db.models.query import QuerySet
 from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
@@ -34,7 +33,7 @@ from registration.models import Invitation
 from social_links import models as social_models
 from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
-from myjobs.models import User
+from myjobs.models import User, Activity
 from mypartners.models import Tag
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 from universal.helpers import get_domain, get_object_or_none
@@ -76,11 +75,11 @@ class NonChainedForeignKey(ForeignKey):
     """
     def clean(self, value, model_instance):
         super(NonChainedForeignKey, self).clean(value, model_instance)
-        
+
         if value:
             object_class = model_instance.__class__
             potential_parent = object_class.objects.get(pk=value)
-            
+
             if value == model_instance.pk:
                 raise ValidationError('%s cannot be at parent entity of itself'
                                         % model_instance)
@@ -94,86 +93,7 @@ class NonChainedForeignKey(ForeignKey):
         return value
 
 
-def term_splitter(terms):
-    """
-    Splits strings representing multiple terms into lists
-    :Inputs:
-        terms: An dictionary of field:values, where values is iterable
-    :Returns:
-        A dictionary of field:values, where each item in values has been split
-        according to its deliminter
-
-    """
-    sep = settings.FACET_RULE_DELIMITER
-    results = {}
-    for field in ('city', 'title', 'country', 'state'):
-        try:
-            results[field] = []
-            for term_string in terms[field]:
-                results[field].extend(term_string.split(sep))
-            terms[field] = results[field]
-        except AttributeError:
-           terms[field] = []
-
-    try:
-        for onet_string in terms['onet']:
-            results[field].extend(term_string.split(','))
-        terms['onet'] = terms['onet']
-    except AttributeError:
-        terms['onet'] = []
-    return terms
-
-
-def sq_from_terms(terms):
-    """
-    Create a SearchQuery() object based on a dictionary of field:values
-    Each of these values will be an iterable (consult saved_search.models module for
-    illustration).
-
-    Inputs:
-    :results: A list of term dictionaries in the form {field_name: search_values}
-
-    Returns:
-    A SearchQuery() object for CustomFacet
-
-    """
-    results = []
-    terms = term_splitter(terms)
-    #First we build an SQ for each term, then we join them into a single SQ
-    for attr,vals in terms.items():
-        sq_attr = CustomFacet.field_to_solr_terms.get(attr, attr)
-        if vals is None:
-            continue;
-        elif attr == 'querystring' and len(vals) > 0:
-            #Query string is a raw query
-            results.append(SQ(content=Raw(vals[0])))
-        elif any(vals):
-            #Build an SQ that joins non empty items in vals with boolean or
-            filt = reduce(operator.or_,
-                          [SQ((u"%s__exact" % sq_attr, i)) for i in vals if i])
-            results.append(filt)
-
-    if results:
-        #Build a SQ that joins each non empty SQ in results with boolean and
-        retval = reduce(operator.and_, filter(lambda x: x, results))
-    else:
-        retval = SQ()
-    return retval
-
-
-class CustomFacetQuerySet(QuerySet):
-    def prod_facets_for_current_site(self):
-        kwargs = {
-            'seositefacet__seosite__id': settings.SITE_ID,
-            'show_production': 1,
-        }
-        return self.filter(**kwargs)
-
-
 class CustomFacetManager(models.Manager):
-    def get_query_set(self):
-        return CustomFacetQuerySet(self.model)
-
     def __getattr__(self, attr, *args):
         if attr.startswith("__"):
             raise AttributeError
@@ -414,9 +334,6 @@ class jobListing (models.Model):
     objects = models.Manager()
     this_site = JobsByBuidManager()
 
-    def return_id(self):
-        return self.id
-
     def save(self):
         self.titleSlug = slugify(self.title)
         self.countrySlug = slugify(self.country)
@@ -531,11 +448,11 @@ class SeoSite(Site):
     canonical_company = models.ForeignKey('Company', blank=True, null=True,
                                           on_delete=models.SET_NULL,
                                           related_name='canonical_company_for')
-    
+
     parent_site = NonChainedForeignKey('self', blank=True, null=True,
                                      on_delete=models.SET_NULL,
-                                     related_name='child_sites')                                      
-                                        
+                                     related_name='child_sites')
+
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
     def clean_domain(self):
@@ -606,7 +523,7 @@ class SeoSite(Site):
         if profile and profile.outgoing_email_domain:
             choices.append((profile.outgoing_email_domain,
                             profile.outgoing_email_domain))
-        return choices    
+        return choices
 
     def save(self, *args, **kwargs):
         #always call clean if the parent_site entry exists to prevent invalid
@@ -614,19 +531,27 @@ class SeoSite(Site):
         if self.parent_site: self.clean_fields()
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
-    
+
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company that owns the SeoSite.
+        In order for a user to have access they must be assigned a role in the
+        Company that owns the SeoSite.*
+
+        * Until activities are activated in production, what determines if a
+        user has access is that they are a company user for one of the
+        companies assigned to the SeoSite's business units (job_source_ids).
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        user_companies = user.get_companies()
-        for company in companies:
-            if company not in user_companies:
-                return False
-        return True
+        if settings.DEBUG:
+            return user.pk in companies.values_list('role__user', flat=True)
+        else:
+
+            user_companies = user.get_companies()
+            for company in companies:
+                if company not in user_companies:
+                    return False
+            return True
 
     def get_companies(self):
         site_buids = self.business_units.all()
@@ -699,6 +624,10 @@ class Company(models.Model):
             for tag in default_tags:
                 Tag.objects.get_or_create(company=self, **tag)
 
+            # create the default admin role
+            admin_role = self.role_set.create(name="Admin")
+            admin_role.activities = Activity.objects.all()
+
     def associated_jobs(self):
         b_units = self.job_source_ids.all()
         job_count = 0
@@ -714,13 +643,13 @@ class Company(models.Model):
     def company_user_count(self):
         """
         Counts how many users are mapped to this company. This is useful for
-        determining which company to map companyusers to when two company
-        instances have very similar names.
-
-        It is treated as a property of the model.
-
+        determining which user to map a company to when two company instances
+        have very similar names.
         """
-        return self.companyuser_set.count()
+        if settings.DEBUG:
+            return self.role_set.values('user').distinct().count()
+        else:
+            return self.companyuser_set.count()
 
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
@@ -760,15 +689,12 @@ class Company(models.Model):
 
     # Permissions
     app_access = models.ManyToManyField(
-        'myjobs.AppAccess', 
+        'myjobs.AppAccess',
         blank=True, verbose_name="App-Level Access")
     prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
-
-    def slugified_name(self):
-        return slugify(self.name)
 
     def get_seo_sites(self):
         """
@@ -788,10 +714,13 @@ class Company(models.Model):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be a CompanyUser
-        for the Company.
+        Returns whether or not the given user can be tied back to the company.
         """
-        return user in self.admins.all()
+
+        if settings.DEBUG:
+            return user.pk in self.role_set.values_list('user', flat=True)
+        else:
+            return user in self.admins.all()
 
     @property
     def has_packages(self):
@@ -1151,7 +1080,7 @@ class Configuration(models.Model):
     browse_facet_order_3 = models.IntegerField('Order', default=3,
                                                choices=ORDER_CHOICES)
     browse_facet_order_4 = models.IntegerField('Order', default=4,
-                                               choices=ORDER_CHOICES)                                               
+                                               choices=ORDER_CHOICES)
     browse_moc_order = models.IntegerField('Order', default=1,
                                            choices=ORDER_CHOICES)
     browse_company_order = models.IntegerField('Order', default=7,
@@ -1417,31 +1346,6 @@ class Country(models.Model):
         verbose_name_plural = 'Countries'
 
 
-class State(models.Model):
-    name = models.CharField(max_length=255, db_index=True)
-    nation = models.ForeignKey(Country)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        unique_together = ('name', 'nation')
-        verbose_name = 'State'
-        verbose_name_plural = 'States'
-
-
-class City(models.Model):
-    name = models.CharField(max_length=255, db_index=True)
-    nation = models.ForeignKey(Country)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'City'
-        verbose_name_plural = 'Cities'
-
-
 class CustomPage(FlatPage):
     group = models.ForeignKey(Group, blank=True, null=True)
     meta = models.TextField(blank=True)
@@ -1519,7 +1423,7 @@ class MessageQueue():
     MessageQueue.send_messages(request)
     """
     message_queue = Queue.Queue()
-    
+
     @classmethod
     def send_messages(self, request):
         """
@@ -1566,7 +1470,7 @@ def update_canonical_microsites(sender, old_domain, **kwargs):
     """
     Updates company's canonical microsite when an seosite domain is
     changed
-    
+
     """
     companies = Company.objects.filter(
             canonical_microsite='http://%s' % old_domain)
@@ -1581,7 +1485,7 @@ def update_canonical_microsites(sender, old_domain, **kwargs):
 def remove_canonical_microsite(sender, **kwargs):
     """
     Removes a company's canonical microsite when a SeoSite is disabled
-    
+
     """
     companies = Company.objects.filter(
             canonical_microsite='http://%s' % sender.domain)
@@ -1632,4 +1536,4 @@ def seosite_change_monitor(sender, instance, **kwargs):
     except sender.DoesNotExist:
         return None
     if old_instance.domain != instance.domain:
-        microsite_moved.send(sender=instance, old_domain=old_instance.domain) 
+        microsite_moved.send(sender=instance, old_domain=old_instance.domain)

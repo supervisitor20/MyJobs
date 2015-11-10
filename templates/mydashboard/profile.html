@@ -16,9 +16,9 @@
                                 </li>
                                 {% endwith %}
                                 {% for admin in company_admins %}
-                                    {% with user_name=admin.user.get_full_name %}
+                                    {% with user_name=user.get_full_name %}
                                     <li>
-                                        {% if not user_name %}{{ admin.user.email }}{% else %}{{ user_name }}{% endif %}
+                                        {% if not user_name %}{{ user.email }}{% else %}{{ user_name }}{% endif %}
                                     </li>
                                     {% endwith %}
                                 {% endfor %} 
