@@ -358,7 +358,6 @@ var EditUserPage = React.createClass({
 
             <div className="row">
               <div className="col-xs-12">
-                {/* TODO Maybe use this https://github.com/insin/react-filtered-multiselect */}
 
                 <label htmlFor="id_roles">Role*:</label>
 
@@ -525,7 +524,7 @@ var UsersMultiselect = React.createClass({
 
 var EditRolePage = React.createClass({
   getInitialState: function() {
-    {/* TODO Remove this awful code once using redux with more intelligent passing of data between child/parent */}
+    {/* TODO Refactor to use basic Actions and the Dispatchers */}
     return {
       help_message: '',
       role_name: '',
@@ -644,7 +643,7 @@ var EditRolePage = React.createClass({
 
     {/* Grab form fields and validate */}
 
-    {/* TODO: Warn user. If they remove a user from all roles, they will have to reinvite him. */}
+    {/* TODO: Warn user? If they remove a user from all roles, they will have to reinvite him. */}
 
     var role_id = this.props.role_id;
 
