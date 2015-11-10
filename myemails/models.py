@@ -9,7 +9,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.template import Template, Context
 
-from seo.models import CompanyUser
+from myjobs.models import User, Role
 import tasks
 
 
@@ -148,7 +148,7 @@ class Event(models.Model):
                 'user__email', flat=True)
         else:
             recipients = User.objects.filter(
-                company=recipent_company).values_list('email', flat=True)
+                company=recipient_company).values_list('email', flat=True)
 
         if hasattr(sending_company, 'companyprofile'):
             email_domain = sending_company.companyprofile.outgoing_email_domain

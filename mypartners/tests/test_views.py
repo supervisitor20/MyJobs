@@ -44,7 +44,7 @@ class MyPartnersTestCase(MyJobsBase):
         self.request_factory = RequestFactory()
 
         # Create a user to login as
-        self.staff_user = UserFactory()
+        self.staff_user = UserFactory(is_staff=True)
 
         # Create a company
         self.company = CompanyFactory()
@@ -1691,13 +1691,31 @@ class OutreachViewTests(MyPartnersTestCase):
         """
             Test to ensure POST will properly create outreach inbox
         """
+        email_to_test = 'popeyes_chicken'
         data = {'form-MAX_NUM_FORMS': 1000,
                 'form-TOTAL_FORMS': 1,
                 'form-INITIAL_FORMS': 0,
-                'form-0-email': 'WOOO@oops.com',
+                'form-0-email': email_to_test,
                 'form-0-id': [u'']
                 }
         self.client.post(reverse('manage_outreach_inboxes'), data)
 
-        new_email = OutreachEmailAddress.objects.get()
-        self.assertEqual(new_email.email, "WOOO@oops.com")
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 1)
+
+    def test_post_form_outreach_email_validation(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        email_to_test = 'popeyes_chicken@anothersite.com'
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': email_to_test,
+                'form-0-id': [u'']
+                }
+        response = self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        self.assertContains(response, "Enter a valid email username")
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 0)
