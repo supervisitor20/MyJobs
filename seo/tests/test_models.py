@@ -173,13 +173,13 @@ class TestRoles(DirectSEOBase):
         Test that a user has access if the user can be tied to a company.
         """
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             self.assertFalse(self.company.user_has_access(self.user))
 
             factories.CompanyUserFactory(company=self.company, user=self.user)
             self.assertTrue(self.company.user_has_access(self.user))
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # user not assigned a role in company, so shouldn't have access
             self.assertFalse(self.company.user_has_access(self.user))
 
