@@ -817,9 +817,6 @@ def api_edit_role(request, role_id=0):
 
     response_data = {}
 
-
-
-
     if request.method != "POST":
         response_data["success"] = "false"
         response_data["message"] = "POST method required."
@@ -1055,9 +1052,6 @@ def api_create_user(request):
 
     response_data = {}
 
-
-
-
     if request.method != "POST":
         response_data["success"] = "false"
         response_data["message"] = "POST method required."
@@ -1178,14 +1172,9 @@ def api_edit_user(request, user_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-
-
-
-
-
 def api_delete_user(request, user_id=0):
     """
-    POST /manage-users/api/users/delete/NUMBER
+    DELETE /manage-users/api/users/delete/NUMBER
     Removes user from roles managed by current company
 
     Inputs:
