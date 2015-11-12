@@ -1325,38 +1325,18 @@ def process_email(request):
 @restrict_to_staff()
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
-def manage_outreach_inboxes(request):
+def nuo_inbox_management(request):
+    """
+    View for manage users
+    """
     company = get_company_or_404(request)
-    OutreachEmailInboxFormset = modelformset_factory(OutreachEmailAddress,
-                                                     exclude=('company',), extra=1,
-                                                     can_delete=True)
-    if request.method == 'GET':
-        formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
-
-    if request.method == 'POST':
-        formset = OutreachEmailInboxFormset(request.POST)
-        if formset.is_valid():
-            for form in formset:
-                # forced to overwrite normal processing in order to assign company to outreach email
-                # did not want to include company on user provided form for fear of manipulation
-                if form.cleaned_data.get('DELETE'):
-                    form.instance.delete()
-                elif form.cleaned_data.get('email'):
-                    instance = form.save(commit=False)
-                    instance.company = company
-                    instance.save()
-            # re-initialize formset now that processing is finished
-            return HttpResponseRedirect(reverse('manage_outreach_inboxes'))
 
     ctx = {
-        'formset': formset,
-        'company': company,
-        'view_name': 'PRM',
-    }
+        "company": company
+        }
 
-    return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
-                              ctx,
-                              RequestContext(request))
+    return render_to_response('nonuseroutreach/nuo_inbox_management.html', ctx,
+                                RequestContext(request))
 
 
 @requires(PRM, missing_activity, missing_access)

@@ -102,6 +102,35 @@ gulp.task('manageusers', function() {
     .pipe(gulp.dest(dest))
 });
 
+gulp.task('nuo_inbox_management', function() {
+    return browserify([], {
+        debug: true,
+        paths: ['./src'],
+    })
+    .external(vendor_libs)
+    .add('src/nonuseroutreach/nuo_inbox_management.js')
+    .transform(babelify)
+    .bundle()
+    .on('error', function(error, meta) {
+        util.log("Browserify error:", error.toString());
+        // Unstick browserify on some errors. Keeps watch alive.
+        this.emit('end');
+    })
+    .on('package', function(pkg) {
+        util.log("Including package:", pkg.name)
+    })
+    .pipe(source('nuo_inbox_management.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    // Do we want this in production builds?
+    .pipe(uglify({ mangle: false }))
+    // stripDebug() must come before sourcemaps.write()
+    // You should remove logging before committing, but this confirms logging won't be in production
+    .pipe(gulpif(strip_debug, stripDebug()))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(dest))
+});
+
 // By default, we strip logging. This disables that functionality.
 gulp.task('watch-no-strip', function() {
     console.log("Keeping console and debugger statements.");
@@ -118,11 +147,11 @@ gulp.task('test', function() {
         }));
 });
 
-gulp.task('build', ['vendor', 'reporting', 'manageusers']);
+gulp.task('build', ['vendor', 'reporting', 'manageusers', 'nuo_inbox_management']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers']);
+    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers', 'nuo_inbox_management']);
 });
 
 gulp.task('default', ['build', 'test']);
