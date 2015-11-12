@@ -601,6 +601,9 @@ def manage_users(request):
     """
     View for manage users
     """
+
+    # TODO Check that user has permisssion to view page?
+
     company = get_company_or_404(request)
 
     ctx = {
@@ -616,6 +619,8 @@ def api_get_activities(request):
     Retrieves all activities
     """
 
+    # TODO Check that user has permisssion?
+
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
@@ -625,6 +630,8 @@ def api_get_roles(request):
     GET /manage-users/api/roles/
     Retrieves all roles associated with a company
     """
+
+    # TODO Check that user has permisssion?
 
     response_data = {}
 
@@ -674,6 +681,8 @@ def api_get_specific_role(request, role_id=0):
     GET /manage-users/api/roles/NUMBER
     Retrieves specific role
     """
+
+    # TODO Check that user has permisssion?
 
     response_data = {}
 
@@ -736,6 +745,8 @@ def api_create_role(request):
     :role:                      JSON of new role
     :success:                   boolean
     """
+
+    # TODO Check that user has permisssion?
 
     response_data = {}
 
@@ -802,6 +813,8 @@ def api_edit_role(request, role_id=0):
     Returns:
     :success:                   boolean
     """
+
+    # TODO Check that user has permisssion?
 
     response_data = {}
 
@@ -898,6 +911,8 @@ def api_delete_role(request, role_id=0):
     :success:                   boolean
     """
 
+    # TODO Check that user has permisssion?
+
     response_data = {}
 
     if request.method == "DELETE":
@@ -930,18 +945,13 @@ def api_delete_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-
-
-
-
-
-
-
 def api_get_users(request):
     """
     GET /manage-users/api/users/
     Retrieves all users associated with a company
     """
+
+    # TODO Check that user has permisssion?
 
     response_data = {}
 
@@ -949,51 +959,135 @@ def api_get_users(request):
 
     users = User.objects.filter(company=company)
 
-
-
-
     for user in users:
 
-        response_data[role.id] = {}
+        response_data[user.id] = {}
 
+        # Email
+        response_data[user.id]["email"] = user.email
 
-        # email
-        # roles
-        # status
-        # role.id
+        # Roles
+        roles_assigned_to_this_user = user.roles.all()
+        response_data[user.id]["roles"] = serializers.serialize("json", roles_assigned_to_this_user, fields=('name'))
 
+        # Status
+        # TODO: This is probably not the same as status
+        response_data[user.id]["verified"] = user.is_verified
 
-
-
-        #
-        # response_data[role_id]['role'] = {}
-        # response_data[role_id]['role']['id'] = role.id
-        # response_data[role_id]['role']['name'] = role.name
-        #
-        # response_data[role_id]['activities'] = {}
-        # # This company has access to various apps by means of multiple app_access_id's
-        # # Retrieve all activities with these app_access_id's
-        # available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
-        # response_data[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
-        # # Retrieve all activities assigned to this role
-        # assigned_activities = role.activities.all()
-        # response_data[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
-        #
-        # # Retrieve users already assigned to this role
-        # users_assigned = User.objects.filter(roles__id=role_id)
-        # response_data[role_id]['users'] = {}
-        # response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
-        #
-        # # Retrieve users that can be assigned to this role
-        # # This is simply a list of all users already assigned to roles associated with this company
-        # users_available = []
-        # roles = Role.objects.filter(company=company)
-        # for role in roles:
-        #     role_id_temp = role.id
-        #     users = User.objects.filter(roles__id=role_id_temp)
-        #     for user in users:
-        #         if user not in users_available:
-        #             users_available.append(user)
-        # response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
-    #
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def api_get_specific_user(request, user_id=0):
+    """
+    GET /manage-users/api/users/NUMBER
+    Retrieves specific user
+    """
+
+    # TODO Check that user has permisssion?
+
+    response_data = {}
+
+    company = get_company_or_404(request)
+
+    user = User.objects.filter(id=user_id)
+
+    # First check that user requested is affiliated with the company
+    if user.filter(company=company).exists() == False:
+        response_data["success"] = "false"
+        response_data["message"] = "Permission denied."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+    # Check if user exists
+    # This is second because, if someone doesn't have access, we don't want them knowing if the user exists or not.
+    if user.exists() == False:
+        response_data["success"] = "false"
+        response_data["message"] = "User does not exist."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+    # Return user
+    response_data[user[0].id] = {}
+
+    # Email
+    response_data[user[0].id]["email"] = user[0].email
+
+    # Available Roles (constrained by company)
+    response_data[user[0].id]["roles"] = {}
+    available_roles = Role.objects.filter(company=company)
+    response_data[user[0].id]["roles"]["available"] = serializers.serialize("json", available_roles)
+
+    # Assigned Roles
+    roles_assigned_to_this_user = user[0].roles.all()
+    response_data[user[0].id]["roles"]["assigned"] = serializers.serialize("json", roles_assigned_to_this_user, fields=('name'))
+
+    # Status
+    # TODO: This is probably not the same as status
+    response_data[user[0].id]["verified"] = user[0].is_verified
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+
+
+
+
+
+
+def api_create_user(request):
+    """
+    POST /manage-users/api/user/create
+    Creates a new user
+
+    Inputs:
+    :user_email:                user email
+    :assigned_roles:            roles assigned to this user
+
+    Returns:
+    :user:                      JSON of new user
+    :success:                   boolean
+    """
+
+    # TODO Check that user has permisssion?
+
+    response_data = {}
+
+    if request.method == "POST":
+
+        company = get_company_or_404(request)
+
+        if request.POST.get("user_email", ""):
+            user_email = request.POST['user_email']
+
+        matching_users = User.objects.filter(email=user_email)
+        if matching_users.exists():
+            # TODO This user is already in the system. Email the user an invitation to accept this role.
+            response_data["success"] = "true"
+            response_data["message"] = "This user already exists. Role invitation email sent."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+        # role_ids = []
+        # if request.POST.getlist("assigned_roles[]", ""):
+        #     roles = request.POST.getlist("assigned_roles[]", "")
+        #     # Create list of role_ids from names
+        #     for i, role in enumerate(roles):
+        #         role_object = Role.objects.filter(name=role)
+        #         role_id = role_object[0].id
+        #         role_ids.append(role_id)
+        # # At least one role must be selected
+        # if not role_ids:
+        #     response_data["success"] = "false"
+        #     response_data["message"] = "Each user must be assigned to at least one role."
+        #     return HttpResponse(json.dumps(response_data), content_type="application/json")
+        #
+        # # Create User
+        # new_user = User.objects.create(email=user_email, company_id=company.id)
+
+        # Assign roles to this user
+        # new_user.roles.add(*role_ids)
+
+        response_data["success"] = "true"
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+    else:
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")

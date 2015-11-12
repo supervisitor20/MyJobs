@@ -44,4 +44,6 @@ urlpatterns = patterns(
 
 
     url(r'^manage-users/api/users/$', 'api_get_users', name='api_get_users'),
+    url(r'^manage-users/api/users/(?P<user_id>[0-9]+)/$', 'api_get_specific_user', name='api_get_specific_user'),
+    url(r'^manage-users/api/users/create/$', 'api_create_user', name='api_create_user'),
 )
