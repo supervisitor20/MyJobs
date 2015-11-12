@@ -198,7 +198,7 @@ class TestRoles(DirectSEOBase):
         users = [factories.UserFactory(email="alice%s@gmail.com" % i)
                  for i in range(10)]
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             # When activities are disabled, company user count is determined by
             # the number of appropriate entries in the company user table.
             self.assertEqual(self.company.company_user_count, 0)
@@ -208,7 +208,7 @@ class TestRoles(DirectSEOBase):
 
             self.assertEqual(self.company.company_user_count, 10)
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # When activities are enabled, company user count is determined by
             # the number distinct users assigned a role within that company
             self.assertEqual(self.company.company_user_count, 0)
