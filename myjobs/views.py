@@ -1042,7 +1042,6 @@ def api_create_user(request):
     :assigned_roles:            roles assigned to this user
 
     Returns:
-    :user:                      JSON of new user
     :success:                   boolean
     """
 
@@ -1064,27 +1063,30 @@ def api_create_user(request):
             response_data["message"] = "This user already exists. Role invitation email sent."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # role_ids = []
-        # if request.POST.getlist("assigned_roles[]", ""):
-        #     roles = request.POST.getlist("assigned_roles[]", "")
-        #     # Create list of role_ids from names
-        #     for i, role in enumerate(roles):
-        #         role_object = Role.objects.filter(name=role)
-        #         role_id = role_object[0].id
-        #         role_ids.append(role_id)
-        # # At least one role must be selected
-        # if not role_ids:
-        #     response_data["success"] = "false"
-        #     response_data["message"] = "Each user must be assigned to at least one role."
-        #     return HttpResponse(json.dumps(response_data), content_type="application/json")
-        #
-        # # Create User
-        # new_user = User.objects.create(email=user_email, company_id=company.id)
+        role_ids = []
+        if request.POST.getlist("assigned_roles[]", ""):
+            roles = request.POST.getlist("assigned_roles[]", "")
+            # Create list of role_ids from names
+            for i, role in enumerate(roles):
+                role_object = Role.objects.filter(name=role)
+                role_id = role_object[0].id
+                role_ids.append(role_id)
+        # At least one role must be selected
+        if not role_ids:
+            response_data["success"] = "false"
+            response_data["message"] = "Each user must be assigned to at least one role."
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        # Assign roles to this user
-        # new_user.roles.add(*role_ids)
+        # Create User
+        new_user, created = User.objects.create_user(email=user_email)
+        if created:
+            # Assign roles to this user
+            new_user.roles.add(*role_ids)
+            response_data["success"] = "true"
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-        response_data["success"] = "true"
+        response_data["success"] = "false"
+        response_data["message"] = "User not created."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     else:
