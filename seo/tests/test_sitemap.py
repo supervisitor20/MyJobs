@@ -19,12 +19,12 @@ class SitemapTestCase(DirectSEOBase):
     def test_index(self):
         resp = self.client.get("/sitemap.xml")
         self.assertEqual(resp.status_code, 200)
-        
+
     def test_no_buid_sitemap(self):
         """
         Test to verify that a sitemap is generated with sites that have no
         BUID.
-        
+
         """
         site = SeoSite.objects.get(id=1)
         site.business_units = []
@@ -48,7 +48,7 @@ class SitemapTestCase(DirectSEOBase):
         `NoReverseMatch` exception to be thrown. Instead of adding a
         tilde, we want to be able to handle any weird characters not
         specified in our URL config.
-        
+
         """
         # Sometimes the site settings are messed up from other tests. Ensure
         # that the settings are compatible with actually searching for the

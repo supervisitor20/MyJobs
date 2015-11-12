@@ -20,7 +20,7 @@ def get_current_seosite(attr=None, str_func=None):
     Example:
     # return the capitalized domain for a site
     >>> {% get_current_seosite 'domain' 'capitalize' %}
-    'My.jobs' 
+    'My.jobs'
     """
 
     seosite = getattr(settings, 'SITE') or SeoSite.objects.get(

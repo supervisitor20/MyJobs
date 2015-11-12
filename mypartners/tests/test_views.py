@@ -256,7 +256,7 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
 class EditItemTests(MyPartnersTestCase):
     """ Test the `edit_item` view function.
-        
+
         In particular, it tests that the appropriate HTTP response is reached
         depending on the URL that the user navigates to.
     """
@@ -298,7 +298,7 @@ class EditItemTests(MyPartnersTestCase):
                     "should have raised an Http404 but didn't.")
 
         for item in self.bad_ids[1:]:
-            # 
+            #
             request = self.requests['contact'](id=item)
             request.user = self.staff_user
 
@@ -355,7 +355,7 @@ class EditItemTests(MyPartnersTestCase):
         soup = BeautifulSoup(response.content)
 
         self.assertIn("Edit Contact", soup.title.text)
-        
+
 
 class PartnerOverviewTests(MyPartnersTestCase):
     """Tests related to the partner overview page, /prm/view/overview/"""
@@ -1048,7 +1048,7 @@ class SearchEditTests(MyPartnersTestCase):
         self.assertIn("Copy of %s" % saved_search.label, response.content)
 
     def test_partner_search_for_new_contact_email(self):
-        """Confirms that an email is sent when a new user is created for a 
+        """Confirms that an email is sent when a new user is created for a
         contact because a saved search was created on that contact's behalf.
         """
         self.search.delete()
@@ -1450,7 +1450,7 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
         # test that appropriate tags created
         library = PartnerLibrary.objects.get(id=library_id)
-        for tag in ['Veteran', 'Disabled Veteran',  
+        for tag in ['Veteran', 'Disabled Veteran',
                     'Female', 'Minority']:
             if getattr(library, 'is_%s' % tag.lower().replace(' ', '_')):
                 self.assertIn(tag, partner.tags.values_list('name', flat=True))

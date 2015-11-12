@@ -11,8 +11,8 @@ print "Testing companies"
 print len(cos)
 
 for co in cos:
-    # As of now, all image URLs have the format 
-    # '//d2e48ltfsb5exy.cloudfront.net/100x50/seo/co-name.gif'. If this were ever to change, 
+    # As of now, all image URLs have the format
+    # '//d2e48ltfsb5exy.cloudfront.net/100x50/seo/co-name.gif'. If this were ever to change,
     # a more robust method of separating the protocol/host from the path would
     # be needed.
     print u"Testing {0}... ".format(co['image']),

@@ -19,7 +19,7 @@ class ProfileUnits(models.Model):
     This is the parent class for all user information. Creating any new
     profile unit instances (Education, Name, Email etc) end up in the
     ProfileUnits queryset as well.
-    
+
     """
     date_created = models.DateTimeField(default=datetime.datetime.now,
                                         editable=False)
@@ -31,7 +31,7 @@ class ProfileUnits(models.Model):
     def save(self, *args, **kwargs):
         """
         Custom save method to set the content type of the instance.
-        
+
         """
         if not self.content_type:
             self.content_type = ContentType.objects.get_for_model(self.__class__)
@@ -39,7 +39,7 @@ class ProfileUnits(models.Model):
 
     def get_fields(self):
         """
-        Returns the module type, value, and field type for all        
+        Returns the module type, value, and field type for all
         fields on a specific model
         """
         field_list = []
@@ -315,7 +315,7 @@ class Address(ProfileUnits):
     label = models.CharField(max_length=60, blank=True,
                              verbose_name=_('Address Name'),
                              help_text='ie Home, Work, etc')
-    
+
 
 
     @classmethod
@@ -511,7 +511,7 @@ class SecondaryEmail(ProfileUnits):
 
     @classmethod
     def get_suggestion(cls, user):
-        """Get a list of all suggestions for a user to add secondary emails to 
+        """Get a list of all suggestions for a user to add secondary emails to
         their profile.
 
         :Inputs:
@@ -546,7 +546,7 @@ class MilitaryService(ProfileUnits):
                                         null=True, blank=True)
     start_rank = models.CharField(max_length=50, blank=True,
                                   verbose_name=_("Start Rank"))
-    end_rank = models.CharField(max_length=50, blank=True, 
+    end_rank = models.CharField(max_length=50, blank=True,
                                 verbose_name=_("End Rank"))
     campaign = models.CharField(max_length=255, blank=True,
                                 verbose_name="Campaign")
@@ -555,7 +555,7 @@ class MilitaryService(ProfileUnits):
 
     @classmethod
     def get_suggestion(cls, user):
-        """Get a list of suggestions for a user to add military service to 
+        """Get a list of suggestions for a user to add military service to
         their profile.
 
         :Inputs:

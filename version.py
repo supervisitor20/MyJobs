@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 """
-Version.py - used to track the version number and build number for the 
+Version.py - used to track the version number and build number for the
 Microsite platform. This file is loaded where the version number is needed.
 
 """
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='Get version information in different formats.')
-    
+
     # parser arguments --------------------------------------------------------
     parser.add_argument(
         '-b', '--build-calculated',

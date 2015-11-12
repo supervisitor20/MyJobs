@@ -72,7 +72,7 @@ class DecoratorTests(MyJobsBase):
 
         with self.assertRaises(Http404) as cm:
             response = requires(
-                [self.activity.name], 
+                [self.activity.name],
                 access_callback=callback)(dummy_view)(self.request)
 
         self.assertEqual(cm.exception.message, "This app doesn't exist.")
@@ -103,7 +103,7 @@ class DecoratorTests(MyJobsBase):
 
         with self.assertRaises(Http404) as cm:
             response = requires(
-                [self.activity.name], 
+                [self.activity.name],
                 activity_callback=callback)(dummy_view)(self.request)
 
         self.assertEqual(cm.exception.message, "Required activities missing.")
@@ -113,7 +113,7 @@ class DecoratorTests(MyJobsBase):
         A user's roles should have all activities required by a decorated view,
         not just a subset of them.
         """
-        
+
         activity = ActivityFactory(app_access=self.app_access)
         response = requires(
             [self.activity.name, activity.name])(dummy_view)(self.request)

@@ -201,7 +201,7 @@ class ActivityTests(MyJobsBase):
             # This should be allowed since the company is different
             RoleFactory(name=self.role.name)
         except IntegrityError:
-            self.fail("Creating a similar role for a different company should " 
+            self.fail("Creating a similar role for a different company should "
                       "be allowed, but it isn't.")
 
         # we shouldn't be allowed to create a role wit the same name in the
