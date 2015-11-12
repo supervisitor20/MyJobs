@@ -55,7 +55,7 @@ class FacetListWidget(object):
     """
     slug_order = {'title': 1, 'location': 2, 'moc': 3, 'facet': 4, 'company': 5,
                   'featured': 5, 'mapped_moc': 3}
-    
+
     def __init__(self, request, site_config, _type, items, filters,
                  offset=None, query_string=None):
         self.request = request

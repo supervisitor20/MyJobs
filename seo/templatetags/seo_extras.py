@@ -48,7 +48,7 @@ def append(value, arg):
 
 
 @register.filter
-@stringfilter       
+@stringfilter
 def smart_truncate(content, length=32, suffix='...'):
     if isinstance(content, unicode):
         # reduce length by 1 for each wide char
@@ -59,7 +59,7 @@ def smart_truncate(content, length=32, suffix='...'):
         return content
     else:
         return content[:length]+suffix
-        
+
 
 @register.filter
 @stringfilter
@@ -71,7 +71,7 @@ def build_rss_link(val):
 
 
 @register.filter
-@stringfilter  
+@stringfilter
 def facet_text(val):
     """
     This filter will take the passed in value of the form:
@@ -83,7 +83,7 @@ def facet_text(val):
 
 
 @register.filter
-@stringfilter  
+@stringfilter
 def facet_url(val):
     """
     This filter will take the passed in value of the form:
@@ -127,7 +127,7 @@ class VariableCycleNode(template.defaulttags.CycleNode):
         if self not in context.render_context:
             context.render_context[self] = itertools.cycle(my_vars)
         cycle_iter = context.render_context[self]
-        value = cycle_iter.next() 
+        value = cycle_iter.next()
         if self.variable_name:
             context[self.variable_name] = value
         return value
@@ -166,7 +166,7 @@ def timedelta(value, arg=None):
         default = datetime.datetime.now()
 
     ts = timesince(default, value)
-        
+
     if value > default:
         retval = "in %s" % ts
     else:
@@ -182,7 +182,7 @@ def append_search_querystring(request, feed_path):
     else:
         qs = ""
 
-    return feed_path+qs    
+    return feed_path+qs
 
 
 @register.assignment_tag(takes_context=True)
@@ -194,7 +194,7 @@ def custom_page_navigation(context):
     if html is None:
         links = CustomPage.objects.filter(
             sites=settings.SITE_ID).values_list('url', 'title')
-        html = "".join(["<a href='%s'>%s</a>" % (url, title) 
+        html = "".join(["<a href='%s'>%s</a>" % (url, title)
                         for (url, title) in links])
         cache.set(cache_key, html, timeout)
     return html
@@ -209,7 +209,7 @@ def logo_carousel(context):
     displayed = context['site_config'].browse_company_show and bool(num_of_cos)
     return {
         'displayed': displayed,
-        'num_of_cos': num_of_cos 
+        'num_of_cos': num_of_cos
     }
 
 
@@ -291,15 +291,15 @@ def get_ga_context():
     """
     rebuilds the google analytics template for flatpages by reconstructing
     the context variable manually
-    
+
     Inputs:
     none
-    
+
     Returns:
     ga.html and footer.html rendered with manual context variable.
-    
+
     """
-    site_id = settings.SITE_ID   
+    site_id = settings.SITE_ID
     ga = GoogleAnalytics.objects.filter(seosite=site_id)
     view_source = settings.VIEW_SOURCE
     build_num = settings.BUILD
@@ -319,7 +319,7 @@ def all_site_tags():
 
 @register.inclusion_tag('ga.html', takes_context=False)
 def flatpage_ga():
-    return get_ga_context()    
+    return get_ga_context()
 
 
 @register.inclusion_tag('wide_footer.html', takes_context=False)
@@ -331,15 +331,15 @@ def flatpage_footer_ga():
 def view_all_jobs_label(view_all_jobs_detail):
     """
     Reads the view_all_jobs_detail config setting, and builds a new link label
-    from the site title if enabled. This tag does not impact display of the 
+    from the site title if enabled. This tag does not impact display of the
     jobs counts.
-    
+
     Inputs:
-    :view_all_jobs_detail: Boolean, set to True to include site title 
+    :view_all_jobs_detail: Boolean, set to True to include site title
                            information in label
     Returns:
     :label: Text to display in the search footer.
-    
+
     """
     label = ugettext("View All Jobs")
     # time to build the new string. This assumes each word is capitalized
@@ -357,7 +357,7 @@ def view_all_jobs_label(view_all_jobs_detail):
             # assemble the final string and then defrag any spaces (for testing)
             label = "View All %s Jobs" % label
             label = ugettext(re.sub(r"([ ])+", " ", label))
-            
+
     return label
 
 

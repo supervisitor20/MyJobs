@@ -89,7 +89,7 @@ class ContactFormTests(MyPartnersTestCase):
         form = ContactForm(instance=self.contact, data=self.data)
         self.assertTrue(form.is_valid())
         form.save(self.staff_user, self.partner.pk)
-        
+
         contact = Contact.objects.get(email=self.data['email'])
         self.assertEqual(contact.name, "John Doe")
 
@@ -228,7 +228,7 @@ class ContactRecordFormTests(MyPartnersTestCase):
         contact_record = ContactRecord.objects.all()[2]
         # sanity check to make sure notes aren't modified yet
         self.assertEqual(contact_record.notes, "Some notes go here.")
-        
+
         self.data.update({
             "contact_type": "phone",
             "contact_phone": "555-555-5555",
@@ -250,7 +250,7 @@ class ContactRecordFormTests(MyPartnersTestCase):
         contact_record = ContactRecord.objects.all()[1]
         # sanity check to make sure notes aren't modified yet
         self.assertEqual(contact_record.notes, "Some notes go here.")
-        
+
         self.data.update({
             'date_time_2': "2012",
             "notes": "some test notes"

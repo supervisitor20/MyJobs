@@ -746,7 +746,7 @@ class FAQ(models.Model):
 class AppAccess(models.Model):
     """
     App access represents a logical grouping of activities. While an activity
-    may belong to many roles, it may only be assigned one app access. 
+    may belong to many roles, it may only be assigned one app access.
     """
     name = models.CharField(max_length=50, unique=True)
 

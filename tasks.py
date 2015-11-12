@@ -996,8 +996,8 @@ def send_event_email(email_task):
 def requeue_failures(hours=8):
     period = datetime.datetime.now() - datetime.timedelta(hours=hours)
 
-    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'], 
-                                            tstamp__gt=period, 
+    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'],
+                                            tstamp__gt=period,
                                             name__in=['tasks.etl_to_solr',
                                                       'tasks.priority_etl_to_solr'])
 

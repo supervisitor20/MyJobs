@@ -12,7 +12,7 @@ from mydashboard.tests.factories import CompanyFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
                                         TagFactory, PRMAttachmentFactory)
-from mypartners.models import (Contact, Location, Partner, PRMAttachment, 
+from mypartners.models import (Contact, Location, Partner, PRMAttachment,
                                Status, OutreachEmailDomain, CommonEmailDomain,
                                ContactRecord)
 from mysearches.models import PartnerSavedSearch
@@ -30,7 +30,7 @@ class MyPartnerTests(MyJobsBase):
         """
         Tests adding a contact to partner's contacts list and tests
         primary_contact. Also tests if the contact gets deleted the partner
-        stays and turns primary_contact to None.  
+        stays and turns primary_contact to None.
         """
         self.assertEqual(Contact.objects.filter(partner=self.partner).count(),
                          1)
@@ -68,7 +68,7 @@ class MyPartnerTests(MyJobsBase):
 
     def test_location_to_contact_relationship(self):
         """
-        Tests adding a Location to Contact. 
+        Tests adding a Location to Contact.
         """
         location = LocationFactory()
 
@@ -229,7 +229,7 @@ class MyPartnerTests(MyJobsBase):
         for contact, location in zip(contacts, ny + [il, mo]):
             contact.locations.add(location)
 
-        self.assertEqual("Chicago, IL; St. Louis, MO; Albany, NY", 
+        self.assertEqual("Chicago, IL; St. Louis, MO; Albany, NY",
                          "; ".join(self.partner.get_contact_locations()))
 
     def test_uncommon_outreach_email_domain(self):
@@ -250,7 +250,7 @@ class MyPartnerTests(MyJobsBase):
         across PRM.
         """
 
-        OutreachEmailDomain.objects.create(company=self.company, 
+        OutreachEmailDomain.objects.create(company=self.company,
                                            domain="foo.bar")
 
         # duplicate domains allowed between companies
@@ -260,7 +260,7 @@ class MyPartnerTests(MyJobsBase):
 
         # dupliate domains disallowed within the same company
         with self.assertRaises(IntegrityError):
-            OutreachEmailDomain.objects.create(company=self.company, 
+            OutreachEmailDomain.objects.create(company=self.company,
                                                domain="foo.bar")
 
     def test_contact_record_report_numbers(self):

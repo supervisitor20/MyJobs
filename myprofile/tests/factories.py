@@ -20,7 +20,7 @@ class NewNameFactory(factory.django.DjangoModelFactory):
     family_name = "Smith"
     primary = False
     user = factory.SubFactory(UserFactory)
-    
+
 
 class PrimaryNameFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -123,7 +123,7 @@ class WebsiteFactory(factory.django.DjangoModelFactory):
 class LicenseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'myprofile.License'
-    
+
     license_type = "Type"
     license_name = "Name"
     user = factory.SubFactory(UserFactory)

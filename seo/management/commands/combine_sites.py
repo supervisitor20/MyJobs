@@ -8,7 +8,7 @@ occupation_group_ids = [553]
 
 configuration_ids = [3281]#Combo Domain Default
 
-group_id = 621 
+group_id = 621
 
 base_site_id = 2972
 
@@ -37,7 +37,7 @@ def create_site_facet(site_facet, site):
     """
     Creates a copy of site_facet with boolean_operation switched to 'and', and
     seosite switched to site. Saves the modified facet
-    
+
     """
     new_site_facet = SeoSiteFacet(seosite=site, customfacet =
             site_facet.customfacet, facet_type = 'DFT', boolean_operation =
@@ -49,7 +49,7 @@ class Command(BaseCommand):
     """
     Creates new domains that are a combination of two different groups and a
     base site configuration, currently location groups, occupation groups, and
-    a base site indianahotel.jobs. For instance, akron.jobs and management.jobs 
+    a base site indianahotel.jobs. For instance, akron.jobs and management.jobs
     would be combine to make akronmanagement.jobs.  This can be refactored to
     be a more general script if we decide to continue building these combo domains.
 
@@ -79,11 +79,11 @@ class Command(BaseCommand):
                 print "Checking " + combo_site.domain
                 if SeoSite.objects.filter(domain=combo_site.domain).exists() or not\
                     SeoSiteRedirect.objects.filter(redirect_url=combo_site.domain).exists():
-                        continue 
+                        continue
                 name_b = site_b.name.rstrip(' Jobs')
-                combo_site.name = name_a + ' ' + name_b + ' Jobs' 
+                combo_site.name = name_a + ' ' + name_b + ' Jobs'
                 combo_site.site_title = combo_site.name
-                combo_site.site_heading = name_a + name_b + ' Jobs' 
+                combo_site.site_heading = name_a + name_b + ' Jobs'
                 combo_site.save()
                 combo_site.business_units =\
                     site_a.business_units.all() | site_b.business_units.all()
@@ -91,7 +91,7 @@ class Command(BaseCommand):
                    create_site_facet(facet, combo_site)
                 for facet in site_b.seositefacet_set.filter(facet_type = 'DFT'):
                    create_site_facet(facet, combo_site)
-                combo_site.configurations = configurations 
+                combo_site.configurations = configurations
                 combo_site.group = group
                 combo_site.view_sources = view_sources
                 site_file.write(combo_site.domain + '\n')
