@@ -1,35 +1,37 @@
 from django.conf.urls import patterns, include, url
+from django.contrib import admin
 
-from redirect.views import myjobs_redirect, home, email_redirect, update_buid
+from postajob.views import SitePackageFilter
+from seo.views.search_views import (BusinessUnitAdminFilter,
+                                    SeoSiteAdminFilter)
 
 # Uncomment the next two lines to enable the admin:
-from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-    # Redirect views
-    url(r'^(?P<guid>[0-9A-Fa-f]{32})(?P<vsid>\d+)?(?P<debug>\+)?$', home, name='home'),
-
-    # Email Redirect view
-    url(r'^email$', email_redirect, name='email_redirect'),
-
-    # View for updating buids
-    url(r'^update_buid/$', update_buid, name='update_buid'),
-
     url(r'^ajax/', include('automation.urls')),
+
+    # Filtering URLs
+    url(r'^sites/$',
+        SitePackageFilter.as_view(),
+        name='site_fsm'),
+    url(r'^ajax/data/filter/business_units/$',
+        BusinessUnitAdminFilter.as_view(),
+        name='buid_admin_fsm'),
+    url(r'^data/filter/sites/$', SeoSiteAdminFilter.as_view(),
+        name='site_admin_fsm'),
 
     url(r'^accounts/', include('registration.urls')),
     url(r'^message/', include('mymessages.urls')),
 
-    # Potential www.my.jobs redirect, catches root and anything not caught
-    # previously
-    url(r'^(?:.*/)?$', myjobs_redirect),
+    url('', include('redirect.urls')),
 )
 
 urlpatterns += patterns(

@@ -31,7 +31,7 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
 from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
-                               Partner, PartnerLibrary, ADDITION)
+                               Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mysearches.models import PartnerSavedSearch
 
@@ -44,7 +44,7 @@ class MyPartnersTestCase(MyJobsBase):
         self.request_factory = RequestFactory()
 
         # Create a user to login as
-        self.staff_user = UserFactory()
+        self.staff_user = UserFactory(is_staff=True)
 
         # Create a company
         self.company = CompanyFactory()
@@ -852,7 +852,6 @@ class SearchEditTests(MyPartnersTestCase):
                                                 created_by=self.staff_user,
                                                 user=self.contact.user,
                                                 partner=self.partner,)
-
     def test_render_new_form(self):
         url = self.get_url(company=self.company.id,
                            partner=self.partner.id)
@@ -967,12 +966,13 @@ class SearchEditTests(MyPartnersTestCase):
 
     def test_update_existing_saved_search(self):
         """
-            Verify that form can update existing saved search information. Ensure last_action_time is
-            also updated properly
+        Verify that form can update existing saved search information. Ensure
+        last_action_time is also updated properly
         """
         self.search.last_action_time = datetime.now() - timedelta(days=1)
         self.search.save()
-        self.assertNotEqual(self.search.last_action_time.date(), datetime.now().date())
+        self.assertNotEqual(self.search.last_action_time.date(),
+                            datetime.now().date())
         url = self.get_url('partner_savedsearch_save',
                            company=self.company.id,
                            partner=self.partner.id,
@@ -1672,3 +1672,50 @@ class LocationViewTests(MyPartnersTestCase):
         # reload contact from DB, as it is holds "expired" data
         reload_contact = Contact.objects.get(pk=self.contact.pk)
         self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
+
+
+class OutreachViewTests(MyPartnersTestCase):
+    """
+        These tests relate to views involved in Non-User Outreach functionality
+    """
+    def test_get_form_outreach_email(self):
+        """
+            Test that GET requests to the non user outreach inbox management system yields a 200
+        """
+        response = self.client.get(reverse('manage_outreach_inboxes'))
+        self.assertEqual(response.status_code, 200)
+        # check that response contains part of the rendered template, ensure we're getting the correct page
+        self.assertContains(response, 'id="inbox-form"')
+
+    def test_post_form_outreach_email(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        email_to_test = 'popeyes_chicken'
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': email_to_test,
+                'form-0-id': [u'']
+                }
+        self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 1)
+
+    def test_post_form_outreach_email_validation(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        email_to_test = 'popeyes_chicken@anothersite.com'
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': email_to_test,
+                'form-0-id': [u'']
+                }
+        response = self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        self.assertContains(response, "Enter a valid email username")
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 0)
