@@ -749,7 +749,11 @@ def api_create_role(request):
 
     response_data = {}
 
-    if request.method == "POST":
+    if request.method != "POST":
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+    else:
         company = get_company_or_404(request)
 
         if request.POST.get("role_name", ""):
@@ -792,10 +796,6 @@ def api_create_role(request):
 
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
-    else:
-        response_data["success"] = "false"
-        response_data["message"] = "POST method required."
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def api_edit_role(request, role_id=0):
@@ -817,7 +817,14 @@ def api_edit_role(request, role_id=0):
 
     response_data = {}
 
-    if request.method == "POST":
+
+
+
+    if request.method != "POST":
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+    else:
         # Check if role exists
         if Role.objects.filter(id=role_id).exists() == False:
             response_data["success"] = "false"
@@ -892,10 +899,6 @@ def api_edit_role(request, role_id=0):
         # RETURN - boolean
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
-    else:
-        response_data["success"] = "false"
-        response_data["message"] = "POST method required."
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def api_delete_role(request, role_id=0):
@@ -914,8 +917,12 @@ def api_delete_role(request, role_id=0):
 
     response_data = {}
 
-    if request.method == "DELETE":
+    if request.method != "DELETE":
+        response_data["success"] = "false"
+        response_data["message"] = "DELETE method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+    else:
         company = get_company_or_404(request)
 
         # Check if role exists
@@ -936,11 +943,6 @@ def api_delete_role(request, role_id=0):
 
         response_data["success"] = "false"
         response_data["message"] = "Role not deleted."
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-    else:
-        response_data["success"] = "false"
-        response_data["message"] = "DELETE method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
@@ -1053,8 +1055,14 @@ def api_create_user(request):
 
     response_data = {}
 
-    if request.method == "POST":
 
+
+
+    if request.method != "POST":
+        response_data["success"] = "false"
+        response_data["message"] = "POST method required."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+    else:
         company = get_company_or_404(request)
 
         if request.POST.get("user_email", ""):
@@ -1066,6 +1074,7 @@ def api_create_user(request):
             response_data["success"] = "true"
             response_data["message"] = "This user already exists. Role invitation email sent."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
+            # TODO If they accept, add them to the role(S)
 
         role_ids = []
         if request.POST.getlist("assigned_roles[]", ""):
@@ -1091,11 +1100,6 @@ def api_create_user(request):
 
         response_data["success"] = "false"
         response_data["message"] = "User not created."
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-    else:
-        response_data["success"] = "false"
-        response_data["message"] = "POST method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
