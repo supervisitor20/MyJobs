@@ -84,7 +84,7 @@ class DecoratorTests(MyJobsBase):
         response.
         """
 
-        self.user.roles.clear()
+        self.user.roles.first().activities.clear()
 
         def callback():
             raise Http404("Required activities missing.")
@@ -113,14 +113,13 @@ class DecoratorTests(MyJobsBase):
         # the erroneous callback should be listed in the output
         self.assertIn("- acess_callback", cm.exception.message)
 
-
     def test_user_with_wrong_activities(self):
         """
         When a user's roles don't include all of the activities required by a
         view, they should see a permission denied error.
         """
 
-        self.user.roles.clear()
+        self.user.roles.first().activities.clear()
         response = requires(self.activity.name)(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 403)

@@ -93,6 +93,7 @@ def get_company(request):
     Uses the myjobs_company cookie to determine what the current company is.
 
     """
+
     if not request.user or request.user.is_anonymous():
         return None
 
@@ -135,7 +136,9 @@ def get_company_or_404(request):
     company = get_company(request)
 
     if not company:
-        raise Http404
+        raise Http404("Either the company does not exist or the current user "
+                      "doesn't have access to it.")
+
     else:
         return company
 
