@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from myreports.decorators import restrict_to_staff
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
-from mypartners.views import PRM, missing_access, missing_activity
+from mypartners.views import PRM
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
     Column, DataType, ReportTypeDataTypes)
@@ -23,7 +23,7 @@ from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def overview(request):
     """The Reports app landing page."""
@@ -55,7 +55,7 @@ def overview(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def report_archive(request):
     """Archive of previously run reports."""
@@ -75,7 +75,7 @@ def report_archive(request):
         return response
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
@@ -137,7 +137,7 @@ class ReportView(View):
     app = 'mypartners'
     model = 'contactrecord'
 
-    @method_decorator(requires(PRM, missing_activity, missing_access))
+    @method_decorator(requires(PRM))
     @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
@@ -227,7 +227,7 @@ class ReportView(View):
         return HttpResponse(name, content_type='text/plain')
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def regenerate(request):
     """
@@ -254,7 +254,7 @@ def regenerate(request):
         "This view is only reachable via a GET request.")
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def downloads(request):
     """ Renders a download customization screen.
@@ -316,7 +316,7 @@ def downloads(request):
         raise Http404("This view is only reachable via an AJAX request")
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 def download_report(request):
     """
@@ -360,7 +360,7 @@ def download_report(request):
 
 
 @restrict_to_staff()
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 @require_http_methods(['GET'])
 def dynamicoverview(request):
@@ -378,7 +378,7 @@ def dynamicoverview(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 @require_http_methods(['POST'])
 def reporting_types_api(request):
@@ -397,7 +397,7 @@ def reporting_types_api(request):
                         content=json.dumps(data))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires(PRM)
 @has_access('prm')
 @require_http_methods(['POST'])
 def report_types_api(request):
