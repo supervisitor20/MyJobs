@@ -70,6 +70,10 @@ def is_a_group_member(user, group):
     requested group
     """
 
+    # If using roles, we aren't concerned with groups
+    if settings.ROLES_ENABLED:
+        return True
+
     try:
         return User.objects.is_group_member(user, group)
     except ValueError:
