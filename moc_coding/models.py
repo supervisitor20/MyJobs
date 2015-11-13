@@ -9,7 +9,7 @@ class Onet(models.Model):
     Occupational Classification ("O*NET-SOC") entity. For information
     about the O*NET-SOC system, consult:
     http://www.onetonline.org/help/onet/
-    
+
     """
     def __unicode__(self):
         return self.title
@@ -18,10 +18,10 @@ class Onet(models.Model):
         verbose_name = "Onet"
         verbose_name_plural = "Onets"
         unique_together = ("title", "code")
-        
+
     title = models.CharField(max_length=300)
     code = models.CharField(max_length=10, primary_key=True)
-    
+
 
 class Moc(models.Model):
     """
@@ -29,7 +29,7 @@ class Moc(models.Model):
     (MOC)[1] as defined by the US Department of Defense, and relates each
     MOC to a set of O*NET codes[2]. This allows us to have a searchable
     relationship between military and civilian jobs.
-    
+
     """
     def __unicode__(self):
         SERVICE_CHOICES = {
@@ -57,8 +57,8 @@ class Moc(models.Model):
     title_slug = models.SlugField(max_length=300)
     onets = models.ManyToManyField(Onet)
     moc_detail = models.OneToOneField('MocDetail', null=True)
-    
-    
+
+
 class MocDetail(models.Model):
     # Needs to be evaluated for utility. This is a bit of legacy code that seems
     # superfluous. I can envision a UI-level data structure like this, but a
@@ -72,12 +72,12 @@ class MocDetail(models.Model):
         (u'm', u'Marines'),
         (u'n', u'Navy'),
     )
-    
+
     primary_value = models.CharField(max_length=255)
     service_branch = models.CharField(max_length=2, choices=SERVICE_CHOICES)
     military_description = models.CharField(max_length=255)
     civilian_description = models.CharField(max_length=255, blank=True)
-    
+
 
 class CustomCareer(models.Model):
     """
@@ -87,16 +87,16 @@ class CustomCareer(models.Model):
     and the entity itself.
 
     """
-    
+
     def __repr__(self):
         return "<CustomCareer Military Code:%s O*NET-SOC:%s>" % (self.moc.id or 0,
                                                                  self.onet.code or 0)
-    
+
     def __str__(self):
         return "Military Code:%s:%s -> O*NET-SOC:%s" % (self.moc.id or 0,
                                                         self.moc.branch,
                                                         self.onet.code or 0)
-    
+
     moc = models.ForeignKey(Moc, verbose_name="Military Occupational Code",
                             help_text="""Sorted by branch, then MOC, then MOC \
                             title.""")
@@ -106,11 +106,11 @@ class CustomCareer(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
-        
+
     class Meta:
         verbose_name = "Custom Military/Civilian Career Map"
         verbose_name_plural = "Custom Military/Civilian Career Maps"
-        
+
 
 def truncate(content, length=32, suffix='...'):
     """
@@ -125,7 +125,7 @@ def truncate(content, length=32, suffix='...'):
 
     Returns:
     `content` trimmed to, at most, the length of `length`+`suffix`.
-    
+
     """
     if len(content) <= (length - len(suffix)):
         return content

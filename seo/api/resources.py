@@ -30,7 +30,7 @@ class ViewSourceResource(ModelResource):
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
 
-        
+
 class GroupResource(ModelResource):
     class Meta:
         queryset = Group.objects.all()
@@ -42,7 +42,7 @@ class GroupResource(ModelResource):
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
 
-        
+
 class ATSResource(ModelResource):
     group = fields.ForeignKey(GroupResource, 'group', null=True)
     class Meta:
@@ -56,8 +56,8 @@ class ATSResource(ModelResource):
         }
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
-        
-        
+
+
 class BusinessUnitResource(ModelResource):
     class Meta:
         queryset = BusinessUnit.objects.all()
@@ -99,7 +99,7 @@ class GoogleAnalyticsCampaignResource(ModelResource):
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
 
-        
+
 class SpecialCommitmentResource(ModelResource):
     class Meta:
         queryset = SpecialCommitment.objects.all()
@@ -111,7 +111,7 @@ class SpecialCommitmentResource(ModelResource):
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
 
-        
+
 class ConfigurationResource(ModelResource):
     class Meta:
         queryset = Configuration.objects.all()
@@ -123,7 +123,7 @@ class ConfigurationResource(ModelResource):
         }
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
-        
+
 
 class BillboardImageResource(ModelResource):
     group = fields.ForeignKey(GroupResource, 'group', null=True)
@@ -137,7 +137,7 @@ class BillboardImageResource(ModelResource):
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
 
-        
+
 class CustomFacetResource(ModelResource):
     group = fields.ForeignKey(GroupResource, 'group', null=True)
     business_units = fields.ToManyField(BusinessUnitResource, 'business_units',
@@ -157,7 +157,7 @@ class CustomFacetResource(ModelResource):
         }
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
-        
+
 
 class SeoSiteResource(ModelResource):
     view_sources = fields.ForeignKey(ViewSourceResource, 'view_sources',null=True,
@@ -177,7 +177,7 @@ class SeoSiteResource(ModelResource):
     billboard_images = fields.ToManyField(BillboardImageResource, 'billboard_images',
                                            blank=True,null=True)
     group = fields.ForeignKey(GroupResource, 'group', null=True)
-    
+
     class Meta:
         queryset = SeoSite.objects.all()
         resource_name = 'seosite'
@@ -195,7 +195,7 @@ class SeoSiteResource(ModelResource):
         }
         authentication = ApiKeyAuthentication()
 
-        
+
 class CompanyResource(ModelResource):
     class Meta:
         queryset = Company.objects.all()
@@ -248,8 +248,8 @@ class OnetResource(ModelResource):
             'code': ALL
         }
         authentication = ApiKeyAuthentication()
-        throttle = SmartCacheDBThrottle()        
-        
+        throttle = SmartCacheDBThrottle()
+
 
 class MocDetailResource(ModelResource):
     class Meta:
@@ -280,8 +280,8 @@ class MocResource(ModelResource):
         }
         authentication = ApiKeyAuthentication()
         throttle = SmartCacheDBThrottle()
-    
-    
+
+
 class JobSearchResource(SearchResource):
     field_aliases = {
         'city': 'city__exact',
@@ -299,7 +299,7 @@ class JobSearchResource(SearchResource):
     state = fields.CharField(attribute='state', blank=True, null=True)
     title = fields.CharField(attribute='title', blank=True, null=True)
     uid = fields.CharField(attribute='uid', blank=True, null=True)
-        
+
     def _build_reverse_url(self, name, args=None, kwargs=None):
         if 'pk' in kwargs:
             return '/seo/%s/%s/%s/' % (kwargs.get('api_name', 'v1'),
@@ -316,16 +316,16 @@ class JobSearchResource(SearchResource):
             filters = {}
 
         for param_alias, value in filters.items():
-            
+
             if param_alias not in self._meta.index_fields:
                 continue
-            
+
             param = self.field_aliases.get(param_alias, param_alias)
             tokens = value.split(self._meta.lookup_sep)
             field_queries = []
-            
+
             for token in tokens:
-                
+
                 if token:
                     field_queries.append(self._meta.query_object((param,
                                                                   token)))
@@ -337,7 +337,7 @@ class JobSearchResource(SearchResource):
             return reduce(operator.and_, filter(lambda x: x, terms))
         else:
             return terms
-    
+
     class Meta:
         allowed_methods = ['get']
         resource_name = 'jobsearch'

@@ -39,7 +39,7 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         # Set version number to date that this file was last modified
         # This should update the cache key on deployments and ensure any servers
-        # deployed to on the same day will have matching keys. This won't clear 
+        # deployed to on the same day will have matching keys. This won't clear
         # the cache for multiple deployments per day.
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime(__file__))),
         'LOCATION': [

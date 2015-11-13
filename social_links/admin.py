@@ -18,7 +18,7 @@ def invalidate_template_cache(fragment_name, *variables):
     cache_key = 'template.cache.%s.%s' % (fragment_name, args.hexdigest())
     cache.delete(cache_key)
 
-    
+
 class MyModelMultipleChoiceField(ModelMultipleChoiceField):
     def __init__(self, queryset, cache_choices=False, required=True,
                  widget=None, label=None, initial=None,
@@ -26,7 +26,7 @@ class MyModelMultipleChoiceField(ModelMultipleChoiceField):
         self.my_model = kwargs.pop('my_model', None)
         super(ModelMultipleChoiceField, self).__init__(queryset, None,
             cache_choices, required, widget, label, initial, help_text,
-            *args, **kwargs)    
+            *args, **kwargs)
 
     def clean(self, value):
         if self.required and not value:
@@ -44,14 +44,14 @@ class MyModelMultipleChoiceField(ModelMultipleChoiceField):
         qs = self.my_model.objects.filter(pk__in=value)
         return qs
 
-        
+
 class SocialLinkForm(ModelForm):
     sites = MyModelMultipleChoiceField(SeoSite.objects.all(), my_model=SeoSite,
                                        required=False,
                                        widget=admin.widgets\
                                        .FilteredSelectMultiple('Sites', False))
     link_icon = ChoiceField(choices=SocialLinkType.icon_choices())
-    
+
     class Meta:
         model = SocialLink
 
@@ -72,13 +72,13 @@ class SocialLinkAdmin(admin.ModelAdmin):
             invalidate_template_cache('social_links', site.domain)
     invalidate_cached_footer.short_description = ("Delete cached footer contain"
                                                   "ing these links")
-    
+
     def queryset(self, request):
         qs = super(SocialLinkAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(group__in=request.user.groups.all())
-    
+
     def get_form(self, request, obj=None, **kwargs):
         this = super(SocialLinkAdmin, self).get_form(request, obj, **kwargs)
         my_group_fieldset = [('link_title', 'group'),
@@ -144,7 +144,7 @@ class MicrositeCarouselForm(ModelForm):
         required=False,
         widget=(admin.widgets.FilteredSelectMultiple('Sites', False))
     )
-    
+
     def save(self, commit=True):
         added_sites = set()
         msc = ModelForm.save(self, commit)
@@ -157,7 +157,7 @@ class MicrositeCarouselForm(ModelForm):
             msc.save()
             msc.seosite_set = added_sites
         return msc
-    
+
     class Meta:
         model = MicrositeCarousel
 
@@ -166,13 +166,13 @@ class MicrositeCarouselAdmin(admin.ModelAdmin):
     filter_horizontal = ('link_sites',)
     list_display = ('__unicode__', 'carousel_title', 'show_active_sites',
                     'is_active', 'group')
-    
+
     def queryset(self, request):
         qs = super(MicrositeCarouselAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(group__in=request.user.groups.all())
-    
+
     def get_form(self, request, obj=None, **kwargs):
         this = super(MicrositeCarouselAdmin, self).get_form(request, obj,
                                                             **kwargs)
@@ -184,7 +184,7 @@ class MicrositeCarouselAdmin(admin.ModelAdmin):
                                      'display_rows']}),]
         this.base_fields['active_sites'].queryset = SeoSite.objects.all()
         self.fieldsets = my_fieldsets
-        
+
         if obj:
             this.base_fields['active_sites'].queryset = (SeoSite.objects\
                                                          .filter(group=obj.group
@@ -215,13 +215,13 @@ class MicrositeCarouselAdmin(admin.ModelAdmin):
             if request.user.is_superuser or request.user.groups.count() > 1:
                 self.fieldsets[0][1]['fields'] = my_group_fieldset
                 this.base_fields['group'].required = True
-                
+
                 if not request.user.is_superuser:
                     this.base_fields['group'].queryset = (
                         Group.objects.filter(id__in=request.user.groups.all())
                     )
         return this
-    
+
     def save_model(self, request, obj, form, change):
         if (not request.user.is_superuser and
             request.user.groups.count() is 1 and
@@ -232,7 +232,7 @@ class MicrositeCarouselAdmin(admin.ModelAdmin):
             #in queries for qs, an error would be thrown if the two objects had
             #been queried from different databases
             obj_site_keys = [site.pk for site in obj.seosite_set.all()]
-            qs = MicrositeCarousel.objects.filter(seosite__pk__in=obj_site_keys, 
+            qs = MicrositeCarousel.objects.filter(seosite__pk__in=obj_site_keys,
                                                   is_active=1)
             if obj.pk:
                 qs = qs.exclude(pk=obj.pk)

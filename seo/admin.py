@@ -193,7 +193,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                 ('browse_facet_order_3', 'browse_facet_text_3',
                  'browse_facet_show_3'),
                 ('browse_facet_order_4', 'browse_facet_text_4',
-                 'browse_facet_show_4'),                 
+                 'browse_facet_show_4'),
                 ('browse_company_order', 'browse_company_text',
                  'browse_company_show'),
                 ('browse_moc_order', 'browse_moc_text', 'browse_moc_show'),
@@ -805,7 +805,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
-                formsets.append(formset) 
+                formsets.append(formset)
 
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
@@ -1080,7 +1080,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 self.log_change(request, new_object, change_message)
                 return self.response_change(request, new_object)
 
-        else:            
+        else:
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)

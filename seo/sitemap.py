@@ -13,7 +13,7 @@ from seo.helpers import sqs_apply_custom_facets
 
 
 class DESolrSitemap(SolrSitemap):
-    """ 
+    """
     Parse the jobs for a particular domain and return a sitemap. This
     generates a sitemap-pages.xml file for all microsites that contains
     all the URLS on the site, its frequency of update, and when it was
@@ -23,7 +23,7 @@ class DESolrSitemap(SolrSitemap):
     it does not fetch the data needed to compute all the URLs at once.
     Instead of using Django's built-in pagination, we delegate pagination
     operations to Solr itself using its `start` and `rows` parameters.
-    
+
     """
     #Required solr document fields. date_new is used by lastmod()
     required_fields = ['date_new']
@@ -39,7 +39,7 @@ class DESolrSitemap(SolrSitemap):
         self.buids = settings.SITE_BUIDS
         self.buid_str = " OR ".join([str(i) for i in self.buids])
         super(DESolrSitemap, self).__init__(queryclass=queryclass, **kwargs)
-        
+
     def _sqs(self):
         sqs = super(DESolrSitemap, self)._sqs()._clone()
 
@@ -50,17 +50,17 @@ class DESolrSitemap(SolrSitemap):
 
         if self.fields:
             sqs = sqs.fields(self.fields)
-            
-        return sqs
-    
-    def changefreq(self, obj): 
-        """How frequently the sitemap is likely to change"""
-        return "monthly" 
 
-    def lastmod(self, obj): 
+        return sqs
+
+    def changefreq(self, obj):
+        """How frequently the sitemap is likely to change"""
+        return "monthly"
+
+    def lastmod(self, obj):
         #Creates a datetime object from date_new
         return datetime.datetime.strptime(obj.get('date_new'), "%Y-%m-%d-%H%M%S")
-    
+
     def priority(self, obj):
         if obj['type'] == 'job_detail':
             return 1.0
@@ -137,19 +137,19 @@ class DESolrSitemap(SolrSitemap):
         """
         Return a list of dictionaries needed to create the URLs.
         In format field:value
-        
+
         """
         end = int(self.pagenum) * self.limit
         start = end - self.limit
         results = self.results.values(*self.fields)[start:end]
         items = []
-        
+
         for d in results:
             # If there are any values in the dictionary that, when slugified,
             # yield empty strings, continue without evaluating further.
             if not all([slugify(v) for v in d.values()]):
                 continue
-                
+
             ret = dict((k, slugify(v)) for k, v in d.items())
             ret['type'] = 'job_detail'
             items.append(ret)
@@ -162,13 +162,13 @@ class DateSitemap(DESolrSitemap):
     Works just like DESolrSitemap, except it also filters jobs by a
     particular date, passed to the constructor as a `datetime.datetime`
     object.
-    
-    """    
+
+    """
     def __init__(self, jobdate=None, **kwargs):
         """
         Inputs:
         :jobdate: datetime.date object.
-        
+
         """
         if not jobdate:
             jobdate = datetime.date.today()
@@ -183,7 +183,7 @@ class DateSitemap(DESolrSitemap):
         """
         Filters the search results returned from DESolrSitemap to only
         include jobs from `self.jobdate`.
-        
+
         """
         sqs = super(DateSitemap, self)._sqs()._clone()
         return sqs.filter(date_new__range=self._daterange())
@@ -200,9 +200,9 @@ class DateSitemap(DESolrSitemap):
         the `_sqs` method will be of type ValuesSearchQuerySet, which
         does not have a `facet_limit` method.
         Inputs::
-        :startdate: 
+        :startdate:
         :enddate:
-        
+
         """
         # The date format Solr uses to represent dates.
         solr_date_fmt = "%Y-%m-%dT%H:%M:%SZ"
@@ -231,7 +231,7 @@ class DateSitemap(DESolrSitemap):
         # let's remove those before proceeding.
         for k in ['start', 'end', 'gap']:
             del facetcounts[k]
-            
+
         for k, v in facetcounts.items():
             # Convert date string to a datetime object.
             try:
@@ -243,7 +243,7 @@ class DateSitemap(DESolrSitemap):
                 # to sort out what that date is and why it is in the results.
                 del facetcounts[k]
                 continue
-                
+
             # Only get year, month and day values.
             ymd = datetime.date(*dt.timetuple()[0:3]).isoformat()
             # Divide the number of results by self.limit and round up to derive

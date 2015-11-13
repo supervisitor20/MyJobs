@@ -59,7 +59,7 @@ class FiltersTestCase(DirectSEOBase):
             for i in range(self.config.num_filter_items_to_show-1):
                 items.append((slab, 5))
             facet_counts['%s_slab' % filter_type] = items
-        widgets = helpers.get_widgets(self.request, self.config, 
+        widgets = helpers.get_widgets(self.request, self.config,
                                       facet_counts, custom_facets=[])
         for widget in widgets:
             rendered_widget = widget.render()
@@ -94,7 +94,7 @@ class FiltersTestCase(DirectSEOBase):
         # We only need some values from the config
         # Slabs with None in their location name are not rendered by the widgets
         good_bad_slabs = {
-            'state': ('california/usa/jobs::California', 
+            'state': ('california/usa/jobs::California',
                       'none/irl/jobs::None'),
             'city': ('gary/indiana/usa/jobs::Indiana',
                      'none/indiana/usa/jobs::None'),
@@ -327,7 +327,7 @@ class FiltersTestCase(DirectSEOBase):
                                          custom_facets=custom_facets,
                                          filters=filters)
         self.assertEqual(num_widgets, 9)
-        
+
         # Show four custom facet groups
         self.config.browse_facet_show_4 = True
         self.config.save()
@@ -359,7 +359,7 @@ class FiltersTestCase(DirectSEOBase):
         facet4 = factories.CustomFacetFactory(name='Test 4')
         factories.SeoSiteFacetFactory(customfacet=facet4, seosite=self.site,
                                       facet_group=4)
-                                      
+
         facet_counts = {'facet_slab': [(facet1, 5), (facet2, 5), (facet3, 5), (facet4, 5)]}
         for filter_type in filter_types:
             facet_counts['%s_slab' % filter_type] = []

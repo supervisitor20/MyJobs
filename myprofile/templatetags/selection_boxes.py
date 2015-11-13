@@ -12,7 +12,7 @@ def country_select(selected="usa", html_id="", input_name="country",
     """
     Builds an html select list of countries. The select list is built using
     data stored on a CDN.
-    
+
     Inputs:
     :selected:      default key to select
     :html_id:       html id to use for the element
@@ -20,10 +20,10 @@ def country_select(selected="usa", html_id="", input_name="country",
     :child_regions: whether this field has a dependent regions field
     :inc_struc:     whether or not to include the html label and structure
     :region_html_id: the id of a child select block that change with this one.
-    
-    Returns:        
+
+    Returns:
     :html_str:      HTML <select> block
-    
+
     """
     selected = selected.lower()
     data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/countries_167-24.json'
@@ -61,10 +61,10 @@ def region_select(country="usa", selected="az", html_id="",
     :html_id:       html id to use for the element
     :input_name:    the form element name
     :inc_struc:     whether or not to include the html label and structure
-    
-    Returns:        
+
+    Returns:
     :html_str:      HTML <select> block or error message
-    
+
     """
     #there is a single file per country, else it returns null.
     country = country.lower()
@@ -75,12 +75,12 @@ def region_select(country="usa", selected="az", html_id="",
         region_list = data_list["regions"]
     except KeyError:
         region_list = {}
-        
+
     try:
         label = data_list["friendly_label"]
     except KeyError:
-        label = "Region" 
-        
+        label = "Region"
+
     if "error" in region_list:
         html_str = "<input type='hidden' name='%s' value=''>" % input_name
         html_str = "%sNo regions available for the selected country" % html_str
@@ -91,7 +91,7 @@ def region_select(country="usa", selected="az", html_id="",
         html_str="%s%s<div class='clear'></div>" % (html_str,sel_tag)
     else:
         html_str = _build_select_list(region_list,selected,input_name,html_id)
-        
+
     return html_str
 
 
@@ -114,20 +114,20 @@ def default_country(field):
 def _load_json_data(json_url):
     """
     Retrieves an external json file, opens it, and reads it in as a dict.
-    
+
     Inputs:
     :jason_url:     The full url of the json data file, with protocol
-    
+
     Returns:
     :json_data:     Python dictionary version of the json file
-    
+
     """
     try:
         data = urllib2.Request(json_url)
         opener = urllib2.build_opener()
         json_data = json.load(opener.open(data))
     except (urllib2.HTTPError,ValueError):
-        return {"code":"error","error":"There was an error loading the file."}   
+        return {"code":"error","error":"There was an error loading the file."}
     return json_data
 
 
@@ -135,7 +135,7 @@ def _build_select_list(select_dict,selected,input_name,html_id,class_name="",
                        child_list_id=""):
     """
     Generic function that builds an html select list for the specified type.
-    
+
     Inputs:
     :select_dict:   A dictionary object used to build the <option> nodes
     :selected:      default key to select
@@ -143,20 +143,20 @@ def _build_select_list(select_dict,selected,input_name,html_id,class_name="",
     :input_name:    the form element name
     :class_name:    option class name to append to element
     :child_list_id: the id of a child list that changes with this list
-    
-    Returns:        
+
+    Returns:
     HTML <select> block
-    
+
     """
     attr_str = ""
     if class_name: # assign the class name
         attr_str = " class='%s'" % class_name
     if child_list_id: # store the child id. Used by JavaScript for UI effects
         attr_str = "%s data-childlistid='%s'" % (attr_str, child_list_id)
-        
+
     html_str = "<select name='%s' id='%s'%s>" % (input_name,html_id,attr_str)
     html_str = "%s<option value=''></option>" % html_str
-    
+
     for item in select_dict:
         if item["code"] == "error":
             return item["error"]
@@ -166,5 +166,5 @@ def _build_select_list(select_dict,selected,input_name,html_id,class_name="",
         if item["code"] != "":
             option_attr = "value='%s'%s" % (item["code"], select_flag)
             html_str = "%s<option %s>%s</option>" % (html_str,option_attr,item["name"])
-    html_str = "%s</select>" % html_str    
+    html_str = "%s</select>" % html_str
     return html_str
