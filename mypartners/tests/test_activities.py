@@ -41,6 +41,5 @@ class TestViewActivities(MyJobsBase):
         Test that only users with the `view partner` activity may navigate
         to `/prm/view`.
         """
-        import ipdb; ipdb.set_trace()
         with self.assertRaises(Http404):
             self.client.get(reverse("prm"))

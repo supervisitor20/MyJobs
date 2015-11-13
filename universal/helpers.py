@@ -101,12 +101,8 @@ def get_company(request):
     if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
-        if settings.ROLES_ENABLED:
-            if company.role_set.filter(user=request.user).exists():
-                return company
-        else:
-            if company.companyuser_set.filter(user=request.user).exists():
-                return company
+        if company.user_has_access(request.user):
+            return company
 
     # If the current hit is for a non-microsite admin, we don't know what
     # company we should be using; don't guess.
@@ -117,18 +113,18 @@ def get_company(request):
     if company:
         company = get_object_or_404(get_model('seo', 'company'), pk=company)
 
-        # If the company cookie is correctly set, confirm that the user
-        # actually has access to that company.
-        if company not in request.user.get_companies():
+        if not company.user_has_access(request.user):
             company = None
 
     if not company:
-        try:
-            # If the company cookie isn't set, then the user should have
-            # only one company, so use that one.
-            company = request.user.get_companies()[0]
-        except IndexError:
-            company = None
+        # If the company cookie isn't set, then the user should have
+        # only one company, so use that one.
+        if settings.ROLES_ENABLED:
+            return get_model('seo', 'Company').objects.filter(
+                role__user=request.user).first()
+        else:
+            return request.user.company_set.first()
+
     return company
 
 

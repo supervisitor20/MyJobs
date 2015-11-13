@@ -546,8 +546,7 @@ class SeoSite(Site):
         if settings.ROLES_ENABLED:
             return user.pk in companies.values_list('role__user', flat=True)
         else:
-
-            user_companies = user.get_companies()
+            user_copmanies = user.company_set.all()
             for company in companies:
                 if company not in user_companies:
                     return False
@@ -713,10 +712,15 @@ class Company(models.Model):
 
     @property
     def prm_access(self):
+        """
+        Read-only property that returns whether or not a company has access
+        to PRM features.
+        """
         if settings.ROLES_ENABLED:
             return "PRM" in self.app_access.values_list("name", flat=True)
         else:
             return self.member
+
 
     def user_has_access(self, user):
         """

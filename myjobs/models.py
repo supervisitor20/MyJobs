@@ -409,14 +409,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return gravatar_url
 
-    def get_companies(self):
-        """
-        Returns a QuerySet of all the Companies a User has access to.
-
-        """
-        from seo.models import Company
-        return Company.objects.filter(admins=self).distinct()
-
     def get_sites(self):
         """
         Returns a QuerySet of all the SeoSites a User has access to.

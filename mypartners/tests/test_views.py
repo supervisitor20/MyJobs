@@ -83,7 +83,6 @@ class MyPartnerViewsTests(MyPartnersTestCase):
         when the partner id is missing.
 
         """
-        import ipdb; ipdb.set_trace()
 
         response = self.client.post(reverse('partner_details'))
         self.assertEqual(response.status_code, 404)
