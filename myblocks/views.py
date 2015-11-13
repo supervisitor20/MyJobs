@@ -107,7 +107,7 @@ def secure_blocks(request):
                 # Allow if no entry was made in the AllowedBlockPath table
                 not block.allowed_paths.exists() or
                 # Allow if no paths were defined in the previous entry
-                not block.allowed_paths.filter(paths__isnull=True) or
+                block.allowed_paths.filter(paths__isnull=True) or
                 # Allow if the current requested path is allowed for this block
                 block.allowed_paths.filter(paths__path=request.path).exists())
             if allowed_path:
