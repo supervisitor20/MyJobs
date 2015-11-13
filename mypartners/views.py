@@ -32,7 +32,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
-from myjobs.decorators import requires
+from myjobs import decorators
 from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -53,6 +53,7 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
 
+
 PRM = Activity.objects.filter(
     app_access__name='PRM').exclude(
         name__icontains='tag').values_list('name', flat=True)
@@ -62,6 +63,9 @@ def missing_access():
 
 def missing_activity():
     raise Http404("Activities are missing.")
+
+def requires(activities):
+    return decorators.requires(activities, missing_activity, missing_access)
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires(PRM, missing_activity, missing_access)

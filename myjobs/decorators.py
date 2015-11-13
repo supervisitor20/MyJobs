@@ -99,6 +99,12 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
         return wraps(view_func)(wrap)
     return decorator
 
+CALLBACK_ERROR_TEMPLATE = """\
+Received invalid callbacks:
+{callbacks}
+Expected "access_callback" and/or "activity_callback".
+"""
+
 class MissingAppAccess(HttpResponseForbidden):
     """
     MissingAppAccess is raised when a company user access a view but that
@@ -119,7 +125,7 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
-def requires(activities, activity_callback=None, access_callback=None):
+def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
 
@@ -139,12 +145,12 @@ def requires(activities, activity_callback=None, access_callback=None):
     Inputs:
     :activities: A list of activity names that the decorated view should
                    check against.
-    :activity_callback: A callable to be used as the view response when the
-                        user isn't associated with the correct subset of
-                        activities.
-    :access_callback: A callable to be used as the view response when the
-                      user's company doesn't have the appropriate app access
-                      (as determined by the passed in activities).
+    :callbacks: callbacks['activity_callback'] is a callable to be used as a
+                view response when the use isn't associated with the correct
+                subset of activities. callbacks['access_callback'] is a
+                callable to be used as a view response when the users's company
+                doesn't have the appropriate app access (as determined by the
+                passed in activities).
 
     Examples:
     Let's assume that the activities "create user", "read user", "update user",
@@ -154,7 +160,7 @@ def requires(activities, activity_callback=None, access_callback=None):
 
     We might want to decorate that view as follows:
 
-        @requires(["read user", "update user"])
+        @requires("read user", "update user")
         def modify_user(request):
             ...
 
@@ -174,7 +180,7 @@ def requires(activities, activity_callback=None, access_callback=None):
             return HttpResponse("<strong>Insufficient permissions. "
                                 "Please contact your administrator</strong>")
 
-        @requires(["read user", "update user"], activity_callback=callback)
+        @requires("read user", "update user", activity_callback=callback)
         def modify_user(request):
             ...
 
@@ -183,12 +189,20 @@ def requires(activities, activity_callback=None, access_callback=None):
     response used when app access is missing by passing `access_callback`.
     """
 
-    activity_callback = activity_callback or MissingActivity
-    access_callback = access_callback or MissingAppAccess
+    invalid_callbacks = set(callbacks.keys()).difference({
+        "access_callback", "activity_callback"})
+
+    if invalid_callbacks:
+        raise TypeError(CALLBACK_ERROR_TEMPLATE.format(callbacks="\n".join(
+            "- {0}".format(callback) for callback in invalid_callbacks)))
+
+    activity_callback = callbacks.get('activity_callback', MissingActivity)
+    access_callback = callbacks.get('access_callback', MissingAppAccess)
 
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
+
             #TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
