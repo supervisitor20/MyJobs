@@ -10,10 +10,10 @@ import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
 
-from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
@@ -1325,9 +1325,10 @@ def process_email(request):
 @restrict_to_staff()
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
-def nuo_inbox_management(request):
+def nuo_main(request):
     """
-    View for manage users
+    View for non user outreach module
+    GET /prm/view/nonuseroutreach
     """
     company = get_company_or_404(request)
 
@@ -1335,9 +1336,52 @@ def nuo_inbox_management(request):
         "company": company
         }
 
-    return render_to_response('nonuseroutreach/nuo_inbox_management.html', ctx,
+    return render_to_response('nonuseroutreach/nuo_main.html', ctx,
                                 RequestContext(request))
 
+
+@restrict_to_staff()
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+def api_get_nuo_inbox_list(request):
+    """
+    Retrieves all non user outreach inboxes for a company. Returns json object with id, email of each
+    GET /prm/api/nonuseroutreach/inbox/list
+    """
+    company = get_company_or_404(request)
+
+    inboxes = OutreachEmailAddress.objects.filter(company=company)
+    return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
+
+
+@restrict_to_staff()
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+def api_save_nuo_inbox(request):
+    """
+    Attempts to save a non user outreach inbox. Returns error message if failed.
+    GET /prm/api/nonuseroutreach/inbox/save
+    """
+    pass
+    # company = get_company_or_404(request)
+    #
+    # inboxes = OutreachEmailAddress.objects.filter(company=company)
+    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
+
+
+@restrict_to_staff()
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+def api_delete_nuo_inbox(request):
+    """
+    Attempts to delete a non user outreach inbox. Returns error message if failed.
+    GET /prm/api/nonuseroutreach/inbox/delete
+    """
+    pass
+    # company = get_company_or_404(request)
+    #
+    # inboxes = OutreachEmailAddress.objects.filter(company=company)
+    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
 
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')

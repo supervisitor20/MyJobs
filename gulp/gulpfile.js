@@ -102,13 +102,13 @@ gulp.task('manageusers', function() {
     .pipe(gulp.dest(dest))
 });
 
-gulp.task('nuo_inbox_management', function() {
+gulp.task('nonuseroutreach', function() {
     return browserify([], {
         debug: true,
         paths: ['./src'],
     })
     .external(vendor_libs)
-    .add('src/nonuseroutreach/nuo_inbox_management.js')
+    .add('src/nonuseroutreach/nonuseroutreach.js')
     .transform(babelify)
     .bundle()
     .on('error', function(error, meta) {
@@ -119,7 +119,7 @@ gulp.task('nuo_inbox_management', function() {
     .on('package', function(pkg) {
         util.log("Including package:", pkg.name)
     })
-    .pipe(source('nuo_inbox_management.js'))
+    .pipe(source('nonuseroutreach.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
     // Do we want this in production builds?
@@ -147,11 +147,11 @@ gulp.task('test', function() {
         }));
 });
 
-gulp.task('build', ['vendor', 'reporting', 'manageusers', 'nuo_inbox_management']);
+gulp.task('build', ['vendor', 'reporting', 'manageusers', 'nonuseroutreach']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers', 'nuo_inbox_management']);
+    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers', 'nonuseroutreach']);
 });
 
 gulp.task('default', ['build', 'test']);
