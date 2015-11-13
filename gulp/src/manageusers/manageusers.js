@@ -1,12 +1,447 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {getCsrf} from 'util/cookie';
+import {validateEmail} from 'util/validateEmail';
 import Button from 'react-bootstrap/lib/Button';
 import FilteredMultiSelect from "react-filtered-multiselect"
 
 
 
 // This is the entry point of the application. Bundling begins here.
+
+
+var EditUserPage = React.createClass({
+  getInitialState: function() {
+    {/* TODO Refactor to use basic Actions and the Dispatchers */}
+    return {
+      help_message: '',
+      user_email: '',
+      available_roles: [],
+      assigned_roles: []
+    };
+  },
+  onTextChange: function(event) {
+    this.state.user_email = event.target.value;
+
+    {/* I know this is awful. setState overrides some states because they are n-levels deep.
+      Look into immutability: http://facebook.github.io/react/docs/update.html */}
+
+    this.setState({
+      help_message: this.state.help_message,
+      user_email: this.state.user_email,
+      assigned_roles: this.refs.roles.state.assigned_roles,
+      available_roles: this.refs.roles.state.available_roles
+    })
+
+  },
+  componentDidMount: function() {
+    if(this.props.action == "Edit"){
+      $.get("/manage-users/api/users/" + this.props.user_id, function(results) {
+
+        if (this.isMounted()) {
+
+          console.log(results)
+
+          var user_object = results[this.props.user_id];
+
+          var user_email = user_object.email;
+
+          var available_roles_unformatted = JSON.parse(user_object.roles.available);
+          var available_roles = available_roles_unformatted.map(function(obj){
+             var role = {};
+             role['id'] = obj.pk;
+             role['name'] = obj.fields.name;
+             return role;
+          });
+
+          console.log("available_roles formatted properly");
+          console.log(available_roles);
+
+          var assigned_roles_unformatted = JSON.parse(user_object.roles.assigned);
+          var assigned_roles = assigned_roles_unformatted.map(function(obj){
+             var role = {};
+             role['id'] = obj.pk;
+             role['name'] = obj.fields.name;
+             return role;
+          });
+
+          this.setState({
+            help_message: '',
+            user_email: user_email,
+            available_roles: available_roles,
+            assigned_roles: assigned_roles
+          });
+        }
+      }.bind(this));
+    }
+
+    else if(this.props.action == "Add"){
+
+      console.log("Inside add user");
+
+      $.get("/manage-users/api/roles/", function(results) {
+
+        if (this.isMounted()) {
+
+          available_roles = [];
+          for (var role_id in results){
+            available_roles.push(
+              {
+                "id":role_id,
+                "name":results[role_id].role.name
+              }
+            )
+          };
+
+          var user_email = "";
+          var available_roles = available_roles;
+          var assigned_roles = [];
+
+          this.setState({
+            help_message: '',
+            user_email: user_email,
+            available_roles: available_roles,
+            assigned_roles: assigned_roles
+          });
+        }
+      }.bind(this));
+    }
+
+  },
+  handleSaveUserClick: function (event) {
+
+    {/* Grab form fields and validate */}
+
+    {/* TODO: Warn user? If they remove a user from all roles, they will have to reinvite him. */}
+
+    var user_id = this.props.user_id;
+
+    var assigned_roles = this.refs.roles.state.assigned_roles;
+
+    var user_email = this.state.user_email;
+
+    if(validateEmail(user_email) === false) {
+      this.setState({
+          help_message: "User email appears invalid.",
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+
+    if(assigned_roles.length < 1){
+      this.setState({
+          help_message: "A user must be assigned to at least one role.",
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+
+    {/* No errors? Clear help text */}
+
+    this.setState({
+        help_message: "",
+        available_roles: this.refs.roles.state.available_roles,
+        assigned_roles: this.refs.roles.state.assigned_roles
+    });
+
+    {/* Format properly */}
+
+    assigned_roles = assigned_roles.map(function(obj){
+       return obj.name;
+    });
+
+    {/* Determine URL based on action */}
+    var url = "";
+    if ( this.props.action == "Edit" ){
+      url = "/manage-users/api/users/edit/" + user_id + "/";
+    }
+    else if ( this.props.action == "Add" ){
+      url = "/manage-users/api/users/create/";
+    }
+
+    {/* Build data to send */}
+    var data_to_send = {};
+    data_to_send['csrfmiddlewaretoken'] = getCsrf();
+    data_to_send['assigned_roles'] = assigned_roles;
+    data_to_send['user_email'] = user_email;
+
+    {/* Submit to server */}
+    $.post(url, data_to_send, function(response) {
+      if ( response.success == "true" ){
+        ReactDOM.render(
+          <Container page="Users" disappear_text="Role created successfully"/>,
+            document.getElementById('content')
+        );
+      }
+      else if ( response.success == "false" ){
+        this.setState({
+            help_message: response.message,
+            user_email: this.state.user_email,
+            available_roles: this.refs.roles.state.available_roles,
+            assigned_roles: this.refs.roles.state.assigned_roles
+        });
+      }
+    }.bind(this));
+  },
+  handleDeleteUserClick: function (event) {
+    if (confirm('Are you sure you want to delete this user?')) {
+    } else {
+        return;
+    }
+
+    var user_id = this.props.user_id;
+
+    var csrf = getCsrf();
+
+    {/* Submit to server */}
+
+    $.ajax( "/manage-users/api/users/delete/" + user_id + "/",
+      {
+        type: "DELETE",
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrf);
+        },
+     success: function( response ) {
+       ReactDOM.render(
+         <Container page="Users" />,
+           document.getElementById('content')
+       );
+    }});
+  },
+  render: function() {
+    var delete_user_button = "";
+    if (this.props.action == "Add") {
+
+    }
+    else if (this.props.action == "Edit"){
+      delete_user_button = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>
+    }
+    return (
+      <div>
+
+        <div className="row">
+          <div className="col-xs-12 ">
+            <div className="wrapper-header">
+              <h2>{this.props.action} User</h2>
+            </div>
+            <div className="product-card-full no-highlight">
+
+              <div className="row">
+                <div className="col-xs-12">
+                  <label htmlFor="id_user_email">User Email*:</label>
+                  <input id="id_user_email" maxLength="255" name="name" type="text" value={this.state.user_email} onChange={this.onTextChange} size="35"/>
+                </div>
+              </div>
+
+              <hr/>
+
+              {/* <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p> */}
+
+              <RolesMultiselect available_roles={this.state.available_roles} assigned_roles={this.state.assigned_roles} ref="roles"/>
+
+              <hr />
+
+              <div className="row">
+
+                <div className="col-xs-12">
+                  <span className="primary pull-right">
+                    {this.state.help_message}
+                  </span>
+                </div>
+                <div className="col-xs-12">
+                  <Button className="primary pull-right" onClick={this.handleSaveUserClick}>Save User</Button>
+                  {delete_user_button}
+                  <CancelUserButton />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
+var Status = React.createClass({
+  render: function() {
+    var button = "";
+    if (this.props.status == true){
+      button = <span className='label label-success'>Active</span>;
+    }
+    else if (this.props.status == false){
+      button = <span className='label label-warning'>Pending</span>;
+    }
+    return (
+      <span>
+        {button}
+      </span>
+    );
+  }
+});
+
+var AssociatedRolesList = React.createClass({
+  render: function() {
+    var associated_roles_list = [];
+    for (var key in this.props.roles) {
+      associated_roles_list.push(
+        <li key={this.props.roles[key].pk}>
+          {this.props.roles[key].fields.name}
+        </li>
+      );
+    };
+    return (
+      <ul>
+        {associated_roles_list}
+      </ul>
+    );
+  }
+});
+
+var UsersList = React.createClass({
+  handleEditClick: function(user_id) {
+
+    ReactDOM.render(
+      <Container page="EditUser" action="Edit" user_id={user_id}/>,
+        document.getElementById('content')
+    );
+  },
+  getInitialState: function() {
+    return {
+      table_rows: ''
+    };
+  },
+  componentDidMount: function() {
+    $.get(this.props.source, function(results) {
+      if (this.isMounted()) {
+
+        var table_rows = [];
+
+        for (var key in results) {
+          results[key].roles = JSON.parse(results[key].roles);
+
+          table_rows.push(
+            <tr key={key}>
+              <td>{results[key].email}</td>
+              <td>
+                <AssociatedRolesList roles={results[key].roles}/>
+              </td>
+              <td>
+                <Status status={results[key].status}/>
+              </td>
+              <td>
+                <Button onClick={this.handleEditClick.bind(this, key)}>Edit</Button>
+              </td>
+            </tr>
+          );
+        }
+        this.setState({
+          table_rows: table_rows
+        });
+      }
+    }.bind(this));
+  },
+  render: function() {
+    return (
+      <div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>User Email</th>
+              <th>Associated Roles</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.state.table_rows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+});
+
+var UsersPage = React.createClass({
+  render: function() {
+    return (
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Users</h2>
+          </div>
+          <div className="product-card-full no-highlight">
+
+            <UsersList source="/manage-users/api/users/" />
+
+            <hr/>
+
+            <div className="row">
+              <div className="col-xs-12">
+                <AddUserButton />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 var AssociatedUsersList = React.createClass({
   render: function() {
@@ -47,7 +482,7 @@ var AssociatedActivitiesList = React.createClass({
 var RolesList = React.createClass({
   handleEditClick: function(role_id) {
     ReactDOM.render(
-      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Edit" role_id={role_id}/>,
+      <Container page="EditRole"  action="Edit" role_id={role_id}/>,
         document.getElementById('content')
     );
   },
@@ -153,7 +588,7 @@ var ActivitiesList = React.createClass({
 var CancelRoleButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="Roles" name={this.props.name} company={this.props.company}/>,
+      <Container page="Roles" />,
         document.getElementById('content')
     );
   },
@@ -164,10 +599,24 @@ var CancelRoleButton = React.createClass({
   }
 });
 
+var AddUserButton = React.createClass({
+  handleClick: function(event) {
+    ReactDOM.render(
+      <Container page="EditUser" action="Add"/>,
+        document.getElementById('content')
+    );
+  },
+  render: function() {
+    return (
+      <Button className="primary pull-right" onClick={this.handleClick}>Add User</Button>
+    );
+  }
+});
+
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="EditRole" name={this.props.name} company={this.props.company} action="Add"/>,
+      <Container page="EditRole"  action="Add"/>,
         document.getElementById('content')
     );
   },
@@ -181,7 +630,7 @@ var AddRoleButton = React.createClass({
 var CancelUserButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="Users" name={this.props.name} company={this.props.company}/>,
+      <Container page="Users" />,
         document.getElementById('content')
     );
   },
@@ -198,7 +647,7 @@ var DeleteUserButton = React.createClass({
         TODO: Warn with a modal, are you sure you want to delete user? */}
 
     ReactDOM.render(
-      <Container page="Users" name={this.props.name} company={this.props.company}/>,
+      <Container page="Users" />,
         document.getElementById('content')
     );
   },
@@ -212,13 +661,13 @@ var DeleteUserButton = React.createClass({
 var AddUserButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="EditUser" name={this.props.name} company={this.props.company} action="Add" />,
+    	<Container page="EditUser"  action="Add" />,
         document.getElementById('content')
     );
   },
   render: function() {
     return (
-      <Button className="primary pull-right"  onClick={this.handleClick}>Add Users</Button>
+      <Button className="primary pull-right"  onClick={this.handleClick}>Add User</Button>
     );
   }
 });
@@ -238,7 +687,7 @@ var SaveUserButton = React.createClass({
 var RolesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="Roles" name={this.props.name} company={this.props.company}/>,
+    	<Container page="Roles" />,
         document.getElementById('content')
     );
   },
@@ -252,7 +701,7 @@ var RolesButton = React.createClass({
 var ActivitiesButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="Activities" name={this.props.name} company={this.props.company}/>,
+    	<Container page="Activities" />,
         document.getElementById('content')
     );
   },
@@ -266,7 +715,7 @@ var ActivitiesButton = React.createClass({
 var UsersButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-    	<Container page="Users" name={this.props.name} company={this.props.company}/>,
+    	<Container page="Users" />,
         document.getElementById('content')
     );
   },
@@ -308,87 +757,82 @@ var UserEmailAddressTextField = React.createClass({
     }
     else if (this.props.action == "Edit"){
       return (
-        <input id="id_user_name" maxLength="255" name="id_user_name" type="email" readOnly value={this.props.user_to_edit} size="35"/>
+        <input id="id_user_name" maxLength="255" name="id_user_name" type="email" readOnly value={this.props.user_email} size="35"/>
       );
     }
   }
 });
 
-var EditUserPage = React.createClass({
+
+
+
+
+var RolesMultiselect = React.createClass({
+  getInitialState() {
+    return {
+      assigned_roles: this.props.assigned_roles,
+      available_roles: this.props.available_roles,
+    }
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      available_roles: nextProps.available_roles,
+      assigned_roles: nextProps.assigned_roles
+    });
+  },
+  _onSelect(assigned_roles) {
+    assigned_roles.sort((a, b) => a.id - b.id)
+    this.setState({assigned_roles})
+  },
+  _onDeselect(deselectedOptions) {
+    var assigned_roles = this.state.assigned_roles.slice()
+    deselectedOptions.forEach(option => {
+      assigned_roles.splice(assigned_roles.indexOf(option), 1)
+    })
+    this.setState({assigned_roles})
+  },
   render: function() {
-    var user_invitation_email_form = "";
-    var delete_user_button = "";
-    if (this.props.action == "Add") {
-      user_invitation_email_form = <UserInvitationEmailForm />;
-
-    }
-    else if (this.props.action == "Edit"){
-      delete_user_button = <DeleteUserButton action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
-    }
-
-    {/* Needed because, apparently, no way to make height of multiselect variable to fill contents */}
-    {/* TODO: Update value dynamically */}
-    var roles_count = 4;
-
-    {/* Needed because, both EditUserPage and EditRolePage components can handle editing or adding,
-      depending on value of this.props.action (e.g. Edit, Add)
-      Roles can always be editted, but we don't want emails to be editted. */}
-    var user_email_text_field = <UserEmailAddressTextField action={this.props.action} user_to_edit={this.props.user_to_edit}/>;
+    var {assigned_roles, available_roles} = this.state
 
     return (
-
-
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>{this.props.action} User</h2>
+        <div className="row">
+          <div className="col-xs-6">
+            <label>Available Roles:</label>
+            <FilteredMultiSelect
+              buttonText="Add"
+              classNames={bootstrapClasses}
+              onChange={this._onSelect}
+              options={available_roles}
+              selectedOptions={assigned_roles}
+              textProp="name"
+              valueProp="id"
+            />
           </div>
-          <div className="product-card-full no-highlight">
-
-            <div className="row">
-              <div className="col-xs-10">
-                <label htmlFor="id_user_name">User Email Address*:</label>
-                <div className="input-group">
-                  {user_email_text_field}
-                </div>
-              </div>
-            </div>
-
-            <hr/>
-
-            <div className="row">
-              <div className="col-xs-12">
-
-                <label htmlFor="id_roles">Role*:</label>
-
-                <select name="id_roles" size={roles_count} multiple defaultValue={['Analytics Setup', 'Analytics User']} aria-describedby="role_select_help">
-                  <option value="Analytics Setup">Analytics Setup</option>
-                  <option value="Analytics User">Analytics User</option>
-                  <option value="PRM - Read">PRM - Read</option>
-                  <option value="PRM - Full Access">PRM - Full Access</option>
-                </select>
-                <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
-              </div>
-            </div>
-
-            <hr/>
-
-            {user_invitation_email_form}
-
-            <div className="row">
-              <div className="col-xs-12">
-                <SaveUserButton />
-                {delete_user_button}
-                <CancelUserButton />
-              </div>
-            </div>
-
+          <div className="col-xs-6">
+            <label>Roles Assigned to this User:</label>
+            <FilteredMultiSelect
+              buttonText="Remove"
+              classNames={{
+                filter: 'form-control'
+              , select: 'form-control'
+              , button: 'btn btn btn-block btn-default'
+              , buttonActive: 'btn btn btn-block btn-danger'
+              }}
+              onChange={this._onDeselect}
+              options={assigned_roles}
+              textProp="name"
+              valueProp="id"
+            />
           </div>
         </div>
-      </div>
     );
   }
 });
+
+
+
+
+
 
 var bootstrapClasses = {
   filter: 'form-control',
@@ -536,6 +980,7 @@ var EditRolePage = React.createClass({
   },
   componentDidMount: function() {
     if(this.props.action == "Edit"){
+
       $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
         if (this.isMounted()) {
 
@@ -820,101 +1265,6 @@ var EditRolePage = React.createClass({
   }
 });
 
-var UsersPage = React.createClass({
-  handleEditClick: function(user_to_edit) {
-    ReactDOM.render(
-      <Container page="EditUser" name={this.props.name} company={this.props.company} action="Edit" user_to_edit={user_to_edit}/>,
-        document.getElementById('content')
-    );
-  },
-  render: function() {
-    return (
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Users</h2>
-          </div>
-          <div className="product-card-full no-highlight">
-
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>User Email</th>
-                  <th>Associated Roles</th>
-                  <th>Status</th>
-                  <th className="col-md-1"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>david@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                      <li>PRM - Full Access</li>
-                      <li>Analytics Setup</li>
-                      <li>Analytics User</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-warning">Pending</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "david@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>dpoynter@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "dpoynter@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>edwin@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>Analytics Setup</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "edwin@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>jkoons@apps.directemployers.org</td>
-                  <td>
-                    <ul>
-                      <li>PRM - Read</li>
-                      <li>PRM - Full Access</li>
-                    </ul>
-                  </td>
-                  <td><span className="label label-success">Active</span></td>
-                  <td>
-                    <Button onClick={this.handleEditClick.bind(this, "jkoons@apps.directemployers.org")}>Edit</Button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <hr/>
-
-            <div className="row">
-              <div className="col-xs-12">
-                <AddUserButton />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-});
-
 var RolesPage = React.createClass({
   render: function() {
     return (
@@ -960,7 +1310,6 @@ var ActivitiesPage = React.createClass({
   }
 });
 
-
 var OverviewPage = React.createClass({
   render: function() {
     return (
@@ -998,7 +1347,7 @@ var Content = React.createClass({
             page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
             break;
         case "EditUser":
-            page = <EditUserPage action={this.props.action} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>;
+            page = <EditUserPage action={this.props.action} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>;
             break;
     }
 
@@ -1018,7 +1367,7 @@ var Menu = React.createClass({
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <RolesButton name={this.props.name} company={this.props.company}/>
+          <RolesButton />
           <ActivitiesButton />
           <UsersButton />
 
@@ -1049,7 +1398,7 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} name={this.props.name} company={this.props.company} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_to_edit={this.props.user_to_edit} disappear_text={this.props.disappear_text}/>
+          <Content page={this.props.page}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
           <Menu />
         </div>
         <div className="clearfix"></div>
@@ -1059,6 +1408,6 @@ var Container = React.createClass({
 });
 
 ReactDOM.render(
-  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_to_edit=""/>,
+  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_id=""/>,
     document.getElementById('content')
 );

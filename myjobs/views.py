@@ -977,10 +977,13 @@ def api_get_users(request):
         roles_assigned_to_this_user = user.roles.all()
         response_data[user.id]["roles"] = serializers.serialize("json", roles_assigned_to_this_user, fields=('name'))
 
+        # TODO Do assigned roles and available roles, I use this on front end
+
+
         # Status
         # TODO: This is NOT the same as status
         # Waiting on email invitation work
-        response_data[user.id]["verified"] = user.is_verified
+        response_data[user.id]["status"] = user.is_verified
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -999,17 +1002,21 @@ def api_get_specific_user(request, user_id=0):
 
     user = User.objects.filter(id=user_id)
 
-    # First check that user requested is affiliated with the company
-    if user.filter(company=company).exists() == False:
-        response_data["success"] = "false"
-        response_data["message"] = "Permission denied."
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-
     # Check if user exists
-    # This is second because, if someone doesn't have access, we don't want them knowing if the user exists or not.
     if user.exists() == False:
         response_data["success"] = "false"
         response_data["message"] = "User does not exist."
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+    # Check if the editor has the right to edit this user (i.e. is the user affiliated with any of the current company's roles?)
+    ## List current company's roles
+    current_companys_roles = Role.objects.filter(company=company)
+    ## List user's roles
+    roles_assigned_to_this_user = user[0].roles.all()
+    ## Overlap?
+    if bool(set( current_companys_roles ) & set( roles_assigned_to_this_user)) == "False":
+        response_data["success"] = "false"
+        response_data["message"] = "You do not have permission to view this user"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
     # Return user
@@ -1030,7 +1037,7 @@ def api_get_specific_user(request, user_id=0):
     # Status
     # TODO: This is NOT the same as status
     # Waiting on email invitation work
-    response_data[user[0].id]["verified"] = user[0].is_verified
+    response_data[user[0].id]["status"] = user[0].is_verified
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
