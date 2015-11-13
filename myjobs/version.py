@@ -1,5 +1,5 @@
 """
-Version.py - used to track the version number and build number for the 
+Version.py - used to track the version number and build number for the
 My.jobs platform. This file is loaded where the version number is needed.
 
 """

@@ -41,9 +41,9 @@ class UserResource(ModelResource):
         Intercepts the default create_response(). Checks for existing user
         and creates a new user if one matching the email doesn't exist.
 
-        Creates new JSON formatted "data" based on the success, failure, 
+        Creates new JSON formatted "data" based on the success, failure,
         or error in user creation. Returns new data to the default
-        create_response(). 
+        create_response().
 
         """
         email = request.GET.get('email', '')
@@ -94,11 +94,11 @@ class SavedSearchResource(ModelResource):
         Intercepts the default create_reponse(). Checks for existing saved
         search matching the user and url. If one doesn't exist, it creates
         a new saved search with daily email and the date/time created in
-        the notes. 
+        the notes.
 
-        Creates new JSON formatted "data" based on the success, failure, or 
-        error in saved search creation. Returns this data to the default 
-        create_response(). 
+        Creates new JSON formatted "data" based on the success, failure, or
+        error in saved search creation. Returns this data to the default
+        create_response().
 
         """
         # Confirm email was provided, and that the user exists

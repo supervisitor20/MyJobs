@@ -11,7 +11,7 @@ class SeoCacheTestCase(DirectSEOBase):
         """
         Tests that we're getting unique or matching cache keys based on
         filter paths
-        
+
         """
         filters1 = build_filter_dict('/standard-facet/new-jobs/dubuque/jobs/')
         filters2 = build_filter_dict('/特殊字符/new-jobs/')

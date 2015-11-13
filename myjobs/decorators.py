@@ -150,8 +150,8 @@ def requires(activities, activity_callback=None, access_callback=None):
     Let's assume that the activities "create user", "read user", "update user",
     and "delete user" exist with an app access of "User Management". Let us
     further assume that a `modify_user` view exists. Finally, lets assume that
-    the current user belongs to a company, `TestCompany`. 
-    
+    the current user belongs to a company, `TestCompany`.
+
     We might want to decorate that view as follows:
 
         @requires(["read user", "update user"])

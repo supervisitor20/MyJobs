@@ -1076,7 +1076,7 @@ def home_page(request):
     returns:
     render_to_response call
 
-    """    
+    """
     site_config = get_site_config(request)
     num_facet_items = site_config.num_filter_items_to_show
     custom_facet_counts = []
@@ -1699,7 +1699,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     redirect_url = helpers.determine_redirect(request, filters)
     if redirect_url:
         return redirect_url
-    
+
     query_path = request.META.get('QUERY_STRING', None)
     moc_id_term = request.GET.get('moc_id', None)
     q_term = request.GET.get('q', None)
@@ -1771,15 +1771,15 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if query_path:
         for job in jobs:
             helpers.add_text_to_job(job)
-    
+
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
-    
+
     widgets = helpers.get_widgets(request, site_config, facet_counts,
                                   custom_facet_counts, filters=filters)
-    
+
     location_term = breadbox.location_display_heading()
     moc_term = breadbox.moc_display_heading()
-    
+
     if not location_term:
         location_term = '\*'
     if not moc_term:

@@ -8,7 +8,7 @@ from moc_coding.models import CustomCareer, Moc, Onet
 def moc_data(request):
     branches = request.GET.get("branch", "").split(",")
     callback = request.GET.get("callback")
-    
+
     if branches:
         mocs = Moc.objects.filter(branch__in=branches)
     else:
@@ -27,7 +27,7 @@ def onet_data(request):
     res = json.dumps([i for i in onets])
     return HttpResponse(u"{jsonp}({res})".format(jsonp=callback, res=res),
                         content_type="application/json")
-    
+
 @login_required(login_url='/admin/')
 def newmapping(request):
     if not request.user.is_superuser:
@@ -56,7 +56,7 @@ def maps_by_objid(request):
     data_dict = custcareers.values("moc_id", "onet_id", "pk","moc__title","onet__title")
     res = json.dumps([i for i in data_dict])
     return HttpResponse(u"{jsonp}({res})".format(jsonp=callback, res=res))
-    
+
 @login_required(login_url='/admin/')
 def delete(request):
     if not request.user.is_superuser:
@@ -67,4 +67,4 @@ def delete(request):
     CustomCareer.objects.filter(id__in=instance_ids).delete()
     del_ids = json.dumps([{'id': i} for i in instance_ids])
     return HttpResponse(u"{jsonp}({ids})".format(jsonp=callback, ids=del_ids))
-    
+

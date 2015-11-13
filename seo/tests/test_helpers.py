@@ -110,7 +110,7 @@ class SeoHelpersTestCase(DirectSEOBase):
 
 class FuzzyInt(int):
     """
-    Overrides the equal method in int to return true if an integer is within 
+    Overrides the equal method in int to return true if an integer is within
     the FuzzyInt's range. This let's us set a range for AssertNumQueries to
     make tests less brittle.
 
@@ -130,7 +130,7 @@ class FuzzyInt(int):
 
 class SeoHelpersDjangoTestCase(DirectSEOBase):
 
-    @patch.object(CustomFacet, 'active_site_facet') 
+    @patch.object(CustomFacet, 'active_site_facet')
     def test_sqs_apply_custom_facets(self, mock_active):
         """
         Tests that correct query strings are added to search query sets for
@@ -139,8 +139,8 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
         no custom facets were being passed in
 
         Since this is the first place we're using mock, here's a brief
-        explanation. patch.object is a decorator that passes in 
-        an object (in this case CustomFacet.active_site_facet) 
+        explanation. patch.object is a decorator that passes in
+        an object (in this case CustomFacet.active_site_facet)
         to our function's local environment (where we've named it mock_active).
         We then override that objects behavior (it's return value in this case)
         to avoid having to set up a chain of sites and configurations

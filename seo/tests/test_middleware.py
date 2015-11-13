@@ -25,7 +25,7 @@ class SiteRedirectMiddlewareTestCase(DirectSEOBase):
         This tests that the passed in HOST needs to be redirected to
         another URL. The path that we go to is used to test that the
         path is consistent across redirects.
-        
+
         """
         response = self.client.get(
             '/style/style.css',
@@ -39,7 +39,7 @@ class SiteRedirectMiddlewareTestCase(DirectSEOBase):
     def test_host_is_not_a_redirect(self):
         """
         This tests that the passed in HOST is the default domain name.
-        
+
         """
         response = self.client.get('/style/style.css',
                                    HTTP_HOST=self.test_site.domain,
@@ -58,7 +58,7 @@ class SiteRedirectMiddlewareTestCase(DirectSEOBase):
         Yes...this is a little loose.
 
         """
-        response = self.client.get('/', HTTP_HOST=u'buckconsultants.jobs', 
+        response = self.client.get('/', HTTP_HOST=u'buckconsultants.jobs',
                                    follow=True)
         redirect_chain = response.redirect_chain
         self.assertEqual(len(redirect_chain), 0)

@@ -1145,7 +1145,7 @@ class TemplateTestCase(DirectSEOTestCase):
         #Check string from view_all_jobs_label
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
- 
+
     def test_view_all_jobs_label(self):
         bu = BusinessUnit.objects.get(id=1)
         bu.title="Acme"
@@ -1872,10 +1872,10 @@ class SeoViewsTestCase(DirectSEOTestCase):
         CustomFacet instance had its 'querystring' attribute set, it was
         handled by passing it to Haystack's 'raw_search' method, while
         field lookups were handled by turning them into SQ objects.
-        
+
         Update:
         Also serves as test that valid custom facet entry does not trigger 404
-        """        
+        """
         site = SeoSite.objects.get(id=1)
         cf1 = factories.CustomFacetFactory.build(querystring="uid:[17000000 TO 17999999]",
                                                  name="Test Flappitypoo",
@@ -1928,7 +1928,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
-        
+
         next_link = '/feed/xml?num_items=1'
         num_pages = 0
         while next_link:
@@ -1963,7 +1963,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.save()
         job = self.solr_docs[0]
         resp = self.client.get(
-                '/feed/rss?q=uid:1000' 
+                '/feed/rss?q=uid:1000'
             )
         tree = etree.parse(StringIO(resp.content))
         self.assertEqual(resp.status_code, 200)
@@ -1989,7 +1989,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertTrue('location=' in self_link and 'q=' in self_link)
         next_link = tree.find("link[@rel='next']").get('href')
         # Get the child tags of the first <job> tag from the XML output
-        self.assertTrue('location=' in next_link and 'q=' in next_link) 
+        self.assertTrue('location=' in next_link and 'q=' in next_link)
 
     def test_feed_title(self):
         site = SeoSite.objects.get(id=1)
@@ -1997,7 +1997,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.save()
         feed_types = ['rss', 'atom']
         for feed_type in feed_types:
-            resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' % 
+            resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' %
                                     feed_type, HTTP_HOST="buckconsultants.jobs")
             self.assertEqual(resp.status_code, 200)
             self.assertNotEqual(resp.content.find(
@@ -2468,16 +2468,16 @@ class SeoViewsTestCase(DirectSEOTestCase):
         company.job_source_ids.add(alpha_buid.id)
         company.save()
 
-        
+
         #test for companies beginning with a number
         resp = self.client.get("/all-companies/0-9/")
-        self.assertContains(resp,'<li class="company">',count=None, 
+        self.assertContains(resp,'<li class="company">',count=None,
                             status_code=200, msg_prefix='')
         #test for companies beginning with a letter
         resp = self.client.get("/all-companies/a/")
-        self.assertContains(resp,'<li class="company">',count=None, 
+        self.assertContains(resp,'<li class="company">',count=None,
                             status_code=200, msg_prefix='')
-            
+
     def test_empty_company_listing(self):
         company = Company.objects.none()
         response = self.client.get('/all-companies/')
@@ -2563,9 +2563,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 '/indianapolis/indiana/usa/jobs/',
                 HTTP_HOST='buckconsultants.jobs',
                 follow=True)
-        self.assertContains(resp,'<div id="de-myjobs-widget"',count=None, 
+        self.assertContains(resp,'<div id="de-myjobs-widget"',count=None,
                                 status_code=200, msg_prefix='')
-            
+
     def test_saved_search_non_render(self):
         """Test company sites don't have a saved search form on job listings."""
         site = factories.SeoSiteFactory.build()
