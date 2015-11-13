@@ -104,8 +104,12 @@ def secure_blocks(request):
             logger.warn("Failed block lookup: %s", element_id)
         else:
             allowed_path = (
-                block.allowed_paths.filter(paths__path=request.path).exists()
-                or not block.allowed_paths.exists())
+                # Allow if no entry was made in the AllowedBlockPath table
+                not block.allowed_paths.exists() or
+                # Allow if no paths were defined in the previous entry
+                not block.allowed_paths.filter(paths__isnull=True) or
+                # Allow if the current requested path is allowed for this block
+                block.allowed_paths.filter(paths__path=request.path).exists())
             if allowed_path:
                 rendered = block.render_for_ajax(request, blocks[element_id])
                 response[element_id] = rendered

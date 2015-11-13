@@ -48,8 +48,17 @@ class TestSecureBlocks(DirectSEOBase):
 
     def test_secure_blocks_render(self):
         """Ask for a real block. If no allowed paths are set, default to
-        allow."""
+        allow. This applies to blocks with and without entries in the
+        AllowedBlockPath table."""
+        # Without entry
         body = '{"blocks": {"%s": {}}}' % self.block.element_id
+        resp = self.make_sb_request(body)
+        result = json.loads(resp.content)
+        self.assertTrue(result[self.block.element_id])
+
+        # With entry
+        self.make_allowed_paths()
+        Path.objects.get().delete()
         resp = self.make_sb_request(body)
         result = json.loads(resp.content)
         self.assertTrue(result[self.block.element_id])
