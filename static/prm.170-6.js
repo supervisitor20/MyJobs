@@ -445,31 +445,34 @@ $(document).ready(function() {
             data: data_to_send,
             success: function(data) {
                 var json = JSON.parse(data);
-                var r_location = location.protocol + "//" + location.host +
-                        "/prm/view/overview?partner="+json.partner;
-                if(json.redirect === true) {
-                    window.location = r_location;
-                }
-                $("#partner-library-modal").modal("hide");
-
-                /* creating alert */
-                var partner_name = $(".modal-body #modal-partner-name").text().slice(0, -1);
-                var company_name = $(".modal-body #modal-company-name").text();
-                var alert_html = "<div class=\"alert alert-success\"><button type=\"button\" " +
-                    "class=\"close\" data-dismiss=\"alert\">x</button><a style=\"text-decoration: underline\" " +
-                    "href="+r_location+">" + partner_name+"</a> was added to "+company_name+" " +
-                    "Partner Relationship Manager.</div>"
-
-                $("#lib-alerts").html(alert_html);
-                if (typeof(isIE) == "number" && isIE > 9 || typeof(isIE) == 'boolean' && isIE == false) {
-                    var filter_data = build_data();
-                    filter_data.page = get_page(filter_data);
-                    send_filter(filter_data);
+                if(json.partner === -1) {
+                  $("#partner-library-modal").modal("hide");
                 } else {
-                    var selector = "#library-" + String(data_to_send.library_id);
-                    $(selector).remove();
-                }
+                    var r_location = location.protocol + "//" + location.host +
+                            "/prm/view/overview?partner="+json.partner;
+                    if(json.redirect === true) {
+                        window.location = r_location;
+                    }
+                    $("#partner-library-modal").modal("hide");
 
+                    /* creating alert */
+                    var partner_name = $(".modal-body #modal-partner-name").text().slice(0, -1);
+                    var company_name = $(".modal-body #modal-company-name").text();
+                    var alert_html = "<div class=\"alert alert-success\"><button type=\"button\" " +
+                        "class=\"close\" data-dismiss=\"alert\">x</button><a style=\"text-decoration: underline\" " +
+                        "href="+r_location+">" + partner_name+"</a> was added to "+company_name+" " +
+                        "Partner Relationship Manager.</div>"
+
+                    $("#lib-alerts").html(alert_html);
+                    if (typeof(isIE) == "number" && isIE > 9 || typeof(isIE) == 'boolean' && isIE == false) {
+                        var filter_data = build_data();
+                        filter_data.page = get_page(filter_data);
+                        send_filter(filter_data);
+                    } else {
+                        var selector = "#library-" + String(data_to_send.library_id);
+                        $(selector).remove();
+                    }
+                }
             }
         });
     });

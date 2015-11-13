@@ -55,17 +55,35 @@ class TestViewActivities(MyJobsBase):
 
     def test_prm(self):
         """
-        Only users with the `read partner` activity may navigate to
-        `/prm/view`.
+        /prm/view requires "read partner".
         """
 
         self.assertRequires("prm", "read partner")
 
     def test_partner_library(self):
         """
-        Only users with the `create partner` activity may navigate to
-        `/prm/view/partner-library'.
+        /prm/partner-library requires "create partner".
         """
 
-        self.assertRequires("partner_library", "create partner")
+        self.assertRequires("partner_library", "read partner")
 
+    def test_create_partner_from_library(self):
+        """
+        /prm/view/partner-library/add requires "create partner".
+        """
+
+        self.assertRequires("create_partner_from_library", "create partner")
+
+    def test_partner_overview(self):
+        """
+        /prm/view/overview requires "read partner".
+        """
+
+        self.assertRequires("partner_overview", "read partner")
+
+    def test_partner_taggign(self):
+        """
+        /prm/view/tagging requires "create tag".
+        """
+
+        self.assertRequires("partner_tagging", "create tag")

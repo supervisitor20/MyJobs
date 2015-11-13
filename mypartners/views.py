@@ -97,7 +97,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
-@requires("create partner")
+@requires("read partner")
 @has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
@@ -128,7 +128,14 @@ def partner_library(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+def redirect():
+    ctx = {
+        'partner': -1
+    }
+
+    return HttpResponse(json.dumps(ctx))
+
+@requires("create partner", activity_callback=redirect)
 @has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
@@ -371,14 +378,14 @@ def delete_prm_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("read partner")
 @has_access('prm')
 def prm_overview(request):
     """
     View that is the "Overview" of one's Partner Activity.
 
     """
-    company, partner, user = prm_worthy(request)
+    company, partner, _ = prm_worthy(request)
 
     most_recent_activity = partner.get_logs()
     records = partner.get_contact_records()
