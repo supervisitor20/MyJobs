@@ -323,14 +323,14 @@ var UsersList = React.createClass({
 
           table_rows.push(
             <tr key={key}>
-              <td>{results[key].email}</td>
-              <td>
+              <td data-title="User Email">{results[key].email}</td>
+              <td data-title="Associated Roles">
                 <AssociatedRolesList roles={results[key].roles}/>
               </td>
-              <td>
+              <td data-title="Status">
                 <Status status={results[key].status}/>
               </td>
-              <td>
+              <td data-title="Edit">
                 <Button onClick={this.handleEditClick.bind(this, key)}>Edit</Button>
               </td>
             </tr>
@@ -345,7 +345,7 @@ var UsersList = React.createClass({
   render: function() {
     return (
       <div>
-        <table className="table">
+        <table className="table" id="no-more-tables">
           <thead>
             <tr>
               <th>User Email</th>
@@ -501,14 +501,14 @@ var RolesList = React.createClass({
 
           table_rows.push(
             <tr key={results[key].role.id}>
-              <td>{results[key].role.name}</td>
-              <td>
+              <td data-title="Role">{results[key].role.name}</td>
+              <td data-title="Associated Activities">
                 <AssociatedActivitiesList activities={results[key].activities}/>
               </td>
-              <td>
+              <td data-title="Associated Users">
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
-              <td>
+              <td data-title="Edit">
                 <Button onClick={this.handleEditClick.bind(this, results[key].role.id)}>Edit</Button>
               </td>
             </tr>
@@ -523,7 +523,7 @@ var RolesList = React.createClass({
   render: function() {
     return (
       <div>
-        <table className="table">
+        <table className="table" id="no-more-tables">
           <thead>
             <tr>
               <th>Role</th>
@@ -1352,7 +1352,7 @@ var Content = React.createClass({
     }
 
     return (
-      <div className="col-xs-8">
+      <div className="col-sm-8 col-xs-12">
         <div className="card-wrapper">
           {page}
         </div>
@@ -1364,7 +1364,7 @@ var Content = React.createClass({
 var Menu = React.createClass({
   render: function() {
     return (
-      <div className="col-xs-4">
+      <div className="col-sm-4 col-xs-12">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
           <RolesButton />
