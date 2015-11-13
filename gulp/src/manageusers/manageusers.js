@@ -237,7 +237,7 @@ var EditUserPage = React.createClass({
 
               <hr/>
 
-              {/* <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p> */}
+              <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
 
               <RolesMultiselect available_roles={this.state.available_roles} assigned_roles={this.state.assigned_roles} ref="roles"/>
 
@@ -1232,7 +1232,7 @@ var EditRolePage = React.createClass({
 
               <hr/>
 
-              {/* <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p> */}
+              <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
 
               <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
 
@@ -1364,13 +1364,12 @@ var Content = React.createClass({
 var Menu = React.createClass({
   render: function() {
     return (
-      <div className="col-sm-4 col-xs-12">
+      <div className="col-sm-4 col-xs-12 pull-right">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
           <RolesButton />
           <ActivitiesButton />
           <UsersButton />
-
         </div>
       </div>
     );
@@ -1398,8 +1397,8 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
           <Menu />
+          <Content page={this.props.page}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
         </div>
         <div className="clearfix"></div>
       </div>
