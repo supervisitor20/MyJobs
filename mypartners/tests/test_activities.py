@@ -14,9 +14,11 @@ from django.http import Http404
 from django.test.utils import override_settings
 
 from seo.tests.factories import CompanyFactory
+from myjobs.decorators import MissingActivity
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import AppAccessFactory, RoleFactory, UserFactory
+from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
+                                    ActivityFactory)
 
 
 @override_settings(ROLES_ENABLED=True, DEBUG=True)
@@ -26,8 +28,8 @@ class TestViewActivities(MyJobsBase):
     def setUp(self):
         super(TestViewActivities, self).setUp()
 
-        self.company = CompanyFactory()
         self.app_access = AppAccessFactory()
+        self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
         self.role = RoleFactory(company=self.company)
         self.user = UserFactory(roles=[self.role])
@@ -36,10 +38,34 @@ class TestViewActivities(MyJobsBase):
         self.client = TestClient()
         self.client.login_user(self.user)
 
+    def assertRequires(self, view_name, *activities):
+        """
+        Asserst that the given view is only accessible when a user has a role
+        with the given activities.
+        """
+        response = self.client.get(reverse(view_name))
+        self.assertEqual(type(response), MissingActivity)
+
+        self.role.activities = [
+            ActivityFactory(name=activity, app_access=self.app_access)
+            for activity in activities]
+
+        response = self.client.get(reverse(view_name))
+        self.assertEqual(response.status_code, 200)
+
     def test_prm(self):
         """
-        Test that only users with the `view partner` activity may navigate
-        to `/prm/view`.
+        Only users with the `read partner` activity may navigate to
+        `/prm/view`.
         """
-        with self.assertRaises(Http404):
-            self.client.get(reverse("prm"))
+
+        self.assertRequires("prm", "read partner")
+
+    def test_partner_library(self):
+        """
+        Only users with the `create partner` activity may navigate to
+        `/prm/view/partner-library'.
+        """
+
+        self.assertRequires("partner_library", "create partner")
+

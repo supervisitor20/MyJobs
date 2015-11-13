@@ -97,7 +97,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
-@requires(PRM)
+@requires("create partner")
 @has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
