@@ -65,10 +65,19 @@ def missing_activity():
     raise Http404("Activities are missing.")
 
 def requires(activities):
-    return decorators.requires(activities, missing_activity, missing_access)
+    return decorators.requires(
+        activities,
+        activity_callback=missing_activity,
+        access_callback=missing_access)
+
+def require(activities, activity_callback, access_callback):
+    return decorators.requires(
+        activities,
+        activity_callback=activity_callback,
+        access_callback=access_callback)
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires("read partner")
 @has_access('prm')
 def prm(request):
     """
@@ -106,7 +115,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
@@ -137,7 +146,7 @@ def partner_library(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
@@ -155,7 +164,7 @@ def create_partner_from_library(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_details(request):
     company, partner, user = prm_worthy(request)
@@ -182,7 +191,7 @@ def partner_details(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def edit_item(request):
     """ Contact/Partner Form.
@@ -247,7 +256,7 @@ def edit_item(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def save_init_partner_form(request):
     form = NewPartnerForm(user=request.user, data=request.POST)
@@ -259,7 +268,7 @@ def save_init_partner_form(request):
         return HttpResponse(json.dumps(form.errors))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def save_item(request):
     """
@@ -315,7 +324,7 @@ def save_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def delete_prm_item(request):
     """
@@ -380,7 +389,7 @@ def delete_prm_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_overview(request):
     """
@@ -414,7 +423,7 @@ def prm_overview(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_tagging(request):
     company = get_company_or_404(request)
@@ -429,7 +438,7 @@ def partner_tagging(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def edit_partner_tag(request):
     company = get_company_or_404(request)
@@ -466,7 +475,7 @@ def edit_partner_tag(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
@@ -509,7 +518,7 @@ def edit_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
@@ -527,7 +536,7 @@ def delete_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def delete_partner_tag(request):
     company = get_company_or_404(request)
@@ -540,7 +549,7 @@ def delete_partner_tag(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_saved_searches(request):
     """
@@ -572,7 +581,7 @@ def prm_saved_searches(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
@@ -621,7 +630,7 @@ def prm_edit_saved_search(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def verify_contact(request):
     """
@@ -664,7 +673,7 @@ def verify_contact(request):
     return HttpResponse(json.dumps(data))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_savedsearch_save(request):
     """
@@ -707,7 +716,7 @@ def partner_savedsearch_save(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_view_full_feed(request):
     """
@@ -751,7 +760,7 @@ def partner_view_full_feed(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_records(request):
     """
@@ -792,7 +801,7 @@ def prm_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_edit_records(request):
     company, partner, user = prm_worthy(request)
@@ -835,7 +844,7 @@ def prm_edit_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def prm_view_records(request):
     """
@@ -888,7 +897,7 @@ def prm_view_records(request):
     return render_to_response('mypartners/view_record.html', ctx,
                               RequestContext(request))
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def get_contact_information(request):
     """
@@ -927,7 +936,7 @@ def get_contact_information(request):
         return Http404("This view is only reachable by an AJAX POST request.")
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def get_records(request):
     """
@@ -975,7 +984,7 @@ def get_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def get_uploaded_file(request):
     """
@@ -1009,7 +1018,7 @@ def get_uploaded_file(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_main_reports(request):
     company, partner, user = prm_worthy(request)
@@ -1033,7 +1042,7 @@ def partner_main_reports(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_get_records(request):
     if request.method == 'GET':
@@ -1075,7 +1084,7 @@ def partner_get_records(request):
         raise Http404
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def partner_get_referrals(request):
     if request.method == 'GET':
@@ -1332,7 +1341,7 @@ def process_email(request):
 
 
 @restrict_to_staff()
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def manage_outreach_inboxes(request):
     company = get_company_or_404(request)
@@ -1368,7 +1377,7 @@ def manage_outreach_inboxes(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def tag_names(request):
     if request.method == 'GET':
@@ -1382,7 +1391,7 @@ def tag_names(request):
         return HttpResponse(json.dumps(names))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def tag_color(request):
     if request.method == 'GET':
@@ -1393,7 +1402,7 @@ def tag_color(request):
         return HttpResponse(json.dumps(colors))
 
 
-@requires(PRM, missing_activity, missing_access)
+@require(PRM, missing_activity, missing_access)
 @has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)
