@@ -997,6 +997,7 @@ var EditRolePage = React.createClass({
   getInitialState: function() {
     {/* TODO Refactor to use basic Actions and the Dispatchers */}
     return {
+      api_response_help: '',
       role_name: '',
       available_activities: [],
       assigned_activities: [],
@@ -1047,6 +1048,7 @@ var EditRolePage = React.createClass({
           });
 
           this.setState({
+            api_response_help: '',
             role_name: role_name,
             available_activities: available_activities,
             assigned_activities: assigned_activities,
@@ -1083,13 +1085,12 @@ var EditRolePage = React.createClass({
              activity['name'] = obj.fields.name;
              return activity;
           });
-
           this.setState({
+            api_response_help: '',
             available_activities: available_activities,
             available_users: available_users,
           });
         }
-
       }.bind(this));
     }
   },
@@ -1100,6 +1101,7 @@ var EditRolePage = React.createClass({
       Look into immutability: http://facebook.github.io/react/docs/update.html */}
 
     this.setState({
+      api_response_help: '',
       role_name: this.state.role_name,
       available_activities: this.refs.activities.state.available_activities,
       assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1121,6 +1123,8 @@ var EditRolePage = React.createClass({
     var role_name = this.state.role_name;
     if(role_name == ""){
       this.setState({
+          api_response_help: '',
+          role_name_help: 'Role name empty.',
           role_name: this.state.role_name,
           available_activities: this.refs.activities.state.available_activities,
           assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1130,9 +1134,17 @@ var EditRolePage = React.createClass({
       return;
     }
 
+
+
     var assigned_activities = this.refs.activities.state.assigned_activities;
+
+    console.log("assigned_activities is:");
+    console.log(assigned_activities);
+
     if(assigned_activities.length < 1){
       this.setState({
+          api_response_help: '',
+          activities_multiselect_help: 'Each role must have at least one activity.',
           role_name: this.state.role_name,
           available_activities: this.refs.activities.state.available_activities,
           assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1145,6 +1157,8 @@ var EditRolePage = React.createClass({
     {/* No errors? Clear help text */}
 
     this.setState({
+        api_response_help: '',
+        activities_multiselect_help: '',
         role_name: this.state.role_name,
         available_activities: this.refs.activities.state.available_activities,
         assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1188,6 +1202,7 @@ var EditRolePage = React.createClass({
       }
       else if ( response.success == "false" ){
         this.setState({
+            api_response_help: response.message,
             role_name: this.state.role_name,
             available_activities: this.refs.activities.state.available_activities,
             assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1233,18 +1248,23 @@ var EditRolePage = React.createClass({
       delete_role_button = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>
     }
 
+    var role_name_help = this.state.role_name_help;
+
+    var api_response_help = this.state.api_response_help;
+
+    var activities_multiselect_help = this.state.activities_multiselect_help;
+
     return (
       <div>
-
         <div className="row">
           <div className="col-xs-12 ">
             <div className="wrapper-header">
               <h2>{this.props.action} Role</h2>
             </div>
             <div className="product-card-full no-highlight">
-
               <div className="row">
                 <div className="col-xs-12">
+                  <HelpText message={role_name_help} />
                   <label htmlFor="id_role_name">Role Name*:</label>
                   <input id="id_role_name" maxLength="255" name="name" type="text" value={this.state.role_name} size="35" onChange={this.onTextChange}/>
                 </div>
@@ -1252,27 +1272,26 @@ var EditRolePage = React.createClass({
 
               <hr/>
 
-              <p className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
+              <HelpText message={activities_multiselect_help} />
 
               <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
+
+              <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
 
               <hr/>
 
               <UsersMultiselect available_users={this.state.available_users} assigned_users={this.state.assigned_users} ref="users"/>
 
+              <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
+
               <hr />
 
               <div className="row">
-
-
-              {/*
-
                 <div className="col-xs-12">
                   <span className="primary pull-right">
-                    {this.state.help_message}
+                    <HelpText message={api_response_help} />
                   </span>
                 </div>
-                */}
 
                 <div className="col-xs-12">
                   <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
@@ -1280,11 +1299,9 @@ var EditRolePage = React.createClass({
                   <CancelRoleButton />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
-
       </div>
     );
   }
