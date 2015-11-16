@@ -25,7 +25,9 @@ def init_tags(self):
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
         help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.',
-        widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
+        widget=forms.TextInput(attrs={
+            'id': 'p-tags',
+            'autocomplete': 'off'})
     )
 
 

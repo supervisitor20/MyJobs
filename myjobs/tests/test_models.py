@@ -12,6 +12,7 @@ from myjobs.models import User, Role
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory)
+from seo.tests.factories import CompanyUserFactory
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
 from myreports.models import Report
@@ -181,11 +182,11 @@ class UserManagerTests(MyJobsBase):
         self.assertIn(report, Report.objects.all())
 
 
-class ActivityTests(MyJobsBase):
+class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""
 
     def setUp(self):
-        super(ActivityTests, self).setUp()
+        super(TestActivities, self).setUp()
 
         self.company = CompanyFactory()
         self.app_access = AppAccessFactory()
@@ -246,4 +247,36 @@ class ActivityTests(MyJobsBase):
 
         # existing role should not have new activity
         self.assertNotIn(new_activity, self.role.activities.all())
+
+    def test_can_method(self):
+        """
+        `User.can` should return False when a user isn't associated with the
+        correct activities and True when they are.
+        """
+
+        user = UserFactory(roles=[self.role])
+        CompanyUserFactory(user=user, company=self.company)
+        activities = self.role.activities.values_list('name', flat=True)
+
+        # check for a single activity
+        self.assertTrue(user.can(self.company, activities[0]))
+
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(self.company, "eat a burrito"))
+
+        with self.settings(ROLES_ENABLED=False):
+            self.company.member = False
+            self.company.save()
+
+            self.assertFalse(user.can(self.company, activities[0]))
+
+            self.company.member = True
+            self.company.save()
+
+        # check for multiple activities
+        self.assertTrue(user.can( self.company, *activities))
+
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(
+                self.company, activities[0], "eat a burrito"))
 
