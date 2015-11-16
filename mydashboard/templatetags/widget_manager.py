@@ -1,4 +1,4 @@
-from django.template import loader, Library, Node, resolve_variable
+from django.template import loader, Library
 
 register = Library()
 

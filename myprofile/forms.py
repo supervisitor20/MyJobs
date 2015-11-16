@@ -1,8 +1,13 @@
 from django.conf import settings
-from django.forms import *
+from django.core.exceptions import ValidationError
+from django.forms import (
+    Select, CheckboxInput, DateInput, TextInput, Textarea, DateTimeInput,
+    TimeInput)
 from django.utils.translation import ugettext_lazy as _
 from myjobs.forms import BaseUserForm
-from myprofile.models import *
+from myprofile.models import (
+    Name, SecondaryEmail, Education, EmploymentHistory, Telephone, Address,
+    MilitaryService, License, Website, Summary, VolunteerHistory)
 from countries import COUNTRIES
 
 
@@ -47,8 +52,8 @@ class NameForm(BaseUserForm):
         form_name = _("Personal Information")
         model = Name
         widgets = generate_custom_widgets(model)
-        
-        
+
+
 class SecondaryEmailForm(BaseUserForm):
     class Meta:
         form_name = _("Secondary Email")
@@ -58,7 +63,7 @@ class SecondaryEmailForm(BaseUserForm):
     def clean_email(self):
         email = self.cleaned_data['email']
         if email.lower() == self.user.email.lower():
-            raise forms.ValidationError('This email is already registered.')
+            raise ValidationError('This email is already registered.')
         return email
             
 

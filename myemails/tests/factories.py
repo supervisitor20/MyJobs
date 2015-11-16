@@ -1,8 +1,5 @@
 from factory import django, SubFactory
 
-from django.contrib.auth.models import ContentType
-
-from myemails.models import Event
 from seo.tests.factories import CompanyFactory
 
 

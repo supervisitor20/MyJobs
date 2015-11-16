@@ -1,7 +1,9 @@
 import operator
 
 from tastypie.authentication import ApiKeyAuthentication
-from tastypie.resources import *
+from tastypie.constants import ALL, ALL_WITH_RELATIONS
+from tastypie import fields
+from tastypie.resources import ModelResource, url
 from tastypie.utils import trailing_slash
 
 from api.resources import SearchResource

@@ -101,6 +101,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.locale.LocaleMiddleware',
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
+    'redirect.middleware.ExcludedViewSourceMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -154,6 +155,10 @@ CELERY_ROUTES = {
     'tasks.priority_etl_to_solr': {
         'queue': 'priority',
         'routing_key': 'priority.update_solr'
+    },
+    'tasks.check_solr_count': {
+        'queue': 'solr',
+        'routing_key': 'solr.update_solr'
     },
     'tasks.task_clear_bu_cache': {
         'queue': 'priority',
@@ -291,7 +296,7 @@ PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mydashboard', 'mysignon', 'mymessages', 'mypartners',
                 'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
                 'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
-                'automation')
+                'automation', 'universal')
 
 INSTALLED_APPS += PROJECT_APPS
 
@@ -555,7 +560,7 @@ EMAIL_FORMATS = {
         'address': u'accounts@{domain}',
         'subject': u'Account Activation for {domain}'
     },
-    CREATE_CONTACT_RECORD : {
+    CREATE_CONTACT_RECORD: {
         'address': PRM_EMAIL,
         'subject': u'Partner Relationship Manager Communication Records'
     },
@@ -634,3 +639,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 SEARCH_FRAGMENT_SIZE = 100
 SEARCH_SNIPPETS = 2
+
+EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
+
+CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'

@@ -1,6 +1,7 @@
 import pytz
 
-from django.forms import *
+from django.forms import (
+    ModelForm, ChoiceField, Select, Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 

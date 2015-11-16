@@ -13,7 +13,7 @@ import uuid
 from myjobs.models import User
 from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
-                                url_sort_options, validate_dotjobs_url)
+                                url_sort_options)
 import mypartners.helpers
 from universal.helpers import send_email
 
@@ -115,11 +115,6 @@ class SavedSearch(models.Model):
                 IndexError):
             # No match was found, so make the company DirectEmployers.
             return 999999
-
-    def get_verbose_frequency(self):
-        for choice in FREQUENCY_CHOICES:
-            if choice[0] == self.frequency:
-                return choice[1]
 
     def get_verbose_dow(self):
         for choice in DOW_CHOICES:

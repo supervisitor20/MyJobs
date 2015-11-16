@@ -6,15 +6,12 @@ from urlparse import urlparse, parse_qsl, urlunparse
 from urllib import urlencode
 
 from django.db.models import Min, Max, Q, Model
-from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.forms import ChoiceField
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.utils.datastructures import MultiValueDict
 from django.utils.safestring import mark_safe
 from django.utils.text import get_text_list, force_unicode, force_text
 from django.utils.timezone import now
@@ -155,7 +152,10 @@ def get_form_delta(form):
             new = [fd.name for fd in new or [] if fd]
 
         if initial or new:
-            delta[field] = {'initial': initial, 'new': new}
+            # do not return complete models for foreign keys, only PK
+            def convert_object(x):
+                return x.pk if isinstance(x, Model) else x
+            delta[field] = {'initial': convert_object(initial), 'new': convert_object(new)}
 
     return delta
 

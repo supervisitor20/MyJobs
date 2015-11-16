@@ -25,7 +25,7 @@ from postajob.models import (CompanyProfile, Job, OfflinePurchase, Package,
                              ProductOrder, JobLocation)
 from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
                                       RowFactory, RowOrderFactory,
-                                      BlockOrderFactory, LoginBlockFactory)
+                                      BlockOrderFactory)
 from seo.models import Company, SeoSite
 from universal.helpers import build_url
 
@@ -190,7 +190,7 @@ class ViewTests(PostajobTestBase):
             HTTP_HOST='test.jobs',
             follow=True)
         self.assertRedirects(
-            response, 
+            response,
             "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
 
     def test_job_access_not_company_user(self):
@@ -212,7 +212,7 @@ class ViewTests(PostajobTestBase):
         created.
         """
         self.sitepackage.sites.clear()
-        
+
         for url in ['request', 'offlinepurchase_add', 'product_add',
                     'productgrouping_add']:
             response = self.client.get(reverse(url), HTTP_HOST='test.jobs')
@@ -286,12 +286,12 @@ class ViewTests(PostajobTestBase):
 
         job = PurchasedJob.objects.get()
         self.assertEqual(job.created_by, self.user)
-    
+
     def test_purchasedjob_update(self):
         product = PurchasedProductFactory(
             product=self.product, owner=self.company)
         job = PurchasedJobFactory(
-            owner=self.company, created_by=self.user, 
+            owner=self.company, created_by=self.user,
             purchased_product=product)
         kwargs = {'pk': job.pk}
 
@@ -666,7 +666,7 @@ class ViewTests(PostajobTestBase):
     def test_purchasedproduct_delete(self):
         purchased_product = PurchasedProductFactory(
             product=self.product, owner=self.company)
-    
+
         kwargs = {'pk': purchased_product.pk}
 
         response = self.client.post(reverse('purchasedproduct_delete',
@@ -717,33 +717,6 @@ class ViewTests(PostajobTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['active_jobs']), 3)
         self.assertEqual(len(response.context['expired_jobs']), 1)
-
-    def test_is_company_user(self):
-        # Current user is a CompanyUser
-        params = {'email': self.user.email}
-        url = build_url(reverse('is_company_user'), params)
-        response = self.client.post(url)
-        self.assertEqual(response.content, 'true')
-
-        # Non-existant user is not a CompanyUser
-        params = {'email': 'thisemail@is.madeup'}
-        url = build_url(reverse('is_company_user'), params)
-        response = self.client.post(url)
-        self.assertEqual(response.content, 'false')
-
-        # Generic User is not a CompanyUser.
-        user = UserFactory(email='anew@user.email')
-        params = {'email': user.email}
-        url = build_url(reverse('is_company_user'), params)
-        response = self.client.post(url)
-        self.assertEqual(response.content, 'false')
-
-        # Is inaccessable to non-CompanyUsers.
-        self.company_user.delete()
-        params = {'email': self.user.email}
-        url = build_url(reverse('is_company_user'), params)
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 404)
 
     def test_offlinepurchase_redeem_not_logged_in(self):
         self.client.logout()
@@ -967,7 +940,7 @@ class ViewTests(PostajobTestBase):
             # include elements from the relevant ProductGrouping and Product
             # instances
             self.assertTrue(text in response.content.decode('utf-8'))
-    
+
     def test_job_add_and_remove_locations(self):
         location = {
             'form-0-city': 'Indianapolis',
@@ -1080,11 +1053,11 @@ class ViewTests(PostajobTestBase):
         self.company_user.company = CompanyFactory(pk=41, name="Wrong Company")
         self.company_user.save()
 
-        for page in ['view_job', 'view_invoice', 
+        for page in ['view_job', 'view_invoice',
                      'purchasedmicrosite_admin_overview', 'admin_products',
                      'admin_groupings', 'admin_offlinepurchase',
-                     'admin_purchasedproduct', 'view_request', 
-                     'process_admin_request', 'resend_invoice', 
+                     'admin_purchasedproduct', 'view_request',
+                     'process_admin_request', 'resend_invoice',
                      'block_user_management']:
 
             response = self.client.get(

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from settings import *
-
 SOLR_FIXTURE = [
     {
         'buid': 0,

@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse
+
 from myjobs.tests.factories import UserFactory
 from mypartners.forms import ContactForm, ContactRecordForm, PartnerForm, NewPartnerForm, LocationForm
 from mypartners.models import Contact, Location, ContactRecord

@@ -2,7 +2,7 @@ import csv
 
 from django.utils.text import slugify
 
-from moc_coding.models import *
+from moc_coding.models import Moc, MocDetail, Onet
 
 def get_mocs_from_csv(filename, columns):
     # Maps MOC code and Branch as keys, since they are defined as unique

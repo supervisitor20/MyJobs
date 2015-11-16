@@ -10,6 +10,7 @@ import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
 
+from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
@@ -32,6 +33,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
 from myjobs.decorators import requires
+from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -41,7 +43,7 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location)
+                               Location, OutreachEmailAddress)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1318,6 +1320,43 @@ def process_email(request):
                                        attachment_failures, unmatched_contacts,
                                        None, admin_email)
     return HttpResponse(status=200)
+
+
+@restrict_to_staff()
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+def manage_outreach_inboxes(request):
+    company = get_company_or_404(request)
+    OutreachEmailInboxFormset = modelformset_factory(OutreachEmailAddress,
+                                                     exclude=('company',), extra=1,
+                                                     can_delete=True)
+    if request.method == 'GET':
+        formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
+
+    if request.method == 'POST':
+        formset = OutreachEmailInboxFormset(request.POST)
+        if formset.is_valid():
+            for form in formset:
+                # forced to overwrite normal processing in order to assign company to outreach email
+                # did not want to include company on user provided form for fear of manipulation
+                if form.cleaned_data.get('DELETE'):
+                    form.instance.delete()
+                elif form.cleaned_data.get('email'):
+                    instance = form.save(commit=False)
+                    instance.company = company
+                    instance.save()
+            # re-initialize formset now that processing is finished
+            return HttpResponseRedirect(reverse('manage_outreach_inboxes'))
+
+    ctx = {
+        'formset': formset,
+        'company': company,
+        'view_name': 'PRM',
+    }
+
+    return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
+                              ctx,
+                              RequestContext(request))
 
 
 @requires(PRM, missing_activity, missing_access)
