@@ -1000,7 +1000,7 @@ def get_uploaded_file(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("read communication record")
 @has_access('prm')
 def partner_main_reports(request):
     company, partner, user = prm_worthy(request)
@@ -1024,7 +1024,7 @@ def partner_main_reports(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+@requires("read communication record")
 @has_access('prm')
 def partner_get_records(request):
     if request.method == 'GET':

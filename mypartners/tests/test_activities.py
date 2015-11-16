@@ -121,3 +121,17 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires("tag_names", "read tag")
+
+    def test_partner_get_records(self):
+        """
+        /prm/view/records/retrieve_records requres "read communication record"
+        """
+
+        self.assertRequires("partner_get_records", "read communication record")
+
+    def test_report_view(self):
+        """
+        /prm/view/reports/details requires "read communication record"
+        """
+
+        self.assertRequires("report_view", "read communication record")
