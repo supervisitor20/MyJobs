@@ -44,10 +44,10 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    {% is_a_group_member user "Employer" as group_member %}
-                    {% get_company_name user as company_name %}
                     {% get_company_from_cookie as company %}
-                    {% if group_member and not settings.%}
+                    {% is_a_group_member company user "Employer" as group_member %}
+                    {% get_company_name user as company_name %}
+                    {% if group_member %}
                     <li class="{% active_tab 'employer-tools' %} has-drop">
                         <a>{% trans "Employers" %}</a>
                         <ul id="employer-apps" class="submenu">
