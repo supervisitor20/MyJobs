@@ -532,30 +532,6 @@ var RolesList = React.createClass({
 });
 
 var ActivitiesList = React.createClass({
-  getInitialState: function() {
-    return {
-      table_rows: ''
-    };
-  },
-  componentDidMount: function() {
-    $.get(this.props.source, function(results) {
-      var results = JSON.parse(results)
-      if (this.isMounted()) {
-        var table_rows = [];
-        for (var i = 0; i < results.length; i++) {
-          table_rows.push(
-            <tr key={results[i].pk}>
-              <td>{results[i].fields.name}</td>
-              <td>{results[i].fields.description}</td>
-            </tr>
-          );
-        }
-        this.setState({
-          table_rows: table_rows
-        });
-      }
-    }.bind(this));
-  },
   render: function() {
     return (
       <div>
@@ -567,7 +543,7 @@ var ActivitiesList = React.createClass({
             </tr>
           </thead>
           <tbody>
-            {this.state.table_rows}
+            {this.props.activities_table_rows}
           </tbody>
         </table>
       </div>
@@ -1294,7 +1270,7 @@ var ActivitiesPage = React.createClass({
           </div>
           <div className="product-card-full no-highlight">
 
-            <ActivitiesList source="/manage-users/api/activities/" />
+            <ActivitiesList activities_table_rows={this.props.activities_table_rows} />
 
           </div>
         </div>
@@ -1321,6 +1297,38 @@ var OverviewPage = React.createClass({
 });
 
 var Content = React.createClass({
+
+  getInitialState: function() {
+    {/* TODO Refactor to use basic Actions and the Dispatchers */}
+    return {
+      activities_table_rows: []
+    };
+  },
+  componentDidMount: function() {
+
+
+
+    {/* Get activities once, and only once */}
+    $.get("/manage-users/api/activities/", function(results) {
+      var results = JSON.parse(results)
+      if (this.isMounted()) {
+        var activities_table_rows = [];
+        for (var i = 0; i < results.length; i++) {
+          activities_table_rows.push(
+            <tr key={results[i].pk}>
+              <td>{results[i].fields.name}</td>
+              <td>{results[i].fields.description}</td>
+            </tr>
+          );
+        }
+        this.setState({
+          activities_table_rows: activities_table_rows
+        });
+      }
+    }.bind(this));
+
+
+  },
   render: function() {
     var page = this.props.page;
     switch(page) {
@@ -1331,7 +1339,7 @@ var Content = React.createClass({
             page = <RolesPage disappear_text={this.props.disappear_text}/>;
             break;
         case "Activities":
-            page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
+            page = <ActivitiesPage activities_table_rows={this.state.activities_table_rows} disappear_text={this.props.disappear_text}/>;
             break;
         case "Users":
             page = <UsersPage disappear_text={this.props.disappear_text}/>;
@@ -1343,7 +1351,6 @@ var Content = React.createClass({
             page = <EditUserPage action={this.props.action} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>;
             break;
     }
-
     return (
       <div className="col-sm-8 col-xs-12">
         <div className="card-wrapper">
@@ -1391,7 +1398,7 @@ var Container = React.createClass({
 
         <div className="row">
           <Menu />
-          <Content page={this.props.page}  action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
+          <Content page={this.props.page} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
         </div>
         <div className="clearfix"></div>
       </div>
