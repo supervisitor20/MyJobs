@@ -71,7 +71,7 @@ def is_a_group_member(company, user, group):
     """
 
     if settings.ROLES_ENABLED:
-        return company.has_features
+        return getattr(company, 'has_features', False)
     else:
         try:
             return User.objects.is_group_member(user, group)

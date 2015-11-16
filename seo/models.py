@@ -546,7 +546,7 @@ class SeoSite(Site):
         if settings.ROLES_ENABLED:
             return user.pk in companies.values_list('role__user', flat=True)
         else:
-            user_copmanies = user.company_set.all()
+            user_companies = user.company_set.all()
             for company in companies:
                 if company not in user_companies:
                     return False
