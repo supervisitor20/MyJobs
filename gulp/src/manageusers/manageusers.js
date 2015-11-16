@@ -429,60 +429,6 @@ var UsersPage = React.createClass({
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var AssociatedUsersList = React.createClass({
   render: function() {
     var associated_users_list = [];
@@ -528,10 +474,14 @@ var RolesList = React.createClass({
   },
   getInitialState: function() {
     return {
-      table_rows: ''
+      table_rows: []
     };
   },
   componentDidMount: function() {
+
+    console.log("this.state is:");
+    console.log(this.state);
+
     $.get(this.props.source, function(results) {
       if (this.isMounted()) {
         var table_rows = [];
@@ -726,6 +676,7 @@ var SaveUserButton = React.createClass({
 
 var RolesButton = React.createClass({
   handleClick: function(event) {
+
     ReactDOM.render(
     	<Container page="Roles" />,
         document.getElementById('content')
