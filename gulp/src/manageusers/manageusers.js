@@ -10,37 +10,61 @@ import FilteredMultiSelect from "react-filtered-multiselect"
 // This is the entry point of the application. Bundling begins here.
 
 
+var HelpText = React.createClass({
+  render: function() {
+    var message = this.props.message;
+    return (
+      <div className="input-error">
+        {message}
+      </div>
+    );
+  }
+});
+
+
 var EditUserPage = React.createClass({
   getInitialState: function() {
     {/* TODO Refactor to use basic Actions and the Dispatchers */}
     return {
-      help_message: '',
+      api_response_help: '',
       user_email: '',
+      user_email_help: '',
+      role_multiselect_help: '',
       available_roles: [],
-      assigned_roles: []
+      assigned_roles: [],
+      api_response_message: ''
     };
   },
   onTextChange: function(event) {
     this.state.user_email = event.target.value;
 
-    {/* I know this is awful. setState overrides some states because they are n-levels deep.
-      Look into immutability: http://facebook.github.io/react/docs/update.html */}
+    var user_email = this.state.user_email;
 
-    this.setState({
-      help_message: this.state.help_message,
-      user_email: this.state.user_email,
-      assigned_roles: this.refs.roles.state.assigned_roles,
-      available_roles: this.refs.roles.state.available_roles
-    })
-
+    if(validateEmail(user_email) === false) {
+      this.setState({
+          user_email: this.state.user_email,
+          user_email_help: 'Invalid email',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+    else {
+      this.setState({
+          user_email: this.state.user_email,
+          user_email_help: '',
+          api_response_message: '',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
   },
   componentDidMount: function() {
     if(this.props.action == "Edit"){
       $.get("/manage-users/api/users/" + this.props.user_id, function(results) {
 
         if (this.isMounted()) {
-
-          console.log(results)
 
           var user_object = results[this.props.user_id];
 
@@ -54,9 +78,6 @@ var EditUserPage = React.createClass({
              return role;
           });
 
-          console.log("available_roles formatted properly");
-          console.log(available_roles);
-
           var assigned_roles_unformatted = JSON.parse(user_object.roles.assigned);
           var assigned_roles = assigned_roles_unformatted.map(function(obj){
              var role = {};
@@ -66,8 +87,10 @@ var EditUserPage = React.createClass({
           });
 
           this.setState({
-            help_message: '',
             user_email: user_email,
+            user_email_help: '',
+            role_multiselect_help: '',
+            api_response_help: '',
             available_roles: available_roles,
             assigned_roles: assigned_roles
           });
@@ -76,8 +99,6 @@ var EditUserPage = React.createClass({
     }
 
     else if(this.props.action == "Add"){
-
-      console.log("Inside add user");
 
       $.get("/manage-users/api/roles/", function(results) {
 
@@ -98,8 +119,10 @@ var EditUserPage = React.createClass({
           var assigned_roles = [];
 
           this.setState({
-            help_message: '',
             user_email: user_email,
+            user_email_help: '',
+            role_multiselect_help: '',
+            api_response_help: '',
             available_roles: available_roles,
             assigned_roles: assigned_roles
           });
@@ -122,7 +145,8 @@ var EditUserPage = React.createClass({
 
     if(validateEmail(user_email) === false) {
       this.setState({
-          help_message: "User email appears invalid.",
+          user_email_help: 'Email invalid',
+          role_multiselect_help: '',
           available_roles: this.refs.roles.state.available_roles,
           assigned_roles: this.refs.roles.state.assigned_roles
       });
@@ -131,7 +155,8 @@ var EditUserPage = React.createClass({
 
     if(assigned_roles.length < 1){
       this.setState({
-          help_message: "A user must be assigned to at least one role.",
+          user_email_help: '',
+          role_multiselect_help: 'Each user must be assigned to at least one role.',
           available_roles: this.refs.roles.state.available_roles,
           assigned_roles: this.refs.roles.state.assigned_roles
       });
@@ -141,7 +166,6 @@ var EditUserPage = React.createClass({
     {/* No errors? Clear help text */}
 
     this.setState({
-        help_message: "",
         available_roles: this.refs.roles.state.available_roles,
         assigned_roles: this.refs.roles.state.assigned_roles
     });
@@ -176,8 +200,10 @@ var EditUserPage = React.createClass({
         );
       }
       else if ( response.success == "false" ){
+        console.log(response);
+
         this.setState({
-            help_message: response.message,
+            api_response_help: response.message,
             user_email: this.state.user_email,
             available_roles: this.refs.roles.state.available_roles,
             assigned_roles: this.refs.roles.state.assigned_roles
@@ -211,13 +237,23 @@ var EditUserPage = React.createClass({
     }});
   },
   render: function() {
-    var delete_user_button = "";
-    if (this.props.action == "Add") {
 
+    var delete_user_button = "";
+
+    var user_email_input = "";
+
+    if (this.props.action == "Add") {
+      user_email_input = <input id="id_user_email" maxLength="255" name="id_user_email" type="email" value={this.state.user_email} onChange={this.onTextChange} size="35"/>
     }
     else if (this.props.action == "Edit"){
+      user_email_input = <input id="id_user_email" maxLength="255" name="id_user_email" type="email" readOnly value={this.state.user_email} size="35"/>
       delete_user_button = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>
     }
+
+    var user_email_help = this.state.user_email_help;
+    var role_multiselect_help = this.state.role_multiselect_help;
+    var api_response_help = this.state.api_response_help;
+
     return (
       <div>
 
@@ -230,16 +266,19 @@ var EditUserPage = React.createClass({
 
               <div className="row">
                 <div className="col-xs-12">
+                  <HelpText message={user_email_help} />
                   <label htmlFor="id_user_email">User Email*:</label>
-                  <input id="id_user_email" maxLength="255" name="name" type="text" value={this.state.user_email} onChange={this.onTextChange} size="35"/>
+                  {user_email_input}
                 </div>
               </div>
 
               <hr/>
 
-              <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
+              <HelpText message={role_multiselect_help} />
 
               <RolesMultiselect available_roles={this.state.available_roles} assigned_roles={this.state.assigned_roles} ref="roles"/>
+
+              <span id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
 
               <hr />
 
@@ -247,9 +286,10 @@ var EditUserPage = React.createClass({
 
                 <div className="col-xs-12">
                   <span className="primary pull-right">
-                    {this.state.help_message}
+                    <HelpText message={api_response_help} />
                   </span>
                 </div>
+
                 <div className="col-xs-12">
                   <Button className="primary pull-right" onClick={this.handleSaveUserClick}>Save User</Button>
                   {delete_user_button}
@@ -748,20 +788,7 @@ var UserInvitationEmailForm = React.createClass({
   }
 });
 
-var UserEmailAddressTextField = React.createClass({
-  render: function() {
-    if (this.props.action == "Add"){
-      return (
-        <input id="id_user_name" maxLength="255" name="id_user_name" editable type="email" size="35"/>
-      );
-    }
-    else if (this.props.action == "Edit"){
-      return (
-        <input id="id_user_name" maxLength="255" name="id_user_name" type="email" readOnly value={this.props.user_email} size="35"/>
-      );
-    }
-  }
-});
+
 
 
 
@@ -970,7 +997,6 @@ var EditRolePage = React.createClass({
   getInitialState: function() {
     {/* TODO Refactor to use basic Actions and the Dispatchers */}
     return {
-      help_message: '',
       role_name: '',
       available_activities: [],
       assigned_activities: [],
@@ -1021,7 +1047,6 @@ var EditRolePage = React.createClass({
           });
 
           this.setState({
-            help_message: '',
             role_name: role_name,
             available_activities: available_activities,
             assigned_activities: assigned_activities,
@@ -1075,7 +1100,6 @@ var EditRolePage = React.createClass({
       Look into immutability: http://facebook.github.io/react/docs/update.html */}
 
     this.setState({
-      help_message: this.state.help_message,
       role_name: this.state.role_name,
       available_activities: this.refs.activities.state.available_activities,
       assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1097,7 +1121,6 @@ var EditRolePage = React.createClass({
     var role_name = this.state.role_name;
     if(role_name == ""){
       this.setState({
-          help_message: "Role name can not be empty",
           role_name: this.state.role_name,
           available_activities: this.refs.activities.state.available_activities,
           assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1110,7 +1133,6 @@ var EditRolePage = React.createClass({
     var assigned_activities = this.refs.activities.state.assigned_activities;
     if(assigned_activities.length < 1){
       this.setState({
-          help_message: "Each role must have at least one activity.",
           role_name: this.state.role_name,
           available_activities: this.refs.activities.state.available_activities,
           assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1123,7 +1145,6 @@ var EditRolePage = React.createClass({
     {/* No errors? Clear help text */}
 
     this.setState({
-        help_message: "",
         role_name: this.state.role_name,
         available_activities: this.refs.activities.state.available_activities,
         assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1167,7 +1188,6 @@ var EditRolePage = React.createClass({
       }
       else if ( response.success == "false" ){
         this.setState({
-            help_message: response.message,
             role_name: this.state.role_name,
             available_activities: this.refs.activities.state.available_activities,
             assigned_activities: this.refs.activities.state.assigned_activities,
@@ -1232,7 +1252,7 @@ var EditRolePage = React.createClass({
 
               <hr/>
 
-              <p id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
+              <p className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</p>
 
               <ActivitiesMultiselect available_activities={this.state.available_activities} assigned_activities={this.state.assigned_activities} ref="activities"/>
 
@@ -1244,11 +1264,16 @@ var EditRolePage = React.createClass({
 
               <div className="row">
 
+
+              {/*
+
                 <div className="col-xs-12">
                   <span className="primary pull-right">
                     {this.state.help_message}
                   </span>
                 </div>
+                */}
+
                 <div className="col-xs-12">
                   <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
                   {delete_role_button}

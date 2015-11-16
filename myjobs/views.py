@@ -1072,7 +1072,7 @@ def api_create_user(request):
         matching_users = User.objects.filter(email=user_email)
         if matching_users.exists():
             # TODO This user is already in the system. Email the user an invitation to accept this role.
-            response_data["success"] = "true"
+            response_data["success"] = "false"
             response_data["message"] = "This user already exists. Role invitation email sent."
             return HttpResponse(json.dumps(response_data), content_type="application/json")
             # TODO If they accept, add them to the role(S)
