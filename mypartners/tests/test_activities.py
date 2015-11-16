@@ -9,8 +9,9 @@ available when those activities are present for a user.
 As such, these tests assume that the settings.ENABLE_ROLES is True.
 """
 
+from urllib import urlencode
+
 from django.core.urlresolvers import reverse
-from django.http import Http404
 from django.test.utils import override_settings
 
 from seo.tests.factories import CompanyFactory
@@ -19,6 +20,8 @@ from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
                                     ActivityFactory)
+from mypartners.helpers import get_library_partners
+from mypartners.models import PartnerLibrary
 
 
 @override_settings(ROLES_ENABLED=True, DEBUG=True)
@@ -43,15 +46,18 @@ class TestViewActivities(MyJobsBase):
         Asserst that the given view is only accessible when a user has a role
         with the given activities.
         """
-        response = self.client.get(reverse(view_name))
+
+        url = reverse(view_name)
+
+        response = self.client.get(url)
         self.assertEqual(type(response), MissingActivity)
 
         self.role.activities = [
             ActivityFactory(name=activity, app_access=self.app_access)
             for activity in activities]
 
-        response = self.client.get(reverse(view_name))
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(url)
+        self.assertNotEqual(type(response), MissingActivity)
 
     def test_prm(self):
         """
@@ -72,7 +78,7 @@ class TestViewActivities(MyJobsBase):
         /prm/view/partner-library/add requires "create partner".
         """
 
-        self.assertRequires("create_partner_from_library", "create partner")
+        self.assertRequires( "create_partner_from_library", "create partner")
 
     def test_partner_overview(self):
         """
@@ -81,7 +87,7 @@ class TestViewActivities(MyJobsBase):
 
         self.assertRequires("partner_overview", "read partner")
 
-    def test_partner_taggign(self):
+    def test_partner_tagging(self):
         """
         /prm/view/tagging requires "create tag".
         """

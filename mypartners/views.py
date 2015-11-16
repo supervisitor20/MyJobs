@@ -128,14 +128,7 @@ def partner_library(request):
                               RequestContext(request))
 
 
-def redirect():
-    ctx = {
-        'partner': -1
-    }
-
-    return HttpResponse(json.dumps(ctx))
-
-@requires("create partner", activity_callback=redirect)
+@requires("create partner")
 @has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
