@@ -146,7 +146,7 @@ def create_partner_from_library(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("update partner")
 @has_access('prm')
 def partner_details(request):
     company, partner, user = prm_worthy(request)
@@ -405,7 +405,7 @@ def prm_overview(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("read tag")
 @has_access('prm')
 def partner_tagging(request):
     company = get_company_or_404(request)
@@ -420,7 +420,7 @@ def partner_tagging(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("update tag")
 @has_access('prm')
 def edit_partner_tag(request):
     company = get_company_or_404(request)
@@ -1359,12 +1359,12 @@ def manage_outreach_inboxes(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+@requires("read tag")
 @has_access('prm')
 def tag_names(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
-        value = request.GET.get('value')
+        value = request.GET.get('value', "")
         names = list(Tag.objects.filter(
             company=company, name__icontains=value).values_list(
                 'name', flat=True))
@@ -1373,7 +1373,7 @@ def tag_names(request):
         return HttpResponse(json.dumps(names))
 
 
-@requires(PRM)
+@requires("read tag")
 @has_access('prm')
 def tag_color(request):
     if request.method == 'GET':

@@ -78,7 +78,7 @@ class TestViewActivities(MyJobsBase):
         /prm/view/partner-library/add requires "create partner".
         """
 
-        self.assertRequires( "create_partner_from_library", "create partner")
+        self.assertRequires("create_partner_from_library", "create partner")
 
     def test_partner_overview(self):
         """
@@ -92,4 +92,32 @@ class TestViewActivities(MyJobsBase):
         /prm/view/tagging requires "create tag".
         """
 
-        self.assertRequires("partner_tagging", "create tag")
+        self.assertRequires("partner_tagging", "read tag")
+
+    def test_edit_partner_tag(self):
+        """
+        /prm/view/tagging/edit requires "update tag".
+        """
+
+        self.assertRequires("edit_partner_tag", "update tag")
+
+    def test_partner_details(self):
+        """
+        /prm/view/details requires "read partner"
+        """
+
+        self.assertRequires("partner_details", "update partner")
+
+    def test_tag_color(self):
+        """
+        /prm/view/records/get-tag-color requires "read tag"
+        """
+
+        self.assertRequires("tag_color", "read tag")
+
+    def test_tag_names(self):
+        """
+        /prm/view/records/get-tags requires "read tag"
+        """
+
+        self.assertRequires("tag_names", "read tag")

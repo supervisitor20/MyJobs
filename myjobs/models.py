@@ -836,3 +836,21 @@ class Role(models.Model):
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company)
+
+    def add_activity(self, name):
+        """
+        Short cut method to add an activity by name.
+
+        Inputs:
+            :name: The name of the activity to be added. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was added if successful,
+            otherwise None
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity:
+            self.activities.add(activity)
+
+        return activity
