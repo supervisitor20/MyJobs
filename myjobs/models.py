@@ -850,8 +850,10 @@ class Role(models.Model):
         """
 
         activity = Activity.objects.filter(name=name).first()
-        if activity:
+        if activity not in self.activities.all():
             self.activities.add(activity)
+        else:
+            activity = None
 
         return activity
 
@@ -868,7 +870,9 @@ class Role(models.Model):
         """
 
         activity = Activity.objects.filter(name=name).first()
-        if activity:
+        if activity not in self.activities.all():
             self.activities.remove(activity)
+        else:
+            activity = None
 
         return activity

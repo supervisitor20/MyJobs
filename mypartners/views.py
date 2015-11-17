@@ -414,6 +414,7 @@ def partner_tagging(request):
     tags = Tag.objects.filter(company=company).order_by('name')
 
     ctx = {'company': company,
+           'create_tags': json.dumps(request.user.can(company, 'create tag')),
            'tags': tags}
 
     return render_to_response('mypartners/partner_tagging.html', ctx,
@@ -1386,7 +1387,7 @@ def tag_color(request):
         return HttpResponse(json.dumps(colors))
 
 
-@requires(PRM)
+@requires("create tag")
 @has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)

@@ -160,9 +160,16 @@ class TestViewActivities(MyJobsBase):
 
         self.assertRequires("get_contact_information", "read contact")
 
-    def test_prm_view_records(self):
+    def test_record_view(self):
         """
         /prm/view/records/'details requires "read communication record"
         """
 
         self.assertRequires("record_view", "read communication record")
+
+    def test_add_tags(self):
+        """
+        /prm/view/tagging/add requires "add tag"
+        """
+
+        self.assertRequires("add_tags", "create tag")
