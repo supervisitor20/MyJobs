@@ -1391,6 +1391,6 @@ def tag_color(request):
 @has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)
-    data = request.GET.get('data').split(',')
+    data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
