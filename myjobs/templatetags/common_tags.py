@@ -57,7 +57,7 @@ def get_description(module):
 
 
 @register.assignment_tag
-def is_a_group_member(user, group):
+def is_a_group_member(company, user, group):
     """
     Determines whether or not the user is a member of a group
 
@@ -70,10 +70,13 @@ def is_a_group_member(user, group):
     requested group
     """
 
-    try:
-        return User.objects.is_group_member(user, group)
-    except ValueError:
-        return False
+    if settings.ROLES_ENABLED:
+        return getattr(company, 'has_features', False)
+    else:
+        try:
+            return User.objects.is_group_member(user, group)
+        except ValueError:
+            return False
 
 
 @register.assignment_tag
