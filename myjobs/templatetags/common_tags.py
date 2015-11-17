@@ -92,13 +92,13 @@ def get_company_name(user):
     """
 
     # Only return companies for which the user is a company user
-    try:
-        if settings.ROLES_ENABLED:
-            return Company.objects.filter(role__user=user)
-        else:
+    if settings.ROLES_ENABLED:
+        return Company.objects.filter(role__user=user).distinct()
+    else:
+        try:
             return user.company_set.all()
-    except ValueError:
-        return Company.objects.none()
+        except ValueError:
+            return Company.objects.none()
 
 
 @register.simple_tag(takes_context=True)
