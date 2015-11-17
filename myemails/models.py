@@ -247,4 +247,6 @@ try:
                 EmailTask.objects.create(act_on=instance.invoice,
                                          related_event=event).schedule()
 except (OperationalError, ProgrammingError):
+    # We're running syncdb and the ContentType table doesn't exist yet. This
+    # shouldn't be necessary with Django 1.8 and app configs.
     pass
