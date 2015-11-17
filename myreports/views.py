@@ -23,7 +23,7 @@ from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def overview(request):
     """The Reports app landing page."""
@@ -55,7 +55,7 @@ def overview(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def report_archive(request):
     """Archive of previously run reports."""
@@ -75,7 +75,7 @@ def report_archive(request):
         return response
 
 
-@requires(PRM)
+@requires("read partner", "read contact", "read communication record")
 @has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """

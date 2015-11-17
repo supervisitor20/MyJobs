@@ -25,11 +25,11 @@ from mypartners.models import PartnerLibrary
 
 
 @override_settings(ROLES_ENABLED=True)
-class TestViewActivities(MyJobsBase):
+class TestViewLevelActivities(MyJobsBase):
     """Test views wrapped with activities."""
 
     def setUp(self):
-        super(TestViewActivities, self).setUp()
+        super(TestViewLevelActivities, self).setUp()
 
         self.app_access = AppAccessFactory()
         self.company = CompanyFactory(app_access=[self.app_access])
@@ -41,13 +41,13 @@ class TestViewActivities(MyJobsBase):
         self.client = TestClient()
         self.client.login_user(self.user)
 
-    def assertRequires(self, view_name, *activities):
+    def assertRequires(self, view_name, *activities, **kwargs):
         """
         Asserst that the given view is only accessible when a user has a role
         with the given activities.
         """
 
-        url = reverse(view_name)
+        url = reverse(view_name, kwargs=kwargs.get('kwargs'))
 
         response = self.client.get(path=url)
         self.assertEqual(type(response), MissingActivity)
@@ -290,3 +290,23 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires("prm_report_records", "read communication record")
+
+    def test_manage_outreach_inboxes(self):
+        """
+        /prm/view/nonuseroutreach/inboxes requires "create contact",
+        "create partner", and "create communication record"
+        """
+
+        self.assertRequires(
+            "manage_outreach_inboxes", "create partner", "create contact",
+            "create communication record")
+
+    def test_process_email(self):
+        """
+        /prm/email requires "create partner", "create contact", and
+        "create communication record"
+        """
+
+        self.assertRequires(
+            "process_email", "create partner", "create contact",
+            "create communication record")

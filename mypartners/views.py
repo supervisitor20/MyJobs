@@ -1167,6 +1167,7 @@ def prm_export(request):
 
 
 @csrf_exempt
+@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
@@ -1329,7 +1330,7 @@ def process_email(request):
 
 
 @restrict_to_staff()
-@requires(PRM)
+@requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def manage_outreach_inboxes(request):
     company = get_company_or_404(request)
