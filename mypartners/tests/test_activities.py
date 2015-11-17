@@ -221,19 +221,14 @@ class TestViewActivities(MyJobsBase):
         /prm/view/locations/save requires "update contact"
         """
 
-        self.assertRequires("save_location", "update contact")
+        self.assertRequires("edit_location", "update contact")
 
     def test_partner_searches(self):
-        """test_get_records(self):
         """
-        /prm/view/records/update requires "read communication record"
-        """
-        self.assertRequires(
-            "get_records", "read communication record")
-        /prm/view/searches requires "read partner saved earches
+        /prm/view/searches requires "read partner saved searche
         """
 
-        self.assertRequires("partner_searches", "read partner saved searches")
+        self.assertRequires("partner_searches", "read partner saved search")
 
     def test_partner_edit_search(self):
         """
@@ -241,7 +236,7 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires(
-            "partner_edit_saved_search", "create partner saved search")
+            "partner_edit_search", "create partner saved search")
 
     def test_partner_get_referrals(self):
         """
@@ -258,3 +253,40 @@ class TestViewActivities(MyJobsBase):
         """
         self.assertRequires(
             "get_records", "read communication record")
+
+    def test_verify_contact(self):
+        """
+        /prm/view/searches/vierify-contact requires "read contact"
+        """
+
+        self.assertRequires("verify_contact", "read contact")
+
+    def test_partner_savedsearch_save(self):
+        """
+        /prm/view/searches/save requires "create partner saved search"
+        """
+
+        self.assertRequires(
+            "partner_savedsearch_save", "create partner saved search")
+
+    def test_partner_view_full_feed(self):
+        """
+        /prm/view/searches/feed requires "read partner saved search"
+        """
+
+        self.assertRequires(
+            "partner_view_full_feed", "read partner saved search")
+
+    def test_partner_get_uploaded_file(self):
+        """
+        /prm/download requires "read communication record"
+        """
+
+        self.assertRequires("get_uploaded_file", "read communication record")
+
+    def test_prm_report_records(self):
+        """
+        /prm/view/reports/details/records requires "read communication record"
+        """
+
+        self.assertRequires("prm_report_records", "read communication record")

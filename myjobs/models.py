@@ -870,7 +870,7 @@ class Role(models.Model):
         """
 
         activity = Activity.objects.filter(name=name).first()
-        if activity and activity not in self.activities.all():
+        if activity and activity in self.activities.all():
             self.activities.remove(activity)
         else:
             activity = None
