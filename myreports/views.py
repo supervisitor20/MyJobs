@@ -17,14 +17,14 @@ from myjobs.decorators import requires
 from mypartners.views import PRM, missing_access, missing_activity
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    ConfigurationColumn, DataType, ReportTypeDataTypes)
+    DataType, ReportTypeDataTypes)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
 from myreports.datasources import get_datasource_json_driver
 from myreports.report_configuration import (
-    ReportConfiguration, ColumnConfiguration, FilterInterfaceConfiguration)
+    ReportConfiguration, ColumnConfiguration)
 
 
 @requires(PRM, missing_activity, missing_access)
@@ -468,8 +468,7 @@ def filters_api(request):
     report_configuration = contacts_config
 
     driver = get_datasource_json_driver(datasource)
-    result = driver.encode_filter_interface(
-        report_configuration.filter_interface)
+    result = driver.encode_filter_interface(report_configuration)
 
     return HttpResponse(content_type='application/json',
                         content=json.dumps(result))
@@ -483,7 +482,10 @@ contacts_config = ReportConfiguration(
             format='text'),
         ColumnConfiguration(
             column='partner',
-            format='text'),
+            format='text',
+            filter_interface='search_multiselect',
+            filter_display='Partners',
+            help=True),
         ColumnConfiguration(
             column='email',
             format='text'),
@@ -492,41 +494,23 @@ contacts_config = ReportConfiguration(
             format='text'),
         ColumnConfiguration(
             column='date',
-            format='us_date'),
+            format='us_date',
+            filter_interface='date_range',
+            filter_display='Date'),
         ColumnConfiguration(
             column='notes',
             format='text'),
         ColumnConfiguration(
             column='locations',
-            format='city_state_list'),
+            format='city_state_list',
+            filter_interface='city_state',
+            filter_display='Locations',
+            help=True),
         ColumnConfiguration(
             column='tags',
-            format='comma_sep'),
-    ],
-    filter_interface=[
-        FilterInterfaceConfiguration(
-            filters=['date_begin', 'date_end'],
-            display="Date",
-            type='date_range'),
-        FilterInterfaceConfiguration(
-            filter='city',
-            display="City",
-            type='search_select',
-            help=True),
-        FilterInterfaceConfiguration(
-            filter='state',
-            display="State",
-            type='search_select',
-            help=True),
-        FilterInterfaceConfiguration(
-            filter='tags',
-            display="Tags",
-            type='search_multiselect',
-            help=True),
-        FilterInterfaceConfiguration(
-            filter='partner',
-            display="Partners",
-            type='search_multiselect',
+            format='comma_sep',
+            filter_interface='search_multiselect',
+            filter_display='Tags',
             help=True),
     ])
 

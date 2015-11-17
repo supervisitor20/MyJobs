@@ -46,35 +46,30 @@ class ContactsDataSourceJsonDriver(object):
     def build_order(self, order_spec):
         return json.loads(order_spec)
 
-    def encode_filter_interface(self, filter_interface_list):
+    def encode_filter_interface(self, report_configuration):
+        column_configs = report_configuration.columns
         filters = [
-            self.encode_single_filter_interface(f)
-            for f in filter_interface_list
+            self.encode_single_filter_interface(c)
+            for c in column_configs
+            if c.filter_interface is not None
         ]
 
         help_available = dict(
-            (f.filter, True)
-            for f in filter_interface_list
-            if f.help)
+            (c.column, True)
+            for c in column_configs
+            if c.help)
 
         return {
             'filters': filters,
             'help': help_available,
         }
 
-    def encode_single_filter_interface(self, filter_interface):
-        if filter_interface.filters is not None:
-            return {
-                'type': filter_interface.type,
-                'filters': filter_interface.filters,
-                'display': filter_interface.display
-            }
-        else:
-            return {
-                'type': filter_interface.type,
-                'filter': filter_interface.filter,
-                'display': filter_interface.display
-            }
+    def encode_single_filter_interface(self, column_config):
+        return {
+            'interface_type': column_config.filter_interface,
+            'filter': column_config.column,
+            'display': column_config.filter_display
+        }
 
 
 class ContactsDataSource(object):
@@ -103,7 +98,6 @@ class ContactsDataSource(object):
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
         return [{'key': s['state'], 'display': s['state']} for s in state_qs]
-
 
     def help_tags(self, company, filter, partial):
         contacts_qs = self.filtered_query_set(company, filter)

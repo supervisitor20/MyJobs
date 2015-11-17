@@ -215,7 +215,7 @@ export class WizardPageFilter extends Component {
             let rows = []
             reportConfig.filters.forEach(col => {
                 let ctrl;
-                switch(col.type) {
+                switch(col.interface_type) {
                     case "search_select": ctrl =
                         rows.push(this.renderRow(col.display, col.filter,
                             <WizardFilterTextInput

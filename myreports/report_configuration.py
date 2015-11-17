@@ -2,9 +2,8 @@ from myreports.column_formats import COLUMN_FORMATS
 
 
 class ReportConfiguration(object):
-    def __init__(self, columns, filter_interface):
+    def __init__(self, columns):
         self.columns = columns
-        self.filter_interface = filter_interface
 
     def get_header(self):
         return [c.column for c in self.columns]
@@ -16,19 +15,13 @@ class ReportConfiguration(object):
 
 
 class ColumnConfiguration(object):
-    def __init__(self, column, format):
+    def __init__(self, column, format,
+                 filter_interface=None, filter_display=None, help=False):
         self.column = column
         self.format = COLUMN_FORMATS[format]
+        self.filter_interface = filter_interface
+        self.filter_display = filter_display
+        self.help = help
 
     def extract_formatted(self, data):
         return self.format.format(data[self.column])
-
-
-class FilterInterfaceConfiguration(object):
-    def __init__(self, filter=None, filters=None, type=None, help=False,
-                 display=''):
-        self.filter = filter
-        self.filters = filters
-        self.type = type
-        self.display = display
-        self.help = help

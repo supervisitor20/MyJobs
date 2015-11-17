@@ -4,7 +4,8 @@ from unittest import TestCase
 
 from myreports.datasources import (
     ContactsDataSource, ContactsFilter, ContactsDataSourceJsonDriver)
-from myreports.report_configuration import FilterInterfaceConfiguration
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration)
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
@@ -247,65 +248,61 @@ class TestContactsDataSourceJsonDriver(TestCase):
         self.assertEqual(['name'], self.driver.build_order('["name"]'))
 
     def test_encode_filter_interface(self):
-        filter_interface = [
-            FilterInterfaceConfiguration(
-                filters=['date_begin', 'date_end'],
-                display="Date",
-                type='date_range'),
-            FilterInterfaceConfiguration(
-                filter='city',
-                display="City",
-                type='search_select',
+        report_config = ReportConfiguration([
+            ColumnConfiguration(
+                column='name',
+                format='text'),
+            ColumnConfiguration(
+                column='date',
+                format='us_date',
+                filter_interface='date_range',
+                filter_display='Date'),
+            ColumnConfiguration(
+                column='locations',
+                format='city_state_list',
+                filter_interface='city_state',
+                filter_display='Locations',
                 help=True),
-            FilterInterfaceConfiguration(
-                filter='state',
-                display="State",
-                type='search_select',
+            ColumnConfiguration(
+                column='tags',
+                format='comma_sep',
+                filter_interface='search_multiselect',
+                filter_display='Tags',
                 help=True),
-            FilterInterfaceConfiguration(
-                filter='tags',
-                display="Tags",
-                type='search_multiselect',
+            ColumnConfiguration(
+                column='partner',
+                format='text',
+                filter_interface='search_multiselect',
+                filter_display='Partners',
                 help=True),
-            FilterInterfaceConfiguration(
-                filter='partner',
-                display="Partners",
-                type='search_multiselect',
-                help=True),
-        ]
+        ])
 
         self.assertEquals({
             'filters': [
                 {
                     'display': 'Date',
-                    'filters': ['date_begin', 'date_end'],
-                    'type': 'date_range',
+                    'filter': 'date',
+                    'interface_type': 'date_range',
                 },
                 {
-                    'display': 'City',
-                    'filter': 'city',
-                    'type': 'search_select',
-                },
-                {
-                    'display': 'State',
-                    'filter': 'state',
-                    'type': 'search_select',
+                    'display': 'Locations',
+                    'filter': 'locations',
+                    'interface_type': 'city_state',
                 },
                 {
                     'display': 'Tags',
                     'filter': 'tags',
-                    'type': 'search_multiselect',
+                    'interface_type': 'search_multiselect',
                 },
                 {
                     'display': 'Partners',
                     'filter': 'partner',
-                    'type': 'search_multiselect',
+                    'interface_type': 'search_multiselect',
                 },
             ],
             'help': {
                 'partner': True,
                 'tags': True,
-                'city': True,
-                'state': True,
+                'locations': True,
             },
-        }, self.driver.encode_filter_interface(filter_interface))
+        }, self.driver.encode_filter_interface(report_config))

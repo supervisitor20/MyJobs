@@ -3,7 +3,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from myreports.report_configuration import (
-    ReportConfiguration, ColumnConfiguration, FilterInterfaceConfiguration)
+    ReportConfiguration, ColumnConfiguration)
 
 
 class TestReportConfig(TestCase):
@@ -16,7 +16,9 @@ class TestReportConfig(TestCase):
                     format='text'),
                 ColumnConfiguration(
                     column='partner',
-                    format='text'),
+                    format='text',
+                    filter_interface='search_multiselect',
+                    filter_display='Partners'),
                 ColumnConfiguration(
                     column='email',
                     format='text'),
@@ -25,33 +27,22 @@ class TestReportConfig(TestCase):
                     format='text'),
                 ColumnConfiguration(
                     column='date',
-                    format='us_date'),
+                    format='us_date',
+                    filter_interface='date_range',
+                    filter_display='Date'),
                 ColumnConfiguration(
                     column='notes',
                     format='text'),
                 ColumnConfiguration(
                     column='locations',
-                    format='city_state_list'),
+                    format='city_state_list',
+                    filter_interface='city_state',
+                    filter_display='Locations'),
                 ColumnConfiguration(
                     column='tags',
-                    format='comma_sep'),
-            ],
-            filter_interface=[
-                FilterInterfaceConfiguration(
-                    filters=['date_begin', 'date_end'],
-                    type='date_range'),
-                FilterInterfaceConfiguration(
-                    filter='city',
-                    type='search_select'),
-                FilterInterfaceConfiguration(
-                    filter='state',
-                    type='search_select'),
-                FilterInterfaceConfiguration(
-                    filter='tags',
-                    type='search_multiselect'),
-                FilterInterfaceConfiguration(
-                    filter='partner',
-                    type='search_multiselect'),
+                    format='comma_sep',
+                    filter_interface='search_multiselect',
+                    filter_display='Tags'),
             ])
 
         self.test_data = [
