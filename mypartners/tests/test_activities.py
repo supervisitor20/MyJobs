@@ -35,7 +35,7 @@ class TestViewLevelActivities(MyJobsBase):
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
         self.role = RoleFactory(company=self.company)
-        self.user = UserFactory(roles=[self.role])
+        self.user = UserFactory(roles=[self.role], is_staff=True)
 
         # login the user so that we don't get redirected to the login page
         self.client = TestClient()
