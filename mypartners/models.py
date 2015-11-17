@@ -81,7 +81,7 @@ class SearchParameterQuerySet(models.query.QuerySet):
         Inputs:
             :company: The company to restrict results to
             :filters: A JSON string which is an object to be passed to
-                      filter().                             
+                      filter().
             :filters: A dict of field: term pairs where field is a field of
                          the `ContactRecord` model and term is search term
                          you'd like to filter against.
@@ -226,7 +226,7 @@ class Contact(ArchivedModel):
     """
     user = models.ForeignKey('myjobs.User', blank=True, null=True,
                              on_delete=models.SET_NULL)
-    partner = models.ForeignKey('Partner', 
+    partner = models.ForeignKey('Partner',
                                 null=True, on_delete=models.SET_NULL)
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
@@ -240,7 +240,7 @@ class Contact(ArchivedModel):
     locations = models.ManyToManyField('Location', related_name='contacts')
     tags = models.ManyToManyField('Tag', null=True)
     notes = models.TextField(max_length=1000, verbose_name='Notes',
-                             blank=True, default="", 
+                             blank=True, default="",
                              help_text='Any additional information you want to record')
     approval_status = models.OneToOneField(
         'mypartners.Status', null=True, verbose_name="Approval Status")
@@ -329,9 +329,9 @@ class Partner(ArchivedModel):
                             help_text='Name of the Organization')
     data_source = models.CharField(max_length=255,
                                    verbose_name='Source',
-                                   blank=True, 
+                                   blank=True,
                                    help_text='Website, event, or other source where you found the partner')
-    uri = models.URLField(verbose_name='URL', blank=True, 
+    uri = models.URLField(verbose_name='URL', blank=True,
                         help_text='Full url. ie http://partnerorganization.org')
     primary_contact = models.ForeignKey('Contact', null=True,
                                         related_name='primary_contact',
@@ -340,7 +340,7 @@ class Partner(ArchivedModel):
     # used if this partner was created by using the partner library
     library = models.ForeignKey('PartnerLibrary', null=True,
                                 on_delete=models.SET_NULL)
-    tags = models.ManyToManyField('Tag', null=True, 
+    tags = models.ManyToManyField('Tag', null=True,
         help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.')
     # owner is the Company that owns this partner.
     owner = models.ForeignKey('seo.Company', null=True,
@@ -437,7 +437,7 @@ class Partner(ArchivedModel):
 def save_partner(sender, instance, **kwargs):
     if not instance.approval_status:
         # TODO: find out how to get a user for approved_by
-        # if no relation exists, instance.user will raise an attribute error    
+        # if no relation exists, instance.user will raise an attribute error
         instance.approval_status = Status.objects.create()
 
 
@@ -561,7 +561,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
     @property
     def contacts(self):
-        """ 
+        """
         Returns a queryset annotated by the number of referrals (contact_type =
         'job') and number of records (contact_type != 'job'). Django doesn't
         allow annotated values to be filtered without also filtering the base
@@ -714,7 +714,7 @@ class ContactRecord(ArchivedModel):
                                               object_id=self.pk).first()
 
 
-@receiver(pre_save, sender=ContactRecord, 
+@receiver(pre_save, sender=ContactRecord,
           dispatch_uid='pre_save_contactrecord_signal')
 def save_contactrecord(sender, instance, **kwargs):
     if not instance.approval_status:

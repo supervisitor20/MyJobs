@@ -84,7 +84,7 @@ class HelpersTests(MyPartnersTestCase):
             contact=self.contact, partner=self.partner)
         attachment = PRMAttachmentFactory(contact_record=contact_record)
 
-        # The contact record form has a lot of required fields. 
+        # The contact record form has a lot of required fields.
         data=dict(
             contact_type=contact_record.contact_type,
             contact=contact_record.contact.pk,

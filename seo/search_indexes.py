@@ -93,11 +93,11 @@ class JobIndex(indexes.SearchIndex, indexes.Indexable):
                                      indexed=True)
     federal_contractor = indexes.CharField(faceted=False)
     full_loc = indexes.CharField(faceted=True, stored=False)
-    html_description = indexes.CharField(model_attr="html_description", 
+    html_description = indexes.CharField(model_attr="html_description",
                                          stored=True,
                                          indexed=False)
     ind = MultiValueSpecialField(field_type='string')
-    link = indexes.CharField(stored=True, indexed=False) 
+    link = indexes.CharField(stored=True, indexed=False)
     location = LocationCharField(model_attr='location', faceted=True, null=True)
     GeoLocation = indexes.LocationField(model_attr='location')
     lat_long_buid_slab = indexes.CharField(faceted=True)

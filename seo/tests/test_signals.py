@@ -19,7 +19,7 @@ class SignalsTestCase(DirectSEOBase):
         self.site.save()
         self.site.configurations.add(self.prod_configuration)
         self.site.configurations.add(self.staging_configuration)
-        
+
     def test_remove_prod_config(self):
         company = Company.objects.get(id=self.company.id)
         self.assertEqual(company.canonical_microsite, 'http://' + self.site.domain)

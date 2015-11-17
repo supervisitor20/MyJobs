@@ -37,7 +37,7 @@ class Migration(DataMigration):
             # remove the library relationship
             contact.library = None
             contact.save()
-            
+
 
     models = {
         u'auth.group': {

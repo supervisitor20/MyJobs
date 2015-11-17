@@ -35,7 +35,7 @@ class JobFeedTestCase(DirectSEOBase):
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid_id = self.businessunit.id
         self.numjobs = 14
-        self.testdir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 
+        self.testdir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                     'data')
         self.company = CompanyFactory()
         self.company.job_source_ids.add(self.businessunit)
@@ -140,18 +140,18 @@ class JobFeedTestCase(DirectSEOBase):
         # Test that non-markdown businessunits have newlines converted to breaks
         no_markdown_bu = BusinessUnitFactory.build(id=5, enable_markdown=False)
         results = DEv2JobFeed(
-                    'seo/tests/data/dseo_feed_0.xml', 
+                    'seo/tests/data/dseo_feed_0.xml',
                     jsid=no_markdown_bu.id,
-                    markdown=no_markdown_bu.enable_markdown) 
+                    markdown=no_markdown_bu.enable_markdown)
         jobs = results.solr_jobs()
         self.assertNotEqual(jobs[0]['html_description'].find('Operations<br />'), -1)
-        
+
     def test_markdown_no_newline_breaks(self):
         # Test that markdown businessunits do not have newlines converted to breaks
         results = DEv2JobFeed(
-                    'seo/tests/data/dseo_feed_0.xml', 
+                    'seo/tests/data/dseo_feed_0.xml',
                     jsid=self.businessunit.id,
-                    markdown = self.businessunit.enable_markdown) 
+                    markdown = self.businessunit.enable_markdown)
         jobs = results.solr_jobs()
         self.assertEqual(jobs[0]['html_description'].find('Operations<br />'), -1)
 
@@ -165,8 +165,8 @@ class JobFeedTestCase(DirectSEOBase):
     def test_unescape(self):
         """Tests that escaped html characters are unescaped when imported"""
         results = DEv2JobFeed(
-                    'seo/tests/data/dseo_feed_0.escaped_chars.xml', 
-                    jsid=0) 
+                    'seo/tests/data/dseo_feed_0.escaped_chars.xml',
+                    jsid=0)
         jobs = results.solr_jobs()
         self.assertEqual(results.job_source_name.find('&#162;'), -1)
         self.assertEqual(jobs[0]['description'].find('&amp;'), -1)
@@ -174,8 +174,8 @@ class JobFeedTestCase(DirectSEOBase):
     def test_markdown_code_blocks(self):
         #test that code blocks are not in html job descriptions
         results = DEv2JobFeed(
-                    'seo/tests/data/dseo_feed_0.markdown.xml', 
-                    jsid=0) 
+                    'seo/tests/data/dseo_feed_0.markdown.xml',
+                    jsid=0)
         jobs = results.solr_jobs()
         for job in jobs:
             self.assertEqual(job['html_description'].find('<code>'), -1)
@@ -191,12 +191,12 @@ class JobFeedTestCase(DirectSEOBase):
     def test_no_null_values(self):
         # test that there's no literal null in html 'city' entry
         results = DEv2JobFeed(
-                    'seo/tests/data/dseo_feed_0.markdown.xml', 
-                    jsid=0) 
+                    'seo/tests/data/dseo_feed_0.markdown.xml',
+                    jsid=0)
         jobs = results.solr_jobs()
         for job in jobs:
             self.assertNotEqual(job['city'], 'null')
-        
+
     def test_dev2_feed(self):
         filepath = download_feed_file(self.buid_id)
         results = DEv2JobFeed(filepath)
@@ -209,7 +209,7 @@ class JobFeedTestCase(DirectSEOBase):
         """
         Tests that mocid fields exist when jobs are imported from a feed and
         added to a solr connnection
-        
+
         """
         filepath = download_feed_file(self.buid_id)
         results = DEv2JobFeed(filepath)
@@ -228,7 +228,7 @@ class JobFeedTestCase(DirectSEOBase):
         """
         Test that the schema for the v2 DirectEmployers feed file schema
         allows for empty feed files.
-        
+
         """
         results = DEv2JobFeed(self.emptyfeed)
         # If the schema is such that empty feed files are considered invalid,
@@ -277,7 +277,7 @@ class JobFeedTestCase(DirectSEOBase):
         Test to ensure that job postings show up in a quasi-random
         fashion by sorting by the `salted_date` attribute in the index
         vice strictly by `date_new`.
-        
+
         """
         filepath = download_feed_file(self.buid_id)
         jobs = DEv2JobFeed(filepath)
@@ -309,7 +309,7 @@ class JobFeedTestCase(DirectSEOBase):
         solr_dates = [i['date_updated'] for i in solrjobs]
         for solr_date in solr_dates:
             self.assertIn(solr_date, dates_updated)
-        
+
     def _get_feedfile(self):
         # Download the 'real' feed file then copy the empty feed file in its
         # place.
@@ -327,7 +327,7 @@ class JobFeedTestCase(DirectSEOBase):
     def test_parse_invalid_feed(self):
         """
         Test that a feed file that fails validation does not cause an unhandled
-        exception. 
+        exception.
 
         """
         result = DEv2JobFeed(self.invalid_feed, jsid=0)

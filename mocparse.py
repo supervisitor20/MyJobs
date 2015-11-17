@@ -21,10 +21,10 @@ ONET4_ORDINAL = 7
 def parse_moc_data(file_in, file_out):
     """
     Parses the csv file.
-    
+
     file_in: csv formatted file
     file_out: outputted JSON
-    
+
     Returns JSON of this format:
     [
         "model": "seo.moc",
@@ -46,7 +46,7 @@ def parse_moc_data(file_in, file_out):
             "onets": "29134300"
         }
     ]
-    
+
     """
     branch_translations = {
         "N": "navy",
@@ -125,7 +125,7 @@ def parse_moc_data(file_in, file_out):
             mocs.append(moc)
             dupe_list.append(dupe_string)
             i += 1
-            
+
         moc_file.close()
         # The crosswalk file size is pretty large, so we just create a file
         # with the JSON in it.
@@ -133,15 +133,15 @@ def parse_moc_data(file_in, file_out):
         fixture_file.write(simplejson.dumps(mocs))
         fixture_file.close()
 
-        
+
 def parse_onet_codes(file_name):
     """
     Parses a tab delimited file of:
     Onet_Code: Onet_Title
-    
+
     We reformat the ONET code to an integer:
     12-3456.78 ---> 12345678
-    
+
     Returns JSON of this format:
     [
         "model": "seo.onet",
@@ -176,13 +176,13 @@ def parse_onet_codes(file_name):
 
     map_file.close()
     return simplejson.dumps(mappings)
-        
+
 def find_moc_with_non_matching_onet(onet_file, moc_file):
     """
     This function is used to find any MOCs, from the Excel spreadsheet
     I was given, that have an ONET code mapped to it that does NOT exist
     in the database that Kyle uses to classify jobs in the XML feed.
-    
+
     Outputs a list of ONETs that do not exist.
 
     """
@@ -190,14 +190,14 @@ def find_moc_with_non_matching_onet(onet_file, moc_file):
     # we create the onet list from the file Kyle gave us
     onets = []
     map_file = open(onet_file, "rU")
-    
+
     for line in map_file:
         onet_code, onet_title = line.split('\t')
         # Do we really need these two commented lines in the code?
         #onet_code = onet_code.replace('-','')
         #onet_code = onet_code.replace('.', '')
         onets.append(onet_code)
-        
+
     map_file.close()
     # parse the Excel spreadsheet, looking for not matching ONETs
     mocs = open(moc_file, "rU")
@@ -217,6 +217,6 @@ def find_moc_with_non_matching_onet(onet_file, moc_file):
             non_matches.append(onet3)
         if onet4 and onet4 not in onets + non_matches:
             non_matches.append(onet4)
-                        
+
     for match in non_matches:
         print match

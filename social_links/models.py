@@ -103,7 +103,7 @@ class SocialLink(models.Model):
             site = Site.objects.get(pk=settings.SITE_ID)
             link_icon = '/'.join([site.domain, link_icon])
         return link_icon
-    
+
     def show_sites(self):
         return ", ".join(self.sites.all().values_list('domain', flat=True))
 
@@ -126,10 +126,10 @@ class SocialLink(models.Model):
 class MicrositeCarousel(models.Model):
     def __unicode__(self):
         return 'Microsite Carousel:%s' % int(self.id)
-    
+
     def show_active_sites(self):
         return ", ".join(self.seosite_set.all().values_list('domain', flat=True))
-    
+
     is_active = models.BooleanField('Active', default=False)
     include_all_sites = models.BooleanField('Include All Group\'s Sites',
                                             default=False)

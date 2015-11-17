@@ -29,7 +29,7 @@ class DESearchQuerySet(SearchQuerySet):
         Returns sum of facet_counts from sqs2 and self.query
 
         Input:
-        :sqs2: SearchQuerySet with facets to add to self facets 
+        :sqs2: SearchQuerySet with facets to add to self facets
 
         """
         if sqs2 is None:
@@ -64,7 +64,7 @@ class DESearchQuerySet(SearchQuerySet):
         clone = self._clone()
         clone.query.set_facet_mincount(mincount)
         return clone
-    
+
     def facet_limit(self, limit):
         """Sets limit for facet result."""
         clone = self._clone()
@@ -76,13 +76,13 @@ class DESearchQuerySet(SearchQuerySet):
         clone = self._clone()
         clone.query.set_facet_prefix(prefix)
         return clone
-        
+
     def facet_offset(self, offset):
         """Sets offset for facet result."""
         clone = self._clone()
         clone.query.set_facet_offset(offset)
         return clone
-        
+
     def facet_sort(self, sort):
         """Sets sort for facet result."""
         clone = self._clone()
@@ -107,7 +107,7 @@ class DESearchQuerySet(SearchQuerySet):
 
     def bf(self, bf):
         """
-        Sets Boost Functions for SearchQuerySet to use when building queries. 
+        Sets Boost Functions for SearchQuerySet to use when building queries.
         Compatable with Solr's Dismax and Extended Dismax query parsers
 
         Input:
@@ -129,7 +129,7 @@ class DESearchQuerySet(SearchQuerySet):
         Input:
         :fields: An iterable of strings. Each element of `fields` must
         correlate to a field on the Solr schema.
-        
+
         """
         # These fields must be included in every search because of Haystack
         # internals. If you remove this, Haystack will throw an exception.
@@ -137,13 +137,13 @@ class DESearchQuerySet(SearchQuerySet):
         clone = self._clone()
         clone.query.set_fields(fields+defaults)
         return clone
-        
+
     def mfac(self, fields, fragment, **kwargs):
         """
         Multi-field checks for autocomplete.
         `fields` : Iterable composed of field names to search against
         `fragment`: The term sought
-        
+
         """
         clone = self._clone()
         query_bits = []
@@ -210,12 +210,12 @@ class DESolrSearchQuery(SolrSearchQuery):
 
     def set_bf(self, bf):
         """
-        Sets Boost Functions for SearchQuery use when building Solr queries. 
+        Sets Boost Functions for SearchQuery use when building Solr queries.
         Compatable with Solr's Dismax and Extended Dismax query parsers
 
         Input:
         :bf: A string defining one or more Solr Functions used to boost
-        relevancy score. 
+        relevancy score.
 
         """
         self.bf = bf
@@ -468,7 +468,7 @@ class DESolrSearchBackend(SolrSearchBackend):
     def build_schema(self, fields):
         content_field_name = ''
         schema_fields = []
-            
+
         for field_name, field_class in fields.items():
             field_data = {
                 'field_name': field_class.index_fieldname,
@@ -542,7 +542,7 @@ class DESolrSearchBackend(SolrSearchBackend):
             self.log.error("Failed to remove document '%s' from Solr: %s",
                            solr_id, e)
 
-        
+
 class DESolrEngine(SolrEngine):
     backend = DESolrSearchBackend
     query = DESolrSearchQuery
@@ -552,16 +552,16 @@ def get_identifier(obj_or_string):
     """
     Get an unique identifier for the object or a string representing the
     object.
-    
+
     If not overridden, uses <app_label>.<object_name>.<pk>.
     """
     if isinstance(obj_or_string, basestring):
         if not IDENTIFIER_REGEX.match(obj_or_string):
             raise AttributeError("Provided string '%s' is not a "
                                  "valid identifier." % obj_or_string)
-        
+
         return obj_or_string
-    
+
     return u"%s.%s.%s" % (obj_or_string._meta.app_label,
                           obj_or_string._meta.module_name,
                           obj_or_string.uid)

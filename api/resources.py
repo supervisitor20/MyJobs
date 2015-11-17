@@ -38,7 +38,7 @@ class SearchOptions(ResourceOptions):
     # used wherever the ModelResource references the ``pk`` kwarg.
     document_uid_field = 'id'
     lookup_sep = ','
-    
+
 
 class SearchDeclarativeMetaclass(DeclarativeMetaclass):
     def __new__(cls, name, bases, attrs):
@@ -49,7 +49,7 @@ class SearchDeclarativeMetaclass(DeclarativeMetaclass):
         include_fields = getattr(new_class._meta, 'fields', [])
         excludes = getattr(new_class._meta, 'excludes', [])
         field_names = new_class.base_fields.keys()
-        
+
         for field_name in field_names:
             if field_name == 'resource_uri':
                 continue
@@ -68,7 +68,7 @@ class SearchDeclarativeMetaclass(DeclarativeMetaclass):
             del(new_class.base_fields['absolute_url'])
 
         return new_class
-        
+
 
 class SearchResource(Resource):
     """
@@ -89,7 +89,7 @@ class SearchResource(Resource):
 
     """
     __metaclass__ = SearchDeclarativeMetaclass
-    
+
     # Each method in this class definition comes from its parent class. Any
     # unusual or completely new behavior is documented. For documentation
     # on other methods, please refer to the tastypie documentation:
@@ -128,15 +128,15 @@ class SearchResource(Resource):
             filters = {}
 
         for param, value in filters.items():
-            
+
             if param not in self._meta.index_fields:
                 continue
-                
+
             tokens = value.split(self._meta.lookup_sep)
             field_queries = []
-            
+
             for token in tokens:
-                
+
                 if token:
                     field_queries.append(self._meta.query_object((param,
                                                                   token)))
@@ -148,7 +148,7 @@ class SearchResource(Resource):
             return reduce(operator.and_, filter(lambda x: x, terms))
         else:
             return terms
-        
+
     def get_resource_uri(self, bundle_or_obj):
         """
         Generate direct link to individual document in our datastore.
@@ -158,7 +158,7 @@ class SearchResource(Resource):
             'resource_name': self._meta.resource_name
         }
         uid = self._meta.document_uid_field
-        
+
         if isinstance(bundle_or_obj, Bundle):
             kwargs['pk'] = getattr(bundle_or_obj.obj, uid, '')
         else:
@@ -168,14 +168,14 @@ class SearchResource(Resource):
             kwargs['api_name'] = self._meta.api_name
 
         return self._build_reverse_url("api_dispatch_detail", kwargs=kwargs)
-            
+
     def get_object_list(self, request):
         """
         A Haystack-specific implementation of ``get_object_list``.
 
         Returns a SearchQuerySet that may have been limited by other
         filter/narrow/etc. operations.
-        
+
         """
         return self._meta.object_class()._clone()
 
@@ -203,7 +203,7 @@ class SearchResource(Resource):
         doc_uid = kwargs.get('pk')
         uid_field = self._meta.document_uid_field
         sqs = self.get_object_list(request)
-        
+
         if doc_uid:
             sqs = sqs.filter(self._meta.query_object((uid_field, doc_uid)))
 
@@ -211,4 +211,4 @@ class SearchResource(Resource):
                 return sqs[0]
             else:
                 return sqs
-        
+

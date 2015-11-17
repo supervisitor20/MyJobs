@@ -7,7 +7,7 @@ SOLR_FIXTURE = [
         'city': 'Indianapolis',
         'city_ac': 'Indianapolis',
         'city_exact': 'Indianapolis',
-        'city_slab': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',        
+        'city_slab': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',
         'city_slab_exact': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',
         'city_slug': 'indianapolis',
         'company': 'Test Company',
