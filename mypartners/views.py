@@ -520,7 +520,7 @@ def delete_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("delete tag")
 @has_access('prm')
 def delete_partner_tag(request):
     company = get_company_or_404(request)

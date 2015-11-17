@@ -173,3 +173,10 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires("add_tags", "create tag")
+
+    def test_delete_partner_tag(self):
+        """
+        /prm/view/tagging/delete requires "delete tag"
+        """
+
+        self.assertRequires("delete_partner_tag", "delete tag")
