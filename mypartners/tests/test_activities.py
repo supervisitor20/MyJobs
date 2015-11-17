@@ -180,3 +180,81 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires("delete_partner_tag", "delete tag")
+
+    def test_create_partner(self):
+        """
+        /prm/view/edit requires "create partner"
+        """
+
+        self.assertRequires("create_partner", "create partner")
+
+    def test_save_init_partner_form(self):
+        """
+        /prm/view/save requres "create partner"
+        """
+
+        self.assertRequires("save_init_partner_form", "create partner")
+
+    def test_delete_prm_item(self):
+        """
+        /prm/view/details/delete requires "delete partner"
+        """
+
+        self.assertRequires("delete_prm_item", "delete partner")
+
+    def test_save_item(self):
+        """
+        /prm/view/details/save requires "update partner"
+        """
+
+        self.assertRequires("save_item", "update partner")
+
+    def test_edit_location(self):
+        """
+        /prm/view/locations/edit requires "update contact"
+        """
+
+        self.assertRequires("edit_location", "update contact")
+
+    def test_delete_location(self):
+        """
+        /prm/view/locations/save requires "update contact"
+        """
+
+        self.assertRequires("save_location", "update contact")
+
+    def test_partner_searches(self):
+        """test_get_records(self):
+        """
+        /prm/view/records/update requires "read communication record"
+        """
+        self.assertRequires(
+            "get_records", "read communication record")
+        /prm/view/searches requires "read partner saved earches
+        """
+
+        self.assertRequires("partner_searches", "read partner saved searches")
+
+    def test_partner_edit_search(self):
+        """
+        /prm/searches/edit requires "create partner saved search"
+        """
+
+        self.assertRequires(
+            "partner_edit_saved_search", "create partner saved search")
+
+    def test_partner_get_referrals(self):
+        """
+        /prm/view/records/retreive_referrals requires
+        "read communication record".
+        """
+
+        self.assertRequires(
+            "partner_get_referrals", "read communication record")
+
+    def test_get_records(self):
+        """
+        /prm/view/records/update requires "read communication record"
+        """
+        self.assertRequires(
+            "get_records", "read communication record")

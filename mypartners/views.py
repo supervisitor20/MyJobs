@@ -173,7 +173,7 @@ def partner_details(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("create partner")
 @has_access('prm')
 def edit_item(request):
     """ Contact/Partner Form.
@@ -238,7 +238,7 @@ def edit_item(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+@requires("create partner")
 @has_access('prm')
 def save_init_partner_form(request):
     form = NewPartnerForm(user=request.user, data=request.POST)
@@ -250,7 +250,7 @@ def save_init_partner_form(request):
         return HttpResponse(json.dumps(form.errors))
 
 
-@requires(PRM)
+@requires("update partner")
 @has_access('prm')
 def save_item(request):
     """
@@ -306,7 +306,7 @@ def save_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires('delete partner')
 @has_access('prm')
 def delete_prm_item(request):
     """
@@ -459,7 +459,7 @@ def edit_partner_tag(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("update contact")
 @has_access('prm')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
@@ -502,7 +502,7 @@ def edit_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("update contact")
 @has_access('prm')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
@@ -527,13 +527,15 @@ def delete_partner_tag(request):
 
     pk = request.GET.get('id')
     tag = Tag.objects.filter(pk=pk).first()
-    tag.delete()
+
+    if tag:
+        tag.delete()
 
     return HttpResponseRedirect(reverse('partner_tagging'))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires('read partner saved search')
 @has_access('prm')
 def prm_saved_searches(request):
     """
@@ -565,7 +567,7 @@ def prm_saved_searches(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires('create partner saved search')
 @has_access('prm')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
@@ -1069,7 +1071,7 @@ def partner_get_records(request):
         raise Http404
 
 
-@requires(PRM)
+@requires("read communication record")
 @has_access('prm')
 def partner_get_referrals(request):
     if request.method == 'GET':
