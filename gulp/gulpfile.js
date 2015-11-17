@@ -109,7 +109,7 @@ gulp.task('nonuseroutreach', function() {
     })
     .external(vendor_libs)
     .add('src/nonuseroutreach/nonuseroutreach.js')
-    .transform(babelify)
+    .transform(babelify.configure({optional: 'runtime'}))
     .bundle()
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
@@ -135,7 +135,7 @@ gulp.task('nonuseroutreach', function() {
 gulp.task('watch-no-strip', function() {
     console.log("Keeping console and debugger statements.");
     strip_debug = false;
-    gulp.watch('src/**/*', ['reporting', 'manageusers']);
+    gulp.watch('src/**/*', ['reporting', 'manageusers', 'nonuseroutreach']);
 });
 
 gulp.task('default', ['build']);

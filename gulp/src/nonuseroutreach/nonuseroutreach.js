@@ -3,113 +3,168 @@ import ReactDOM from "react-dom";
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 
-
 // This is the entry point of the application. Bundling begins here.
 
+
 var ControlButtons = React.createClass({
+  handleButtonClick: function(i) {
+    this.props.buttonClicked(this.props.buttons[i]);
+  },
   render: function() {
-    return this.props.control_buttons.map(function(button){
-      <Button className="primary pull-right" onClick={this.handleClick}>{button}</Button>
-    });
-    }
+    var buttons = this.props.buttons.map(function(button, i){
+          return (
+              <Button className="primary pull-right" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button}</Button>
+          );
+      }.bind(this));
+    return (
+    <span>{buttons}</span>
+    );
+  }
 });
 
-//var EmailEditButton = React.createClass({
-//  handleClick: function(event) {
-//    ReactDOM.render(
-//      <Container page="EditRole" action="Add"/>,
-//        document.getElementById('content')
-//    );
-//  },
-//  render: function() {
-//    return (
-//      <Button className="primary pull-right" onClick={this.handleClick}>Edit</Button>
-//    );
-//  }
-//});
-//
-//var EmailDeleteButton = React.createClass({
-//  handleClick: function(event) {
-//    ReactDOM.render(
-//      <Container page="EditRole" action="Add"/>,
-//        document.getElementById('content')
-//    );
-//  },
-//  render: function() {
-//    return (
-//      <Button className="primary pull-right" onClick={this.handleClick}>Delete</Button>
-//    );
-//  }
-//});
-
 var EmailInput = React.createClass({
+  emailChanged: function(){
+    this.props.emailFieldChanged(this.refs.email_input.value.trim());
+  },
   render: function(){
     return (
-        <input type="text" className="email-input" id={this.props.id} value={this.props.email} />
+        <input type="text" className="email-input" id={this.props.id} value={this.props.email} onChange={this.emailChanged} ref="email_input" />
     )
   },
 });
 
-var InboxList = React.createClass({
-  handleEditClick: function(role_id) {
-    ReactDOM.render(
-      <Container page="EditRole" action="Edit" role_id={role_id}/>,
-        document.getElementById('content')
-    );
+var InboxRow = React.createClass({
+  emailFieldChanged: function(value) {
+    this.setState({current_email: value});
+    if (value != this.state.initial_email) {
+      this.setState({buttons: ['Cancel', 'Save']});
+    } else {
+      this.setState({buttons: ['Delete']});
+    }
+  },
+  buttonClicked: function(button_value) {
+    switch(button_value) {
+      case "Delete":
+        this.deleteEmail();
+        break;
+      case "Save":
+        this.saveEmail();
+        break;
+      case "Cancel":
+        this.cancelChanges();
+        break;
+    };
+  },
+  deleteEmail:function() {
+    if (confirm("Are you sure you want to delete " + this.state.initial_email + "@my.jobs?")) {
+    } else {
+      return;
+    }
+    this.props.handleDelete(this.props.index)
+
+  },
+  saveEmail: function() {
+    return;
+  },
+  cancelChanges: function() {
+    this.setState({current_email: this.state.initial_email});
+    this.setState({buttons: ['Delete']});
   },
   getInitialState: function() {
     return {
-      inbox_divs: '',
-      control_buttons:["Delete"]
+      id: this.props.inbox.pk,
+      initial_email: this.props.inbox.fields.email,
+      current_email: this.props.inbox.fields.email,
+      buttons: ['Delete']
+    }
+  },
+  render: function(){
+          return (
+          <div className="clearfix">
+            <EmailInput id={this.state.id} email={this.state.current_email} emailFieldChanged={this.emailFieldChanged} />
+            <ControlButtons buttons={this.state.buttons} buttonClicked={this.buttonClicked} />
+          </div>
+      );
+  }
+})
+
+var InboxList = React.createClass({
+  handleDelete: function(index) {
+    this.setState({
+      inboxes: this.state.inboxes.filter((_, i) => i !== index)
+    });
+  },
+  getInitialState: function() {
+    return {
+      inboxes: [],
     };
   },
-  componentDidMount: function() {
-    $.get(this.props.source, function(results) {
-      if (this.isMounted()) {
-        var inboxes = JSON.parse(results);
-        var inbox_divs = inboxes.map(function(inbox){
-          return (
-              <div className="clearfix">
-                <EmailInput id={inbox.pk} email={inbox.fields.email} disabled="disabled" />
-                <ControlButtons control_buttons={this.state.control_buttons} />
-              </div>
-          )
-        })
-        this.setState({
-          inbox_divs: inbox_divs
-        });
-      }
-    }.bind(this));
+  componentDidMount: async function() {
+    console.log(this.props);
+    console.log(this.props.source);
+    const results = await $.get(this.props.source);
+    //const results = '[{"pk": 28, "model": "mypartners.outreachemailaddress", "fields": {"email": "milton_bradley_edq"}}, {"pk": 29, "model": "mypartners.outreachemailaddress", "fields": {"email": "halia"}}]';
+    console.log(results);
+    this.setState({
+      inboxes: JSON.parse(results),
+    });
+    console.log("componentDidMount done");
   },
   render: function() {
+    const {inboxes} = this.state;
+    var spacer = ''
+    if (inboxes.length !== 0){
+      spacer = <hr  />;
+    }
     return (
       <div>
-        {this.state.inbox_divs}
+        {inboxes.map((inbox_ob, i) =>
+              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} />
+        )}
+        {spacer}
       </div>
     );
   }
 });
 
 var AddInboxButton = React.createClass({
-  handleClick: function(event) {
-    ReactDOM.render(
-      <Container page="EditRole" action="Add"/>,
-        document.getElementById('content')
-    );
-  },
   render: function() {
     return (
-      <Button className="primary pull-right" onClick={this.handleClick}>Add Inbox</Button>
+      <Button disabled={true}>Add Inbox</Button>
     );
   }
 });
 
-var InboxManagementButton = React.createClass({
-  handleClick: function(event) {
-    ReactDOM.render(
-    	<Container page="InboxManagement" />,
-        document.getElementById('content')
+var AddInboxForm = React.createClass({
+  getInitialState: function(){
+    return {add_disabled: true};
+  },
+  emailFieldChanged: function(value) {
+    this.setState({current_email: value});
+    if (value.length > 0) {
+      this.setState({add_disabled: false})
+    } else {
+      this.setState({add_disabled: true})
+    }
+    // TODO: Form validation
+    // TODO: enable/disable add button
+  },
+  submitInbox: function() {
+    // TODO: Submit API
+  },
+  render: function() {
+    return (
+      <div className="col-xs-12">
+        <EmailInput />
+        <AddInboxButton add_disabled={this.state.add_disabled} />
+      </div>
     );
+  },
+});
+
+var InboxManagementButton = React.createClass({
+  handleClick: function() {
+    this.props.changePage("InboxManagement");
   },
   render: function() {
     return (
@@ -120,10 +175,7 @@ var InboxManagementButton = React.createClass({
 
 var OverviewButton = React.createClass({
   handleClick: function(event) {
-    ReactDOM.render(
-    	<Container page="Overview" />,
-        document.getElementById('content')
-    );
+    this.props.changePage("Overview");
   },
   render: function() {
     return (
@@ -151,13 +203,8 @@ var InboxManagementPage = React.createClass({
 
             <InboxList source="/prm/api/nonuseroutreach/inbox/list" />
 
-            <hr/>
-
             <div className="row">
-              <div className="col-xs-12">
-                <EmailInput />
-                <AddInboxButton />
-              </div>
+            <AddInboxForm />
             </div>
           </div>
         </div>
@@ -188,19 +235,12 @@ var Content = React.createClass({
     var page = this.props.page;
     switch(page) {
         case "Overview":
-            page = <OverviewPage disappear_text={this.props.disappear_text}/>;
+            page = <OverviewPage />;
             break;
         case "InboxManagement":
-            page = <InboxManagementPage disappear_text={this.props.disappear_text}/>;
+            page = <InboxManagementPage />;
             break;
-        //case "Activities":
-        //    page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
-        //    break;
-        //case "EditRole":
-        //    page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
-        //    break;
     }
-
     return (
       <div className="col-xs-8">
         <div className="card-wrapper">
@@ -217,8 +257,9 @@ var Menu = React.createClass({
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <OverviewButton />
-          <InboxManagementButton />
+          <OverviewButton {...this.props} />
+          <InboxManagementButton {...this.props} />
+          <AddInboxButton {...this.props} />
         </div>
       </div>
     );
@@ -226,6 +267,16 @@ var Menu = React.createClass({
 });
 
 var Container = React.createClass({
+  getInitialState: function() {
+    return {
+      page:"Overview",
+      company: "DirectEmployers",
+    };
+  },
+  changePage: function(page_input) {
+    this.setState({page:page_input})
+  },
+
   render: function() {
     return (
       <div>
@@ -246,8 +297,8 @@ var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.props.page} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>
-          <Menu />
+          <Content page={this.state.page} />
+          <Menu changePage={this.changePage} />
         </div>
         <div className="clearfix"></div>
       </div>
@@ -256,6 +307,6 @@ var Container = React.createClass({
 });
 
 ReactDOM.render(
-  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id=""/>,
+  <Container />,
     document.getElementById('content')
 );
