@@ -32,7 +32,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
-from myjobs.decorators import requires
+from myjobs.decorators import requires, MissingActivity
 from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -742,7 +742,7 @@ def partner_view_full_feed(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("read communication record")
 @has_access('prm')
 def prm_records(request):
     """
@@ -783,7 +783,7 @@ def prm_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("create communication record", "update communication record")
 @has_access('prm')
 def prm_edit_records(request):
     company, partner, user = prm_worthy(request)
@@ -826,7 +826,7 @@ def prm_edit_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM)
+@requires("read communication record")
 @has_access('prm')
 def prm_view_records(request):
     """
@@ -879,7 +879,7 @@ def prm_view_records(request):
     return render_to_response('mypartners/view_record.html', ctx,
                               RequestContext(request))
 
-@requires(PRM)
+@requires("read contact")
 @has_access('prm')
 def get_contact_information(request):
     """

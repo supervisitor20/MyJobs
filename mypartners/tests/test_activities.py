@@ -49,14 +49,14 @@ class TestViewActivities(MyJobsBase):
 
         url = reverse(view_name)
 
-        response = self.client.get(url)
+        response = self.client.get(path=url)
         self.assertEqual(type(response), MissingActivity)
 
         self.role.activities = [
             ActivityFactory(name=activity, app_access=self.app_access)
             for activity in activities]
 
-        response = self.client.get(url)
+        response = self.client.get(path=url)
         self.assertNotEqual(type(response), MissingActivity)
 
     def test_prm(self):
@@ -124,7 +124,7 @@ class TestViewActivities(MyJobsBase):
 
     def test_partner_get_records(self):
         """
-        /prm/view/records/retrieve_records requres "read communication record"
+        /prm/view/records/retrieve_records requires "read communication record"
         """
 
         self.assertRequires("partner_get_records", "read communication record")
@@ -135,3 +135,34 @@ class TestViewActivities(MyJobsBase):
         """
 
         self.assertRequires("report_view", "read communication record")
+
+    def test_partner_records(self):
+        """
+        /prm/view/records requires "read communication record"
+        """
+
+        self.assertRequires("report_view", "read communication record")
+
+    def test_partner_edit_record(self):
+        """
+        /prm/view/records/edit requires "create communication record" and
+        "update communication record"
+        """
+
+        self.assertRequires(
+            "partner_edit_record", "create communication record",
+            "update communication record")
+
+    def test_get_contact_information(self):
+        """
+        /prm/view/records/contact_info requires "read contact"
+        """
+
+        self.assertRequires("get_contact_information", "read contact")
+
+    def test_prm_view_records(self):
+        """
+        /prm/view/records/'details requires "read communication record"
+        """
+
+        self.assertRequires("record_view", "read communication record")

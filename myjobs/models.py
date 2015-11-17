@@ -839,18 +839,36 @@ class Role(models.Model):
 
     def add_activity(self, name):
         """
-        Short cut method to add an activity by name.
+        Shortcut method to add an activity by name.
 
-        Inputs:
+        Input:
             :name: The name of the activity to be added. Case-sensitive.
 
         Output:
-            The model instance for the activity that was added if successful,
-            otherwise None
+            The model instance for the activity that was added. If no activity
+            was added, `None` is returned.
         """
 
         activity = Activity.objects.filter(name=name).first()
         if activity:
             self.activities.add(activity)
+
+        return activity
+
+    def remove_activity(self, name):
+        """
+        Shortcut method to remove an activity by name.
+
+        Input:
+            :name: The name of the activity to be removed. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was removed. If no
+            activity was removed, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity:
+            self.activities.remove(activity)
 
         return activity
