@@ -1,10 +1,12 @@
 import json
+
 from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.loading import get_model
 
 from myreports.helpers import serialize, determine_user_type
-from myreports.report_query import get_report_query
+from myreports.datasources import get_datasource_json_driver
+from myreports.result_encoder import report_hook, ReportJsonEncoder
 from mypartners.models import SearchParameterManager
 
 
@@ -134,6 +136,7 @@ class ReportType(models.Model):
     data_types = models.ManyToManyField(
         'DataType', through='ReportTypeDataTypes')
     is_active = models.BooleanField(default=False)
+    datasource = models.CharField(max_length=50, default='')
     objects = ReportTypeManager()
 
 
@@ -264,6 +267,7 @@ class DynamicReport(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey('seo.Company')
     report_presentation = models.ForeignKey('myreports.ReportPresentation')
+    filters = models.TextField(default="{}")
     results = models.FileField(upload_to='reports')
 
     company_ref = 'owner'
@@ -289,29 +293,19 @@ class DynamicReport(models.Model):
 
     @property
     def python(self):
-        return json.loads(self._results)
-
-    def get_report_query(self):
-        report_query_name = (
-            self.report_presentation.report_data
-            .report_type.report_type)
-        return get_report_query(report_query_name)
-
-    def queryset(self):
-        self.report_query = self.get_report_query()
-        report_qs = (self.report_query
-                     .report_query_set(self.owner))
-        return report_qs
+        return json.loads(self._results, object_hook=report_hook)
 
     def regenerate(self):
-        self.report_query = self.get_report_query()
-        data = [self.report_query.extract(m) for m in self.queryset()]
-        contents = json.dumps(data)
+        report_type = self.report_presentation.report_data.report_type
+
+        driver = get_datasource_json_driver(report_type.datasource)
+        data = driver.run(self.owner, self.filters, "[]")
+
+        contents = json.dumps(data, cls=ReportJsonEncoder)
         results = ContentFile(contents)
 
         if self.results:
             self.results.delete()
 
-        name = self.report_presentation.display_name
-        self.results.save('%s-%s.json' % (name, self.pk), results)
+        self.results.save('%s-%s.json' % (self.name, self.pk), results)
         self._results = contents

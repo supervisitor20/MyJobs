@@ -22,7 +22,7 @@ class Api {
     }
 
     withCsrf(formData) {
-        return {...formData, a: 1, csrfmiddlewaretoken: this.csrf};
+        return {...formData, csrfmiddlewaretoken: this.csrf};
     }
 
     checkStatus(response) {
@@ -51,6 +51,14 @@ class Api {
 
     }
 
+    async getFromReportingApi(url) {
+        var response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        return this.parseJSON(this.checkStatus(response));
+    }
+
     async postToReportingApi(url, data) {
         var formData = this.objectToFormData(this.withCsrf(data));
         var response = await fetch(url, {
@@ -63,6 +71,14 @@ class Api {
             },
         });
         return this.parseJSON(this.checkStatus(response));
+    }
+
+    async listReports() {
+        var response = await this.getFromReportingApi(
+            "/reports/api/list_reports", {
+                method: 'GET',
+            });
+        return response['reports'];
     }
 
     async getReportingTypes() {
@@ -95,8 +111,42 @@ class Api {
         return (await promise)['report_presentation'];
     }
 
-    async runReport(reportPresentationId) {
+    async getFilters(reportPresentationId) {
         var formData = {
+            rp_id: reportPresentationId,
+        };
+        var promise = this.postToReportingApi(
+            "/reports/api/filters",
+            formData);
+        return (await promise);
+    }
+
+    async getHelp(reportPresentationId, filter, field, partial) {
+        var formData = {
+            rp_id: reportPresentationId,
+            filter: JSON.stringify(filter),
+            field: field,
+            partial: partial,
+        };
+        var promise = this.postToReportingApi(
+            "/reports/api/help",
+            formData);
+        return (await promise);
+    }
+
+    // XXX: remove
+    async getColumns(reportPresentationId) {
+        var formData = {
+            rp_id: reportPresentationId,
+        };
+        var promise = this.postToReportingApi("/reports/api/columns", formData);
+        return (await promise)['columns'];
+    }
+
+    async runReport(reportPresentationId, name, filter) {
+        var formData = {
+            name: name,
+            filter: JSON.stringify(filter),
             rp_id: reportPresentationId,
         };
         return await this.postToReportingApi("/reports/api/run_report", formData);

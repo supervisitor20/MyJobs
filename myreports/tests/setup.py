@@ -119,7 +119,8 @@ def create_full_fixture():
     rt_con = ReportTypeFactory(
         id=2,
         report_type="Contacts",
-        description="Contacts Report")
+        description="Contacts Report",
+        datasource="contacts")
     rt_comm = ReportTypeFactory(
         id=3,
         report_type="Communication Records",

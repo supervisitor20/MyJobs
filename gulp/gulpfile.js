@@ -16,7 +16,10 @@ var vendor_libs = [
     'react-dom',
     'redux',
     'react-redux',
+    'react-bootstrap',
+    'react-autosuggest',
     'babel/polyfill',
+    'fetch-polyfill',
     'es6-promise',
 ];
 
@@ -27,10 +30,14 @@ var dest = '../static/bundle';
 gulp.task('vendor', function() {
     return browserify([], { debug: true, list: true, })
     .require(vendor_libs)
-    .bundle()
+    .on('package', function(pkg) {
+        util.log("Vendor package:", pkg.name)
+    })
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
+        this.emit('end');
     })
+    .bundle()
     .pipe(source('vendor.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
@@ -49,7 +56,6 @@ gulp.task('reporting', function() {
     .external(vendor_libs)
     .add('src/reporting/main.js')
     .transform(babelify.configure({optional: 'runtime'}))
-    .bundle()
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
         // Unstick browserify on some errors. Keeps watch alive.
@@ -58,6 +64,7 @@ gulp.task('reporting', function() {
     .on('package', function(pkg) {
         util.log("Including package:", pkg.name)
     })
+    .bundle()
     .pipe(source('reporting.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))

@@ -278,3 +278,24 @@ def json_to_query(data, sep="__", parent=""):
             results[parent + key] = value
 
     return results
+
+
+def dict_identity(cls):
+    def eq(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def ne(self, other):
+        return not self.__eq__(other)
+
+    def repr(self):
+        return "<%s %r>" % (cls.__name__, self.__dict__)
+
+    cls.__eq__ = eq
+    cls.__ne__ = ne
+    cls.__unicode__ = repr
+    cls.__str__ = repr
+    cls.__repr__ = repr
+    return cls

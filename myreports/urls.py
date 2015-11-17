@@ -23,7 +23,9 @@ urlpatterns = patterns(
     url(r'^api/data_types$', 'data_types_api', name='data_types_api'),
     url(r'^api/report_presentations$', 'presentation_types_api',
         name='presentation_types_api'),
-    url(r'^api/columns$', 'columns_api',
-        name='columns_api'),
-    url(r'^api/run_report$', 'run_dynamic_report', name='run_dynamic_report')
+    url(r'^api/filters$', 'filters_api', name='filters_api'),
+    url(r'^api/list_reports$', 'list_dynamic_reports',
+        name='list_dynamic_reports'),
+    url(r'^api/run_report$', 'run_dynamic_report', name='run_dynamic_report'),
+    url(r'^api/help$', 'help_api', name='help_api'),
 )

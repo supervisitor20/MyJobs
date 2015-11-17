@@ -7,6 +7,8 @@ from seo.search_transformer import transform_search, \
     SearchTransformer, optimize_tree, Parser, Energy, \
     token_peekable, tokenize
 
+logger = logging.getLogger(__name__)
+
 # Columns:
 # input query, input location, default_query, expected output
 test_data = [
@@ -126,7 +128,7 @@ def test_one_case(self, input_query, expected):
     message += "\n      got: "
     message += unicode(actual)
     self.assertEqual(expected, actual, message)
-    logging.info("Correct: %s -> %s", input_query, expected)
+    logger.info("Correct: %s -> %s", input_query, expected)
 
 for i, (input_query, expected) in enumerate(test_data):
 

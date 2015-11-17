@@ -1,10 +1,13 @@
+import json
+
 from myreports.tests.setup import MyReportsTestCase
 
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
     ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes)
 from myjobs.tests.factories import UserFactory
-from mypartners.tests.factories import ContactFactory, PartnerFactory
+from mypartners.tests.factories import (
+    ContactFactory, PartnerFactory, LocationFactory)
 from seo.tests.factories import CompanyUserFactory
 
 
@@ -100,6 +103,32 @@ class TestDynamicReport(MyReportsTestCase):
         report.regenerate()
         expected_column_names = set([
             'name', 'tags', 'notes', 'locations', 'phone', 'partner',
-            'email'])
+            'email', 'date'])
         self.assertEqual(10, len(report.python))
+        self.assertEqual(expected_column_names, set(report.python[0]))
+
+    def test_filtered_report(self):
+        """Run a dynamic report with a filter."""
+        partner = PartnerFactory(owner=self.company)
+        for i in range(0, 10):
+            location = LocationFactory.create(
+                city="city-%s" % i)
+            ContactFactory.create(
+                name="name-%s" % i,
+                partner=partner,
+                locations=[location])
+
+        report_pres = ReportPresentation.objects.get(id=3)
+        report = DynamicReport.objects.create(
+            report_presentation=report_pres,
+            filters=json.dumps({
+                'city': 'city-2',
+            }),
+            owner=self.company)
+        report.regenerate()
+        expected_column_names = set([
+            'name', 'tags', 'notes', 'locations', 'phone', 'partner',
+            'email', 'date'])
+        self.assertEqual(1, len(report.python))
+        self.assertEqual('name-2', report.python[0]['name'])
         self.assertEqual(expected_column_names, set(report.python[0]))

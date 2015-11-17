@@ -22,6 +22,10 @@ from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
+from myreports.datasources import get_datasource_json_driver
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration, FilterInterfaceConfiguration)
+
 
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
@@ -365,16 +369,7 @@ def download_report(request):
 @require_http_methods(['GET'])
 def dynamicoverview(request):
     """The Dynamic Reports page."""
-    company = get_company_or_404(request)
-    states = OrderedDict(
-        sorted((v, k) for k, v in location_data.states.inv.iteritems()))
-
-    ctx = {
-        "company": company,
-        "states": json.dumps(states),
-    }
-
-    return render_to_response('myreports/dynamicreports.html', ctx,
+    return render_to_response('myreports/dynamicreports.html', {},
                               RequestContext(request))
 
 
@@ -463,30 +458,98 @@ def presentation_types_api(request):
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['POST'])
-def columns_api(request):
-    rp_id = request.POST['rp_id']
-    rp = ReportPresentation.objects.get(id=rp_id)
-    columns = (ConfigurationColumn.objects
-               .active_for_report_presentation(rp))
+def filters_api(request):
+    request_data = request.POST
+    # XXX: Change to configuration id
+    rp_id = request_data['rp_id']
+    report_pres = ReportPresentation.objects.get(id=rp_id)
+    datasource = report_pres.report_data.report_type.datasource
 
-    data = ({
-        'name': c.column.column_name,
-        'alias': c.alias,
-        'multi_value_expansion': c.multi_value_expansion,
-        'filter_only': c.filter_only,
-        'default': c.default_value,
-        'interface': {
-            'type': c.interface_element_type.interface_element_type,
-            'description': c.interface_element_type.description,
-            'code': c.interface_element_type.element_code,
-        },
-        'format': [{
-            'name': f.name,
-            'code': f.format_code,
-        } for f in c.column_formats.all()],
-    } for c in columns)
-    result = {'columns': dict((d['name'], d) for d in data)}
+    report_configuration = contacts_config
+
+    driver = get_datasource_json_driver(datasource)
+    result = driver.encode_filter_interface(
+        report_configuration.filter_interface)
+
     return HttpResponse(content_type='application/json',
+                        content=json.dumps(result))
+
+
+# XXX: build from models!
+contacts_config = ReportConfiguration(
+    columns=[
+        ColumnConfiguration(
+            column='name',
+            format='text'),
+        ColumnConfiguration(
+            column='partner',
+            format='text'),
+        ColumnConfiguration(
+            column='email',
+            format='text'),
+        ColumnConfiguration(
+            column='phone',
+            format='text'),
+        ColumnConfiguration(
+            column='date',
+            format='us_date'),
+        ColumnConfiguration(
+            column='notes',
+            format='text'),
+        ColumnConfiguration(
+            column='locations',
+            format='city_state_list'),
+        ColumnConfiguration(
+            column='tags',
+            format='comma_sep'),
+    ],
+    filter_interface=[
+        FilterInterfaceConfiguration(
+            filters=['date_begin', 'date_end'],
+            display="Date",
+            type='date_range'),
+        FilterInterfaceConfiguration(
+            filter='city',
+            display="City",
+            type='search_select',
+            help=True),
+        FilterInterfaceConfiguration(
+            filter='state',
+            display="State",
+            type='search_select',
+            help=True),
+        FilterInterfaceConfiguration(
+            filter='tags',
+            display="Tags",
+            type='search_multiselect',
+            help=True),
+        FilterInterfaceConfiguration(
+            filter='partner',
+            display="Partners",
+            type='search_multiselect',
+            help=True),
+    ])
+
+
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+@require_http_methods(['POST'])
+def help_api(request):
+    request_data = request.POST
+    rp_id = request_data['rp_id']
+    filter = request_data['filter']
+    field = request_data['field']
+    partial = request_data['partial']
+
+    report_pres = ReportPresentation.objects.get(id=rp_id)
+    datasource = report_pres.report_data.report_type.datasource
+    driver = get_datasource_json_driver(datasource)
+
+    company = request.user.companyuser_set.first().company
+
+    result = driver.help(company, filter, field, partial)
+
+    return HttpResponse(content_type="application/json",
                         content=json.dumps(result))
 
 
@@ -495,12 +558,16 @@ def columns_api(request):
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
     rp_id = request.POST['rp_id']
+    name = request.POST['name']
+    filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
 
     company = request.user.companyuser_set.first().company
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,
+        filters=filter_spec,
+        name=name,
         owner=company)
 
     report.regenerate()
@@ -509,6 +576,23 @@ def run_dynamic_report(request):
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@requires(PRM, missing_activity, missing_access)
+@has_access('prm')
+@require_http_methods(['GET'])
+def list_dynamic_reports(request):
+    company = request.user.companyuser_set.first().company
+
+    reports = (
+        DynamicReport.objects
+        .filter(owner=company)
+        .order_by('-pk')[:10])
+
+    data = [{'id': r.id, 'name': r.name}
+            for r in reports]
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps({'reports': data}))
 
 
 @requires(PRM, missing_activity, missing_access)
@@ -528,29 +612,26 @@ def download_dynamic_report(request):
         The report with the specified options rendered as a CSV file.
     """
 
+    # XXX: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
     order_by = request.GET.get('order_by', None)
 
     report = DynamicReport.objects.get(id=report_id)
+    report_configuration = contacts_config
 
     if order_by:
         report.order_by = order_by
         report.save()
 
-    columns = (ConfigurationColumn.objects
-               .active_for_report_presentation(
-                    report.report_presentation))
-    values = [c.column.column_name for c in columns]
-
-    records = (dict((v, unicode(rec.get(v))) for v in values)
-               for rec in report.python)
+    values = report_configuration.get_header()
+    records = [report_configuration.format_record(r) for r in report.python]
 
     response = HttpResponse(content_type='text/csv')
     content_disposition = "attachment; filename=%s-%s.csv"
     response['Content-Disposition'] = content_disposition % (
         report.name.replace(' ', '_'), report.pk)
 
-    response.write(serialize('csv', records, values=values, order_by=order_by))
+    response.write(serialize('csv', records, values=values))
 
     return response

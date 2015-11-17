@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from myjobs.tests.test_views import TestClient
 from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        PartnerFactory)
+                                        PartnerFactory, LocationFactory)
 from myreports.models import Report
 from myreports.tests.setup import MyReportsTestCase
 
@@ -393,6 +393,20 @@ class TestRegenerate(MyReportsTestCase):
 
 
 class TestReportsApi(MyReportsTestCase):
+    def setUp(self):
+        super(TestReportsApi, self).setUp()
+        ContactFactory.create(
+            name="a", email="a@example.com",
+            partner=self.partner,
+            locations=[
+                LocationFactory.create(
+                    city="Chicago",
+                    state="IL"),
+                LocationFactory.create(
+                    city="Champaign",
+                    state="IL"),
+                ])
+
     def test_reporting_types_api_fail_get(self):
         """Try an invalid method on reporting types."""
         resp = self.client.get(reverse('reporting_types_api'))
@@ -443,26 +457,96 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(1, len(data))
         self.assertEquals("Contact CSV", data['3']['name'])
 
-    def test_columns_api(self):
-        """Test that we get descriptions of available columns."""
-        resp = self.client.post(reverse('columns_api'),
+    def test_filters_api(self):
+        """Test that we get descriptions of available filters."""
+        resp = self.client.post(reverse('filters_api'),
                                 data={'rp_id': '3'})
         result = json.loads(resp.content)
-        expected_keys = set([
-            u'locations', u'partner', u'tags', u'name', u'email'])
-        self.assertEquals(expected_keys, set(result['columns'].keys()))
+        expected_keys = set(['filters', 'help'])
+        self.assertEquals(expected_keys, set(result.keys()))
+
+    def test_help_api(self):
+        """Test the dynamic report help api.
+
+        We should get back suggestions based on existing input.
+        """
+        resp = self.client.post(
+            reverse('help_api'),
+            data={
+                'rp_id': 3,
+                'filter': json.dumps({'state': 'IL'}),
+                'field': 'city',
+                'partial': 'i',
+            })
+        self.assertEquals(200, resp.status_code)
+        result = json.loads(resp.content)
+        expected_result = [
+            {'display': 'Chicago', 'key': 'Chicago'},
+            {'display': 'Champaign', 'key': 'Champaign'},
+        ]
+        self.assertEqual(expected_result, result)
 
 
 class TestDynamicReports(MyReportsTestCase):
     def test_dynamic_report(self):
-        """Create some test data, run, and download a report."""
+        """Create some test data, run, list, and download a report."""
         self.client.login_user(self.user)
 
         partner = PartnerFactory(owner=self.company)
         for i in range(0, 10):
-            ContactFactory.create(name=u"name-%s \u2019" % i, partner=partner)
+            # unicode here to push through report generation/download
+            ContactFactory.create(
+                name=u"name-%s \u2019" % i,
+                partner=partner)
 
-        resp = self.client.post(reverse('run_dynamic_report'), {'rp_id': 3})
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': 3,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {'id': report_id, 'name': 'The Report'},
+            ]},
+            json.loads(resp.content))
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        lines = resp.content.splitlines()
+        self.assertEquals(11, len(lines))
+        first_found_name = lines[1].split(',')[0]
+        expected_name = u'name-0 \u2019'.encode('utf-8')
+        self.assertEqual(expected_name, first_found_name)
+
+    def test_dynamic_report_with_filter(self):
+        """Create some test data, run filtered, and download a report."""
+        self.client.login_user(self.user)
+
+        partner = PartnerFactory(owner=self.company)
+        for i in range(0, 10):
+            location = LocationFactory.create(
+                city="city-%s" % i)
+            ContactFactory.create(
+                name="name-%s" % i,
+                partner=partner,
+                locations=[location])
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': 3,
+                'name': 'The Report',
+                'filter': json.dumps({
+                    'city': 'city-2',
+                }),
+            })
         self.assertEqual(200, resp.status_code)
         report_id = json.loads(resp.content)['id']
 
@@ -470,7 +554,7 @@ class TestDynamicReports(MyReportsTestCase):
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
         lines = resp.content.splitlines()
+        self.assertEquals(2, len(lines))
         first_found_name = lines[1].split(',')[0]
-        expected_name = u'name-0 \u2019'.encode('utf-8')
+        expected_name = 'name-2'
         self.assertEqual(expected_name, first_found_name)
-        self.assertEquals(11, len(lines))
