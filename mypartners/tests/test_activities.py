@@ -24,7 +24,7 @@ from mypartners.helpers import get_library_partners
 from mypartners.models import PartnerLibrary
 
 
-@override_settings(ROLES_ENABLED=True, DEBUG=True)
+@override_settings(ROLES_ENABLED=True)
 class TestViewActivities(MyJobsBase):
     """Test views wrapped with activities."""
 

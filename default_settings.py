@@ -88,21 +88,21 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    #'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'middleware.SiteRedirectMiddleware',
+    #'middleware.SiteRedirectMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',  # http auth
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
-    'middleware.MultiHostMiddleware',
+    #'middleware.MultiHostMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
-    'middleware.PasswordChangeRedirectMiddleware',
+    #'middleware.PasswordChangeRedirectMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'middleware.CompactP3PMiddleware',
-    'middleware.TimezoneMiddleware',
+    #'middleware.CompactP3PMiddleware',
+    #'middleware.TimezoneMiddleware',
     'redirect.middleware.ExcludedViewSourceMiddleware',
 )
 

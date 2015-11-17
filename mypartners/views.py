@@ -378,6 +378,7 @@ def prm_overview(request):
     View that is the "Overview" of one's Partner Activity.
 
     """
+
     company, partner, _ = prm_worthy(request)
 
     most_recent_activity = partner.get_logs()
@@ -833,6 +834,7 @@ def prm_view_records(request):
     View an individual ContactRecord.
 
     """
+
     company, partner, _ = prm_worthy(request)
     _, _, contact_records = get_records_from_request(request)
     page_number = int(request.GET.get('page', 1))
@@ -915,7 +917,7 @@ def get_contact_information(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        return Http404("This view is only reachable by an AJAX POST request.")
+        raise Http404("This view is only reachable by an AJAX POST request.")
 
 
 @requires(PRM)
