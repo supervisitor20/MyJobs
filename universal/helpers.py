@@ -94,7 +94,7 @@ def get_company(request):
 
     """
 
-    if not request.user or request.user.is_anonymous():
+    if not request.user or not request.user.pk or request.user.is_anonymous():
         return None
 
     # If settings.SITE is set we're on a microsite, so get the company
