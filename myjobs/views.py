@@ -35,6 +35,7 @@ from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
 from seo.models import Company
+from universal.decorators import has_access
 
 logger = logging.getLogger('__name__')
 
@@ -615,6 +616,7 @@ def manage_users(request):
                                 RequestContext(request))
 
 @staff_member_required
+@has_access('user management')
 def api_get_activities(request):
     """
     Retrieves all activities
@@ -626,7 +628,8 @@ def api_get_activities(request):
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
 @staff_member_required
-# @requires('read role')
+@requires('read role')
+@has_access('user management')
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
@@ -678,6 +681,8 @@ def api_get_roles(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@has_access('user management')
+@requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
     GET /manage-users/api/roles/NUMBER
@@ -733,6 +738,8 @@ def api_get_specific_role(request, role_id=0):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('create role')
+@has_access('user management')
 def api_create_role(request):
     """
     POST /manage-users/api/roles/create
@@ -800,6 +807,8 @@ def api_create_role(request):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('update role')
+@has_access('user management')
 def api_edit_role(request, role_id=0):
     """
     POST /manage-users/api/roles/edit
@@ -900,6 +909,8 @@ def api_edit_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('delete role')
+@has_access('user management')
 def api_delete_role(request, role_id=0):
     """
     POST /manage-users/api/roles/delete/NUMBER
@@ -945,6 +956,8 @@ def api_delete_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('read user')
+@has_access('user management')
 def api_get_users(request):
     """
     GET /manage-users/api/users/
@@ -990,6 +1003,8 @@ def api_get_users(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('read user')
+@has_access('user management')
 def api_get_specific_user(request, user_id=0):
     """
     GET /manage-users/api/users/NUMBER
@@ -1044,6 +1059,8 @@ def api_get_specific_user(request, user_id=0):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('create user')
+@has_access('user management')
 def api_create_user(request):
     """
     POST /manage-users/api/user/create
@@ -1106,6 +1123,8 @@ def api_create_user(request):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('update user')
+@has_access('user management')
 def api_edit_user(request, user_id=0):
     """
     POST /manage-users/api/users/edit
@@ -1181,6 +1200,8 @@ def api_edit_user(request, user_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('delete user')
+@has_access('user management')
 def api_delete_user(request, user_id=0):
     """
     DELETE /manage-users/api/users/delete/NUMBER
