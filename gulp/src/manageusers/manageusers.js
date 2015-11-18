@@ -323,14 +323,14 @@ var Status = React.createClass({
 
 var AssociatedRolesList = React.createClass({
   render: function() {
-    var associated_roles_list = [];
-    for (var key in this.props.roles) {
-      associated_roles_list.push(
-        <li key={this.props.roles[key].pk}>
-          {this.props.roles[key].fields.name}
+    var associated_roles_list = this.props.roles.map(function(role, index) {
+      return (
+        <li key={index}>
+          {role.fields.name}
         </li>
       );
-    };
+    });
+
     return (
       <ul>
         {associated_roles_list}
@@ -389,14 +389,13 @@ var UsersPage = React.createClass({
 
 var AssociatedUsersList = React.createClass({
   render: function() {
-    var associated_users_list = [];
-    for (var key in this.props.users) {
-      associated_users_list.push(
-        <li key={key}>
-            {this.props.users[key].fields.email}
+    var associated_users_list = this.props.users.map(function(user, index) {
+      return (
+        <li key={index}>
+          {user.fields.email}
         </li>
       );
-    };
+    });
     return (
       <ul>
         {associated_users_list}
@@ -407,14 +406,13 @@ var AssociatedUsersList = React.createClass({
 
 var AssociatedActivitiesList = React.createClass({
   render: function() {
-    var associated_activities_list = [];
-    for (var key in this.props.activities) {
-      associated_activities_list.push(
-        <li key={this.props.activities[key].pk}>
-          {this.props.activities[key].fields.name}
+    var associated_activities_list = this.props.activities.map(function(activity, index) {
+      return (
+        <li key={index}>
+          {activity.fields.name}
         </li>
       );
-    };
+    });
     return (
       <ul>
         {associated_activities_list}
