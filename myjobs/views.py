@@ -18,6 +18,7 @@ from django.shortcuts import render_to_response, redirect, render, Http404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from django.contrib.admin.views.decorators import staff_member_required
 
 from captcha.fields import ReCaptchaField
 
@@ -596,7 +597,7 @@ def topbar(request):
 
     return response
 
-
+@staff_member_required
 def manage_users(request):
     """
     View for manage users
@@ -613,7 +614,7 @@ def manage_users(request):
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
 
-
+@staff_member_required
 def api_get_activities(request):
     """
     Retrieves all activities
@@ -624,7 +625,7 @@ def api_get_activities(request):
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
-
+@staff_member_required
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
@@ -675,7 +676,7 @@ def api_get_roles(request):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_get_specific_role(request, role_id=0):
     """
     GET /manage-users/api/roles/NUMBER
@@ -730,7 +731,7 @@ def api_get_specific_role(request, role_id=0):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_create_role(request):
     """
     POST /manage-users/api/roles/create
@@ -797,7 +798,7 @@ def api_create_role(request):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_edit_role(request, role_id=0):
     """
     POST /manage-users/api/roles/edit
@@ -897,7 +898,7 @@ def api_edit_role(request, role_id=0):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_delete_role(request, role_id=0):
     """
     POST /manage-users/api/roles/delete/NUMBER
@@ -942,7 +943,7 @@ def api_delete_role(request, role_id=0):
         response_data["message"] = "Role not deleted."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_get_users(request):
     """
     GET /manage-users/api/users/
@@ -987,7 +988,7 @@ def api_get_users(request):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_get_specific_user(request, user_id=0):
     """
     GET /manage-users/api/users/NUMBER
@@ -1041,7 +1042,7 @@ def api_get_specific_user(request, user_id=0):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_create_user(request):
     """
     POST /manage-users/api/user/create
@@ -1103,7 +1104,7 @@ def api_create_user(request):
         response_data["message"] = "User not created."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_edit_user(request, user_id=0):
     """
     POST /manage-users/api/users/edit
@@ -1178,7 +1179,7 @@ def api_edit_user(request, user_id=0):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_delete_user(request, user_id=0):
     """
     DELETE /manage-users/api/users/delete/NUMBER
