@@ -42,8 +42,9 @@ class DecoratorTests(MyJobsBase):
         """
 
         with self.assertRaises(Activity.DoesNotExist) as cm:
-            response = requires("this is invalid")(dummy_view)(self.request)
+            view = requires("this is invalid")(dummy_view)
 
+        # the erroneous activity should be in the error message
         self.assertIn("this is invalid", cm.exception.message)
 
 
@@ -118,12 +119,12 @@ class DecoratorTests(MyJobsBase):
             raise Http404("Required activities missing.")
 
         with self.assertRaises(TypeError) as cm:
-            response = requires(
+            # we misspelled access here, so the callback is invalid
+            view = requires(
                 self.activity.name,
-                # we misspelled access here, so the callback is invalid
-                acess_callback=callback)(dummy_view)(self.request)
+                acess_callback=callback)(dummy_view)
 
-        # the erroneous callback should be listed in the output
+        # the erroneous callback should be listed in the exception
         self.assertIn("- acess_callback", cm.exception.message)
 
     def test_user_with_wrong_activities(self):
