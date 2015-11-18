@@ -214,11 +214,17 @@ export class WizardPageFilter extends Component {
 
             let rows = []
             reportConfig.filters.forEach(col => {
-                let ctrl;
                 switch(col.interface_type) {
-                    case "search_select": ctrl =
+                    case "date_range":
                         rows.push(this.renderRow(col.display, col.filter,
-                            <WizardFilterTextInput
+                            <WizardFilterDateRange
+                                id={col.filter}
+                                updateFilter={v =>
+                                    this.updateFilter(col.filter, v)}/>
+                        ));
+                    case "search_select":
+                        rows.push(this.renderRow(col.display, col.filter,
+                            <WizardFilterSearchDropdown
                                 id={col.filter}
                                 updateFilter={v =>
                                     this.updateFilter(col.filter, v)}
@@ -226,7 +232,7 @@ export class WizardPageFilter extends Component {
                                     this.getHints(col.filter, col.field, v)}/>
                         ));
                         break;
-                    case "search_multiselect": ctrl =
+                    case "search_multiselect":
                         rows.push(this.renderRow(col.display, col.filter,
                             <WizardFilterMultiCollect
                                 addItem={v =>
@@ -275,7 +281,44 @@ WizardPageFilter.propTypes = {
 };
 
 
-export class WizardFilterTextInput extends Component {
+export class WizardFilterDateRange extends Component {
+    constructor() {
+        super();
+        this.state = {begin: '', end: ''};
+    }
+
+    updateField(field, value) {
+        const {updateFilter} = this.props;
+        let newState = {...this.state};
+        newState[field] = value;
+        this.setState(newState);
+        updateFilter([newState.begin, newState.end]);
+    }
+
+    render() {
+        return <span>
+            <input
+                type="text"
+                placeholder="begin date"
+                onChange={e =>
+                    this.updateField('begin', e.target.value)} />
+            <input
+                type="text"
+                placeholder="end date"
+                onChange={e =>
+                    this.updateField('end', e.target.value)} />
+        </span>;
+    }
+
+}
+
+WizardFilterDateRange.propTypes = {
+    id: PropTypes.string.isRequired,
+    updateFilter: PropTypes.func.isRequired,
+};
+
+
+export class WizardFilterSearchDropdown extends Component {
     async loadOptions(input, cb) {
         try {
             const {getHints} = this.props;
@@ -321,7 +364,7 @@ export class WizardFilterTextInput extends Component {
     }
 }
 
-WizardFilterTextInput.propTypes = {
+WizardFilterSearchDropdown.propTypes = {
     id: PropTypes.string.isRequired,
     updateFilter: PropTypes.func.isRequired,
     getHints: PropTypes.func.isRequired,

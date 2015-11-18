@@ -98,8 +98,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             ContactsFilter(
-                date_begin=datetime(2015, 9, 1),
-                date_end=datetime(2015, 9, 30)),
+                date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
         names = set([r['name'] for r in recs])
         expected = {self.sue.name}
@@ -111,7 +110,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             ContactsFilter(
-                date_end=datetime(2015, 10, 1)),
+                date=[None, datetime(2015, 9, 30)]),
             [])
         names = set([r['name'] for r in recs])
         expected = {self.sue.name}
@@ -123,7 +122,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             ContactsFilter(
-                date_begin=datetime(2015, 10, 1)),
+                date=[datetime(2015, 10, 1), None]),
             [])
         names = set([r['name'] for r in recs])
         expected = {self.john.name}
@@ -251,11 +250,10 @@ class TestContactsDataSourceJsonDriver(TestCase):
         self.assertEquals(ContactsFilter(city='Indy'), result)
 
     def test_date_filters(self):
-        spec = '{"date_begin": "2015-09-01", "date_end": "2015-09-30"}'
+        spec = '{"date": ["2015-09-01", "2015-09-30"]}'
         result = self.driver.build_filter(spec)
         expected = ContactsFilter(
-            date_begin=datetime(2015, 9, 1),
-            date_end=datetime(2015, 9, 30))
+            date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
         self.assertEquals(expected, result)
 
     def test_order(self):

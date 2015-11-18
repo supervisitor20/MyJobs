@@ -28,13 +28,13 @@ class ContactsDataSourceJsonDriver(object):
     def build_filter(self, filter_json):
         kwargs = {}
         filter_spec = json.loads(filter_json)
-        date_begin = filter_spec.get('date_begin', None)
-        if date_begin is not None:
-            kwargs['date_begin'] = datetime.strptime(date_begin, "%Y-%m-%d")
+        date_strings = filter_spec.get('date', None)
+        if date_strings is not None:
+            dates = [
+                (datetime.strptime(d, "%Y-%m-%d") if d else None)
+                for d in date_strings]
 
-        date_end = filter_spec.get('date_end', None)
-        if date_end is not None:
-            kwargs['date_end'] = datetime.strptime(date_end, "%Y-%m-%d")
+            kwargs['date'] = dates
 
         kwargs['city'] = filter_spec.get('city', None)
         kwargs['state'] = filter_spec.get('state', None)
@@ -141,10 +141,9 @@ class ContactsDataSource(object):
 
 @dict_identity
 class ContactsFilter(object):
-    def __init__(self, date_begin=None, date_end=None, state=None,
-                 city=None, tags=None, partner=None):
-        self.date_begin = date_begin
-        self.date_end = date_end
+    def __init__(self, date=None, state=None, city=None, tags=None,
+                 partner=None):
+        self.date = date
         self.state = state
         self.city = city
         self.tags = tags
@@ -156,16 +155,18 @@ class ContactsFilter(object):
         return ContactsFilter(**new_keys)
 
     def filter_query_set(self, qs):
-        if (self.date_begin is not None and
-                self.date_end is not None):
-            qs = qs.filter(
-                last_action_time__range=tuple([
-                    self.date_begin,
-                    self.date_end + timedelta(days=1)]))
-        elif self.date_begin is not None:
-            qs = qs.filter(last_action_time__gte=self.date_begin)
-        elif self.date_end is not None:
-            qs = qs.filter(last_action_time__lte=self.date_end)
+        if self.date is not None:
+            if (self.date[0] is not None and
+                    self.date[1] is not None):
+                qs = qs.filter(
+                    last_action_time__range=tuple([
+                        self.date[0],
+                        self.date[1] + timedelta(days=1)]))
+            elif self.date[0] is not None:
+                qs = qs.filter(last_action_time__gte=self.date[0])
+            elif self.date[1] is not None:
+                qs = qs.filter(
+                    last_action_time__lte=self.date[1] + timedelta(days=1))
 
         if self.tags:
             qs = qs.filter(tags__name__in=self.tags)
