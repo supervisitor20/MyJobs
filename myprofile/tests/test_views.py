@@ -27,7 +27,7 @@ class MyProfileViewsTests(MyJobsBase):
         """
         resp = self.client.get(reverse('view_profile'))
         soup = BeautifulSoup(resp.content)
-        item_id = Name.objects.all()[0].id
+        item_id = self.name.id
 
         # The existing name object should be rendered on the main content
         # section
@@ -36,6 +36,18 @@ class MyProfileViewsTests(MyJobsBase):
         # profile-section contains the name of a profile section that has no
         # information filled out yet and shows up in the sidebar
         self.assertTrue(soup.findAll('tr', {'class': 'profile-section'}))
+
+    def test_edit_summary(self):
+        summary = SummaryFactory(user=self.user)
+        resp = self.client.get(reverse('view_profile'))
+        soup = BeautifulSoup(resp.content)
+
+        item = soup.find('div', id='summary-' + str(summary.id) + '-item')
+        self.assertIsNotNone(item)
+
+        link = item.find('a').attrs['href']
+        resp = self.client.get(link)
+        self.assertEqual(resp.status_code, 200)
 
     def test_handle_form_get_new(self):
         """
