@@ -3,9 +3,55 @@ import ReactDOM from "react-dom";
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 
-// This is the entry point of the application. Bundling begins here.
+// class to contain dynamic email editing states, type is text of button and function identifier, disabled is whether
+// the button is disabled or not. by default, it is not disabled
+class ControlButton {
+  constructor(type, disabled=false) {
+    this.type = type;
+    this.disabled = disabled;
+  }
+}
+
+// Display errors from client-side form validation.. red text above stuff
+var HelpText = React.createClass({
+  render: function() {
+    var message = this.props.message;
+    return (
+      <div className="input-error">
+        {message}
+      </div>
+    );
+  }
+});
+
+// validation method to ensure value is a proper email username
+// returns:
+// Object
+//    -success (whether or not the object validated)
+//    -message (error message from validator)
+var validateEmailInput = function(value){
+  var return_object = {
+    success: true,
+    messages: []
+  }
+  var email_re = new RegExp("^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$", "i");
+  var at_re = new RegExp("@+");
+  if (value.length == 0) {
+    return_object.success = false;
+    return return_object;
+    };
+  if (at_re.test(value)) {
+    return_object.success = false;
+    return_object.messages.push("Enter only the portion to the left of the '@'")
+  } else if (!email_re.test(value)) {
+    return_object.success = false;
+    return_object.messages.push("Please enter a valid email username")
+  };
+  return return_object;
+};
 
 
+// creates span with buttons for saving, deleting, and canceling changes to an existing inbox
 var ControlButtons = React.createClass({
   handleButtonClick: function(i) {
     this.props.buttonClicked(this.props.buttons[i]);
@@ -13,7 +59,7 @@ var ControlButtons = React.createClass({
   render: function() {
     var buttons = this.props.buttons.map(function(button, i){
           return (
-              <Button className="primary pull-right" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button}</Button>
+              <Button disabled={button.disabled} className="primary pull-right" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
           );
       }.bind(this));
     return (
@@ -22,6 +68,8 @@ var ControlButtons = React.createClass({
   }
 });
 
+
+// textbox for entering email usernames. used in both add and edit functionalities
 var EmailInput = React.createClass({
   emailChanged: function(){
     this.props.emailFieldChanged(this.refs.email_input.value.trim());
@@ -33,17 +81,23 @@ var EmailInput = React.createClass({
   },
 });
 
+
+// individual inbox loaded from DB, contains inbox textbox and control buttons
 var InboxRow = React.createClass({
   emailFieldChanged: function(value) {
-    this.setState({current_email: value});
+    var validation_object = validateEmailInput(value);
+    this.setState({
+      current_email: value,
+      validation_messages: validation_object.messages
+    })
     if (value != this.state.initial_email) {
-      this.setState({buttons: ['Cancel', 'Save']});
+      this.setState({buttons: [new ControlButton("Cancel"), new ControlButton("Save", !validation_object.success)]});
     } else {
-      this.setState({buttons: ['Delete']});
+      this.setState({buttons: [new ControlButton("Delete")]});
     }
   },
-  buttonClicked: function(button_value) {
-    switch(button_value) {
+  buttonClicked: function(button) {
+    switch(button.type) {
       case "Delete":
         this.deleteEmail();
         break;
@@ -67,27 +121,37 @@ var InboxRow = React.createClass({
     return;
   },
   cancelChanges: function() {
-    this.setState({current_email: this.state.initial_email});
-    this.setState({buttons: ['Delete']});
+    this.setState({
+      current_email: this.state.initial_email,
+      buttons: [new ControlButton("Delete")],
+      validation_messages: [],
+    });
   },
   getInitialState: function() {
     return {
       id: this.props.inbox.pk,
       initial_email: this.props.inbox.fields.email,
       current_email: this.props.inbox.fields.email,
-      buttons: ['Delete']
+      buttons: [new ControlButton("Delete")],
+      validation_messages: []
     }
   },
   render: function(){
-          return (
-          <div className="clearfix">
-            <EmailInput id={this.state.id} email={this.state.current_email} emailFieldChanged={this.emailFieldChanged} />
-            <ControlButtons buttons={this.state.buttons} buttonClicked={this.buttonClicked} />
-          </div>
-      );
-  }
+    var validation_messages = this.state.validation_messages.map((message) =>
+    <HelpText message={message} />
+    );
+    return (
+    <div className="clearfix inbox-row">
+      {validation_messages}
+      <EmailInput id={this.state.id} email={this.state.current_email} emailFieldChanged={this.emailFieldChanged} />
+      <ControlButtons buttons={this.state.buttons} buttonClicked={this.buttonClicked} />
+    </div>
+    );
+    }
 })
 
+
+// container for all edit rows of objects loaded from DB
 var InboxList = React.createClass({
   handleDelete: function(index) {
     this.setState({
@@ -100,15 +164,10 @@ var InboxList = React.createClass({
     };
   },
   componentDidMount: async function() {
-    console.log(this.props);
-    console.log(this.props.source);
     const results = await $.get(this.props.source);
-    //const results = '[{"pk": 28, "model": "mypartners.outreachemailaddress", "fields": {"email": "milton_bradley_edq"}}, {"pk": 29, "model": "mypartners.outreachemailaddress", "fields": {"email": "halia"}}]';
-    console.log(results);
     this.setState({
       inboxes: JSON.parse(results),
     });
-    console.log("componentDidMount done");
   },
   render: function() {
     const {inboxes} = this.state;
@@ -127,41 +186,48 @@ var InboxList = React.createClass({
   }
 });
 
+
+// button for submitting a new email username
 var AddInboxButton = React.createClass({
   render: function() {
     return (
-      <Button disabled={true}>Add Inbox</Button>
+      <Button disabled={this.props.add_disabled} className="primary pull-right">Add Inbox</Button>
     );
   }
 });
 
+
+// container for add button and new inbox input field
 var AddInboxForm = React.createClass({
   getInitialState: function(){
     return {add_disabled: true};
   },
   emailFieldChanged: function(value) {
     this.setState({current_email: value});
-    if (value.length > 0) {
+    if (validateEmailInput(value).success) {
       this.setState({add_disabled: false})
     } else {
       this.setState({add_disabled: true})
     }
-    // TODO: Form validation
+    // TODO: Form validation instead of length checks
     // TODO: enable/disable add button
   },
+
   submitInbox: function() {
     // TODO: Submit API
   },
   render: function() {
     return (
       <div className="col-xs-12">
-        <EmailInput />
+        <EmailInput emailFieldChanged={this.emailFieldChanged} />
         <AddInboxButton add_disabled={this.state.add_disabled} />
       </div>
     );
   },
 });
 
+
+// menu link to inbox management app screen
 var InboxManagementButton = React.createClass({
   handleClick: function() {
     this.props.changePage("InboxManagement");
@@ -173,6 +239,8 @@ var InboxManagementButton = React.createClass({
   }
 });
 
+
+// menu link to overview of the entire nuo module
 var OverviewButton = React.createClass({
   handleClick: function(event) {
     this.props.changePage("Overview");
@@ -184,13 +252,8 @@ var OverviewButton = React.createClass({
   }
 });
 
-var bootstrapClasses = {
-  filter: 'form-control',
-  select: 'form-control',
-  button: 'btn btn btn-block btn-default',
-  buttonActive: 'btn btn btn-block btn-primary'
-}
 
+// inbox management app main page
 var InboxManagementPage = React.createClass({
   render: function() {
     return (
@@ -213,6 +276,8 @@ var InboxManagementPage = React.createClass({
   }
 });
 
+
+// overview main display page
 var OverviewPage = React.createClass({
   render: function() {
     return (
@@ -230,6 +295,8 @@ var OverviewPage = React.createClass({
   }
 });
 
+
+/// the container for the main page. the left side of the screen
 var Content = React.createClass({
   render: function() {
     var page = this.props.page;
@@ -251,6 +318,8 @@ var Content = React.createClass({
   }
 });
 
+
+// navigation links
 var Menu = React.createClass({
   render: function() {
     return (
@@ -259,13 +328,14 @@ var Menu = React.createClass({
           <h2 className="top">Navigation</h2>
           <OverviewButton {...this.props} />
           <InboxManagementButton {...this.props} />
-          <AddInboxButton {...this.props} />
         </div>
       </div>
     );
   }
 });
 
+
+// the "master" container
 var Container = React.createClass({
   getInitialState: function() {
     return {
