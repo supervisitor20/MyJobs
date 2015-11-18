@@ -599,6 +599,7 @@ def topbar(request):
     return response
 
 @staff_member_required
+@has_access('user management')
 def manage_users(request):
     """
     View for manage users
