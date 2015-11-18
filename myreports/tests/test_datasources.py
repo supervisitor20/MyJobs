@@ -139,6 +139,20 @@ class TestContactsDataSource(MyJobsBase):
         expected = {self.john.name}
         self.assertEqual(expected, names)
 
+    def test_filter_by_empty_things(self):
+        ds = ContactsDataSource()
+        recs = ds.run(
+            self.company,
+            ContactsFilter(
+                partner=[],
+                tags=[],
+                city='',
+                state=''),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = {self.john.name, self.sue.name}
+        self.assertEqual(expected, names)
+
     def test_filter_by_state(self):
         ds = ContactsDataSource()
         recs = ds.run(

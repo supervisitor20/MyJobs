@@ -167,16 +167,16 @@ class ContactsFilter(object):
         elif self.date_end is not None:
             qs = qs.filter(last_action_time__lte=self.date_end)
 
-        if self.tags is not None:
+        if self.tags:
             qs = qs.filter(tags__name__in=self.tags)
 
-        if self.partner is not None:
+        if self.partner:
             qs = qs.filter(partner__pk__in=self.partner)
 
-        if self.city is not None:
+        if self.city:
             qs = qs.filter(locations__city__iexact=self.city)
 
-        if self.state is not None:
+        if self.state:
             qs = qs.filter(locations__state__iexact=self.state)
 
         return qs
