@@ -330,7 +330,6 @@ var AssociatedRolesList = React.createClass({
         </li>
       );
     });
-
     return (
       <ul>
         {associated_roles_list}

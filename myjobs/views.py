@@ -23,7 +23,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
-from myjobs.decorators import user_is_allowed
+from myjobs.decorators import user_is_allowed, requires, MissingActivity
 from myjobs.forms import ChangePasswordForm, EditCommunicationForm
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
@@ -626,6 +626,7 @@ def api_get_activities(request):
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
 @staff_member_required
+# @requires('read role')
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
