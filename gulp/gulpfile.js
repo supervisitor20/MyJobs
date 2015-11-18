@@ -56,15 +56,15 @@ gulp.task('reporting', function() {
     .external(vendor_libs)
     .add('src/reporting/main.js')
     .transform(babelify.configure({optional: 'runtime'}))
+    .on('package', function(pkg) {
+        util.log("Including package:", pkg.name)
+    })
+    .bundle()
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
         // Unstick browserify on some errors. Keeps watch alive.
         this.emit('end');
     })
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .bundle()
     .pipe(source('reporting.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
