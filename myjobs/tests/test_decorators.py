@@ -2,6 +2,7 @@ from django.test import RequestFactory
 from django.test.utils import override_settings
 from django.http import HttpResponse, Http404
 
+from myjobs.models import Activity
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
@@ -33,6 +34,18 @@ class DecoratorTests(MyJobsBase):
         factory = RequestFactory()
         self.request = factory.get("/test")
         self.request.user = self.user
+
+    def test_decorating_a_view_with_invalid_activities(self):
+        """
+        Decorating a view with activities that don't exist should raise an
+        exception.
+        """
+
+        with self.assertRaises(Activity.DoesNotExist) as cm:
+            response = requires("this is invalid")(dummy_view)(self.request)
+
+        self.assertIn("this is invalid", cm.exception.message)
+
 
     def test_accessing_a_view_with_proper_permissions(self):
         """

@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, AppAccess
+from myjobs.models import User, AppAccess, Activity
 from universal.helpers import get_company_or_404
 
 
@@ -125,6 +125,8 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
+
+
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
@@ -144,14 +146,15 @@ def requires(*activities, **callbacks):
 
     Inputs:
     :activities: A list of activity names that the decorated view should
-                   check against.
+                 check against. Passing invalid activity names will result in
+                 an `Activity.DoesNotExist` exception.
     :callbacks: callbacks['activity_callback'] is a callable to be used as a
                 view response when the use isn't associated with the correct
                 subset of activities. callbacks['access_callback'] is a
                 callable to be used as a view response when the users's company
                 doesn't have the appropriate app access (as determined by the
                 passed in activities).
-                
+
                 Both callbacks take a `request` parameter which can be used to
                 do further processing before returning an alternate result.
 
@@ -192,6 +195,14 @@ def requires(*activities, **callbacks):
     response used when app access is missing by passing `access_callback`.
     """
 
+
+    activities = set(activities)
+    valid_activities = set(Activity.objects.values_list('name', flat=True))
+
+    if not activities.issubset(valid_activities):
+        raise Activity.DoesNotExist(
+            "Activities with these names do not exists: {}".format(
+                activities.difference(valid_activities)))
 
     invalid_callbacks = set(callbacks.keys()).difference({
         "access_callback", "activity_callback"})
