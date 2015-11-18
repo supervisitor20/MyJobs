@@ -26,7 +26,7 @@ class ApiTestCase(DirectSEOTestCase):
 
     def deserialize(self, resp):
         return self.serializer.deserialize(resp.content, format=resp['Content-Type'])
-        
+
     def test_not_authorized(self):
         """
         Test if a user can gain access without an API key
@@ -40,12 +40,12 @@ class ApiTestCase(DirectSEOTestCase):
         resp = self.client.get("api/v1/seosite/?format=xml")
         self.assertEqual(resp.status_code, 404)
         key = ApiKey(user=self.user)
-        
+
     def test_list_xml(self):
         resp = self.client.get("/api/v1/seosite/?%s&format=xml" % (self.auth_qs))
         self.assertEqual(resp.status_code, 200)
         self.serializer.from_xml(resp.content)
-        
+
     def test_list_json(self):
         resp = self.client.get("/api/v1/seosite/?%s&format=json" % (self.auth_qs))
         self.assertEqual(len(self.deserialize(resp)['objects']), 1)
@@ -61,7 +61,7 @@ class ApiTestCase(DirectSEOTestCase):
         """
         Ensure that POST requests are rejected. This test can be removed
         if/when we allow other methods besides GET to our resources.
-        
+
         """
         jobjson = ("""{"buid": 13543, "city": "Chester",\
                    "company": "Edward Jones", "country": "United States",\

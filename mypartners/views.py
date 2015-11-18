@@ -33,6 +33,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
 from myjobs.decorators import requires
+from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -53,7 +54,8 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 find_partner_from_email, tag_get_or_create)
 
 PRM = Activity.objects.filter(
-    app_access__name='PRM').values_list('name', flat=True)
+    app_access__name='PRM').exclude(
+        name__icontains='tag').values_list('name', flat=True)
 
 def missing_access():
     raise Http404("App level permissions are missing.")
@@ -169,6 +171,7 @@ def partner_details(request):
         'contact_ct': contact_ct_id,
         'partner_ct': partner_ct_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     return render_to_response('mypartners/partner_details.html', ctx,
                               RequestContext(request))
@@ -231,6 +234,7 @@ def edit_item(request):
         'contacts': json.dumps(contacts),
         'content_id': content_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     if item_id:
         ctx['locations'] = Contact.objects.get(pk=item_id).locations.all()
@@ -605,6 +609,7 @@ def prm_edit_saved_search(request):
         'microsites': set(microsites),
         'content_type': ContentType.objects.get_for_model(PartnerSavedSearch).id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
 
     return render_to_response('mypartners/partner_edit_search.html', ctx,
@@ -819,6 +824,7 @@ def prm_edit_records(request):
         'content_type': ContentType.objects.get_for_model(ContactRecord).id,
         'item_id': record_id,
         'form': form,
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
     return render_to_response('mypartners/edit_record.html', ctx,
                               RequestContext(request))
@@ -1321,6 +1327,7 @@ def process_email(request):
     return HttpResponse(status=200)
 
 
+@restrict_to_staff()
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def manage_outreach_inboxes(request):

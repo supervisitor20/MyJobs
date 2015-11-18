@@ -1,78 +1,27 @@
 # -*- coding: utf-8 -*-
 from south.utils import datetime_utils as datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-class Migration(DataMigration):
 
-    DOMAINS = (
-        # Default domains included
-        "aol.com", "att.net", "comcast.net", "facebook.com", "gmail.com",
-        "gmx.com", "googlemail.com", "google.com", "hotmail.com",
-        "hotmail.co.uk", "mac.com", "me.com", "mail.com", "msn.com",
-        "live.com", "sbcglobal.net", "verizon.net", "yahoo.com",
-        "yahoo.co.uk",
-
-        # Other global domains
-        "email.com", "games.com", "gmx.net", "hush.com", "hushmail.com",
-        "icloud.com", "inbox.com", "lavabit.com", "love.com",
-        "outlook.com", "pobox.com", "rocketmail.com", "safe-mail.net",
-        "wow.com", "ygm.com", "ymail.com", "zoho.com", "fastmail.fm",
-
-        # United States ISP domains
-        "bellsouth.net", "charter.net", "cox.net",
-        "earthlink.net", "juno.com",
-
-        # British ISP domains
-        "btinternet.com", "virginmedia.com", "blueyonder.co.uk",
-        "freeserve.co.uk", "live.co.uk", "ntlworld.com", "o2.co.uk",
-        "orange.net", "sky.com", "talktalk.co.uk", "tiscali.co.uk",
-        "virgin.net", "wanadoo.co.uk", "bt.com",
-
-        # Domains used in Asia
-        "sina.com", "qq.com", "naver.com", "hanmail.net", "daum.net",
-        "nate.com", "yahoo.co.jp", "yahoo.co.kr", "yahoo.co.id",
-        "yahoo.co.in", "yahoo.com.sg", "yahoo.com.ph",
-
-        # French ISP domains
-        "hotmail.fr", "live.fr", "laposte.net", "yahoo.fr", "wanadoo.fr",
-        "orange.fr", "gmx.fr", "sfr.fr", "neuf.fr", "free.fr",
-
-        # German ISP domains
-        "gmx.de", "hotmail.de", "live.de", "online.de", "t-online.de",
-        "web.de", "yahoo.de",
-
-        # Russian ISP domains
-        "mail.ru", "rambler.ru", "yandex.ru", "ya.ru", "list.ru",
-
-        # Belgian ISP domains
-        "hotmail.be", "live.be", "skynet.be", "voo.be", "tvcablenet.be",
-        "telenet.be",
-
-        # Argentinian ISP domains
-        "hotmail.com.ar", "live.com.ar", "yahoo.com.ar", "fibertel.com.ar",
-        "speedy.com.ar", "arnet.com.ar",
-
-        # Domains used in Mexico
-        "yahoo.com.mx", "live.com.mx",
-        "hotmail.es", "hotmail.com.mx",
-        "prodigy.net.mx"
-    )
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
-        # Note: Don't use "from appname.models import ModelName".
-        # Use orm.ModelName to refer to models in this application,
-        # and orm['appname.ModelName'] for models in other applications.
 
-        orm.CommonEmailDomain.objects.bulk_create(
-            orm.CommonEmailDomain(domain=domain) for domain in self.DOMAINS)
+        # Changing field 'OutreachEmailAddress.email'
+        db.alter_column(u'mypartners_outreachemailaddress', 'email', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255))
+        # Adding unique constraint on 'OutreachEmailAddress', fields ['email']
+        db.create_unique(u'mypartners_outreachemailaddress', ['email'])
+
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        # Removing unique constraint on 'OutreachEmailAddress', fields ['email']
+        db.delete_unique(u'mypartners_outreachemailaddress', ['email'])
 
-        orm.CommonEmailDomain.objects.filter(domain__in=self.DOMAINS).delete()
+
+        # Changing field 'OutreachEmailAddress.email'
+        db.alter_column(u'mypartners_outreachemailaddress', 'email', self.gf('django.db.models.fields.EmailField')(max_length=255))
 
     models = {
         u'auth.group': {
@@ -94,6 +43,25 @@ class Migration(DataMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'myjobs.activity': {
+            'Meta': {'object_name': 'Activity'},
+            'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '150'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.appaccess': {
+            'Meta': {'object_name': 'AppAccess'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.role': {
+            'Meta': {'unique_together': "(('company', 'name'),)", 'object_name': 'Role'},
+            'activities': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Activity']", 'symmetrical': 'False'}),
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'myjobs.user': {
             'Meta': {'object_name': 'User'},
@@ -118,6 +86,7 @@ class Migration(DataMigration):
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'password_change': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'profile_completion': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'roles': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.Role']", 'symmetrical': 'False'}),
             'source': ('django.db.models.fields.CharField', [], {'default': "'https://secure.my.jobs'", 'max_length': '255'}),
             'timezone': ('django.db.models.fields.CharField', [], {'default': "'America/New_York'", 'max_length': '255'}),
             'user_guid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
@@ -125,7 +94,7 @@ class Migration(DataMigration):
         },
         u'mypartners.commonemaildomain': {
             'Meta': {'ordering': "['domain']", 'object_name': 'CommonEmailDomain'},
-            'domain': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '200'}),
+            'domain': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'mypartners.contact': {
@@ -134,6 +103,7 @@ class Migration(DataMigration):
             'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_action_time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'locations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'contacts'", 'symmetrical': 'False', 'to': u"orm['mypartners.Location']"}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -161,6 +131,7 @@ class Migration(DataMigration):
         u'mypartners.contactrecord': {
             'Meta': {'object_name': 'ContactRecord'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'contact': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.Contact']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'contact_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'contact_phone': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '30', 'blank': 'True'}),
@@ -173,6 +144,7 @@ class Migration(DataMigration):
             'job_hires': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
             'job_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '40', 'blank': 'True'}),
             'job_interviews': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '6', 'blank': 'True'}),
+            'last_action_time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'length': ('django.db.models.fields.TimeField', [], {'null': 'True', 'blank': 'True'}),
             'location': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'notes': ('django.db.models.fields.TextField', [], {'default': "''", 'max_length': '1000', 'blank': 'True'}),
@@ -191,17 +163,42 @@ class Migration(DataMigration):
             'postal_code': ('django.db.models.fields.CharField', [], {'max_length': '12', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '200'})
         },
+        u'mypartners.nonuseroutreach': {
+            'Meta': {'object_name': 'NonUserOutreach'},
+            'communication_records': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.ContactRecord']", 'symmetrical': 'False'}),
+            'contacts': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Contact']", 'symmetrical': 'False'}),
+            'current_workflow_state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachWorkflowState']"}),
+            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'email_body': ('django.db.models.fields.TextField', [], {}),
+            'from_email': ('django.db.models.fields.EmailField', [], {'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'outreach_email': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.OutreachEmailAddress']"}),
+            'partners': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['mypartners.Partner']", 'symmetrical': 'False'})
+        },
+        u'mypartners.outreachemailaddress': {
+            'Meta': {'object_name': 'OutreachEmailAddress'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            'email': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'mypartners.outreachemaildomain': {
             'Meta': {'ordering': "['company', 'domain']", 'unique_together': "(('company', 'domain'),)", 'object_name': 'OutreachEmailDomain'},
             'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'domain': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            'domain': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
+        u'mypartners.outreachworkflowstate': {
+            'Meta': {'object_name': 'OutreachWorkflowState'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         u'mypartners.partner': {
             'Meta': {'object_name': 'Partner'},
             'approval_status': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['mypartners.Status']", 'unique': 'True', 'null': 'True'}),
+            'archived_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'data_source': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_action_time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'library': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['mypartners.PartnerLibrary']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
@@ -246,7 +243,7 @@ class Migration(DataMigration):
             'approved_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'code': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
+            'last_modified': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'})
         },
         u'mypartners.tag': {
             'Meta': {'unique_together': "(('name', 'company'),)", 'object_name': 'Tag'},
@@ -304,6 +301,7 @@ class Migration(DataMigration):
         u'seo.company': {
             'Meta': {'ordering': "['name']", 'unique_together': "(('name', 'user_created'),)", 'object_name': 'Company'},
             'admins': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.User']", 'through': u"orm['seo.CompanyUser']", 'symmetrical': 'False'}),
+            'app_access': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.AppAccess']", 'symmetrical': 'False', 'blank': 'True'}),
             'canonical_microsite': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'company_slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'digital_strategies_customer': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -368,6 +366,7 @@ class Migration(DataMigration):
             'defaultBlurb': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'defaultBlurbTitle': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'directemployers_link': ('django.db.models.fields.URLField', [], {'default': "'http://directemployers.org'", 'max_length': '200'}),
+            'doc_type': ('django.db.models.fields.CharField', [], {'default': '\'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">\'', 'max_length': '255'}),
             'facet_tag': ('django.db.models.fields.CharField', [], {'default': "'new-jobs'", 'max_length': '50'}),
             'fontColor': ('django.db.models.fields.CharField', [], {'default': "'666666'", 'max_length': '6'}),
             'footer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
@@ -375,6 +374,7 @@ class Migration(DataMigration):
             'header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'home_page_template': ('django.db.models.fields.CharField', [], {'default': "'home_page/home_page_listing.html'", 'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language_code': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '16'}),
             'location_tag': ('django.db.models.fields.CharField', [], {'default': "'jobs'", 'max_length': '50'}),
             'meta': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'moc_helptext': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
@@ -515,4 +515,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['mypartners']
-    symmetrical = True

@@ -90,10 +90,10 @@ def get_company_name(user):
 
     # Only return companies for which the user is a company user
     try:
-        if settings.DEBUG:
+        if settings.ROLES_ENABLED:
             return Company.objects.filter(role__user=user)
         else:
-            return user.comapny_set.all()
+            return user.company_set.all()
     except ValueError:
         return Company.objects.none()
 

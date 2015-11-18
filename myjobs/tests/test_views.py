@@ -1141,13 +1141,13 @@ class MyJobsTopbarViewsTests(MyJobsBase):
                       {% get_company_name user as company_name %}
                       {{ company_name }}"""
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             context = Context({'user': self.user})
             rendered = Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             roles = [RoleFactory(company=c) for c in self.companies]
 
             self.user.roles = roles

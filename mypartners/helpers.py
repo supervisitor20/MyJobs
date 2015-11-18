@@ -479,7 +479,7 @@ def filter_partners(request, partner_library=False):
                           'contact__archived_on__isnull': True})
 
     if state:
-        
+
         state_query = Q()
         if partner_library:
             for synonym in states.synonyms[state.strip().lower()]:

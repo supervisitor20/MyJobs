@@ -41,7 +41,7 @@ class SiteTestCase(DirectSEOBase):
     def tearDown(self):
         super(SiteTestCase, self).tearDown()
         self.conn.delete(q="*:*")
-    
+
     def test_unicode_title(self):
         # Test imports
         group = factories.GroupFactory()
@@ -92,7 +92,7 @@ class SiteTestCase(DirectSEOBase):
             # search results
             for count_tuple in facet_widget.items:
                 self.assertTrue(sqs.count() >= count_tuple[1])
-        
+
         # Test default site facets against PySolr query
         from django.core.cache import cache
         cache.clear()
@@ -135,13 +135,13 @@ class SiteTestCase(DirectSEOBase):
         # last 30 days, this test will eventually be checking 0 jobs in sitemap
         # TODO, find a way to keep feed dates current. We might be able to use
         # the mock library to override datetime functions
-        resp = self.client.get('/sitemap.xml', HTTP_HOST=self.site.domain)  
+        resp = self.client.get('/sitemap.xml', HTTP_HOST=self.site.domain)
         root = etree.fromstring(resp.content)
         self.assertGreater(len(root), 0)
         crawled_jobs = 0
         for loc, lastmod in root:
             self.assertTrue(loc.text)
-            resp = self.client.get(loc.text, HTTP_HOST=self.site.domain)  
+            resp = self.client.get(loc.text, HTTP_HOST=self.site.domain)
             self.assertEqual(resp.status_code, 200)
             # Get the first daily sitemap
             urlset = etree.fromstring(resp.content)

@@ -20,7 +20,7 @@ from universal.helpers import send_email
 
 class CustomSetPasswordForm(SetPasswordForm):
     """
-    Custom password form based on Django's default set password form. This 
+    Custom password form based on Django's default set password form. This
     allows us to enforce the new password rules.
     """
     new_password1 = PasswordField(error_messages={'required':
@@ -45,7 +45,7 @@ class CustomSetPasswordForm(SetPasswordForm):
         """
         Verify that the values entered into the two password fields
         match.
-        
+
         """
         if 'password1' in self._errors:
             self._errors['password1'] = [
@@ -77,7 +77,7 @@ class CustomAuthForm(AuthenticationForm):
     Custom login form based on Django's default login form. This allows us to
     bypass the is_active check on the user in order to allow a limited profile
     view for users that haven't activated yet.
-    
+
     """
     username = forms.CharField(error_messages={'required':'Email is required.'},
                                label=_("Email"), required=True,
@@ -113,7 +113,7 @@ class CustomAuthForm(AuthenticationForm):
                 # These fields are no longer valid. Remove them from the
                 # cleaned data
                 del self.cleaned_data['username']
-                del self.cleaned_data['password']  
+                del self.cleaned_data['password']
 
         self.check_for_test_cookie()
         return self.cleaned_data
@@ -197,7 +197,7 @@ class RegistrationForm(forms.Form):
         """
         Validate that the username is alphanumeric and is not already
         in use.
-        
+
         """
         if User.objects.get_email_owner(self.cleaned_data['email']):
             raise forms.ValidationError(_("A user with that email already exists."))
@@ -208,7 +208,7 @@ class RegistrationForm(forms.Form):
         """
         Verify that the values entered into the two password fields
         match.
-        
+
         """
         if 'password1' in self._errors:
             self._errors['password1'] = [

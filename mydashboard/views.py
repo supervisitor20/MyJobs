@@ -76,7 +76,7 @@ def dashboard(request, template="mydashboard/mydashboard.html",
     authorized_microsites, buids = get_company_microsites(company)
 
     # roles are only enabled during development
-    if settings.DEBUG:
+    if settings.ROLES_ENABLED:
         admins = User.objects.filter(roles__company=company)
     else:
         admins = User.objects.filter(company=company)

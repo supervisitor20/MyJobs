@@ -116,7 +116,7 @@ class JobFeed(object):
     def job_mocs(job):
         """
         Return a list of MOCs and MOC slabs for a given job.
-        
+
         """
         onets = job.get('onet_code', '')
         moc_list = []
@@ -130,7 +130,7 @@ class JobFeed(object):
         Return a list of moc data that will match this job's CustomCareer
         mappings, as well as original moc-onet mappings that haven't been
         overridden.
-        
+
         This is union of (CustomCareer mapped mocs) and (all mocs that would
         normally map, minus any mocs with custom mappings)
 
@@ -163,7 +163,7 @@ class JobFeed(object):
         mapped_job_mocs = Moc.objects.filter(id__in=list(onet_list))
         mapped_job_moc_set = set(mapped_job_mocs)
         job_mocs = unmapped_mocs | mapped_job_moc_set
-        return self.moc_data(job_mocs) 
+        return self.moc_data(job_mocs)
 
     @staticmethod
     def clean_onet(onet):
@@ -192,7 +192,7 @@ class JobFeed(object):
     def full_loc(obj):
         fields = ['city', 'state', 'location', 'country']
         strings = ['%s::%s' % (f, obj[f]) for f in fields]
-        
+
         return '@@'.join(strings)
 
     @staticmethod
@@ -204,12 +204,12 @@ class JobFeed(object):
         if slugify(obj['state']):
             url = "%s/%s/jobs" % (slugify(obj['state']),
                                   obj['country_short'].lower())
-            
+
             return "%s::%s" % (url, obj['state'])
 
     @staticmethod
     def city_slab(obj):
-        url = "%s/%s/%s/jobs" % (slugify(obj['city']), slugify(obj['state']), 
+        url = "%s/%s/%s/jobs" % (slugify(obj['city']), slugify(obj['state']),
                                  obj['country_short'].lower())
         return "%s::%s" % (url, obj['location'])
 
@@ -250,7 +250,7 @@ class DEJobFeed(JobFeed):
         Returns:
         A datetime object representing a random time between `date` and
         the previous midnight.
-        
+
         """
         oneday = datetime.timedelta(hours=23, minutes=59, seconds=59)
         # midnight last night
@@ -281,7 +281,7 @@ class DEJobFeed(JobFeed):
             else:
                 job_dict[element.tag] = self.unescape(element.text)
         return job_dict
-        
+
     @staticmethod
     def markdown_to_html(description):
         markdowner = markdown2.Markdown(extras={'demote-headers': 3})
@@ -318,12 +318,12 @@ class DEJobFeed(JobFeed):
         job_dict = {}
         # Convert the xml element to a dictionary for easier handling
         job_node = self.node_to_dict(job_node)
-    
+
         job_node['location'] = self.location(job_node)
 
-        job_node['date_created'] = get_strptime(job_node['date_created'], 
+        job_node['date_created'] = get_strptime(job_node['date_created'],
                                                 self.datetime_pattern)
-        job_node['date_modified'] = get_strptime(job_node['date_modified'], 
+        job_node['date_modified'] = get_strptime(job_node['date_modified'],
                                                 self.datetime_pattern)
 
         onets = job_node.get('onet_code', '')
@@ -346,9 +346,9 @@ class DEJobFeed(JobFeed):
         mocs = self.job_mocs(job_node)
         moc_tups = self.moc_data(mocs)
         mapped_moc_tups = self.mapped_mocs(mocs, job_node)
-        
+
         job_dict['job_source_name'] = self.job_source_name
-        job_dict['buid'] = self.jsid 
+        job_dict['buid'] = self.jsid
         job_dict['city'] = job_node['city']
         job_dict['city_ac'] = job_node['city']
         job_dict['city_exact'] = job_node['city']
@@ -496,7 +496,7 @@ class DEv2JobFeed(DEJobFeed):
             joblist.append(jobdict)
         return joblist
 
-    
+
 def get_strptime(ts, pattern):
     """Convert a datetime string to a datetime object."""
     if not ts:
@@ -519,7 +519,7 @@ def guid_from_link(link):
 
 
 def get_mapped_mocs(bu, onets):
-    """For a given job, determine any custom onet mappings that override the 
+    """For a given job, determine any custom onet mappings that override the
     defaults.
     Input:
         :bu: The businessUnit this job is associated with
