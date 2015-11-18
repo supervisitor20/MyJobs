@@ -1030,7 +1030,7 @@ var EditRolePage = React.createClass({
     {/* Submit to server */}
     $.post(url, data_to_send, function(response) {
 
-      {/* TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon:
+      {/* TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
         http://stackoverflow.com/questions/33778675/react-make-flash-message-disappear-automatically
         */}
       if ( response.success == "true" ){

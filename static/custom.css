@@ -4140,7 +4140,7 @@ h1 a {
   position: relative;
 }
 
-.product-card-full .label-warning{
+.product-card-full .label-warning, .product-card-full .label-success{
   height: 45px;
   padding-top: 15px;
 }
