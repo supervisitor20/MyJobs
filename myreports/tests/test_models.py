@@ -173,7 +173,9 @@ class TestDynamicReport(MyReportsTestCase):
         report = DynamicReport.objects.create(
             report_presentation=report_pres,
             filters=json.dumps({
-                'city': 'city-2',
+                'locations': {
+                    'city': 'city-2',
+                },
             }),
             owner=self.company)
         report.regenerate()

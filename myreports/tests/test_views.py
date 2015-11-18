@@ -544,7 +544,9 @@ class TestDynamicReports(MyReportsTestCase):
                 'rp_id': 3,
                 'name': 'The Report',
                 'filter': json.dumps({
-                    'city': 'city-2',
+                    'locations': {
+                        'city': 'city-2',
+                    },
                 }),
             })
         self.assertEqual(200, resp.status_code)

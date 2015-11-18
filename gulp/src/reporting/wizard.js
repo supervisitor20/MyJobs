@@ -187,7 +187,7 @@ export class WizardPageFilter extends Component {
         });
     }
 
-    async getHints(filter, field, partial) {
+    async getHints(filter, partial) {
         try {
             const {reportConfig} = this.props;
             return await reportConfig.getHints(filter, partial);
@@ -222,6 +222,7 @@ export class WizardPageFilter extends Component {
                                 updateFilter={v =>
                                     this.updateFilter(col.filter, v)}/>
                         ));
+                        break;
                     case "search_select":
                         rows.push(this.renderRow(col.display, col.filter,
                             <WizardFilterSearchDropdown
@@ -229,7 +230,17 @@ export class WizardPageFilter extends Component {
                                 updateFilter={v =>
                                     this.updateFilter(col.filter, v)}
                                 getHints={v =>
-                                    this.getHints(col.filter, col.field, v)}/>
+                                    this.getHints(col.filter, v)}/>
+                        ));
+                        break;
+                    case "city_state":
+                        rows.push(this.renderRow(col.display, col.filter,
+                            <WizardFilterCityState
+                                id={col.filter}
+                                updateFilter={v =>
+                                    this.updateFilter(col.filter, v)}
+                                getHints={(f, v) =>
+                                    this.getHints(f, v)}/>
                         ));
                         break;
                     case "search_multiselect":
@@ -238,7 +249,7 @@ export class WizardPageFilter extends Component {
                                 addItem={v =>
                                     this.addToMultifilter(col.filter, v)}
                                 getHints={v =>
-                                    this.getHints(col.filter, col.field, v)}/>
+                                    this.getHints(col.filter, v)}/>
                         ));
                         rows.push(this.renderRow(
                             "",
@@ -278,6 +289,49 @@ export class WizardPageFilter extends Component {
 
 WizardPageFilter.propTypes = {
     reportConfig: PropTypes.object.isRequired,
+};
+
+
+export class WizardFilterCityState extends Component {
+    constructor() {
+        super();
+        this.state = {city: '', state: ''};
+    }
+
+    updateField(field, value) {
+        const {updateFilter} = this.props;
+        let newState = {...this.state};
+        newState[field] = value;
+        this.setState(newState);
+        updateFilter(newState);
+    }
+
+    render() {
+        const {id, getHints} = this.props;
+        return <span>
+            <WizardFilterSearchDropdown
+                id={id + "-city"}
+                placeholder="city"
+                updateFilter={v =>
+                    this.updateField('city', v)}
+                getHints={v =>
+                    getHints('city', v)}/>
+            <WizardFilterSearchDropdown
+                id={id + "-state"}
+                placeholder="state"
+                updateFilter={v =>
+                    this.updateField('state', v)}
+                getHints={v =>
+                    getHints('state', v)}/>
+        </span>;
+    }
+
+}
+
+WizardFilterCityState.propTypes = {
+    id: PropTypes.string.isRequired,
+    updateFilter: PropTypes.func.isRequired,
+    getHints: PropTypes.func.isRequired,
 };
 
 
@@ -337,7 +391,7 @@ export class WizardFilterSearchDropdown extends Component {
 
     render() {
         try {
-            const {id, updateFilter} = this.props;
+            const {id, updateFilter, placeholder} = this.props;
             const eid = 'filter-autosuggest-' + id;
 
             return (
@@ -355,6 +409,7 @@ export class WizardFilterSearchDropdown extends Component {
                         }}
                     inputAttributes={{
                         type: "search",
+                        placeholder: placeholder,
                         onChange: v => updateFilter(v),
                         }}/>
             );
@@ -368,6 +423,7 @@ WizardFilterSearchDropdown.propTypes = {
     id: PropTypes.string.isRequired,
     updateFilter: PropTypes.func.isRequired,
     getHints: PropTypes.func.isRequired,
+    placeholder: PropTypes.string,
 };
 
 

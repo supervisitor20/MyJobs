@@ -256,7 +256,7 @@ def create_full_fixture():
         column_name="locations",
         output_format="city_state_list",
         filter_interface_type='city_state',
-        filter_interface_display='Locations',
+        filter_interface_display='Location',
         configuration=con_con,
         multi_value_expansion=False,
         has_help=True)

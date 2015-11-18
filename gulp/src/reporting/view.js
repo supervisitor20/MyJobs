@@ -27,7 +27,6 @@ export class DynamicReportApp extends Component {
     }
 
     async refreshReportList() {
-        console.log('refreshReportList');
         const {reportFinder} = this.props;
         const reportList = await reportFinder.getReportList();
 

@@ -36,8 +36,7 @@ class ContactsDataSourceJsonDriver(object):
 
             kwargs['date'] = dates
 
-        kwargs['city'] = filter_spec.get('city', None)
-        kwargs['state'] = filter_spec.get('state', None)
+        kwargs['locations'] = filter_spec.get('locations', None)
         kwargs['tags'] = filter_spec.get('tags', None)
         kwargs['partner'] = filter_spec.get('partner', None)
 
@@ -80,7 +79,7 @@ class ContactsDataSource(object):
         return [self.extract_record(r) for r in qs_distinct]
 
     def help_city(self, company, filter, partial):
-        modified_filter = filter.clone_with(city=None)
+        modified_filter = filter.clone_without_city()
         contacts_qs = self.filtered_query_set(company, modified_filter)
         locations_qs = (
             Location.objects
@@ -90,7 +89,7 @@ class ContactsDataSource(object):
         return [{'key': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter, partial):
-        modified_filter = filter.clone_with(state=None)
+        modified_filter = filter.clone_without_state()
         contacts_qs = self.filtered_query_set(company, modified_filter)
         locations_qs = (
             Location.objects
@@ -141,18 +140,31 @@ class ContactsDataSource(object):
 
 @dict_identity
 class ContactsFilter(object):
-    def __init__(self, date=None, state=None, city=None, tags=None,
-                 partner=None):
+    def __init__(self, date=None, locations=None, tags=None, partner=None):
         self.date = date
-        self.state = state
-        self.city = city
+        self.locations = locations
         self.tags = tags
         self.partner = partner
 
-    def clone_with(self, **kwargs):
-        new_keys = self.__dict__
-        new_keys.update(kwargs)
-        return ContactsFilter(**new_keys)
+    def clone_without_city(self):
+        new_root = dict(self.__dict__)
+        locations = new_root.get('locations', None)
+        if locations:
+            if 'city' in locations:
+                new_locations = dict(locations)
+                del new_locations['city']
+            new_root['locations'] = new_locations
+        return ContactsFilter(**new_root)
+
+    def clone_without_state(self):
+        new_root = dict(self.__dict__)
+        locations = new_root.get('locations', None)
+        if locations:
+            if 'state' in locations:
+                new_locations = dict(locations)
+                del new_locations['state']
+            new_root['locations'] = new_locations
+        return ContactsFilter(**new_root)
 
     def filter_query_set(self, qs):
         if self.date is not None:
@@ -174,10 +186,13 @@ class ContactsFilter(object):
         if self.partner:
             qs = qs.filter(partner__pk__in=self.partner)
 
-        if self.city:
-            qs = qs.filter(locations__city__iexact=self.city)
+        if self.locations is not None:
+            city = self.locations.get('city', None)
+            if city:
+                qs = qs.filter(locations__city__iexact=city)
 
-        if self.state:
-            qs = qs.filter(locations__state__iexact=self.state)
+            state = self.locations.get('state', None)
+            if state:
+                qs = qs.filter(locations__state__iexact=state)
 
         return qs

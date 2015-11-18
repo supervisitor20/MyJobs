@@ -145,8 +145,7 @@ class TestContactsDataSource(MyJobsBase):
             ContactsFilter(
                 partner=[],
                 tags=[],
-                city='',
-                state=''),
+                locations={'city': '', 'state': ''}),
             [])
         names = set([r['name'] for r in recs])
         expected = {self.john.name, self.sue.name}
@@ -156,7 +155,10 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
-            ContactsFilter(state='CA'),
+            ContactsFilter(
+                locations={
+                    'state': 'CA'
+                }),
             [])
         names = [r['name'] for r in recs]
         expected = [self.sue.name]
@@ -166,7 +168,10 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
-            ContactsFilter(city='Los Angeles'),
+            ContactsFilter(
+                locations={
+                    'city': 'Los Angeles'
+                }),
             [])
         names = [r['name'] for r in recs]
         expected = [self.sue.name]
@@ -174,13 +179,19 @@ class TestContactsDataSource(MyJobsBase):
 
     def test_help_city(self):
         ds = ContactsDataSource()
-        recs = ds.help_city(self.company, ContactsFilter(city="zz"), "angel")
+        recs = ds.help_city(
+            self.company,
+            ContactsFilter(locations={'city': "zz"}),
+            "angel")
         actual = set([r['key'] for r in recs])
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
         ds = ContactsDataSource()
-        recs = ds.help_state(self.company, ContactsFilter(state="zz"), "i")
+        recs = ds.help_state(
+            self.company,
+            ContactsFilter(locations={'state': "zz"}),
+            "i")
         actual = set([r['key'] for r in recs])
         self.assertEqual({'IL', 'IN'}, actual)
 
@@ -246,8 +257,9 @@ class TestContactsDataSourceJsonDriver(TestCase):
         self.assertEquals(ContactsFilter(), result)
 
     def test_city_filter(self):
-        result = self.driver.build_filter('{"city": "Indy"}')
-        self.assertEquals(ContactsFilter(city='Indy'), result)
+        result = self.driver.build_filter(
+                '{"locations": {"city": "Indy"}}')
+        self.assertEquals(ContactsFilter(locations={'city': 'Indy'}), result)
 
     def test_date_filters(self):
         spec = '{"date": ["2015-09-01", "2015-09-30"]}'
@@ -318,3 +330,23 @@ class TestContactsDataSourceJsonDriver(TestCase):
                 'locations': True,
             },
         }, self.driver.encode_filter_interface(report_config))
+
+
+class TestContactsFilterCloning(TestCase):
+    def test_clone_without_empty(self):
+        filter = ContactsFilter()
+        self.assertEqual(ContactsFilter(), filter.clone_without_city())
+        self.assertEqual(ContactsFilter(), filter.clone_without_state())
+
+    def test_clone_without_full(self):
+        filter = ContactsFilter(
+                tags=['C'],
+                locations={'city': 'A', 'state': 'B'})
+        expected_with_city = ContactsFilter(
+                tags=['C'],
+                locations={'city': 'A'})
+        expected_with_state = ContactsFilter(
+                tags=['C'],
+                locations={'state': 'B'})
+        self.assertEqual(expected_with_state, filter.clone_without_city())
+        self.assertEqual(expected_with_city, filter.clone_without_state())
