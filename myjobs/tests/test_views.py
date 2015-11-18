@@ -1127,8 +1127,6 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         # Test if the lists of company names match!
         self.assertItemsEqual(jsond_company_names, actual_company_names)
-<<<<<<< HEAD
-=======
 
     def test_get_company_name(self):
         """
@@ -1156,5 +1154,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
             rendered = Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
-
->>>>>>> 996ed2dbed29687728cbcedb767c6bc197427353
