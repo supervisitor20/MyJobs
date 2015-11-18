@@ -67,7 +67,7 @@ class DecoratorTests(MyJobsBase):
 
         self.company.app_access.clear()
 
-        def callback():
+        def callback(request):
             raise Http404("This app doesn't exist.")
 
         with self.assertRaises(Http404) as cm:
@@ -86,7 +86,7 @@ class DecoratorTests(MyJobsBase):
 
         self.user.roles.first().activities.clear()
 
-        def callback():
+        def callback(request):
             raise Http404("Required activities missing.")
 
         with self.assertRaises(Http404) as cm:
@@ -101,7 +101,7 @@ class DecoratorTests(MyJobsBase):
         When an invalid callback is declared, we should see an error.
         """
 
-        def callback():
+        def callback(request):
             raise Http404("Required activities missing.")
 
         with self.assertRaises(TypeError) as cm:

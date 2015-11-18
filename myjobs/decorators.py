@@ -151,6 +151,9 @@ def requires(*activities, **callbacks):
                 callable to be used as a view response when the users's company
                 doesn't have the appropriate app access (as determined by the
                 passed in activities).
+                
+                Both callbacks take a `request` parameter which can be used to
+                do further processing before returning an alternate result.
 
     Examples:
     Let's assume that the activities "create user", "read user", "update user",
@@ -176,7 +179,7 @@ def requires(*activities, **callbacks):
     the user some useful information) you may additionally pass an
     `activity_callback`, which will return the appropriate response:
 
-        def callback():
+        def callback(request):
             return HttpResponse("<strong>Insufficient permissions. "
                                 "Please contact your administrator</strong>")
 
@@ -197,8 +200,10 @@ def requires(*activities, **callbacks):
         raise TypeError(CALLBACK_ERROR_TEMPLATE.format(callbacks="\n".join(
             "- {0}".format(callback) for callback in invalid_callbacks)))
 
-    activity_callback = callbacks.get('activity_callback', MissingActivity)
-    access_callback = callbacks.get('access_callback', MissingAppAccess)
+    activity_callback = callbacks.get(
+        'activity_callback', lambda request: MissingActivity())
+    access_callback = callbacks.get(
+            'access_callback', lambda request: MissingAppAccess())
 
     def decorator(view_func):
         @wraps(view_func)
@@ -225,11 +230,11 @@ def requires(*activities, **callbacks):
             # company should have at least the access required by the view
             if not bool(company_access) or not set(required_access).issubset(
                     company_access):
-                return access_callback()
+                return access_callback(request)
             # the user should have at least the activities required by the view
             elif not bool(user_activities) or not set(activities).issubset(
                     user_activities):
-                return activity_callback()
+                return activity_callback(request)
             else:
                 return view_func(request, *args, **kwargs)
 
