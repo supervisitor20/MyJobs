@@ -38,6 +38,9 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertTrue(soup.findAll('tr', {'class': 'profile-section'}))
 
     def test_edit_summary(self):
+        """
+        See test_edit_profile
+        """
         summary = SummaryFactory(user=self.user)
         resp = self.client.get(reverse('view_profile'))
         soup = BeautifulSoup(resp.content)
