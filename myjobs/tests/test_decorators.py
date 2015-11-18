@@ -2,6 +2,7 @@ from django.test import RequestFactory
 from django.test.utils import override_settings
 from django.http import HttpResponse, Http404
 
+from myjobs.models import Activity
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
@@ -34,6 +35,19 @@ class DecoratorTests(MyJobsBase):
         self.request = factory.get("/test")
         self.request.user = self.user
 
+    def test_decorating_a_view_with_invalid_activities(self):
+        """
+        Decorating a view with activities that don't exist should raise an
+        exception.
+        """
+
+        with self.assertRaises(Activity.DoesNotExist) as cm:
+            view = requires("this is invalid")(dummy_view)
+
+        # the erroneous activity should be in the error message
+        self.assertIn("this is invalid", cm.exception.message)
+
+
     def test_accessing_a_view_with_proper_permissions(self):
         """
         If a user tries to access a page for which his company has access and
@@ -41,7 +55,7 @@ class DecoratorTests(MyJobsBase):
         allowed to visit that page.
         """
 
-        response = requires([self.activity.name])(dummy_view)(self.request)
+        response = requires(self.activity.name)(dummy_view)(self.request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, self.user.email)
 
@@ -53,7 +67,7 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.company.app_access.clear()
-        response = requires([self.activity.name])(dummy_view)(self.request)
+        response = requires(self.activity.name)(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(type(response), MissingAppAccess)
@@ -67,27 +81,15 @@ class DecoratorTests(MyJobsBase):
 
         self.company.app_access.clear()
 
-        def callback():
+        def callback(request):
             raise Http404("This app doesn't exist.")
 
         with self.assertRaises(Http404) as cm:
             response = requires(
-                [self.activity.name],
+                self.activity.name,
                 access_callback=callback)(dummy_view)(self.request)
 
         self.assertEqual(cm.exception.message, "This app doesn't exist.")
-
-    def test_user_with_wrong_activities(self):
-        """
-        When a user's roles don't include all of the activities required by a
-        view, they should see a permission denied error.
-        """
-
-        self.user.roles.clear()
-        response = requires([self.activity.name])(dummy_view)(self.request)
-
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(type(response), MissingActivity)
 
     def test_activity_callback(self):
         """
@@ -96,17 +98,46 @@ class DecoratorTests(MyJobsBase):
         response.
         """
 
-        self.user.roles.clear()
+        self.user.roles.first().activities.clear()
 
-        def callback():
+        def callback(request):
             raise Http404("Required activities missing.")
 
         with self.assertRaises(Http404) as cm:
             response = requires(
-                [self.activity.name],
+                self.activity.name,
                 activity_callback=callback)(dummy_view)(self.request)
 
         self.assertEqual(cm.exception.message, "Required activities missing.")
+
+    def test_invalid_callback(self):
+        """
+        When an invalid callback is declared, we should see an error.
+        """
+
+        def callback(request):
+            raise Http404("Required activities missing.")
+
+        with self.assertRaises(TypeError) as cm:
+            # we misspelled access here, so the callback is invalid
+            view = requires(
+                self.activity.name,
+                acess_callback=callback)(dummy_view)
+
+        # the erroneous callback should be listed in the exception
+        self.assertIn("- acess_callback", cm.exception.message)
+
+    def test_user_with_wrong_activities(self):
+        """
+        When a user's roles don't include all of the activities required by a
+        view, they should see a permission denied error.
+        """
+
+        self.user.roles.first().activities.clear()
+        response = requires(self.activity.name)(dummy_view)(self.request)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(type(response), MissingActivity)
 
     def test_user_with_wrong_number_of_activities(self):
         """
@@ -116,7 +147,7 @@ class DecoratorTests(MyJobsBase):
 
         activity = ActivityFactory(app_access=self.app_access)
         response = requires(
-            [self.activity.name, activity.name])(dummy_view)(self.request)
+            self.activity.name, activity.name)(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(type(response), MissingActivity)
@@ -129,7 +160,7 @@ class DecoratorTests(MyJobsBase):
 
         activity = ActivityFactory(app_access=self.app_access)
         self.role.activities.add(activity)
-        response = requires([self.activity.name])(dummy_view)(self.request)
+        response = requires(self.activity.name)(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, self.user.email)

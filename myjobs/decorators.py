@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, AppAccess
+from myjobs.models import User, AppAccess, Activity
 from universal.helpers import get_company_or_404
 
 
@@ -99,6 +99,12 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
         return wraps(view_func)(wrap)
     return decorator
 
+CALLBACK_ERROR_TEMPLATE = """\
+Received invalid callbacks:
+{callbacks}
+Expected "access_callback" and/or "activity_callback".
+"""
+
 class MissingAppAccess(HttpResponseForbidden):
     """
     MissingAppAccess is raised when a company user access a view but that
@@ -119,7 +125,9 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
-def requires(activities, activity_callback=None, access_callback=None):
+
+
+def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
 
@@ -138,13 +146,17 @@ def requires(activities, activity_callback=None, access_callback=None):
 
     Inputs:
     :activities: A list of activity names that the decorated view should
-                   check against.
-    :activity_callback: A callable to be used as the view response when the
-                        user isn't associated with the correct subset of
-                        activities.
-    :access_callback: A callable to be used as the view response when the
-                      user's company doesn't have the appropriate app access
-                      (as determined by the passed in activities).
+                 check against. Passing invalid activity names will result in
+                 an `Activity.DoesNotExist` exception.
+    :callbacks: callbacks['activity_callback'] is a callable to be used as a
+                view response when the use isn't associated with the correct
+                subset of activities. callbacks['access_callback'] is a
+                callable to be used as a view response when the users's company
+                doesn't have the appropriate app access (as determined by the
+                passed in activities).
+
+                Both callbacks take a `request` parameter which can be used to
+                do further processing before returning an alternate result.
 
     Examples:
     Let's assume that the activities "create user", "read user", "update user",
@@ -154,7 +166,7 @@ def requires(activities, activity_callback=None, access_callback=None):
 
     We might want to decorate that view as follows:
 
-        @requires(["read user", "update user"])
+        @requires("read user", "update user")
         def modify_user(request):
             ...
 
@@ -170,11 +182,11 @@ def requires(activities, activity_callback=None, access_callback=None):
     the user some useful information) you may additionally pass an
     `activity_callback`, which will return the appropriate response:
 
-        def callback():
+        def callback(request):
             return HttpResponse("<strong>Insufficient permissions. "
                                 "Please contact your administrator</strong>")
 
-        @requires(["read user", "update user"], activity_callback=callback)
+        @requires("read user", "update user", activity_callback=callback)
         def modify_user(request):
             ...
 
@@ -183,8 +195,26 @@ def requires(activities, activity_callback=None, access_callback=None):
     response used when app access is missing by passing `access_callback`.
     """
 
-    activity_callback = activity_callback or MissingActivity
-    access_callback = access_callback or MissingAppAccess
+
+    activities = set(activities)
+    valid_activities = set(Activity.objects.values_list('name', flat=True))
+
+    if not activities.issubset(valid_activities):
+        raise Activity.DoesNotExist(
+            "Activities with these names do not exists: {}".format(
+                activities.difference(valid_activities)))
+
+    invalid_callbacks = set(callbacks.keys()).difference({
+        "access_callback", "activity_callback"})
+
+    if invalid_callbacks:
+        raise TypeError(CALLBACK_ERROR_TEMPLATE.format(callbacks="\n".join(
+            "- {0}".format(callback) for callback in invalid_callbacks)))
+
+    activity_callback = callbacks.get(
+        'activity_callback', lambda request: MissingActivity())
+    access_callback = callbacks.get(
+            'access_callback', lambda request: MissingAppAccess())
 
     def decorator(view_func):
         @wraps(view_func)
@@ -192,28 +222,30 @@ def requires(activities, activity_callback=None, access_callback=None):
             #TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
+
             if not settings.ROLES_ENABLED:
                 return view_func(request, *args, **kwargs)
 
             company = get_company_or_404(request)
             # the app_access we have, determined by the current company
-            company_access = company.app_access.values_list('name', flat=True)
-            user_activities = request.user.roles.values_list(
-                'activities__name', flat=True)
+            company_access = filter(bool, company.app_access.values_list(
+                'name', flat=True))
+            user_activities = filter(bool, request.user.roles.values_list(
+                'activities__name', flat=True))
 
             # the app_access we need, determined by the activities passed in
-            required_access = AppAccess.objects.filter(
+            required_access = filter(bool, AppAccess.objects.filter(
                 activity__name__in=activities).values_list(
-                    'name', flat=True)
+                    'name', flat=True).distinct())
 
             # company should have at least the access required by the view
             if not bool(company_access) or not set(required_access).issubset(
                     company_access):
-                return access_callback()
+                return access_callback(request)
             # the user should have at least the activities required by the view
             elif not bool(user_activities) or not set(activities).issubset(
                     user_activities):
-                return activity_callback()
+                return activity_callback(request)
             else:
                 return view_func(request, *args, **kwargs)
 
