@@ -9,8 +9,6 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
-var stripDebug = require('gulp-strip-debug');
-var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
 
 var vendor_libs = [
@@ -23,8 +21,6 @@ var vendor_libs = [
 ];
 
 var dest = '../static/bundle';
-
-var strip_debug = true;
 
 // Splitting vendor libs into a separate bundle improves rebuild time from 8
 // seconds to <500ms.
@@ -96,17 +92,8 @@ gulp.task('manageusers', function() {
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
     // stripDebug() must come before sourcemaps.write()
-    // You should remove logging before committing, but this confirms logging won't be in production
-    .pipe(gulpif(strip_debug, stripDebug()))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
-});
-
-// By default, we strip logging. This disables that functionality.
-gulp.task('watch-no-strip', function() {
-    console.log("Keeping console and debugger statements.");
-    strip_debug = false;
-    gulp.watch('src/**/*', ['reporting', 'manageusers']);
 });
 
 gulp.task('default', ['build']);

@@ -145,7 +145,7 @@ var EditUserPage = React.createClass({
 
     if(validateEmail(user_email) === false) {
       this.setState({
-          user_email_help: 'Email invalid',
+          user_email_help: 'Invalid email.',
           role_multiselect_help: '',
           available_roles: this.refs.roles.state.available_roles,
           assigned_roles: this.refs.roles.state.assigned_roles
@@ -195,7 +195,7 @@ var EditUserPage = React.createClass({
     $.post(url, data_to_send, function(response) {
       if ( response.success == "true" ){
         ReactDOM.render(
-          <Container page="Users" disappear_text="Role created successfully"/>,
+          <Container page="Users" reload_apis="true" disappear_text="User created successfully"/>,
             document.getElementById('content')
         );
       }
@@ -231,7 +231,7 @@ var EditUserPage = React.createClass({
         },
      success: function( response ) {
        ReactDOM.render(
-         <Container page="Users" />,
+         <Container page="Users" reload_apis="true" disappear_text="User deleted successfully"/>,
            document.getElementById('content')
        );
     }});
@@ -340,48 +340,6 @@ var AssociatedRolesList = React.createClass({
 });
 
 var UsersList = React.createClass({
-  handleEditClick: function(user_id) {
-
-    ReactDOM.render(
-      <Container page="EditUser" action="Edit" user_id={user_id}/>,
-        document.getElementById('content')
-    );
-  },
-  getInitialState: function() {
-    return {
-      table_rows: ''
-    };
-  },
-  componentDidMount: function() {
-    $.get(this.props.source, function(results) {
-      if (this.isMounted()) {
-
-        var table_rows = [];
-
-        for (var key in results) {
-          results[key].roles = JSON.parse(results[key].roles);
-
-          table_rows.push(
-            <tr key={key}>
-              <td data-title="User Email">{results[key].email}</td>
-              <td data-title="Associated Roles">
-                <AssociatedRolesList roles={results[key].roles}/>
-              </td>
-              <td data-title="Status">
-                <Status status={results[key].status}/>
-              </td>
-              <td data-title="Edit">
-                <Button onClick={this.handleEditClick.bind(this, key)}>Edit</Button>
-              </td>
-            </tr>
-          );
-        }
-        this.setState({
-          table_rows: table_rows
-        });
-      }
-    }.bind(this));
-  },
   render: function() {
     return (
       <div>
@@ -395,7 +353,7 @@ var UsersList = React.createClass({
             </tr>
           </thead>
           <tbody>
-            {this.state.table_rows}
+            {this.props.users_table_rows}
           </tbody>
         </table>
       </div>
@@ -413,7 +371,7 @@ var UsersPage = React.createClass({
           </div>
           <div className="product-card-full no-highlight">
 
-            <UsersList source="/manage-users/api/users/" />
+            <UsersList users_table_rows={this.props.users_table_rows} />
 
             <hr/>
 
@@ -472,44 +430,6 @@ var RolesList = React.createClass({
         document.getElementById('content')
     );
   },
-  getInitialState: function() {
-    return {
-      table_rows: []
-    };
-  },
-  componentDidMount: function() {
-
-    console.log("this.state is:");
-    console.log(this.state);
-
-    $.get(this.props.source, function(results) {
-      if (this.isMounted()) {
-        var table_rows = [];
-        for (var key in results) {
-          results[key].activities = JSON.parse(results[key].activities.assigned);
-          results[key].users.assigned = JSON.parse(results[key].users.assigned);
-
-          table_rows.push(
-            <tr key={results[key].role.id}>
-              <td data-title="Role">{results[key].role.name}</td>
-              <td data-title="Associated Activities">
-                <AssociatedActivitiesList activities={results[key].activities}/>
-              </td>
-              <td data-title="Associated Users">
-                <AssociatedUsersList users={results[key].users.assigned}/>
-              </td>
-              <td data-title="Edit">
-                <Button onClick={this.handleEditClick.bind(this, results[key].role.id)}>Edit</Button>
-              </td>
-            </tr>
-          );
-        }
-        this.setState({
-          table_rows: table_rows
-        });
-      }
-    }.bind(this));
-  },
   render: function() {
     return (
       <div>
@@ -523,7 +443,7 @@ var RolesList = React.createClass({
             </tr>
           </thead>
           <tbody>
-            {this.state.table_rows}
+            {this.props.roles_table_rows}
           </tbody>
         </table>
       </div>
@@ -582,7 +502,7 @@ var AddUserButton = React.createClass({
 var AddRoleButton = React.createClass({
   handleClick: function(event) {
     ReactDOM.render(
-      <Container page="EditRole"  action="Add"/>,
+      <Container page="EditRole" action="Add"/>,
         document.getElementById('content')
     );
   },
@@ -634,18 +554,6 @@ var AddUserButton = React.createClass({
   render: function() {
     return (
       <Button className="primary pull-right"  onClick={this.handleClick}>Add User</Button>
-    );
-  }
-});
-
-var SaveUserButton = React.createClass({
-  handleClick: function(event) {
-    {/* TODO A user MUST be assigned to at least one role
-        TODO Submit new user to server */}
-  },
-  render: function() {
-    return (
-      <Button className="primary pull-right" onClick={this.handleClick}>Save Users</Button>
     );
   }
 });
@@ -751,7 +659,7 @@ var RolesMultiselect = React.createClass({
     return (
         <div className="row">
           <div className="col-xs-6">
-            <label>Available Roles:</label>
+            <label>Roles Available:</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={bootstrapClasses}
@@ -763,7 +671,7 @@ var RolesMultiselect = React.createClass({
             />
           </div>
           <div className="col-xs-6">
-            <label>Roles Assigned to this User:</label>
+            <label>Roles Assigned:</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
@@ -826,7 +734,7 @@ var ActivitiesMultiselect = React.createClass({
         <div className="row">
 
           <div className="col-xs-6">
-            <label>Available Activities:</label>
+            <label>Activities Available:</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={bootstrapClasses}
@@ -838,7 +746,7 @@ var ActivitiesMultiselect = React.createClass({
             />
           </div>
           <div className="col-xs-6">
-            <label>Activities Assigned to this Role:</label>
+            <label>Activities Assigned:</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
@@ -888,7 +796,7 @@ var UsersMultiselect = React.createClass({
     return (
         <div className="row">
           <div className="col-xs-6">
-            <label>Available Users:</label>
+            <label>Users Available:</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={bootstrapClasses}
@@ -900,7 +808,7 @@ var UsersMultiselect = React.createClass({
             />
           </div>
           <div className="col-xs-6">
-            <label>Users Assigned to this Role:</label>
+            <label>Users Assigned:</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
@@ -1123,7 +1031,7 @@ var EditRolePage = React.createClass({
     $.post(url, data_to_send, function(response) {
       if ( response.success == "true" ){
         ReactDOM.render(
-          <Container page="Roles" disappear_text="Role created successfully"/>,
+          <Container page="Roles" reload_apis="true" disappear_text="Role created successfully"/>,
             document.getElementById('content')
         );
       }
@@ -1133,8 +1041,8 @@ var EditRolePage = React.createClass({
             role_name: this.state.role_name,
             available_activities: this.refs.activities.state.available_activities,
             assigned_activities: this.refs.activities.state.assigned_activities,
-            available_users:  this.refs.users.state.available_users,
-            assigned_users:  this.refs.users.state.assigned_users
+            available_users: this.refs.users.state.available_users,
+            assigned_users: this.refs.users.state.assigned_users
         });
       }
     }.bind(this));
@@ -1159,7 +1067,7 @@ var EditRolePage = React.createClass({
         },
      success: function( response ) {
        ReactDOM.render(
-         <Container page="Roles" />,
+         <Container page="Roles" reload_apis="true"  />,
            document.getElementById('content')
        );
     }});
@@ -1244,7 +1152,7 @@ var RolesPage = React.createClass({
           </div>
           <div className="product-card-full no-highlight">
 
-            <RolesList source="/manage-users/api/roles/" />
+            <RolesList roles_table_rows={this.props.roles_table_rows} />
 
             <hr/>
 
@@ -1297,17 +1205,50 @@ var OverviewPage = React.createClass({
 });
 
 var Content = React.createClass({
-
-  getInitialState: function() {
-    {/* TODO Refactor to use basic Actions and the Dispatchers */}
-    return {
-      activities_table_rows: []
-    };
+  handleEditClick: function(id, page) {
+    {/* Might be a better way to do this */}
+    if (page == "EditRole"){
+      var role_id = id;
+    }
+    else if(page == "EditUser"){
+      var user_id = id;
+    }
+    ReactDOM.render(
+      <Container page={page} action="Edit" role_id={role_id} user_id={user_id}/>,
+        document.getElementById('content')
+    );
   },
-  componentDidMount: function() {
+  callRolesAPI: function () {
+    {/* Get roles once, but reload if needed */}
+    $.get("/manage-users/api/roles/", function(results) {
+      if (this.isMounted()) {
+        var roles_table_rows = [];
+        for (var key in results) {
+          results[key].activities = JSON.parse(results[key].activities.assigned);
+          results[key].users.assigned = JSON.parse(results[key].users.assigned);
+          roles_table_rows.push(
+            <tr key={results[key].role.id}>
+              <td data-title="Role">{results[key].role.name}</td>
+              <td data-title="Associated Activities">
+                <AssociatedActivitiesList activities={results[key].activities}/>
+              </td>
+              <td data-title="Associated Users">
+                <AssociatedUsersList users={results[key].users.assigned}/>
+              </td>
+              <td data-title="Edit">
+                <Button onClick={this.handleEditClick.bind(this, results[key].role.id, 'EditRole')}>Edit</Button>
+              </td>
+            </tr>
+          );
+        }
+        this.setState({
+          roles_table_rows: roles_table_rows
+        });
+      }
+    }.bind(this));
+  },
 
-
-
+  callActivitiesAPI: function () {
     {/* Get activities once, and only once */}
     $.get("/manage-users/api/activities/", function(results) {
       var results = JSON.parse(results)
@@ -1326,8 +1267,54 @@ var Content = React.createClass({
         });
       }
     }.bind(this));
+  },
 
-
+  callUsersAPI: function () {
+    {/* Get users once, but reload if needed */}
+    $.get("/manage-users/api/users/", function(results) {
+      if (this.isMounted()) {
+        var users_table_rows = [];
+        for (var key in results) {
+          results[key].roles = JSON.parse(results[key].roles);
+          users_table_rows.push(
+            <tr key={key}>
+              <td data-title="User Email">{results[key].email}</td>
+              <td data-title="Associated Roles">
+                <AssociatedRolesList roles={results[key].roles}/>
+              </td>
+              <td data-title="Status">
+                <Status status={results[key].status}/>
+              </td>
+              <td data-title="Edit">
+                <Button onClick={this.handleEditClick.bind(this, key, 'EditUser')}>Edit</Button>
+              </td>
+            </tr>
+          );
+        }
+        this.setState({
+          users_table_rows: users_table_rows
+        });
+      }
+    }.bind(this));
+  },
+  getInitialState: function() {
+    return {
+      roles_table_rows: [],
+      activities_table_rows: [],
+      users_table_rows: []
+    };
+  },
+  componentWillReceiveProps: function(nextProps) {
+    if ( nextProps.reload_apis == "true" ){
+      this.callRolesAPI();
+      this.callActivitiesAPI();
+      this.callUsersAPI();
+    }
+  },
+  componentDidMount: function() {
+    this.callActivitiesAPI();
+    this.callRolesAPI();
+    this.callUsersAPI();
   },
   render: function() {
     var page = this.props.page;
@@ -1336,16 +1323,16 @@ var Content = React.createClass({
             page = <OverviewPage disappear_text={this.props.disappear_text}/>;
             break;
         case "Roles":
-            page = <RolesPage disappear_text={this.props.disappear_text}/>;
+            page = <RolesPage roles_table_rows={this.state.roles_table_rows} disappear_text={this.props.disappear_text}/>;
             break;
         case "Activities":
             page = <ActivitiesPage activities_table_rows={this.state.activities_table_rows} disappear_text={this.props.disappear_text}/>;
             break;
         case "Users":
-            page = <UsersPage disappear_text={this.props.disappear_text}/>;
+            page = <UsersPage users_table_rows={this.state.users_table_rows} disappear_text={this.props.disappear_text}/>;
             break;
         case "EditRole":
-            page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
+            page = <EditRolePage action={this.props.action} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
             break;
         case "EditUser":
             page = <EditUserPage action={this.props.action} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>;
@@ -1398,7 +1385,7 @@ var Container = React.createClass({
 
         <div className="row">
           <Menu />
-          <Content page={this.props.page} action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
+          <Content reload_apis={this.props.reload_apis} page={this.props.page} action={this.props.action} role_id={this.props.role_id} user_id={this.props.user_id} disappear_text={this.props.disappear_text}/>
         </div>
         <div className="clearfix"></div>
       </div>
@@ -1407,6 +1394,6 @@ var Container = React.createClass({
 });
 
 ReactDOM.render(
-  <Container page="Overview" name="Daniel" company="DirectEmployers" action="" role_to_edit="" role_id="" user_id=""/>,
+  <Container page="Overview" reload_apis="true" action="" role_id="" user_id=""/>,
     document.getElementById('content')
 );
