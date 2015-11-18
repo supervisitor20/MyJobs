@@ -189,6 +189,7 @@ def requires(*activities, **callbacks):
     response used when app access is missing by passing `access_callback`.
     """
 
+
     invalid_callbacks = set(callbacks.keys()).difference({
         "access_callback", "activity_callback"})
 
@@ -202,23 +203,24 @@ def requires(*activities, **callbacks):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-
             #TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
+
             if not settings.ROLES_ENABLED:
                 return view_func(request, *args, **kwargs)
 
             company = get_company_or_404(request)
             # the app_access we have, determined by the current company
-            company_access = company.app_access.values_list('name', flat=True)
-            user_activities = request.user.roles.values_list(
-                'activities__name', flat=True)
+            company_access = filter(bool, company.app_access.values_list(
+                'name', flat=True))
+            user_activities = filter(bool, request.user.roles.values_list(
+                'activities__name', flat=True))
 
             # the app_access we need, determined by the activities passed in
-            required_access = AppAccess.objects.filter(
+            required_access = filter(bool, AppAccess.objects.filter(
                 activity__name__in=activities).values_list(
-                    'name', flat=True)
+                    'name', flat=True).distinct())
 
             # company should have at least the access required by the view
             if not bool(company_access) or not set(required_access).issubset(

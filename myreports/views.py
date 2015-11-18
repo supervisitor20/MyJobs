@@ -75,7 +75,7 @@ def report_archive(request):
         return response
 
 
-@requires("read partner", "read contact", "read communication record")
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
@@ -137,7 +137,8 @@ class ReportView(View):
     app = 'mypartners'
     model = 'contactrecord'
 
-    @method_decorator(requires(PRM))
+    @method_decorator(requires(
+        'read partner', 'read contact', 'read communication record'))
     @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
@@ -159,7 +160,7 @@ class ReportView(View):
         """
 
         report_id = request.GET.get('id', 0)
-        report = Report.objects.get(id=report_id)
+        report = get_object_or_404(Report, pk=report_id)
 
         if report.model == "contactrecord":
             records = report.queryset
@@ -208,6 +209,7 @@ class ReportView(View):
         Outputs:
            An HttpResponse indicating success or failure of report creation.
         """
+
         company = get_company_or_404(request)
         name = request.POST.get('report_name', str(datetime.now()))
         filters = request.POST.get('filters', "{}")
@@ -227,7 +229,7 @@ class ReportView(View):
         return HttpResponse(name, content_type='text/plain')
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def regenerate(request):
     """
@@ -254,7 +256,7 @@ def regenerate(request):
         "This view is only reachable via a GET request.")
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def downloads(request):
     """ Renders a download customization screen.
@@ -316,7 +318,7 @@ def downloads(request):
         raise Http404("This view is only reachable via an AJAX request")
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 def download_report(request):
     """
@@ -360,7 +362,7 @@ def download_report(request):
 
 
 @restrict_to_staff()
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['GET'])
 def dynamicoverview(request):
@@ -378,7 +380,7 @@ def dynamicoverview(request):
                               RequestContext(request))
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def reporting_types_api(request):
@@ -397,7 +399,7 @@ def reporting_types_api(request):
                         content=json.dumps(data))
 
 
-@requires(PRM)
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def report_types_api(request):
@@ -417,6 +419,7 @@ def report_types_api(request):
                         content=json.dumps(data))
 
 
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def data_types_api(request):
@@ -436,6 +439,7 @@ def data_types_api(request):
                         content=json.dumps(data))
 
 
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def presentation_types_api(request):
@@ -458,6 +462,7 @@ def presentation_types_api(request):
                         content=json.dumps(data))
 
 
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
@@ -478,6 +483,7 @@ def run_dynamic_report(request):
                         content=json.dumps(data))
 
 
+@requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['GET'])
 def download_dynamic_report(request):
@@ -498,7 +504,7 @@ def download_dynamic_report(request):
     values = request.GET.getlist('values', None)
     order_by = request.GET.get('order_by', None)
 
-    report = DynamicReport.objects.get(id=report_id)
+    report = get_object_or_404(DynamicReport, pk=report_id)
 
     if order_by:
         report.order_by = order_by
