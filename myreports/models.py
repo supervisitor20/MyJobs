@@ -184,7 +184,8 @@ class Configuration(models.Model):
                 help=cm.has_help)
             for cm in (
                 self.configurationcolumn_set
-                .filter(is_active=True))])
+                .filter(is_active=True)
+                .order_by('column_name'))])
 
 
 class ReportPresentationManager(models.Manager):
