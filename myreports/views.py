@@ -460,59 +460,17 @@ def presentation_types_api(request):
 @require_http_methods(['POST'])
 def filters_api(request):
     request_data = request.POST
-    # XXX: Change to configuration id
     rp_id = request_data['rp_id']
     report_pres = ReportPresentation.objects.get(id=rp_id)
     datasource = report_pres.report_data.report_type.datasource
 
-    report_configuration = contacts_config
+    report_configuration = (report_pres.configuration.build_configuration())
 
     driver = get_datasource_json_driver(datasource)
     result = driver.encode_filter_interface(report_configuration)
 
     return HttpResponse(content_type='application/json',
                         content=json.dumps(result))
-
-
-# XXX: build from models!
-contacts_config = ReportConfiguration(
-    columns=[
-        ColumnConfiguration(
-            column='name',
-            format='text'),
-        ColumnConfiguration(
-            column='partner',
-            format='text',
-            filter_interface='search_multiselect',
-            filter_display='Partners',
-            help=True),
-        ColumnConfiguration(
-            column='email',
-            format='text'),
-        ColumnConfiguration(
-            column='phone',
-            format='text'),
-        ColumnConfiguration(
-            column='date',
-            format='us_date',
-            filter_interface='date_range',
-            filter_display='Date'),
-        ColumnConfiguration(
-            column='notes',
-            format='text'),
-        ColumnConfiguration(
-            column='locations',
-            format='city_state_list',
-            filter_interface='city_state',
-            filter_display='Locations',
-            help=True),
-        ColumnConfiguration(
-            column='tags',
-            format='comma_sep',
-            filter_interface='search_multiselect',
-            filter_display='Tags',
-            help=True),
-    ])
 
 
 @requires(PRM, missing_activity, missing_access)
@@ -602,7 +560,9 @@ def download_dynamic_report(request):
     order_by = request.GET.get('order_by', None)
 
     report = DynamicReport.objects.get(id=report_id)
-    report_configuration = contacts_config
+    report_configuration = (
+            report.report_presentation
+            .configuration.build_configuration())
 
     if order_by:
         report.order_by = order_by

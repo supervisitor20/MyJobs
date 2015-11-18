@@ -4,7 +4,10 @@ from myreports.tests.setup import MyReportsTestCase
 
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
-    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes)
+    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes,
+    Configuration)
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration)
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import (
     ContactFactory, PartnerFactory, LocationFactory)
@@ -84,9 +87,57 @@ class TestActiveModels(MyReportsTestCase):
         columns = (ConfigurationColumn.objects
                    .active_for_report_presentation(rp))
         expected_columns = set([
-            u'locations', u'partner', u'tags', u'name', u'email'])
-        actual_columns = set(c.column.column_name for c in columns)
+            u'phone', u'date', u'locations', u'partner', u'tags',
+            u'name', u'email', u'notes'])
+        actual_columns = set(c.column_name for c in columns)
         self.assertEqual(expected_columns, actual_columns)
+
+
+class TestReportConfiguration(MyReportsTestCase):
+    def test_build_config(self):
+        expected_config = ReportConfiguration(
+            columns=[
+                ColumnConfiguration(
+                    column='name',
+                    format='text'),
+                ColumnConfiguration(
+                    column='partner',
+                    format='text',
+                    filter_interface='search_multiselect',
+                    filter_display='Partners',
+                    help=True),
+                ColumnConfiguration(
+                    column='email',
+                    format='text'),
+                ColumnConfiguration(
+                    column='phone',
+                    format='text'),
+                ColumnConfiguration(
+                    column='date',
+                    format='us_date',
+                    filter_interface='date_range',
+                    filter_display='Date'),
+                ColumnConfiguration(
+                    column='notes',
+                    format='text'),
+                ColumnConfiguration(
+                    column='locations',
+                    format='city_state_list',
+                    filter_interface='city_state',
+                    filter_display='Locations',
+                    help=True),
+                ColumnConfiguration(
+                    column='tags',
+                    format='comma_sep',
+                    filter_interface='search_multiselect',
+                    filter_display='Tags',
+                    help=True),
+            ])
+        config_model = Configuration.objects.get(id=3)
+        self.maxDiff = 10000
+        self.assertEqual(
+            expected_config.columns,
+            config_model.build_configuration().columns)
 
 
 class TestDynamicReport(MyReportsTestCase):

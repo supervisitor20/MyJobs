@@ -6,6 +6,8 @@ from django.db.models.loading import get_model
 
 from myreports.helpers import serialize, determine_user_type
 from myreports.datasources import get_datasource_json_driver
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration)
 from myreports.result_encoder import report_hook, ReportJsonEncoder
 from mypartners.models import SearchParameterManager
 
@@ -172,6 +174,18 @@ class Configuration(models.Model):
     name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
 
+    def build_configuration(self):
+        return ReportConfiguration([
+            ColumnConfiguration(
+                column=cm.column_name,
+                format=cm.output_format,
+                filter_interface=cm.filter_interface_type,
+                filter_display=cm.filter_interface_display,
+                help=cm.has_help)
+            for cm in (
+                self.configurationcolumn_set
+                .filter(is_active=True))])
+
 
 class ReportPresentationManager(models.Manager):
     def active_for_report_type_data_type(self, rtdt):
@@ -203,46 +217,27 @@ class Column(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class InterfaceElementType(models.Model):
-    interface_element_type = models.CharField(max_length=50)
-    description = models.CharField(max_length=500)
-    element_code = models.CharField(max_length=2000)
-    is_active = models.BooleanField(default=False)
-
-
-class ColumnFormat(models.Model):
-    name = models.CharField(max_length=50)
-    format_code = models.CharField(max_length=2000)
-    is_active = models.BooleanField(default=False)
-
-
-class ConfigurationColumnFormats(models.Model):
-    column_format = models.ForeignKey('ColumnFormat')
-    configuration_column = models.ForeignKey('ConfigurationColumn')
-    is_active = models.BooleanField(default=False)
-
-
 class ConfigurationColumnManager(models.Manager):
     def active_for_report_presentation(self, rp):
         return (ConfigurationColumn.objects
                 .filter(configuration__reportpresentation=rp)
                 .filter(is_active=True)
-                .filter(column_formats__is_active=True)
-                .filter(configurationcolumnformats__is_active=True)
-                .select_related()
-                .prefetch_related('column_formats'))
+                .select_related())
 
 
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
-    column = models.ForeignKey(Column, null=True)
-    interface_element_type = models.ForeignKey(InterfaceElementType)
+
+    column_name = models.CharField(max_length=50, default='')
+    output_format = models.CharField(max_length=50, default='')
+    filter_interface_type = models.CharField(max_length=50, null=True)
+    filter_interface_display = models.CharField(max_length=50, null=True)
+    has_help = models.BooleanField(default=False)
+
     alias = models.CharField(max_length=100)
     multi_value_expansion = models.PositiveSmallIntegerField()
     filter_only = models.BooleanField(default=False)
     default_value = models.CharField(max_length=500, blank=True, default="")
-    column_formats = models.ManyToManyField(
-        'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
     objects = ConfigurationColumnManager()
 

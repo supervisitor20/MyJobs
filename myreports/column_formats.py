@@ -1,9 +1,13 @@
+from universal.helpers import dict_identity
 
+
+@dict_identity
 class StringFormatter(object):
     def format(self, value):
         return unicode(value)
 
 
+@dict_identity
 class JoinFormatter(object):
     def __init__(self, between, inner_formatter=None):
         self.between = between
@@ -17,6 +21,7 @@ class JoinFormatter(object):
             self.inner_formatter.format(v) for v in values)
 
 
+@dict_identity
 class StrftimeFormatter(object):
     def __init__(self, strftime_format):
         self.strftime_format = strftime_format
@@ -25,6 +30,7 @@ class StrftimeFormatter(object):
         return value.strftime(self.strftime_format)
 
 
+@dict_identity
 class MultiFieldDescend(object):
     def __init__(self, fields, inner):
         self.fields = fields

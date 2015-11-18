@@ -8,9 +8,49 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Deleting model 'ColumnFormat'
+        db.delete_table(u'myreports_columnformat')
+
+        # Deleting model 'ConfigurationColumnFormats'
+        db.delete_table(u'myreports_configurationcolumnformats')
+
+        # Deleting model 'InterfaceElementType'
+        db.delete_table(u'myreports_interfaceelementtype')
+
         # Adding field 'DynamicReport.filters'
         db.add_column(u'myreports_dynamicreport', 'filters',
                       self.gf('django.db.models.fields.TextField')(default='{}'),
+                      keep_default=False)
+
+        # Deleting field 'ConfigurationColumn.column'
+        db.delete_column(u'myreports_configurationcolumn', 'column_id')
+
+        # Deleting field 'ConfigurationColumn.interface_element_type'
+        db.delete_column(u'myreports_configurationcolumn', 'interface_element_type_id')
+
+        # Adding field 'ConfigurationColumn.column_name'
+        db.add_column(u'myreports_configurationcolumn', 'column_name',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=50),
+                      keep_default=False)
+
+        # Adding field 'ConfigurationColumn.output_format'
+        db.add_column(u'myreports_configurationcolumn', 'output_format',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=50),
+                      keep_default=False)
+
+        # Adding field 'ConfigurationColumn.filter_interface_type'
+        db.add_column(u'myreports_configurationcolumn', 'filter_interface_type',
+                      self.gf('django.db.models.fields.CharField')(max_length=50, null=True),
+                      keep_default=False)
+
+        # Adding field 'ConfigurationColumn.filter_interface_display'
+        db.add_column(u'myreports_configurationcolumn', 'filter_interface_display',
+                      self.gf('django.db.models.fields.CharField')(max_length=50, null=True),
+                      keep_default=False)
+
+        # Adding field 'ConfigurationColumn.has_help'
+        db.add_column(u'myreports_configurationcolumn', 'has_help',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
         # Adding field 'ReportType.datasource'
@@ -20,8 +60,61 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+        # Adding model 'ColumnFormat'
+        db.create_table(u'myreports_columnformat', (
+            ('format_code', self.gf('django.db.models.fields.CharField')(max_length=2000)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal(u'myreports', ['ColumnFormat'])
+
+        # Adding model 'ConfigurationColumnFormats'
+        db.create_table(u'myreports_configurationcolumnformats', (
+            ('configuration_column', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ConfigurationColumn'])),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('column_format', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.ColumnFormat'])),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal(u'myreports', ['ConfigurationColumnFormats'])
+
+        # Adding model 'InterfaceElementType'
+        db.create_table(u'myreports_interfaceelementtype', (
+            ('element_code', self.gf('django.db.models.fields.CharField')(max_length=2000)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=500)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('interface_element_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
+        ))
+        db.send_create_signal(u'myreports', ['InterfaceElementType'])
+
         # Deleting field 'DynamicReport.filters'
         db.delete_column(u'myreports_dynamicreport', 'filters')
+
+        # Adding field 'ConfigurationColumn.column'
+        db.add_column(u'myreports_configurationcolumn', 'column',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myreports.Column'], null=True),
+                      keep_default=False)
+
+        # Adding field 'ConfigurationColumn.interface_element_type'
+        db.add_column(u'myreports_configurationcolumn', 'interface_element_type',
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['myreports.InterfaceElementType']),
+                      keep_default=False)
+
+        # Deleting field 'ConfigurationColumn.column_name'
+        db.delete_column(u'myreports_configurationcolumn', 'column_name')
+
+        # Deleting field 'ConfigurationColumn.output_format'
+        db.delete_column(u'myreports_configurationcolumn', 'output_format')
+
+        # Deleting field 'ConfigurationColumn.filter_interface_type'
+        db.delete_column(u'myreports_configurationcolumn', 'filter_interface_type')
+
+        # Deleting field 'ConfigurationColumn.filter_interface_display'
+        db.delete_column(u'myreports_configurationcolumn', 'filter_interface_display')
+
+        # Deleting field 'ConfigurationColumn.has_help'
+        db.delete_column(u'myreports_configurationcolumn', 'has_help')
 
         # Deleting field 'ReportType.datasource'
         db.delete_column(u'myreports_reporttype', 'datasource')
@@ -103,13 +196,6 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'table_name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        u'myreports.columnformat': {
-            'Meta': {'object_name': 'ColumnFormat'},
-            'format_code': ('django.db.models.fields.CharField', [], {'max_length': '2000'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
         u'myreports.configuration': {
             'Meta': {'object_name': 'Configuration'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -119,22 +205,17 @@ class Migration(SchemaMigration):
         u'myreports.configurationcolumn': {
             'Meta': {'object_name': 'ConfigurationColumn'},
             'alias': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Column']", 'null': 'True'}),
-            'column_formats': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myreports.ColumnFormat']", 'through': u"orm['myreports.ConfigurationColumnFormats']", 'symmetrical': 'False'}),
+            'column_name': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '50'}),
             'configuration': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.Configuration']"}),
             'default_value': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '500', 'blank': 'True'}),
+            'filter_interface_display': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
+            'filter_interface_type': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
             'filter_only': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'has_help': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'interface_element_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.InterfaceElementType']"}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'multi_value_expansion': ('django.db.models.fields.PositiveSmallIntegerField', [], {})
-        },
-        u'myreports.configurationcolumnformats': {
-            'Meta': {'object_name': 'ConfigurationColumnFormats'},
-            'column_format': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ColumnFormat']"}),
-            'configuration_column': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ConfigurationColumn']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+            'multi_value_expansion': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
+            'output_format': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '50'})
         },
         u'myreports.datatype': {
             'Meta': {'object_name': 'DataType'},
@@ -153,14 +234,6 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'report_presentation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myreports.ReportPresentation']"}),
             'results': ('django.db.models.fields.files.FileField', [], {'max_length': '100'})
-        },
-        u'myreports.interfaceelementtype': {
-            'Meta': {'object_name': 'InterfaceElementType'},
-            'description': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'element_code': ('django.db.models.fields.CharField', [], {'max_length': '2000'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'interface_element_type': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         u'myreports.presentationtype': {
             'Meta': {'object_name': 'PresentationType'},

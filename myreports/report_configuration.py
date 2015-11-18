@@ -1,6 +1,9 @@
+from universal.helpers import dict_identity
+
 from myreports.column_formats import COLUMN_FORMATS
 
 
+@dict_identity
 class ReportConfiguration(object):
     def __init__(self, columns):
         self.columns = columns
@@ -14,6 +17,7 @@ class ReportConfiguration(object):
             for c in self.columns)
 
 
+@dict_identity
 class ColumnConfiguration(object):
     def __init__(self, column, format,
                  filter_interface=None, filter_display=None, help=False):
