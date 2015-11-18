@@ -91,7 +91,6 @@ gulp.task('manageusers', function() {
     .pipe(sourcemaps.init({loadMaps: true}))
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
-    // stripDebug() must come before sourcemaps.write()
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
 });
