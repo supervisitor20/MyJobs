@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta, datetime
 
-from mypartners.models import Contact, Location, Tag, Partner
+from mypartners.models import Contact, Location, Tag, Partner, Status
 
 from universal.helpers import dict_identity
 
@@ -134,7 +134,12 @@ class ContactsDataSource(object):
 
     def filtered_query_set(self, company, filter):
         qs_company = Contact.objects.filter(partner__owner=company)
-        qs_filtered = filter.filter_query_set(qs_company)
+        qs_live = (
+            qs_company
+            .filter(approval_status__code__iexact=Status.APPROVED)
+            .filter(partner__approval_status__code__iexact=Status.APPROVED)
+            .filter(archived_on__isnull=True))
+        qs_filtered = filter.filter_query_set(qs_live)
         return qs_filtered
 
 
