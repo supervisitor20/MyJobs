@@ -351,16 +351,20 @@ export class WizardFilterDateRange extends Component {
 
     render() {
         return <span>
-            <input
-                type="text"
-                placeholder="begin date"
-                onChange={e =>
-                    this.updateField('begin', e.target.value)} />
-            <input
-                type="text"
-                placeholder="end date"
-                onChange={e =>
-                    this.updateField('end', e.target.value)} />
+            <div>
+                <input
+                    type="text"
+                    placeholder="begin date"
+                    onChange={e =>
+                        this.updateField('begin', e.target.value)} />
+            </div>
+            <div>
+                <input
+                    type="text"
+                    placeholder="end date"
+                    onChange={e =>
+                        this.updateField('end', e.target.value)} />
+            </div>
         </span>;
     }
 
