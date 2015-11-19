@@ -981,6 +981,7 @@ def api_get_users(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('read user')
 def api_get_specific_user(request, user_id=0):
     """
     GET /manage-users/api/users/NUMBER
