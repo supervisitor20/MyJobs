@@ -835,7 +835,7 @@ def api_edit_role(request, role_id=0):
         # INPUT - role_name
         role_name = request.POST.get("role_name", "")
         # Role names must be unique
-        matching_roles = Role.objects.filter(name=role_name).exclude(pk=role_id)
+        matching_roles = Role.objects.filter(name=role_name, company=company).exclude(pk=role_id)
         if matching_roles.exists():
             response_data["success"] = "false"
             response_data["message"] = "Another role with this name already exists."

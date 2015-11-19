@@ -1071,9 +1071,7 @@ var EditRolePage = React.createClass({
          <Container page="Roles" reload_apis="true"  />,
            document.getElementById('content')
        );
-    }});
-
-
+    }})
   },
   render: function() {
     var delete_role_button = "";
