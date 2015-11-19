@@ -14,7 +14,6 @@ from django.views.decorators.http import require_http_methods
 from myreports.decorators import restrict_to_staff
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
-from mypartners.views import PRM
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
     Column, DataType, ReportTypeDataTypes)
