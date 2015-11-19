@@ -1154,4 +1154,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
             rendered = Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
-
