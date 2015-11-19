@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from django_extensions.admin import ForeignKeyAutocompleteAdmin
-
 from myblocks import forms, models
 
 
@@ -115,23 +113,6 @@ class RowAdmin(admin.ModelAdmin):
     save_as = True
 
 
-class PathInline(admin.TabularInline):
-    model = models.Path
-
-
-class AllowedBlockPathAdmin(ForeignKeyAutocompleteAdmin):
-    inlines = [PathInline]
-    related_search_fields = {
-        'site': ('domain', 'name'),
-    }
-
-    class Meta:
-        model = models.AllowedBlockPath
-
-    class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
-
-
 admin.site.register(models.ApplyLinkBlock, ApplyLinkBlockAdmin)
 admin.site.register(models.BreadboxBlock, BreadboxBlockAdmin)
 admin.site.register(models.ContentBlock, ContentBlockAdmin)
@@ -154,4 +135,3 @@ admin.site.register(models.ColumnBlock, ColumnBlockAdmin)
 
 admin.site.register(models.Row, RowAdmin)
 admin.site.register(models.Page, PageAdmin)
-admin.site.register(models.AllowedBlockPath, AllowedBlockPathAdmin)
