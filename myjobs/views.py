@@ -23,7 +23,7 @@ from django.views.generic import TemplateView
 from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
-from myjobs.decorators import user_is_allowed
+from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import ChangePasswordForm, EditCommunicationForm
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
@@ -598,6 +598,7 @@ def topbar(request):
     return response
 
 @staff_member_required
+@requires("read role")
 def manage_users(request):
     """
     View for manage users
@@ -612,6 +613,7 @@ def manage_users(request):
                                 RequestContext(request))
 
 @staff_member_required
+@requires("read activity")
 def api_get_activities(request):
     """
     Retrieves all activities
@@ -621,6 +623,7 @@ def api_get_activities(request):
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
 @staff_member_required
+@requires("read role")
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
@@ -670,6 +673,7 @@ def api_get_roles(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
     GET /manage-users/api/roles/NUMBER
@@ -723,6 +727,7 @@ def api_get_specific_role(request, role_id=0):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('create role')
 def api_create_role(request):
     """
     POST /manage-users/api/roles/create
@@ -789,6 +794,7 @@ def api_create_role(request):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('update role')
 def api_edit_role(request, role_id=0):
     """
     POST /manage-users/api/roles/edit
@@ -887,6 +893,7 @@ def api_edit_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @staff_member_required
+@requires('delete role')
 def api_delete_role(request, role_id=0):
     """
     POST /manage-users/api/roles/delete/NUMBER

@@ -151,7 +151,7 @@ def requires(*activities, **callbacks):
                 callable to be used as a view response when the users's company
                 doesn't have the appropriate app access (as determined by the
                 passed in activities).
-                
+
                 Both callbacks take a `request` parameter which can be used to
                 do further processing before returning an alternate result.
 
@@ -191,7 +191,6 @@ def requires(*activities, **callbacks):
     status code of 200. A similar strategy can be used for customizing the
     response used when app access is missing by passing `access_callback`.
     """
-
 
     invalid_callbacks = set(callbacks.keys()).difference({
         "access_callback", "activity_callback"})
