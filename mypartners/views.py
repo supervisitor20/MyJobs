@@ -25,6 +25,7 @@ from django.utils.text import force_text
 from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.admin.views.decorators import staff_member_required
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
@@ -33,7 +34,6 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
 from myjobs.decorators import requires
-from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -1322,7 +1322,7 @@ def process_email(request):
     return HttpResponse(status=200)
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def nuo_main(request):
@@ -1340,7 +1340,7 @@ def nuo_main(request):
                                 RequestContext(request))
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def api_get_nuo_inbox_list(request):
@@ -1354,7 +1354,7 @@ def api_get_nuo_inbox_list(request):
     return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def api_save_nuo_inbox(request):
@@ -1369,7 +1369,7 @@ def api_save_nuo_inbox(request):
     # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def api_delete_nuo_inbox(request):

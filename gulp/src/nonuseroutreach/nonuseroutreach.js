@@ -6,9 +6,10 @@ import Button from 'react-bootstrap/lib/Button';
 // class to contain dynamic email editing states, type is text of button and function identifier, disabled is whether
 // the button is disabled or not. by default, it is not disabled
 class ControlButton {
-  constructor(type, disabled=false) {
+  constructor(type, disabled=false, primary=false) {
     this.type = type;
     this.disabled = disabled;
+    this.primary = primary;
   }
 }
 
@@ -58,8 +59,13 @@ var ControlButtons = React.createClass({
   },
   render: function() {
     var buttons = this.props.buttons.map(function(button, i){
+          let classes = [
+              "pull-right",
+              "margin-top",
+          ]
+          if (button.primary) classes.push("primary")
           return (
-              <Button disabled={button.disabled} className="primary pull-right margin-top" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
+              <Button disabled={button.disabled} className={classes} onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
           );
       }.bind(this));
     return (
@@ -94,9 +100,9 @@ var InboxRow = React.createClass({
       validation_messages: validation_object.messages
     })
     if (value != this.state.initial_email) {
-      this.setState({buttons: [new ControlButton("Cancel"), new ControlButton("Save", !validation_object.success)]});
+      this.setState({buttons: [new ControlButton("Save", !validation_object.success, true), new ControlButton("Cancel")]});
     } else {
-      this.setState({buttons: [new ControlButton("Delete")]});
+      this.setState({buttons: [new ControlButton("Delete", false, true)]});
     }
   },
   buttonClicked: function(button) {
@@ -127,7 +133,7 @@ var InboxRow = React.createClass({
   cancelChanges: function() {
     this.setState({
       current_email: this.state.initial_email,
-      buttons: [new ControlButton("Delete")],
+      buttons: [new ControlButton("Delete", false, true)],
       validation_messages: [],
     });
   },
@@ -136,7 +142,7 @@ var InboxRow = React.createClass({
       id: this.props.inbox.pk,
       initial_email: this.props.inbox.fields.email,
       current_email: this.props.inbox.fields.email,
-      buttons: [new ControlButton("Delete")],
+      buttons: [new ControlButton("Delete", false, true)],
       validation_messages: []
     }
   },
