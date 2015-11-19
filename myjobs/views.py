@@ -23,7 +23,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
-from myjobs.decorators import user_is_allowed, requires, MissingActivity
+from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import ChangePasswordForm, EditCommunicationForm
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
@@ -34,8 +34,6 @@ from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
-from seo.models import Company
-from universal.decorators import has_access
 
 logger = logging.getLogger('__name__')
 
@@ -811,7 +809,6 @@ def api_edit_role(request, role_id=0):
     """
 
     response_data = {}
-
     if request.method != "POST":
         response_data["success"] = "false"
         response_data["message"] = "POST method required."
@@ -855,7 +852,6 @@ def api_edit_role(request, role_id=0):
             activity_object = Activity.objects.filter(name=activity)
             activity_id = activity_object[0].id
             activity_ids.append(activity_id)
-
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
 
@@ -876,18 +872,21 @@ def api_edit_role(request, role_id=0):
         for activity_id in activity_ids:
             role.activities.add(activity_id)
             role.save()
-
         # EDIT ROLE - Users assigned to this role
         # Loop through all users. Should each be assigned this role? Or not?
-        all_users = User.objects.all()
-        for user in all_users:
-            if user.email in assigned_users_emails:
-                user.roles.add(int(role_id))
-                user.save()
-            else:
-                user.roles.remove(int(role_id))
-                user.save()
+        existing_role_users = User.objects.filter(roles__id__exact=role_id)
+        new_role_users = User.objects.filter(email__in=assigned_users_emails)
+        for user in existing_role_users.exclude(pk__in=new_role_users.values("pk")):
+            user.roles.remove(role_id)
+        for user in new_role_users.exclude(pk__in=existing_role_users.values("pk")):
+            user.roles.add(role_id)
 
+        # existing_role_users = [user.pk for user in User.objects.filter(roles__id__exact=role_id)]
+        # new_role_users = [user.pk for user in User.objects.filter(email__in=assigned_users_emails)]
+        # for user_pk in [x for x in existing_role_users if x not in new_role_users]:
+        #     role.users.remove(user_pk)
+        # for user_pk in [x for x in new_role_users if x not in existing_role_users]:
+        #     role.users.add(user_pk)
         # RETURN - boolean
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
