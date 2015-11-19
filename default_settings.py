@@ -9,7 +9,7 @@ from os.path import abspath, dirname, basename, join
 
 from secrets import *
 
-ROLES_ENABLED = True
+ROLES_ENABLED = False
 
 djcelery.setup_loader()
 

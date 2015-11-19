@@ -1025,11 +1025,31 @@ var EditRolePage = React.createClass({
     data_to_send['assigned_users'] = assigned_users;
 
     {/* Submit to server */}
+
+
+
+    $.ajax({
+      url  : url,
+      type : 'post',
+      data : data_to_send
+    }).success(function(response){
+      console.log("success");
+      console.log(response)
+    }).error(function(xhr, status){
+      alert("error");
+      alert(xhr.status);
+    });
+
+
+
+
+
+    {/*
     $.post(url, data_to_send, function(response) {
 
-      {/* TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
+      TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
         http://stackoverflow.com/questions/33778675/react-make-flash-message-disappear-automatically
-        */}
+
       if ( response.success == "true" ){
         ReactDOM.render(
           <Container page="Roles" reload_apis="true" disappear_text="Role created successfully"/>,
@@ -1047,6 +1067,11 @@ var EditRolePage = React.createClass({
         });
       }
     }.bind(this));
+
+*/}
+
+
+
   },
   handleDeleteRoleClick: function (event) {
     if (confirm('Are you sure you want to delete this role?')) {
