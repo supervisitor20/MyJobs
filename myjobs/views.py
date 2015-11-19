@@ -8,6 +8,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import logout, authenticate
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
@@ -596,7 +597,7 @@ def topbar(request):
 
     return response
 
-
+@staff_member_required
 def manage_users(request):
     """
     View for manage users
@@ -610,7 +611,7 @@ def manage_users(request):
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
 
-
+@staff_member_required
 def api_get_activities(request):
     """
     Retrieves all activities
@@ -619,7 +620,7 @@ def api_get_activities(request):
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
-
+@staff_member_required
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
@@ -668,7 +669,7 @@ def api_get_roles(request):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_get_specific_role(request, role_id=0):
     """
     GET /manage-users/api/roles/NUMBER
@@ -721,7 +722,7 @@ def api_get_specific_role(request, role_id=0):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_create_role(request):
     """
     POST /manage-users/api/roles/create
@@ -787,7 +788,7 @@ def api_create_role(request):
         response_data["message"] = "POST method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_edit_role(request, role_id=0):
     """
     POST /manage-users/api/roles/edit
@@ -885,7 +886,7 @@ def api_edit_role(request, role_id=0):
         response_data["message"] = "POST method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+@staff_member_required
 def api_delete_role(request, role_id=0):
     """
     POST /manage-users/api/roles/delete/NUMBER
