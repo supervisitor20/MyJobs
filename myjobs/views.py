@@ -23,7 +23,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
-from myjobs.decorators import user_is_allowed, requires, MissingActivity
+from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import ChangePasswordForm, EditCommunicationForm
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
@@ -34,8 +34,6 @@ from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
-from seo.models import Company
-from universal.decorators import has_access
 
 logger = logging.getLogger('__name__')
 
@@ -598,6 +596,7 @@ def topbar(request):
 
     return response
 
+
 @staff_member_required
 @requires('read role', 'read user')
 def manage_users(request):
@@ -614,6 +613,7 @@ def manage_users(request):
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
 
+
 @staff_member_required
 def api_get_activities(request):
     """
@@ -622,6 +622,7 @@ def api_get_activities(request):
 
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
+
 
 @staff_member_required
 @requires('read role')
@@ -672,6 +673,7 @@ def api_get_roles(request):
         response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('read role')
@@ -726,6 +728,7 @@ def api_get_specific_role(request, role_id=0):
     response_data[role_id]['users']['available'] = serializers.serialize("json", users_available, fields=('email'))
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('create role')
@@ -793,6 +796,7 @@ def api_create_role(request):
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+
 @staff_member_required
 @requires('update role')
 def api_edit_role(request, role_id=0):
@@ -811,7 +815,6 @@ def api_edit_role(request, role_id=0):
     """
 
     response_data = {}
-
     if request.method != "POST":
         response_data["success"] = "false"
         response_data["message"] = "POST method required."
@@ -855,7 +858,6 @@ def api_edit_role(request, role_id=0):
             activity_object = Activity.objects.filter(name=activity)
             activity_id = activity_object[0].id
             activity_ids.append(activity_id)
-
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
 
@@ -876,21 +878,17 @@ def api_edit_role(request, role_id=0):
         for activity_id in activity_ids:
             role.activities.add(activity_id)
             role.save()
-
         # EDIT ROLE - Users assigned to this role
         # Loop through all users. Should each be assigned this role? Or not?
-        all_users = User.objects.all()
-        for user in all_users:
-            if user.email in assigned_users_emails:
-                user.roles.add(int(role_id))
-                user.save()
-            else:
-                user.roles.remove(int(role_id))
-                user.save()
-
-        # RETURN - boolean
+        existing_role_users = User.objects.filter(roles__id__exact=role_id)
+        new_role_users = User.objects.filter(email__in=assigned_users_emails)
+        for user in existing_role_users.exclude(pk__in=new_role_users.values("pk")):
+            user.roles.remove(role_id)
+        for user in new_role_users.exclude(pk__in=existing_role_users.values("pk")):
+            user.roles.add(role_id)
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('delete role')
@@ -936,6 +934,7 @@ def api_delete_role(request, role_id=0):
         response_data["message"] = "Role not deleted."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+
 @staff_member_required
 @requires('read user')
 def api_get_users(request):
@@ -979,6 +978,7 @@ def api_get_users(request):
         response_data[user.id]["status"] = user.is_verified
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('read user')
@@ -1032,6 +1032,7 @@ def api_get_specific_user(request, user_id=0):
     response_data[user[0].id]["status"] = user[0].is_verified
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('create user')
@@ -1093,6 +1094,7 @@ def api_create_user(request):
         response_data["success"] = "false"
         response_data["message"] = "User not created."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('update user')
@@ -1167,6 +1169,7 @@ def api_edit_user(request, user_id=0):
         # # RETURN - boolean
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
+
 
 @staff_member_required
 @requires('delete user')
