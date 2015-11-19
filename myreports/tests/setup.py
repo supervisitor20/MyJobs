@@ -213,12 +213,14 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=3,
         column_name="name",
+        order=100,
         output_format="text",
         configuration=con_con,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=4,
         column_name="partner",
+        order=101,
         output_format="text",
         filter_interface_type='search_multiselect',
         filter_interface_display='Partners',
@@ -228,18 +230,21 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=5,
         column_name="email",
+        order=102,
         output_format="text",
         configuration=con_con,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=6,
         column_name="phone",
+        order=103,
         output_format="text",
         configuration=con_con,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=7,
         column_name="date",
+        order=104,
         configuration=con_con,
         output_format="us_date",
         filter_interface_type='date_range',
@@ -248,12 +253,14 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=8,
         column_name="notes",
+        order=105,
         output_format="text",
         configuration=con_con,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=9,
         column_name="locations",
+        order=106,
         output_format="city_state_list",
         filter_interface_type='city_state',
         filter_interface_display='Location',
@@ -263,6 +270,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=10,
         column_name="tags",
+        order=107,
         output_format="comma_sep",
         filter_interface_type='search_multiselect',
         filter_interface_display='Tags',

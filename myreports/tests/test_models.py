@@ -124,7 +124,7 @@ class TestReportConfiguration(MyReportsTestCase):
                     column='locations',
                     format='city_state_list',
                     filter_interface='city_state',
-                    filter_display='Locations',
+                    filter_display='Location',
                     help=True),
                 ColumnConfiguration(
                     column='tags',

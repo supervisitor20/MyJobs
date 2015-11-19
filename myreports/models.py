@@ -185,7 +185,7 @@ class Configuration(models.Model):
             for cm in (
                 self.configurationcolumn_set
                 .filter(is_active=True)
-                .order_by('column_name'))])
+                .order_by('order'))])
 
 
 class ReportPresentationManager(models.Manager):
@@ -229,6 +229,7 @@ class ConfigurationColumnManager(models.Manager):
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
 
+    order = models.IntegerField(default=100)
     column_name = models.CharField(max_length=50, default='')
     output_format = models.CharField(max_length=50, default='')
     filter_interface_type = models.CharField(max_length=50, null=True)

@@ -28,6 +28,11 @@ class Migration(SchemaMigration):
         # Deleting field 'ConfigurationColumn.interface_element_type'
         db.delete_column(u'myreports_configurationcolumn', 'interface_element_type_id')
 
+        # Adding field 'ConfigurationColumn.order'
+        db.add_column(u'myreports_configurationcolumn', 'order',
+                      self.gf('django.db.models.fields.IntegerField')(default=100),
+                      keep_default=False)
+
         # Adding field 'ConfigurationColumn.column_name'
         db.add_column(u'myreports_configurationcolumn', 'column_name',
                       self.gf('django.db.models.fields.CharField')(default='', max_length=50),
@@ -100,6 +105,9 @@ class Migration(SchemaMigration):
         db.add_column(u'myreports_configurationcolumn', 'interface_element_type',
                       self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['myreports.InterfaceElementType']),
                       keep_default=False)
+
+        # Deleting field 'ConfigurationColumn.order'
+        db.delete_column(u'myreports_configurationcolumn', 'order')
 
         # Deleting field 'ConfigurationColumn.column_name'
         db.delete_column(u'myreports_configurationcolumn', 'column_name')
@@ -215,6 +223,7 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'multi_value_expansion': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
+            'order': ('django.db.models.fields.IntegerField', [], {'default': '100'}),
             'output_format': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '50'})
         },
         u'myreports.datatype': {
