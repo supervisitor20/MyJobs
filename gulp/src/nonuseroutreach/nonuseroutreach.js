@@ -59,7 +59,7 @@ var ControlButtons = React.createClass({
   render: function() {
     var buttons = this.props.buttons.map(function(button, i){
           return (
-              <Button disabled={button.disabled} className="primary pull-right" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
+              <Button disabled={button.disabled} className="primary pull-right margin-top" onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
           );
       }.bind(this));
     return (
@@ -76,7 +76,10 @@ var EmailInput = React.createClass({
   },
   render: function(){
     return (
-        <input type="text" className="email-input" id={this.props.id} value={this.props.email} onChange={this.emailChanged} ref="email_input" />
+        <div className="input-group">
+          <input type="text" className="email-input form-control" id={this.props.id} value={this.props.email} onChange={this.emailChanged} ref="email_input" />
+          <span className="input-group-addon">@my.jobs</span>
+        </div>
     )
   },
 });
@@ -118,6 +121,7 @@ var InboxRow = React.createClass({
 
   },
   saveEmail: function() {
+    this.props.loadInboxesFromApi();
     return;
   },
   cancelChanges: function() {
@@ -141,7 +145,7 @@ var InboxRow = React.createClass({
     <HelpText message={message} />
     );
     return (
-    <div className="clearfix inbox-row">
+    <div className="clearfix product-card no-highlight">
       {validation_messages}
       <EmailInput id={this.state.id} email={this.state.current_email} emailFieldChanged={this.emailFieldChanged} />
       <ControlButtons buttons={this.state.buttons} buttonClicked={this.buttonClicked} />
@@ -163,7 +167,10 @@ var InboxList = React.createClass({
       inboxes: [],
     };
   },
-  componentDidMount: async function() {
+  componentDidMount: function () {
+    this.loadInboxesFromApi();
+  },
+  loadInboxesFromApi: async function() {
     const results = await $.get(this.props.source);
     this.setState({
       inboxes: JSON.parse(results),
@@ -171,16 +178,11 @@ var InboxList = React.createClass({
   },
   render: function() {
     const {inboxes} = this.state;
-    var spacer = ''
-    if (inboxes.length !== 0){
-      spacer = <hr  />;
-    }
     return (
       <div>
         {inboxes.map((inbox_ob, i) =>
-              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} />
+              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadFromApi={this.loadInboxesFromApi} />
         )}
-        {spacer}
       </div>
     );
   }
@@ -191,7 +193,7 @@ var InboxList = React.createClass({
 var AddInboxButton = React.createClass({
   render: function() {
     return (
-      <Button disabled={this.props.add_disabled} className="primary pull-right">Add Inbox</Button>
+      <Button disabled={this.props.add_disabled} className="primary pull-right margin-top">Add Inbox</Button>
     );
   }
 });
@@ -200,10 +202,17 @@ var AddInboxButton = React.createClass({
 // container for add button and new inbox input field
 var AddInboxForm = React.createClass({
   getInitialState: function(){
-    return {add_disabled: true};
+    return {
+      add_disabled: true,
+      validation_messages: []
+    };
   },
   emailFieldChanged: function(value) {
-    this.setState({current_email: value});
+    var validation_object = validateEmailInput(value);
+    this.setState({
+      current_email: value,
+      validation_messages: validation_object.messages
+    })
     if (validateEmailInput(value).success) {
       this.setState({add_disabled: false})
     } else {
@@ -217,8 +226,12 @@ var AddInboxForm = React.createClass({
     // TODO: Submit API
   },
   render: function() {
+    var validation_messages = this.state.validation_messages.map((message) =>
+    <HelpText message={message} />
+    );
     return (
       <div className="col-xs-12">
+        {validation_messages}
         <EmailInput emailFieldChanged={this.emailFieldChanged} />
         <AddInboxButton add_disabled={this.state.add_disabled} />
       </div>
@@ -230,7 +243,8 @@ var AddInboxForm = React.createClass({
 // menu link to inbox management app screen
 var InboxManagementButton = React.createClass({
   handleClick: function() {
-    this.props.changePage("InboxManagement");
+    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
+    "have your employees send outreach emails"]);
   },
   render: function() {
     return (
@@ -257,21 +271,34 @@ var OverviewButton = React.createClass({
 var InboxManagementPage = React.createClass({
   render: function() {
     return (
+        <div>
+      <div className="card-wrapper">
       <div className="row">
         <div className="col-xs-12 ">
           <div className="wrapper-header">
-            <h2>Inbox Management</h2>
+            <h2>Existing Inbox Management</h2>
           </div>
-          <div className="product-card-full no-highlight">
-
+          <div className="partner-holder">
             <InboxList source="/prm/api/nonuseroutreach/inbox/list" />
-
-            <div className="row">
+          </div>
+        </div>
+        </div>
+        </div>
+        <div className="card-wrapper">
+        <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Add New Inbox</h2>
+          </div>
+          <div className="partner-holder no-highlight">
+            <div className="product-card no-highlight clearfix">
             <AddInboxForm />
             </div>
           </div>
         </div>
-      </div>
+        </div>
+        </div>
+        </div>
     );
   }
 });
@@ -281,13 +308,15 @@ var InboxManagementPage = React.createClass({
 var OverviewPage = React.createClass({
   render: function() {
     return (
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Overview</h2>
-          </div>
-          <div className="product-card no-highlight">
-            <p>Non User Outreach is a module that will help you manage and track positive outreach efforts by your employees</p>
+      <div className="card-wrapper">
+        <div className="row">
+          <div className="col-xs-12 ">
+            <div className="wrapper-header">
+              <h2>Overview</h2>
+            </div>
+            <div className="product-card no-highlight">
+              <p>Non User Outreach is a module that will help you manage and track positive outreach efforts by your employees</p>
+            </div>
           </div>
         </div>
       </div>
@@ -310,9 +339,7 @@ var Content = React.createClass({
     }
     return (
       <div className="col-xs-8">
-        <div className="card-wrapper">
           {page}
-        </div>
       </div>
     );
   }
@@ -322,18 +349,25 @@ var Content = React.createClass({
 // navigation links
 var Menu = React.createClass({
   render: function() {
+    var tips_header;
+    if (this.props.tips && this.props.tips.length > 0) {
+      var tips = this.props.tips.map(tip => <p>{tip}</p>
+      );
+      tips_header = <h2>Tips</h2>;
+    }
     return (
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
           <OverviewButton {...this.props} />
           <InboxManagementButton {...this.props} />
+          {tips_header}
+          {tips}
         </div>
       </div>
     );
   }
 });
-
 
 // the "master" container
 var Container = React.createClass({
@@ -341,10 +375,13 @@ var Container = React.createClass({
     return {
       page:"Overview",
       company: "DirectEmployers",
+      tips: [],
     };
   },
-  changePage: function(page_input) {
-    this.setState({page:page_input})
+  // change what it displayed in the "Content" div. option parameter "tips" allows a list of tips to display
+  // beneath the navigation menu
+  changePage: function(page_input, tips=[]) {
+    this.setState({page:page_input, tips:tips})
   },
 
   render: function() {
@@ -368,7 +405,7 @@ var Container = React.createClass({
 
         <div className="row">
           <Content page={this.state.page} />
-          <Menu changePage={this.changePage} />
+          <Menu changePage={this.changePage} tips={this.state.tips} />
         </div>
         <div className="clearfix"></div>
       </div>
