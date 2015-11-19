@@ -209,6 +209,13 @@ var EditUserPage = React.createClass({
             assigned_roles: this.refs.roles.state.assigned_roles
         });
       }
+    }.bind(this))
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "Unable to save user. Insufficient privileges.",
+        });
+      }
     }.bind(this));
   },
   handleDeleteUserClick: function (event) {
@@ -222,19 +229,25 @@ var EditUserPage = React.createClass({
     var csrf = getCsrf();
 
     {/* Submit to server */}
-
     $.ajax( "/manage-users/api/users/delete/" + user_id + "/",
-      {
-        type: "DELETE",
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-CSRFToken", csrf);
-        },
-     success: function( response ) {
+    {
+      type: "DELETE",
+      beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-CSRFToken", csrf);
+    },
+    success: function( response ) {
        ReactDOM.render(
          <Container page="Users" reload_apis="true" disappear_text="User deleted successfully"/>,
            document.getElementById('content')
-       );
-    }});
+         );
+    }})
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "User not deleted. Insufficient privileges.",
+        });
+      }
+    }.bind(this));
   },
   render: function() {
 
@@ -1025,31 +1038,10 @@ var EditRolePage = React.createClass({
     data_to_send['assigned_users'] = assigned_users;
 
     {/* Submit to server */}
-
-
-
-    $.ajax({
-      url  : url,
-      type : 'post',
-      data : data_to_send
-    }).success(function(response){
-      console.log("success");
-      console.log(response)
-    }).error(function(xhr, status){
-      alert("error");
-      alert(xhr.status);
-    });
-
-
-
-
-
-    {/*
     $.post(url, data_to_send, function(response) {
-
-      TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
+      {/* TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
         http://stackoverflow.com/questions/33778675/react-make-flash-message-disappear-automatically
-
+        */}
       if ( response.success == "true" ){
         ReactDOM.render(
           <Container page="Roles" reload_apis="true" disappear_text="Role created successfully"/>,
@@ -1066,12 +1058,14 @@ var EditRolePage = React.createClass({
             assigned_users: this.refs.users.state.assigned_users
         });
       }
+    }.bind(this))
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "Unable to save role. Insufficient privileges.",
+        });
+      }
     }.bind(this));
-
-*/}
-
-
-
   },
   handleDeleteRoleClick: function (event) {
     if (confirm('Are you sure you want to delete this role?')) {
@@ -1097,6 +1091,13 @@ var EditRolePage = React.createClass({
            document.getElementById('content')
        );
     }})
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "Role not deleted. Insufficient privileges.",
+        });
+      }
+    }.bind(this));
   },
   render: function() {
     var delete_role_button = "";
