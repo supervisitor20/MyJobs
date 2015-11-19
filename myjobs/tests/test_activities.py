@@ -111,4 +111,4 @@ class TestViewLevelActivities(MyJobsBase):
         /manage-users/api/activities requires 'read role'
         """
 
-        self.assertRequires('api_get_activities', 'read activity')
+        self.assertRequires('api_get_activities', 'read role')

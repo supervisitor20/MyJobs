@@ -613,7 +613,7 @@ def manage_users(request):
                                 RequestContext(request))
 
 @staff_member_required
-@requires("read activity")
+@requires("read role")
 def api_get_activities(request):
     """
     Retrieves all activities
