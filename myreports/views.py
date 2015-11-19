@@ -2,6 +2,7 @@ from collections import OrderedDict
 from datetime import datetime
 import json
 
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.files.base import ContentFile
 from django.db.models.loading import get_model
 from django.http import HttpResponse, Http404
@@ -11,7 +12,6 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
-from myreports.decorators import restrict_to_staff
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
 from mypartners.views import PRM, missing_access, missing_activity
@@ -359,7 +359,7 @@ def download_report(request):
     return response
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 @require_http_methods(['GET'])

@@ -14,6 +14,7 @@ from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
@@ -33,7 +34,6 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
 from myjobs.decorators import requires
-from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -1327,7 +1327,7 @@ def process_email(request):
     return HttpResponse(status=200)
 
 
-@restrict_to_staff()
+@staff_member_required
 @requires(PRM, missing_activity, missing_access)
 @has_access('prm')
 def manage_outreach_inboxes(request):
