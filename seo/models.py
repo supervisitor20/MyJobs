@@ -640,6 +640,15 @@ class Company(models.Model):
                                                             flat=True))
 
     @property
+    def has_features(self):
+        """
+        Convenience read-only property which returns whether the company has
+        any features enabled.
+        """
+
+        return self.app_access.exists()
+
+    @property
     def company_user_count(self):
         """
         Counts how many users are mapped to this company. This is useful for

@@ -83,7 +83,7 @@ class DecoratorTests(MyJobsBase):
         view, they should see a permission denied error.
         """
 
-        self.user.roles.clear()
+        self.user.roles.first().activities.clear()
         response = requires([self.activity.name])(dummy_view)(self.request)
 
         self.assertEqual(response.status_code, 403)
@@ -96,7 +96,7 @@ class DecoratorTests(MyJobsBase):
         response.
         """
 
-        self.user.roles.clear()
+        self.user.roles.first().activities.clear()
 
         def callback():
             raise Http404("Required activities missing.")

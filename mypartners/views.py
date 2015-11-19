@@ -418,6 +418,7 @@ def partner_tagging(request):
     tags = Tag.objects.filter(company=company).order_by('name')
 
     ctx = {'company': company,
+           'create_tags': json.dumps(request.user.can(company, 'create tag')),
            'tags': tags}
 
     return render_to_response('mypartners/partner_tagging.html', ctx,
