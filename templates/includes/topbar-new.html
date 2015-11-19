@@ -40,13 +40,13 @@
                                     <li><a href="{{ ABSOLUTE_URL }}message/inbox?message={{ message.message.pk }}">{{ message.message.start_on.date }} - {{ message.message.subject|truncatewords:'10' }}</a></li>
                                 {% endif %}
                             {% empty %}
-                                <li><p>No new unread messages </p></li>
+                                <li><p>No new unread messages</p></li>
                             {% endfor %}
                         </ul>
                     </li>
-                    {% get_company_from_cookie as company %}
-                    {% is_a_group_member company user "Employer" as group_member %}
+                    {% is_a_group_member user "Employer" as group_member %}
                     {% get_company_name user as company_name %}
+                    {% get_company_from_cookie as company %}
                     {% if group_member %}
                     <li class="{% active_tab 'employer-tools' %} has-drop">
                         <a>{% trans "Employers" %}</a>
@@ -89,7 +89,7 @@
                     <ul id="nav">
                         <li>
                             <a class="main-nav"></a>
-                            <ul class="span4" id="pop-menu">
+                            <ul class="col-md-4" id="pop-menu">
                                 <li id="logged-in-li">
                                     {% trans "Logged in as " %}
                                     <b>
