@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from seo.tests import factories
 from seo.models import Company, CustomFacet, SeoSite, SiteTag
+from myjobs.models import AppAccess
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
 
@@ -355,4 +356,16 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         # postajob_sites = company_sites + network_sites + generic_sites +
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
+
+    def test_enabled_access(self):
+        """
+        `Company.enabled_access` should return  list of app access names.
+        """
+        self.assertItemsEqual(self.company.enabled_access, [])
+
+        app_access = AppAccessFactory(name='Test Access')
+        self.company.app_access.add(app_access)
+
+        self.assertItemsEqual(self.company.enabled_access, ['Test Access'])
+
 

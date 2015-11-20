@@ -280,3 +280,17 @@ class TestActivities(MyJobsBase):
             self.assertFalse(user.can(
                 self.company, activities[0], "eat a burrito"))
 
+    def test_activities(self):
+        """
+        `User.activities` should return a list of activities associated with
+        this user.
+        """
+
+        user = UserFactory()
+
+        self.assertItemsEqual(user.activities, [])
+
+        self.roles.add(self.role)
+        activities = self.role.activities.values_list('name', flat=True)
+
+        self.assertItemsEqual(user.activities, activities)

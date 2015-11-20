@@ -35,6 +35,12 @@ def completion_level(level):
 
     return get_completion(level)
 
+@register.assignment_tag
+def can(user, company, *activity_names):
+    """Template tag analog to `myjobs.User.can()` method."""
+
+    return user.can(company, *activity_names)
+
 
 @register.simple_tag
 def get_description(module):
@@ -71,7 +77,9 @@ def is_a_group_member(company, user, group):
     """
 
     if settings.ROLES_ENABLED:
-        return getattr(company, 'has_features', False)
+        return any([
+            user.can(company, 'read role'),
+            user.can(company, 'read partner')])
     else:
         try:
             return User.objects.is_group_member(user, group)

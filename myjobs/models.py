@@ -348,6 +348,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
+    @property
+    def activities(self):
+        """Returns a list of activity names associated with this user."""
+
+        return filter(bool, self.roles.values_list(
+            'activities__name', flat=True))
+
     def email_user(self, message, email_type=settings.GENERIC, **kwargs):
         headers = kwargs.pop('headers', {})
         if 'X-SMTPAPI' not in headers:
@@ -676,11 +683,25 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
         if settings.ROLES_ENABLED:
-            return set(activity_names).issubset(
-                self.roles.filter(company=company).values_list(
-                    'activities__name', flat=True))
+            required_access = filter(bool, AppAccess.objects.filter(
+                activity__name__in=activity_names).values_list(
+                    'name', flat=True).distinct())
+
+            return all([
+                set(required_access).issubset(company.enabled_access),
+                set(activity_names).issubset(self.activities)])
+
         else:
-            return company.member and company in self.company_set.all()
+            # TODO: Delete after we deploy the roles system
+            is_company_user = company in self.company_set.all()
+            activities = ''.join(activity_names)
+
+            if 'partner' in activities:
+                return is_company_user and company.prm_access
+            elif 'role' in activities:
+                return False
+            else:
+                return is_company_user
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')

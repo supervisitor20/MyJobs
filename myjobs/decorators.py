@@ -215,11 +215,6 @@ def requires(*activities, **callbacks):
                 return view_func(request, *args, **kwargs)
 
             company = get_company_or_404(request)
-            # the app_access we have, determined by the current company
-            company_access = filter(bool, company.app_access.values_list(
-                'name', flat=True))
-            user_activities = filter(bool, request.user.roles.values_list(
-                'activities__name', flat=True))
 
             # the app_access we need, determined by the activities passed in
             required_access = filter(bool, AppAccess.objects.filter(
@@ -227,12 +222,12 @@ def requires(*activities, **callbacks):
                     'name', flat=True).distinct())
 
             # company should have at least the access required by the view
-            if not bool(company_access) or not set(required_access).issubset(
-                    company_access):
+            if not bool(company.enabled_access) or not set(
+                    required_access).issubset(company.enabled_access):
                 return access_callback(request)
             # the user should have at least the activities required by the view
-            elif not bool(user_activities) or not set(activities).issubset(
-                    user_activities):
+            elif not bool(request.user.activities) or not set(activities).issubset(
+                    user.activities):
                 return activity_callback(request)
             else:
                 return view_func(request, *args, **kwargs)
