@@ -3,6 +3,9 @@ import Autosuggest from 'react-autosuggest';
 import {Button, Glyphicon} from 'react-bootstrap';
 
 
+// Future: factor out components likely to be useful and move them to a
+// module suitable for sharing between apps.
+
 class Link extends Component {
     linkClick(e) {
         e.preventDefault();
@@ -246,6 +249,7 @@ export class WizardPageFilter extends Component {
                     case "search_multiselect":
                         rows.push(this.renderRow(col.display, col.filter,
                             <WizardFilterMultiCollect
+                                id={col.filter}
                                 addItem={v =>
                                     this.addToMultifilter(col.filter, v)}
                                 getHints={v =>
@@ -503,6 +507,12 @@ export class WizardFilterMultiCollect extends Component {
     }
 }
 
+WizardFilterMultiCollect.propTypes = {
+    id: PropTypes.string.isRequired,
+    addItem: PropTypes.func.isRequired,
+    getHints: PropTypes.func.isRequired,
+};
+
 
 const WizardFilterCollectedItems = props =>
     <div> {
@@ -516,3 +526,7 @@ const WizardFilterCollectedItems = props =>
             </Button>)
     }
     </div>
+
+WizardFilterCollectedItems.propTypes = {
+    items: PropTypes.array.isRequired,
+}
