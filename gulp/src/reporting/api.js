@@ -1,3 +1,14 @@
+// Abstract the details of building urls and serializing requests for the
+// reporting api.
+//
+// This uses the fetch api. Fetch works somewhat differently from jQuery.ajax.
+// This module encasulates all of that. Errors are translated to JS exceptions.
+
+// Future: Factor out the non-reporting-specific ajax details so they can be
+// used by other apps.
+
+
+// This is needed for IE8. The fetch-polyfill module doesn't quite do enough.
 // based on:
 // http://stackoverflow.com/questions/24710503/how-do-i-post-urlencoded-form-data-with-http-in-angularjs
 function ancientSerialize(obj) {
@@ -132,15 +143,6 @@ class Api {
             "/reports/api/help",
             formData);
         return (await promise);
-    }
-
-    // XXX: remove
-    async getColumns(reportPresentationId) {
-        var formData = {
-            rp_id: reportPresentationId,
-        };
-        var promise = this.postToReportingApi("/reports/api/columns", formData);
-        return (await promise)['columns'];
     }
 
     async runReport(reportPresentationId, name, filter) {

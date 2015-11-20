@@ -95,6 +95,7 @@ class TestActiveModels(MyReportsTestCase):
 
 class TestReportConfiguration(MyReportsTestCase):
     def test_build_config(self):
+        """Test building a report configuration from the DB."""
         expected_config = ReportConfiguration(
             columns=[
                 ColumnConfiguration(

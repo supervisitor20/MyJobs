@@ -1,3 +1,11 @@
+// This is the business logic of the myreports client.
+
+
+// Root of the client.
+//
+// Used to walk through the api needed to find a usable presentation type.
+//
+// Last call of the "walk" is buildReportConfiguration.
 export class ReportFinder {
     constructor(api, configBuilder) {
         this.api = api;
@@ -31,6 +39,9 @@ export class ReportFinder {
     }
 }
 
+// This factory just builds a ReportConfiguration.
+//
+// Having it makes unit testing easier.
 export class ReportConfigurationBuilder {
     constructor(api) {
         this.api = api;
@@ -41,6 +52,23 @@ export class ReportConfigurationBuilder {
     }
 }
 
+// Gradually build a filter for a report run with help from the api.
+//
+// Use the getHints function where available on fields to get sample
+// field values.
+//
+// Use setFilter to set simple filter values.
+//
+// Use the multifilter functions for filter values which are a collection of
+// items.
+//
+// An instance of this class stores it's own state. Use getFilter to extract
+// the complete state of the filter so far.
+//
+// Use the run function to run and store the report in the api.
+
+// Future: consider restructuring this class so that it's methods which mutate
+// state operate on and return a new react state object.
 export class ReportConfiguration {
     constructor(rpId, filters, api, newReportNote) {
         this.rpId = rpId;

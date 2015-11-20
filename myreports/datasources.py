@@ -1,3 +1,4 @@
+"""Sources of data suitable for reporting on."""
 import json
 from datetime import timedelta, datetime
 
@@ -12,20 +13,37 @@ def get_datasource_json_driver(datasource_name):
 
 
 class ContactsDataSourceJsonDriver(object):
+    """Translate from web api values to ContactsDataSource objects."""
     def __init__(self, ds):
         self.ds = ds
 
     def run(self, company, filter_spec, order_spec):
+        """Run the report.
+
+        company: company model object for this run.
+        filter_spec: string with json object representing the user filter
+        order_spec: string with json list of fields in "[+-]field" form
+
+        returns: list of relatively flat dictionaries.
+        """
         return self.ds.run(
             company,
             self.build_filter(filter_spec),
             self.build_order(order_spec))
 
     def help(self, company, filter_spec, field, partial):
+        """Get help values for a particular field.
+
+        company: company model object for this run.
+        filter_spec: string with json object for the current user filter.
+        field: which field we are getting help for
+        partial: the user input in the field so far
+        """
         method = getattr(self.ds, 'help_' + field)
         return method(company, self.build_filter(filter_spec), partial)
 
     def build_filter(self, filter_json):
+        """Build a ContactsFilter for the given filter_json"""
         kwargs = {}
         filter_spec = json.loads(filter_json)
         date_strings = filter_spec.get('date', None)
@@ -43,9 +61,14 @@ class ContactsDataSourceJsonDriver(object):
         return ContactsFilter(**kwargs)
 
     def build_order(self, order_spec):
+        """Build a list of order_by fields from the given order_spec."""
         return json.loads(order_spec)
 
     def encode_filter_interface(self, report_configuration):
+        """Describe the filter_interface in python primitives.
+
+        Output is suitable for serializing to JSON.
+        """
         column_configs = report_configuration.columns
         filters = [
             self.encode_single_filter_interface(c)
@@ -73,12 +96,20 @@ class ContactsDataSourceJsonDriver(object):
 
 class ContactsDataSource(object):
     def run(self, company, filter, order):
+        """Run the query with the given company, filter, and ordering.
+
+        returns: list of relatively flat dictionaries.
+
+        The dictionaries have depth only for locations and tags. This is to
+        allow for some flexibility in formatting at report download time.
+        """
         qs_filtered = self.filtered_query_set(company, filter)
         qs_ordered = qs_filtered.order_by(*order)
         qs_distinct = qs_ordered.distinct()
         return [self.extract_record(r) for r in qs_distinct]
 
     def help_city(self, company, filter, partial):
+        """Get help for the city field."""
         modified_filter = filter.clone_without_city()
         contacts_qs = self.filtered_query_set(company, modified_filter)
         locations_qs = (
@@ -89,6 +120,7 @@ class ContactsDataSource(object):
         return [{'key': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter, partial):
+        """Get help for the state field."""
         modified_filter = filter.clone_without_state()
         contacts_qs = self.filtered_query_set(company, modified_filter)
         locations_qs = (
@@ -99,6 +131,7 @@ class ContactsDataSource(object):
         return [{'key': s['state'], 'display': s['state']} for s in state_qs]
 
     def help_tags(self, company, filter, partial):
+        """Get help for the tags field."""
         contacts_qs = self.filtered_query_set(company, filter)
 
         tags_qs = (
@@ -109,6 +142,7 @@ class ContactsDataSource(object):
         return [{'key': t['name'], 'display':t['name']} for t in names_qs]
 
     def help_partner(self, company, filter, partial):
+        """Get help for the partner field."""
         contacts_qs = self.filtered_query_set(company, filter)
         partners_qs = (
             Partner.objects
@@ -118,6 +152,7 @@ class ContactsDataSource(object):
         return [{'key': t['pk'], 'display':t['name']} for t in data_qs]
 
     def extract_record(self, record):
+        """Translate from a query set record to a dictionary."""
         return {
             'name': record.name,
             'partner': record.partner.name,
@@ -133,6 +168,8 @@ class ContactsDataSource(object):
         }
 
     def filtered_query_set(self, company, filter):
+        """Create a query set with security, safety, and user filters applied.
+        """
         qs_company = Contact.objects.filter(partner__owner=company)
         qs_live = (
             qs_company
@@ -145,6 +182,7 @@ class ContactsDataSource(object):
 
 @dict_identity
 class ContactsFilter(object):
+    """Represent a ContactsDataSource user filter."""
     def __init__(self, date=None, locations=None, tags=None, partner=None):
         self.date = date
         self.locations = locations
@@ -152,6 +190,10 @@ class ContactsFilter(object):
         self.partner = partner
 
     def clone_without_city(self):
+        """City help needs it's filter cleared before searching for help.
+
+        Return a new ContactsFilter without the current city filter applied.
+        """
         new_root = dict(self.__dict__)
         locations = new_root.get('locations', None)
         if locations:
@@ -162,6 +204,10 @@ class ContactsFilter(object):
         return ContactsFilter(**new_root)
 
     def clone_without_state(self):
+        """State help needs it's filter cleared before searching for help.
+
+        Return a new ContactsFilter without the current state filter applied.
+        """
         new_root = dict(self.__dict__)
         locations = new_root.get('locations', None)
         if locations:
@@ -172,6 +218,10 @@ class ContactsFilter(object):
         return ContactsFilter(**new_root)
 
     def filter_query_set(self, qs):
+        """Apply the filter described by this instance to a query set.
+
+        qs: the query set to receive the filter
+        """
         if self.date is not None:
             if (self.date[0] is not None and
                     self.date[1] is not None):

@@ -9,6 +9,7 @@ from myreports.report_configuration import (
 class TestReportConfig(TestCase):
     def setUp(self):
         super(TestReportConfig, self).setUp()
+        # Realistic contacts report configuration
         self.contacts_config = ReportConfiguration(
             columns=[
                 ColumnConfiguration(
@@ -45,6 +46,7 @@ class TestReportConfig(TestCase):
                     filter_display='Tags'),
             ])
 
+        # Realistic extracted contact records.
         self.test_data = [
             {
                 'date': datetime(2015, 10, 3),
@@ -74,6 +76,7 @@ class TestReportConfig(TestCase):
         ]
 
     def test_header(self):
+        """Test that the formatter can get an ordered list of columns."""
         header = self.contacts_config.get_header()
         self.assertEqual([
             'name', 'partner', 'email', 'phone', 'date', 'notes',
@@ -81,6 +84,7 @@ class TestReportConfig(TestCase):
             header)
 
     def test_records(self):
+        """Test that records are formatted properly."""
         self.maxDiff = 10000
         rec = self.contacts_config.format_record(self.test_data[0])
         self.assertEqual({
@@ -108,6 +112,7 @@ class TestReportConfig(TestCase):
 
 class TestColumnConfiguration(TestCase):
     def test_trivial(self):
+        """Test that we can format a simple value."""
         test_data = {'name': 'asdf'}
         self.assertEqual(
             'asdf',
@@ -116,6 +121,7 @@ class TestColumnConfiguration(TestCase):
                 format='text').extract_formatted(test_data))
 
     def test_deep_join(self):
+        """Test that we can format a complex value."""
         test_data = {
             'locations': [
                 {'city': 'Indy', 'state': 'IN'},

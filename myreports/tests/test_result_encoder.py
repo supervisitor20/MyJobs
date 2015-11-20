@@ -20,16 +20,20 @@ class LocalTime(tzinfo):
 
 class TestResultEncoding(TestCase):
     def test_parse_date_round_trip_no_tz(self):
+        """Test that we can make a round trip without a timezone."""
         input = datetime(2015, 12, 23, tzinfo=None)
         result = parse_datetime(input.isoformat())
         self.assertEqual(input, result)
 
     def test_parse_date_round_trip_with_tz(self):
+        """Test that we can make a round trip with a timezone."""
         input = datetime(2015, 12, 23, 5, tzinfo=LocalTime())
         result = parse_datetime(input.isoformat())
         self.assertEqual(input, result)
 
     def test_round_trip_tz(self):
+        """Test that we can roundtrip complex data with our infrastucture."""
+
         data = {
             'a': 1,
             'd': datetime(2015, 12, 23),

@@ -19,8 +19,11 @@ class TestContactsDataSource(MyJobsBase):
     def setUp(self):
         super(TestContactsDataSource, self).setUp()
 
+        # A company to work with
         self.company = CompanyFactory(name='right')
         self.company.save()
+
+        # A separate company that should not show up in results.
         self.other_company = CompanyFactory(name='wrong')
         self.other_company.save()
 
@@ -31,10 +34,12 @@ class TestContactsDataSource(MyJobsBase):
 
         self.partner_a = PartnerFactory(owner=self.company, name="aaa")
         self.partner_b = PartnerFactory(owner=self.company, name="bbb")
+        # An unapproved parther. Associated data should be filtered out.
         self.partner_unapp = PartnerFactory(
             owner=self.company,
             name="unapproved",
             approval_status__code=Status.UNPROCESSED)
+        # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
         self.east_tag = TagFactory.create(name='east')
@@ -77,6 +82,7 @@ class TestContactsDataSource(MyJobsBase):
                 state="CA"))
         self.sue.tags.add(self.west_tag)
 
+        # Poision data. Should never show up.
         self.archived_partner_user = (
             UserFactory(email="archived_partner@user.com"))
         self.archived_partner = ContactFactory(
@@ -97,6 +103,7 @@ class TestContactsDataSource(MyJobsBase):
                 state="NO"))
         self.archived_partner.tags.add(self.west_tag)
 
+        # Poision data. Should never show up.
         self.archived_contact_user = (
             UserFactory(email="archived_contact@user.com"))
         self.archived_contact = ContactFactory(
@@ -117,6 +124,7 @@ class TestContactsDataSource(MyJobsBase):
                 state="NO"))
         self.archived_contact.tags.add(self.west_tag)
 
+        # Poision data. Should never show up.
         self.unapproved_partner_user = (
             UserFactory(email="unapproved_partner@user.com"))
         self.unapproved_partner_contact = ContactFactory(
@@ -137,6 +145,7 @@ class TestContactsDataSource(MyJobsBase):
                 state="NO"))
         self.unapproved_partner_contact.tags.add(self.west_tag)
 
+        # Poision data. Should never show up.
         self.unapproved_contact_user = (
             UserFactory(email="unapproved_contact@user.com"))
         self.unapproved_contact = ContactFactory(
@@ -158,6 +167,7 @@ class TestContactsDataSource(MyJobsBase):
                 state="NO"))
         self.unapproved_contact.tags.add(self.west_tag)
 
+        # Poision data. Should never show up.
         self.wrong_user = UserFactory(email="wrong@user.com")
         self.wrong = ContactFactory(
             partner=self.other_partner,
@@ -173,11 +183,13 @@ class TestContactsDataSource(MyJobsBase):
         self.wrong.tags.add(self.west_tag)
         self.wrong.tags.add(self.bad_tag)
 
+        # Archive archived data here. Doing this earlier in the set up results
+        # in odd exceptions.
         self.partner_archived.archive()
         self.archived_contact.archive()
 
     def test_run_unfiltered(self):
-        """Should reject contact from another company."""
+        """Should show only appropriate data for this user."""
         ds = ContactsDataSource()
         recs = ds.run(self.company, ContactsFilter(), [])
         names = set([r['name'] for r in recs])
@@ -221,6 +233,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags(self):
+        """Should show only contact with correct tags."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -231,6 +244,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_empty_things(self):
+        """Empty filters should not filter, just like missing filters."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -244,6 +258,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_state(self):
+        """Should show only contacts with correct state."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -257,6 +272,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_city(self):
+        """Should show only contacts with correct city."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -270,6 +286,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_help_city(self):
+        """Should complete city and ignore current city filter."""
         ds = ContactsDataSource()
         recs = ds.help_city(
             self.company,
@@ -279,6 +296,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
+        """Should complete state and ignore current state filter."""
         ds = ContactsDataSource()
         recs = ds.help_state(
             self.company,
@@ -288,12 +306,14 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
+        """Should provide list of tag completions."""
         ds = ContactsDataSource()
         recs = ds.help_tags(self.company, ContactsFilter(), "E")
         actual = set([r['key'] for r in recs])
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_partner(self):
+        """Should provide list of partner completions."""
         ds = ContactsDataSource()
         recs = ds.help_partner(self.company, ContactsFilter(), "A")
         self.assertEqual(
@@ -301,6 +321,7 @@ class TestContactsDataSource(MyJobsBase):
             recs)
 
     def test_order(self):
+        """Should order results as we expect."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -331,6 +352,7 @@ class TestContactsDataSourceJsonDriver(TestCase):
         self.driver = ContactsDataSourceJsonDriver(self.ds)
 
     def test_help_cities(self):
+        """Test that city help gets plumbed to datasource correctly."""
         result = self.driver.help('company', '{}', 'city', 'zzz')
         self.assertEqual('aaa', result)
         self.assertEqual([
@@ -338,6 +360,7 @@ class TestContactsDataSourceJsonDriver(TestCase):
             ], self.ds.calls)
 
     def test_run(self):
+        """Test that json run calls are plumbed to datasource correctly."""
         result = self.driver.run('company', '{}', '["zzz"]')
         self.assertEqual('aaa', result)
         self.assertEqual([
@@ -345,15 +368,18 @@ class TestContactsDataSourceJsonDriver(TestCase):
             ], self.ds.calls)
 
     def test_empty_filter(self):
+        """Test that ContactsFilter has all proper defaults."""
         result = self.driver.build_filter("{}")
         self.assertEquals(ContactsFilter(), result)
 
     def test_city_filter(self):
+        """Test that city filter is built properly."""
         result = self.driver.build_filter(
                 '{"locations": {"city": "Indy"}}')
         self.assertEquals(ContactsFilter(locations={'city': 'Indy'}), result)
 
     def test_date_filters(self):
+        """Test that date filters are built properly."""
         spec = '{"date": ["2015-09-01", "2015-09-30"]}'
         result = self.driver.build_filter(spec)
         expected = ContactsFilter(
@@ -361,9 +387,11 @@ class TestContactsDataSourceJsonDriver(TestCase):
         self.assertEquals(expected, result)
 
     def test_order(self):
+        """Test that order is built properly."""
         self.assertEqual(['name'], self.driver.build_order('["name"]'))
 
     def test_encode_filter_interface(self):
+        """Test that filter interface is serialized properly."""
         report_config = ReportConfiguration([
             ColumnConfiguration(
                 column='name',
@@ -426,11 +454,13 @@ class TestContactsDataSourceJsonDriver(TestCase):
 
 class TestContactsFilterCloning(TestCase):
     def test_clone_without_empty(self):
+        """Test clearing filter fields on an empty filter."""
         filter = ContactsFilter()
         self.assertEqual(ContactsFilter(), filter.clone_without_city())
         self.assertEqual(ContactsFilter(), filter.clone_without_state())
 
     def test_clone_without_full(self):
+        """Test clearing filter fields that are populated."""
         filter = ContactsFilter(
                 tags=['C'],
                 locations={'city': 'A', 'state': 'B'})

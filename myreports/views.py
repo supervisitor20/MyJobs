@@ -377,6 +377,7 @@ def dynamicoverview(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def reporting_types_api(request):
+    """Get a list of reporting types for this user."""
     reporting_types = (ReportingType.objects
                        .active_for_user(request.user))
 
@@ -396,7 +397,10 @@ def reporting_types_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def report_types_api(request):
+    """Get a list of report types
 
+    reporting_type_id: reporting type id from earlier call
+    """
     reporting_type_id = request.POST['reporting_type_id']
     report_types = (ReportType.objects
                     .active_for_reporting_type(reporting_type_id))
@@ -416,7 +420,10 @@ def report_types_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def data_types_api(request):
+    """Get a list of data types
 
+    report_type_id: report type id from earlier call
+    """
     report_type_id = request.POST['report_type_id']
     data_types = (DataType.objects
                   .active_for_report_type(report_type_id))
@@ -436,7 +443,11 @@ def data_types_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def presentation_types_api(request):
+    """Get a list of presentation types
 
+    report_type_id: report type id from earlier call
+    data_type_id: data type id from earlier call
+    """
     report_type_id = request.POST['report_type_id']
     data_type_id = request.POST['data_type_id']
     rpdt = (ReportTypeDataTypes.objects
@@ -459,6 +470,12 @@ def presentation_types_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def filters_api(request):
+    """Get a list of filters for the UI.
+
+    rp_id: Report Presentation ID
+
+    response: See ContactsJsonDriver.encode_filter_interface()
+    """
     request_data = request.POST
     rp_id = request_data['rp_id']
     report_pres = ReportPresentation.objects.get(id=rp_id)
@@ -477,6 +494,15 @@ def filters_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def help_api(request):
+    """Get help for a partially filled out field.
+
+    rp_id: Report Presentation ID
+    filter: JSON string with user filter to use
+    field: Name of field to get help for
+    partial: Data entered so far
+
+    response: [{'key': data, 'display': data to display}]
+    """
     request_data = request.POST
     rp_id = request_data['rp_id']
     filter = request_data['filter']
@@ -499,6 +525,14 @@ def help_api(request):
 @has_access('prm')
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
+    """Run a dynamic report.
+
+    rp_id: Report Presentation ID
+    name: name of report
+    filter_spec: JSON string with user filter to use
+
+    response: {'id': new dynamic report id}
+    """
     rp_id = request.POST['rp_id']
     name = request.POST['name']
     filter_spec = request.POST.get('filter', '{}')
@@ -524,6 +558,7 @@ def run_dynamic_report(request):
 @has_access('prm')
 @require_http_methods(['GET'])
 def list_dynamic_reports(request):
+    """Get a list of dynamic report runs for this user."""
     company = request.user.companyuser_set.first().company
 
     reports = (
@@ -554,7 +589,7 @@ def download_dynamic_report(request):
         The report with the specified options rendered as a CSV file.
     """
 
-    # XXX: check report_id vs company owner!!!
+    # SECURITY: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
     order_by = request.GET.get('order_by', None)

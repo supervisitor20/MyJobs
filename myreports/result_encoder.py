@@ -1,3 +1,14 @@
+'''Encode more complex datatypes in JSON.
+
+This module provides a python JSON object_hook and ...JsonEncoder for
+serializing and deseralizing data more complex than the JSON datatypes
+supported by default.
+
+So far datetime is the only supported data type.
+
+Serialized JSON objects handled by this module include a __type__ member.
+'''
+
 import json
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
