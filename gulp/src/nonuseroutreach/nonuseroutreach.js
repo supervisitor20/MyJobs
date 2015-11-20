@@ -1,7 +1,28 @@
+{/*
+Non User Outreach Module
+
+This single-page app will contain all of the functions for managing non-user outreach. Each "page" will be produced
+individually.
+
+Pages:
+Inbox Management -
+
+  The purpose of this app is to manage the email address to which a company's employees can send records of
+  non-user outreach. Email addesses can be added, edited, and deleted. All emails fall under the @my.jobs domain
+  and the only editable portion is the username, or text to the left of the "@".
+
+*/}
+
 import React from "react";
 import ReactDOM from "react-dom";
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
+
+{/*
+
+ NUO INBOX MANAGEMENT APP
+
+*/}
 
 // class to contain dynamic email editing states, type is text of button and function identifier, disabled is whether
 // the button is disabled or not. by default, it is not disabled
@@ -119,6 +140,7 @@ var InboxRow = React.createClass({
     };
   },
   deleteEmail:function() {
+    //Stubbed out for future PR
     if (confirm("Are you sure you want to delete " + this.state.initial_email + "@my.jobs?")) {
     } else {
       return;
@@ -127,6 +149,7 @@ var InboxRow = React.createClass({
 
   },
   saveEmail: function() {
+    //Stubbed out for future PR
     this.props.loadInboxesFromApi();
     return;
   },
@@ -162,8 +185,9 @@ var InboxRow = React.createClass({
 
 
 // container for all edit rows of objects loaded from DB
-var InboxList = React.createClass({
+var ExistingInboxList = React.createClass({
   handleDelete: function(index) {
+    // Stubbed out for future PR
     this.setState({
       inboxes: this.state.inboxes.filter((_, i) => i !== index)
     });
@@ -184,11 +208,20 @@ var InboxList = React.createClass({
   },
   render: function() {
     const {inboxes} = this.state;
+    if (inboxes.length === 0) {
+      // Currently returning empty span to replace module.. Better solution??
+      return <span></span>;
+    }
     return (
-      <div>
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Existing Inbox Management</h2>
+          </div>
+          <div className="partner-holder">
         {inboxes.map((inbox_ob, i) =>
-              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadFromApi={this.loadInboxesFromApi} />
+              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadInboxesFromApi={this.loadInboxesFromApi} />
         )}
+        </div>
       </div>
     );
   }
@@ -224,52 +257,23 @@ var AddInboxForm = React.createClass({
     } else {
       this.setState({add_disabled: true})
     }
-    // TODO: Form validation instead of length checks
-    // TODO: enable/disable add button
   },
 
   submitInbox: function() {
-    // TODO: Submit API
+    //Stubbed out for future PR
   },
   render: function() {
     var validation_messages = this.state.validation_messages.map((message) =>
     <HelpText message={message} />
     );
     return (
-      <div className="col-xs-12">
+      <div>
         {validation_messages}
         <EmailInput emailFieldChanged={this.emailFieldChanged} />
         <AddInboxButton add_disabled={this.state.add_disabled} />
       </div>
     );
   },
-});
-
-
-// menu link to inbox management app screen
-var InboxManagementButton = React.createClass({
-  handleClick: function() {
-    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
-    "have your employees send outreach emails"]);
-  },
-  render: function() {
-    return (
-      <Button onClick={this.handleClick}>Inbox Management</Button>
-    );
-  }
-});
-
-
-// menu link to overview of the entire nuo module
-var OverviewButton = React.createClass({
-  handleClick: function(event) {
-    this.props.changePage("Overview");
-  },
-  render: function() {
-    return (
-      <Button onClick={this.handleClick}>Overview</Button>
-    );
-  }
 });
 
 
@@ -280,14 +284,7 @@ var InboxManagementPage = React.createClass({
         <div>
       <div className="card-wrapper">
       <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Existing Inbox Management</h2>
-          </div>
-          <div className="partner-holder">
-            <InboxList source="/prm/api/nonuseroutreach/inbox/list" />
-          </div>
-        </div>
+        <ExistingInboxList source="/prm/api/nonuseroutreach/inbox/list" />
         </div>
         </div>
         <div className="card-wrapper">
@@ -308,6 +305,12 @@ var InboxManagementPage = React.createClass({
     );
   }
 });
+
+{/*
+
+ OVERVIEW / PARENT APP
+
+*/}
 
 
 // overview main display page
@@ -347,6 +350,33 @@ var Content = React.createClass({
       <div className="col-xs-8">
           {page}
       </div>
+    );
+  }
+});
+
+
+// menu link to inbox management app screen
+var InboxManagementButton = React.createClass({
+  handleClick: function() {
+    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
+    "have your employees send outreach emails"]);
+  },
+  render: function() {
+    return (
+      <Button onClick={this.handleClick}>Inbox Management</Button>
+    );
+  }
+});
+
+
+// menu link to overview of the entire nuo module
+var OverviewButton = React.createClass({
+  handleClick: function(event) {
+    this.props.changePage("Overview");
+  },
+  render: function() {
+    return (
+      <Button onClick={this.handleClick}>Overview</Button>
     );
   }
 });

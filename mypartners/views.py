@@ -1353,25 +1353,29 @@ def api_get_nuo_inbox_list(request):
     Retrieves all non user outreach inboxes for a company. Returns json object with id, email of each
     GET /prm/api/nonuseroutreach/inbox/list
     """
+
     company = get_company_or_404(request)
 
     inboxes = OutreachEmailAddress.objects.filter(company=company)
-    return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
+    print serializers.serialize("json", inboxes, fields=('email'))
+    # return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
 
+    #The below code is temporary code so that inboxes will display to test the UI. This will be removed in the API PR
+    test_set = [{"pk": 28, "model": "mypartners.outreachemailaddress", "fields": {"email": "popeyes-chicken"}},
+                {"pk": 29, "model": "mypartners.outreachemailaddress", "fields": {"email": "halia_builders"}}]
+
+    return HttpResponse(json.dumps(test_set))
 
 @staff_member_required
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def api_save_nuo_inbox(request):
     """
+    Stubbed out for future PR
     Attempts to save a non user outreach inbox. Returns error message if failed.
     GET /prm/api/nonuseroutreach/inbox/save
     """
     pass
-    # company = get_company_or_404(request)
-    #
-    # inboxes = OutreachEmailAddress.objects.filter(company=company)
-    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
 
 
 @staff_member_required
@@ -1379,14 +1383,11 @@ def api_save_nuo_inbox(request):
 @has_access('prm')
 def api_delete_nuo_inbox(request):
     """
+    Stubbed out for future PR
     Attempts to delete a non user outreach inbox. Returns error message if failed.
     GET /prm/api/nonuseroutreach/inbox/delete
     """
     pass
-    # company = get_company_or_404(request)
-    #
-    # inboxes = OutreachEmailAddress.objects.filter(company=company)
-    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
 
 
 @requires('read tag')
