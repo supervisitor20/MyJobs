@@ -1,4 +1,4 @@
-import {bootstrap} from "./bootstrap.js";
+import {bootstrap} from "../util/polyfills.js";
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from 'util/cookie';
