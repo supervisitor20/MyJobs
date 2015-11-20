@@ -1,4 +1,4 @@
-import {bootstrap} from "../util/polyfills.js";
+import {installPolyfills} from "../util/polyfills.js";
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from 'util/cookie';
@@ -7,7 +7,7 @@ import {DynamicReportApp} from "./view.js";
 import React from "react";
 import ReactDOM from "react-dom";
 
-bootstrap();
+installPolyfills();
 
 const api = new Api(getCsrf());
 
