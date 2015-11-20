@@ -200,8 +200,6 @@ var EditUserPage = React.createClass({
         );
       }
       else if ( response.success == "false" ){
-        console.log(response);
-
         this.setState({
             api_response_help: response.message,
             user_email: this.state.user_email,
@@ -982,9 +980,6 @@ var EditRolePage = React.createClass({
 
 
     var assigned_activities = this.refs.activities.state.assigned_activities;
-
-    console.log("assigned_activities is:");
-    console.log(assigned_activities);
 
     if(assigned_activities.length < 1){
       this.setState({
