@@ -227,7 +227,7 @@ def requires(*activities, **callbacks):
                 return access_callback(request)
             # the user should have at least the activities required by the view
             elif not bool(request.user.activities) or not set(activities).issubset(
-                    user.activities):
+                    request.user.activities):
                 return activity_callback(request)
             else:
                 return view_func(request, *args, **kwargs)
