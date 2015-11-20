@@ -30,8 +30,10 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
+    "history": "^1.13.1",
     "react-bootstrap": "^0.27.3",
     "react-filtered-multiselect": "^0.4.2",
+    "react-router": "^1.0.0",
     "through2": "^2.0.0"
   }
 }
