@@ -1,11 +1,11 @@
 {% load i18n %}
 
-<div class="product-card" id="{{item.get_model_name}}-{{item.id}}-item">
+<div class="product-card" id="{{module.0.get_model_name}}-{{module.0.id}}-item">
     <div class="big-title">
         {{ module.0.headline }}
     </div>
     <div class="product-details">
         {{ module.0.the_summary }}
     </div>
-    <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
+    <a class="btn" href="{% url 'handle_form' %}?id={{ module.0.id }}&module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>

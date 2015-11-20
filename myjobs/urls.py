@@ -34,4 +34,11 @@ urlpatterns = patterns(
     url(r'^toolbar/$', 'toolbar', name='toolbar'),
     url(r'^cas/$', 'cas', name='cas'),
     url(r'^topbar/$', 'topbar', name='topbar'),
+    url(r'^manage-users/$', 'manage_users', name='manage_users'),
+    url(r'^manage-users/api/roles/$', 'api_get_roles', name='api_get_roles'),
+    url(r'^manage-users/api/roles/(?P<role_id>[0-9]+)/$', 'api_get_specific_role', name='api_get_specific_role'),
+    url(r'^manage-users/api/roles/create/$', 'api_create_role', name='api_create_role'),
+    url(r'^manage-users/api/roles/edit/(?P<role_id>[0-9]+)/$', 'api_edit_role', name='api_edit_role'),
+    url(r'^manage-users/api/roles/delete/(?P<role_id>[0-9]+)/$', 'api_delete_role', name='api_delete_role'),
+    url(r'^manage-users/api/activities/$', 'api_get_activities', name='api_get_activities'),
 )

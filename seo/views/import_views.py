@@ -1,8 +1,9 @@
 # Library Imports
-import datetime
+from datetime import timedelta
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from djcelery.models import TaskState
 import json
@@ -95,7 +96,7 @@ def confirm_load_jobs_from_etl(response):
             # Setup a check on this business unit down the road.
             if 'count' in msg:
                 logger.info("Creating check_solr_count task (%s, %s)"%(buid, msg['count']))
-                eta=datetime.datetime.now()+datetime.timedelta(minutes=20)
+                eta=timezone.now() + timedelta(minutes=20)
                 task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
 
             logger.info("Creating ETL Task (%s, %s, %s)"%(jsid, buid, name))
@@ -130,8 +131,8 @@ def send_sns_confirm(response):
 
 @staff_member_required
 def import_dashboard(request):
-    Tminus24 = datetime.datetime.now() - datetime.timedelta(days=1)
-    Tminus48 = datetime.datetime.now() - datetime.timedelta(days=2)
+    Tminus24 = timezone.now() - timedelta(days=1)
+    Tminus48 = timezone.now() - timedelta(days=2)
 
     last24 = TaskState.objects.filter(tstamp__gt=Tminus24)
     last24 = last24.filter(name__in=['tasks.priority_etl_to_solr',

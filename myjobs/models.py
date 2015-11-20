@@ -409,14 +409,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return gravatar_url
 
-    def get_companies(self):
-        """
-        Returns a QuerySet of all the Companies a User has access to.
-
-        """
-        from seo.models import Company
-        return Company.objects.filter(admins=self).distinct()
-
     def get_sites(self):
         """
         Returns a QuerySet of all the SeoSites a User has access to.
@@ -844,3 +836,43 @@ class Role(models.Model):
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company)
+
+    def add_activity(self, name):
+        """
+        Shortcut method to add an activity by name.
+
+        Input:
+            :name: The name of the activity to be added. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was added. If no activity
+            was added, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity not in self.activities.all():
+            self.activities.add(activity)
+        else:
+            activity = None
+
+        return activity
+
+    def remove_activity(self, name):
+        """
+        Shortcut method to remove an activity by name.
+
+        Input:
+            :name: The name of the activity to be removed. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was removed. If no
+            activity was removed, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity in self.activities.all():
+            self.activities.remove(activity)
+        else:
+            activity = None
+
+        return activity

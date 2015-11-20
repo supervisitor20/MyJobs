@@ -32,7 +32,7 @@ from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
 from myjobs.models import User, Activity
-from myjobs.decorators import requires
+from myjobs.decorators import requires, MissingActivity
 from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -53,18 +53,9 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
 
-PRM = Activity.objects.filter(
-    app_access__name='PRM').exclude(
-        name__icontains='tag').values_list('name', flat=True)
-
-def missing_access():
-    raise Http404("App level permissions are missing.")
-
-def missing_activity():
-    raise Http404("Activities are missing.")
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read partner')
 @has_access('prm')
 def prm(request):
     """
@@ -102,7 +93,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read partner')
 @has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
@@ -133,7 +124,7 @@ def partner_library(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('create partner')
 @has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
@@ -151,7 +142,7 @@ def create_partner_from_library(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('update partner')
 @has_access('prm')
 def partner_details(request):
     company, partner, user = prm_worthy(request)
@@ -178,7 +169,7 @@ def partner_details(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('create partner')
 @has_access('prm')
 def edit_item(request):
     """ Contact/Partner Form.
@@ -243,7 +234,7 @@ def edit_item(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('create partner')
 @has_access('prm')
 def save_init_partner_form(request):
     form = NewPartnerForm(user=request.user, data=request.POST)
@@ -255,7 +246,7 @@ def save_init_partner_form(request):
         return HttpResponse(json.dumps(form.errors))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('update partner')
 @has_access('prm')
 def save_item(request):
     """
@@ -311,7 +302,7 @@ def save_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('delete partner')
 @has_access('prm')
 def delete_prm_item(request):
     """
@@ -376,14 +367,15 @@ def delete_prm_item(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read partner')
 @has_access('prm')
 def prm_overview(request):
     """
     View that is the "Overview" of one's Partner Activity.
 
     """
-    company, partner, user = prm_worthy(request)
+
+    company, partner, _ = prm_worthy(request)
 
     most_recent_activity = partner.get_logs()
     records = partner.get_contact_records()
@@ -410,7 +402,7 @@ def prm_overview(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read tag')
 @has_access('prm')
 def partner_tagging(request):
     company = get_company_or_404(request)
@@ -418,6 +410,7 @@ def partner_tagging(request):
     tags = Tag.objects.filter(company=company).order_by('name')
 
     ctx = {'company': company,
+           'create_tags': json.dumps(request.user.can(company, 'create tag')),
            'tags': tags}
 
     return render_to_response('mypartners/partner_tagging.html', ctx,
@@ -425,7 +418,7 @@ def partner_tagging(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('update tag')
 @has_access('prm')
 def edit_partner_tag(request):
     company = get_company_or_404(request)
@@ -462,7 +455,7 @@ def edit_partner_tag(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('update contact')
 @has_access('prm')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
@@ -505,7 +498,7 @@ def edit_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('update contact')
 @has_access('prm')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
@@ -523,20 +516,22 @@ def delete_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('delete tag')
 @has_access('prm')
 def delete_partner_tag(request):
     company = get_company_or_404(request)
 
     pk = request.GET.get('id')
     tag = Tag.objects.filter(pk=pk).first()
-    tag.delete()
+
+    if tag:
+        tag.delete()
 
     return HttpResponseRedirect(reverse('partner_tagging'))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read partner saved search')
 @has_access('prm')
 def prm_saved_searches(request):
     """
@@ -568,7 +563,7 @@ def prm_saved_searches(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('create partner saved search')
 @has_access('prm')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
@@ -617,7 +612,7 @@ def prm_edit_saved_search(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read contact')
 @has_access('prm')
 def verify_contact(request):
     """
@@ -660,7 +655,7 @@ def verify_contact(request):
     return HttpResponse(json.dumps(data))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('create partner saved search')
 @has_access('prm')
 def partner_savedsearch_save(request):
     """
@@ -703,7 +698,7 @@ def partner_savedsearch_save(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read partner saved search')
 @has_access('prm')
 def partner_view_full_feed(request):
     """
@@ -747,7 +742,7 @@ def partner_view_full_feed(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read communication record')
 @has_access('prm')
 def prm_records(request):
     """
@@ -788,7 +783,7 @@ def prm_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('create communication record', 'update communication record')
 @has_access('prm')
 def prm_edit_records(request):
     company, partner, user = prm_worthy(request)
@@ -831,13 +826,14 @@ def prm_edit_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read communication record')
 @has_access('prm')
 def prm_view_records(request):
     """
     View an individual ContactRecord.
 
     """
+
     company, partner, _ = prm_worthy(request)
     _, _, contact_records = get_records_from_request(request)
     page_number = int(request.GET.get('page', 1))
@@ -884,7 +880,7 @@ def prm_view_records(request):
     return render_to_response('mypartners/view_record.html', ctx,
                               RequestContext(request))
 
-@requires(PRM, missing_activity, missing_access)
+@requires('read contact')
 @has_access('prm')
 def get_contact_information(request):
     """
@@ -920,16 +916,16 @@ def get_contact_information(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        return Http404("This view is only reachable by an AJAX POST request.")
+        raise Http404("This view is only reachable by an AJAX POST request.")
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires("read communication record")
 @has_access('prm')
 def get_records(request):
     """
     Returns a json object containing the records matching the search
     criteria (contact, contact_type, and date_time range) rendered using
-    records.html and the date range and date string required to update
+    records.html and the date range and date string requiresd to update
     the time_filter.html template to match the search.
 
     """
@@ -971,14 +967,14 @@ def get_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires("read communication record")
 @has_access('prm')
 def get_uploaded_file(request):
     """
     Determines the location of a PRMAttachment (either in S3 or in local
     storage) and redirects to it.
 
-    PRMAttachments stored in S3 require a generated key and have a 10 minute
+    PRMAttachments stored in S3 requires a generated key and have a 10 minute
     access window.
 
     """
@@ -1005,7 +1001,7 @@ def get_uploaded_file(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
-@requires(PRM, missing_activity, missing_access)
+@requires('read communication record')
 @has_access('prm')
 def partner_main_reports(request):
     company, partner, user = prm_worthy(request)
@@ -1029,7 +1025,7 @@ def partner_main_reports(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('read communication record')
 @has_access('prm')
 def partner_get_records(request):
     if request.method == 'GET':
@@ -1071,7 +1067,7 @@ def partner_get_records(request):
         raise Http404
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('read communication record')
 @has_access('prm')
 def partner_get_referrals(request):
     if request.method == 'GET':
@@ -1108,6 +1104,7 @@ def partner_get_referrals(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @user_passes_test(lambda u: User.objects.is_group_member(u, 'Employer'))
+@requires("read communication record")
 def prm_export(request):
     #TODO: investigate using django's builtin serialization for XML
     company, partner, user = prm_worthy(request)
@@ -1166,6 +1163,7 @@ def prm_export(request):
 
 
 @csrf_exempt
+@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
@@ -1328,7 +1326,7 @@ def process_email(request):
 
 
 @restrict_to_staff()
-@requires(PRM, missing_activity, missing_access)
+@requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def manage_outreach_inboxes(request):
     company = get_company_or_404(request)
@@ -1364,12 +1362,12 @@ def manage_outreach_inboxes(request):
                               RequestContext(request))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('read tag')
 @has_access('prm')
 def tag_names(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
-        value = request.GET.get('value')
+        value = request.GET.get('value', "")
         names = list(Tag.objects.filter(
             company=company, name__icontains=value).values_list(
                 'name', flat=True))
@@ -1378,7 +1376,7 @@ def tag_names(request):
         return HttpResponse(json.dumps(names))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('read tag')
 @has_access('prm')
 def tag_color(request):
     if request.method == 'GET':
@@ -1389,10 +1387,10 @@ def tag_color(request):
         return HttpResponse(json.dumps(colors))
 
 
-@requires(PRM, missing_activity, missing_access)
+@requires('create tag')
 @has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)
-    data = request.GET.get('data').split(',')
+    data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))

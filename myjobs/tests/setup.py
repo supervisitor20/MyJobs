@@ -32,7 +32,6 @@ class MyJobsBase(TestCase):
         self.ms_solr.delete(q='*:*')
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
                 self.base_context_processors)
-
         try:
             self.patcher.stop()
         except RuntimeError:

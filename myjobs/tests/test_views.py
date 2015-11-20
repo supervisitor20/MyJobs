@@ -57,15 +57,16 @@ class TestClient(Client):
         available.
         """
         path = path or self.path
+
+        if not path:
+            raise TypeError("get expects a path. None given. Either "
+                            "instantiate TestClient with a default path or be "
+                            "sure that the first argument to get is a valid "
+                            "path.")
         data = data or self.data
 
-        try:
-            return super(TestClient, self).get(
-                path, data=data, follow=follow, secure=secure, **extra)
-        except TypeError:
-            raise Exception("Calls to TestClient's methods require that "
-                            "either path be passed explicit, or the "
-                            "path be specified in the constructor")
+        return super(TestClient, self).get(
+            path, data=data, follow=follow, secure=secure, **extra)
 
     def post(self, path=None, data=None, content_type=MULTIPART_CONTENT,
              secure=False, **extra):
@@ -1154,4 +1155,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
             rendered = Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
-

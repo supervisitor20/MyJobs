@@ -35,7 +35,6 @@ urlpatterns = patterns(
     url(r'^emails/', include('myemails.urls')),
 )
 
-
 urlpatterns += patterns(
     '',
     url(r'^accounts/', include('registration.urls')),

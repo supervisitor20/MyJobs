@@ -9,6 +9,8 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
+var stripDebug = require('gulp-strip-debug');
+var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
 
 // This build produces several javascript bundles.
@@ -41,6 +43,8 @@ var vendor_libs = [
 ];
 
 var dest = '../static/bundle';
+
+var strip_debug = true;
 
 gulp.task('vendor', function() {
     return browserify([], { debug: true, list: true, })
@@ -104,6 +108,46 @@ gulp.task('reporting', function() {
     .pipe(gulp.dest(dest));
 });
 
+// If an app task starts logging that it is including packages, add those
+// packages to vendor_libs.
+gulp.task('manageusers', function() {
+    return browserify([], {
+        debug: true,
+        paths: ['./src'],
+    })
+    .external(vendor_libs)
+    .add('src/manageusers/manageusers.js')
+    .transform(babelify)
+    .bundle()
+    .on('error', function(error, meta) {
+        util.log("Browserify error:", error.toString());
+        // Unstick browserify on some errors. Keeps watch alive.
+        this.emit('end');
+    })
+    .on('package', function(pkg) {
+        util.log("Including package:", pkg.name)
+    })
+    .pipe(source('manageusers.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    // Do we want this in production builds?
+    .pipe(uglify({ mangle: false }))
+    // stripDebug() must come before sourcemaps.write()
+    // You should remove logging before committing, but this confirms logging won't be in production
+    .pipe(gulpif(strip_debug, stripDebug()))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(dest))
+});
+
+// By default, we strip logging. This disables that functionality.
+gulp.task('watch-no-strip', function() {
+    console.log("Keeping console and debugger statements.");
+    strip_debug = false;
+    gulp.watch('src/**/*', ['reporting', 'manageusers']);
+});
+
+gulp.task('default', ['build']);
+
 gulp.task('test', function() {
     return gulp.src(['./src/**/spec/*.js'])
         .pipe(jasmine({
@@ -112,11 +156,11 @@ gulp.task('test', function() {
 });
 
 // Build everything. Good way to start after a git checkout.
-gulp.task('build', ['vendor', 'reporting']);
+gulp.task('build', ['vendor', 'reporting', 'manageusers']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    return gulp.watch('src/**/*', ['test', 'reporting']);
+    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers']);
 });
 
 gulp.task('default', ['build', 'test']);

@@ -40,7 +40,7 @@
                                     <li><a href="{{ ABSOLUTE_URL }}message/inbox?message={{ message.message.pk }}">{{ message.message.start_on.date }} - {{ message.message.subject|truncatewords:'10' }}</a></li>
                                 {% endif %}
                             {% empty %}
-                                <li><p>No new unread messages </p></li>
+                                <li><p>No new unread messages</p></li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -89,7 +89,7 @@
                     <ul id="nav">
                         <li>
                             <a class="main-nav"></a>
-                            <ul class="span4" id="pop-menu">
+                            <ul class="col-md-4" id="pop-menu">
                                 <li id="logged-in-li">
                                     {% trans "Logged in as " %}
                                     <b>
