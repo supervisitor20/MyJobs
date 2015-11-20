@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 from seo.tests import factories
 from seo.models import Company, CustomFacet, SeoSite, SiteTag
-from myjobs.models import AppAccess
+from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
 

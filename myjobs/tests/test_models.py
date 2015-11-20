@@ -290,7 +290,7 @@ class TestActivities(MyJobsBase):
 
         self.assertItemsEqual(user.activities, [])
 
-        self.roles.add(self.role)
+        self.user.roles.add(self.role)
         activities = self.role.activities.values_list('name', flat=True)
 
         self.assertItemsEqual(user.activities, activities)
