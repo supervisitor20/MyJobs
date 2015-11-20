@@ -958,17 +958,3 @@ class RowOrder(models.Model):
 
     def __unicode__(self):
         return "Row for page %s" % self.page.pk
-
-
-class AllowedBlockPath(models.Model):
-    block = models.ForeignKey('Block', related_name='allowed_paths')
-    site = models.ForeignKey('seo.SeoSite', related_name='allowed_paths')
-
-    def __unicode__(self):
-        return u"Block: '{block}', Site: '{site}'".format(
-            block=self.block.name, site=self.site.name)
-
-
-class Path(models.Model):
-    path = models.CharField(max_length=255)
-    allowed_on = models.ForeignKey('AllowedBlockPath', related_name='paths')

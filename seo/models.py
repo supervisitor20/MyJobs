@@ -546,8 +546,7 @@ class SeoSite(Site):
         if settings.ROLES_ENABLED:
             return user.pk in companies.values_list('role__user', flat=True)
         else:
-
-            user_companies = user.get_companies()
+            user_companies = user.company_set.all()
             for company in companies:
                 if company not in user_companies:
                     return False
@@ -640,6 +639,15 @@ class Company(models.Model):
                                                             flat=True))
 
     @property
+    def has_features(self):
+        """
+        Convenience read-only property which returns whether the company has
+        any features enabled.
+        """
+
+        return self.app_access.exists()
+
+    @property
     def company_user_count(self):
         """
         Counts how many users are mapped to this company. This is useful for
@@ -691,7 +699,6 @@ class Company(models.Model):
     app_access = models.ManyToManyField(
         'myjobs.AppAccess',
         blank=True, verbose_name="App-Level Access")
-    prm_access = models.BooleanField(default=False)
     product_access = models.BooleanField(default=False)
     posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
@@ -712,6 +719,18 @@ class Company(models.Model):
                                             | models.Q(canonical_company=self))
         return microsites
 
+    @property
+    def prm_access(self):
+        """
+        Read-only property that returns whether or not a company has access
+        to PRM features.
+        """
+        if settings.ROLES_ENABLED:
+            return "PRM" in self.app_access.values_list("name", flat=True)
+        else:
+            return self.member
+
+
     def user_has_access(self, user):
         """
         Returns whether or not the given user can be tied back to the company.
@@ -726,11 +745,6 @@ class Company(models.Model):
     def has_packages(self):
         return self.sitepackage_set.filter(
             sites__in=settings.SITE.postajob_site_list()).exists()
-
-
-@receiver(pre_save, sender=Company, dispatch_uid='pre_save_company_signal')
-def update_prm_access(sender, instance, **kwargs):
-    instance.prm_access = instance.member
 
 
 class FeaturedCompany(models.Model):

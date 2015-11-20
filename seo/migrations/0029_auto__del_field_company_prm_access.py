@@ -8,29 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Path'
-        db.create_table(u'myblocks_path', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('path', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('allowed_on', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myblocks.AllowedBlockPath'])),
-        ))
-        db.send_create_signal(u'myblocks', ['Path'])
-
-        # Adding model 'AllowedBlockPath'
-        db.create_table(u'myblocks_allowedblockpath', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('block', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myblocks.Block'])),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.SeoSite'])),
-        ))
-        db.send_create_signal(u'myblocks', ['AllowedBlockPath'])
+        # Deleting field 'Company.prm_access'
+        db.delete_column(u'seo_company', 'prm_access')
 
 
     def backwards(self, orm):
-        # Deleting model 'Path'
-        db.delete_table(u'myblocks_path')
-
-        # Deleting model 'AllowedBlockPath'
-        db.delete_table(u'myblocks_allowedblockpath')
+        # Adding field 'Company.prm_access'
+        db.add_column(u'seo_company', 'prm_access',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
 
     models = {
@@ -54,145 +40,16 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'myblocks.allowedblockpath': {
-            'Meta': {'object_name': 'AllowedBlockPath'},
-            'block': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Block']"}),
+        u'flatpages.flatpage': {
+            'Meta': {'ordering': "(u'url',)", 'object_name': 'FlatPage', 'db_table': "u'django_flatpage'"},
+            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'enable_comments': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']"})
-        },
-        u'myblocks.applylinkblock': {
-            'Meta': {'object_name': 'ApplyLinkBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.block': {
-            'Meta': {'object_name': 'Block'},
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            'element_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
-            'head': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'offset': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'span': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'template': ('django.db.models.fields.TextField', [], {}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.blockorder': {
-            'Meta': {'ordering': "('order',)", 'object_name': 'BlockOrder'},
-            'block': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Block']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'order': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'row': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Row']"}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.breadboxblock': {
-            'Meta': {'object_name': 'BreadboxBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.columnblock': {
-            'Meta': {'object_name': 'ColumnBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'}),
-            'blocks': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'included_blocks'", 'symmetrical': 'False', 'through': u"orm['myblocks.ColumnBlockOrder']", 'to': u"orm['myblocks.Block']"})
-        },
-        u'myblocks.columnblockorder': {
-            'Meta': {'ordering': "('order',)", 'object_name': 'ColumnBlockOrder'},
-            'block': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Block']"}),
-            'column_block': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'included_column_blocks'", 'to': u"orm['myblocks.ColumnBlock']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'order': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.contentblock': {
-            'Meta': {'object_name': 'ContentBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.facetblurbblock': {
-            'Meta': {'object_name': 'FacetBlurbBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.jobdetailblock': {
-            'Meta': {'object_name': 'JobDetailBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.jobdetailbreadboxblock': {
-            'Meta': {'object_name': 'JobDetailBreadboxBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.jobdetailheaderblock': {
-            'Meta': {'object_name': 'JobDetailHeaderBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.loginblock': {
-            'Meta': {'object_name': 'LoginBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.morebuttonblock': {
-            'Meta': {'object_name': 'MoreButtonBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.page': {
-            'Meta': {'object_name': 'Page'},
-            'doc_type': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
-            'head': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'language_code': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '16'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'page_type': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'rows': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myblocks.Row']", 'through': u"orm['myblocks.RowOrder']", 'symmetrical': 'False'}),
-            'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['seo.SeoSite']", 'symmetrical': 'False'}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'production'", 'max_length': '255'}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.path': {
-            'Meta': {'object_name': 'Path'},
-            'allowed_on': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.AllowedBlockPath']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'max_length': '255'})
-        },
-        u'myblocks.registrationblock': {
-            'Meta': {'object_name': 'RegistrationBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.row': {
-            'Meta': {'object_name': 'Row'},
-            'blocks': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myblocks.Block']", 'through': u"orm['myblocks.BlockOrder']", 'symmetrical': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.roworder': {
-            'Meta': {'ordering': "('order',)", 'object_name': 'RowOrder'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'order': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'page': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Page']"}),
-            'row': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myblocks.Row']"}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'myblocks.savedsearchwidgetblock': {
-            'Meta': {'object_name': 'SavedSearchWidgetBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.searchboxblock': {
-            'Meta': {'object_name': 'SearchBoxBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.searchfilterblock': {
-            'Meta': {'object_name': 'SearchFilterBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.searchresultblock': {
-            'Meta': {'object_name': 'SearchResultBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.searchresultheaderblock': {
-            'Meta': {'object_name': 'SearchResultHeaderBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.shareblock': {
-            'Meta': {'object_name': 'ShareBlock', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'myblocks.veteransearchbox': {
-            'Meta': {'object_name': 'VeteranSearchBox', '_ormbases': [u'myblocks.Block']},
-            u'block_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['myblocks.Block']", 'unique': 'True', 'primary_key': 'True'})
+            'registration_required': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['sites.Site']", 'symmetrical': 'False'}),
+            'template_name': ('django.db.models.fields.CharField', [], {'max_length': '70', 'blank': 'True'}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            'url': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_index': 'True'})
         },
         u'myjobs.activity': {
             'Meta': {'object_name': 'Activity'},
@@ -262,6 +119,20 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200'}),
             'value': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200'})
         },
+        u'seo.billboardhotspot': {
+            'Meta': {'object_name': 'BillboardHotspot'},
+            'billboard_image': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.BillboardImage']"}),
+            'border_color': ('django.db.models.fields.CharField', [], {'default': "'FFFFFF'", 'max_length': '6'}),
+            'display_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'font_color': ('django.db.models.fields.CharField', [], {'default': "'FFFFFF'", 'max_length': '6'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'offset_x': ('django.db.models.fields.IntegerField', [], {}),
+            'offset_y': ('django.db.models.fields.IntegerField', [], {}),
+            'primary_color': ('django.db.models.fields.CharField', [], {'default': "'5A6D81'", 'max_length': '6'}),
+            'text': ('django.db.models.fields.CharField', [], {'max_length': '140'}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
+        },
         u'seo.billboardimage': {
             'Meta': {'object_name': 'BillboardImage'},
             'copyright_info': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
@@ -302,7 +173,6 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'og_img': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'posting_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'prm_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'prm_saved_search_sites': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['seo.SeoSite']", 'null': 'True', 'blank': 'True'}),
             'product_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'site_package': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['postajob.SitePackage']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
@@ -393,6 +263,13 @@ class Migration(SchemaMigration):
             'wide_footer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'wide_header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
         },
+        u'seo.country': {
+            'Meta': {'object_name': 'Country'},
+            'abbrev': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'abbrev_short': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'})
+        },
         u'seo.customfacet': {
             'Meta': {'object_name': 'CustomFacet'},
             'always_show': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -415,6 +292,20 @@ class Migration(SchemaMigration):
             'title': ('django.db.models.fields.CharField', [], {'max_length': '800', 'null': 'True', 'blank': 'True'}),
             'url_slab': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
+        u'seo.custompage': {
+            'Meta': {'ordering': "(u'url',)", 'object_name': 'CustomPage', '_ormbases': [u'flatpages.FlatPage']},
+            u'flatpage_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['flatpages.FlatPage']", 'unique': 'True', 'primary_key': 'True'}),
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'null': 'True', 'blank': 'True'}),
+            'meta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'meta_description': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'})
+        },
+        u'seo.featuredcompany': {
+            'Meta': {'object_name': 'FeaturedCompany'},
+            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_featured': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'seosite': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']"})
+        },
         u'seo.googleanalytics': {
             'Meta': {'object_name': 'GoogleAnalytics'},
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'null': 'True'}),
@@ -431,6 +322,54 @@ class Migration(SchemaMigration):
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']", 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '200'})
+        },
+        u'seo.joblisting': {
+            'Meta': {'object_name': 'jobListing'},
+            'city': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'citySlug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
+            'country': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'countrySlug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
+            'country_short': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '3', 'null': 'True', 'blank': 'True'}),
+            'date_new': ('django.db.models.fields.DateTimeField', [], {}),
+            'date_updated': ('django.db.models.fields.DateTimeField', [], {}),
+            'description': ('django.db.models.fields.TextField', [], {}),
+            'hitkey': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'link': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            'location': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'reqid': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
+            'state': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'stateSlug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
+            'state_short': ('django.db.models.fields.CharField', [], {'max_length': '3', 'null': 'True', 'blank': 'True'}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            'titleSlug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'uid': ('django.db.models.fields.IntegerField', [], {'unique': 'True', 'db_index': 'True'}),
+            'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True', 'blank': 'True'})
+        },
+        u'seo.locationparameter': {
+            'Meta': {'object_name': 'LocationParameter'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'location'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'seo.mocparameter': {
+            'Meta': {'object_name': 'MocParameter'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'moc'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'seo.qparameter': {
+            'Meta': {'object_name': 'QParameter'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'q'", 'unique': 'True', 'null': 'True', 'to': u"orm['seo.QueryRedirect']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '200'})
+        },
+        u'seo.queryredirect': {
+            'Meta': {'object_name': 'QueryRedirect'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'new_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
+            'old_path': ('django.db.models.fields.CharField', [], {'max_length': '200', 'db_index': 'True'}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['sites.Site']"})
         },
         u'seo.seosite': {
             'Meta': {'ordering': "(u'domain',)", 'object_name': 'SeoSite', '_ormbases': [u'sites.Site']},
@@ -464,6 +403,12 @@ class Migration(SchemaMigration):
             'facet_group': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'facet_type': ('django.db.models.fields.CharField', [], {'default': "'STD'", 'max_length': '4', 'db_index': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'seosite': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']"})
+        },
+        u'seo.seositeredirect': {
+            'Meta': {'unique_together': "(['redirect_url', 'seosite'],)", 'object_name': 'SeoSiteRedirect'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'redirect_url': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_index': 'True'}),
             'seosite': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']"})
         },
         u'seo.sitetag': {
@@ -502,4 +447,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['myblocks']
+    complete_apps = ['seo']

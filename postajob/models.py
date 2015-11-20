@@ -495,7 +495,7 @@ class SitePackage(Package):
         if self.owner:
             return super(SitePackage, self).user_has_access(user)
         else:
-            user_companies = user.get_companies()
+            user_companies = user.companies.all()
             for site in self.sites.all():
                 for company in site.get_companies():
                     if company not in user_companies:
