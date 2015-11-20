@@ -16,6 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
+from django.core.validators import ValidationError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -1345,6 +1346,7 @@ def nuo_main(request):
                                 RequestContext(request))
 
 
+#TODO: Add proper activities for the APIs
 @staff_member_required
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
@@ -1367,11 +1369,49 @@ def api_save_nuo_inbox(request):
     Attempts to save a non user outreach inbox. Returns error message if failed.
     GET /prm/api/nonuseroutreach/inbox/save
     """
-    pass
-    # company = get_company_or_404(request)
-    #
-    # inboxes = OutreachEmailAddress.objects.filter(company=company)
-    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
+    class EmailResponseObject:
+        def __init__(self):
+            self.success = True
+            self.form_message = ""
+            self.field_errors = None
+
+        def raise_error(self, form_message="Problem editing inbox. Please refresh page and try again", field_errors=None):
+            self.success = False
+            self.form_message = form_message
+            self.field_errors = field_errors
+            return self
+
+        def as_json(self):
+            return json.dumps(self)
+
+    if request.method != "POST":
+        raise Http404("Invalid method")
+    response_object = EmailResponseObject
+    company = get_company_or_404(request)
+    add_or_edit = request.POST.get("operation")
+    email_input = request.POST.get("email")
+    existing_object_pk = request.POST.get("pk", None)
+    if add_or_edit == "edit" and not existing_object_pk:
+        return HttpResponse(response_object.raise_error().as_json())
+
+    if add_or_edit == "edit":
+        inbox = OutreachEmailAddress.objects.filter(pk=existing_object_pk, company=company)
+    elif add_or_edit == "add":
+        inbox = OutreachEmailAddress()
+
+    if not inbox:
+        return HttpResponse(response_object.raise_error().as_json())
+
+    inbox.email = email_input
+    try:
+        inbox.clean_fields()
+    except ValidationError as ve:
+        return HttpResponse(response_object.raise_error(form_message="Validation Errors",
+                                                        field_errors=ve.message_dict).as_json())
+
+    inbox.save()
+    return HttpResponse(response_object.as_json)
+
 
 
 @staff_member_required
