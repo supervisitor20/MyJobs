@@ -15,7 +15,7 @@ def dummy_view(request):
 
 
 # TODO: remove this when the feature goes live
-@override_settings(DEBUG=True)
+@override_settings(ROLES_ENABLED=True)
 class DecoratorTests(MyJobsBase):
     """Tests that the various decorators in MyJobs work as expected."""
 

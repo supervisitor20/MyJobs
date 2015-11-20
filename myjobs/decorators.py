@@ -192,7 +192,7 @@ def requires(activities, activity_callback=None, access_callback=None):
             #TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
-            if not settings.DEBUG:
+            if not settings.ROLES_ENABLED:
                 return view_func(request, *args, **kwargs)
 
             company = get_company_or_404(request)
