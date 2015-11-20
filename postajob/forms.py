@@ -430,7 +430,7 @@ class SitePackageForm(RequestForm):
             self.fields['sites'].queryset = self.request.user.get_sites()
 
             # Limit a user to only companies they have access to.
-            self.fields['owner'].queryset = self.request.user.get_companies()
+            self.fields['owner'].queryset = self.request.user.companies.all()
 
 
 class ProductForm(RequestForm):

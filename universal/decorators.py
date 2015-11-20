@@ -146,6 +146,8 @@ warn_when_inactive = partial(
     link_text='Resend Activation')
 
 
+# TODO: Remove this decorator when Roles are deployed, as the internal check
+# in `requires` takes care of this already
 def has_access(feature):
     """
     Decorator that signifies which feature permissions are required in order to
