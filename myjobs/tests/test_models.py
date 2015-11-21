@@ -188,8 +188,8 @@ class TestActivities(MyJobsBase):
     def setUp(self):
         super(TestActivities, self).setUp()
 
-        self.company = CompanyFactory()
         self.app_access = AppAccessFactory()
+        self.company = CompanyFactory(app_access=[self.app_access])
         self.activities = ActivityFactory.create_batch(
             5, app_access=self.app_access)
         self.role = RoleFactory(
@@ -290,7 +290,7 @@ class TestActivities(MyJobsBase):
 
         self.assertItemsEqual(user.activities, [])
 
-        self.user.roles.add(self.role)
+        user.roles.add(self.role)
         activities = self.role.activities.values_list('name', flat=True)
 
         self.assertItemsEqual(user.activities, activities)

@@ -701,7 +701,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             elif 'role' in activities:
                 return False
             else:
-                return is_company_user
+                return is_company_user and company.member
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
