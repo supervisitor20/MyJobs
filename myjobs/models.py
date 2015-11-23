@@ -409,14 +409,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return gravatar_url
 
-    def get_companies(self):
-        """
-        Returns a QuerySet of all the Companies a User has access to.
-
-        """
-        from seo.models import Company
-        return Company.objects.filter(admins=self).distinct()
-
     def get_sites(self):
         """
         Returns a QuerySet of all the SeoSites a User has access to.
@@ -643,6 +635,53 @@ class User(AbstractBaseUser, PermissionsMixin):
         return not packages.exists() or packages.filter(
             owner__in=self.company_set.all()).exists()
 
+    def can(self, company, *activity_names):
+        """
+        Note: Until the activities feature is deployed, this method only
+        returns true when the company is a member company and the user is a
+        company user for that copmany.
+
+        Checks if a user may perform certain activities.
+
+        Inputs:
+            :company: The company who's role activities to check.
+            :activity_names: Positional arguments are the names of the
+                             activities the user wants to perform.
+             belonging to the given company
+
+        Output:
+            A boolean signifying whether the provided actions may be performed.
+
+        Example:
+
+            # given
+            app_access = AppAccess.objects.create(name="Example")
+            company = Company.objects.first()
+            activities = Activity.objects.bulk_create([
+                Activity(name="create example", app_access=app_access),
+                Activity(name="delete example", app_access=app_access)])
+
+            role = Role.objects.create(name="Example Role", company=company)
+            role.activities.add(activities[0])
+            user = User.objects.first()
+            user.roles.add(role)
+
+            # results
+            user.can(company, "create example") == True
+            user.can(company, "delete example") == False
+            user.can(company, "create example", "delete_example") == False
+        """
+
+        if not company:
+            return False
+
+        if settings.ROLES_ENABLED:
+            return set(activity_names).issubset(
+                self.roles.filter(company=company).values_list(
+                    'activities__name', flat=True))
+        else:
+            return company.member and company in self.company_set.all()
+
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
 def delete_user(sender, instance, using, **kwargs):
@@ -746,7 +785,7 @@ class FAQ(models.Model):
 class AppAccess(models.Model):
     """
     App access represents a logical grouping of activities. While an activity
-    may belong to many roles, it may only be assigned one app access. 
+    may belong to many roles, it may only be assigned one app access.
     """
     name = models.CharField(max_length=50, unique=True)
 
@@ -797,3 +836,43 @@ class Role(models.Model):
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company)
+
+    def add_activity(self, name):
+        """
+        Shortcut method to add an activity by name.
+
+        Input:
+            :name: The name of the activity to be added. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was added. If no activity
+            was added, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity not in self.activities.all():
+            self.activities.add(activity)
+        else:
+            activity = None
+
+        return activity
+
+    def remove_activity(self, name):
+        """
+        Shortcut method to remove an activity by name.
+
+        Input:
+            :name: The name of the activity to be removed. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was removed. If no
+            activity was removed, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity in self.activities.all():
+            self.activities.remove(activity)
+        else:
+            activity = None
+
+        return activity

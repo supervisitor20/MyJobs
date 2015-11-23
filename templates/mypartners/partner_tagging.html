@@ -40,6 +40,10 @@
 {% endblock content %}
 
 {% block extra-js %}
+<script type="text/javascript">
+  var create_tags = {{ create_tags }};
+</script>
 <script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}partner_tagging.156-09.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}tags.170-6.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}partner_tagging.170-17.js{{ gz }}"></script>
 {% endblock %}

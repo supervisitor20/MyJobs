@@ -238,7 +238,7 @@ def job_breadcrumbs(job, company=False):
     Generate breadcrumbs for job detail pages.
     Inputs:
         :job: Job document from Haystack
-        :company: Boolean, set to True to include comapny information in output
+        :company: Boolean, set to True to include company information in output
 
     Outputs:
         A list of dictionaries for each field in the breadbox
@@ -392,7 +392,7 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-    
+
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
     if len(moc_pieces) < 3: #moc url must be 3 parts
@@ -403,7 +403,7 @@ def pull_moc_object_via_slug(moc_slug_value):
     try:
         return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
-        return None    
+        return None
 
 def bread_box_moc_heading(moc_slug_value):
     moc = pull_moc_object_via_slug(moc_slug_value)

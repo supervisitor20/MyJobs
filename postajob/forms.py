@@ -370,7 +370,7 @@ class PurchasedJobForm(PurchasedJobBaseForm):
         # product
         max_job_length = self.purchased_product.max_job_length
         job_length_index = [
-            choice[0] for choice in 
+            choice[0] for choice in
             self.fields['date_expired'].widget.choices].index(max_job_length)
 
         self.fields['date_expired'].widget.choices = self.fields[
@@ -430,7 +430,7 @@ class SitePackageForm(RequestForm):
             self.fields['sites'].queryset = self.request.user.get_sites()
 
             # Limit a user to only companies they have access to.
-            self.fields['owner'].queryset = self.request.user.get_companies()
+            self.fields['owner'].queryset = self.request.user.companies.all()
 
 
 class ProductForm(RequestForm):

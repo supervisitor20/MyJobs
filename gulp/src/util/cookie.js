@@ -1,4 +1,3 @@
-
 // We used to cut and paste this function in various places. Yay modules!
 function read_cookie(cookie) {
     var nameEQ = cookie + "=",
