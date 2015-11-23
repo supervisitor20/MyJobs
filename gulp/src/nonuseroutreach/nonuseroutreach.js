@@ -281,27 +281,27 @@ var AddInboxForm = React.createClass({
 var InboxManagementPage = React.createClass({
   render: function() {
     return (
-        <div>
-      <div className="card-wrapper">
-      <div className="row">
-        <ExistingInboxList source="/prm/api/nonuseroutreach/inbox/list" />
-        </div>
+      <div>
+        <div className="card-wrapper">
+          <div className="row">
+            <ExistingInboxList source="/prm/api/nonuseroutreach/inbox/list" />
+          </div>
         </div>
         <div className="card-wrapper">
-        <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Add New Inbox</h2>
-          </div>
-          <div className="partner-holder no-highlight">
-            <div className="product-card no-highlight clearfix">
-            <AddInboxForm />
+          <div className="row">
+            <div className="col-xs-12 ">
+              <div className="wrapper-header">
+                <h2>Add New Inbox</h2>
+              </div>
+              <div className="partner-holder no-highlight">
+                <div className="product-card no-highlight clearfix">
+                  <AddInboxForm />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        </div>
-        </div>
-        </div>
+      </div>
     );
   }
 });

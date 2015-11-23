@@ -299,14 +299,14 @@ class TestViewLevelActivities(MyJobsBase):
 
         self.assertRequires("prm_report_records", "read communication record")
 
-    def test_manage_outreach_inboxes(self):
+    def test_manage_outreach_main(self):
         """
-        /prm/view/nonuseroutreach/inboxes requires "create contact",
+        /prm/view/nonuseroutreach requires "create contact",
         "create partner", and "create communication record"
         """
 
         self.assertRequires(
-            "manage_outreach_inboxes", "create partner", "create contact",
+            "nuo_main", "create partner", "create contact",
             "create communication record")
 
     def test_process_email(self):
