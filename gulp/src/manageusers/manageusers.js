@@ -46,7 +46,8 @@ const App = React.createClass({
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td data-title="Edit">
-                <Link to={`/role/${results[key].role.id}` action=`Edit`}>Edit</Link>
+               {/* <Link to={`/role/${results[key].role.id}` action=`Edit`}>Edit</Link> */}
+
               </td>
             </tr>
           );
@@ -518,12 +519,7 @@ const Roles = React.createClass({
                 <AddRoleButton />
               </div>
             </div>
-
-
             {this.props.children}
-
-
-
           </div>
         </div>
       </div>
@@ -547,9 +543,6 @@ const Role = React.createClass({
     };
   },
   componentDidMount: function() {
-
-    console.log("the component done mounted!");
-    console.log(this;
 
     if(this.props.action == "Edit"){
 
@@ -638,6 +631,7 @@ const Role = React.createClass({
         }
       }.bind(this));
     }
+
   },
   onTextChange: function(event) {
     this.state.role_name = event.target.value;
