@@ -358,8 +358,8 @@ var Content = React.createClass({
 // menu link to inbox management app screen
 var InboxManagementButton = React.createClass({
   handleClick: function() {
-    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
-    "have your employees send outreach emails"]);
+    this.props.changePage("InboxManagement", [{key: "inbtip", tip: "Use this page to manage the various email addresses to which you will " +
+    "have your employees send outreach emails"}]);
   },
   render: function() {
     return (
@@ -387,7 +387,7 @@ var Menu = React.createClass({
   render: function() {
     var tips_header;
     if (this.props.tips && this.props.tips.length > 0) {
-      var tips = this.props.tips.map(tip => <p>{tip}</p>
+      var tips = this.props.tips.map(tip => <p key={tip.key}>{tip.tip}</p>
       );
       tips_header = <h2>Tips</h2>;
     }

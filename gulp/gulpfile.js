@@ -124,18 +124,9 @@ gulp.task('nonuseroutreach', function() {
     .pipe(sourcemaps.init({loadMaps: true}))
     // Do we want this in production builds?
     .pipe(uglify({ mangle: false }))
-    // stripDebug() must come before sourcemaps.write()
-    // You should remove logging before committing, but this confirms logging won't be in production
     .pipe(gulpif(strip_debug, stripDebug()))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
-});
-
-// By default, we strip logging. This disables that functionality.
-gulp.task('watch-no-strip', function() {
-    console.log("Keeping console and debugger statements.");
-    strip_debug = false;
-    gulp.watch('src/**/*', ['reporting', 'manageusers', 'nonuseroutreach']);
 });
 
 gulp.task('default', ['build']);
