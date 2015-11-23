@@ -8,7 +8,6 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import logout, authenticate
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
@@ -35,6 +34,7 @@ from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
 from seo.models import Company
+from myreports.decorators import restrict_to_staff
 
 logger = logging.getLogger('__name__')
 
@@ -597,7 +597,7 @@ def topbar(request):
 
     return response
 
-@staff_member_required
+@restrict_to_staff()
 @requires("read role")
 def manage_users(request):
     """
@@ -612,7 +612,7 @@ def manage_users(request):
     return render_to_response('manageusers/index.html', ctx,
                                 RequestContext(request))
 
-@staff_member_required
+@restrict_to_staff()
 @requires("read role")
 def api_get_activities(request):
     """
@@ -622,7 +622,7 @@ def api_get_activities(request):
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
-@staff_member_required
+@restrict_to_staff()
 @requires("read role")
 def api_get_roles(request):
     """
@@ -672,7 +672,7 @@ def api_get_roles(request):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@staff_member_required
+@restrict_to_staff()
 @requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
@@ -726,7 +726,7 @@ def api_get_specific_role(request, role_id=0):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@staff_member_required
+@restrict_to_staff()
 @requires('create role')
 def api_create_role(request):
     """
@@ -793,7 +793,7 @@ def api_create_role(request):
         response_data["message"] = "POST method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@staff_member_required
+@restrict_to_staff()
 @requires('update role')
 def api_edit_role(request, role_id=0):
     """
@@ -892,7 +892,7 @@ def api_edit_role(request, role_id=0):
         response_data["message"] = "POST method required."
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@staff_member_required
+@restrict_to_staff()
 @requires('delete role')
 def api_delete_role(request, role_id=0):
     """
