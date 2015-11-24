@@ -46,8 +46,7 @@ const App = React.createClass({
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td data-title="Edit">
-               {/* <Link to={`/role/${results[key].role.id}` action=`Edit`}>Edit</Link> */}
-
+               <Link to={`/role/${results[key].role.id}`} action='Edit'>Edit</Link>
               </td>
             </tr>
           );
@@ -58,31 +57,53 @@ const App = React.createClass({
       }
     }.bind(this));
   },
-
-
-
-
-
+  callUsersAPI: function () {
+    {/* Get users once, but reload if needed */}
+    $.get("/manage-users/api/users/", function(results) {
+      if (this.isMounted()) {
+        var users_table_rows = [];
+        for (var key in results) {
+          results[key].roles = JSON.parse(results[key].roles);
+          users_table_rows.push(
+            <tr key={key}>
+              <td data-title="User Email">{results[key].email}</td>
+              <td data-title="Associated Roles">
+                <AssociatedRolesList roles={results[key].roles}/>
+              </td>
+              <td data-title="Status">
+                <Status status={results[key].status}/>
+              </td>
+              <td data-title="Edit">
+                <Link to={`/user/${key}`} action='Edit'>Edit</Link>
+              </td>
+            </tr>
+          );
+        }
+        console.log(users_table_rows);
+        this.setState({
+          users_table_rows: users_table_rows
+        });
+      }
+    }.bind(this));
+  },
   getInitialState: function() {
     return {
       roles_table_rows: [],
       activities_table_rows: [],
-      users_table_rows: []
+      users_table_rows: [],
     };
   },
   componentWillReceiveProps: function(nextProps) {
     if ( nextProps.reload_apis == "true" ){
       this.callActivitiesAPI();
       this.callRolesAPI();
-      {/*
-      this.callUsersAPI(); */}
+      this.callUsersAPI();
     }
   },
   componentDidMount: function() {
     this.callActivitiesAPI();
     this.callRolesAPI();
-    {/*
-    this.callUsersAPI(); */}
+    this.callUsersAPI();
   },
   render() {
     return (
@@ -92,7 +113,6 @@ const App = React.createClass({
             <h1><a href="/manage" title="Back to Manage Users">DirectEmployers</a></h1>
           </div>
         </div>
-
 
         <div className="row">
           <div className="col-sm-12">
@@ -110,13 +130,12 @@ const App = React.createClass({
             <div className="card-wrapper">
 
               {this.props.children && React.cloneElement(
-
                 this.props.children, {
                   activities_table_rows: this.state.activities_table_rows,
                   roles_table_rows: this.state.roles_table_rows,
-                  action: "Edit"
+                  users_table_rows: this.state.users_table_rows,
+                  action: this.state.action
                 })
-
               }
 
             </div>
@@ -125,10 +144,10 @@ const App = React.createClass({
           <div className="col-sm-4 col-xs-12 pull-right">
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
-              {/* <RolesButton /> */}
-              <Link to="/roles">Roles</Link>
-              <Link to="/activities">Activities</Link>
-              {/* <UsersButton /> */}
+              <Link to="/" className="btn">Overview</Link>
+              <Link to="/roles" className="btn">Roles</Link>
+              <Link to="/activities" className="btn">Activities</Link>
+              <Link to="/users" className="btn">Users</Link>
             </div>
           </div>
 
@@ -186,10 +205,42 @@ const Overview = React.createClass({
 
 
 
+const Status = React.createClass({
+  render: function() {
+    var button = "";
+    if (this.props.status == true){
+      button = <span className='label label-success'>Active</span>;
+    }
+    else if (this.props.status == false){
+      button = <span className='label label-warning'>Pending</span>;
+    }
+    return (
+      <span>
+        {button}
+      </span>
+    );
+  }
+});
 
 
 
 
+const AssociatedRolesList = React.createClass({
+  render: function() {
+    var associated_roles_list = this.props.roles.map(function(role, index) {
+      return (
+        <li key={index}>
+          {role.fields.name}
+        </li>
+      );
+    });
+    return (
+      <ul>
+        {associated_roles_list}
+      </ul>
+    );
+  }
+});
 
 
 
@@ -308,10 +359,7 @@ const AssociatedUsersList = React.createClass({
 
 const AddRoleButton = React.createClass({
   handleClick: function(event) {
-    ReactDOM.render(
-      <Container page="EditRole" action="Add"/>,
-        document.getElementById('content')
-    );
+    {/* TODO do something */}
   },
   render: function() {
     return (
@@ -422,10 +470,7 @@ const ActivitiesMultiselect = React.createClass({
 
 const CancelRoleButton = React.createClass({
   handleClick: function(event) {
-    ReactDOM.render(
-      <Container page="Roles" />,
-        document.getElementById('content')
-    );
+    {/* TODO do something */}
   },
   render: function() {
     return (
@@ -734,10 +779,16 @@ const Role = React.createClass({
         http://stackoverflow.com/questions/33778675/react-make-flash-message-disappear-automatically
         */}
       if ( response.success == "true" ){
+
+        {/* TODO do something
+
         ReactDOM.render(
           <Container page="Roles" reload_apis="true" disappear_text="Role created successfully"/>,
             document.getElementById('content')
         );
+
+        */}
+
       }
       else if ( response.success == "false" ){
         this.setState({
@@ -777,10 +828,17 @@ const Role = React.createClass({
             xhr.setRequestHeader("X-CSRFToken", csrf);
         },
      success: function( response ) {
+
+       {/* TODO Do something
+
+
        ReactDOM.render(
          <Container page="Roles" reload_apis="true"  />,
            document.getElementById('content')
        );
+
+       */}
+
     }})
     .fail( function(xhr) {
       if(xhr.status == 403){
@@ -862,33 +920,462 @@ const Role = React.createClass({
 
 
 
+const UsersList = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <table className="table" id="no-more-tables">
+          <thead>
+            <tr>
+              <th>User Email</th>
+              <th>Associated Roles</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.props.users_table_rows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+});
+
+var AddUserButton = React.createClass({
+  handleClick: function(event) {
+
+    {/* TODO do something
+    ReactDOM.render(
+      <Container page="EditUser" action="Add"/>,
+        document.getElementById('content')
+    );
+    */}
+
+  },
+  render: function() {
+    return (
+
+      <Link to='/user/' action="Add" className="btn pull-right">Add User</Link>
+    );
+  }
+});
+
 
 const Users = React.createClass({
-  render() {
+  render: function() {
     return (
-      <div>
-        <h1>Users</h1>
-        <div className="master">
-          list of users
-        </div>
-        <div className="detail">
-          {this.props.children}
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Users</h2>
+          </div>
+          <div className="product-card-full no-highlight">
+
+            <UsersList users_table_rows={this.props.users_table_rows} />
+
+            <hr/>
+
+            <div className="row">
+              <div className="col-xs-12">
+                <AddUserButton />
+              </div>
+            </div>
+
+            {this.props.children}
+          </div>
         </div>
       </div>
-    )
+    );
   }
-})
+});
+
+
+const CancelUserButton = React.createClass({
+  handleClick: function(event) {
+    ReactDOM.render(
+      <Container page="Users" />,
+        document.getElementById('content')
+    );
+  },
+  render: function() {
+    return (
+      <Button className="pull-right" onClick={this.handleClick}>Cancel</Button>
+    );
+  }
+});
+
+
+
+
+const RolesMultiselect = React.createClass({
+  getInitialState() {
+    return {
+      assigned_roles: this.props.assigned_roles,
+      available_roles: this.props.available_roles,
+    }
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      available_roles: nextProps.available_roles,
+      assigned_roles: nextProps.assigned_roles
+    });
+  },
+  _onSelect(assigned_roles) {
+    assigned_roles.sort((a, b) => a.id - b.id)
+    this.setState({assigned_roles})
+  },
+  _onDeselect(deselectedOptions) {
+    var assigned_roles = this.state.assigned_roles.slice()
+    deselectedOptions.forEach(option => {
+      assigned_roles.splice(assigned_roles.indexOf(option), 1)
+    })
+    this.setState({assigned_roles})
+  },
+  render: function() {
+    var {assigned_roles, available_roles} = this.state
+
+    return (
+        <div className="row">
+          <div className="col-xs-6">
+            <label>Roles Available:</label>
+            <FilteredMultiSelect
+              buttonText="Add"
+              classNames={bootstrapClasses}
+              onChange={this._onSelect}
+              options={available_roles}
+              selectedOptions={assigned_roles}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+          <div className="col-xs-6">
+            <label>Roles Assigned:</label>
+            <FilteredMultiSelect
+              buttonText="Remove"
+              classNames={{
+                filter: 'form-control'
+              , select: 'form-control'
+              , button: 'btn btn btn-block btn-default'
+              , buttonActive: 'btn btn btn-block btn-danger'
+              }}
+              onChange={this._onDeselect}
+              options={assigned_roles}
+              textProp="name"
+              valueProp="id"
+            />
+          </div>
+        </div>
+    );
+  }
+});
+
+
+
+
 
 const User = React.createClass({
-  render() {
+  getInitialState: function() {
+    {/* TODO Refactor to use basic Actions and the Dispatchers */}
+    return {
+      api_response_help: '',
+      user_email: '',
+      user_email_help: '',
+      role_multiselect_help: '',
+      available_roles: [],
+      assigned_roles: [],
+      api_response_message: ''
+    };
+  },
+  onTextChange: function(event) {
+    this.state.user_email = event.target.value;
+
+    var user_email = this.state.user_email;
+
+    if(validateEmail(user_email) === false) {
+      this.setState({
+          user_email: this.state.user_email,
+          user_email_help: 'Invalid email',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+    else {
+      this.setState({
+          user_email: this.state.user_email,
+          user_email_help: '',
+          api_response_message: '',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+  },
+  componentDidMount: function() {
+    if(this.props.action == "Edit"){
+      $.get("/manage-users/api/users/" + this.props.user_id, function(results) {
+
+        if (this.isMounted()) {
+
+          var user_object = results[this.props.user_id];
+
+          var user_email = user_object.email;
+
+          var available_roles_unformatted = JSON.parse(user_object.roles.available);
+          var available_roles = available_roles_unformatted.map(function(obj){
+             var role = {};
+             role['id'] = obj.pk;
+             role['name'] = obj.fields.name;
+             return role;
+          });
+
+          var assigned_roles_unformatted = JSON.parse(user_object.roles.assigned);
+          var assigned_roles = assigned_roles_unformatted.map(function(obj){
+             var role = {};
+             role['id'] = obj.pk;
+             role['name'] = obj.fields.name;
+             return role;
+          });
+
+          this.setState({
+            user_email: user_email,
+            user_email_help: '',
+            role_multiselect_help: '',
+            api_response_help: '',
+            available_roles: available_roles,
+            assigned_roles: assigned_roles
+          });
+        }
+      }.bind(this));
+    }
+
+    else if(this.props.action == "Add"){
+
+      $.get("/manage-users/api/roles/", function(results) {
+
+        if (this.isMounted()) {
+
+          available_roles = [];
+          for (var role_id in results){
+            available_roles.push(
+              {
+                "id":role_id,
+                "name":results[role_id].role.name
+              }
+            )
+          };
+
+          var user_email = "";
+          var available_roles = available_roles;
+          var assigned_roles = [];
+
+          this.setState({
+            user_email: user_email,
+            user_email_help: '',
+            role_multiselect_help: '',
+            api_response_help: '',
+            available_roles: available_roles,
+            assigned_roles: assigned_roles
+          });
+        }
+      }.bind(this));
+    }
+
+  },
+  handleSaveUserClick: function (event) {
+
+    {/* Grab form fields and validate */}
+
+    {/* TODO: Warn user? If they remove a user from all roles, they will have to reinvite him. */}
+
+    var user_id = this.props.user_id;
+
+    var assigned_roles = this.refs.roles.state.assigned_roles;
+
+    var user_email = this.state.user_email;
+
+    if(validateEmail(user_email) === false) {
+      this.setState({
+          user_email_help: 'Invalid email.',
+          role_multiselect_help: '',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+
+    if(assigned_roles.length < 1){
+      this.setState({
+          user_email_help: '',
+          role_multiselect_help: 'Each user must be assigned to at least one role.',
+          available_roles: this.refs.roles.state.available_roles,
+          assigned_roles: this.refs.roles.state.assigned_roles
+      });
+      return;
+    }
+
+    {/* No errors? Clear help text */}
+
+    this.setState({
+        available_roles: this.refs.roles.state.available_roles,
+        assigned_roles: this.refs.roles.state.assigned_roles
+    });
+
+    {/* Format properly */}
+
+    assigned_roles = assigned_roles.map(function(obj){
+       return obj.name;
+    });
+
+    {/* Determine URL based on action */}
+    var url = "";
+    if ( this.props.action == "Edit" ){
+      url = "/manage-users/api/users/edit/" + user_id + "/";
+    }
+    else if ( this.props.action == "Add" ){
+      url = "/manage-users/api/users/create/";
+    }
+
+    {/* Build data to send */}
+    var data_to_send = {};
+    data_to_send['csrfmiddlewaretoken'] = getCsrf();
+    data_to_send['assigned_roles'] = assigned_roles;
+    data_to_send['user_email'] = user_email;
+
+    {/* Submit to server */}
+    $.post(url, data_to_send, function(response) {
+      if ( response.success == "true" ){
+        ReactDOM.render(
+          <Container page="Users" reload_apis="true" disappear_text="User created successfully"/>,
+            document.getElementById('content')
+        );
+      }
+      else if ( response.success == "false" ){
+        this.setState({
+            api_response_help: response.message,
+            user_email: this.state.user_email,
+            available_roles: this.refs.roles.state.available_roles,
+            assigned_roles: this.refs.roles.state.assigned_roles
+        });
+      }
+    }.bind(this))
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "Unable to save user. Insufficient privileges.",
+        });
+      }
+    }.bind(this));
+  },
+  handleDeleteUserClick: function (event) {
+    if (confirm('Are you sure you want to delete this user?')) {
+    } else {
+        return;
+    }
+
+    var user_id = this.props.user_id;
+
+    var csrf = getCsrf();
+
+    {/* Submit to server */}
+    $.ajax( "/manage-users/api/users/delete/" + user_id + "/",
+    {
+      type: "DELETE",
+      beforeSend: function(xhr) {
+          xhr.setRequestHeader("X-CSRFToken", csrf);
+    },
+    success: function( response ) {
+       ReactDOM.render(
+         <Container page="Users" reload_apis="true" disappear_text="User deleted successfully"/>,
+           document.getElementById('content')
+         );
+    }})
+    .fail( function(xhr) {
+      if(xhr.status == 403){
+        this.setState({
+            api_response_help: "User not deleted. Insufficient privileges.",
+        });
+      }
+    }.bind(this));
+  },
+  render: function() {
+
+    console.log(this)
+
+    var delete_user_button = "";
+
+    var user_email_input = "";
+
+    console.log("this.props.action");
+    console.log(this.props.action);
+
+    if (this.props.action == "Add") {
+      user_email_input = <input id="id_user_email" maxLength="255" name="id_user_email" type="email" value={this.state.user_email} onChange={this.onTextChange} size="35"/>
+    }
+    else if (this.props.action == "Edit"){
+      user_email_input = <input id="id_user_email" maxLength="255" name="id_user_email" type="email" readOnly value={this.state.user_email} size="35"/>
+      delete_user_button = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>
+    }
+
+    var user_email_help = this.state.user_email_help;
+    var role_multiselect_help = this.state.role_multiselect_help;
+    var api_response_help = this.state.api_response_help;
+
     return (
       <div>
-        <h2>{this.props.params.userId}</h2>
 
+        <div className="row">
+          <div className="col-xs-12 ">
+            <div className="wrapper-header">
+              <h2>{this.props.action} User</h2>
+            </div>
+            <div className="product-card-full no-highlight">
+
+              <div className="row">
+                <div className="col-xs-12">
+                  <HelpText message={user_email_help} />
+                  <label htmlFor="id_user_email">User Email*:</label>
+                  {user_email_input}
+                </div>
+              </div>
+
+              <hr/>
+
+              <HelpText message={role_multiselect_help} />
+
+              <RolesMultiselect available_roles={this.state.available_roles} assigned_roles={this.state.assigned_roles} ref="roles"/>
+
+              <span id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
+
+              <hr />
+
+              <div className="row">
+
+                <div className="col-xs-12">
+                  <span className="primary pull-right">
+                    <HelpText message={api_response_help} />
+                  </span>
+                </div>
+
+                <div className="col-xs-12">
+                  <Button className="primary pull-right" onClick={this.handleSaveUserClick}>Save User</Button>
+                  {delete_user_button}
+                  <CancelUserButton />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
-    )
+    );
   }
-})
+});
+
+
+
+
 
 
 
@@ -898,10 +1385,10 @@ render((
       <IndexRoute component={Overview} />
       <Route path="activities" component={Activities} />
       <Route path="roles" component={Roles} />
-      <Route path="/role/:role_id" component={Role}/>
-      <Route path="users" component={Users}>
-        <Route path="/user/:userId" component={User}/>
-      </Route>
+      <Route path="/role/:role_id" component={Role} />
+      <Route path="users" component={Users} />
+      <Route path="/user/:user_id" component={User} />
+      <Route path="/user/" component={User} />
     </Route>
   </Router>
 ), document.getElementById('content'))
