@@ -116,4 +116,8 @@ describe("ReportConfiguration", () => {
         expect(result).toEqual(7);
         expect(fakeComponent.newReportNote).toHaveBeenCalled();
     }));
+
+    it("will fail this test", () => {
+        fail("in order to trigger a build failure.");
+    });
 });
