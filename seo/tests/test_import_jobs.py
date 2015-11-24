@@ -153,7 +153,7 @@ class LoadETLTestCase(DirectSEOBase):
                                     'data',
                                     'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip') 
         with open(self.zipfile) as zf:
-            self.jobs = sorted(list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060")))
+            self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
 
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
@@ -184,8 +184,9 @@ class LoadETLTestCase(DirectSEOBase):
         add_company(self.businessunit)
         
         transformed_job = hr_xml_to_json(self.jobs[0], self.businessunit)
+        print "\nTRANSFORMED: %s\n" %  transformed_job['guid']
 
-        expected = datetime.datetime.strptime("2015-01-11", "%Y-%m-%d").date()
+        expected = datetime.datetime.strptime("2015-01-19", "%Y-%m-%d").date()
         actual = transformed_job['salted_date'].date()
 
         self.assertEqual(expected, actual, 
