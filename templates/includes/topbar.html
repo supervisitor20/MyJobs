@@ -45,16 +45,18 @@
                         </ul>
                     </li>
                     {% get_company_from_cookie as company %}
+                    {% can user company "read partner" as can_read_partner %}
+                    {% can user company "read role" as can_read_role %}
                     {% is_a_group_member company user "Employer" as group_member %}
                     {% get_company_name user as company_name %}
                     {% if group_member %}
                     <li class="{% active_tab 'employer-tools' %} has-drop">
                         <a>{% trans "Employers" %}</a>
                         <ul id="employer-apps" class="submenu">
-                            {% if company.prm_access %}
+                            {% if can_read_partner %}
                                 <li><a id="partner-tab" href="{{ ABSOLUTE_URL }}prm/view">{% trans "PRM" %}</a></li>
                             {% endif %}
-                            {% if company.prm_access %}
+                            {% if can_read_partner %}
                                 <li><a id="reports-tab" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
                             {% endif %}
                             {% if company.product_access %}
@@ -66,7 +68,7 @@
                             {% if company.posting_access %}
                                 <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
                             {% endif %}
-                            {% if request.user.is_staff %}
+                            {% if request.user.is_staff and can_read_role %}
                               <li><a id="posted-jobs-tab" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
                             {% endif %}
                         </ul>
@@ -123,7 +125,7 @@
 
                                         <li><a id="savedsearch-link" class="no-show seeker-menu" href="{{ ABSOLUTE_URL }}saved-search/view/">{% trans "My Saved Searches" %}</a></li>
 
-                                        {% if company.prm_access  %}
+                                        {% if can_read_partner %}
 
                                             <li><a id="employer-tools" class="no-show desktop_hide" style="cursor: pointer;">{% trans "Employer" %}</a></li>
 
@@ -131,7 +133,7 @@
                                             <li><a id="partner-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}prm/view?company={{ company.id }}">{% trans "PRM" %}</a></li>
 
                                         {% endif %}
-                                        {% if company.prm_access %}
+                                        {% if can_read_partner %}
                                             <li><a id="reports-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
                                         {% endif %}
                                         {% if company.product_access %}
@@ -142,6 +144,9 @@
                                         {% endif %}
                                         {% if company.posting_access %}
                                             <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
+                                        {% endif %}
+                                        {% if request.user.is_staff and can_read_role %}
+                                          <li><a id="posted-jobs-tab" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
                                         {% endif %}
                                     {% endif %}
                                     <li><a id="account-link" href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>

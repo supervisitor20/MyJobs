@@ -20,7 +20,8 @@ from mymessages.tests.factories import MessageInfoFactory
 
 from setup import MyJobsBase
 from myjobs.models import User, EmailLog, FAQ
-from myjobs.tests.factories import UserFactory, RoleFactory
+from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
+                                    AppAccessFactory)
 from mypartners.tests.factories import PartnerFactory
 from mysearches.models import PartnerSavedSearch
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
@@ -937,9 +938,6 @@ class MyJobsViewsTests(MyJobsBase):
         # ensure topbar shows logged out options
         self.assertIn("Log In", response.content)
 
-
-
-
     def test_referring_site_in_topbar(self):
         self.client.get(
             reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'
@@ -1142,7 +1140,7 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         with self.settings(ROLES_ENABLED=False):
             context = Context({'user': self.user})
-            rendered = Template(template).render(context)
+            Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
 
@@ -1152,6 +1150,67 @@ class MyJobsTopbarViewsTests(MyJobsBase):
             self.user.roles = roles
 
             context = Context({'user': self.user})
-            rendered = Template(template).render(context)
+            Template(template).render(context)
             self.assertItemsEqual(
                 context['company_name'], self.user.company_set.all())
+
+    def test_can_template_tag(self):
+        """
+        The {% can company user activity %} template tag should return False
+        when roles are disabled if passed an activity that includes "role"
+        """
+
+        template = """{% load common_tags %}
+                      {% can user company "read partner" as read_partner %}
+                      {% can user company "read role" as read_role %}"""
+
+        app_access = AppAccessFactory()
+        self.companies[0].app_access.add(app_access)
+        activities = [
+            ActivityFactory(name="read role", app_access=app_access),
+            ActivityFactory(name="read partner", app_access=app_access)]
+
+        role = RoleFactory(company=self.companies[0], activities=activities)
+        context = Context({
+            'user': self.user, 'company': self.companies[0]})
+
+        with self.settings(ROLES_ENABLED=False):
+            Template(template).render(context)
+
+            self.assertTrue(context['read_partner'])
+            self.assertFalse(context['read_role'])
+
+            # disable PRM (by disabling member when roles are disabled)
+            self.companies[0].member = False
+            self.companies[0].save()
+
+            # recreate the context since the last rendering modified it
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+            Template(template).render(context)
+
+            self.assertFalse(context['read_partner'])
+            self.assertFalse(context['read_role'])
+
+        with self.settings(ROLES_ENABLED=True):
+            self.user.roles.add(role)
+
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+
+            Template(template).render(context)
+
+            self.assertTrue(context['read_partner'])
+            self.assertTrue(context['read_role'])
+
+            # disable PRM (by removing PRM-related activities when roles are
+            # enabled
+            role.remove_activity('read partner')
+            role.remove_activity('read role')
+
+            # recreate the context since the last rendering modified it
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+            Template(template).render(context)
+            self.assertFalse(context['read_partner'])
+            self.assertFalse(context['read_role'])
