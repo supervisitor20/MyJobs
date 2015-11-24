@@ -8,6 +8,8 @@ from seo.models import BusinessUnit, Company
 from seo.tests.factories import BusinessUnitFactory, CompanyFactory
 from setup import DirectSEOBase
 from mock import patch
+import datetime
+from transform import hr_xml_to_json
 
 
 class ImportJobsTestCase(DirectSEOBase):
@@ -147,13 +149,11 @@ class LoadETLTestCase(DirectSEOBase):
 
     def setUp(self):
         super(LoadETLTestCase, self).setUp()
-
         self.zipfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'data',
-                                    'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip')
-
+                                    'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip') 
         with open(self.zipfile) as zf:
-            self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
+            self.jobs = sorted(list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060")))
 
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
@@ -179,6 +179,18 @@ class LoadETLTestCase(DirectSEOBase):
         self.assertEqual(count, 38, "38 Jobs not in solr after call to update job source. Found %s" % count)
         self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 38,
                          "Job Count not updated after imports: Should be 38 was %s" % self.businessunit.associated_jobs)
+
+    def test_salted_date_is_based_on_date_new(self):
+        add_company(self.businessunit)
+        
+        transformed_job = hr_xml_to_json(self.jobs[0], self.businessunit)
+
+        expected = datetime.datetime.strptime("2015-01-11", "%Y-%m-%d").date()
+        actual = transformed_job['salted_date'].date()
+
+        self.assertEqual(expected, actual, 
+                         "'Salted_date' is expected to be the same date as date_new, it is not. %s is not %s" %
+                             (actual, expected))
 
     def test_filtering_on_includeinindex_bit(self):
         """Test that filtering on the include_in_index bit works"""
