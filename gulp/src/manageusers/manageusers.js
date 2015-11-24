@@ -6,7 +6,7 @@ import {validateEmail} from 'util/validateEmail';
 import Button from 'react-bootstrap/lib/Button';
 import FilteredMultiSelect from "react-filtered-multiselect"
 import createHistory from 'history/lib/createHashHistory';
-
+import createBrowserHistory from 'history/lib/createBrowserHistory';
 
 
 const App = React.createClass({
@@ -1303,22 +1303,16 @@ const User = React.createClass({
 
 
 render((
-  <Router>
+  <Router history={createBrowserHistory()}>
     <Route path="/" component={App}>
       <IndexRoute component={Overview} />
       <Route path="activities" component={Activities} />
       <Route path="roles" component={Roles} />
-
       <Route path="/role/add" component={Role} />
-
       <Route path="/role/:role_id" component={Role} />
-
       <Route path="users" component={Users} />
-
       <Route path="/user/add" component={User} />
-
       <Route path="/user/:user_id" component={User} />
-
       <Route path="*" component={NoMatch}/>
     </Route>
   </Router>
