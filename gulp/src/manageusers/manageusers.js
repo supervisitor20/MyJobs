@@ -150,9 +150,9 @@ const App = React.createClass({
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
               <Link to="/" className="btn">Overview</Link>
-              <Link to="/roles" className="btn">Roles</Link>
-              <Link to="/activities" className="btn">Activities</Link>
-              <Link to="/users" className="btn">Users</Link>
+              <Link to="roles" className="btn">Roles</Link>
+              <Link to="activities" className="btn">Activities</Link>
+              <Link to="users" className="btn">Users</Link>
             </div>
           </div>
 
@@ -197,7 +197,7 @@ const Roles = React.createClass({
 
             <div className="row">
               <div className="col-xs-12">
-                <Link to="/role/add" query={{ action: "Add" }} className="primary pull-right btn btn-default">Add Role</Link>
+                <Link to="role/add" query={{ action: "Add" }} className="primary pull-right btn btn-default">Add Role</Link>
               </div>
             </div>
           </div>
@@ -544,7 +544,7 @@ const Role = React.createClass({
                 <div className="col-xs-12">
                   <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
                   {delete_role_button}
-                  <Link to="/roles" className="pull-right btn btn-default">Cancel</Link>
+                  <Link to="roles" className="pull-right btn btn-default">Cancel</Link>
                 </div>
               </div>
             </div>
@@ -900,7 +900,7 @@ const UsersList = React.createClass({
 const AddUserButton = React.createClass({
   render: function() {
     return (
-      <Link to="/user/add" query={{ action: "Add" }} className="primary pull-right btn btn-default">Add User</Link>
+      <Link to="user/add" query={{ action: "Add" }} className="primary pull-right btn btn-default">Add User</Link>
     );
   }
 });
@@ -1287,7 +1287,7 @@ const User = React.createClass({
                 <div className="col-xs-12">
                   <Button className="primary pull-right" onClick={this.handleSaveUserClick}>Save User</Button>
                   {delete_user_button}
-                  <Link to="/users" className="pull-right btn btn-default">Cancel</Link>
+                  <Link to="users" className="pull-right btn btn-default">Cancel</Link>
                 </div>
               </div>
 
@@ -1303,7 +1303,7 @@ const User = React.createClass({
 
 
 render((
-  <Router history={createBrowserHistory()}>
+  <Router>
     <Route path="/" component={App}>
       <IndexRoute component={Overview} />
       <Route path="activities" component={Activities} />
