@@ -29,7 +29,6 @@ const App = React.createClass({
         });
       }
     }.bind(this));
-
   },
   callRolesAPI: function () {
     {/* Get roles once, but reload if needed */}
@@ -114,7 +113,7 @@ const App = React.createClass({
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1><a href="/manage" title="Back to Manage Users">DirectEmployers</a></h1>
+            <h1>DirectEmployers</h1>
           </div>
         </div>
 
@@ -129,10 +128,8 @@ const App = React.createClass({
         </div>
 
         <div className="row">
-
           <div className="col-sm-8 col-xs-12">
             <div className="card-wrapper">
-
               {this.props.children && React.cloneElement(
                 this.props.children, {
                   activities_table_rows: this.state.activities_table_rows,
@@ -142,7 +139,6 @@ const App = React.createClass({
                   callUsersAPI: this.callUsersAPI,
                 })
               }
-
             </div>
           </div>
 
@@ -156,33 +152,16 @@ const App = React.createClass({
             </div>
           </div>
 
-
-          {/*
-
-          <Content reload_apis={this.props.route.reload_apis} page={this.props.route.page} action={this.props.route.action} role_id={this.props.route.role_id} user_id={this.props.route.user_id} disappear_text={this.props.route.disappear_text}/>
-          */}
-
         </div>
         <div className="clearfix"></div>
-
       </div>
     )
   }
 })
 
 
-
-
-
-
-
-
-
-
-
-
 const Roles = React.createClass({
-  render: function() {
+  render() {
     return (
       <div className="row">
         <div className="col-xs-12 ">
@@ -216,7 +195,6 @@ const Roles = React.createClass({
 
 const Role = React.createClass({
   getInitialState: function() {
-    {/* TODO Refactor to use basic Actions and the Dispatchers */}
     return {
       api_response_help: '',
       role_name: '',
@@ -225,9 +203,6 @@ const Role = React.createClass({
       available_users: [],
       assigned_users: []
     };
-
-
-
   },
   componentDidMount: function() {
     let action = this.props.location.query.action;
@@ -323,7 +298,8 @@ const Role = React.createClass({
   onTextChange: function(event) {
     this.state.role_name = event.target.value;
 
-    {/* I know this is awful. setState overrides some states because they are n-levels deep.
+    {/* This works, but is cumbersome to scale. For next app, or if we grow this one larger, refactor using Flux.
+      setState overrides some states because they are n-levels deep.
       Look into immutability: http://facebook.github.io/react/docs/update.html */}
 
     this.setState({
@@ -358,8 +334,6 @@ const Role = React.createClass({
       });
       return;
     }
-
-
 
     var assigned_activities = this.refs.activities.state.assigned_activities;
 
@@ -485,7 +459,7 @@ const Role = React.createClass({
       }
     }.bind(this));
   },
-  render: function() {
+  render() {
     let action = this.props.location.query.action;
 
     var delete_role_button = "";
@@ -564,7 +538,7 @@ const Role = React.createClass({
 
 
 const Overview = React.createClass({
-  render: function() {
+  render() {
     return (
       <div className="row">
         <div className="col-xs-12 ">
@@ -582,7 +556,7 @@ const Overview = React.createClass({
 });
 
 const NoMatch = React.createClass({
-  render: function() {
+  render() {
     return (
       <div className="row">
         <div className="col-xs-12 ">
@@ -599,7 +573,7 @@ const NoMatch = React.createClass({
 });
 
 const Status = React.createClass({
-  render: function() {
+  render() {
     var button = "";
     if (this.props.status == true){
       button = <span className='label label-success'>Active</span>;
@@ -616,7 +590,7 @@ const Status = React.createClass({
 });
 
 const AssociatedRolesList = React.createClass({
-  render: function() {
+  render() {
     var associated_roles_list = this.props.roles.map(function(role, index) {
       return (
         <li key={index}>
@@ -633,7 +607,7 @@ const AssociatedRolesList = React.createClass({
 });
 
 const RolesList = React.createClass({
-  render: function() {
+  render() {
     return (
       <div>
         <table className="table" id="no-more-tables">
@@ -655,7 +629,7 @@ const RolesList = React.createClass({
 });
 
 const ActivitiesList = React.createClass({
-  render: function() {
+  render() {
     return (
       <div>
         <table className="table">
@@ -676,7 +650,7 @@ const ActivitiesList = React.createClass({
 
 const Activities = React.createClass({
 
-  render: function() {
+  render() {
 
 
     return (
@@ -695,7 +669,7 @@ const Activities = React.createClass({
 });
 
 const AssociatedActivitiesList = React.createClass({
-  render: function() {
+  render() {
     var associated_activities_list = this.props.activities.map(function(activity, index) {
       return (
         <li key={index}>
@@ -712,7 +686,7 @@ const AssociatedActivitiesList = React.createClass({
 });
 
 const AssociatedUsersList = React.createClass({
-  render: function() {
+  render() {
     var associated_users_list = this.props.users.map(function(user, index) {
       return (
         <li key={index}>
@@ -731,7 +705,7 @@ const AssociatedUsersList = React.createClass({
 
 
 const HelpText = React.createClass({
-  render: function() {
+  render() {
     var message = this.props.message;
     return (
       <div className="input-error">
@@ -772,7 +746,7 @@ const ActivitiesMultiselect = React.createClass({
     })
     this.setState({assigned_activities})
   },
-  render: function() {
+  render() {
     var {assigned_activities, available_activities} = this.state
 
     return (
@@ -837,7 +811,7 @@ const UsersMultiselect = React.createClass({
     })
     this.setState({assigned_users})
   },
-  render: function() {
+  render() {
     var {assigned_users, available_users} = this.state
 
     return (
@@ -876,7 +850,7 @@ const UsersMultiselect = React.createClass({
 });
 
 const UsersList = React.createClass({
-  render: function() {
+  render() {
     return (
       <div>
         <table className="table" id="no-more-tables">
@@ -898,7 +872,7 @@ const UsersList = React.createClass({
 });
 
 const AddUserButton = React.createClass({
-  render: function() {
+  render() {
     return (
       <Link to="user/add" query={{ action: "Add" }} className="primary pull-right btn btn-default">Add User</Link>
     );
@@ -906,7 +880,7 @@ const AddUserButton = React.createClass({
 });
 
 const Users = React.createClass({
-  render: function() {
+  render() {
     return (
       <div className="row">
         <div className="col-xs-12 ">
@@ -957,7 +931,7 @@ const RolesMultiselect = React.createClass({
     })
     this.setState({assigned_roles})
   },
-  render: function() {
+  render() {
     var {assigned_roles, available_roles} = this.state
 
     return (
@@ -1228,7 +1202,7 @@ const User = React.createClass({
       }
     }.bind(this));
   },
-  render: function() {
+  render() {
 
     var delete_user_button = "";
 
