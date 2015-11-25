@@ -13,7 +13,7 @@ const App = React.createClass({
   callActivitiesAPI: function () {
     {/* Get activities once, and only once */}
     $.get("/manage-users/api/activities/", function(results) {
-      var results = JSON.parse(results)
+      results = JSON.parse(results);
       if (this.isMounted()) {
         var activities_table_rows = [];
         for (var i = 0; i < results.length; i++) {
@@ -63,8 +63,8 @@ const App = React.createClass({
     {/* Get users once, but reload if needed */}
     $.get("/manage-users/api/users/", function(results) {
       if (this.isMounted()) {
-        var users_table_rows = [];
-        for (var key in results) {
+        let users_table_rows = [];
+        for (let key in results) {
           results[key].roles = JSON.parse(results[key].roles);
           users_table_rows.push(
             <tr key={key}>
@@ -159,6 +159,34 @@ const App = React.createClass({
   }
 })
 
+
+const NoMatch = React.createClass({
+  render() {
+    return (
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Not found.</h2>
+          </div>
+          <div className="product-card no-highlight">
+            <p>Not found.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
+
+const HelpText = React.createClass({
+  render() {
+    return (
+      <div className="input-error">
+        {this.props.message}
+      </div>
+    );
+  }
+});
 
 const Roles = React.createClass({
   render() {
@@ -555,22 +583,7 @@ const Overview = React.createClass({
   }
 });
 
-const NoMatch = React.createClass({
-  render() {
-    return (
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Not found.</h2>
-          </div>
-          <div className="product-card no-highlight">
-            <p>Not found.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-});
+
 
 const Status = React.createClass({
   render() {
@@ -704,16 +717,7 @@ const AssociatedUsersList = React.createClass({
 
 
 
-const HelpText = React.createClass({
-  render() {
-    var message = this.props.message;
-    return (
-      <div className="input-error">
-        {message}
-      </div>
-    );
-  }
-});
+
 
 const bootstrapClasses = {
   filter: 'form-control',
