@@ -188,8 +188,8 @@ class TestActivities(MyJobsBase):
     def setUp(self):
         super(TestActivities, self).setUp()
 
-        self.company = CompanyFactory()
         self.app_access = AppAccessFactory()
+        self.company = CompanyFactory(app_access=[self.app_access])
         self.activities = ActivityFactory.create_batch(
             5, app_access=self.app_access)
         self.role = RoleFactory(
@@ -280,3 +280,17 @@ class TestActivities(MyJobsBase):
             self.assertFalse(user.can(
                 self.company, activities[0], "eat a burrito"))
 
+    def test_activities(self):
+        """
+        `User.activities` should return a list of activities associated with
+        this user.
+        """
+
+        user = UserFactory()
+
+        self.assertItemsEqual(user.activities, [])
+
+        user.roles.add(self.role)
+        activities = self.role.activities.values_list('name', flat=True)
+
+        self.assertItemsEqual(user.activities, activities)

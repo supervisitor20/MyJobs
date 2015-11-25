@@ -746,6 +746,12 @@ class Company(models.Model):
         return self.sitepackage_set.filter(
             sites__in=settings.SITE.postajob_site_list()).exists()
 
+    @property
+    def enabled_access(self):
+        """Returns a list of app access names associated with this company."""
+
+        return filter(bool, self.app_access.values_list('name', flat=True))
+
 
 class FeaturedCompany(models.Model):
     """

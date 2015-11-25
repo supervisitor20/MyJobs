@@ -11,7 +11,7 @@ As such, these tests assume that the settings.ENABLE_ROLES is True.
 
 
 from django.core.urlresolvers import reverse
-from django.test.utils import override_settings
+from django.conf import settings
 
 from myjobs.decorators import MissingActivity
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
@@ -21,12 +21,12 @@ from myjobs.tests.test_views import TestClient
 from seo.tests.factories import CompanyFactory
 
 
-@override_settings(ROLES_ENABLED=True)
 class TestViewLevelActivities(MyJobsBase):
     """Test views wrapped with activities."""
 
     def setUp(self):
         super(TestViewLevelActivities, self).setUp()
+        settings.ROLES_ENABLED = True
 
         self.app_access = AppAccessFactory()
         self.activities = [

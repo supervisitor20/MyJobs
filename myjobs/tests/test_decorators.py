@@ -1,5 +1,7 @@
+"""Tests the decorators in the myjobs app."""
+
 from django.test import RequestFactory
-from django.test.utils import override_settings
+from django.conf import settings
 from django.http import HttpResponse, Http404
 
 from myjobs.tests.setup import MyJobsBase
@@ -15,12 +17,12 @@ def dummy_view(request):
 
 
 # TODO: remove this when the feature goes live
-@override_settings(ROLES_ENABLED=True)
 class DecoratorTests(MyJobsBase):
     """Tests that the various decorators in MyJobs work as expected."""
 
     def setUp(self):
         super(DecoratorTests, self).setUp()
+        settings.ROLES_ENABLED = True
         self.app_access = AppAccessFactory()
         self.company = CompanyFactory(app_access=[self.app_access])
         self.activity = ActivityFactory(app_access=self.app_access)
