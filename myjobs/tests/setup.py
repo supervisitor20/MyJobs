@@ -17,6 +17,7 @@ class MyJobsBase(TestCase):
         self.ms_solr = Solr('http://127.0.0.1:8983/solr/seo')
         self.ms_solr.delete(q='*:*')
         setattr(settings, "PROJECT", 'myjobs')
+        settings.ROLES_ENABLED = False
 
         self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
         context_processors = self.base_context_processors + (

@@ -126,7 +126,7 @@ def transform_for_postajob(job):
     solr_job['date_updated_exact'] = job['date_updated']
     solr_job['job_source_name'] = 'Post-a-Job'
     solr_job['date_updated'] = job['date_updated']
-    solr_job['salted_date'] = DEJobFeed.date_salt(job['date_updated'])
+    solr_job['salted_date'] = DEJobFeed.date_salt(job['date_new'])
     solr_job['reqid'] = job['reqid']
     solr_job['company_digital_strategies_customer'] = company.digital_strategies_customer
     solr_job['guid'] = job['guid']
@@ -286,7 +286,7 @@ def hr_xml_to_json(xml, business_unit):
     job['country_short_exact'] = country_short.upper()
     job['date_updated_exact'] = job['date_updated']
     job['job_source_name'] = business_unit.title
-    job['salted_date'] = DEJobFeed.date_salt(job['date_updated'])
+    job['salted_date'] = DEJobFeed.date_salt(job['date_new'])
     job['buid'] = business_unit.id
     job['reqid'] = reqid
     job['company_digital_strategies_customer'] = company.digital_strategies_customer
