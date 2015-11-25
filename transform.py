@@ -9,6 +9,7 @@ from seo.models import Company, Country
 from slugify import slugify
 from xmlparse import DEJobFeed, get_strptime, text_fields, get_mapped_mocs
 import uuid
+from django.utils.timezone import get_current_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -416,11 +417,14 @@ def make_redirect(job, business_unit):
         return redirect
     except Redirect.DoesNotExist:
         logger.debug("Creating new redirect for guid %s", guid)
+        # TODO: Make this change at the source of the data, and evaluate all places where we parse dates during imports 
+        #       for similar issues.  
+        localized_time = get_current_timezone().localize(job['date_new'], is_dst=False)
         redirect = Redirect(guid=guid,
                             buid=business_unit.id,
                             uid=None,
                             url=job['link'],
-                            new_date=job['date_new'],
+                            new_date=localized_time,
                             expired_date=None,
                             job_location=location,
                             job_title=job['title_exact'],
