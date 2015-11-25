@@ -32,4 +32,38 @@ export class InboxManagement {
     async getInboxesFromApi(){
         return api.loadExistingInboxes();
     }
+
+    validateEmailInput(value){
+      var return_object = {
+        success: true,
+        messages: []
+      }
+      var email_re = new RegExp("^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$", "i");
+      var at_re = new RegExp("@+");
+      if (value.length == 0) {
+        return_object.success = false;
+        return return_object;
+        };
+      if (at_re.test(value)) {
+        return_object.success = false;
+        return_object.messages.push("Enter only the portion to the left of the '@'")
+      } else if (!email_re.test(value)) {
+        return_object.success = false;
+        return_object.messages.push("Please enter a valid email username")
+      };
+      return return_object;
+    }
+
+    emailFieldChanged(value) {
+    let validation_object = this.validateEmailInput(value);
+    let returnState = {
+      current_email: value,
+      validation_messages: validation_object.messages
+    };
+    if (validation_object.success) {
+      returnState.add_disabled = false;
+    } else {
+      returnState.add_disabled = true;
+    }
+  }
 }

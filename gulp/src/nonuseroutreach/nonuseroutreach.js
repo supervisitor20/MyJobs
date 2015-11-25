@@ -209,18 +209,7 @@ var AddInboxForm = React.createClass({
     };
   },
   emailFieldChanged: function(value) {
-    var validation_object = validateEmailInput(value);
-    this.setState({
-      current_email: value,
-      validation_messages: validation_object.messages
-    })
-    if (validateEmailInput(value).success) {
-      this.setState({add_disabled: false})
-    } else {
-      this.setState({add_disabled: true})
-    }
-    // TODO: Form validation instead of length checks
-    // TODO: enable/disable add button
+    this.setState(this.props.inboxManager.emailFieldChanged())
   },
 
   submitInbox: function() {
@@ -280,7 +269,7 @@ var InboxManagementPage = React.createClass({
             <h2>Existing Inbox Management</h2>
           </div>
           <div className="partner-holder">
-            <InboxList source="/prm/api/nonuseroutreach/inbox/list" />
+            <InboxList inboxManager={this.props.inboxManager} />
           </div>
         </div>
         </div>
@@ -293,7 +282,7 @@ var InboxManagementPage = React.createClass({
           </div>
           <div className="partner-holder no-highlight">
             <div className="product-card no-highlight clearfix">
-            <AddInboxForm />
+            <AddInboxForm inboxManager={this.props.inboxManager} />
             </div>
           </div>
         </div>
@@ -335,9 +324,9 @@ var Content = React.createClass({
             page = <OverviewPage />;
             break;
         case "InboxManagement":
-            page = <InboxManagementPage />;
+            page = <InboxManagementPage inboxManager={this.props.inboxManager} />;
             break;
-    }
+    };
     return (
       <div className="col-xs-8">
           {page}
@@ -360,8 +349,8 @@ var Menu = React.createClass({
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <OverviewButton {...this.props} />
-          <InboxManagementButton {...this.props} />
+          <OverviewButton changePage={this.state.changePage} />
+          <InboxManagementButton changePage={this.state.changePage} />
           {tips_header}
           {tips}
         </div>
@@ -405,7 +394,7 @@ export var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.state.page} />
+          <Content page={this.state.page} inboxManager={this.props.inboxManager} />
           <Menu changePage={this.changePage} tips={this.state.tips} />
         </div>
         <div className="clearfix"></div>
