@@ -33,8 +33,6 @@ var jasmine = require('gulp-jasmine');
 var vendor_libs = [
     'react',
     'react-dom',
-    'redux',
-    'react-redux',
     'react-bootstrap',
     'react-autosuggest',
     'babel/polyfill',
