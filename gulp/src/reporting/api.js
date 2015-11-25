@@ -1,3 +1,14 @@
+// Abstract the details of building urls and serializing requests for the
+// reporting api.
+//
+// This uses the fetch api. Fetch works somewhat differently from jQuery.ajax.
+// This module encasulates all of that. Errors are translated to JS exceptions.
+
+// Future: Factor out the non-reporting-specific ajax details so they can be
+// used by other apps.
+
+
+// This is needed for IE8. The fetch-polyfill module doesn't quite do enough.
 // based on:
 // http://stackoverflow.com/questions/24710503/how-do-i-post-urlencoded-form-data-with-http-in-angularjs
 function ancientSerialize(obj) {
@@ -22,7 +33,7 @@ class Api {
     }
 
     withCsrf(formData) {
-        return {...formData, a: 1, csrfmiddlewaretoken: this.csrf};
+        return {...formData, csrfmiddlewaretoken: this.csrf};
     }
 
     checkStatus(response) {
@@ -51,6 +62,14 @@ class Api {
 
     }
 
+    async getFromReportingApi(url) {
+        var response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        return this.parseJSON(this.checkStatus(response));
+    }
+
     async postToReportingApi(url, data) {
         var formData = this.objectToFormData(this.withCsrf(data));
         var response = await fetch(url, {
@@ -63,6 +82,14 @@ class Api {
             },
         });
         return this.parseJSON(this.checkStatus(response));
+    }
+
+    async listReports() {
+        var response = await this.getFromReportingApi(
+            "/reports/api/list_reports", {
+                method: 'GET',
+            });
+        return response['reports'];
     }
 
     async getReportingTypes() {
@@ -95,8 +122,33 @@ class Api {
         return (await promise)['report_presentation'];
     }
 
-    async runReport(reportPresentationId) {
+    async getFilters(reportPresentationId) {
         var formData = {
+            rp_id: reportPresentationId,
+        };
+        var promise = this.postToReportingApi(
+            "/reports/api/filters",
+            formData);
+        return (await promise);
+    }
+
+    async getHelp(reportPresentationId, filter, field, partial) {
+        var formData = {
+            rp_id: reportPresentationId,
+            filter: JSON.stringify(filter),
+            field: field,
+            partial: partial,
+        };
+        var promise = this.postToReportingApi(
+            "/reports/api/help",
+            formData);
+        return (await promise);
+    }
+
+    async runReport(reportPresentationId, name, filter) {
+        var formData = {
+            name: name,
+            filter: JSON.stringify(filter),
             rp_id: reportPresentationId,
         };
         return await this.postToReportingApi("/reports/api/run_report", formData);

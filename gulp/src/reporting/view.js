@@ -1,171 +1,198 @@
-import Actions from './actions.js'
 import React, {PropTypes, Component} from 'react';
+import {
+    WizardPageReportingTypes,
+    WizardPageReportTypes,
+    WizardPageDataTypes,
+    WizardPagePresentationTypes,
+    WizardPageFilter,
+} from './wizard';
 
-// Since we are using redux we can there is no need for this.state
-// in components.
+// Props for this component come directly from the store state. (see main.js).
+export class DynamicReportApp extends Component {
+    constructor() {
+        super();
+        this.state = {pageIndex: null, error: null, reportList: []};
+    }
 
-// DyanamicReportApp below is "smart" and controls what is seen when.
+    async reset() {
+        const {reportFinder} = this.props;
 
-// Use ES6 class style for components that need handler methods.
-// Also set up propTypes. They are a little tedious to type it but save time
-// overall.
-class Link extends Component {
-    linkClick(e) {
-        e.preventDefault();
-        this.props.linkClick();
+        const reportingTypes = await reportFinder.getReportingTypes();
+
+        this.setState({
+            ...this.state,
+            pageIndex: "reportingTypes",
+            reportingTypes: reportingTypes,
+        });
+    }
+
+    async refreshReportList() {
+        const {reportFinder} = this.props;
+        const reportList = await reportFinder.getReportList();
+
+        this.setState({
+            ...this.state,
+            reportList: reportList,
+        });
+    }
+
+    async reportingTypesPage() {
+        try {
+            const {reportFinder} = this.props;
+            const reportingTypes = await reportFinder.getReportingTypes();
+            this.setState({
+                ...this.state,
+                pageIndex: "reportingTypes",
+                reportingTypes: reportingTypes,
+            });
+        } catch(e) {
+            console.error(e.stack);
+        }
+    }
+
+    async reportTypesPage(reportingTypeId) {
+        try {
+            const {reportFinder} = this.props;
+            const reportTypes =
+                await reportFinder.getReportTypes(reportingTypeId);
+            this.setState({
+                ...this.state,
+                pageIndex: "reportTypes",
+                reportTypes: reportTypes,
+            });
+        } catch(e) {
+            console.error(e.stack);
+        }
+    }
+
+    async dataTypesPage(reportTypeId) {
+        try {
+            const {reportFinder} = this.props;
+            const dataTypes =
+                await reportFinder.getDataTypes(reportTypeId);
+            this.setState({
+                ...this.state,
+                reportTypeId: reportTypeId,
+                pageIndex: "dataTypes",
+                dataTypes: dataTypes,
+            });
+        } catch(e) {
+            console.error(e.stack);
+        }
+    }
+
+    async presentationTypesPage(reportTypeId, dataTypeId) {
+        try {
+            const {reportFinder} = this.props;
+            const presentationTypes =
+                await reportFinder.getPresentationTypes(
+                    reportTypeId, dataTypeId);
+            this.setState({
+                ...this.state,
+                pageIndex: "presentationTypes",
+                presentationTypes: presentationTypes,
+            });
+        } catch(e) {
+            console.error(e.stack);
+        }
+    }
+
+    async filterPage(rpId) {
+        const {reportFinder} = this.props;
+
+        const reportConfig =
+            await reportFinder.buildReportConfiguration(
+                rpId,
+                () => this.refreshReportList())
+
+        this.setState({
+            ...this.state,
+            lastRpId: rpId,
+            pageIndex: "filter",
+            reportConfig: reportConfig,
+        });
+    }
+
+    async componentDidMount() {
+        try {
+            await this.refreshReportList();
+            await this.reportingTypesPage();
+        } catch(e) {
+            console.error(e.stack);
+        }
     }
 
     render() {
-        return (
-            <a className="" href="#" onClick={e => this.linkClick(e)}>
-                {this.props.label}
-            </a>
-        );
+        try {
+            const {pageIndex, error, reportList} = this.state;
+            let page;
+            if (error) {
+                page = <div><h3>Error!</h3></div>;
+            } else {
+                switch(pageIndex) {
+                    case "reportingTypes":
+                        const {reportingTypes} = this.state;
+                        page =
+                            <WizardPageReportingTypes
+                                data={reportingTypes}
+                                selected={id => this.reportTypesPage(id)}/>;
+                        break;
+                    case "reportTypes":
+                        const {reportTypes} = this.state;
+                        page =
+                            <WizardPageReportTypes
+                                data={reportTypes}
+                                selected={id => this.dataTypesPage(id)}/>;
+                        break;
+                    case "dataTypes":
+                        const {reportTypeId, dataTypes} = this.state;
+                        page =
+                            <WizardPageDataTypes
+                                data={dataTypes}
+                                selected={dataTypeId =>
+                                    this.presentationTypesPage(
+                                        reportTypeId, dataTypeId)}/>;
+                        break;
+                    case "presentationTypes":
+                        const {presentationTypes} = this.state;
+                        page =
+                            <WizardPagePresentationTypes
+                                data={presentationTypes}
+                                selected={id => this.filterPage(id)}/>;
+                        break;
+                    case "filter":
+                        const {reportConfig} = this.state;
+                        page =
+                            <WizardPageFilter
+                                reportConfig={reportConfig}/>;
+                        break;
+                    default:
+                        page = null;
+                }
+            }
+
+            return (
+                <div className="container">
+                    <div className="row">
+                        <div className="span8 panel">
+                            {page}
+                        </div>
+                        <div className="span4">
+                            <ReportList reports={reportList}/>
+                        </div>
+                    </div>
+                </div>
+            );
+        } catch (e) {
+            console.error(e.stack);
+        }
     }
 }
 
-Link.propTypes = {
-    linkClick: PropTypes.func.isRequired,
-    label: PropTypes.string.isRequired,
-};
-
-
-// If a component is just a render method and a return statement use this form.
-const LinkRow = (props) =>
-    <div className="row">
-        <div className="span3" style={{textAlign: "right"}}>
-            <Link
-                linkClick={() => props.linkClick(props.id)}
-                label={props.buttonText}/>
-        </div>
-        <div className="span4">{props.text}</div>
-    </div>;
-
-LinkRow.propTypes = {
-    linkClick: PropTypes.func.isRequired,
-    text: PropTypes.string.isRequired,
-    buttonText: PropTypes.string.isRequired,
-};
-
-
-// When defining a component with just a render method but you want to write
-// javascript statements, use this function form.
-const WizardPageReportingTypes = function(props) {
-    const data = props.data;
-    const rows = Object.keys(data).map(k =>
-        <LinkRow key={k} id={k} buttonText={data[k]['name']}
-            text={data[k]['description']}
-            linkClick={() => props.creators.nextAfterReportingType(k)}/>
-    );
-
-    return (
-        <div>
-            <div className="row">
-                <div className="span3" style={{textAlign: "right"}}>
-                </div>
-                <div className="span4">
-                    <h4>Reporting Types</h4>
-                </div>
-            </div>
-            {rows}
-        </div>
-    );
+DynamicReportApp.propTypes = {
+    reportFinder: PropTypes.object.isRequired,
 }
 
-WizardPageReportingTypes.propTypes = {
-    data: PropTypes.object.isRequired,
-    creators: PropTypes.object.isRequired,
-};
-
-
-const WizardPageReportTypes = function(props) {
-    const data = props.data;
-    const rows = Object.keys(data).map(k =>
-        <LinkRow key={k} id={k} buttonText={data[k]['name']}
-            text={data[k]['description']}
-            linkClick={() => props.creators.nextAfterReportType(k)}/>
-    );
-
-    return (
-        <div>
-            <div className="row">
-                <div className="span3" style={{textAlign: "right"}}>
-                </div>
-                <div className="span4">
-                    <h4>Report Types</h4>
-                </div>
-            </div>
-            {rows}
-        </div>
-    );
-}
-
-WizardPageReportTypes.propTypes = {
-    data: PropTypes.object.isRequired,
-    creators: PropTypes.object.isRequired,
-};
-
-
-const WizardPageDataTypes = function(props) {
-    const data = props.data;
-    const rows = Object.keys(data).map(k =>
-        <LinkRow key={k} id={k} buttonText={data[k]['name']}
-            text={data[k]['description']}
-            linkClick={() => props.creators.nextAfterDataType(props.reportType, k)}/>
-    );
-
-    return (
-        <div>
-            <div className="row">
-                <div className="span3" style={{textAlign: "right"}}>
-                </div>
-                <div className="span4">
-                    <h4>Data Types</h4>
-                </div>
-            </div>
-            {rows}
-        </div>
-    );
-}
-
-WizardPageDataTypes.propTypes = {
-    data: PropTypes.object.isRequired,
-    reportType: PropTypes.number.isRequired,
-    creators: PropTypes.object.isRequired,
-};
-
-
-const WizardPagePresentationTypes = function(props) {
-    const data = props.data;
-    const rows = Object.keys(data).map(k =>
-        <div key={k} className="row">
-            <div className="span3" style={{textAlign: "right"}}>
-            </div>
-            <div className="span4">
-                <Link id={k} label={data[k]['name']}
-                    linkClick={() => props.creators.nextAfterPresentationType(k)}/>
-            </div>
-        </div>
-    );
-
-    return (
-        <div>
-            <div className="row">
-                <div className="span3" style={{textAlign: "right"}}>
-                </div>
-                <div className="span4">
-                    <h4>Presentation Types</h4>
-                </div>
-            </div>
-            {rows}
-        </div>
-    );
-}
-
-WizardPagePresentationTypes.propTypes = {
-    data: PropTypes.object.isRequired,
-    creators: PropTypes.object.isRequired,
-};
 
 const ReportList = function(props) {
     const reportData = props.reports.map(report => ({
@@ -191,78 +218,3 @@ const ReportList = function(props) {
 ReportList.propTypes = {
     reports: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
-
-
-// Props for this component come directly from the store state. (see main.js).
-export const DynamicReportApp = function(props) {
-    var page;
-    if (props.error) {
-        page = <div><h3>Error!</h3></div>;
-    } else {
-        switch(props.pageIndex) {
-            case "reportingTypes":
-                page =
-                    <WizardPageReportingTypes
-                        creators={props.creators}
-                        data={props.reportingTypes}/>;
-                break;
-            case "reportTypes":
-                page =
-                    <WizardPageReportTypes
-                        creators={props.creators}
-                        data={props.reportTypes}/>;
-                break;
-            case "dataTypes":
-                page =
-                    <WizardPageDataTypes
-                        creators={props.creators}
-                        data={props.dataTypes}
-                        reportType={props.selectedReportType}/>;
-                break;
-            case "presentationTypes":
-                page =
-                    <WizardPagePresentationTypes
-                        creators={props.creators}
-                        data={props.presentationTypes}/>
-                break;
-            default:
-                page = null;
-        }
-    }
-
-    return (
-        <div className="container">
-            <div className="row">
-                <div className="span8 panel">
-                    {page}
-                </div>
-                <div className="span4">
-                    <ReportList reports={props.reports}/>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-DynamicReportApp.propTypes = {
-    creators: PropTypes.object.isRequired,
-    reportingTypes: PropTypes.object.isRequired,
-    selectedReportingType: PropTypes.number,
-
-    reportTypes: PropTypes.object.isRequired,
-    selectedReportType: PropTypes.number,
-
-    dataTypes: PropTypes.object.isRequired,
-    selectedDataType: PropTypes.number,
-
-    presentationTypes: PropTypes.object.isRequired,
-    selectedPresentationType: PropTypes.number,
-
-    pageIndex: PropTypes.string.isRequired,
-
-    loading: PropTypes.bool.isRequired,
-
-    error: PropTypes.string.isRequired,
-    reports: PropTypes.arrayOf(PropTypes.object).isRequired,
-
-}

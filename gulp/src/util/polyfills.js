@@ -6,7 +6,7 @@ import 'fetch-polyfill';
 // ES5-shim/sham and babel/polyfill probably have to be part of the bundling
 // environment.
 
-export function bootstrap() {
+export function installPolyfills() {
     // This gives us the Promise API.
     es6PromisePolyfill();
 
@@ -16,5 +16,10 @@ export function bootstrap() {
             log: () => {},
             error: () => {},
         };
+    }
+
+    // IE8 doesn't have Date.now()
+    if (!Date.now) {
+        Date.now = function() { return new Date().getTime(); }
     }
 }
