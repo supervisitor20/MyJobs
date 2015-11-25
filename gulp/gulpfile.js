@@ -10,6 +10,8 @@ var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
 var jasmine = require('gulp-jasmine');
+var browserSync = require('browser-sync');
+var reload = browserSync.reload;
 
 var vendor_libs = [
     'react',
@@ -93,6 +95,8 @@ gulp.task('manageusers', function() {
     .pipe(uglify({ mangle: false }))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(dest))
+    // Refreshes browser
+    .pipe(reload({stream: true, once: true}))
 });
 
 gulp.task('default', ['build']);
@@ -108,6 +112,14 @@ gulp.task('build', ['vendor', 'reporting', 'manageusers']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
+    // Enables refreshing of browserify
+    // Requires the following in the relevant task:
+    // .pipe(reload({stream: true, once: true}))
+    // While Django serves up on :8000, to benefit from browserSynch visit :3000
+    browserSync({
+      notify: false,
+      proxy: "127.0.0.1:8000/"
+    });
     return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers']);
 });
 

@@ -12,11 +12,14 @@ import createBrowserHistory from 'history/lib/createBrowserHistory';
 const App = React.createClass({
   callActivitiesAPI: function () {
     {/* Get activities once, and only once */}
+
+
+    console.log("one")
     $.get("/manage-users/api/activities/", function(results) {
       results = JSON.parse(results);
       if (this.isMounted()) {
-        var activities_table_rows = [];
-        for (var i = 0; i < results.length; i++) {
+        let activities_table_rows = [];
+        for (let i = 0; i < results.length; i++) {
           activities_table_rows.push(
             <tr key={results[i].pk}>
               <td>{results[i].fields.name}</td>
@@ -34,8 +37,8 @@ const App = React.createClass({
     {/* Get roles once, but reload if needed */}
     $.get("/manage-users/api/roles/", function(results) {
       if (this.isMounted()) {
-        var roles_table_rows = [];
-        for (var key in results) {
+        let roles_table_rows = [];
+        for (let key in results) {
           results[key].activities = JSON.parse(results[key].activities.assigned);
           results[key].users.assigned = JSON.parse(results[key].users.assigned);
           roles_table_rows.push(
@@ -239,37 +242,37 @@ const Role = React.createClass({
       $.get("/manage-users/api/roles/" + this.props.params.role_id, function(results) {
         if (this.isMounted()) {
 
-          var role_object = results[this.props.params.role_id];
+          let role_object = results[this.props.params.role_id];
 
-          var role_name = role_object.role.name;
+          let role_name = role_object.role.name;
 
-          var available_users_unformatted = JSON.parse(role_object.users.available);
-          var available_users = available_users_unformatted.map(function(obj){
-             var user = {};
+          let available_users_unformatted = JSON.parse(role_object.users.available);
+          let available_users = available_users_unformatted.map(function(obj){
+             let user = {};
              user['id'] = obj.pk;
              user['name'] = obj.fields.email;
              return user;
           });
 
-          var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
-          var assigned_users = assigned_users_unformatted.map(function(obj){
-             var user = {};
+          let assigned_users_unformatted = JSON.parse(role_object.users.assigned);
+          let assigned_users = assigned_users_unformatted.map(function(obj){
+             let user = {};
              user['id'] = obj.pk;
              user['name'] = obj.fields.email;
              return user;
           });
 
-          var available_activities_unformatted = JSON.parse(role_object.activities.available);
-          var available_activities = available_activities_unformatted.map(function(obj){
-             var activity = {};
+          let available_activities_unformatted = JSON.parse(role_object.activities.available);
+          let available_activities = available_activities_unformatted.map(function(obj){
+             let activity = {};
              activity['id'] = obj.pk;
              activity['name'] = obj.fields.name;
              return activity;
           });
 
-          var assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
-          var assigned_activities = assigned_activities_unformatted.map(function(obj){
-             var activity = {};
+          let assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
+          let assigned_activities = assigned_activities_unformatted.map(function(obj){
+             let activity = {};
              activity['id'] = obj.pk;
              activity['name'] = obj.fields.name;
              return activity;
@@ -292,23 +295,24 @@ const Role = React.createClass({
 
           {/* Objects in results don't have predictable keys */}
           {/* It doesn't matter which one we get */}
-          var role_object = {};
-          for (var key in results) {
+          {/* Therefore get the first one with a loop */}
+          let role_object = {};
+          for (let key in results) {
             role_object = results[key];
             break;
           }
 
-          var available_users_unformatted = JSON.parse(role_object.users.available);
-          var available_users = available_users_unformatted.map(function(obj){
-             var user = {};
+          let available_users_unformatted = JSON.parse(role_object.users.available);
+          let available_users = available_users_unformatted.map(function(obj){
+             let user = {};
              user['id'] = obj.pk;
              user['name'] = obj.fields.email;
              return user;
           });
 
-          var available_activities_unformatted = JSON.parse(role_object.activities.available);
-          var available_activities = available_activities_unformatted.map(function(obj){
-             var activity = {};
+          let available_activities_unformatted = JSON.parse(role_object.activities.available);
+          let available_activities = available_activities_unformatted.map(function(obj){
+             let activity = {};
              activity['id'] = obj.pk;
              activity['name'] = obj.fields.name;
              return activity;
@@ -345,12 +349,12 @@ const Role = React.createClass({
 
     {/* TODO: Warn user? If they remove a user from all roles, they will have to reinvite him. */}
 
-    var role_id = this.props.params.role_id;
+    let role_id = this.props.params.role_id;
 
-    var assigned_users = this.refs.users.state.assigned_users;
+    let assigned_users = this.refs.users.state.assigned_users;
 
-    var role_name = this.state.role_name;
-    if(role_name == ""){
+    let role_name = this.state.role_name;
+    if(role_name == ''){
       this.setState({
           api_response_help: '',
           role_name_help: 'Role name empty.',
@@ -363,7 +367,7 @@ const Role = React.createClass({
       return;
     }
 
-    var assigned_activities = this.refs.activities.state.assigned_activities;
+    let assigned_activities = this.refs.activities.state.assigned_activities;
 
     if(assigned_activities.length < 1){
       this.setState({
@@ -403,7 +407,7 @@ const Role = React.createClass({
     {/* Determine URL based on action */}
     let action = this.props.location.query.action;
 
-    var url = "";
+    let url = '';
     if ( action == "Edit" ){
       url = "/manage-users/api/roles/edit/" + role_id + "/";
     }
@@ -412,7 +416,7 @@ const Role = React.createClass({
     }
 
     {/* Build data to send */}
-    var data_to_send = {};
+    let data_to_send = {};
     data_to_send['csrfmiddlewaretoken'] = getCsrf();
     data_to_send['role_name'] = role_name;
     data_to_send['assigned_activities'] = assigned_activities;
@@ -460,9 +464,9 @@ const Role = React.createClass({
         return;
     }
 
-    var role_id = this.props.params.role_id;
+    let role_id = this.props.params.role_id;
 
-    var csrf = getCsrf();
+    let csrf = getCsrf();
 
     {/* Submit to server */}
 
@@ -490,7 +494,7 @@ const Role = React.createClass({
   render() {
     let action = this.props.location.query.action;
 
-    var delete_role_button = "";
+    let delete_role_button = '';
     if (action == "Edit"){
       delete_role_button = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>
     }
@@ -498,11 +502,11 @@ const Role = React.createClass({
       action = "Add";
     }
 
-    var role_name_help = this.state.role_name_help;
+    let role_name_help = this.state.role_name_help;
 
-    var api_response_help = this.state.api_response_help;
+    let api_response_help = this.state.api_response_help;
 
-    var activities_multiselect_help = this.state.activities_multiselect_help;
+    let activities_multiselect_help = this.state.activities_multiselect_help;
 
     return (
       <div>
@@ -574,7 +578,7 @@ const Overview = React.createClass({
             <h2>Overview</h2>
           </div>
           <div className="product-card no-highlight">
-            <p>Use this tool to create users and permit them to perform various activities.</p>
+            <p>Use this tool to create users and permit them to perform letious activities.</p>
             <p>First, create a role. A role is a group of activities (e.g. view existing communication records, add new communication records, etc.). Then, create a user and assign them to that role. Once assigned to a role, that user can execute activities assigned to that role.</p>
           </div>
         </div>
@@ -587,7 +591,7 @@ const Overview = React.createClass({
 
 const Status = React.createClass({
   render() {
-    var button = "";
+    let button = '';
     if (this.props.status == true){
       button = <span className='label label-success'>Active</span>;
     }
@@ -604,7 +608,7 @@ const Status = React.createClass({
 
 const AssociatedRolesList = React.createClass({
   render() {
-    var associated_roles_list = this.props.roles.map(function(role, index) {
+    let associated_roles_list = this.props.roles.map(function(role, index) {
       return (
         <li key={index}>
           {role.fields.name}
@@ -683,7 +687,7 @@ const Activities = React.createClass({
 
 const AssociatedActivitiesList = React.createClass({
   render() {
-    var associated_activities_list = this.props.activities.map(function(activity, index) {
+    let associated_activities_list = this.props.activities.map(function(activity, index) {
       return (
         <li key={index}>
           {activity.fields.name}
@@ -700,7 +704,7 @@ const AssociatedActivitiesList = React.createClass({
 
 const AssociatedUsersList = React.createClass({
   render() {
-    var associated_users_list = this.props.users.map(function(user, index) {
+    let associated_users_list = this.props.users.map(function(user, index) {
       return (
         <li key={index}>
           {user.fields.email}
@@ -744,14 +748,14 @@ const ActivitiesMultiselect = React.createClass({
     this.setState({assigned_activities})
   },
   _onDeselect(deselectedOptions) {
-    var assigned_activities = this.state.assigned_activities.slice()
+    let assigned_activities = this.state.assigned_activities.slice()
     deselectedOptions.forEach(option => {
       assigned_activities.splice(assigned_activities.indexOf(option), 1)
     })
     this.setState({assigned_activities})
   },
   render() {
-    var {assigned_activities, available_activities} = this.state
+    let {assigned_activities, available_activities} = this.state
 
     return (
         <div className="row">
@@ -809,14 +813,14 @@ const UsersMultiselect = React.createClass({
     this.setState({assigned_users})
   },
   _onDeselect(deselectedOptions) {
-    var assigned_users = this.state.assigned_users.slice()
+    let assigned_users = this.state.assigned_users.slice()
     deselectedOptions.forEach(option => {
       assigned_users.splice(assigned_users.indexOf(option), 1)
     })
     this.setState({assigned_users})
   },
   render() {
-    var {assigned_users, available_users} = this.state
+    let {assigned_users, available_users} = this.state
 
     return (
         <div className="row">
@@ -929,14 +933,14 @@ const RolesMultiselect = React.createClass({
     this.setState({assigned_roles})
   },
   _onDeselect(deselectedOptions) {
-    var assigned_roles = this.state.assigned_roles.slice()
+    let assigned_roles = this.state.assigned_roles.slice()
     deselectedOptions.forEach(option => {
       assigned_roles.splice(assigned_roles.indexOf(option), 1)
     })
     this.setState({assigned_roles})
   },
   render() {
-    var {assigned_roles, available_roles} = this.state
+    let {assigned_roles, available_roles} = this.state
 
     return (
         <div className="row">
@@ -989,7 +993,7 @@ const User = React.createClass({
   onTextChange: function(event) {
     this.state.user_email = event.target.value;
 
-    var user_email = this.state.user_email;
+    let user_email = this.state.user_email;
 
     if(validateEmail(user_email) === false) {
       this.setState({
@@ -1019,21 +1023,21 @@ const User = React.createClass({
 
         if (this.isMounted()) {
 
-          var user_object = results[this.props.params.user_id];
+          let user_object = results[this.props.params.user_id];
 
-          var user_email = user_object.email;
+          let user_email = user_object.email;
 
-          var available_roles_unformatted = JSON.parse(user_object.roles.available);
-          var available_roles = available_roles_unformatted.map(function(obj){
-             var role = {};
+          let available_roles_unformatted = JSON.parse(user_object.roles.available);
+          let available_roles = available_roles_unformatted.map(function(obj){
+             let role = {};
              role['id'] = obj.pk;
              role['name'] = obj.fields.name;
              return role;
           });
 
-          var assigned_roles_unformatted = JSON.parse(user_object.roles.assigned);
-          var assigned_roles = assigned_roles_unformatted.map(function(obj){
-             var role = {};
+          let assigned_roles_unformatted = JSON.parse(user_object.roles.assigned);
+          let assigned_roles = assigned_roles_unformatted.map(function(obj){
+             let role = {};
              role['id'] = obj.pk;
              role['name'] = obj.fields.name;
              return role;
@@ -1056,9 +1060,8 @@ const User = React.createClass({
       $.get("/manage-users/api/roles/", function(results) {
 
         if (this.isMounted()) {
-
           available_roles = [];
-          for (var role_id in results){
+          for (let role_id in results){
             available_roles.push(
               {
                 "id":role_id,
@@ -1067,17 +1070,15 @@ const User = React.createClass({
             )
           };
 
-          var user_email = "";
-          var available_roles = available_roles;
-          var assigned_roles = [];
+          let available_roles = available_roles;
 
           this.setState({
-            user_email: user_email,
+            user_email: '',
             user_email_help: '',
             role_multiselect_help: '',
             api_response_help: '',
             available_roles: available_roles,
-            assigned_roles: assigned_roles
+            assigned_roles: []
           });
         }
       }.bind(this));
@@ -1090,11 +1091,11 @@ const User = React.createClass({
 
     {/* TODO: Warn user? If they remove a user from all roles, they will have to reinvite him. */}
 
-    var user_id = this.props.params.user_id;
+    let user_id = this.props.params.user_id;
 
-    var assigned_roles = this.refs.roles.state.assigned_roles;
+    let assigned_roles = this.refs.roles.state.assigned_roles;
 
-    var user_email = this.state.user_email;
+    let user_email = this.state.user_email;
 
     if(validateEmail(user_email) === false) {
       this.setState({
@@ -1132,7 +1133,7 @@ const User = React.createClass({
     {/* Determine URL based on action */}
     let action = this.props.location.query.action;
 
-    var url = "";
+    let url = '';
     if ( action == "Edit" ){
       url = "/manage-users/api/users/edit/" + user_id + "/";
     }
@@ -1141,7 +1142,7 @@ const User = React.createClass({
     }
 
     {/* Build data to send */}
-    var data_to_send = {};
+    let data_to_send = {};
     data_to_send['csrfmiddlewaretoken'] = getCsrf();
     data_to_send['assigned_roles'] = assigned_roles;
     data_to_send['user_email'] = user_email;
@@ -1181,9 +1182,9 @@ const User = React.createClass({
         return;
     }
 
-    var user_id = this.props.params.user_id;
+    let user_id = this.props.params.user_id;
 
-    var csrf = getCsrf();
+    let csrf = getCsrf();
 
     {/* Submit to server */}
     $.ajax( "/manage-users/api/users/delete/" + user_id + "/",
@@ -1208,9 +1209,9 @@ const User = React.createClass({
   },
   render() {
 
-    var delete_user_button = "";
+    let delete_user_button = '';
 
-    var user_email_input = "";
+    let user_email_input = '';
 
     let action = this.props.location.query.action;
 
@@ -1222,9 +1223,9 @@ const User = React.createClass({
       user_email_input = <input id="id_user_email" maxLength="255" name="id_user_email" type="email" value={this.state.user_email} onChange={this.onTextChange} size="35"/>
     }
 
-    var user_email_help = this.state.user_email_help;
-    var role_multiselect_help = this.state.role_multiselect_help;
-    var api_response_help = this.state.api_response_help;
+    let user_email_help = this.state.user_email_help;
+    let role_multiselect_help = this.state.role_multiselect_help;
+    let api_response_help = this.state.api_response_help;
 
     return (
       <div>

@@ -30,6 +30,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
+    "browser-sync": "^2.10.0",
     "history": "^1.13.1",
     "react-bootstrap": "^0.27.3",
     "react-filtered-multiselect": "^0.4.2",
