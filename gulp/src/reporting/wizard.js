@@ -47,7 +47,7 @@ LinkRow.propTypes = {
 };
 
 
-function WizardPageReportingTypes(props) {
+export function WizardPageReportingTypes(props) {
   const data = props.data;
   const rows = Object.keys(data).map(k =>
     <LinkRow key={k} id={k} label={data[k].name}
