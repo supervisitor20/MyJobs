@@ -108,7 +108,7 @@ gulp.task('nonuseroutreach', function() {
         paths: ['./src'],
     })
     .external(vendor_libs)
-    .add('src/nonuseroutreach/nonuseroutreach.js')
+    .add('src/nonuseroutreach/main.js')
     .transform(babelify.configure({optional: 'runtime'}))
     .bundle()
     .on('error', function(error, meta) {

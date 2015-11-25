@@ -3,6 +3,27 @@ import ReactDOM from "react-dom";
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 
+var validateEmailInput = function(value){
+  var return_object = {
+    success: true,
+    messages: []
+  }
+  var email_re = new RegExp("^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$", "i");
+  var at_re = new RegExp("@+");
+  if (value.length == 0) {
+    return_object.success = false;
+    return return_object;
+    };
+  if (at_re.test(value)) {
+    return_object.success = false;
+    return_object.messages.push("Enter only the portion to the left of the '@'")
+  } else if (!email_re.test(value)) {
+    return_object.success = false;
+    return_object.messages.push("Please enter a valid email username")
+  };
+  return return_object;
+};
+
 // class to contain dynamic email editing states, type is text of button and function identifier, disabled is whether
 // the button is disabled or not. by default, it is not disabled
 class ControlButton {
@@ -24,32 +45,6 @@ var HelpText = React.createClass({
     );
   }
 });
-
-// validation method to ensure value is a proper email username
-// returns:
-// Object
-//    -success (whether or not the object validated)
-//    -message (error message from validator)
-var validateEmailInput = function(value){
-  var return_object = {
-    success: true,
-    messages: []
-  }
-  var email_re = new RegExp("^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$", "i");
-  var at_re = new RegExp("@+");
-  if (value.length == 0) {
-    return_object.success = false;
-    return return_object;
-    };
-  if (at_re.test(value)) {
-    return_object.success = false;
-    return_object.messages.push("Enter only the portion to the left of the '@'")
-  } else if (!email_re.test(value)) {
-    return_object.success = false;
-    return_object.messages.push("Please enter a valid email username")
-  };
-  return return_object;
-};
 
 
 // creates span with buttons for saving, deleting, and canceling changes to an existing inbox
@@ -376,7 +371,7 @@ var Menu = React.createClass({
 });
 
 // the "master" container
-var Container = React.createClass({
+export var Container = React.createClass({
   getInitialState: function() {
     return {
       page:"Overview",
@@ -418,8 +413,3 @@ var Container = React.createClass({
     );
   }
 });
-
-ReactDOM.render(
-  <Container />,
-    document.getElementById('content')
-);
