@@ -12,9 +12,6 @@ import createBrowserHistory from 'history/lib/createBrowserHistory';
 const App = React.createClass({
   callActivitiesAPI: function () {
     {/* Get activities once, and only once */}
-
-
-    console.log("one")
     $.get("/manage-users/api/activities/", function(results) {
       results = JSON.parse(results);
       if (this.isMounted()) {
