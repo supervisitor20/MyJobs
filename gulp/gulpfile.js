@@ -12,6 +12,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var stripDebug = require('gulp-strip-debug');
 var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
+var eslint = require('gulp-eslint');
 
 // This build produces several javascript bundles.
 // * vendor.js - Contains all the libraries we use, bundled and minified.
@@ -26,18 +27,15 @@ var jasmine = require('gulp-jasmine');
 //
 // For development run the default target, then leave the watch target running.
 
-// Future: Add jshint to the application bundle builds in the hope that we
-//     can use it in a manner similar to how use use flake8 on python code.
-
 // These go in vendor.js and are left out of app specific bundles.
 var vendor_libs = [
-    'react',
-    'react-dom',
-    'react-bootstrap',
-    'react-autosuggest',
-    'babel/polyfill',
-    'fetch-polyfill',
-    'es6-promise',
+  'react',
+  'react-dom',
+  'react-bootstrap',
+  'react-autosuggest',
+  'babel/polyfill',
+  'fetch-polyfill',
+  'es6-promise',
 ];
 
 var dest = '../static/bundle';
@@ -45,22 +43,22 @@ var dest = '../static/bundle';
 var strip_debug = true;
 
 gulp.task('vendor', function() {
-    return browserify([], { debug: true, list: true, })
-    .require(vendor_libs)
-    .on('package', function(pkg) {
-        util.log("Vendor package:", pkg.name)
-    })
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        this.emit('end');
-    })
-    .bundle()
-    .pipe(source('vendor.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(uglify({ mangle: false }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest));
+  return browserify([], { debug: true, list: true, })
+  .require(vendor_libs)
+  .on('package', function(pkg) {
+    util.log("Vendor package:", pkg.name)
+  })
+  .on('error', function(error, meta) {
+    util.log("Browserify error:", error.toString());
+    this.emit('end');
+  })
+  .bundle()
+  .pipe(source('vendor.js'))
+  .pipe(buffer())
+  .pipe(sourcemaps.init({loadMaps: true}))
+  .pipe(uglify({ mangle: false }))
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest(dest));
 });
 
 // If an app task starts logging that it is including packages, add those
@@ -80,85 +78,120 @@ gulp.task('vendor', function() {
 // from ordinary node.js libraries.
 
 gulp.task('reporting', function() {
-    return browserify([], {
-        debug: true,
-        paths: ['./src'],
-    })
-    .external(vendor_libs)
-    .add('src/reporting/main.js')
-    .transform(babelify.configure({optional: 'runtime'}))
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .bundle()
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        // Unstick browserify on some errors. Keeps watch alive.
-        this.emit('end');
-    })
-    .pipe(source('reporting.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Consider adding this to production builds later when we are sure
-    // we won't need unminified code available.
-    //.pipe(uglify({ mangle: false }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest));
+  return browserify([], {
+    debug: true,
+    paths: ['./src'],
+  })
+  .external(vendor_libs)
+  .add('src/reporting/main.js')
+  .transform(babelify.configure({optional: 'runtime'}))
+  .on('package', function(pkg) {
+    util.log("Including package:", pkg.name)
+  })
+  .bundle()
+  .on('error', function(error, meta) {
+    util.log("Browserify error:", error.toString());
+    // Unstick browserify on some errors. Keeps watch alive.
+    this.emit('end');
+  })
+  .pipe(source('reporting.js'))
+  .pipe(buffer())
+  .pipe(sourcemaps.init({loadMaps: true}))
+  // Consider adding this to production builds later when we are sure
+  // we won't need unminified code available.
+  //.pipe(uglify({ mangle: false }))
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest(dest));
 });
 
 // If an app task starts logging that it is including packages, add those
 // packages to vendor_libs.
 gulp.task('manageusers', function() {
-    return browserify([], {
-        debug: true,
-        paths: ['./src'],
-    })
-    .external(vendor_libs)
-    .add('src/manageusers/manageusers.js')
-    .transform(babelify)
-    .bundle()
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        // Unstick browserify on some errors. Keeps watch alive.
-        this.emit('end');
-    })
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .pipe(source('manageusers.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Do we want this in production builds?
-    .pipe(uglify({ mangle: false }))
-    // stripDebug() must come before sourcemaps.write()
-    // You should remove logging before committing, but this confirms logging won't be in production
-    .pipe(gulpif(strip_debug, stripDebug()))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest))
+  return browserify([], {
+    debug: true,
+    paths: ['./src'],
+  })
+  .external(vendor_libs)
+  .add('src/manageusers/manageusers.js')
+  .transform(babelify)
+  .bundle()
+  .on('error', function(error, meta) {
+    util.log("Browserify error:", error.toString());
+    // Unstick browserify on some errors. Keeps watch alive.
+    this.emit('end');
+  })
+  .on('package', function(pkg) {
+    util.log("Including package:", pkg.name)
+  })
+  .pipe(source('manageusers.js'))
+  .pipe(buffer())
+  .pipe(sourcemaps.init({loadMaps: true}))
+  // Do we want this in production builds?
+  .pipe(uglify({ mangle: false }))
+  // stripDebug() must come before sourcemaps.write()
+  // You should remove logging before committing, but this confirms logging won't be in production
+  .pipe(gulpif(strip_debug, stripDebug()))
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest(dest))
 });
 
 // By default, we strip logging. This disables that functionality.
 gulp.task('watch-no-strip', function() {
-    console.log("Keeping console and debugger statements.");
-    strip_debug = false;
-    gulp.watch('src/**/*', ['reporting', 'manageusers']);
+  console.log("Keeping console and debugger statements.");
+  strip_debug = false;
+  gulp.watch('src/**/*', ['reporting', 'manageusers']);
 });
 
-gulp.task('default', ['build']);
-
 gulp.task('test', function() {
-    return gulp.src(['./src/**/spec/*.js'])
-        .pipe(jasmine({
-            includeStackTrace: false,
-        }));
+  return gulp.src(['./src/**/spec/*.js'])
+    .pipe(jasmine({
+      includeStackTrace: false,
+    }));
+});
+
+/**
+ * lint-fix: run eslint with fix mode on.
+ *
+ * This can be helpful in limited circumstances. Be careful.
+ *
+ * It is not part of watch or the default build. Let's keep it
+ * that way.
+ */
+gulp.task('lint-fix', function() {
+  function isFixed(file) {
+    return file.eslint != null && file.eslint.fixed;
+  };
+  return gulp.src(['./src/**/*.js'])
+    .pipe(eslint({
+      extends: 'airbnb',
+      env: {
+        jasmine: true,
+      },
+      parser: 'babel-eslint',
+      fix: true,
+    }))
+    .pipe(eslint.format())
+    .pipe(gulpif(isFixed, gulp.dest("./src")));
+});
+
+gulp.task('lint', function() {
+  return gulp.src(['./src/**/*.js'])
+    .pipe(eslint({
+      extends: 'airbnb',
+      env: {
+        jasmine: true,
+      },
+      parser: 'babel-eslint',
+    }))
+    .pipe(eslint.format());
 });
 
 // Build everything. Good way to start after a git checkout.
-gulp.task('build', ['vendor', 'reporting', 'manageusers']);
+gulp.task('build', ['vendor', 'reporting', 'manageusers', 'lint', 'test']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers']);
+    return gulp.watch('src/**/*', ['test', 'lint', 'reporting', 'manageusers']);
 });
 
 gulp.task('default', ['build', 'test']);

@@ -1,8 +1,8 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
-import FilteredMultiSelect from "react-filtered-multiselect"
+import FilteredMultiSelect from 'react-filtered-multiselect';
 
 
 
@@ -17,7 +17,7 @@ var AssociatedUsersList = React.createClass({
             {this.props.users[key].fields.email}
         </li>
       );
-    };
+    }
     return (
       <ul>
         {associated_users_list}
@@ -35,7 +35,7 @@ var AssociatedActivitiesList = React.createClass({
           {this.props.activities[key].fields.name}
         </li>
       );
-    };
+    }
     return (
       <ul>
         {associated_activities_list}
@@ -114,7 +114,7 @@ var ActivitiesList = React.createClass({
   },
   componentDidMount: function() {
     $.get(this.props.source, function(results) {
-      var results = JSON.parse(results)
+      var results = JSON.parse(results);
       if (this.isMounted()) {
         var table_rows = [];
         for (var i = 0; i < results.length; i++) {
@@ -211,14 +211,14 @@ var bootstrapClasses = {
   select: 'form-control',
   button: 'btn btn btn-block btn-default',
   buttonActive: 'btn btn btn-block btn-primary'
-}
+};
 
 var ActivitiesMultiselect = React.createClass({
   getInitialState() {
     return {
       available_activities: this.props.available_activities,
       assigned_activities: this.props.assigned_activities,
-    }
+    };
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
@@ -227,18 +227,18 @@ var ActivitiesMultiselect = React.createClass({
     });
   },
   _onSelect(assigned_activities) {
-    assigned_activities.sort((a, b) => a.id - b.id)
-    this.setState({assigned_activities})
+    assigned_activities.sort((a, b) => a.id - b.id);
+    this.setState({assigned_activities});
   },
   _onDeselect(deselectedOptions) {
-    var assigned_activities = this.state.assigned_activities.slice()
+    var assigned_activities = this.state.assigned_activities.slice();
     deselectedOptions.forEach(option => {
-      assigned_activities.splice(assigned_activities.indexOf(option), 1)
-    })
-    this.setState({assigned_activities})
+      assigned_activities.splice(assigned_activities.indexOf(option), 1);
+    });
+    this.setState({assigned_activities});
   },
   render: function() {
-    var {assigned_activities, available_activities} = this.state
+    var {assigned_activities, available_activities} = this.state;
 
     return (
         <div className="row">
@@ -281,7 +281,7 @@ var UsersMultiselect = React.createClass({
     return {
       assigned_users: this.props.assigned_users,
       available_users: this.props.available_users,
-    }
+    };
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
@@ -290,18 +290,18 @@ var UsersMultiselect = React.createClass({
     });
   },
   _onSelect(assigned_users) {
-    assigned_users.sort((a, b) => a.id - b.id)
-    this.setState({assigned_users})
+    assigned_users.sort((a, b) => a.id - b.id);
+    this.setState({assigned_users});
   },
   _onDeselect(deselectedOptions) {
-    var assigned_users = this.state.assigned_users.slice()
+    var assigned_users = this.state.assigned_users.slice();
     deselectedOptions.forEach(option => {
-      assigned_users.splice(assigned_users.indexOf(option), 1)
-    })
-    this.setState({assigned_users})
+      assigned_users.splice(assigned_users.indexOf(option), 1);
+    });
+    this.setState({assigned_users});
   },
   render: function() {
-    var {assigned_users, available_users} = this.state
+    var {assigned_users, available_users} = this.state;
 
     return (
         <div className="row">
@@ -351,8 +351,8 @@ var EditRolePage = React.createClass({
     };
   },
   componentDidMount: function() {
-    if(this.props.action == "Edit"){
-      $.get("/manage-users/api/roles/" + this.props.role_id, function(results) {
+    if (this.props.action === 'Edit') {
+      $.get('/manage-users/api/roles/' + this.props.role_id, function(results) {
         if (this.isMounted()) {
 
           var role_object = results[this.props.role_id];
@@ -360,35 +360,35 @@ var EditRolePage = React.createClass({
           var role_name = role_object.role.name;
 
           var available_users_unformatted = JSON.parse(role_object.users.available);
-          var available_users = available_users_unformatted.map(function(obj){
-             var user = {};
-             user['id'] = obj.pk;
-             user['name'] = obj.fields.email;
-             return user;
+          var available_users = available_users_unformatted.map(function(obj) {
+            var user = {};
+            user['id'] = obj.pk;
+            user['name'] = obj.fields.email;
+            return user;
           });
 
           var assigned_users_unformatted = JSON.parse(role_object.users.assigned);
-          var assigned_users = assigned_users_unformatted.map(function(obj){
-             var user = {};
-             user['id'] = obj.pk;
-             user['name'] = obj.fields.email;
-             return user;
+          var assigned_users = assigned_users_unformatted.map(function(obj) {
+            var user = {};
+            user['id'] = obj.pk;
+            user['name'] = obj.fields.email;
+            return user;
           });
 
           var available_activities_unformatted = JSON.parse(role_object.activities.available);
-          var available_activities = available_activities_unformatted.map(function(obj){
-             var activity = {};
-             activity['id'] = obj.pk;
-             activity['name'] = obj.fields.name;
-             return activity;
+          var available_activities = available_activities_unformatted.map(function(obj) {
+            var activity = {};
+            activity['id'] = obj.pk;
+            activity['name'] = obj.fields.name;
+            return activity;
           });
 
           var assigned_activities_unformatted = JSON.parse(role_object.activities.assigned);
-          var assigned_activities = assigned_activities_unformatted.map(function(obj){
-             var activity = {};
-             activity['id'] = obj.pk;
-             activity['name'] = obj.fields.name;
-             return activity;
+          var assigned_activities = assigned_activities_unformatted.map(function(obj) {
+            var activity = {};
+            activity['id'] = obj.pk;
+            activity['name'] = obj.fields.name;
+            return activity;
           });
 
           this.setState({
@@ -402,8 +402,8 @@ var EditRolePage = React.createClass({
         }
       }.bind(this));
     }
-    else if(this.props.action == "Add"){
-      $.get("/manage-users/api/roles/", function(results) {
+    else if (this.props.action === 'Add') {
+      $.get('/manage-users/api/roles/', function(results) {
         if (this.isMounted()) {
 
           {/* Objects in results don't have predictable keys */}
@@ -415,19 +415,19 @@ var EditRolePage = React.createClass({
           }
 
           var available_users_unformatted = JSON.parse(role_object.users.available);
-          var available_users = available_users_unformatted.map(function(obj){
-             var user = {};
-             user['id'] = obj.pk;
-             user['name'] = obj.fields.email;
-             return user;
+          var available_users = available_users_unformatted.map(function(obj) {
+            var user = {};
+            user['id'] = obj.pk;
+            user['name'] = obj.fields.email;
+            return user;
           });
 
           var available_activities_unformatted = JSON.parse(role_object.activities.available);
-          var available_activities = available_activities_unformatted.map(function(obj){
-             var activity = {};
-             activity['id'] = obj.pk;
-             activity['name'] = obj.fields.name;
-             return activity;
+          var available_activities = available_activities_unformatted.map(function(obj) {
+            var activity = {};
+            activity['id'] = obj.pk;
+            activity['name'] = obj.fields.name;
+            return activity;
           });
 
           this.setState({
@@ -443,7 +443,7 @@ var EditRolePage = React.createClass({
     this.state.role_name = event.target.value;
 
     {/* I know this is awful. setState overrides some states because they are n-levels deep.
-      Look into immutability: http://facebook.github.io/react/docs/update.html */}
+      Look into immutability: http://facebook.github.io/react/docs/update.html }
 
     this.setState({
       help_message: this.state.help_message,
@@ -452,10 +452,10 @@ var EditRolePage = React.createClass({
       assigned_activities: this.refs.activities.state.assigned_activities,
       available_users:  this.refs.users.state.available_users,
       assigned_users:  this.refs.users.state.assigned_users
-    })
+    });
 
   },
-  handleSaveRoleClick: function (event) {
+  handleSaveRoleClick: function(event) {
 
     {/* Grab form fields and validate */}
 
@@ -466,27 +466,27 @@ var EditRolePage = React.createClass({
     var assigned_users = this.refs.users.state.assigned_users;
 
     var role_name = this.state.role_name;
-    if(role_name == ""){
+    if (role_name === '') {
       this.setState({
-          help_message: "Role name can not be empty",
-          role_name: this.state.role_name,
-          available_activities: this.refs.activities.state.available_activities,
-          assigned_activities: this.refs.activities.state.assigned_activities,
-          available_users:  this.refs.users.state.available_users,
-          assigned_users:  this.refs.users.state.assigned_users
+        help_message: 'Role name can not be empty',
+        role_name: this.state.role_name,
+        available_activities: this.refs.activities.state.available_activities,
+        assigned_activities: this.refs.activities.state.assigned_activities,
+        available_users:  this.refs.users.state.available_users,
+        assigned_users:  this.refs.users.state.assigned_users
       });
       return;
     }
 
     var assigned_activities = this.refs.activities.state.assigned_activities;
-    if(assigned_activities.length < 1){
+    if (assigned_activities.length < 1) {
       this.setState({
-          help_message: "Each role must have at least one activity.",
-          role_name: this.state.role_name,
-          available_activities: this.refs.activities.state.available_activities,
-          assigned_activities: this.refs.activities.state.assigned_activities,
-          available_users:  this.refs.users.state.available_users,
-          assigned_users:  this.refs.users.state.assigned_users
+        help_message: 'Each role must have at least one activity.',
+        role_name: this.state.role_name,
+        available_activities: this.refs.activities.state.available_activities,
+        assigned_activities: this.refs.activities.state.assigned_activities,
+        available_users:  this.refs.users.state.available_users,
+        assigned_users:  this.refs.users.state.assigned_users
       });
       return;
     }
@@ -494,31 +494,31 @@ var EditRolePage = React.createClass({
     {/* No errors? Clear help text */}
 
     this.setState({
-        help_message: "",
-        role_name: this.state.role_name,
-        available_activities: this.refs.activities.state.available_activities,
-        assigned_activities: this.refs.activities.state.assigned_activities,
-        available_users:  this.refs.users.state.available_users,
-        assigned_users:  this.refs.users.state.assigned_users
+      help_message: '',
+      role_name: this.state.role_name,
+      available_activities: this.refs.activities.state.available_activities,
+      assigned_activities: this.refs.activities.state.assigned_activities,
+      available_users:  this.refs.users.state.available_users,
+      assigned_users:  this.refs.users.state.assigned_users
     });
 
     {/* Format properly */}
 
-    assigned_activities = assigned_activities.map(function(obj){
-       return obj.name;
+    assigned_activities = assigned_activities.map(function(obj) {
+      return obj.name;
     });
 
-    assigned_users = assigned_users.map(function(obj){
-       return obj.name;
+    assigned_users = assigned_users.map(function(obj) {
+      return obj.name;
     });
 
     {/* Determine URL based on action */}
-    var url = "";
-    if ( this.props.action == "Edit" ){
-      url = "/manage-users/api/roles/edit/" + role_id + "/";
+    var url = '';
+    if ( this.props.action === 'Edit' ) {
+      url = '/manage-users/api/roles/edit/' + role_id + '/';
     }
-    else if ( this.props.action == "Add" ){
-      url = "/manage-users/api/roles/create/";
+    else if ( this.props.action === 'Add' ) {
+      url = '/manage-users/api/roles/create/';
     }
 
     {/* Build data to send */}
@@ -531,28 +531,28 @@ var EditRolePage = React.createClass({
     {/* Submit to server */}
     {/* TODO Integrate Darrin's nice abstracted util here for easier testing */}
     $.post(url, data_to_send, function(response) {
-      if ( response.success == "true" ){
+      if ( response.success === 'true' ) {
         ReactDOM.render(
           <Container page="Roles" disappear_text="Role created successfully"/>,
             document.getElementById('content')
         );
       }
-      else if ( response.success == "false" ){
+      else if ( response.success === 'false' ) {
         this.setState({
-            help_message: response.message,
-            role_name: this.state.role_name,
-            available_activities: this.refs.activities.state.available_activities,
-            assigned_activities: this.refs.activities.state.assigned_activities,
-            available_users:  this.refs.users.state.available_users,
-            assigned_users:  this.refs.users.state.assigned_users
+          help_message: response.message,
+          role_name: this.state.role_name,
+          available_activities: this.refs.activities.state.available_activities,
+          assigned_activities: this.refs.activities.state.assigned_activities,
+          available_users:  this.refs.users.state.available_users,
+          assigned_users:  this.refs.users.state.assigned_users
         });
       }
     }.bind(this));
   },
-  handleDeleteRoleClick: function (event) {
+  handleDeleteRoleClick: function(event) {
     if (confirm('Are you sure you want to delete this role?')) {
     } else {
-        return;
+      return;
     }
 
     var role_id = this.props.role_id;
@@ -562,28 +562,28 @@ var EditRolePage = React.createClass({
     {/* Submit to server */}
 
     {/* TODO Integrate Darrin's nice abstracted util here for easier testing */}
-    $.ajax( "/manage-users/api/roles/delete/" + role_id + "/",
+    $.ajax( '/manage-users/api/roles/delete/' + role_id + '/',
       {
-        type: "DELETE",
+        type: 'DELETE',
         beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-CSRFToken", csrf);
+          xhr.setRequestHeader('X-CSRFToken', csrf);
         },
-     success: function( response ) {
-       ReactDOM.render(
+        success: function( response ) {
+          ReactDOM.render(
          <Container page="Roles" />,
            document.getElementById('content')
        );
-    }});
+        }});
 
 
   },
   render: function() {
-    var delete_role_button = "";
-    if (this.props.action == "Add") {
+    var delete_role_button = '';
+    if (this.props.action === 'Add') {
 
     }
-    else if (this.props.action == "Edit"){
-      delete_role_button = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>
+    else if (this.props.action === 'Edit') {
+      delete_role_button = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>;
     }
 
     return (
@@ -703,19 +703,19 @@ var OverviewPage = React.createClass({
 var Content = React.createClass({
   render: function() {
     var page = this.props.page;
-    switch(page) {
-        case "Overview":
-            page = <OverviewPage disappear_text={this.props.disappear_text}/>;
-            break;
-        case "Roles":
-            page = <RolesPage disappear_text={this.props.disappear_text}/>;
-            break;
-        case "Activities":
-            page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
-            break;
-        case "EditRole":
-            page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
-            break;
+    switch (page) {
+    case 'Overview':
+      page = <OverviewPage disappear_text={this.props.disappear_text}/>;
+      break;
+    case 'Roles':
+      page = <RolesPage disappear_text={this.props.disappear_text}/>;
+      break;
+    case 'Activities':
+      page = <ActivitiesPage disappear_text={this.props.disappear_text}/>;
+      break;
+    case 'EditRole':
+      page = <EditRolePage action={this.props.action} role_to_edit={this.props.role_to_edit} role_id={this.props.role_id} disappear_text={this.props.disappear_text}/>;
+      break;
     }
 
     return (
