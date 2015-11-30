@@ -13,6 +13,7 @@ var jasmine = require('gulp-jasmine');
 var eslint = require('gulp-eslint');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
+var gulpif = require('gulp-if');
 
 // This build produces several javascript bundles.
 // * vendor.js - Contains all the libraries we use, bundled and minified.
@@ -157,7 +158,7 @@ gulp.task('test', function() {
   function isFixed(file) {
     return file.eslint != null && file.eslint.fixed;
   };
-  return gulp.src(['./src/**/*.js'])
+  return gulp.src(['./src/manageusers/manageusers.js'])
     .pipe(eslint({
       extends: 'airbnb',
       env: {
