@@ -87,7 +87,6 @@ class Api {
     async listReports() {
         var response = await this.getFromReportingApi(
             "/reports/api/list_reports", {
-                method: 'GET',
             });
         return response['reports'];
     }
