@@ -41,12 +41,12 @@ class Command(BaseCommand):
     help = 'Runs all tests that don\'t need Django framework'
 
     def handle(self, *args, **options):
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.ERROR)
+        logging.getLogger().setLevel(logging.CRITICAL)
         argv = sys.argv[1:]  # manage.py cmd -> cmd
         if len(argv) == 1:
             argv.append('discover')
-        program = unittest.TestProgram(
+        unittest.TestProgram(
             module=None,
             testLoader=NoDjangoTestLoader(),
             argv=argv)
-        print list(NoDjangoTestLoader().discover("."))

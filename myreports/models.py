@@ -1,10 +1,14 @@
 import json
+
 from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.loading import get_model
 
 from myreports.helpers import serialize, determine_user_type
-from myreports.report_query import get_report_query
+from myreports.datasources import get_datasource_json_driver
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration)
+from myreports.result_encoder import report_hook, ReportJsonEncoder
 from mypartners.models import SearchParameterManager
 
 
@@ -134,6 +138,7 @@ class ReportType(models.Model):
     data_types = models.ManyToManyField(
         'DataType', through='ReportTypeDataTypes')
     is_active = models.BooleanField(default=False)
+    datasource = models.CharField(max_length=50, default='')
     objects = ReportTypeManager()
 
 
@@ -169,6 +174,19 @@ class Configuration(models.Model):
     name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
 
+    def build_configuration(self):
+        return ReportConfiguration([
+            ColumnConfiguration(
+                column=cm.column_name,
+                format=cm.output_format,
+                filter_interface=cm.filter_interface_type,
+                filter_display=cm.filter_interface_display,
+                help=cm.has_help)
+            for cm in (
+                self.configurationcolumn_set
+                .filter(is_active=True)
+                .order_by('order'))])
+
 
 class ReportPresentationManager(models.Manager):
     def active_for_report_type_data_type(self, rtdt):
@@ -194,52 +212,36 @@ class PresentationType(models.Model):
     is_active = models.BooleanField(default=False)
 
 
-class ColumnManager(models.Manager):
-    def active_for_configuration(self, configuration):
-        column_qs = Column.objects.filter(is_active=True)
-        config_col_qs = configuration.configurationcolumn_set.filter(
-            is_active=True)
-
-        return column_qs.filter(id__in=config_col_qs)
-
-
 class Column(models.Model):
     table_name = models.CharField(max_length=50)
     column_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
-    objects = ColumnManager()
 
 
-class InterfaceElementType(models.Model):
-    interface_element_type = models.CharField(max_length=50)
-    description = models.CharField(max_length=500)
-    element_code = models.CharField(max_length=2000)
-    is_active = models.BooleanField(default=False)
-
-
-class ColumnFormat(models.Model):
-    name = models.CharField(max_length=50)
-    format_code = models.CharField(max_length=2000)
-    is_active = models.BooleanField(default=False)
-
-
-class ConfigurationColumnFormats(models.Model):
-    column_format = models.ForeignKey('ColumnFormat')
-    configuration_column = models.ForeignKey('ConfigurationColumn')
-    is_active = models.BooleanField(default=False)
+class ConfigurationColumnManager(models.Manager):
+    def active_for_report_presentation(self, rp):
+        return (ConfigurationColumn.objects
+                .filter(configuration__reportpresentation=rp)
+                .filter(is_active=True)
+                .select_related())
 
 
 class ConfigurationColumn(models.Model):
     configuration = models.ForeignKey(Configuration)
-    column = models.ForeignKey(Column, null=True)
-    interface_element_type = models.ForeignKey(InterfaceElementType)
+
+    order = models.IntegerField(default=100)
+    column_name = models.CharField(max_length=50, default='')
+    output_format = models.CharField(max_length=50, default='')
+    filter_interface_type = models.CharField(max_length=50, null=True)
+    filter_interface_display = models.CharField(max_length=50, null=True)
+    has_help = models.BooleanField(default=False)
+
     alias = models.CharField(max_length=100)
     multi_value_expansion = models.PositiveSmallIntegerField()
     filter_only = models.BooleanField(default=False)
     default_value = models.CharField(max_length=500, blank=True, default="")
-    column_formats = models.ManyToManyField(
-        'ColumnFormat', through='ConfigurationColumnFormats')
     is_active = models.BooleanField(default=False)
+    objects = ConfigurationColumnManager()
 
 
 class DynamicReport(models.Model):
@@ -262,6 +264,7 @@ class DynamicReport(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey('seo.Company')
     report_presentation = models.ForeignKey('myreports.ReportPresentation')
+    filters = models.TextField(default="{}")
     results = models.FileField(upload_to='reports')
 
     company_ref = 'owner'
@@ -287,29 +290,19 @@ class DynamicReport(models.Model):
 
     @property
     def python(self):
-        return json.loads(self._results)
-
-    def get_report_query(self):
-        report_query_name = (
-            self.report_presentation.report_data
-            .report_type.report_type)
-        return get_report_query(report_query_name)
-
-    def queryset(self):
-        self.report_query = self.get_report_query()
-        report_qs = (self.report_query
-                     .report_query_set(self.owner))
-        return report_qs
+        return json.loads(self._results, object_hook=report_hook)
 
     def regenerate(self):
-        self.report_query = self.get_report_query()
-        data = [self.report_query.extract(m) for m in self.queryset()]
-        contents = json.dumps(data)
+        report_type = self.report_presentation.report_data.report_type
+
+        driver = get_datasource_json_driver(report_type.datasource)
+        data = driver.run(self.owner, self.filters, "[]")
+
+        contents = json.dumps(data, cls=ReportJsonEncoder)
         results = ContentFile(contents)
 
         if self.results:
             self.results.delete()
 
-        name = self.report_presentation.display_name
-        self.results.save('%s-%s.json' % (name, self.pk), results)
+        self.results.save('%s-%s.json' % (self.name, self.pk), results)
         self._results = contents
