@@ -168,6 +168,11 @@ gulp.task('lint-fix', function() {
         jasmine: true,
       },
       parser: 'babel-eslint',
+      plugins: ['babel'],
+      rules: {
+        "babel/object-curly-spacing": 1,
+        "babel/no-await-in-loop": 1,
+      },
       fix: true,
     }))
     .pipe(eslint.format())
@@ -175,13 +180,18 @@ gulp.task('lint-fix', function() {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(['./src/**/*.js'])
+  return gulp.src(['./src/**/*.js', '!./src/manageusers/**/*'])
     .pipe(eslint({
       extends: 'airbnb',
       env: {
         jasmine: true,
       },
       parser: 'babel-eslint',
+      plugins: ['babel'],
+      rules: {
+        "babel/object-curly-spacing": 1,
+        "babel/no-await-in-loop": 2,
+      },
     }))
     .pipe(eslint.format());
 });
