@@ -1,4 +1,7 @@
-require('babel/register');
+require('babel-register')({
+  presets: ["es2015", "react", "stage-2"],
+});
+require('babel-polyfill');
 
 var gulp = require('gulp');
 var browserify = require('browserify');
@@ -9,7 +12,7 @@ var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
-var stripDebug = require('gulp-strip-debug');
+//var stripDebug = require('gulp-strip-debug');
 var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
 var eslint = require('gulp-eslint');
@@ -33,9 +36,10 @@ var vendor_libs = [
   'react-dom',
   'react-bootstrap',
   'react-autosuggest',
-  'babel/polyfill',
   'fetch-polyfill',
+  'babel-polyfill',
   'es6-promise',
+  'warning',
 ];
 
 var dest = '../static/bundle';
@@ -43,10 +47,10 @@ var dest = '../static/bundle';
 var strip_debug = true;
 
 gulp.task('vendor', function() {
-  return browserify([], { debug: true, list: true, })
+  return browserify([], { debug: true, })
   .require(vendor_libs)
   .on('package', function(pkg) {
-    util.log("Vendor package:", pkg.name)
+    util.log("Vendor package:", pkg.name, pkg.version)
   })
   .on('error', function(error, meta) {
     util.log("Browserify error:", error.toString());
@@ -56,7 +60,7 @@ gulp.task('vendor', function() {
   .pipe(source('vendor.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(uglify({ mangle: false }))
+  .pipe(uglify({ mangle: false, compress: true }))
   .pipe(sourcemaps.write('./'))
   .pipe(gulp.dest(dest));
 });
@@ -66,16 +70,6 @@ gulp.task('vendor', function() {
 // bundle processing, the build starts taking too long and that code will
 // be redownloaded for different apps, instead of shared by the vendor.js
 // bundle.
-//
-// The list of ok packages here are:
-// * de-build (thats us),
-// * babel-runtime
-// * process
-// * core-js
-//
-// Ideally this bundle would contain only de-build but I can't figure out
-// how to get the others into vendor.js, as they are processed differently
-// from ordinary node.js libraries.
 
 gulp.task('reporting', function() {
   return browserify([], {
@@ -84,7 +78,9 @@ gulp.task('reporting', function() {
   })
   .external(vendor_libs)
   .add('src/reporting/main.js')
-  .transform(babelify.configure({optional: 'runtime'}))
+  .transform(babelify.configure({
+    presets: ["es2015", "react", "stage-2"],
+  }))
   .on('package', function(pkg) {
     util.log("Including package:", pkg.name)
   })
@@ -113,7 +109,9 @@ gulp.task('manageusers', function() {
   })
   .external(vendor_libs)
   .add('src/manageusers/manageusers.js')
-  .transform(babelify)
+  .transform(babelify.configure({
+    presets: ["es2015", "react", "stage-2"],
+  }))
   .bundle()
   .on('error', function(error, meta) {
     util.log("Browserify error:", error.toString());
@@ -130,7 +128,7 @@ gulp.task('manageusers', function() {
   .pipe(uglify({ mangle: false }))
   // stripDebug() must come before sourcemaps.write()
   // You should remove logging before committing, but this confirms logging won't be in production
-  .pipe(gulpif(strip_debug, stripDebug()))
+  //.pipe(gulpif(strip_debug, stripDebug()))
   .pipe(sourcemaps.write('./'))
   .pipe(gulp.dest(dest))
 });
@@ -204,4 +202,4 @@ gulp.task('watch', function() {
     return gulp.watch('src/**/*', ['test', 'lint', 'reporting', 'manageusers']);
 });
 
-gulp.task('default', ['build', 'test']);
+gulp.task('default', ['build']);

@@ -128,4 +128,3 @@ export class ReportConfigurationBuilder {
       return new ReportConfiguration(rpId, filters, this.api, cb);
     }
 }
-

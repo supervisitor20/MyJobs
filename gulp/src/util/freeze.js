@@ -20,4 +20,3 @@ export function deepFreeze(obj) {
   // Freeze self
   return Object.freeze(obj);
 }
-

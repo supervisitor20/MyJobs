@@ -172,5 +172,3 @@ export class DynamicReportApp extends Component {
 DynamicReportApp.propTypes = {
   reportFinder: PropTypes.object.isRequired,
 };
-
-
