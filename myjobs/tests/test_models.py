@@ -298,22 +298,27 @@ class TestActivities(MyJobsBase):
 
         with self.settings(ROLES_ENABLED=True):
             user = admin_user.send_invite('regular@joe.com', self.company)
-
-            self.assertFalse(user.can(self.company, 'create user'))
+            self.assertFalse(
+                user.can(self.company, 'create user'),
+                "User shouldn't be able to 'create user', but can")
 
             user = admin_user.send_invite(
                 'regular@joe.com', self.company, role_name=self.role.name)
-            self.assertTrue(user.can(self.company, 'create user'))
+            self.assertTrue(
+                user.can(self.company, 'create user'),
+                "User should be able to 'create user' but can't.")
 
         with self.settings(ROLES_ENABLED=False):
             user = admin_user.send_invite('regular@joe.com', self.company)
-
-            self.assertFalse(user.can(self.company, 'create user'))
+            self.assertFalse(
+                user.can(self.company, 'create user'),
+                "User shouldn't be able to 'create user', but can.")
 
             user = admin_user.send_invite(
                 'regular@joe.com', self.company, True)
-
-            self.assertTrue(user.can(self.company, 'create user'))
+            self.assertTrue(
+                user.can(self.company, 'create user'),
+                "User should be able to 'create user', but can't")
 
 
     def test_activities(self):
