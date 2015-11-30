@@ -12,7 +12,7 @@ class SmartCacheDBThrottle(CacheDBThrottle):
     this to make it be smart.
 
     Requires Django 1.3+.
-    
+
     """
     def should_be_throttled(self, identifier, **kwargs):
         # Tastypie barfs if you try to do anything with throttling when using
@@ -22,7 +22,7 @@ class SmartCacheDBThrottle(CacheDBThrottle):
         # the key.
         cache = getattr(settings, 'CACHES', {})
         cache_default = cache.get('default')
-        
+
         if cache_default and cache_default['BACKEND'].endswith('DummyCache'):
             return False
         else:

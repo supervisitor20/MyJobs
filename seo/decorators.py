@@ -131,9 +131,9 @@ def custom_cache_page(view):
     return decorator
 
 
-def sns_json_message(f): 
-    
-    def wrap(request, *args, **kwargs):      
+def sns_json_message(f):
+
+    def wrap(request, *args, **kwargs):
         # check the request to see if we need to confirm subscription
         json_message = None
         res = request.body
@@ -144,19 +144,19 @@ def sns_json_message(f):
                 res = urllib2.urlopen(subscribeURL)
         except KeyError:
             # We 'pass' here because the Type attribute might not be
-            # in the JSON object if we've already subscribed to the 
+            # in the JSON object if we've already subscribed to the
             # end point.
             pass
         except Exception as e:
-            logging.error("%s" % e, 
-                          exc_info=sys.exc_info(), 
+            logging.error("%s" % e,
+                          exc_info=sys.exc_info(),
                           extra={'request': request,
                                  'view': 'sns_json_message decorator'})
             return HttpResponse(status=500)
         finally:
             f(json_message, *args, **kwargs)
             return HttpResponse(status=200)
-    
+
     return wrap
 
 try:
@@ -173,11 +173,11 @@ def profile(log_file):
     for later processing and examination.
 
     It takes one argument, the profile log name. If it's a relative path, it
-    places it under the PROFILE_LOG_BASE. It also inserts a time stamp into the 
-    file name, such that 'my_view.prof' become 'my_view-20100211T170321.prof', 
-    where the time stamp is in UTC. This makes it easy to run and compare 
+    places it under the PROFILE_LOG_BASE. It also inserts a time stamp into the
+    file name, such that 'my_view.prof' become 'my_view-20100211T170321.prof',
+    where the time stamp is in UTC. This makes it easy to run and compare
     multiple trials.
-    
+
     """
     if not os.path.isabs(log_file):
         log_file = os.path.join(PROFILE_LOG_BASE, log_file)

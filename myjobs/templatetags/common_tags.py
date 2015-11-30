@@ -35,6 +35,12 @@ def completion_level(level):
 
     return get_completion(level)
 
+@register.assignment_tag
+def can(user, company, *activity_names):
+    """Template tag analog to `myjobs.User.can()` method."""
+
+    return user.can(company, *activity_names)
+
 
 @register.simple_tag
 def get_description(module):
@@ -57,7 +63,7 @@ def get_description(module):
 
 
 @register.assignment_tag
-def is_a_group_member(user, group):
+def is_a_group_member(company, user, group):
     """
     Determines whether or not the user is a member of a group
 
@@ -70,10 +76,15 @@ def is_a_group_member(user, group):
     requested group
     """
 
-    try:
-        return User.objects.is_group_member(user, group)
-    except ValueError:
-        return False
+    if settings.ROLES_ENABLED:
+        return any([
+            user.can(company, 'read role'),
+            user.can(company, 'read partner')])
+    else:
+        try:
+            return User.objects.is_group_member(user, group)
+        except ValueError:
+            return False
 
 
 @register.assignment_tag
@@ -89,13 +100,13 @@ def get_company_name(user):
     """
 
     # Only return companies for which the user is a company user
-    try:
-        if settings.DEBUG:
-            return Company.objects.filter(role__user=user)
-        else:
+    if settings.ROLES_ENABLED:
+        return Company.objects.filter(role__user=user).distinct()
+    else:
+        try:
             return user.company_set.all()
-    except ValueError:
-        return Company.objects.none()
+        except ValueError:
+            return Company.objects.none()
 
 
 @register.simple_tag(takes_context=True)

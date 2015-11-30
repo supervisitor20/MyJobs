@@ -11,7 +11,7 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         # Create a list of logo file names from the Company.logo_url attribute
         # e.g. '//d2e48ltfsb5exy.cloudfront.net/100x50/seo/foo.gif' --> 'foo.gif'
-        in_db = [co.logo_url.split("/")[-1] for co 
+        in_db = [co.logo_url.split("/")[-1] for co
                  in Company.objects.filter(member=True)]
 
         # Instead of checking each logo individually, find the difference

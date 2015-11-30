@@ -169,7 +169,7 @@ class SavedSearchModelsTests(MyJobsBase):
         SavedSearchFactory(user=self.user)
         send_search_digests()
         self.assertEqual(len(mail.outbox), 1)
-    
+
     def test_initial_email(self):
         search = SavedSearchFactory(user=self.user, is_active=False,
                                     url='www.my.jobs/search?q=new+search')
@@ -231,7 +231,7 @@ class SavedSearchModelsTests(MyJobsBase):
     def test_unicode_in_saved_search(self):
         """Tests that saved search urls with unicode don't cause errors."""
         search = SavedSearchFactory(
-            user=self.user, 
+            user=self.user,
             url=u"warehouse.jobs/search?location=Roswell%2C+GA&q=Delivery+I"
                 "+%E2%80%93+Material+Handler%2FDriver+Helper+%E2%80%93+3rd"
                 "+Shift%2C+Part-time")

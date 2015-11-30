@@ -69,7 +69,7 @@ def select(context, pattern, ignore=None):
     if pattern in path:
         if ignore and ignore in path:
             return ''
-        
+
         return 'selected'
 
 

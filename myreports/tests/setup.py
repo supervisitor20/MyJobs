@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.conf import settings
 
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory
@@ -25,6 +26,7 @@ class MyReportsTestCase(TestCase):
     except that it provides a MyJobs TestClient instance and a logged in user.
     """
     def setUp(self):
+        settings.ROLES_ENABLED = False
         self.client = TestClient()
         self.user = UserFactory(email='testuser@directemployers.org')
         self.user.set_password('aa')

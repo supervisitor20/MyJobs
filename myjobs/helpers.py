@@ -51,10 +51,10 @@ def expire_login(request, *args, **kwargs):
 def get_completion(level):
     """
     Determines the bootstraps bar color associated with the completion level.
-    
+
     inputs:
     :level: The completion percentage of a user's profile.
-    
+
     outputs:
     A string containing the bootstrap bar type.
     """

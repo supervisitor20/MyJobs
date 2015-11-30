@@ -15,7 +15,7 @@ class SimplerXMLGeneratorWithCDATA(SimplerXMLGenerator):
     def write_cdata(self, content):
         """wraps xml content in CDATA tags"""
         self._write('<![CDATA[%s]]>' % content)
-        
+
 
 class ExtraValue():
     """
@@ -46,13 +46,13 @@ class ExtraValuesSerializer(Serializer):
     DATE_FORMAT = "%Y-%m-%d"
     TIME_FORMAT = "%H:%M:%S"
 
-    def __init__(self, feed_type='xml', publisher='', publisher_url='', 
+    def __init__(self, feed_type='xml', publisher='', publisher_url='',
                  last_build_date='', field_mapping=None, extra_values=None):
         """
         Inputs:
         :field_mapping: Dict that maps "object field name":"feed field name"
         :publisher: Name of feed source
-        :last_build_date: When feed was last built 
+        :last_build_date: When feed was last built
         :publisher_url: Link to publisher
         :extra_values: A list of ExtraValue objects to add to serialized data
 
@@ -60,7 +60,7 @@ class ExtraValuesSerializer(Serializer):
         if field_mapping is None:
             field_mapping = {}
         if extra_values is None:
-            extra_values = {} 
+            extra_values = {}
         self.extra_values = extra_values
         self.field_mapping = field_mapping
         self.publisher = publisher
@@ -78,7 +78,7 @@ class ExtraValuesSerializer(Serializer):
             value = d.strftime("%s %s" % (self.DATE_FORMAT, self.TIME_FORMAT))
         self.finish_handle_item(field_name=field_name, value=value,
                                 attributes=attributes)
- 
+
     def handle_item_url(self, item):
         is_posted = item.get('is_posted', False)
         if is_posted:
@@ -100,7 +100,7 @@ class ExtraValuesSerializer(Serializer):
     def serialize(self, queryset, **options):
         """
         Serialize a queryset.
-        
+
         """
         self.options = options
         self.stream = options.get("stream", StringIO())
@@ -128,10 +128,10 @@ class ExtraValuesSerializer(Serializer):
 
 
 class XMLExtraValuesSerializer(ExtraValuesSerializer):
-    """ 
+    """
     Give default serializer extra functionality. You must pass feed_type when
     calling this function or it will default to XML.
-    
+
     Inputs:
     :ExtraValuesSerializer: object containing specific properites to use.
 
@@ -140,7 +140,7 @@ class XMLExtraValuesSerializer(ExtraValuesSerializer):
     XML nodes with custom names, serializing of calculated fields, optional
     CDATA wrapping of text fields, as well as a slightly different xml structure
     that is more tailored to a job feed file.
-    
+
     """
     def __init__(self, use_cdata=False, *args, **kwargs):
         super(XMLExtraValuesSerializer, self).__init__(*args, **kwargs)
@@ -210,7 +210,7 @@ class JSONExtraValuesSerializer(ExtraValuesSerializer):
         super(JSONExtraValuesSerializer, self).__init__(**kwargs)
 
     def start_serialization(self):
-        self._current = {} 
+        self._current = {}
         self.objects = []
 
     def start_object(self, obj):

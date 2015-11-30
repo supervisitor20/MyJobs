@@ -220,7 +220,7 @@ class Breadbox(object):
             try:
                 left = slugs.index(location_slugs[0])
             except ValueError:
-                # location slug isn't part of the path 
+                # location slug isn't part of the path
                 pass
             else:
                 right = left + len(location_slugs)

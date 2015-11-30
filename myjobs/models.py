@@ -348,6 +348,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
+    @property
+    def activities(self):
+        """Returns a list of activity names associated with this user."""
+
+        return filter(bool, self.roles.values_list(
+            'activities__name', flat=True))
+
     def email_user(self, message, email_type=settings.GENERIC, **kwargs):
         headers = kwargs.pop('headers', {})
         if 'X-SMTPAPI' not in headers:
@@ -408,14 +415,6 @@ class User(AbstractBaseUser, PermissionsMixin):
                                      % gravatar_url)
 
         return gravatar_url
-
-    def get_companies(self):
-        """
-        Returns a QuerySet of all the Companies a User has access to.
-
-        """
-        from seo.models import Company
-        return Company.objects.filter(admins=self).distinct()
 
     def get_sites(self):
         """
@@ -643,6 +642,74 @@ class User(AbstractBaseUser, PermissionsMixin):
         return not packages.exists() or packages.filter(
             owner__in=self.company_set.all()).exists()
 
+    def can(self, company, *activity_names):
+        """
+        Checks if a user may perform certain activities for a company.
+
+        Inputs:
+            :company: The company who's role activities to check.
+            :activity_names: Positional arguments are the names of the
+                             activities the user wants to perform.
+             belonging to the given company
+
+        Output:
+            A boolean signifying whether the provided actions may be performed.
+
+        Example:
+
+            # given
+            app_access = AppAccess.objects.create(name="Example")
+            company = Company.objects.first()
+            company.app_access.add(app_access)
+            activities = Activity.objects.bulk_create([
+                Activity(name="create example", app_access=app_access),
+                Activity(name="delete example", app_access=app_access)])
+
+            role = Role.objects.create(name="Example Role", company=company)
+            role.activities.add(activities[0])
+            user = User.objects.first()
+            user.roles.add(role)
+
+            # results
+            user.can(company, "create example") == True
+            user.can(company, "delete example") == False
+            user.can(company, "create example", "delete_example") == False
+
+            # furthermore, given
+            company.app_access.clear()
+
+            # results
+            user.can(company, "create example") == False
+        """
+
+        if not company:
+            return False
+
+        if settings.ROLES_ENABLED:
+            required_access = filter(bool, AppAccess.objects.filter(
+                activity__name__in=activity_names).values_list(
+                    'name', flat=True).distinct())
+
+            # Company must have correct access and user must have correct
+            # activities
+            return all([
+                bool(company.enabled_access),
+                set(required_access).issubset(company.enabled_access),
+                bool(self.activities),
+                set(activity_names).issubset(self.activities)])
+
+        else:
+            # TODO: Delete after we deploy the roles system
+            is_company_user = company in self.company_set.all()
+            activities = ''.join(activity_names)
+
+            if 'partner' in activities:
+                return is_company_user and company.prm_access
+            elif 'role' in activities:
+                return False
+            else:
+                return is_company_user and company.member
+
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
 def delete_user(sender, instance, using, **kwargs):
@@ -746,7 +813,7 @@ class FAQ(models.Model):
 class AppAccess(models.Model):
     """
     App access represents a logical grouping of activities. While an activity
-    may belong to many roles, it may only be assigned one app access. 
+    may belong to many roles, it may only be assigned one app access.
     """
     name = models.CharField(max_length=50, unique=True)
 
@@ -797,3 +864,43 @@ class Role(models.Model):
 
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company)
+
+    def add_activity(self, name):
+        """
+        Shortcut method to add an activity by name.
+
+        Input:
+            :name: The name of the activity to be added. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was added. If no activity
+            was added, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity not in self.activities.all():
+            self.activities.add(activity)
+        else:
+            activity = None
+
+        return activity
+
+    def remove_activity(self, name):
+        """
+        Shortcut method to remove an activity by name.
+
+        Input:
+            :name: The name of the activity to be removed. Case-sensitive.
+
+        Output:
+            The model instance for the activity that was removed. If no
+            activity was removed, `None` is returned.
+        """
+
+        activity = Activity.objects.filter(name=name).first()
+        if activity and activity in self.activities.all():
+            self.activities.remove(activity)
+        else:
+            activity = None
+
+        return activity

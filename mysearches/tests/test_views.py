@@ -245,7 +245,7 @@ class MySearchViewTests(MyJobsBase):
         Deleting all searches should only remove regular saved searches if the
         partner saved searches weren't created by the user trying to use it.
         """
-        
+
         user = UserFactory(email='asdfa@example.com')
         company = CompanyFactory(id=2423, name="Bacon Factory",
                                  user_created=False)
@@ -255,7 +255,7 @@ class MySearchViewTests(MyJobsBase):
 
         response = self.client.get(reverse('delete_saved_search') +
             '?id=ALL')
-        
+
         self.assertEqual(response.status_code, 302)
         # partner saved search should still exist...
         self.assertTrue(models.PartnerSavedSearch.objects.filter(

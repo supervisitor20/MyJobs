@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from seo.tests import factories
 from seo.models import Company, CustomFacet, SeoSite, SiteTag
+from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
 
@@ -153,14 +154,14 @@ class TestRoles(DirectSEOBase):
         the companies associated with an seo site's business units.
         """
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             # no company user, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
 
             factories.CompanyUserFactory(company=self.company, user=self.user)
             self.assertTrue(self.site.user_has_access(self.user))
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # user not assigned a role in company, so shouldn't have access
             self.assertFalse(self.site.user_has_access(self.user))
 
@@ -173,13 +174,13 @@ class TestRoles(DirectSEOBase):
         Test that a user has access if the user can be tied to a company.
         """
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             self.assertFalse(self.company.user_has_access(self.user))
 
             factories.CompanyUserFactory(company=self.company, user=self.user)
             self.assertTrue(self.company.user_has_access(self.user))
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # user not assigned a role in company, so shouldn't have access
             self.assertFalse(self.company.user_has_access(self.user))
 
@@ -198,7 +199,7 @@ class TestRoles(DirectSEOBase):
         users = [factories.UserFactory(email="alice%s@gmail.com" % i)
                  for i in range(10)]
 
-        with self.settings(DEBUG=False):
+        with self.settings(ROLES_ENABLED=False):
             # When activities are disabled, company user count is determined by
             # the number of appropriate entries in the company user table.
             self.assertEqual(self.company.company_user_count, 0)
@@ -208,7 +209,7 @@ class TestRoles(DirectSEOBase):
 
             self.assertEqual(self.company.company_user_count, 10)
 
-        with self.settings(DEBUG=True):
+        with self.settings(ROLES_ENABLED=True):
             # When activities are enabled, company user count is determined by
             # the number distinct users assigned a role within that company
             self.assertEqual(self.company.company_user_count, 0)
@@ -355,4 +356,16 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         # postajob_sites = company_sites + network_sites + generic_sites +
         #                  new_site
         self.assertEqual(len(postajob_sites), SeoSite.objects.all().count())
+
+    def test_enabled_access(self):
+        """
+        `Company.enabled_access` should return  list of app access names.
+        """
+        self.assertItemsEqual(self.company.enabled_access, [])
+
+        app_access = AppAccessFactory(name='Test Access')
+        self.company.app_access.add(app_access)
+
+        self.assertItemsEqual(self.company.enabled_access, ['Test Access'])
+
 

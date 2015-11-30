@@ -107,7 +107,7 @@ class SavedSearchHelperTests(MyJobsBase):
         # If a frequency isn't specified, days_ago should be missing from
         # the url.
         self.assertNotIn('days_ago', query)
-    
+
         # Test to make sure sort by "Date" doesn't have anything added
         feed_url = url_sort_options(feed, "Date")
         self.assertEquals(feed_url, "http://www.my.jobs/jobs/feed/rss")
