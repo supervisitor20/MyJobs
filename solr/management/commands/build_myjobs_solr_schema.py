@@ -155,7 +155,8 @@ class Command(BaseCommand):
                     # so far.
                     if field_type == 'OneToOneField' or \
                             any(s in field.attname
-                                for s in ['password', 'deactivate_type']):
+                                for s in ['password', 'deactivate_type',
+                                          'text_only']):
                         continue
 
                     field_data = {

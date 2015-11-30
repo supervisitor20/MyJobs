@@ -1,9 +1,13 @@
 """Generic helper functions."""
 
 from copy import copy, deepcopy
+import htmlentitydefs
+from HTMLParser import HTMLParser
 import re
 import urllib
 from urlparse import urlparse, urlunparse
+
+from bs4 import BeautifulSoup
 
 from django.db.models.loading import get_model
 from django.conf import settings
@@ -185,8 +189,94 @@ def add_pagination(request, object_list, per_page=None):
     return pagination
 
 
-def send_email(email_body, email_type=settings.GENERIC,
-               recipients=None, site=None, headers=None, **kwargs):
+class HTMLTextExtractor(HTMLParser):
+    """
+    Accepts html input and transforms it into text suitable for a
+    text-only email.
+    """
+    # Look on my works, ye Mighty, and despair!
+    def __init__(self):
+        # HTMLParser is an old-style class. We can't use super().
+        HTMLParser.__init__(self)
+        self.extracted = []
+
+    @property
+    def last_entry(self):
+        """
+        Grabs the last entry in self.extracted, or an empty string.
+        """
+        return self.extracted[-1] if self.extracted else ''
+
+    def handle_starttag(self, tag, attrs):
+        """
+        Extracts hrefs from anchors and inserts them into our output list
+        if they are not present.
+        """
+        if tag == 'a':
+            attrs = dict(attrs)
+            href = attrs.get('href')
+            if href and href not in self.extracted:
+                if not self.last_entry.endswith('\n\n'):
+                    self.extracted.append('\n\n')
+                self.extracted.append(href)
+
+    def handle_data(self, data):
+        """
+        Manages spacing in our text output.
+        """
+        is_space = data.isspace()
+        last_is_space = self.last_entry.isspace()
+        # Weird spacing can cause strange display quirks when a text-only
+        # email is interpreted by Gmail, for instance. Futilely try to correct
+        # common whitespace issues.
+        if not is_space or not last_is_space:
+            data = data.strip(' \t')
+            if not (self.last_entry.endswith('\n') or
+                    data.startswith('\n')):
+                self.extracted.append('\n\n')
+            self.extracted.append(data)
+
+    def handle_charref(self, number):
+        """
+        Turns character references into unicode characters.
+        """
+        codepoint = (int(number[1:], 16)
+                     if number[0] in (u'x', u'X')
+                     else int(number))
+        self.extracted.append(unichr(codepoint))
+
+    def get_text(self):
+        """
+        Does one final pass of whitespace changes and then returns
+        processed text.
+        """
+        text = u''.join(self.extracted)
+
+        # With a text-only email, newlines are our only formatting option.
+        # Removing extraneous spaces here will allow the next statement to
+        # be more correct.
+        text = text.replace('\n \n', '\n\n')
+
+        # Replace 3+ newlines with one
+        text = re.sub("[\n]{3,}", "\n\n", text)
+
+        # Reduce spacing to one space
+        text = re.sub("[ ]{2,}", " ", text)
+        return text
+
+
+def extract_text_from_html(contents):
+    """
+    Use HTMLTextExtractor to extract text from HTML and return the result.
+    """
+    extractor = HTMLTextExtractor()
+    extractor.feed(contents)
+    extractor.close()
+    return extractor.get_text()
+
+
+def send_email(email_body, email_type=settings.GENERIC, recipients=None,
+               site=None, headers=None, text_only=False, **kwargs):
     recipients = recipients or []
 
     company_name = 'My.jobs'
@@ -211,14 +301,22 @@ def send_email(email_body, email_type=settings.GENERIC,
     subject = settings.EMAIL_FORMATS[email_type]['subject']
     subject = subject.format(**kwargs)
 
+    if text_only:
+        email_body = extract_text_from_html(email_body)
+
     email_kwargs = {
         'subject': subject, 'body': email_body, 'from_email': sender,
         'to': recipients
     }
+
     if headers is not None:
         email_kwargs['headers'] = headers
+
     message = EmailMessage(**email_kwargs)
-    message.content_subtype = 'html'
+
+    if not text_only:
+        message.content_subtype = 'html'
+
     message.send()
 
     return message
