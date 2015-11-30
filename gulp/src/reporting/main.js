@@ -2,7 +2,7 @@ import {installPolyfills} from '../util/polyfills.js';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from 'util/cookie';
-import {DynamicReportApp} from './view.js';
+import {DynamicReportApp} from './DynamicReportApp.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

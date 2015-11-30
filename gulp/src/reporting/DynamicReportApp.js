@@ -1,11 +1,10 @@
 import React, {PropTypes, Component} from 'react';
-import {
-    WizardPageReportingTypes,
-    WizardPageReportTypes,
-    WizardPageDataTypes,
-    WizardPagePresentationTypes,
-    WizardPageFilter,
-} from './wizard';
+import {ReportList} from './ReportList';
+import {WizardPageReportingTypes} from './wizard/WizardPageReportingTypes';
+import {WizardPageReportTypes} from './wizard/WizardPageReportTypes';
+import {WizardPageDataTypes} from './wizard/WizardPageDataTypes';
+import {WizardPagePresentationTypes} from './wizard/WizardPagePresentationTypes';
+import {WizardPageFilter} from './wizard/WizardPageFilter';
 
 // Props for this component come directly from the store state. (see main.js).
 export class DynamicReportApp extends Component {
@@ -151,7 +150,7 @@ export class DynamicReportApp extends Component {
         );
         break;
       default:
-        page = null;
+        page = '';
       }
     }
 
@@ -175,27 +174,3 @@ DynamicReportApp.propTypes = {
 };
 
 
-function ReportList(props) {
-  const reportData = props.reports.map(report => ({
-    id: report.id,
-    href: '/reports/view/dynamicdownload?id=' + report.id,
-  }));
-  const reportLinks = reportData.map(r =>
-    <li key={r.id}>
-      <a href={r.href}>Report id: {r.id}</a>
-    </li>
-  );
-
-  return (
-    <div>
-      <div className="sidebar">
-        <h2 className="top">Reports</h2>
-        {reportLinks}
-      </div>
-    </div>
-  );
-}
-
-ReportList.propTypes = {
-  reports: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
