@@ -3,7 +3,7 @@ from django.contrib import admin
 from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
 from mypartners.models import (Partner, Contact, CommonEmailDomain,
-                               OutreachEmailDomain)
+                               OutreachEmailDomain, OutreachEmailAddress)
 from mydashboard.admin import company_user_name
 
 
@@ -28,4 +28,5 @@ class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
 admin.site.register(Partner)
 admin.site.register(Contact)
 admin.site.register(CommonEmailDomain)
+admin.site.register(OutreachEmailAddress) #TODO: Remove this once NUO Module is live
 admin.site.register(OutreachEmailDomain, OutreachEmailDomainAdmin)
