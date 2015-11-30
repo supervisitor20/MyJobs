@@ -374,6 +374,7 @@ def dynamicoverview(request):
                               RequestContext(request))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
@@ -394,6 +395,7 @@ def reporting_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
@@ -417,6 +419,7 @@ def report_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
@@ -440,6 +443,7 @@ def data_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
@@ -467,6 +471,7 @@ def presentation_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
@@ -555,6 +560,7 @@ def run_dynamic_report(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['GET'])

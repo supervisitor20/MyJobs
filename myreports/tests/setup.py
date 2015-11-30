@@ -28,7 +28,8 @@ class MyReportsTestCase(TestCase):
     def setUp(self):
         settings.ROLES_ENABLED = False
         self.client = TestClient()
-        self.user = UserFactory(email='testuser@directemployers.org')
+        self.user = UserFactory(
+            email='testuser@directemployers.org', is_staff=True)
         self.user.set_password('aa')
         self.company = CompanyFactory(name='Test Company')
         self.partner = PartnerFactory(name='Test Partner', owner=self.company)
