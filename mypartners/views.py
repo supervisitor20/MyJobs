@@ -1366,51 +1366,9 @@ def api_get_nuo_inbox_list(request):
 @has_access('prm')
 def api_save_nuo_inbox(request):
     """
-    Attempts to save a non user outreach inbox. Returns error message if failed.
-    GET /prm/api/nonuseroutreach/inbox/save
+    stub for save api
     """
-    class EmailResponseObject:
-        def __init__(self):
-            self.success = True
-            self.form_message = ""
-            self.field_errors = None
-
-        def raise_error(self, form_message="Problem editing inbox. Please refresh page and try again", field_errors=None):
-            self.success = False
-            self.form_message = form_message
-            self.field_errors = field_errors
-            return self
-
-        def as_json(self):
-            return json.dumps(self)
-
-    if request.method != "POST":
-        raise Http404("Invalid method")
-    response_object = EmailResponseObject
-    company = get_company_or_404(request)
-    add_or_edit = request.POST.get("operation")
-    email_input = request.POST.get("email")
-    existing_object_pk = request.POST.get("pk", None)
-    if add_or_edit == "edit" and not existing_object_pk:
-        return HttpResponse(response_object.raise_error().as_json())
-
-    if add_or_edit == "edit":
-        inbox = OutreachEmailAddress.objects.filter(pk=existing_object_pk, company=company)
-    elif add_or_edit == "add":
-        inbox = OutreachEmailAddress()
-
-    if not inbox:
-        return HttpResponse(response_object.raise_error().as_json())
-
-    inbox.email = email_input
-    try:
-        inbox.clean_fields()
-    except ValidationError as ve:
-        return HttpResponse(response_object.raise_error(form_message="Validation Errors",
-                                                        field_errors=ve.message_dict).as_json())
-
-    inbox.save()
-    return HttpResponse(response_object.as_json)
+    pass
 
 
 
@@ -1419,14 +1377,10 @@ def api_save_nuo_inbox(request):
 @has_access('prm')
 def api_delete_nuo_inbox(request):
     """
-    Attempts to delete a non user outreach inbox. Returns error message if failed.
-    GET /prm/api/nonuseroutreach/inbox/delete
+    stub for delete api
     """
     pass
-    # company = get_company_or_404(request)
-    #
-    # inboxes = OutreachEmailAddress.objects.filter(company=company)
-    # return HttpResponse(serializers.serialize("json", inboxes, fields=('id', 'email')))
+
 
 
 @requires('read tag')
