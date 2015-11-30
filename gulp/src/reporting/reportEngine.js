@@ -72,7 +72,7 @@ export class ReportConfiguration {
     }
 
     setFilter(field, value) {
-      if (value === null || value === '') {
+      if (value === undefined || value === null || value === '') {
         delete this.simpleFilter[field];
       } else {
         this.simpleFilter[field] = value;
