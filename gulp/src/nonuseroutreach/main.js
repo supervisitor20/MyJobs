@@ -6,6 +6,8 @@ import {InboxManagement} from './nonuseroutreachEngine'
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+installPolyfills();
+
 const api = new Api(getCsrf())
 const inboxManager = new InboxManagement(api);
 

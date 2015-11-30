@@ -89,11 +89,11 @@ var EmailInput = React.createClass({
 // individual inbox loaded from DB, contains inbox textbox and control buttons
 var InboxRow = React.createClass({
   emailFieldChanged: function(value) {
-    var validation_object = validateEmailInput(value);
+    var validation_object = this.props.inboxManager.validateEmailInput(value);
     this.setState({
       current_email: value,
       validation_messages: validation_object.messages
-    })
+    });
     if (value != this.state.initial_email) {
       this.setState({buttons: [new ControlButton("Save", !validation_object.success, true), new ControlButton("Cancel")]});
     } else {
@@ -142,8 +142,8 @@ var InboxRow = React.createClass({
     }
   },
   render: function(){
-    var validation_messages = this.state.validation_messages.map((message) =>
-    <HelpText message={message} />
+    var validation_messages = this.state.validation_messages.map((message, i) =>
+    <HelpText message={message} key={i} />
     );
     return (
     <div className="clearfix product-card no-highlight">
@@ -172,19 +172,27 @@ var InboxList = React.createClass({
     this.loadInboxesFromApi();
   },
   loadInboxesFromApi: async function() {
-    const results = await $.get(this.props.source);
+    const results = await this.props.inboxManager.getExistingInboxes();
     this.setState({
-      inboxes: JSON.parse(results),
+      inboxes: results,
     });
   },
   render: function() {
     const {inboxes} = this.state;
+    if (inboxes.length === 0) {
+      return (<div></div>)
+    }
     return (
-      <div>
-        {inboxes.map((inbox_ob, i) =>
-              <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadFromApi={this.loadInboxesFromApi} />
-        )}
-      </div>
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Existing Inbox Management</h2>
+          </div>
+          <div className="partner-holder">
+            {inboxes.map((inbox_ob, i) =>
+                  <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadFromApi={this.loadInboxesFromApi} inboxManager={this.props.inboxManager} />
+            )}
+          </div>
+        </div>
     );
   }
 });
@@ -209,9 +217,17 @@ var AddInboxForm = React.createClass({
     };
   },
   emailFieldChanged: function(value) {
-    this.setState(this.props.inboxManager.emailFieldChanged())
+      let validation_object = this.props.inboxManager.validateEmailInput(value);
+      this.setState({
+        current_email: value,
+        validation_messages: validation_object.messages
+      });
+      if (validation_object.success) {
+        this.setState({add_disabled: false});
+      } else {
+        this.setState({add_disabled: true});
+      };
   },
-
   submitInbox: function() {
     // TODO: Submit API
   },
@@ -230,64 +246,30 @@ var AddInboxForm = React.createClass({
 });
 
 
-// menu link to inbox management app screen
-var InboxManagementButton = React.createClass({
-  handleClick: function() {
-    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
-    "have your employees send outreach emails"]);
-  },
-  render: function() {
-    return (
-      <Button onClick={this.handleClick}>Inbox Management</Button>
-    );
-  }
-});
-
-
-// menu link to overview of the entire nuo module
-var OverviewButton = React.createClass({
-  handleClick: function(event) {
-    this.props.changePage("Overview");
-  },
-  render: function() {
-    return (
-      <Button onClick={this.handleClick}>Overview</Button>
-    );
-  }
-});
-
-
 // inbox management app main page
 var InboxManagementPage = React.createClass({
   render: function() {
     return (
         <div>
-      <div className="card-wrapper">
-      <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Existing Inbox Management</h2>
-          </div>
-          <div className="partner-holder">
-            <InboxList inboxManager={this.props.inboxManager} />
-          </div>
-        </div>
-        </div>
-        </div>
-        <div className="card-wrapper">
-        <div className="row">
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Add New Inbox</h2>
-          </div>
-          <div className="partner-holder no-highlight">
-            <div className="product-card no-highlight clearfix">
-            <AddInboxForm inboxManager={this.props.inboxManager} />
+          <div className="card-wrapper">
+            <div className="row">
+              <InboxList inboxManager={this.props.inboxManager} />
             </div>
           </div>
-        </div>
-        </div>
-        </div>
+          <div className="card-wrapper">
+            <div className="row">
+              <div className="col-xs-12 ">
+                <div className="wrapper-header">
+                  <h2>Add New Inbox</h2>
+                </div>
+                <div className="partner-holder no-highlight">
+                  <div className="product-card no-highlight clearfix">
+                    <AddInboxForm inboxManager={this.props.inboxManager} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
     );
   }
@@ -336,12 +318,39 @@ var Content = React.createClass({
 });
 
 
+// menu link to inbox management app screen
+var InboxManagementButton = React.createClass({
+  handleClick: function() {
+    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
+    "have your employees send outreach emails"]);
+  },
+  render: function() {
+    return (
+      <Button onClick={this.handleClick}>Inbox Management</Button>
+    );
+  }
+});
+
+
+// menu link to overview of the entire nuo module
+var OverviewButton = React.createClass({
+  handleClick: function(event) {
+    this.props.changePage("Overview");
+  },
+  render: function() {
+    return (
+      <Button onClick={this.handleClick}>Overview</Button>
+    );
+  }
+});
+
+
 // navigation links
 var Menu = React.createClass({
   render: function() {
     var tips_header;
     if (this.props.tips && this.props.tips.length > 0) {
-      var tips = this.props.tips.map(tip => <p>{tip}</p>
+      var tips = this.props.tips.map((tip, i) => <p key={i}>{tip}</p>
       );
       tips_header = <h2>Tips</h2>;
     }
@@ -349,8 +358,8 @@ var Menu = React.createClass({
       <div className="col-xs-4">
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <OverviewButton changePage={this.state.changePage} />
-          <InboxManagementButton changePage={this.state.changePage} />
+          <OverviewButton changePage={this.props.changePage} />
+          <InboxManagementButton changePage={this.props.changePage} />
           {tips_header}
           {tips}
         </div>

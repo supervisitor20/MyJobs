@@ -34,42 +34,16 @@ export class Api {
         return response.json();
     }
 
-    objectToFormData(obj) {
-        // No good way around this:
-        if (hasFormData) {
-            var formData = new FormData();
-            Object.keys(obj).forEach(k => formData.append(k, obj[k]));
-            return formData;
-        } else {
-            return ancientSerialize(obj);
-        }
-
-    }
-
-    async postToNuoApi(url, data) {
-        var formData = this.objectToFormData(this.withCsrf(data));
-        var response = await fetch(url, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-            // No good way around this.
-            headers: hasFormData ? undefined : {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
-        return this.parseJSON(this.checkStatus(response));
-    }
-
     async getFromNuoApi(url) {
-        var response = await fetch(url, {
+        let response = await fetch(url, {
             method: 'GET',
             credentials: 'include',
         });
         return this.parseJSON(this.checkStatus(response));
     }
 
-    async loadExistingInboxes () {
-        var response = await this.getFromNuoApi("/prm/api/nonuseroutreach/inbox/list");
+    async getExistingInboxes() {
+        let response = await this.getFromNuoApi("/prm/api/nonuseroutreach/inbox/list");
         return response;
     }
 }
