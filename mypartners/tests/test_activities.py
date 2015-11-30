@@ -299,16 +299,6 @@ class TestViewLevelActivities(MyJobsBase):
 
         self.assertRequires("prm_report_records", "read communication record")
 
-    def test_manage_outreach_inboxes(self):
-        """
-        /prm/view/nonuseroutreach/inboxes requires "create contact",
-        "create partner", and "create communication record"
-        """
-
-        self.assertRequires(
-            "manage_outreach_inboxes", "create partner", "create contact",
-            "create communication record")
-
     def test_process_email(self):
         """
         /prm/email requires "create partner", "create contact", and
@@ -317,4 +307,13 @@ class TestViewLevelActivities(MyJobsBase):
 
         self.assertRequires(
             "process_email", "create partner", "create contact",
+            "create communication record")
+
+    def test_nuo_inbox_api(self):
+        """
+        GET /prm/api/nonuseroutreach/inbox/list
+        TODO: Change this to proper activities for NUO, not generic PRM activities
+        """
+        self.assertRequires(
+            "api_get_nuo_inbox_list", "create partner", "create contact",
             "create communication record")

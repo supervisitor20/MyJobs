@@ -16,7 +16,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
-from django.core.validators import ValidationError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -26,7 +25,6 @@ from django.utils.text import force_text
 from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.admin.views.decorators import staff_member_required
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
@@ -1347,7 +1345,7 @@ def nuo_main(request):
 
 
 #TODO: Add proper activities for the APIs
-@staff_member_required
+@restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def api_get_nuo_inbox_list(request):
@@ -1361,7 +1359,7 @@ def api_get_nuo_inbox_list(request):
     return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def api_save_nuo_inbox(request):
@@ -1371,8 +1369,7 @@ def api_save_nuo_inbox(request):
     pass
 
 
-
-@staff_member_required
+@restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def api_delete_nuo_inbox(request):
@@ -1380,7 +1377,6 @@ def api_delete_nuo_inbox(request):
     stub for delete api
     """
     pass
-
 
 
 @requires('read tag')
