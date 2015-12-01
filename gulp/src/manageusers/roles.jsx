@@ -2,15 +2,7 @@ import React from 'react';
 import RolesList from './rolesList.jsx';
 import {Link} from 'react-router';
 
-const Roles = React.createClass({
-  propTypes: {
-    rolesTableRows: React.PropTypes.array.isRequired,
-  },
-  getDefaultProps: function() {
-    return {
-      rolesTableRows: [],
-    };
-  },
+class Roles extends React.Component {
   render() {
     return (
       <div className="row">
@@ -33,7 +25,15 @@ const Roles = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
+
+Roles.propTypes = {
+  rolesTableRows: React.PropTypes.array.isRequired,
+};
+
+Roles.defaultProps = {
+  rolesTableRows: [],
+};
 
 export default Roles;

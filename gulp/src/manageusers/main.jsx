@@ -18,108 +18,102 @@ import AssociatedActivitiesList from './AssociatedActivitiesList.jsx';
 
 import Status from './status.jsx';
 
-const App = React.createClass({
-  propTypes: {
-    children: React.PropTypes.object.isRequired,
-  },
-  getInitialState() {
-    return {
+export class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       rolesTableRows: [],
       activitiesTableRows: [],
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
     };
-  },
+  }
   componentDidMount() {
     this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
-  },
+  }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
       this.callActivitiesAPI();
       this.callRolesAPI();
       this.callUsersAPI();
     }
-  },
+  }
   callActivitiesAPI() {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function(results) {
       results = JSON.parse(results);
-      if (this.isMounted()) {
-        const activitiesTableRows = [];
-        for (let i = 0; i < results.length; i++) {
-          activitiesTableRows.push(
-            <tr key={results[i].pk}>
-              <td>{results[i].fields.name}</td>
-              <td>{results[i].fields.description}</td>
-            </tr>
-          );
-        }
-        this.setState({
-          activitiesTableRows: activitiesTableRows,
-        });
+
+      const activitiesTableRows = [];
+      for (let i = 0; i < results.length; i++) {
+        activitiesTableRows.push(
+          <tr key={results[i].pk}>
+            <td>{results[i].fields.name}</td>
+            <td>{results[i].fields.description}</td>
+          </tr>
+        );
       }
+      this.setState({
+        activitiesTableRows: activitiesTableRows,
+      });
+
     }.bind(this));
-  },
+  }
   callRolesAPI() {
     // Get roles once, but reload if needed
     $.get('/manage-users/api/roles/', function(results) {
-      if (this.isMounted()) {
-        const rolesTableRows = [];
-        for (const key in results) {
-          results[key].activities = JSON.parse(results[key].activities.assigned);
-          results[key].users.assigned = JSON.parse(results[key].users.assigned);
-          rolesTableRows.push(
-            <tr key={results[key].role.id}>
-              <td data-title="Role">{results[key].role.name}</td>
-              <td data-title="Associated Activities">
-                <AssociatedActivitiesList activities={results[key].activities}/>
-              </td>
-              <td data-title="Associated Users">
-                <AssociatedUsersList users={results[key].users.assigned}/>
-              </td>
-              <td data-title="Edit">
-               <Link to={`/role/${results[key].role.id}`} query={{ action: 'Edit' }} className="btn">Edit</Link>
-              </td>
-            </tr>
-          );
-        }
-        this.setState({
-          rolesTableRows: rolesTableRows,
-        });
+      const rolesTableRows = [];
+      for (const key in results) {
+        results[key].activities = JSON.parse(results[key].activities.assigned);
+        results[key].users.assigned = JSON.parse(results[key].users.assigned);
+        rolesTableRows.push(
+          <tr key={results[key].role.id}>
+            <td data-title="Role">{results[key].role.name}</td>
+            <td data-title="Associated Activities">
+              <AssociatedActivitiesList activities={results[key].activities}/>
+            </td>
+            <td data-title="Associated Users">
+              <AssociatedUsersList users={results[key].users.assigned}/>
+            </td>
+            <td data-title="Edit">
+             <Link to={`/role/${results[key].role.id}`} query={{ action: 'Edit' }} className="btn">Edit</Link>
+            </td>
+          </tr>
+        );
       }
+      this.setState({
+        rolesTableRows: rolesTableRows,
+      });
     }.bind(this));
-  },
+  }
   callUsersAPI() {
     // Get users once, but reload if needed
     $.get('/manage-users/api/users/', function(results) {
-      if (this.isMounted()) {
-        const usersTableRows = [];
-        for (const key in results) {
-          results[key].roles = JSON.parse(results[key].roles);
-          usersTableRows.push(
-            <tr key={key}>
-              <td data-title="User Email">{results[key].email}</td>
-              <td data-title="Associated Roles">
-                <AssociatedRolesList roles={results[key].roles}/>
-              </td>
-              <td data-title="Status">
-                <Status status={results[key].status}/>
-              </td>
-              <td data-title="Edit">
-                <Link to={`/user/${key}`} action="Edit" query={{ action: 'Edit'}} className="btn">Edit</Link>
-              </td>
-            </tr>
-          );
-        }
-        this.setState({
-          usersTableRows: usersTableRows,
-        });
+      const usersTableRows = [];
+      for (const key in results) {
+        results[key].roles = JSON.parse(results[key].roles);
+        usersTableRows.push(
+          <tr key={key}>
+            <td data-title="User Email">{results[key].email}</td>
+            <td data-title="Associated Roles">
+              <AssociatedRolesList roles={results[key].roles}/>
+            </td>
+            <td data-title="Status">
+              <Status status={results[key].status}/>
+            </td>
+            <td data-title="Edit">
+              <Link to={`/user/${key}`} action="Edit" query={{ action: 'Edit'}} className="btn">Edit</Link>
+            </td>
+          </tr>
+        );
       }
+      this.setState({
+        usersTableRows: usersTableRows,
+      });
     }.bind(this));
-  },
+  }
   render() {
     return (
       <div>
@@ -168,8 +162,12 @@ const App = React.createClass({
         <div className="clearfix"></div>
       </div>
     );
-  },
-});
+  }
+}
+
+App.propTypes = {
+  children: React.PropTypes.object.isRequired,
+};
 
 render((
   <Router>

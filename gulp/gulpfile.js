@@ -115,7 +115,7 @@ gulp.task('manageusers', function() {
         paths: ['./src'],
     })
     .external(vendor_libs)
-    .add('src/manageusers/manageusers.jsx')
+    .add('src/manageusers/main.jsx')
     .transform(babelify)
     .bundle()
     .on('error', function(error, meta) {
