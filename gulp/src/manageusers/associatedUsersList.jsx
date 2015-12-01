@@ -1,9 +1,6 @@
 import React from 'react';
 
-const AssociatedUsersList = React.createClass({
-  propTypes: {
-    users: React.PropTypes.array.isRequired,
-  },
+class AssociatedUsersList extends React.Component {
   render() {
     const associatedUsersList = this.props.users.map(function(user, index) {
       return (
@@ -17,7 +14,11 @@ const AssociatedUsersList = React.createClass({
         {associatedUsersList}
       </ul>
     );
-  },
-});
+  }
+}
+
+AssociatedUsersList.propTypes = {
+  users: React.PropTypes.array.isRequired,
+}
 
 export default AssociatedUsersList;

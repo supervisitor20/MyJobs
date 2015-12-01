@@ -1,16 +1,13 @@
 import React from 'react';
 
-const HelpText = React.createClass({
-  propTypes: {
-    message: React.PropTypes.string.isRequired,
-  },
+class HelpText extends React.Component {
   render() {
     return (
       <div className="input-error">
         {this.props.message}
       </div>
     );
-  },
-});
+  }
+}
 
 export default HelpText;

@@ -1,9 +1,6 @@
 import React from 'react';
 
-const AssociatedRolesList = React.createClass({
-  propTypes: {
-    roles: React.PropTypes.array.isRequired,
-  },
+class AssociatedRolesList extends React.Component {
   render() {
     const associatedRolesList = this.props.roles.map(function createAssociatedRolesList(role, index) {
       return (
@@ -17,7 +14,11 @@ const AssociatedRolesList = React.createClass({
         {associatedRolesList}
       </ul>
     );
-  },
-});
+  }
+}
+
+AssociatedRolesList.propTypes = {
+  roles: React.PropTypes.array.isRequired,
+}
 
 export default AssociatedRolesList;

@@ -1,7 +1,6 @@
 import React from 'react';
 
-
-const Overview = React.createClass({
+class Overview extends React.Component {
   render() {
     return (
       <div className="row">
@@ -16,7 +15,7 @@ const Overview = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
 
 export default Overview;

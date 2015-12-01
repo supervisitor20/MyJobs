@@ -1,9 +1,6 @@
 import React from 'react';
 
-const UsersList = React.createClass({
-  propTypes: {
-    usersTableRows: React.PropTypes.array.isRequired,
-  },
+class UsersList extends React.Component {
   render() {
     return (
       <div>
@@ -22,7 +19,11 @@ const UsersList = React.createClass({
         </table>
       </div>
     );
-  },
-});
+  }
+}
+
+UsersList.propTypes = {
+  usersTableRows: React.PropTypes.array.isRequired,
+}
 
 export default UsersList;

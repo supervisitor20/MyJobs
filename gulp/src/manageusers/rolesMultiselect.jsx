@@ -8,34 +8,35 @@ const bootstrapClasses = {
   buttonActive: 'btn btn btn-block btn-primary',
 };
 
-const RolesMultiselect = React.createClass({
-  propTypes: {
-    assignedRoles: React.PropTypes.array.isRequired,
-    availableRoles: React.PropTypes.array.isRequired,
-  },
-  getInitialState() {
-    return {
+class RolesMultiselect extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       assignedRoles: this.props.assignedRoles,
       availableRoles: this.props.availableRoles,
     };
-  },
+    // React components using ES6 no longer autobind 'this' to non React methods
+    // Thank you: https://github.com/goatslacker/alt/issues/283
+    this._onSelect = this._onSelect.bind(this);
+    this._onDeselect = this._onDeselect.bind(this);
+  }
   componentWillReceiveProps(nextProps) {
     this.setState({
       availableRoles: nextProps.availableRoles,
       assignedRoles: nextProps.assignedRoles,
     });
-  },
+  }
   _onSelect(assignedRoles) {
     assignedRoles.sort((a, b) => a.id - b.id);
     this.setState({assignedRoles});
-  },
+  }
   _onDeselect(deselectedOptions) {
     const assignedRoles = this.state.assignedRoles.slice();
     deselectedOptions.forEach(option => {
       assignedRoles.splice(assignedRoles.indexOf(option), 1);
     });
     this.setState({assignedRoles});
-  },
+  }
   render() {
     const {assignedRoles, availableRoles} = this.state;
 
@@ -71,7 +72,12 @@ const RolesMultiselect = React.createClass({
           </div>
         </div>
     );
-  },
-});
+  }
+}
+
+RolesMultiselect.propTypes = {
+  assignedRoles: React.PropTypes.array.isRequired,
+  availableRoles: React.PropTypes.array.isRequired,
+}
 
 export default RolesMultiselect;

@@ -1,9 +1,6 @@
 import React from 'react';
 
-const ActivitiesList = React.createClass({
-  propTypes: {
-    activitiesTableRows: React.PropTypes.array.isRequired,
-  },
+class ActivitiesList extends React.Component {
   render() {
     return (
       <div>
@@ -20,7 +17,11 @@ const ActivitiesList = React.createClass({
         </table>
       </div>
     );
-  },
-});
+  }
+}
+
+ActivitiesList.propTypes = {
+  activitiesTableRows: React.PropTypes.array.isRequired,
+}
 
 export default ActivitiesList;

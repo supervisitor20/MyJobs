@@ -8,34 +8,34 @@ const bootstrapClasses = {
   buttonActive: 'btn btn btn-block btn-primary',
 };
 
-const ActivitiesMultiselect = React.createClass({
-  propTypes: {
-    availableActivities: React.PropTypes.array.isRequired,
-    assignedActivities: React.PropTypes.array.isRequired,
-  },
-  getInitialState() {
-    return {
+class ActivitiesMultiselect extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       availableActivities: this.props.availableActivities,
       assignedActivities: this.props.assignedActivities,
     };
-  },
+    this._onSelect = this._onSelect.bind(this);
+    this._onDeselect = this._onDeselect.bind(this);
+    this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
+  }
   componentWillReceiveProps(nextProps) {
     this.setState({
       availableActivities: nextProps.availableActivities,
       assignedActivities: nextProps.assignedActivities,
     });
-  },
+  }
   _onSelect(assignedActivities) {
     assignedActivities.sort((a, b) => a.id - b.id);
     this.setState({assignedActivities});
-  },
+  }
   _onDeselect(deselectedOptions) {
     const assignedActivities = this.state.assignedActivities.slice();
     deselectedOptions.forEach(option => {
       assignedActivities.splice(assignedActivities.indexOf(option), 1);
     });
     this.setState({assignedActivities});
-  },
+  }
   render() {
     const {assignedActivities, availableActivities} = this.state;
 
@@ -72,7 +72,12 @@ const ActivitiesMultiselect = React.createClass({
           </div>
         </div>
     );
-  },
-});
+  }
+}
+
+ActivitiesMultiselect.propTypes = {
+  availableActivities: React.PropTypes.array.isRequired,
+  assignedActivities: React.PropTypes.array.isRequired,
+}
 
 export default ActivitiesMultiselect;

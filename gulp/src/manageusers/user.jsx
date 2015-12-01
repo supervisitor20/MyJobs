@@ -8,16 +8,10 @@ import {Link} from 'react-router';
 import {validateEmail} from 'util/validateEmail';
 import {getCsrf} from 'util/cookie';
 
-const User = React.createClass({
-  propTypes: {
-    location: React.PropTypes.object.isRequired,
-    params: React.PropTypes.object.isRequired,
-    callUsersAPI: React.PropTypes.func,
-    history: React.PropTypes.object.isRequired,
-  },
-  getInitialState() {
-    // TODO Refactor to use basic Actions and the Dispatchers
-    return {
+class User extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       apiResponseHelp: '',
       userEmail: '',
       userEmailHelp: '',
@@ -26,68 +20,69 @@ const User = React.createClass({
       assignedRoles: [],
       api_response_message: '',
     };
-  },
+    // React components using ES6 no longer autobind 'this' to non React methods
+    // Thank you: https://github.com/goatslacker/alt/issues/283
+    this.onTextChange = this.onTextChange.bind(this);
+    this.handleSaveUserClick = this.handleSaveUserClick.bind(this);
+    this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
+  }
   componentDidMount() {
     const action = this.props.location.query.action;
 
     if (action === 'Edit') {
       $.get('/manage-users/api/users/' + this.props.params.userId, function getUser(results) {
-        if (this.isMounted()) {
-          const userObject = results[this.props.params.userId];
+        const userObject = results[this.props.params.userId];
 
-          const userEmail = userObject.email;
+        const userEmail = userObject.email;
 
-          const availableRolesUnformatted = JSON.parse(userObject.roles.available);
-          const availableRoles = availableRolesUnformatted.map(function(obj) {
-            const role = {};
-            role.id = obj.pk;
-            role.name = obj.fields.name;
-            return role;
-          });
+        const availableRolesUnformatted = JSON.parse(userObject.roles.available);
+        const availableRoles = availableRolesUnformatted.map(function(obj) {
+          const role = {};
+          role.id = obj.pk;
+          role.name = obj.fields.name;
+          return role;
+        });
 
-          const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
-          const assignedRoles = assignedRolesUnformatted.map(function(obj) {
-            const role = {};
-            role.id = obj.pk;
-            role.name = obj.fields.name;
-            return role;
-          });
+        const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
+        const assignedRoles = assignedRolesUnformatted.map(function(obj) {
+          const role = {};
+          role.id = obj.pk;
+          role.name = obj.fields.name;
+          return role;
+        });
 
-          this.setState({
-            userEmail: userEmail,
-            userEmailHelp: '',
-            roleMultiselectHelp: '',
-            apiResponseHelp: '',
-            availableRoles: availableRoles,
-            assignedRoles: assignedRoles,
-          });
-        }
+        this.setState({
+          userEmail: userEmail,
+          userEmailHelp: '',
+          roleMultiselectHelp: '',
+          apiResponseHelp: '',
+          availableRoles: availableRoles,
+          assignedRoles: assignedRoles,
+        });
       }.bind(this));
     } else {
       $.get('/manage-users/api/roles/', function addUser(results) {
-        if (this.isMounted()) {
-          const availableRoles = [];
-          for (const roleId in results){
-            availableRoles.push(
-              {
-                'id': roleId,
-                'name': results[roleId].role.name,
-              }
-            );
-          }
-
-          this.setState({
-            userEmail: '',
-            userEmailHelp: '',
-            roleMultiselectHelp: '',
-            apiResponseHelp: '',
-            availableRoles: availableRoles,
-            assignedRoles: [],
-          });
+        const availableRoles = [];
+        for (const roleId in results){
+          availableRoles.push(
+            {
+              'id': roleId,
+              'name': results[roleId].role.name,
+            }
+          );
         }
+
+        this.setState({
+          userEmail: '',
+          userEmailHelp: '',
+          roleMultiselectHelp: '',
+          apiResponseHelp: '',
+          availableRoles: availableRoles,
+          assignedRoles: [],
+        });
       }.bind(this));
     }
-  },
+  }
   onTextChange(event) {
     this.state.userEmail = event.target.value;
 
@@ -111,11 +106,10 @@ const User = React.createClass({
       });
       return;
     }
-  },
+  }
   handleSaveUserClick() {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
-
     const userId = this.props.params.userId;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
@@ -193,7 +187,7 @@ const User = React.createClass({
         });
       }
     }.bind(this));
-  },
+  }
   handleDeleteUserClick() {
     const history = this.props.history;
     // Temporary until I replace $.ajax jQuery with vanilla JS ES6 arrow function
@@ -226,7 +220,7 @@ const User = React.createClass({
           });
         }
       }.bind(this));
-  },
+  }
   render() {
     let deleteUserButton = '';
 
@@ -292,8 +286,15 @@ const User = React.createClass({
           </div>
         </div>
       </div>
-    );
-  },
-});
+    )
+  }
+}
+
+User.propTypes = {
+  location: React.PropTypes.object.isRequired,
+  params: React.PropTypes.object.isRequired,
+  callUsersAPI: React.PropTypes.func,
+  history: React.PropTypes.object.isRequired,
+}
 
 export default User;

@@ -1,9 +1,6 @@
 import React from 'react';
 
-const AssociatedActivitiesList = React.createClass({
-  propTypes: {
-    activities: React.PropTypes.array.isRequired,
-  },
+class AssociatedActivitiesList extends React.Component {
   render() {
     const associatedActivitiesList = this.props.activities.map(function(activity, index) {
       return (
@@ -17,7 +14,11 @@ const AssociatedActivitiesList = React.createClass({
         {associatedActivitiesList}
       </ul>
     );
-  },
-});
+  }
+}
+
+AssociatedActivitiesList.propTypes = {
+  activities: React.PropTypes.array.isRequired,
+};
 
 export default AssociatedActivitiesList;

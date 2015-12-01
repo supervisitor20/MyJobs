@@ -28,6 +28,9 @@ export class App extends React.Component {
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
     };
+    this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
+    this.callRolesAPI = this.callRolesAPI.bind(this);
+    this.callUsersAPI = this.callUsersAPI.bind(this);
   }
   componentDidMount() {
     this.callActivitiesAPI();

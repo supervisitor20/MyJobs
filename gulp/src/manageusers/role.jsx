@@ -8,15 +8,10 @@ import HelpText from './helpText.jsx';
 import ActivitiesMultiselect from './activitiesMultiselect.jsx';
 import UsersMultiselect from './usersMultiselect.jsx';
 
-const Role = React.createClass({
-  propTypes: {
-    location: React.PropTypes.object.isRequired,
-    params: React.PropTypes.object.isRequired,
-    callRolesAPI: React.PropTypes.func,
-    history: React.PropTypes.object.isRequired,
-  },
-  getInitialState() {
-    return {
+class Role extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       apiResponseHelp: '',
       activitiesMultiselectHelp: '',
       roleName: '',
@@ -26,95 +21,94 @@ const Role = React.createClass({
       availableUsers: [],
       assignedUsers: [],
     };
-  },
+    this.onTextChange = this.onTextChange.bind(this);
+    this.handleSaveRoleClick = this.handleSaveRoleClick.bind(this);
+    this.handleDeleteRoleClick = this.handleDeleteRoleClick.bind(this);
+  }
   componentDidMount() {
     const action = this.props.location.query.action;
 
     if(action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId, function getRole(results) {
-        if (this.isMounted()) {
-          const roleObject = results[this.props.params.roleId];
+        const roleObject = results[this.props.params.roleId];
 
-          const roleName = roleObject.role.name;
+        const roleName = roleObject.role.name;
 
-          const availableUsersUnformatted = JSON.parse(roleObject.users.available);
-          const availableUsers = availableUsersUnformatted.map(function(obj) {
-            const user = {};
-            user.id = obj.pk;
-            user.name = obj.fields.email;
-            return user;
-          });
+        const availableUsersUnformatted = JSON.parse(roleObject.users.available);
+        const availableUsers = availableUsersUnformatted.map(function(obj) {
+          const user = {};
+          user.id = obj.pk;
+          user.name = obj.fields.email;
+          return user;
+        });
 
-          const assignedUsersUnformatted = JSON.parse(roleObject.users.assigned);
-          const assignedUsers = assignedUsersUnformatted.map(function(obj) {
-            const user = {};
-            user.id = obj.pk;
-            user.name = obj.fields.email;
-            return user;
-          });
+        const assignedUsersUnformatted = JSON.parse(roleObject.users.assigned);
+        const assignedUsers = assignedUsersUnformatted.map(function(obj) {
+          const user = {};
+          user.id = obj.pk;
+          user.name = obj.fields.email;
+          return user;
+        });
 
-          const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
-          const availableActivities = availableActivitiesUnformatted.map(function(obj) {
-            const activity = {};
-            activity.id = obj.pk;
-            activity.name = obj.fields.name;
-            return activity;
-          });
+        const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
+        const availableActivities = availableActivitiesUnformatted.map(function(obj) {
+          const activity = {};
+          activity.id = obj.pk;
+          activity.name = obj.fields.name;
+          return activity;
+        });
 
-          const assignedActivitiesUnformatted = JSON.parse(roleObject.activities.assigned);
-          const assignedActivities = assignedActivitiesUnformatted.map(function(obj) {
-            const activity = {};
-            activity.id = obj.pk;
-            activity.name = obj.fields.name;
-            return activity;
-          });
+        const assignedActivitiesUnformatted = JSON.parse(roleObject.activities.assigned);
+        const assignedActivities = assignedActivitiesUnformatted.map(function(obj) {
+          const activity = {};
+          activity.id = obj.pk;
+          activity.name = obj.fields.name;
+          return activity;
+        });
 
-          this.setState({
-            apiResponseHelp: '',
-            roleName: roleName,
-            availableActivities: availableActivities,
-            assignedActivities: assignedActivities,
-            availableUsers: availableUsers,
-            assignedUsers: assignedUsers,
-          });
-        }
+        this.setState({
+          apiResponseHelp: '',
+          roleName: roleName,
+          availableActivities: availableActivities,
+          assignedActivities: assignedActivities,
+          availableUsers: availableUsers,
+          assignedUsers: assignedUsers,
+        });
       }.bind(this));
     } else {
       $.get('/manage-users/api/roles/', function addRole(results) {
-        if (this.isMounted()) {
-          // Objects in results don't have predictable keys
-          // It doesn't matter which one we get
-          // Therefore get the first one with a loop
-          let roleObject = {};
-          for (const key in results) {
-            roleObject = results[key];
-            break;
-          }
-
-          const availableUsersUnformatted = JSON.parse(roleObject.users.available);
-          const availableUsers = availableUsersUnformatted.map(function(obj) {
-            const user = {};
-            user.id = obj.pk;
-            user.name = obj.fields.email;
-            return user;
-          });
-
-          const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
-          const availableActivities = availableActivitiesUnformatted.map(function(obj) {
-            const activity = {};
-            activity.id = obj.pk;
-            activity.name = obj.fields.name;
-            return activity;
-          });
-          this.setState({
-            apiResponseHelp: '',
-            availableActivities: availableActivities,
-            availableUsers: availableUsers,
-          });
+        // Objects in results don't have predictable keys
+        // It doesn't matter which one we get
+        // Therefore get the first one with a loop
+        let roleObject = {};
+        for (const key in results) {
+          roleObject = results[key];
+          break;
         }
+
+        const availableUsersUnformatted = JSON.parse(roleObject.users.available);
+        const availableUsers = availableUsersUnformatted.map(function(obj) {
+          const user = {};
+          user.id = obj.pk;
+          user.name = obj.fields.email;
+          return user;
+        });
+
+        const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
+        const availableActivities = availableActivitiesUnformatted.map(function(obj) {
+          const activity = {};
+          activity.id = obj.pk;
+          activity.name = obj.fields.name;
+          return activity;
+        });
+        this.setState({
+          apiResponseHelp: '',
+          availableActivities: availableActivities,
+          availableUsers: availableUsers,
+        });
       }.bind(this));
     }
-  },
+  }
   onTextChange(event) {
     this.state.roleName = event.target.value;
 
@@ -130,7 +124,7 @@ const Role = React.createClass({
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
     });
-  },
+  }
   handleSaveRoleClick() {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
@@ -237,7 +231,7 @@ const Role = React.createClass({
         });
       }
     }.bind(this));
-  },
+  }
   handleDeleteRoleClick() {
     const history = this.props.history;
     // Temporary until I replace $.ajax jQuery with vanilla JS ES6 arrow function
@@ -270,8 +264,8 @@ const Role = React.createClass({
         });
       }
     }.bind(this));
-  },
-  render() {
+  }
+  render(){
     let action = this.props.location.query.action;
 
     let deleteRoleButton = '';
@@ -337,7 +331,14 @@ const Role = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
+
+Role.propTypes = {
+  location: React.PropTypes.object.isRequired,
+  params: React.PropTypes.object.isRequired,
+  callRolesAPI: React.PropTypes.func,
+  history: React.PropTypes.object.isRequired,
+}
 
 export default Role;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Status = React.createClass({
+class Status extends React.Component {
   render() {
     let button = '';
     if (this.props.status === true) {
@@ -14,7 +14,7 @@ const Status = React.createClass({
         {button}
       </span>
     );
-  },
-});
+  }
+}
 
 export default Status;

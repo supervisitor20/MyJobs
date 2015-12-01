@@ -1,9 +1,6 @@
 import React from 'react';
 
-const RolesList = React.createClass({
-  propTypes: {
-    rolesTableRows: React.PropTypes.array.isRequired,
-  },
+class RolesList extends React.Component {
   render() {
     return (
       <div>
@@ -22,7 +19,11 @@ const RolesList = React.createClass({
         </table>
       </div>
     );
-  },
-});
+  }
+}
+
+RolesList.propTypes = {
+  rolesTableRows: React.PropTypes.array.isRequired,
+}
 
 export default RolesList;

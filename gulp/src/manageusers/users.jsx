@@ -2,15 +2,7 @@ import React from 'react';
 import UsersList from './usersList.jsx';
 import AddUserButton from './addUserButton.jsx';
 
-const Users = React.createClass({
-  propTypes: {
-    usersTableRows: React.PropTypes.array.isRequired,
-  },
-  getDefaultProps: function() {
-    return {
-      usersTableRows: [],
-    };
-  },
+class Users extends React.Component {
   render() {
     return (
       <div className="row">
@@ -33,7 +25,15 @@ const Users = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
+
+Users.propTypes = {
+  usersTableRows: React.PropTypes.array.isRequired,
+}
+
+Users.defaultProps = {
+  usersTableRows: [],
+}
 
 export default Users;

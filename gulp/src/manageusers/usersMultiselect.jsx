@@ -8,37 +8,35 @@ const bootstrapClasses = {
   buttonActive: 'btn btn btn-block btn-primary',
 };
 
-const UsersMultiselect = React.createClass({
-  propTypes: {
-    assignedUsers: React.PropTypes.array.isRequired,
-    availableUsers: React.PropTypes.array.isRequired,
-  },
-  getInitialState() {
-    return {
-      assignedUsers: this.props.assignedUsers,
-      availableUsers: this.props.availableUsers,
-    };
-  },
+class UsersMultiselect extends React.Component {
   componentWillReceiveProps(nextProps) {
     this.setState({
       availableUsers: nextProps.availableUsers,
       assignedUsers: nextProps.assignedUsers,
     });
-  },
+    this._onSelect = this._onSelect.bind(this);
+    this._onDeselect = this._onDeselect.bind(this);
+  }
   _onSelect(assignedUsers) {
     assignedUsers.sort((a, b) => a.id - b.id);
     this.setState({assignedUsers});
-  },
+  }
   _onDeselect(deselectedOptions) {
     const assignedUsers = this.state.assignedUsers.slice();
     deselectedOptions.forEach(option => {
       assignedUsers.splice(assignedUsers.indexOf(option), 1);
     });
     this.setState({assignedUsers});
-  },
+  }
+  constructor(props) {
+    super(props);
+    this.state = {
+      assignedUsers: this.props.assignedUsers,
+      availableUsers: this.props.availableUsers,
+    };
+  }
   render() {
     const {assignedUsers, availableUsers} = this.state;
-
     return (
         <div className="row">
           <div className="col-xs-6">
@@ -71,7 +69,12 @@ const UsersMultiselect = React.createClass({
           </div>
         </div>
     );
-  },
-});
+  }
+}
+
+UsersMultiselect.propTypes = {
+  assignedUsers: React.PropTypes.array.isRequired,
+  availableUsers: React.PropTypes.array.isRequired,
+}
 
 export default UsersMultiselect;
