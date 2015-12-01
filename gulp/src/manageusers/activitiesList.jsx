@@ -22,6 +22,6 @@ class ActivitiesList extends React.Component {
 
 ActivitiesList.propTypes = {
   activitiesTableRows: React.PropTypes.array.isRequired,
-}
+};
 
 export default ActivitiesList;

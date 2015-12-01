@@ -78,6 +78,6 @@ class RolesMultiselect extends React.Component {
 RolesMultiselect.propTypes = {
   assignedRoles: React.PropTypes.array.isRequired,
   availableRoles: React.PropTypes.array.isRequired,
-}
+};
 
 export default RolesMultiselect;

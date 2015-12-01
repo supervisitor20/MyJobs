@@ -24,6 +24,6 @@ class UsersList extends React.Component {
 
 UsersList.propTypes = {
   usersTableRows: React.PropTypes.array.isRequired,
-}
+};
 
 export default UsersList;

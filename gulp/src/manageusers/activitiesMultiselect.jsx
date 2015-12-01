@@ -77,6 +77,6 @@ class ActivitiesMultiselect extends React.Component {
 ActivitiesMultiselect.propTypes = {
   availableActivities: React.PropTypes.array.isRequired,
   assignedActivities: React.PropTypes.array.isRequired,
-}
+};
 
 export default ActivitiesMultiselect;

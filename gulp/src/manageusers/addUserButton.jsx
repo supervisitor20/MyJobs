@@ -5,7 +5,7 @@ class AddUserButton extends React.Component {
   render() {
     return (
       <Link to="user/add" query={{ action: 'Add' }} className="primary pull-right btn btn-default">Add User</Link>
-    )
+    );
   }
 }
 

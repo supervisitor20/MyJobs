@@ -2,7 +2,7 @@ import React from 'react';
 
 class AssociatedActivitiesList extends React.Component {
   render() {
-    const associatedActivitiesList = this.props.activities.map(function(activity, index) {
+    const associatedActivitiesList = this.props.activities.map( (activity, index) => {
       return (
         <li key={index}>
           {activity.fields.name}

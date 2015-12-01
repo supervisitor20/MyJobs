@@ -36,7 +36,7 @@ class User extends React.Component {
         const userEmail = userObject.email;
 
         const availableRolesUnformatted = JSON.parse(userObject.roles.available);
-        const availableRoles = availableRolesUnformatted.map(function(obj) {
+        const availableRoles = availableRolesUnformatted.map( obj => {
           const role = {};
           role.id = obj.pk;
           role.name = obj.fields.name;
@@ -44,7 +44,7 @@ class User extends React.Component {
         });
 
         const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
-        const assignedRoles = assignedRolesUnformatted.map(function(obj) {
+        const assignedRoles = assignedRolesUnformatted.map( obj => {
           const role = {};
           role.id = obj.pk;
           role.name = obj.fields.name;
@@ -63,7 +63,7 @@ class User extends React.Component {
     } else {
       $.get('/manage-users/api/roles/', function addUser(results) {
         const availableRoles = [];
-        for (const roleId in results){
+        for (const roleId in results) {
           availableRoles.push(
             {
               'id': roleId,
@@ -95,7 +95,6 @@ class User extends React.Component {
         availableRoles: this.refs.roles.state.availableRoles,
         assignedRoles: this.refs.roles.state.assignedRoles,
       });
-      return;
     } else {
       this.setState({
         userEmail: this.state.userEmail,
@@ -104,7 +103,6 @@ class User extends React.Component {
         availableRoles: this.refs.roles.state.availableRoles,
         assignedRoles: this.refs.roles.state.assignedRoles,
       });
-      return;
     }
   }
   handleSaveUserClick() {
@@ -126,7 +124,7 @@ class User extends React.Component {
       return;
     }
 
-    if (assignedRoles.length < 1){
+    if (assignedRoles.length < 1) {
       this.setState({
         userEmailHelp: '',
         roleMultiselectHelp: 'Each user must be assigned to at least one role.',
@@ -143,8 +141,8 @@ class User extends React.Component {
     });
 
     // Format properly
-    assignedRoles = assignedRoles.map(function(obj) {
-       return obj.name;
+    assignedRoles = assignedRoles.map( obj => {
+      return obj.name;
     });
 
     // Determine URL based on action
@@ -165,13 +163,12 @@ class User extends React.Component {
 
     // Submit to server
     $.post(url, dataToSend, function submitToServer(response) {
-      if ( response.success === 'true' ){
+      if ( response.success === 'true' ) {
         // Reload API
         this.props.callUsersAPI();
         // Redirect user
         this.props.history.pushState(null, '/users');
-      }
-      else if ( response.success === 'false' ){
+      } else if ( response.success === 'false' ) {
         this.setState({
           apiResponseHelp: response.message,
           userEmail: this.state.userEmail,
@@ -181,7 +178,7 @@ class User extends React.Component {
       }
     }.bind(this))
     .fail( function(xhr) {
-      if (xhr.status === 403){
+      if (xhr.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save user. Insufficient privileges.',
         });
@@ -286,7 +283,7 @@ class User extends React.Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
@@ -295,6 +292,6 @@ User.propTypes = {
   params: React.PropTypes.object.isRequired,
   callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
-}
+};
 
 export default User;

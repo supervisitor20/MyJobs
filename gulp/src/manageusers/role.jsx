@@ -28,14 +28,14 @@ class Role extends React.Component {
   componentDidMount() {
     const action = this.props.location.query.action;
 
-    if(action === 'Edit') {
+    if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId, function getRole(results) {
         const roleObject = results[this.props.params.roleId];
 
         const roleName = roleObject.role.name;
 
         const availableUsersUnformatted = JSON.parse(roleObject.users.available);
-        const availableUsers = availableUsersUnformatted.map(function(obj) {
+        const availableUsers = availableUsersUnformatted.map( obj => {
           const user = {};
           user.id = obj.pk;
           user.name = obj.fields.email;
@@ -43,7 +43,7 @@ class Role extends React.Component {
         });
 
         const assignedUsersUnformatted = JSON.parse(roleObject.users.assigned);
-        const assignedUsers = assignedUsersUnformatted.map(function(obj) {
+        const assignedUsers = assignedUsersUnformatted.map( obj => {
           const user = {};
           user.id = obj.pk;
           user.name = obj.fields.email;
@@ -51,7 +51,7 @@ class Role extends React.Component {
         });
 
         const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
-        const availableActivities = availableActivitiesUnformatted.map(function(obj) {
+        const availableActivities = availableActivitiesUnformatted.map( obj => {
           const activity = {};
           activity.id = obj.pk;
           activity.name = obj.fields.name;
@@ -59,7 +59,7 @@ class Role extends React.Component {
         });
 
         const assignedActivitiesUnformatted = JSON.parse(roleObject.activities.assigned);
-        const assignedActivities = assignedActivitiesUnformatted.map(function(obj) {
+        const assignedActivities = assignedActivitiesUnformatted.map( obj => {
           const activity = {};
           activity.id = obj.pk;
           activity.name = obj.fields.name;
@@ -87,7 +87,7 @@ class Role extends React.Component {
         }
 
         const availableUsersUnformatted = JSON.parse(roleObject.users.available);
-        const availableUsers = availableUsersUnformatted.map(function(obj) {
+        const availableUsers = availableUsersUnformatted.map( obj => {
           const user = {};
           user.id = obj.pk;
           user.name = obj.fields.email;
@@ -95,7 +95,7 @@ class Role extends React.Component {
         });
 
         const availableActivitiesUnformatted = JSON.parse(roleObject.activities.available);
-        const availableActivities = availableActivitiesUnformatted.map(function(obj) {
+        const availableActivities = availableActivitiesUnformatted.map( obj => {
           const activity = {};
           activity.id = obj.pk;
           activity.name = obj.fields.name;
@@ -175,11 +175,11 @@ class Role extends React.Component {
 
     // Format properly
 
-    let formattedAssignedActivities = assignedActivities.map(function(obj) {
+    const formattedAssignedActivities = assignedActivities.map( obj => {
       return obj.name;
     });
 
-    assignedUsers = assignedUsers.map(function(obj) {
+    assignedUsers = assignedUsers.map( obj => {
       return obj.name;
     });
 
@@ -187,7 +187,7 @@ class Role extends React.Component {
     const action = this.props.location.query.action;
 
     let url = '';
-    if ( action === 'Edit' ){
+    if ( action === 'Edit' ) {
       url = '/manage-users/api/roles/edit/' + roleId + '/';
     } else {
       url = '/manage-users/api/roles/create/';
@@ -207,13 +207,12 @@ class Role extends React.Component {
       // TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
       // http://stackoverflow.com/questions/33778675/react-make-flash-message-disappear-automatically
 
-      if ( response.success === 'true' ){
+      if ( response.success === 'true' ) {
         // Reload API
         this.props.callRolesAPI();
         // Redirect user
         history.pushState(null, '/roles');
-      }
-      else if ( response.success === 'false' ){
+      } else if ( response.success === 'false' ){
         this.setState({
           apiResponseHelp: response.message,
           roleName: this.state.roleName,
@@ -247,29 +246,29 @@ class Role extends React.Component {
 
     // Submit to server
     $.ajax( '/manage-users/api/roles/delete/' + roleId + '/', {
-          type: 'DELETE',
-          beforeSend: function(xhr) {
-          xhr.setRequestHeader('X-CSRFToken', csrf);
-        },
+      type: 'DELETE',
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader('X-CSRFToken', csrf);
+      },
       success: function() {
         // Reload API
         self.props.callRolesAPI();
         // Redirect the user
         history.pushState(null, '/roles');
-    }})
-    .fail( function(xhr) {
-      if (xhr.status === 403){
-        this.setState({
-          apiResponseHelp: 'Role not deleted. Insufficient privileges.',
-        });
-      }
-    }.bind(this));
+      }})
+      .fail( function(xhr) {
+        if (xhr.status === 403) {
+          this.setState({
+            apiResponseHelp: 'Role not deleted. Insufficient privileges.',
+          });
+        }
+      }.bind(this));
   }
-  render(){
+  render() {
     let action = this.props.location.query.action;
 
     let deleteRoleButton = '';
-    if (action === 'Edit'){
+    if (action === 'Edit') {
       deleteRoleButton = <Button className="pull-right" onClick={this.handleDeleteRoleClick}>Delete Role</Button>;
     } else {
       action = 'Add';
@@ -339,6 +338,6 @@ Role.propTypes = {
   params: React.PropTypes.object.isRequired,
   callRolesAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
-}
+};
 
 export default Role;

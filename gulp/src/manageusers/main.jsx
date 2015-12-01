@@ -46,45 +46,48 @@ export class App extends React.Component {
   }
   callActivitiesAPI() {
     // Get activities once, and only once
-    $.get('/manage-users/api/activities/', function(results) {
-      results = JSON.parse(results);
+    $.get('/manage-users/api/activities/', function getActivities(results) {
+      const parsedResults = JSON.parse(results);
 
       const activitiesTableRows = [];
-      for (let i = 0; i < results.length; i++) {
-        activitiesTableRows.push(
-          <tr key={results[i].pk}>
-            <td>{results[i].fields.name}</td>
-            <td>{results[i].fields.description}</td>
-          </tr>
-        );
+      for (let i = 0; i < parsedResults.length; i++) {
+        if (parsedResults.hasOwnProperty(i)) {
+          activitiesTableRows.push(
+            <tr key={parsedResults[i].pk}>
+              <td>{parsedResults[i].fields.name}</td>
+              <td>{parsedResults[i].fields.description}</td>
+            </tr>
+          );
+        }
       }
       this.setState({
         activitiesTableRows: activitiesTableRows,
       });
-
     }.bind(this));
   }
   callRolesAPI() {
     // Get roles once, but reload if needed
-    $.get('/manage-users/api/roles/', function(results) {
+    $.get('/manage-users/api/roles/', function getRoles(results) {
       const rolesTableRows = [];
       for (const key in results) {
-        results[key].activities = JSON.parse(results[key].activities.assigned);
-        results[key].users.assigned = JSON.parse(results[key].users.assigned);
-        rolesTableRows.push(
-          <tr key={results[key].role.id}>
-            <td data-title="Role">{results[key].role.name}</td>
-            <td data-title="Associated Activities">
-              <AssociatedActivitiesList activities={results[key].activities}/>
-            </td>
-            <td data-title="Associated Users">
-              <AssociatedUsersList users={results[key].users.assigned}/>
-            </td>
-            <td data-title="Edit">
-             <Link to={`/role/${results[key].role.id}`} query={{ action: 'Edit' }} className="btn">Edit</Link>
-            </td>
-          </tr>
-        );
+        if (results.hasOwnProperty(key)) {
+          results[key].activities = JSON.parse(results[key].activities.assigned);
+          results[key].users.assigned = JSON.parse(results[key].users.assigned);
+          rolesTableRows.push(
+            <tr key={results[key].role.id}>
+              <td data-title="Role">{results[key].role.name}</td>
+              <td data-title="Associated Activities">
+                <AssociatedActivitiesList activities={results[key].activities}/>
+              </td>
+              <td data-title="Associated Users">
+                <AssociatedUsersList users={results[key].users.assigned}/>
+              </td>
+              <td data-title="Edit">
+               <Link to={`/role/${results[key].role.id}`} query={{ action: 'Edit' }} className="btn">Edit</Link>
+              </td>
+            </tr>
+          );
+        }
       }
       this.setState({
         rolesTableRows: rolesTableRows,
@@ -93,24 +96,26 @@ export class App extends React.Component {
   }
   callUsersAPI() {
     // Get users once, but reload if needed
-    $.get('/manage-users/api/users/', function(results) {
+    $.get('/manage-users/api/users/', function getUsers(results) {
       const usersTableRows = [];
       for (const key in results) {
-        results[key].roles = JSON.parse(results[key].roles);
-        usersTableRows.push(
-          <tr key={key}>
-            <td data-title="User Email">{results[key].email}</td>
-            <td data-title="Associated Roles">
-              <AssociatedRolesList roles={results[key].roles}/>
-            </td>
-            <td data-title="Status">
-              <Status status={results[key].status}/>
-            </td>
-            <td data-title="Edit">
-              <Link to={`/user/${key}`} action="Edit" query={{ action: 'Edit'}} className="btn">Edit</Link>
-            </td>
-          </tr>
-        );
+        if (results.hasOwnProperty(key)) {
+          results[key].roles = JSON.parse(results[key].roles);
+          usersTableRows.push(
+            <tr key={key}>
+              <td data-title="User Email">{results[key].email}</td>
+              <td data-title="Associated Roles">
+                <AssociatedRolesList roles={results[key].roles}/>
+              </td>
+              <td data-title="Status">
+                <Status status={results[key].status}/>
+              </td>
+              <td data-title="Edit">
+                <Link to={`/user/${key}`} action="Edit" query={{ action: 'Edit'}} className="btn">Edit</Link>
+              </td>
+            </tr>
+          );
+        }
       }
       this.setState({
         usersTableRows: usersTableRows,

@@ -10,4 +10,12 @@ class HelpText extends React.Component {
   }
 }
 
+HelpText.propTypes = {
+  message: React.PropTypes.string.isRequired,
+};
+
+HelpText.defaultProps = {
+  message: '',
+};
+
 export default HelpText;

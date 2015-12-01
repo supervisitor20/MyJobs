@@ -30,10 +30,10 @@ class Users extends React.Component {
 
 Users.propTypes = {
   usersTableRows: React.PropTypes.array.isRequired,
-}
+};
 
 Users.defaultProps = {
   usersTableRows: [],
-}
+};
 
 export default Users;

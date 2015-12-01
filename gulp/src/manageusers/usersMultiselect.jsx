@@ -9,6 +9,13 @@ const bootstrapClasses = {
 };
 
 class UsersMultiselect extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      assignedUsers: this.props.assignedUsers,
+      availableUsers: this.props.availableUsers,
+    };
+  }
   componentWillReceiveProps(nextProps) {
     this.setState({
       availableUsers: nextProps.availableUsers,
@@ -27,13 +34,6 @@ class UsersMultiselect extends React.Component {
       assignedUsers.splice(assignedUsers.indexOf(option), 1);
     });
     this.setState({assignedUsers});
-  }
-  constructor(props) {
-    super(props);
-    this.state = {
-      assignedUsers: this.props.assignedUsers,
-      availableUsers: this.props.availableUsers,
-    };
   }
   render() {
     const {assignedUsers, availableUsers} = this.state;
@@ -75,6 +75,6 @@ class UsersMultiselect extends React.Component {
 UsersMultiselect.propTypes = {
   assignedUsers: React.PropTypes.array.isRequired,
   availableUsers: React.PropTypes.array.isRequired,
-}
+};
 
 export default UsersMultiselect;

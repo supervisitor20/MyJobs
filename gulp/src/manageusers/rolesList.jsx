@@ -24,6 +24,6 @@ class RolesList extends React.Component {
 
 RolesList.propTypes = {
   rolesTableRows: React.PropTypes.array.isRequired,
-}
+};
 
 export default RolesList;
