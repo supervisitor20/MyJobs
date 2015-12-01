@@ -24,15 +24,14 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             Verify that the inbox list API will properly return any inboxes for the current company.
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, msg="assert nuo inbox view works for proper user")
         response_json = json.loads(response.content)
 
-        # assert that there are no additional inboxes returned
-        self.assertEqual(len(response_json), 1)
+        self.assertEqual(len(response_json), 1, msg="assert only user's company's inbox returned")
 
-        # assert that the inbox that is returned is the one we created for the company
-        self.assertEqual(response_json[0]["pk"], self.inbox.pk)
-        self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email)
+        return_msg = "assert that the inbox that is returned is the one we created for the company"
+        self.assertEqual(response_json[0]["pk"], self.inbox.pk, msg=return_msg)
+        self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email, msg=return_msg)
 
     def test_non_staff_cannot_use_view(self):
         """
@@ -42,7 +41,7 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         non_staff_user = UserFactory(is_staff=False, email="testuser@test.com")
         self.client.login_user(non_staff_user)
         response = self.client.get(reverse('api_get_nuo_inbox_list'), follow=False)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 404, msg="ensure NUO inboxes returns 404 for non staff users")
 
     def test_user_requires_prm_access(self):
         """
@@ -51,11 +50,10 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         """
         settings.ROLES_ENABLED = False
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        # make sure we get a 200 for the default test user (who is a company user for a member company)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, msg="assert view loaded properly for prm access user")
 
         non_company_user = UserFactory(email="testuser@test.com")
         self.client.login_user(non_company_user)
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        # ensure we get a 404 for a user that is not a company user for a member company
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 404, msg="assert NUO inboxes returns 404 for a user that is not"
+                                                        " a company user for a member company")
