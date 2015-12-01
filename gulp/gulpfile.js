@@ -73,6 +73,9 @@ function webpackConfig() {
 gulp.task('bundle', function(callback) {
   var config = webpackConfig();
   config.plugins.push(
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': '"production"',
+    }),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       filename: 'vendor.js',
