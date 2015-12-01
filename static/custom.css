@@ -3948,9 +3948,46 @@ h1 a {
 .panel {
 }
 
-.product-card-full {
+
+
+
+
+
+
+
+
+
+
+.product-card-full .table-striped thead th {
+  background: rgb(235, 235, 235);
+}
+
+.product-card-full .table-striped tbody tr:nth-child(odd) td{
+  background-color: transparent;
+}
+
+.product-card-full .table-striped tbody tr:nth-child(even) td{
+  background: rgb(235, 235, 235);
+}
+
+.product-card-full .row {
   padding: 15px;
 }
+
+.product-card-full .col-xs-6 {
+  padding: 0px;
+}
+
+.FilteredMultiSelect {
+  padding-right: 15px;
+}
+
+
+
+
+
+
+
 
 .wrapper-header + .product-card-full {
   border-top: 0;
@@ -4151,6 +4188,8 @@ h1 a {
 
 .btn.pull-right {
   margin-left: 10px;
+  margin-bottom: 8px;
+  margin-right: 8px;
 }
 
 .multiselect-controls {

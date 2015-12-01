@@ -17,9 +17,7 @@ class Users extends React.Component {
             <hr/>
 
             <div className="row">
-              <div className="col-xs-12">
-                <AddUserButton />
-              </div>
+              <AddUserButton />
             </div>
           </div>
         </div>

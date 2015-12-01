@@ -298,21 +298,29 @@ class Role extends React.Component {
                 </div>
               </div>
 
-              <hr/>
 
-              <HelpText message={activitiesMultiselectHelp} />
 
-              <ActivitiesMultiselect availableActivities={this.state.availableActivities} assignedActivities={this.state.assignedActivities} ref="activities"/>
+              <div className="row">
+                <div className="col-xs-12">
+                  <hr/>
 
-              <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
+                  <HelpText message={activitiesMultiselectHelp} />
 
-              <hr/>
+                  <ActivitiesMultiselect availableActivities={this.state.availableActivities} assignedActivities={this.state.assignedActivities} ref="activities"/>
 
-              <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
+                  <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
 
-              <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
+                  <hr/>
 
-              <hr />
+                  <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
+
+                  <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
+
+                  <hr />
+                </div>
+              </div>
+
+
 
               <div className="row">
                 <div className="col-xs-12">
