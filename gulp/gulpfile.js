@@ -115,7 +115,7 @@ gulp.task('manageusers', function() {
         paths: ['./src'],
     })
     .external(vendor_libs)
-    .add('src/manageusers/manageusers.js')
+    .add('src/manageusers/manageusers.jsx')
     .transform(babelify)
     .bundle()
     .on('error', function(error, meta) {
@@ -158,7 +158,7 @@ gulp.task('test', function() {
   function isFixed(file) {
     return file.eslint != null && file.eslint.fixed;
   };
-  return gulp.src(['./src/manageusers/manageusers.js'])
+  return gulp.src(['./src/manageusers/*.jsx'])
     .pipe(eslint({
       extends: 'airbnb',
       env: {
@@ -172,7 +172,7 @@ gulp.task('test', function() {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(['./src/**/*.js'])
+  return gulp.src(['./src/manageusers/*.*'])
     .pipe(eslint({
       extends: 'airbnb',
       env: {
