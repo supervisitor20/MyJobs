@@ -64,12 +64,14 @@ class User extends React.Component {
       $.get('/manage-users/api/roles/', function addUser(results) {
         const availableRoles = [];
         for (const roleId in results) {
-          availableRoles.push(
-            {
-              'id': roleId,
-              'name': results[roleId].role.name,
-            }
-          );
+          if (results.hasOwnProperty(roleId)) {
+            availableRoles.push(
+              {
+                'id': roleId,
+                'name': results[roleId].role.name,
+              }
+            );
+          }
         }
 
         this.setState({

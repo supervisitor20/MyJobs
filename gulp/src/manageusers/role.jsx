@@ -82,8 +82,10 @@ class Role extends React.Component {
         // Therefore get the first one with a loop
         let roleObject = {};
         for (const key in results) {
-          roleObject = results[key];
-          break;
+          if (results.hasOwnProperty(key)) {
+            roleObject = results[key];
+            break;
+          }
         }
 
         const availableUsersUnformatted = JSON.parse(roleObject.users.available);
@@ -212,7 +214,7 @@ class Role extends React.Component {
         this.props.callRolesAPI();
         // Redirect user
         history.pushState(null, '/roles');
-      } else if ( response.success === 'false' ){
+      } else if ( response.success === 'false' ) {
         this.setState({
           apiResponseHelp: response.message,
           roleName: this.state.roleName,
@@ -224,7 +226,7 @@ class Role extends React.Component {
       }
     }.bind(this))
     .fail( function(xhr) {
-      if (xhr.status === 403){
+      if (xhr.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save role. Insufficient privileges.',
         });
