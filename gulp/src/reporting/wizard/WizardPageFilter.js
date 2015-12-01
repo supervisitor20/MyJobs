@@ -1,5 +1,5 @@
 import React, {PropTypes, Component} from 'react';
-import {Button} from 'react-bootstrap';
+import Button from 'react-bootstrap/lib/Button';
 import warning from 'warning';
 
 import {WizardFilterDateRange} from './WizardFilterDateRange';

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {getCsrf} from 'util/cookie';
+import {getCsrf} from '../util/cookie';
 import Button from 'react-bootstrap/lib/Button';
 import FilteredMultiSelect from 'react-filtered-multiselect';
 

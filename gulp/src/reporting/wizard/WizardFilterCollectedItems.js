@@ -1,5 +1,6 @@
 import React, {PropTypes} from 'react';
-import {Button, Glyphicon} from 'react-bootstrap';
+import Button from 'react-bootstrap/lib/Button';
+import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 
 
 // Future: factor out components likely to be useful and move them to a
