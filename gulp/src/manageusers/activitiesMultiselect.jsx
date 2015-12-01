@@ -17,7 +17,6 @@ class ActivitiesMultiselect extends React.Component {
     };
     this._onSelect = this._onSelect.bind(this);
     this._onDeselect = this._onDeselect.bind(this);
-    this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
   }
   componentWillReceiveProps(nextProps) {
     this.setState({
