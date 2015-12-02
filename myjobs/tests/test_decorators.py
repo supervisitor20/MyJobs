@@ -4,7 +4,6 @@ from django.test import RequestFactory
 from django.conf import settings
 from django.http import HttpResponse, Http404
 
-from myjobs.models import Activity
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
@@ -36,19 +35,6 @@ class DecoratorTests(MyJobsBase):
         factory = RequestFactory()
         self.request = factory.get("/test")
         self.request.user = self.user
-
-    def test_decorating_a_view_with_invalid_activities(self):
-        """
-        Decorating a view with activities that don't exist should raise an
-        exception.
-        """
-
-        with self.assertRaises(Activity.DoesNotExist) as cm:
-            view = requires("this is invalid")(dummy_view)
-
-        # the erroneous activity should be in the error message
-        self.assertIn("this is invalid", cm.exception.message)
-
 
     def test_accessing_a_view_with_proper_permissions(self):
         """
@@ -121,12 +107,12 @@ class DecoratorTests(MyJobsBase):
             raise Http404("Required activities missing.")
 
         with self.assertRaises(TypeError) as cm:
-            # we misspelled access here, so the callback is invalid
-            view = requires(
+            response = requires(
                 self.activity.name,
-                acess_callback=callback)(dummy_view)
+                # we misspelled access here, so the callback is invalid
+                acess_callback=callback)(dummy_view)(self.request)
 
-        # the erroneous callback should be listed in the exception
+        # the erroneous callback should be listed in the output
         self.assertIn("- acess_callback", cm.exception.message)
 
     def test_user_with_wrong_activities(self):
@@ -166,4 +152,3 @@ class DecoratorTests(MyJobsBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, self.user.email)
-
