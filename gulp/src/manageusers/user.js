@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Button from 'react-bootstrap/lib/Button';
-import HelpText from './helpText.jsx';
-import RolesMultiselect from './RolesMultiselect.jsx';
+import HelpText from './helpText';
+import RolesMultiselect from './RolesMultiselect';
 import {Link} from 'react-router';
 import {validateEmail} from 'util/validateEmail';
 import {getCsrf} from 'util/cookie';

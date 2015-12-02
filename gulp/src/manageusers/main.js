@@ -4,19 +4,19 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
-import Overview from './overview.jsx';
-import Roles from './roles.jsx';
-import Role from './role.jsx';
-import Activities from './activities.jsx';
-import Users from './users.jsx';
-import User from './user.jsx';
-import NoMatch from './noMatch.jsx';
+import Overview from './overview';
+import Roles from './roles';
+import Role from './role';
+import Activities from './activities';
+import Users from './users';
+import User from './user';
+import NoMatch from './noMatch';
 
-import AssociatedRolesList from './AssociatedRolesList.jsx';
-import AssociatedUsersList from './AssociatedUsersList.jsx';
-import AssociatedActivitiesList from './AssociatedActivitiesList.jsx';
+import AssociatedRolesList from './AssociatedRolesList';
+import AssociatedUsersList from './AssociatedUsersList';
+import AssociatedActivitiesList from './AssociatedActivitiesList';
 
-import Status from './status.jsx';
+import Status from './status';
 
 export class App extends React.Component {
   constructor(props) {

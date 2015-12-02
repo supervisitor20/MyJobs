@@ -1,5 +1,5 @@
 import React from 'react';
-import RolesList from './rolesList.jsx';
+import RolesList from './rolesList';
 import {Link} from 'react-router';
 
 class Roles extends React.Component {

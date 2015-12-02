@@ -4,9 +4,9 @@ import React from 'react';
 import {Link} from 'react-router';
 import {getCsrf} from 'util/cookie';
 import Button from 'react-bootstrap/lib/Button';
-import HelpText from './helpText.jsx';
-import ActivitiesMultiselect from './activitiesMultiselect.jsx';
-import UsersMultiselect from './usersMultiselect.jsx';
+import HelpText from './helpText';
+import ActivitiesMultiselect from './activitiesMultiselect';
+import UsersMultiselect from './usersMultiselect';
 
 class Role extends React.Component {
   constructor(props) {
