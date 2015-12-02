@@ -179,7 +179,7 @@ class User extends React.Component {
         });
       }
     }.bind(this))
-    .fail( function(xhr) {
+    .fail( function failGracefully(xhr) {
       if (xhr.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save user. Insufficient privileges.',
@@ -203,16 +203,16 @@ class User extends React.Component {
     // Submit to server
     $.ajax( '/manage-users/api/users/delete/' + userId + '/', {
       type: 'DELETE',
-      beforeSend: function(xhr) {
+      beforeSend: function beforeSend(xhr) {
         xhr.setRequestHeader('X-CSRFToken', csrf);
       },
-      success: function( ) {
+      success: function success() {
         // Reload API
         self.props.callUsersAPI();
         // Redirect user
         history.pushState(null, '/users');
       }})
-      .fail( function(xhr) {
+      .fail( function failGracefully(xhr) {
         if (xhr.status === 403) {
           this.setState({
             apiResponseHelp: 'User not deleted. Insufficient privileges.',

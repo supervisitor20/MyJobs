@@ -1,6 +1,4 @@
 import React from 'react';
-import {Link} from 'react-router';
-import Button from 'react-bootstrap/lib/Button';
 
 class AssociatedActivitiesList extends React.Component {
   constructor(props) {

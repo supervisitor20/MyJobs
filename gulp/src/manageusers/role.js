@@ -225,7 +225,7 @@ class Role extends React.Component {
         });
       }
     }.bind(this))
-    .fail( function(xhr) {
+    .fail( function failGracefully(xhr) {
       if (xhr.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save role. Insufficient privileges.',
@@ -249,16 +249,16 @@ class Role extends React.Component {
     // Submit to server
     $.ajax( '/manage-users/api/roles/delete/' + roleId + '/', {
       type: 'DELETE',
-      beforeSend: function(xhr) {
+      beforeSend: function beforeSend(xhr) {
         xhr.setRequestHeader('X-CSRFToken', csrf);
       },
-      success: function() {
+      success: function success() {
         // Reload API
         self.props.callRolesAPI();
         // Redirect the user
         history.pushState(null, '/roles');
       }})
-      .fail( function(xhr) {
+      .fail( function failGracefully(xhr) {
         if (xhr.status === 403) {
           this.setState({
             apiResponseHelp: 'Role not deleted. Insufficient privileges.',

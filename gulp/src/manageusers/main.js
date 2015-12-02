@@ -83,7 +83,7 @@ export class App extends React.Component {
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td data-title="Edit">
-               <Link to={`/role/${results[key].role.id}`} query={{ action: 'Edit' }} className="btn">Edit</Link>
+               <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>
               </td>
             </tr>
           );
@@ -111,7 +111,7 @@ export class App extends React.Component {
                 <Status status={results[key].status}/>
               </td>
               <td data-title="Edit">
-                <Link to={`/user/${key}`} action="Edit" query={{ action: 'Edit'}} className="btn">Edit</Link>
+                <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
               </td>
             </tr>
           );
