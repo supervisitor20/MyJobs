@@ -17,9 +17,7 @@ class Roles extends React.Component {
             <hr/>
 
             <div className="row">
-
               <Link to="role/add" query={{ action: 'Add' }} className="primary pull-right btn btn-default">Add Role</Link>
-
             </div>
           </div>
         </div>

@@ -142,8 +142,6 @@ export class App extends React.Component {
         </div>
 
         <div className="row">
-
-
           <div className="col-sm-4 col-xs-12 pull-right">
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
@@ -154,7 +152,6 @@ export class App extends React.Component {
             </div>
           </div>
 
-          
           <div className="col-sm-8 col-xs-12">
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
@@ -168,9 +165,6 @@ export class App extends React.Component {
               }
             </div>
           </div>
-
-
-
         </div>
         <div className="clearfix"></div>
       </div>

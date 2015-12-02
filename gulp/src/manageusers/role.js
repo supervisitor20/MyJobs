@@ -298,8 +298,6 @@ class Role extends React.Component {
                 </div>
               </div>
 
-
-
               <div className="row">
                 <div className="col-xs-12">
                   <hr/>
@@ -319,8 +317,6 @@ class Role extends React.Component {
                   <hr />
                 </div>
               </div>
-
-
 
               <div className="row">
                 <div className="col-xs-12">
