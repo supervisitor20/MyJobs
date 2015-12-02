@@ -4,6 +4,7 @@ require('babel-register')({
 require('babel-polyfill');
 
 var fs = require('fs');
+var path = require('path');
 var gulp = require('gulp');
 var webpack = require('webpack');
 var util = require('gulp-util');
@@ -17,6 +18,10 @@ var eslint = require('gulp-eslint');
 //     This code is shared by all other app bundles. It is expected to be
 //     larger than app bundles and shared by all pages needing this
 //     infrastructure.
+//
+//     In production this bundle also contains whatever code webpack deemed
+//     as common to all app bundles.
+//
 // * reporting.js, [other-apps].js, etc. - These contain mostly only code
 //     used in a specific application. There should be one for each "app"
 //     in our site.
@@ -29,6 +34,8 @@ var eslint = require('gulp-eslint');
 var vendorLibs = [
   'react',
   'react-dom',
+  // Importing all of react-bootstrap _really_ bloats the bundle.
+  // Just pull what we use.
   'react-bootstrap/lib/Button.js',
   'react-bootstrap/lib/Glyphicon.js',
   'react-autosuggest',
@@ -49,7 +56,9 @@ function webpackConfig() {
       manageusers: './src/manageusers/manageusers',
       vendor: vendorLibs,
     },
-    resolve: {},
+    resolve: {
+      root: path.resolve('src'),
+    },
     output: {
       path: '../static/bundle',
       filename: '[name].js',
@@ -73,15 +82,25 @@ function webpackConfig() {
 gulp.task('bundle', function(callback) {
   var config = webpackConfig();
   config.plugins.push(
+    // React is smaller, faster, and silent in this mode.
+    // The warning module is also silent in this mode.
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"',
     }),
+    // Factor common code in to vendor.js.
+    // This also establishes the parent relationship between the vendor
+    // and app chunks.
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       filename: 'vendor.js',
     }),
+    // No idea if Dedupe and OccurenceOrder are actually doing anything.
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurenceOrderPlugin(),
+    // Minify.
+    // Warnings are off as the output isn't useful in a log.
+    // In development it can be useful to see this output to verify that
+    // dead code removal is doing something sane.
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false,
@@ -91,15 +110,18 @@ gulp.task('bundle', function(callback) {
     if(err) {
       throw new util.PluginError("webpack", err);
     }
-    util.log("\n", stats.toString("minimal"));
+    util.log(stats.toString("minimal"));
     fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
 });
 
+// Object to use for webpack's in memory cache. This seems to be the only
+// way to have an incremental build with webpack.
 var webpackCache = {};
 
-gulp.task('watch-bundle', function(callback) {
+gulp.task('dev-bundle', function(callback) {
+  // This bundle is tuned for build speed and development convenience.
   var config = webpackConfig();
   config.debug = true;
   config.devtool = 'eval-source-map';
@@ -107,6 +129,8 @@ gulp.task('watch-bundle', function(callback) {
   config.resolve.unsafeCache = true;
   config.profile = true;
   config.plugins.push(
+    // Still generate a vendor.js but don't bother factoring any common
+    // app code into it.
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       filename: 'vendor.js',
@@ -129,6 +153,21 @@ gulp.task('test', function() {
     }));
 });
 
+function lintOptions() {
+  return {
+    extends: 'airbnb',
+    env: {
+      jasmine: true,
+    },
+    parser: 'babel-eslint',
+    plugins: ['babel'],
+    rules: {
+      "babel/object-curly-spacing": 1,
+      "babel/no-await-in-loop": 2,
+    },
+  };
+}
+
 /**
  * lint-fix: run eslint with fix mode on.
  *
@@ -141,47 +180,31 @@ gulp.task('lint-fix', function() {
   function isFixed(file) {
     return file.eslint != null && file.eslint.fixed;
   };
-  return gulp.src(['./src/**/*.js'])
-    .pipe(eslint({
-      extends: 'airbnb',
-      env: {
-        jasmine: true,
-      },
-      parser: 'babel-eslint',
-      plugins: ['babel'],
-      rules: {
-        "babel/object-curly-spacing": 1,
-        "babel/no-await-in-loop": 1,
-      },
-      fix: true,
-    }))
+  var lintOpts = lintOptions();
+  lintOpts.fix = true;
+  return gulp.src(['./src/somedir/**/*js'])
+    .pipe(eslint(lintOpts))
     .pipe(eslint.format())
     .pipe(gulpif(isFixed, gulp.dest("./src")));
 });
 
 gulp.task('lint', function() {
+  // Remove this exclusion when manageusers is ready.
   return gulp.src(['./src/**/*.js', '!./src/manageusers/**/*'])
-    .pipe(eslint({
-      extends: 'airbnb',
-      env: {
-        jasmine: true,
-      },
-      parser: 'babel-eslint',
-      plugins: ['babel'],
-      rules: {
-        "babel/object-curly-spacing": 1,
-        "babel/no-await-in-loop": 2,
-      },
-    }))
+    .pipe(eslint(lintOptions()))
     .pipe(eslint.format());
 });
 
 // Build everything. Good way to start after a git checkout.
 gulp.task('build', ['bundle', 'lint', 'test']);
 
+gulp.task('watch-tasks', ['dev-bundle', 'test', 'lint']);
+
 // Leave this running in development for a pleasant experience.
-gulp.task('watch', ['watch-bundle'], function() {
-    return gulp.watch('src/**/*', ['watch-bundle', 'test', 'lint']);
+gulp.task('watch', function() {
+    return gulp.watch('src/**/*', ['watch-tasks']);
 });
 
+// This is how we build in production.
+// In production NODE_ENV is set to 'production'.
 gulp.task('default', ['build']);
