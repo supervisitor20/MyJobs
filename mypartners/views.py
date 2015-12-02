@@ -1163,7 +1163,6 @@ def prm_export(request):
 
 
 @csrf_exempt
-@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
