@@ -348,6 +348,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
+    @property
+    def activities(self):
+        """Returns a list of activity names associated with this user."""
+
+        return filter(bool, self.roles.values_list(
+            'activities__name', flat=True))
+
     def email_user(self, message, email_type=settings.GENERIC, **kwargs):
         headers = kwargs.pop('headers', {})
         if 'X-SMTPAPI' not in headers:
@@ -637,11 +644,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def can(self, company, *activity_names):
         """
-        Note: Until the activities feature is deployed, this method only
-        returns true when the company is a member company and the user is a
-        company user for that copmany.
-
-        Checks if a user may perform certain activities.
+        Checks if a user may perform certain activities for a company.
 
         Inputs:
             :company: The company who's role activities to check.
@@ -657,6 +660,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             # given
             app_access = AppAccess.objects.create(name="Example")
             company = Company.objects.first()
+            company.app_access.add(app_access)
             activities = Activity.objects.bulk_create([
                 Activity(name="create example", app_access=app_access),
                 Activity(name="delete example", app_access=app_access)])
@@ -670,17 +674,41 @@ class User(AbstractBaseUser, PermissionsMixin):
             user.can(company, "create example") == True
             user.can(company, "delete example") == False
             user.can(company, "create example", "delete_example") == False
+
+            # furthermore, given
+            company.app_access.clear()
+
+            # results
+            user.can(company, "create example") == False
         """
 
         if not company:
             return False
 
         if settings.ROLES_ENABLED:
-            return set(activity_names).issubset(
-                self.roles.filter(company=company).values_list(
-                    'activities__name', flat=True))
+            required_access = filter(bool, AppAccess.objects.filter(
+                activity__name__in=activity_names).values_list(
+                    'name', flat=True).distinct())
+
+            # Company must have correct access and user must have correct
+            # activities
+            return all([
+                bool(company.enabled_access),
+                set(required_access).issubset(company.enabled_access),
+                bool(self.activities),
+                set(activity_names).issubset(self.activities)])
+
         else:
-            return company.member and company in self.company_set.all()
+            # TODO: Delete after we deploy the roles system
+            is_company_user = company in self.company_set.all()
+            activities = ''.join(activity_names)
+
+            if 'partner' in activities:
+                return is_company_user and company.prm_access
+            elif 'role' in activities:
+                return False
+            else:
+                return is_company_user and company.member
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')

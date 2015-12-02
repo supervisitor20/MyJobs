@@ -34,6 +34,8 @@ from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
+from seo.models import Company
+from myreports.decorators import restrict_to_staff
 
 logger = logging.getLogger('__name__')
 
@@ -597,8 +599,8 @@ def topbar(request):
     return response
 
 
-@staff_member_required
-@requires('read role', 'read user')
+@restrict_to_staff()
+@requires("read role")
 def manage_users(request):
     """
     View for manage users
@@ -614,7 +616,8 @@ def manage_users(request):
                                 RequestContext(request))
 
 
-@staff_member_required
+@restrict_to_staff()
+@requires("read role")
 def api_get_activities(request):
     """
     Retrieves all activities
@@ -624,8 +627,8 @@ def api_get_activities(request):
     return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
 
 
-@staff_member_required
-@requires('read role')
+@restrict_to_staff()
+@requires("read role")
 def api_get_roles(request):
     """
     GET /manage-users/api/roles/
@@ -675,7 +678,7 @@ def api_get_roles(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
@@ -730,7 +733,7 @@ def api_get_specific_role(request, role_id=0):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('create role')
 def api_create_role(request):
     """
@@ -798,7 +801,7 @@ def api_create_role(request):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('update role')
 def api_edit_role(request, role_id=0):
     """
@@ -891,7 +894,7 @@ def api_edit_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('delete role')
 def api_delete_role(request, role_id=0):
     """
@@ -936,7 +939,7 @@ def api_delete_role(request, role_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('read user')
 def api_get_users(request):
     """
@@ -981,7 +984,7 @@ def api_get_users(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('read user')
 def api_get_specific_user(request, user_id=0):
     """
@@ -1035,7 +1038,7 @@ def api_get_specific_user(request, user_id=0):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('create user')
 def api_create_user(request):
     """
@@ -1100,7 +1103,7 @@ def api_create_user(request):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('update user')
 def api_edit_user(request, user_id=0):
     """
@@ -1175,7 +1178,7 @@ def api_edit_user(request, user_id=0):
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires('delete user')
 def api_delete_user(request, user_id=0):
     """

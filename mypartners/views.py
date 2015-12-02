@@ -55,10 +55,6 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 find_partner_from_email, tag_get_or_create)
 
 
-PRM = Activity.objects.filter(
-    app_access__name='PRM').exclude(
-        name__icontains='tag').values_list('name', flat=True)
-
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read partner')
 @has_access('prm')

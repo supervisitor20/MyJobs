@@ -14,14 +14,18 @@ from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
-from mypartners.views import PRM
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    Column, DataType, ReportTypeDataTypes)
+    DataType, ReportTypeDataTypes)
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
+from myreports.datasources import get_datasource_json_driver
+from myreports.report_configuration import (
+    ReportConfiguration, ColumnConfiguration)
+
+from myreports.decorators import restrict_to_staff
 
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
@@ -367,23 +371,16 @@ def download_report(request):
 @require_http_methods(['GET'])
 def dynamicoverview(request):
     """The Dynamic Reports page."""
-    company = get_company_or_404(request)
-    states = OrderedDict(
-        sorted((v, k) for k, v in location_data.states.inv.iteritems()))
-
-    ctx = {
-        "company": company,
-        "states": json.dumps(states),
-    }
-
-    return render_to_response('myreports/dynamicreports.html', ctx,
+    return render_to_response('myreports/dynamicreports.html', {},
                               RequestContext(request))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def reporting_types_api(request):
+    """Get a list of reporting types for this user."""
     reporting_types = (ReportingType.objects
                        .active_for_user(request.user))
 
@@ -399,11 +396,15 @@ def reporting_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def report_types_api(request):
+    """Get a list of report types
 
+    reporting_type_id: reporting type id from earlier call
+    """
     reporting_type_id = request.POST['reporting_type_id']
     report_types = (ReportType.objects
                     .active_for_reporting_type(reporting_type_id))
@@ -419,11 +420,15 @@ def report_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def data_types_api(request):
+    """Get a list of data types
 
+    report_type_id: report type id from earlier call
+    """
     report_type_id = request.POST['report_type_id']
     data_types = (DataType.objects
                   .active_for_report_type(report_type_id))
@@ -439,11 +444,16 @@ def data_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def presentation_types_api(request):
+    """Get a list of presentation types
 
+    report_type_id: report type id from earlier call
+    data_type_id: data type id from earlier call
+    """
     report_type_id = request.POST['report_type_id']
     data_type_id = request.POST['data_type_id']
     rpdt = (ReportTypeDataTypes.objects
@@ -462,17 +472,85 @@ def presentation_types_api(request):
                         content=json.dumps(data))
 
 
+@restrict_to_staff()
+@requires('read partner', 'read contact', 'read communication record')
+@has_access('prm')
+@require_http_methods(['POST'])
+def filters_api(request):
+    """Get a list of filters for the UI.
+
+    rp_id: Report Presentation ID
+
+    response: See ContactsJsonDriver.encode_filter_interface()
+    """
+    request_data = request.POST
+    rp_id = request_data['rp_id']
+    report_pres = ReportPresentation.objects.get(id=rp_id)
+    datasource = report_pres.report_data.report_type.datasource
+
+    report_configuration = (report_pres.configuration.build_configuration())
+
+    driver = get_datasource_json_driver(datasource)
+    result = driver.encode_filter_interface(report_configuration)
+
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(result))
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@has_access('prm')
+@require_http_methods(['POST'])
+def help_api(request):
+    """Get help for a partially filled out field.
+
+    rp_id: Report Presentation ID
+    filter: JSON string with user filter to use
+    field: Name of field to get help for
+    partial: Data entered so far
+
+    response: [{'key': data, 'display': data to display}]
+    """
+    request_data = request.POST
+    rp_id = request_data['rp_id']
+    filter = request_data['filter']
+    field = request_data['field']
+    partial = request_data['partial']
+
+    report_pres = ReportPresentation.objects.get(id=rp_id)
+    datasource = report_pres.report_data.report_type.datasource
+    driver = get_datasource_json_driver(datasource)
+
+    company = request.user.companyuser_set.first().company
+
+    result = driver.help(company, filter, field, partial)
+
+    return HttpResponse(content_type="application/json",
+                        content=json.dumps(result))
+
+
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
+    """Run a dynamic report.
+
+    rp_id: Report Presentation ID
+    name: name of report
+    filter_spec: JSON string with user filter to use
+
+    response: {'id': new dynamic report id}
+    """
     rp_id = request.POST['rp_id']
+    name = request.POST['name']
+    filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
 
     company = request.user.companyuser_set.first().company
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,
+        filters=filter_spec,
+        name=name,
         owner=company)
 
     report.regenerate()
@@ -481,6 +559,25 @@ def run_dynamic_report(request):
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@restrict_to_staff()
+@requires('read partner', 'read contact', 'read communication record')
+@has_access('prm')
+@require_http_methods(['GET'])
+def list_dynamic_reports(request):
+    """Get a list of dynamic report runs for this user."""
+    company = request.user.companyuser_set.first().company
+
+    reports = (
+        DynamicReport.objects
+        .filter(owner=company)
+        .order_by('-pk')[:10])
+
+    data = [{'id': r.id, 'name': r.name}
+            for r in reports]
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps({'reports': data}))
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -500,28 +597,28 @@ def download_dynamic_report(request):
         The report with the specified options rendered as a CSV file.
     """
 
+    # SECURITY: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
     order_by = request.GET.get('order_by', None)
 
     report = get_object_or_404(DynamicReport, pk=report_id)
+    report_configuration = (
+            report.report_presentation
+            .configuration.build_configuration())
 
     if order_by:
         report.order_by = order_by
         report.save()
 
-    configuration = report.report_presentation.configuration
-    columns = Column.objects.active_for_configuration(configuration)
-    values = [c.column_name for c in columns]
-
-    records = (dict((v, unicode(rec.get(v))) for v in values)
-               for rec in report.python)
+    values = report_configuration.get_header()
+    records = [report_configuration.format_record(r) for r in report.python]
 
     response = HttpResponse(content_type='text/csv')
     content_disposition = "attachment; filename=%s-%s.csv"
     response['Content-Disposition'] = content_disposition % (
         report.name.replace(' ', '_'), report.pk)
 
-    response.write(serialize('csv', records, values=values, order_by=order_by))
+    response.write(serialize('csv', records, values=values))
 
     return response

@@ -195,7 +195,6 @@ def requires(*activities, **callbacks):
     response used when app access is missing by passing `access_callback`.
     """
 
-
     activities = set(activities)
     valid_activities = set(Activity.objects.values_list('name', flat=True))
 
@@ -227,11 +226,6 @@ def requires(*activities, **callbacks):
                 return view_func(request, *args, **kwargs)
 
             company = get_company_or_404(request)
-            # the app_access we have, determined by the current company
-            company_access = filter(bool, company.app_access.values_list(
-                'name', flat=True))
-            user_activities = filter(bool, request.user.roles.values_list(
-                'activities__name', flat=True))
 
             # the app_access we need, determined by the activities passed in
             required_access = filter(bool, AppAccess.objects.filter(
@@ -239,12 +233,18 @@ def requires(*activities, **callbacks):
                     'name', flat=True).distinct())
 
             # company should have at least the access required by the view
-            if not bool(company_access) or not set(required_access).issubset(
-                    company_access):
-                return access_callback(request)
+            has_access = all([
+                bool(company.enabled_access),
+                set(required_access).issubset(company.enabled_access)])
+
             # the user should have at least the activities required by the view
-            elif not bool(user_activities) or not set(activities).issubset(
-                    user_activities):
+            has_activities = all([
+                bool(request.user.activities),
+                set(activities).issubset(request.user.activities)])
+
+            if not has_access:
+                return access_callback(request)
+            elif not has_activities:
                 return activity_callback(request)
             else:
                 return view_func(request, *args, **kwargs)
