@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, AppAccess, Activity
+from myjobs.models import User, AppAccess
 from universal.helpers import get_company_or_404
 
 
@@ -125,8 +125,6 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
-
-
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
@@ -146,8 +144,7 @@ def requires(*activities, **callbacks):
 
     Inputs:
     :activities: A list of activity names that the decorated view should
-                 check against. Passing invalid activity names will result in
-                 an `Activity.DoesNotExist` exception.
+                   check against.
     :callbacks: callbacks['activity_callback'] is a callable to be used as a
                 view response when the use isn't associated with the correct
                 subset of activities. callbacks['access_callback'] is a
@@ -194,14 +191,6 @@ def requires(*activities, **callbacks):
     status code of 200. A similar strategy can be used for customizing the
     response used when app access is missing by passing `access_callback`.
     """
-
-    activities = set(activities)
-    valid_activities = set(Activity.objects.values_list('name', flat=True))
-
-    if not activities.issubset(valid_activities):
-        raise Activity.DoesNotExist(
-            "Activities with these names do not exists: {}".format(
-                activities.difference(valid_activities)))
 
     invalid_callbacks = set(callbacks.keys()).difference({
         "access_callback", "activity_callback"})
