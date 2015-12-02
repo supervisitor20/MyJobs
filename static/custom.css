@@ -3958,17 +3958,6 @@ h1 a {
 
 
 
-.product-card-full .table-striped thead th {
-  background: rgb(235, 235, 235);
-}
-
-.product-card-full .table-striped tbody tr:nth-child(odd) td{
-  background-color: transparent;
-}
-
-.product-card-full .table-striped tbody tr:nth-child(even) td{
-  background: rgb(235, 235, 235);
-}
 
 .product-card-full .row {
   padding: 15px;
@@ -4067,13 +4056,10 @@ h1 a {
   border-image-slice: 100%;
   border-image-source: none;
   border-image-width: 1;
-  border-left-color: rgb(197, 197, 197);
   border-left-style: solid;
   border-left-width: 1.11111px;
-  border-right-color: rgb(197, 197, 197);
   border-right-style: solid;
   border-right-width: 1.11111px;
-  border-top-color: rgb(197, 197, 197);
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   border-top-style: solid;
@@ -4087,8 +4073,8 @@ h1 a {
   font-size: 14px;
   height: 42px;
   line-height: 20px;
-  margin: 10 0 10 0;
-  padding: 10 10 50 10px;
+  margin-bottom: 10px;
+  padding: 10px;
   text-align: center;
   text-decoration: none;
   vertical-align: middle;
@@ -4117,7 +4103,6 @@ h1 a {
   background-color: rgb(95, 108, 130);
   background-image: linear-gradient(rgb(140, 150, 161), rgb(95, 108, 130));
   background-repeat: repeat-x;
-  border-bottom-color: rgb(197, 197, 197);
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
   border-bottom-style: solid;
@@ -4127,13 +4112,10 @@ h1 a {
   border-image-slice: 100%;
   border-image-source: none;
   border-image-width: 1;
-  border-left-color: rgb(197, 197, 197);
   border-left-style: solid;
   border-left-width: 1.11111px;
-  border-right-color: rgb(197, 197, 197);
   border-right-style: solid;
   border-right-width: 1.11111px;
-  border-top-color: rgb(197, 197, 197);
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   border-top-style: solid;
@@ -4178,7 +4160,7 @@ h1 a {
 }
 
 .product-card-full .label-warning, .product-card-full .label-success{
-  height: 45px;
+  height: 42px;
   padding-top: 15px;
 }
 
@@ -4186,10 +4168,14 @@ h1 a {
   background-color: #D8D8D8;
 }
 
-.btn.pull-right {
+a.btn.pull-right, button.btn.pull-right {
   margin-left: 10px;
   margin-bottom: 8px;
   margin-right: 8px;
+}
+
+a.btn.pull-right {
+  padding-top: 10px;
 }
 
 .multiselect-controls {

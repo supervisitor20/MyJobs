@@ -4,7 +4,7 @@ class ActivitiesList extends React.Component {
   render() {
     return (
       <div>
-        <table className="table table-striped">
+        <table className="table">
           <thead>
             <tr>
               <th>Activity</th>

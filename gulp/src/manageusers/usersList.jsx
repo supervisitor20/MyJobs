@@ -4,7 +4,7 @@ class UsersList extends React.Component {
   render() {
     return (
       <div>
-        <table className="table table-striped" id="no-more-tables">
+        <table className="table" id="no-more-tables">
           <thead>
             <tr>
               <th>User Email</th>
