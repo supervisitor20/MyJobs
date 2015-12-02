@@ -142,6 +142,19 @@ export class App extends React.Component {
         </div>
 
         <div className="row">
+
+
+          <div className="col-sm-4 col-xs-12 pull-right">
+            <div className="sidebar">
+              <h2 className="top">Navigation</h2>
+              <Link to="/" className="btn">Overview</Link>
+              <Link to="roles" className="btn">Roles</Link>
+              <Link to="activities" className="btn">Activities</Link>
+              <Link to="users" className="btn">Users</Link>
+            </div>
+          </div>
+
+          
           <div className="col-sm-8 col-xs-12">
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
@@ -156,15 +169,7 @@ export class App extends React.Component {
             </div>
           </div>
 
-          <div className="col-sm-4 col-xs-12 pull-right">
-            <div className="sidebar">
-              <h2 className="top">Navigation</h2>
-              <Link to="/" className="btn">Overview</Link>
-              <Link to="roles" className="btn">Roles</Link>
-              <Link to="activities" className="btn">Activities</Link>
-              <Link to="users" className="btn">Users</Link>
-            </div>
-          </div>
+
 
         </div>
         <div className="clearfix"></div>
