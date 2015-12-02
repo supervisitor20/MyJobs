@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 import json
 import random
 
-from django.core.urlresolvers import reverse
-
-
 from mypartners import helpers
 from mypartners.forms import ContactRecordForm
 from mypartners.tests.test_views import (MyPartnersTestCase,
@@ -13,7 +10,6 @@ from mypartners.tests.test_views import (MyPartnersTestCase,
 from mypartners.tests.factories import (ContactRecordFactory, PartnerFactory,
                                         PRMAttachmentFactory)
 from mypartners.models import ContactLogEntry
-
 
 
 class HelpersTests(MyPartnersTestCase):
@@ -88,7 +84,7 @@ class HelpersTests(MyPartnersTestCase):
             contact=self.contact, partner=self.partner)
         attachment = PRMAttachmentFactory(contact_record=contact_record)
 
-        # The contact record form has a lot of required fields. 
+        # The contact record form has a lot of required fields.
         data=dict(
             contact_type=contact_record.contact_type,
             contact=contact_record.contact.pk,

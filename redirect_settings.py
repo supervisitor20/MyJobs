@@ -1,5 +1,5 @@
 from datetime import timedelta
-from default_settings import MIDDLEWARE_CLASSES
+from django.conf import global_settings
 
 PROJECT = 'redirect'
 
@@ -24,11 +24,7 @@ CACHES = {
     }
 }
 
-EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
-
-CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'
-
-MIDDLEWARE_CLASSES += (
+MIDDLEWARE_CLASSES = global_settings.MIDDLEWARE_CLASSES + (
     'redirect.middleware.ExcludedViewSourceMiddleware',
     'redirect.middleware.MyJobsRedirectMiddleware',
 )

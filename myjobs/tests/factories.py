@@ -22,3 +22,43 @@ class UserFactory(factory.django.DjangoModelFactory):
             if create:
                 user.save()
         return user
+
+    @factory.post_generation
+    def roles(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        roles = extracted or []
+        self.roles.add(*roles)
+
+class AppAccessFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = 'myjobs.AppAccess'
+
+    name = factory.Sequence(lambda n: 'Test App %s' % n)
+
+
+class ActivityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model =  'myjobs.Activity'
+
+    app_access = factory.SubFactory(AppAccessFactory)
+    name = factory.Sequence(lambda n: 'test activity %s' % n)
+    description = "Just a description of some test activity."
+
+
+class RoleFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = 'myjobs.Role'
+
+    company = factory.SubFactory('seo.tests.factories.CompanyFactory')
+    name = factory.Sequence(lambda n: 'test role %s' % n)
+
+    @factory.post_generation
+    def activities(self, create, extracted, **kwargs):
+
+        if not create:
+            return
+
+        activities = extracted or []
+        self.activities.add(*activities)

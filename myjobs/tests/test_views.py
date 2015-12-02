@@ -13,13 +13,15 @@ from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.http import HttpRequest
+from django.template import Context, Template
 from django.test.client import Client, MULTIPART_CONTENT
 from mymessages.models import Message
 from mymessages.tests.factories import MessageInfoFactory
 
 from setup import MyJobsBase
 from myjobs.models import User, EmailLog, FAQ
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
+                                    AppAccessFactory)
 from mypartners.tests.factories import PartnerFactory
 from mysearches.models import PartnerSavedSearch
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
@@ -56,15 +58,16 @@ class TestClient(Client):
         available.
         """
         path = path or self.path
+
+        if not path:
+            raise TypeError("get expects a path. None given. Either "
+                            "instantiate TestClient with a default path or be "
+                            "sure that the first argument to get is a valid "
+                            "path.")
         data = data or self.data
 
-        try:
-            return super(TestClient, self).get(
-                path, data=data, follow=follow, secure=secure, **extra)
-        except TypeError:
-            raise Exception("Calls to TestClient's methods require that "
-                            "either path be passed explicit, or the "
-                            "path be specified in the constructor")
+        return super(TestClient, self).get(
+            path, data=data, follow=follow, secure=secure, **extra)
 
     def post(self, path=None, data=None, content_type=MULTIPART_CONTENT,
              secure=False, **extra):
@@ -859,7 +862,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -890,7 +893,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         # creator should have a My.jobs message and email
         for body in [creator.message_set.first().body,
-                     mail.outbox[0].body]: 
+                     mail.outbox[0].body]:
             self.assertIn(self.user.email, body)
             self.assertIn('unsubscribed from one or more saved search emails',
                           body)
@@ -934,9 +937,6 @@ class MyJobsViewsTests(MyJobsBase):
 
         # ensure topbar shows logged out options
         self.assertIn("Log In", response.content)
-
-
-
 
     def test_referring_site_in_topbar(self):
         self.client.get(
@@ -1125,5 +1125,92 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         actual_company_names = [company.name for company in self.companies]
 
         # Test if the lists of company names match!
-        self.assertEqual(jsond_company_names, actual_company_names)
+        self.assertItemsEqual(jsond_company_names, actual_company_names)
 
+    def test_get_company_name(self):
+        """
+        The get_company_name` template tag should return the list of companies
+        to which a user belongs
+        """
+
+
+        template = """{% load common_tags %}
+                      {% get_company_name user as company_name %}
+                      {{ company_name }}"""
+
+        with self.settings(ROLES_ENABLED=False):
+            context = Context({'user': self.user})
+            Template(template).render(context)
+            self.assertItemsEqual(
+                context['company_name'], self.user.company_set.all())
+
+        with self.settings(ROLES_ENABLED=True):
+            roles = [RoleFactory(company=c) for c in self.companies]
+
+            self.user.roles = roles
+
+            context = Context({'user': self.user})
+            Template(template).render(context)
+            self.assertItemsEqual(
+                context['company_name'], self.user.company_set.all())
+
+    def test_can_template_tag(self):
+        """
+        The {% can company user activity %} template tag should return False
+        when roles are disabled if passed an activity that includes "role"
+        """
+
+        template = """{% load common_tags %}
+                      {% can user company "read partner" as read_partner %}
+                      {% can user company "read role" as read_role %}"""
+
+        app_access = AppAccessFactory()
+        self.companies[0].app_access.add(app_access)
+        activities = [
+            ActivityFactory(name="read role", app_access=app_access),
+            ActivityFactory(name="read partner", app_access=app_access)]
+
+        role = RoleFactory(company=self.companies[0], activities=activities)
+        context = Context({
+            'user': self.user, 'company': self.companies[0]})
+
+        with self.settings(ROLES_ENABLED=False):
+            Template(template).render(context)
+
+            self.assertTrue(context['read_partner'])
+            self.assertFalse(context['read_role'])
+
+            # disable PRM (by disabling member when roles are disabled)
+            self.companies[0].member = False
+            self.companies[0].save()
+
+            # recreate the context since the last rendering modified it
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+            Template(template).render(context)
+
+            self.assertFalse(context['read_partner'])
+            self.assertFalse(context['read_role'])
+
+        with self.settings(ROLES_ENABLED=True):
+            self.user.roles.add(role)
+
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+
+            Template(template).render(context)
+
+            self.assertTrue(context['read_partner'])
+            self.assertTrue(context['read_role'])
+
+            # disable PRM (by removing PRM-related activities when roles are
+            # enabled
+            role.remove_activity('read partner')
+            role.remove_activity('read role')
+
+            # recreate the context since the last rendering modified it
+            context = Context({
+                'user': self.user, 'company': self.companies[0]})
+            Template(template).render(context)
+            self.assertFalse(context['read_partner'])
+            self.assertFalse(context['read_role'])

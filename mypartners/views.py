@@ -10,6 +10,7 @@ import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
 
+from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
@@ -30,7 +31,9 @@ from email_parser import build_email_dicts, get_datetime_from_str
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
-from myjobs.models import User
+from myjobs.models import User, Activity
+from myjobs.decorators import requires, MissingActivity
+from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -40,7 +43,7 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location)
+                               Location, OutreachEmailAddress)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -52,6 +55,7 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read partner')
 @has_access('prm')
 def prm(request):
     """
@@ -81,7 +85,7 @@ def prm(request):
         'company': company,
         'user': request.user,
         'partner_ct': ContentType.objects.get_for_model(Partner).id,
-        'view_name': 'PRM',
+        'view_name': 'PRM'
     }
 
     return render_to_response('mypartners/prm.html', ctx,
@@ -89,6 +93,7 @@ def prm(request):
 
 
 @warn_when_inactive(feature='Partner Library is')
+@requires('read partner')
 @has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
@@ -119,6 +124,7 @@ def partner_library(request):
                               RequestContext(request))
 
 
+@requires('create partner')
 @has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
@@ -136,6 +142,7 @@ def create_partner_from_library(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('update partner')
 @has_access('prm')
 def partner_details(request):
     company, partner, user = prm_worthy(request)
@@ -155,12 +162,14 @@ def partner_details(request):
         'contact_ct': contact_ct_id,
         'partner_ct': partner_ct_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     return render_to_response('mypartners/partner_details.html', ctx,
                               RequestContext(request))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('create partner')
 @has_access('prm')
 def edit_item(request):
     """ Contact/Partner Form.
@@ -216,6 +225,7 @@ def edit_item(request):
         'contacts': json.dumps(contacts),
         'content_id': content_id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag')),
     }
     if item_id:
         ctx['locations'] = Contact.objects.get(pk=item_id).locations.all()
@@ -224,6 +234,7 @@ def edit_item(request):
                               RequestContext(request))
 
 
+@requires('create partner')
 @has_access('prm')
 def save_init_partner_form(request):
     form = NewPartnerForm(user=request.user, data=request.POST)
@@ -235,6 +246,7 @@ def save_init_partner_form(request):
         return HttpResponse(json.dumps(form.errors))
 
 
+@requires('update partner')
 @has_access('prm')
 def save_item(request):
     """
@@ -286,9 +298,11 @@ def save_item(request):
             return HttpResponse(status=200)
         else:
             return HttpResponse(json.dumps(form.errors))
+    raise Http404('Problem saving form. Please reload and try again')
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('delete partner')
 @has_access('prm')
 def delete_prm_item(request):
     """
@@ -307,19 +321,28 @@ def delete_prm_item(request):
 
     if content_id == ContentType.objects.get_for_model(Partner).id:
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
-        Contact.objects.filter(partner=partner).delete()
         log_change(partner, None, request.user, partner, partner.name,
                    action_type=DELETION)
-        partner.delete()
+        partner.archive()
         return HttpResponseRedirect(reverse('prm') + '?company=' +
                                     str(company.id))
     elif content_id == ContentType.objects.get_for_model(ContactRecord).id:
         contact_record = get_object_or_404(ContactRecord, partner=partner_id,
                                            id=item_id)
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
+        # At one point, contacts could be deleted. The previous functionality
+        # at this location couldn't handle that, accessing
+        # contact_record.contact.name directly. Chaining getattr may not be
+        # pretty but it ensures that we will never be accessing nonexistent
+        # attributes.
+        contact_name = getattr(getattr(contact_record,
+                                       'contact',
+                                       None),
+                               'name',
+                               '')
         log_change(contact_record, None, request.user, partner,
-                   contact_record.contact.name, action_type=DELETION)
-        contact_record.delete()
+                   contact_name, action_type=DELETION)
+        contact_record.archive()
         return HttpResponseRedirect(reverse('partner_records')+'?company=' +
                                     str(company.id)+'&partner=' +
                                     str(partner_id))
@@ -337,20 +360,22 @@ def delete_prm_item(request):
         contact = get_object_or_404(Contact, id=contact_id)
         log_change(contact, None, request.user, partner, contact.name,
                    action_type=DELETION)
-        contact.delete()
+        contact.archive()
         return HttpResponseRedirect(reverse('partner_details')+'?company=' +
                                     str(company.id)+'&partner=' +
                                     str(partner_id))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read partner')
 @has_access('prm')
 def prm_overview(request):
     """
     View that is the "Overview" of one's Partner Activity.
 
     """
-    company, partner, user = prm_worthy(request)
+
+    company, partner, _ = prm_worthy(request)
 
     most_recent_activity = partner.get_logs()
     records = partner.get_contact_records()
@@ -377,6 +402,7 @@ def prm_overview(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read tag')
 @has_access('prm')
 def partner_tagging(request):
     company = get_company_or_404(request)
@@ -384,6 +410,7 @@ def partner_tagging(request):
     tags = Tag.objects.filter(company=company).order_by('name')
 
     ctx = {'company': company,
+           'create_tags': json.dumps(request.user.can(company, 'create tag')),
            'tags': tags}
 
     return render_to_response('mypartners/partner_tagging.html', ctx,
@@ -391,6 +418,7 @@ def partner_tagging(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('update tag')
 @has_access('prm')
 def edit_partner_tag(request):
     company = get_company_or_404(request)
@@ -427,6 +455,7 @@ def edit_partner_tag(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('update contact')
 @has_access('prm')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
@@ -445,11 +474,12 @@ def edit_location(request):
 
             if location not in contact.locations.all():
                 contact.locations.add(location)
-                contact.save()
+                contact.update_last_action_time()
 
+            content_id = ContentType.objects.get_for_model(contact.__class__).pk
             return HttpResponseRedirect(
-                reverse('edit_contact') + "?partner=%s&id=%s" % (
-                    partner.id, contact.id))
+                reverse('edit_contact') + "?partner=%s&id=%s&ct=%s" % (
+                    partner.id, contact.id, content_id))
     else:
         form = LocationForm(instance=location)
 
@@ -468,6 +498,7 @@ def edit_location(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('update contact')
 @has_access('prm')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
@@ -475,26 +506,32 @@ def delete_location(request):
     location = get_object_or_404(
         Location, pk=request.REQUEST.get('location', 0))
 
+    contact.update_last_action_time()
     contact.locations.remove(location)
 
+    content_id = ContentType.objects.get_for_model(contact.__class__).pk
     return HttpResponseRedirect(
-        reverse('edit_contact') + "?partner=%s&id=%s" % (
-            partner.id, contact.id))
+        reverse('edit_contact') + "?partner=%s&id=%s&ct=%s" % (
+            partner.id, contact.id, content_id))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('delete tag')
 @has_access('prm')
 def delete_partner_tag(request):
     company = get_company_or_404(request)
 
     pk = request.GET.get('id')
     tag = Tag.objects.filter(pk=pk).first()
-    tag.delete()
+
+    if tag:
+        tag.delete()
 
     return HttpResponseRedirect(reverse('partner_tagging'))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read partner saved search')
 @has_access('prm')
 def prm_saved_searches(request):
     """
@@ -526,6 +563,7 @@ def prm_saved_searches(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('create partner saved search')
 @has_access('prm')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
@@ -566,6 +604,7 @@ def prm_edit_saved_search(request):
         'microsites': set(microsites),
         'content_type': ContentType.objects.get_for_model(PartnerSavedSearch).id,
         'view_name': 'PRM',
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
 
     return render_to_response('mypartners/partner_edit_search.html', ctx,
@@ -573,6 +612,7 @@ def prm_edit_saved_search(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read contact')
 @has_access('prm')
 def verify_contact(request):
     """
@@ -615,6 +655,7 @@ def verify_contact(request):
     return HttpResponse(json.dumps(data))
 
 
+@requires('create partner saved search')
 @has_access('prm')
 def partner_savedsearch_save(request):
     """
@@ -657,6 +698,7 @@ def partner_savedsearch_save(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read partner saved search')
 @has_access('prm')
 def partner_view_full_feed(request):
     """
@@ -700,6 +742,7 @@ def partner_view_full_feed(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read communication record')
 @has_access('prm')
 def prm_records(request):
     """
@@ -740,6 +783,7 @@ def prm_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('create communication record', 'update communication record')
 @has_access('prm')
 def prm_edit_records(request):
     company, partner, user = prm_worthy(request)
@@ -775,18 +819,21 @@ def prm_edit_records(request):
         'content_type': ContentType.objects.get_for_model(ContactRecord).id,
         'item_id': record_id,
         'form': form,
+        'create_tags': json.dumps(request.user.can(company, 'create tag'))
     }
     return render_to_response('mypartners/edit_record.html', ctx,
                               RequestContext(request))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read communication record')
 @has_access('prm')
 def prm_view_records(request):
     """
     View an individual ContactRecord.
 
     """
+
     company, partner, _ = prm_worthy(request)
     _, _, contact_records = get_records_from_request(request)
     page_number = int(request.GET.get('page', 1))
@@ -833,6 +880,7 @@ def prm_view_records(request):
     return render_to_response('mypartners/view_record.html', ctx,
                               RequestContext(request))
 
+@requires('read contact')
 @has_access('prm')
 def get_contact_information(request):
     """
@@ -868,15 +916,16 @@ def get_contact_information(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        return Http404("This view is only reachable by an AJAX POST request.")
+        raise Http404("This view is only reachable by an AJAX POST request.")
 
 
+@requires("read communication record")
 @has_access('prm')
 def get_records(request):
     """
     Returns a json object containing the records matching the search
     criteria (contact, contact_type, and date_time range) rendered using
-    records.html and the date range and date string required to update
+    records.html and the date range and date string requiresd to update
     the time_filter.html template to match the search.
 
     """
@@ -918,13 +967,14 @@ def get_records(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires("read communication record")
 @has_access('prm')
 def get_uploaded_file(request):
     """
     Determines the location of a PRMAttachment (either in S3 or in local
     storage) and redirects to it.
 
-    PRMAttachments stored in S3 require a generated key and have a 10 minute
+    PRMAttachments stored in S3 requires a generated key and have a 10 minute
     access window.
 
     """
@@ -951,6 +1001,7 @@ def get_uploaded_file(request):
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
+@requires('read communication record')
 @has_access('prm')
 def partner_main_reports(request):
     company, partner, user = prm_worthy(request)
@@ -974,6 +1025,7 @@ def partner_main_reports(request):
                               RequestContext(request))
 
 
+@requires('read communication record')
 @has_access('prm')
 def partner_get_records(request):
     if request.method == 'GET':
@@ -1015,6 +1067,7 @@ def partner_get_records(request):
         raise Http404
 
 
+@requires('read communication record')
 @has_access('prm')
 def partner_get_referrals(request):
     if request.method == 'GET':
@@ -1051,6 +1104,7 @@ def partner_get_referrals(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @user_passes_test(lambda u: User.objects.is_group_member(u, 'Employer'))
+@requires("read communication record")
 def prm_export(request):
     #TODO: investigate using django's builtin serialization for XML
     company, partner, user = prm_worthy(request)
@@ -1109,6 +1163,7 @@ def prm_export(request):
 
 
 @csrf_exempt
+@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
@@ -1270,11 +1325,49 @@ def process_email(request):
     return HttpResponse(status=200)
 
 
+@restrict_to_staff()
+@requires("create partner", "create contact", "create communication record")
+@has_access('prm')
+def manage_outreach_inboxes(request):
+    company = get_company_or_404(request)
+    OutreachEmailInboxFormset = modelformset_factory(OutreachEmailAddress,
+                                                     exclude=('company',), extra=1,
+                                                     can_delete=True)
+    if request.method == 'GET':
+        formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
+
+    if request.method == 'POST':
+        formset = OutreachEmailInboxFormset(request.POST)
+        if formset.is_valid():
+            for form in formset:
+                # forced to overwrite normal processing in order to assign company to outreach email
+                # did not want to include company on user provided form for fear of manipulation
+                if form.cleaned_data.get('DELETE'):
+                    form.instance.delete()
+                elif form.cleaned_data.get('email'):
+                    instance = form.save(commit=False)
+                    instance.company = company
+                    instance.save()
+            # re-initialize formset now that processing is finished
+            return HttpResponseRedirect(reverse('manage_outreach_inboxes'))
+
+    ctx = {
+        'formset': formset,
+        'company': company,
+        'view_name': 'PRM',
+    }
+
+    return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
+                              ctx,
+                              RequestContext(request))
+
+
+@requires('read tag')
 @has_access('prm')
 def tag_names(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
-        value = request.GET.get('value')
+        value = request.GET.get('value', "")
         names = list(Tag.objects.filter(
             company=company, name__icontains=value).values_list(
                 'name', flat=True))
@@ -1283,6 +1376,7 @@ def tag_names(request):
         return HttpResponse(json.dumps(names))
 
 
+@requires('read tag')
 @has_access('prm')
 def tag_color(request):
     if request.method == 'GET':
@@ -1293,9 +1387,10 @@ def tag_color(request):
         return HttpResponse(json.dumps(colors))
 
 
+@requires('create tag')
 @has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)
-    data = request.GET.get('data').split(',')
+    data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))

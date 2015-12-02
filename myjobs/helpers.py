@@ -3,7 +3,6 @@ from jira.client import JIRA
 from django.contrib import auth
 from django.core import mail
 from django.core.mail import EmailMessage
-from django.utils.safestring import mark_safe
 
 from secrets import options, my_agent_auth, EMAIL_TO_ADMIN
 
@@ -52,10 +51,10 @@ def expire_login(request, *args, **kwargs):
 def get_completion(level):
     """
     Determines the bootstraps bar color associated with the completion level.
-    
+
     inputs:
     :level: The completion percentage of a user's profile.
-    
+
     outputs:
     A string containing the bootstrap bar type.
     """

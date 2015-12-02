@@ -11,5 +11,5 @@ class CustomCareerResource(ModelResource):
         queryset = CustomCareer.objects.all()
         authentication = ApiKeyAuthentication()
         authorization = DjangoAuthorization()
-    
-    
+
+

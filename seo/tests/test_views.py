@@ -24,6 +24,7 @@ from BeautifulSoup import BeautifulSoup
 from lxml import etree
 
 from import_jobs import clear_solr, download_feed_file, update_solr
+from slugify import slugify
 from xmlparse import DEv2JobFeed
 from moc_coding import models as moc_models
 from moc_coding.tests import factories as moc_factories
@@ -36,37 +37,23 @@ from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
 from redirect.tests.factories import RedirectFactory
 from seo import helpers
-from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings)
+from seo.tests.setup import (DirectSEOBase, DirectSEOTestCase, patch_settings, DirectSeoTCWithSiteAndConfig)
 from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
-                        SeoSite, SeoSiteFacet, SiteTag, User, SeoSiteRedirect)
+                        SeoSite, SeoSiteFacet, SiteTag, User)
 from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
 from universal.helpers import build_url
 
 
-class FallbackTestCase(DirectSEOTestCase):
+class FallbackTestCase(DirectSeoTCWithSiteAndConfig):
     def setUp(self):
         super(FallbackTestCase, self).setUp()
-
-        self.job = solr_settings.SOLR_FIXTURE[0]
-        self.conn.add([self.job])
-
-        self.site = SeoSite.objects.get()
-        self.buid = BusinessUnit.objects.get_or_create(pk=self.job['buid'])
-        self.site.business_units.add(self.job['buid'])
-        self.site.save()
-
+        self.job = self.solr_docs[1]
         self.content = 'This is a content block'
-
-        self.config = Configuration.objects.get(status=2)
         self.config.home_page_template = 'home_page/home_page_listing.html'
         self.config.footer = ''
         self.config.save()
-
-    def tearDown(self):
-        self.conn.delete(q='*:*')
-        super(FallbackTestCase, self).tearDown()
 
     def make_page(self, page_type):
         content = 'This is a content block'
@@ -1158,7 +1145,7 @@ class TemplateTestCase(DirectSEOTestCase):
         #Check string from view_all_jobs_label
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
- 
+
     def test_view_all_jobs_label(self):
         bu = BusinessUnit.objects.get(id=1)
         bu.title="Acme"
@@ -1885,10 +1872,10 @@ class SeoViewsTestCase(DirectSEOTestCase):
         CustomFacet instance had its 'querystring' attribute set, it was
         handled by passing it to Haystack's 'raw_search' method, while
         field lookups were handled by turning them into SQ objects.
-        
+
         Update:
         Also serves as test that valid custom facet entry does not trigger 404
-        """        
+        """
         site = SeoSite.objects.get(id=1)
         cf1 = factories.CustomFacetFactory.build(querystring="uid:[17000000 TO 17999999]",
                                                  name="Test Flappitypoo",
@@ -1941,7 +1928,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site = SeoSite.objects.get(id=1)
         site.business_units = [self.buid_id]
         site.save()
-        
+
         next_link = '/feed/xml?num_items=1'
         num_pages = 0
         while next_link:
@@ -1976,7 +1963,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.save()
         job = self.solr_docs[0]
         resp = self.client.get(
-                '/feed/rss?q=uid:1000' 
+                '/feed/rss?q=uid:1000'
             )
         tree = etree.parse(StringIO(resp.content))
         self.assertEqual(resp.status_code, 200)
@@ -2002,7 +1989,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertTrue('location=' in self_link and 'q=' in self_link)
         next_link = tree.find("link[@rel='next']").get('href')
         # Get the child tags of the first <job> tag from the XML output
-        self.assertTrue('location=' in next_link and 'q=' in next_link) 
+        self.assertTrue('location=' in next_link and 'q=' in next_link)
 
     def test_feed_title(self):
         site = SeoSite.objects.get(id=1)
@@ -2010,7 +1997,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         site.save()
         feed_types = ['rss', 'atom']
         for feed_type in feed_types:
-            resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' % 
+            resp = self.client.get('/jobs/feed/%s?q=Retail&location=Indianapolis' %
                                     feed_type, HTTP_HOST="buckconsultants.jobs")
             self.assertEqual(resp.status_code, 200)
             self.assertNotEqual(resp.content.find(
@@ -2139,8 +2126,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
             self.assertEqual(businessunit.count(), 1)
 
     def test_xml_parse_moc(self):
-        import os
-
         filepath = download_feed_file(self.buid_id)
         moc = moc_factories.MocFactory.build()
         moc.save()
@@ -2483,16 +2468,16 @@ class SeoViewsTestCase(DirectSEOTestCase):
         company.job_source_ids.add(alpha_buid.id)
         company.save()
 
-        
+
         #test for companies beginning with a number
         resp = self.client.get("/all-companies/0-9/")
-        self.assertContains(resp,'<li class="company">',count=None, 
+        self.assertContains(resp,'<li class="company">',count=None,
                             status_code=200, msg_prefix='')
         #test for companies beginning with a letter
         resp = self.client.get("/all-companies/a/")
-        self.assertContains(resp,'<li class="company">',count=None, 
+        self.assertContains(resp,'<li class="company">',count=None,
                             status_code=200, msg_prefix='')
-            
+
     def test_empty_company_listing(self):
         company = Company.objects.none()
         response = self.client.get('/all-companies/')
@@ -2578,9 +2563,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 '/indianapolis/indiana/usa/jobs/',
                 HTTP_HOST='buckconsultants.jobs',
                 follow=True)
-        self.assertContains(resp,'<div id="de-myjobs-widget"',count=None, 
+        self.assertContains(resp,'<div id="de-myjobs-widget"',count=None,
                                 status_code=200, msg_prefix='')
-            
+
     def test_saved_search_non_render(self):
         """Test company sites don't have a saved search form on job listings."""
         site = factories.SeoSiteFactory.build()
@@ -2763,6 +2748,120 @@ class StaticPageOverrideTests(DirectSEOBase):
         #self.assertEqual(response['Location'], redirect.new_path)
         pass
         # TODO: Reimplement test with qs redirects
+
+
+class FilterTestCase404(DirectSeoTCWithSiteAndConfig):
+    """
+        Test cases involved in the search filter slugs. Ensure 404 returned under proper conditions.
+    """
+    def test_valid_company_200(self):
+        """
+            Verify that a valid company search string returns a 200
+        """
+
+        new_company = factories.CompanyFactory()
+        resp = self.client.get("/%s/careers/" % new_company.company_slug,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_invalid_company_behavior(self):
+        """
+            Verify that invalid companies will return a 404 error if they have no jobs,
+            200 if they have jobs
+        """
+        job = self.solr_docs[1]
+        company_from_job = Company.objects.filter(name__iexact=job['company'])
+        if company_from_job:
+            slug_value = company_from_job[0].company_slug
+            company_from_job.delete()  # make sure company doesn't exist in DB
+        else:
+            slug_value = slugify(job['company'])
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200)  # make sure 200 returned if jobs exist
+
+        self.conn.delete(q='*:*')  # delete job that was created
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)  # make sure 404 returned if jobs don't exist
+
+    def test_invalid_moc_404(self):
+        """
+            Verify that invalid moc url values will return a 404 error
+        """
+        resp = self.client.get("/a/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get("/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+
+class FilterTestCase404(DirectSEOTestCase):
+    """
+        Test cases involved in the search filter slugs. Ensure 404 returned under proper conditions.
+    """
+    def setUp(self):
+        super(FilterTestCase404, self).setUp()
+        self.job = solr_settings.SOLR_FIXTURE[1]
+        self.conn.add([self.job])
+
+        self.site = SeoSite.objects.get()
+        self.buid = BusinessUnit.objects.get_or_create(pk=self.job['buid'])
+        self.site.business_units.add(self.job['buid'])
+        self.site.save()
+
+        self.config = Configuration.objects.get(status=2)
+        self.config.home_page_template = 'home_page/home_page_listing.html'
+        self.config.footer = ''
+        self.config.save()
+
+    def tearDown(self):
+        self.conn.delete(q='*:*')
+        super(FilterTestCase404, self).tearDown()
+
+    def test_valid_company_200(self):
+        """
+            Verify that a valid company search string returns a 200
+        """
+
+        new_company = factories.CompanyFactory()
+        resp = self.client.get("/%s/careers/" % new_company.company_slug,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_invalid_company_behavior(self):
+        """
+            Verify that invalid companies will return a 404 error if they have no jobs,
+            200 if they have jobs
+        """
+        company_from_job = Company.objects.filter(name__iexact=self.job['company'])
+        if company_from_job:
+            slug_value = company_from_job[0].company_slug
+            company_from_job.delete() #make sure company doesn't exist in DB
+        else:
+            slug_value = self.job['company'].lower()
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 200) #make sure 200 returned if jobs exist
+
+        self.conn.delete(q='*:*') #delete job that was created
+
+        resp = self.client.get("/%s/careers/" % slug_value,
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404) #make sure 404 returned if jobs don't exist
+
+    def test_invalid_moc_404(self):
+        """
+            Verify that invalid moc url values will return a 404 error
+        """
+        resp = self.client.get("/a/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get("/fake/moc/vet-jobs/",
+                               HTTP_HOST=self.site.domain)
+        self.assertEqual(resp.status_code, 404)
 
 class FilterTestCase404(DirectSEOTestCase):
     """

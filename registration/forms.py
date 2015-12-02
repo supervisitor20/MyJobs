@@ -20,14 +20,13 @@ from universal.helpers import send_email
 
 class CustomSetPasswordForm(SetPasswordForm):
     """
-    Custom password form based on Django's default set password form. This 
+    Custom password form based on Django's default set password form. This
     allows us to enforce the new password rules.
     """
     new_password1 = PasswordField(error_messages={'required':
                                               'Password is required.'},
                                   label=('Password'), required=True,
                                   widget=forms.PasswordInput(attrs={
-                                      'placeholder': _('Password'),
                                       'id': 'id_password1',
                                       'autocomplete': 'off'}),
                                   help_text="Must contain an uppercase "
@@ -37,8 +36,7 @@ class CustomSetPasswordForm(SetPasswordForm):
     new_password2 = forms.CharField(error_messages={'required':
                                                 'Password is required.'},
                                     label=_("Password (again)"), required=True,
-                                    widget=forms.PasswordInput(
-                                        attrs={'placeholder': _('Password (again)'),
+                                    widget=forms.PasswordInput(attrs={
                                                'id': 'id_password2',
                                                'autocomplete': 'off'},
                                         render_value=False))
@@ -47,7 +45,7 @@ class CustomSetPasswordForm(SetPasswordForm):
         """
         Verify that the values entered into the two password fields
         match.
-        
+
         """
         if 'password1' in self._errors:
             self._errors['password1'] = [
@@ -79,24 +77,22 @@ class CustomAuthForm(AuthenticationForm):
     Custom login form based on Django's default login form. This allows us to
     bypass the is_active check on the user in order to allow a limited profile
     view for users that haven't activated yet.
-    
+
     """
     username = forms.CharField(error_messages={'required':'Email is required.'},
                                label=_("Email"), required=True,
-                               widget=forms.TextInput(
-                                   attrs={'placeholder': _('Email'),
+                               widget=forms.TextInput(attrs={
                                           'id':'id_username'}))
     password = forms.CharField(error_messages={'required':'Password is required.'},
                                label=_("Password"), required=True,
-                               widget=forms.PasswordInput(
-                                   attrs={'placeholder':_('Password'),
+                               widget=forms.PasswordInput(attrs={
                                           'id':'id_password'},
                                    render_value=False,))
 
     remember_me = forms.BooleanField(label=_('Keep me logged in for 2 weeks'),
                                      required=False,
-                                     widget=forms.CheckboxInput(
-                                         attrs={'id': 'id_remember_me'}))
+                                     widget=forms.CheckboxInput(attrs={
+                                         'id': 'id_remember_me'}))
 
     def __init__(self, request=None, *args, **kwargs):
         super(CustomAuthForm, self).__init__(request, *args, **kwargs)
@@ -117,7 +113,7 @@ class CustomAuthForm(AuthenticationForm):
                 # These fields are no longer valid. Remove them from the
                 # cleaned data
                 del self.cleaned_data['username']
-                del self.cleaned_data['password']  
+                del self.cleaned_data['password']
 
         self.check_for_test_cookie()
         return self.cleaned_data
@@ -141,8 +137,7 @@ class CustomPasswordResetForm(PasswordResetForm):
     """
     email = forms.CharField(error_messages={'required': 'Email is required.'},
                             label=_("Email"), required=True,
-                            widget=forms.TextInput(
-                                attrs={'placeholder': _('Email'),
+                            widget=forms.TextInput(attrs={
                                        'id': 'id_email',
                                        'class': 'reset-pass-input'}))
 
@@ -178,7 +173,6 @@ class RegistrationForm(forms.Form):
     email = forms.EmailField(error_messages={'required':'Email is required.'},
                              label=_("Email"), required=True,
                              widget=forms.TextInput(attrs={
-                                 'placeholder': _('Email'),
                                  'id':'id_email',
                                  'autocomplete': 'off'}),
                              max_length=255)
@@ -186,7 +180,6 @@ class RegistrationForm(forms.Form):
                                               'Password is required.'},
                               label=('Password'), required=True,
                               widget=forms.PasswordInput(attrs={
-                                  'placeholder': _('Password'),
                                   'id': 'id_password1',
                                   'autocomplete': 'off'}),
                               help_text="Must contain an uppercase "
@@ -195,8 +188,7 @@ class RegistrationForm(forms.Form):
     password2 = forms.CharField(error_messages={'required':
                                                 'Password is required.'},
                                 label=_("Password (again)"), required=True,
-                                widget=forms.PasswordInput(
-                                    attrs={'placeholder': _('Password (again)'),
+                                widget=forms.PasswordInput(attrs={
                                            'id': 'id_password2',
                                            'autocomplete': 'off'},
                                     render_value=False))
@@ -205,7 +197,7 @@ class RegistrationForm(forms.Form):
         """
         Validate that the username is alphanumeric and is not already
         in use.
-        
+
         """
         if User.objects.get_email_owner(self.cleaned_data['email']):
             raise forms.ValidationError(_("A user with that email already exists."))
@@ -216,7 +208,7 @@ class RegistrationForm(forms.Form):
         """
         Verify that the values entered into the two password fields
         match.
-        
+
         """
         if 'password1' in self._errors:
             self._errors['password1'] = [

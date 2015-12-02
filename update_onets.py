@@ -2,7 +2,7 @@ import csv
 
 from django.utils.text import slugify
 
-from moc_coding.models import *
+from moc_coding.models import Moc, MocDetail, Onet
 
 def get_mocs_from_csv(filename, columns):
     # Maps MOC code and Branch as keys, since they are defined as unique
@@ -80,7 +80,7 @@ def run(filename, cols=None):
             moc_record.title_slug = moc['title_slug']
             moc_record.moc_detail = moc_detail_record
             moc_record.save()
-            
+
             # log change
             new_mocs.append(moc_record)
 
@@ -99,11 +99,11 @@ def run(filename, cols=None):
 
     return new_mocs
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     import sys
 
     for filename in sys.argv[1:]:
         new_mocs = run(filename)
 
         print new_mocs
-    
+

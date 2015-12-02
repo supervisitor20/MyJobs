@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
 import random
 import requests
@@ -12,10 +12,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.core import mail
 from django.http import Http404
-from django.test.client import RequestFactory 
+from django.test.client import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
-from myprofile.models import SecondaryEmail
 from myprofile.tests.factories import SecondaryEmailFactory
 from seo.models import SeoSite
 
@@ -31,8 +30,8 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
                                         ContactRecordFactory, TagFactory)
 from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
-from mypartners.models import (Contact, ContactRecord, ContactLogEntry, 
-                               Partner, PartnerLibrary, ADDITION)
+from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
+                               Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mysearches.models import PartnerSavedSearch
 
@@ -45,7 +44,7 @@ class MyPartnersTestCase(MyJobsBase):
         self.request_factory = RequestFactory()
 
         # Create a user to login as
-        self.staff_user = UserFactory()
+        self.staff_user = UserFactory(is_staff=True)
 
         # Create a company
         self.company = CompanyFactory()
@@ -53,8 +52,6 @@ class MyPartnersTestCase(MyJobsBase):
         self.admin = CompanyUserFactory(user=self.staff_user,
                                         company=self.company)
         mail.outbox = []
-        self.client = TestClient()
-        self.client.login_user(self.staff_user)
 
         # Create a partner
         self.partner = PartnerFactory(owner=self.company, pk=1)
@@ -145,10 +142,121 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
         self.assertEqual(len(soup.select('div.product-card')), 10)
 
+    def count_active_rows(self, url, count, type_='class_',
+                          selector='card-wrapper'):
+        """
+        The three tests that currently use this are all largely identical,
+        differing only in the model being checked, url name, and css
+        selectors.
+
+        Navigate to :url:, look for an element with css matching :type_: and
+        :selector:, and count how many divs are inside that contain the css
+        class "product-card". Compare this number to :count:.
+        """
+        response = self.client.get(url)
+        soup = BeautifulSoup(response.content)
+        records = soup.find(**{type_: selector})
+        if records is None:
+            actual = 0
+        else:
+            actual = len(records('div', class_='product-card'))
+        self.assertEqual(actual, count)
+
+    def test_archived_partners_not_displayed(self):
+        partner = PartnerFactory(owner=self.company, pk=self.partner.pk + 1)
+
+        url = self.get_url('prm')
+
+        self.count_active_rows(url=url, count=2, type_='id',
+                               selector='partner-holder')
+
+        partner.archive()
+
+        self.count_active_rows(url=url, count=1, type_='id',
+                               selector='partner-holder')
+
+    def test_archived_contacts_not_displayed(self):
+        contact = ContactFactory(partner=self.partner,
+                                 user=self.contact_user,
+                                 email='contact2@user.com')
+        url = self.get_url('partner_details', company=self.company.id,
+                           partner=self.partner.id)
+
+        self.count_active_rows(url=url, count=2)
+
+        contact.archive()
+
+        self.count_active_rows(url=url, count=1)
+
+    def test_archived_records_not_displayed(self):
+        contact_records = ContactRecordFactory.create_batch(
+            2, partner=self.partner, contact=self.contact)
+        overview_url = self.get_url('partner_records', company=self.company.id,
+                                    partner=self.partner.id)
+        add_url = self.get_url('partner_edit_record', partner=self.partner.id)
+
+        def count_contacts_on_form(count):
+            """
+            Counts contacts on communication record forms, ignoring the
+            auto-added blank value.
+            """
+            response = self.client.get(add_url)
+            soup = BeautifulSoup(response.content)
+            contacts = soup.find(id='id_contact')
+            contacts = contacts('option')
+            values = [contact.attrs['value'] for contact in contacts
+                      if contact.attrs['value']]
+            self.assertEqual(len(values), count)
+
+        count_contacts_on_form(count=1)
+        self.count_active_rows(url=overview_url, count=2)
+
+        contact_records[0].archive()
+
+        self.count_active_rows(url=overview_url, count=1)
+
+        # Archiving a contact should also treat that contact's communication
+        # records as archived regardless of their archived status.
+        self.contact.archive()
+
+        # The previous archived contact should no longer appear on communication
+        # record forms.
+        count_contacts_on_form(count=0)
+        self.count_active_rows(url=overview_url, count=0)
+        # Grab an unarchived contact record again and ensure it hasn't been
+        # archived.
+        record = ContactRecord.all_objects.get(pk=contact_records[1].pk)
+        self.assertFalse(record.archived_on)
+
+    def test_archive_communication_records_without_contact(self):
+        """
+        Test that trying to archive a communication record without an
+        associated contact works correctly. This should not happen very often
+        and the number of records for which this is an issue should never
+        increase as we no longer allow deleting of contacts.
+        """
+        self.client.login_user(self.staff_user)
+        communication_record = ContactRecordFactory(partner=self.partner,
+                                                    contact=self.contact)
+        url = self.get_url('delete_prm_item',
+                           partner=self.partner.pk,
+                           id=communication_record.pk,
+                           ct=ContentType.objects.get_for_model(ContactRecord).pk)
+
+        self.contact.delete()
+
+        response = self.client.get(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 302)
+        with self.assertRaises(ContactRecord.DoesNotExist):
+            ContactRecord.objects.get(pk=communication_record.pk)
+        communication_record = ContactRecord.all_objects.get(
+            pk=communication_record.pk)
+        self.assertTrue(communication_record.archived_on)
+
 
 class EditItemTests(MyPartnersTestCase):
-    """ Test the `edit_item` view functio. 
-        
+    """ Test the `edit_item` view function.
+
         In particular, it tests that the appropriate HTTP response is reached
         depending on the URL that the user navigates to.
     """
@@ -190,7 +298,7 @@ class EditItemTests(MyPartnersTestCase):
                     "should have raised an Http404 but didn't.")
 
         for item in self.bad_ids[1:]:
-            # 
+            #
             request = self.requests['contact'](id=item)
             request.user = self.staff_user
 
@@ -247,7 +355,7 @@ class EditItemTests(MyPartnersTestCase):
         soup = BeautifulSoup(response.content)
 
         self.assertIn("Edit Contact", soup.title.text)
-        
+
 
 class PartnerOverviewTests(MyPartnersTestCase):
     """Tests related to the partner overview page, /prm/view/overview/"""
@@ -744,7 +852,6 @@ class SearchEditTests(MyPartnersTestCase):
                                                 created_by=self.staff_user,
                                                 user=self.contact.user,
                                                 partner=self.partner,)
-
     def test_render_new_form(self):
         url = self.get_url(company=self.company.id,
                            partner=self.partner.id)
@@ -855,7 +962,17 @@ class SearchEditTests(MyPartnersTestCase):
                              msg="%s != %s for field %s" %
                                  (v, getattr(search, k), k))
 
+        self.assertEqual(search.last_action_time.date(), datetime.now().date())
+
     def test_update_existing_saved_search(self):
+        """
+        Verify that form can update existing saved search information. Ensure
+        last_action_time is also updated properly
+        """
+        self.search.last_action_time = datetime.now() - timedelta(days=1)
+        self.search.save()
+        self.assertNotEqual(self.search.last_action_time.date(),
+                            datetime.now().date())
         url = self.get_url('partner_savedsearch_save',
                            company=self.company.id,
                            partner=self.partner.id,
@@ -888,6 +1005,8 @@ class SearchEditTests(MyPartnersTestCase):
             self.assertEqual(v, getattr(search, k),
                              msg="%s != %s for field %s" %
                                  (v, getattr(search, k), k))
+
+        self.assertEqual(search.last_action_time.date(), datetime.now().date())
 
     def test_deactivate_partner_search(self):
         mail.outbox = []
@@ -929,7 +1048,7 @@ class SearchEditTests(MyPartnersTestCase):
         self.assertIn("Copy of %s" % saved_search.label, response.content)
 
     def test_partner_search_for_new_contact_email(self):
-        """Confirms that an email is sent when a new user is created for a 
+        """Confirms that an email is sent when a new user is created for a
         contact because a saved search was created on that contact's behalf.
         """
         self.search.delete()
@@ -957,6 +1076,10 @@ class SearchEditTests(MyPartnersTestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_location_form_update_last_action_time(self):
+        self.data = dict(label='Home', address_line_one='123 Fake St', address_line_two='Ste 321', city='Somewhere',
+                         state='NM')
 
 
 class EmailTests(MyPartnersTestCase):
@@ -1144,8 +1267,8 @@ class EmailTests(MyPartnersTestCase):
             self.assertEqual(self.data['text'], record.notes)
             self.assertEqual(Contact.objects.all().count(), 2)
 
-            Contact.objects.filter(email=record.contact_email).delete()
-            ContactRecord.objects.filter(id=record.pk).delete()
+            Contact.objects.get(email=record.contact_email).delete()
+            record.delete()
 
     def test_double_escape_forward(self):
         self.data['to'] = 'prm@my.jobs'
@@ -1327,7 +1450,7 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
         # test that appropriate tags created
         library = PartnerLibrary.objects.get(id=library_id)
-        for tag in ['Veteran', 'Disabled Veteran',  
+        for tag in ['Veteran', 'Disabled Veteran',
                     'Female', 'Minority']:
             if getattr(library, 'is_%s' % tag.lower().replace(' ', '_')):
                 self.assertIn(tag, partner.tags.values_list('name', flat=True))
@@ -1467,9 +1590,11 @@ class ContactLogEntryTests(MyPartnersTestCase):
         self.assertEqual(data['name'], delta['name']['new'])
 
     def test_location_update(self):
+        """
+            Verify log is created when location is edited.
+        """
         location = LocationFactory()
         self.contact.locations.add(location)
-        self.contact.save()
 
         url = self.get_url(partner=self.partner.id, company=self.company.pk,
                            id=self.contact.id, location=location.id,
@@ -1486,9 +1611,111 @@ class ContactLogEntryTests(MyPartnersTestCase):
         response = self.client.post(url, data=data, follow=True)
 
         self.assertEqual(response.status_code, 200)
+
         log = ContactLogEntry.objects.get()
 
         delta = json.loads(log.delta)
 
         self.assertEqual(location.city, delta['city']['initial'])
         self.assertEqual(data['city'], delta['city']['new'])
+
+
+class LocationViewTests(MyPartnersTestCase):
+    def test_location_update(self):
+        """
+            Verify that modifications of locations properly update the last_action_time of the connected Contact
+        """
+        location = LocationFactory()
+        self.contact.locations.add(location)
+        # backdate last action date for comparison
+        self.contact.last_action_time = datetime.now() - timedelta(days=30)
+        self.contact.save()
+        original_action_time = self.contact.last_action_time
+
+        url = self.get_url(partner=self.partner.id, company=self.company.pk,
+                           id=self.contact.id, location=location.id,
+                           view='edit_location')
+
+        data = {
+            'company_id': self.company.pk,
+            'partner': self.partner.pk,
+            'label': 'The label has changed.',
+            'city': 'Fargo',
+            'state': 'ND',
+        }
+
+        response = self.client.post(url, data=data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        # reload contact from DB, as it is holds "expired" data
+        reload_contact = Contact.objects.get(pk=self.contact.pk)
+        self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
+
+    def test_location_delete(self):
+        """
+            Verify that deleting locations causes their connected Contact's last_action_time to be updated
+        """
+        location = LocationFactory()
+        self.contact.locations.add(location)
+        # backdate last action date for comparison
+        self.contact.last_action_time = datetime.now() - timedelta(days=30)
+        self.contact.save()
+        original_action_time = self.contact.last_action_time
+
+        url = self.get_url(partner=self.partner.id, company=self.company.pk,
+                           id=self.contact.id, location=location.id,
+                           view='delete_location')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        # reload contact from DB, as it is holds "expired" data
+        reload_contact = Contact.objects.get(pk=self.contact.pk)
+        self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
+
+
+class OutreachViewTests(MyPartnersTestCase):
+    """
+        These tests relate to views involved in Non-User Outreach functionality
+    """
+    def test_get_form_outreach_email(self):
+        """
+            Test that GET requests to the non user outreach inbox management system yields a 200
+        """
+        response = self.client.get(reverse('manage_outreach_inboxes'))
+        self.assertEqual(response.status_code, 200)
+        # check that response contains part of the rendered template, ensure we're getting the correct page
+        self.assertContains(response, 'id="inbox-form"')
+
+    def test_post_form_outreach_email(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        email_to_test = 'popeyes_chicken'
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': email_to_test,
+                'form-0-id': [u'']
+                }
+        self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 1)
+
+    def test_post_form_outreach_email_validation(self):
+        """
+            Test to ensure POST will properly create outreach inbox
+        """
+        email_to_test = 'popeyes_chicken@anothersite.com'
+        data = {'form-MAX_NUM_FORMS': 1000,
+                'form-TOTAL_FORMS': 1,
+                'form-INITIAL_FORMS': 0,
+                'form-0-email': email_to_test,
+                'form-0-id': [u'']
+                }
+        response = self.client.post(reverse('manage_outreach_inboxes'), data)
+
+        self.assertContains(response, "Enter a valid email username")
+        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
+        self.assertEqual(count_emails, 0)

@@ -31,7 +31,7 @@
                 <input type="hidden" name="partner" value="{{ partner.id }}">
             <div class="form-label pull-left">&nbsp;</div>
             <div class="actions pull-right">
-                {% if object_id %}<button id="delete" type="button" data-toggle="modal" data-target="#delete-confirm" class="btn">{% trans 'Delete' %}</button>{% endif %}
+                {% if item_id %}<button id="delete" type="button" data-toggle="modal" data-target="#delete-confirm" class="btn">{% trans 'Delete' %}</button>{% endif %}
                 <a class="btn" href="{% url 'partner_records' %}?partner={{ partner.id }}">{% trans 'Cancel' %}</a>
                 <button type="submit" class="btn primary" id="partner_record_save">{% trans 'Save' %}</button>
             </div>
@@ -54,7 +54,7 @@
             <div class="modal-footer">
                 <div class="actions">
                     <button data-dismiss="modal" class="btn primary pull-right">{% trans 'Cancel' %}</button>
-                    <a class="btn" href="{% url 'delete_prm_item' %}?partner={{ partner.id }}&ct={{ content_type }}&id={{ object_id }}">{% trans 'Delete' %}</a>
+                    <a class="btn" href="{% url 'delete_prm_item' %}?partner={{ partner.id }}&ct={{ content_type }}&id={{ item_id }}">{% trans 'Delete' %}</a>
                 </div>
             </div>
         </div>{# /delete-confirm #}
@@ -62,6 +62,10 @@
 {% endblock %}
 
 {% block extra-js %}
+<script type="text/javascript">
+  var create_tags = {{ create_tags }}; 
+</script>
 <script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}partner_edit_record.164-6.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}partner_edit_record.170-6.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}tags.170-6.js{{ gz }}"></script>
 {% endblock %}

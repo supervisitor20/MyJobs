@@ -6,6 +6,7 @@ import os
 from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 
 DEBUG = True
+ROLES_ENABLED = True
 
 DATABASES = {
     'default': dict({

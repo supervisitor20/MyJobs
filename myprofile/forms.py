@@ -1,8 +1,13 @@
 from django.conf import settings
-from django.forms import *
+from django.core.exceptions import ValidationError
+from django.forms import (
+    Select, CheckboxInput, DateInput, TextInput, Textarea, DateTimeInput,
+    TimeInput)
 from django.utils.translation import ugettext_lazy as _
 from myjobs.forms import BaseUserForm
-from myprofile.models import *
+from myprofile.models import (
+    Name, SecondaryEmail, Education, EmploymentHistory, Telephone, Address,
+    MilitaryService, License, Website, Summary, VolunteerHistory)
 from countries import COUNTRIES
 
 
@@ -13,13 +18,13 @@ def generate_custom_widgets(model):
 
     Inputs:
     :model:       model class from form Meta
-    
+
     Outputs:
     :widgets:     dictionary of widgets with custom attributes defined
     """
     fields = model._meta.fields
     widgets = {}
-    
+
     for field in fields:
         internal_type = field.get_internal_type()
         # exclude profile unit base fields
@@ -47,8 +52,8 @@ class NameForm(BaseUserForm):
         form_name = _("Personal Information")
         model = Name
         widgets = generate_custom_widgets(model)
-        
-        
+
+
 class SecondaryEmailForm(BaseUserForm):
     class Meta:
         form_name = _("Secondary Email")
@@ -58,9 +63,9 @@ class SecondaryEmailForm(BaseUserForm):
     def clean_email(self):
         email = self.cleaned_data['email']
         if email.lower() == self.user.email.lower():
-            raise forms.ValidationError('This email is already registered.')
+            raise ValidationError('This email is already registered.')
         return email
-            
+
 
 class EducationForm(BaseUserForm):
     def __init__(self, *args, **kwargs):
@@ -75,13 +80,13 @@ class EducationForm(BaseUserForm):
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'
-        
+
 
 class EmploymentHistoryForm(BaseUserForm):
     def __init__(self, *args, **kwargs):
         super(EmploymentHistoryForm, self).__init__(*args, **kwargs)
-        self.fields['start_date'].input_formats = settings.DATE_INPUT_FORMATS  
-        self.fields['end_date'].input_formats = settings.DATE_INPUT_FORMATS  
+        self.fields['start_date'].input_formats = settings.DATE_INPUT_FORMATS
+        self.fields['end_date'].input_formats = settings.DATE_INPUT_FORMATS
 
     class Meta:
         form_name = _("Most Recent Work History")
@@ -89,20 +94,20 @@ class EmploymentHistoryForm(BaseUserForm):
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'
-        
-       
+
+
 class TelephoneForm(BaseUserForm):
     """
-    Returns 1 as default country code so that initial-profile-page 
+    Returns 1 as default country code so that initial-profile-page
     will save properly and prevent a null error.
     """
     def clean_country_dialing(self):
-        country_dial = self.cleaned_data.get('country_dialing')        
+        country_dial = self.cleaned_data.get('country_dialing')
         if not country_dial:
             country_dial = 1
-            
+
         return country_dial
-            
+
     class Meta:
         form_name = _("Phone Number")
         model = Telephone
@@ -127,8 +132,8 @@ class AddressForm(BaseUserForm):
 class MilitaryServiceForm(BaseUserForm):
     def __init__(self, *args, **kwargs):
         super(MilitaryServiceForm, self).__init__(*args, **kwargs)
-        self.fields['service_start_date'].input_formats = settings.DATE_INPUT_FORMATS  
-        self.fields['service_end_date'].input_formats = settings.DATE_INPUT_FORMATS  
+        self.fields['service_start_date'].input_formats = settings.DATE_INPUT_FORMATS
+        self.fields['service_end_date'].input_formats = settings.DATE_INPUT_FORMATS
 
     class Meta:
         form_name = _("Military Service History")
@@ -185,7 +190,7 @@ class VolunteerHistoryForm(BaseUserForm):
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'
-    
+
 
 class InitialForm(BaseUserForm):
     def __init__(self, *args, **kwargs):

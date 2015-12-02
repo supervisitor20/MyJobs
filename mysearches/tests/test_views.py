@@ -1,12 +1,9 @@
 import json
 import urllib2
-
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
-
-from mock import patch
 
 from myjobs.tests.setup import MyJobsBase
 from mydashboard.tests.factories import CompanyFactory
@@ -15,8 +12,6 @@ from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory, ContactFactory
 
 from mysearches import forms, models
-from mysearches.tests.local.fake_feed_data import jobs, no_jobs
-from mysearches.tests.test_helpers import return_file
 from mysearches.tests.factories import (SavedSearchDigestFactory,
                                         SavedSearchFactory,
                                         PartnerSavedSearchFactory)
@@ -47,17 +42,6 @@ class MySearchViewTests(MyJobsBase):
         }
         self.new_form = forms.SavedSearchForm(user=self.user,
                                               data=self.new_form_data)
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        super(MySearchViewTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_search_main(self):
         response = self.client.get(reverse('saved_search_main'))
@@ -261,7 +245,7 @@ class MySearchViewTests(MyJobsBase):
         Deleting all searches should only remove regular saved searches if the
         partner saved searches weren't created by the user trying to use it.
         """
-        
+
         user = UserFactory(email='asdfa@example.com')
         company = CompanyFactory(id=2423, name="Bacon Factory",
                                  user_created=False)
@@ -271,7 +255,7 @@ class MySearchViewTests(MyJobsBase):
 
         response = self.client.get(reverse('delete_saved_search') +
             '?id=ALL')
-        
+
         self.assertEqual(response.status_code, 302)
         # partner saved search should still exist...
         self.assertTrue(models.PartnerSavedSearch.objects.filter(

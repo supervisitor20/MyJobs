@@ -55,7 +55,6 @@ def get_rss_soup(rss_url):
     Outputs:
                    BeautifulSoup object
     """
-
     rss_feed = urllib2.urlopen(rss_url).read()
     return BeautifulSoup(rss_feed, "html.parser")
 
@@ -74,7 +73,6 @@ def validate_dotjobs_url(search_url, user):
     """
     if not search_url:
         return None, None
-
     if search_url.find('://') == -1:
         search_url = "http://" + search_url
 
@@ -94,7 +92,7 @@ def validate_dotjobs_url(search_url, user):
         return None, None
 
     try:
-        page = urllib.urlopen(search_url).read()
+        page = urllib2.urlopen(search_url).read()
         soup = BeautifulSoup(page, "html.parser")
     except Exception as e:
         logger.error("Failed to download or parse page with rss link: %s"
@@ -244,10 +242,10 @@ def date_in_range(start, end, x):
 
 def url_sort_options(feed_url, sort_by, frequency=None, partner=False):
     """
-    Updates urls based on sort by option. 
+    Updates urls based on sort by option.
 
     Inputs:
-    :feed_url:      URL of an RSS feed 
+    :feed_url:      URL of an RSS feed
     :sort_by:       What the feed should be sorted by ('Relevance' or 'Date')
     :frequency:     Frequency of saved search ('D', 'W', 'M')
     :partner:       This is a partner saved search; don't add days_ago

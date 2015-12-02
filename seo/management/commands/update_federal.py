@@ -5,7 +5,7 @@ from seo.models import BusinessUnit
 class Command(BaseCommand):
     args = "'/path/to/file.csv' (as string)"
     help = """
-           Given the path to a CSV file in the format of 'buid, fc(0|1), 
+           Given the path to a CSV file in the format of 'buid, fc(0|1),
            Company Name' update the federal_contractor attributes
            on the Company model.
            """

@@ -1,7 +1,7 @@
 import bleach
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import resolve
 from django.template import Library
 from django.template.loader import render_to_string
 from django.utils.text import slugify
@@ -69,7 +69,7 @@ def select(context, pattern, ignore=None):
     if pattern in path:
         if ignore and ignore in path:
             return ''
-        
+
         return 'selected'
 
 

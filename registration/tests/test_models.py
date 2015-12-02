@@ -17,19 +17,18 @@ from myprofile.tests.factories import PrimaryNameFactory
 from registration.forms import InvitationForm
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
-from seo.models import CompanyUser
 from seo.tests.factories import CompanyFactory
 
 
 class RegistrationModelTests(MyJobsBase):
     """
     Test the model and manager used in the default backend.
-    
+
     """
     user_info = {'password1': 'swordfish',
                  'email': 'alice@example.com',
                  'send_email': True}
-    
+
     def setUp(self):
         super(RegistrationModelTests, self).setUp()
         self.old_activation = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', None)
@@ -44,7 +43,7 @@ class RegistrationModelTests(MyJobsBase):
         Creating a registration profile for a user populates the
         profile with the correct user and a SHA1 hash to use as
         activation key.
-        
+
         """
         new_user, created = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
@@ -57,7 +56,7 @@ class RegistrationModelTests(MyJobsBase):
     def test_user_creation_email(self):
         """
         By default, creating a new user sends an activation email.
-        
+
         """
         User.objects.create_user(**self.user_info)
         self.assertEqual(len(mail.outbox), 1)
@@ -66,7 +65,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         Passing ``send_email=False`` when creating a new user will not
         send an activation email.
-        
+
         """
         self.user_info['send_email'] = False
         User.objects.create_user(
@@ -78,7 +77,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         ``RegistrationProfile.activation_key_expired()`` is ``False``
         within the activation window.
-        
+
         """
         new_user, _ = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
@@ -88,7 +87,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         ``RegistrationProfile.activation_key_expired()`` is ``True``
         outside the activation window.
-        
+
         """
         new_user, created = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
@@ -100,7 +99,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         Activating a user within the permitted window makes the
         account active, and resets the activation key.
-        
+
         """
         new_user, created = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
@@ -118,7 +117,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         Attempting to activate outside the permitted window does not
         activate the account.
-        
+
         """
         new_user, created = User.objects.create_user(**self.user_info)
 
@@ -140,14 +139,14 @@ class RegistrationModelTests(MyJobsBase):
         """
         Attempting to activate with a key which is not a SHA1 hash
         fails.
-        
+
         """
         self.failIf(ActivationProfile.objects.activate_user('foo'))
 
     def test_activation_already_activated(self):
         """
         Attempting to re-activate an already-activated account fails.
-        
+
         """
         new_user, created = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
@@ -160,7 +159,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         Attempting to activate with a non-existent key (i.e., one not
         associated with any account) fails.
-        
+
         """
         # Due to the way activation keys are constructed during
         # registration, this will never be a valid key.
@@ -171,7 +170,7 @@ class RegistrationModelTests(MyJobsBase):
         """
         ``RegistrationProfile.objects.delete_expired_users()`` only
         deletes inactive users whose activation window has expired.
-        
+
         """
         User.objects.create_user(**self.user_info)
         expired_user, created = User.objects.create_user(
@@ -190,7 +189,7 @@ class RegistrationModelTests(MyJobsBase):
         Calling the reset_activation method on the ActivationProfile model
         generates a new activation key, even if it was already activated.
         """
-        
+
         new_user, created = User.objects.create_user(**self.user_info)
         profile = ActivationProfile.objects.get(user=new_user)
         ActivationProfile.objects.activate_user(profile.activation_key)

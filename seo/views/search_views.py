@@ -23,7 +23,6 @@ from django.http import (HttpResponse, Http404, HttpResponseNotFound,
                          HttpResponseRedirect, HttpResponseServerError,
                          QueryDict)
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext, loader
 from django.template.defaultfilters import safe
@@ -38,13 +37,12 @@ from moc_coding import models as moc_models
 from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
-from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr, task_check_solr_count
 from xmlparse import text_fields
 from import_jobs import add_jobs, delete_by_guid
 from transform import transform_for_postajob
 
 from myblocks.views import BlockView
-from myblocks.models import SearchResultBlock, Page
+from myblocks.models import SearchResultBlock
 from myblocks import context_tools
 from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.breadbox import Breadbox
@@ -55,15 +53,14 @@ from seo.filters import FacetListWidget
 from seo.forms.admin_forms import UploadJobFileForm
 from seo.models import (BusinessUnit, Company, Configuration, Country,
                         GoogleAnalytics, JobFeed, SeoSite, SiteTag)
-from seo.decorators import (sns_json_message, custom_cache_page, protected_site,
-                            home_page_check)
+from seo.decorators import custom_cache_page, protected_site, home_page_check
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
 from myjobs.decorators import user_is_allowed
-from myemails.models import EmailTemplate, EmailSection
+from myemails.models import EmailSection
 from myblocks.models import Page
 
 """
@@ -1077,7 +1074,7 @@ def home_page(request):
     returns:
     render_to_response call
 
-    """    
+    """
     site_config = get_site_config(request)
     num_facet_items = site_config.num_filter_items_to_show
     custom_facet_counts = []
@@ -1368,29 +1365,6 @@ def v2_redirect(request, v2_redirect=None, country=None, state=None, city=None,
             }
         })
     return redirect(url, permanent=True, **v2_redirect_kwargs)
-
-
-@csrf_exempt
-@sns_json_message
-def send_sns_confirm(response):
-    """
-    Called when a job feed file is ready to be imported. Calls celery update
-    tasks.
-
-    """
-    # Postajob buids and state job bank buids
-    allowed_buids = [1228, 5480] + range(2650,2704)
-
-    LOG.info("sns received for SEOXML")
-    if response:
-        if response['Subject'] != 'END':
-            buid = response['Subject']
-            if int(buid) in allowed_buids:
-                LOG.info("Creating update_solr task for %s" % buid)
-                set_title = helpers.create_businessunit(int(buid))
-                task_update_solr.delay(buid, force=True, set_title=set_title)
-            else:
-                LOG.info("Skipping update_solr for %s because it is not in the allowed buids list." % buid)
 
 
 def new_sitemap_index(request):
@@ -1700,7 +1674,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     redirect_url = helpers.determine_redirect(request, filters)
     if redirect_url:
         return redirect_url
-    
+
     query_path = request.META.get('QUERY_STRING', None)
     moc_id_term = request.GET.get('moc_id', None)
     q_term = request.GET.get('q', None)
@@ -1772,21 +1746,21 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     if query_path:
         for job in jobs:
             helpers.add_text_to_job(job)
-    
+
     breadbox = Breadbox(request.path, filters, jobs, request.GET)
-    
+
     widgets = helpers.get_widgets(request, site_config, facet_counts,
                                   custom_facet_counts, filters=filters)
-    
+
     location_term = breadbox.location_display_heading()
     moc_term = breadbox.moc_display_heading()
-    
+
     if not location_term:
         location_term = '\*'
     if not moc_term:
         moc_term = '\*'
 
-    company_data = helpers.get_company_data(filters)
+    company_data = helpers.get_company_thumbnail(filters)
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
@@ -1914,93 +1888,6 @@ def delete_a_job(request):
 
     resp = {'jobs_deleted': jobs_deleted}
     return HttpResponse(json.dumps(resp), content_type='application/json')
-
-
-@csrf_exempt
-@sns_json_message
-def confirm_load_jobs_from_etl(response):
-    """
-    Called when a job source is ready to be imported. Calls celery update
-    tasks.
-
-    """
-
-    blocked_jsids = ('4051c882-fa2c-4c93-9db5-91c9add39def',
-                     '10f89212-654e-4ee5-8655-2bbb4770252f',
-                     'e6fa8adb-07c9-4b15-87ad-5816c3968d43',
-                     '8667bd35-c6d3-4008-8b62-36d6b6e3bb62',
-                     'c94ddf73-23c8-4b6c-ad5a-a98b5f2a04b0',
-                     '5de582a0-cab5-45f8-88a8-a31f7fe03025',
-                     '72690d11-b3fc-403c-8726-c80883e27774',
-                     'e0fe5671-c591-40d4-bba9-f0d8542882e2',
-                     'dd5fd646-655b-4867-8784-700bb5c6315b',
-                     'c4d56d17-7b35-436a-8871-80d8c2e37bf9',
-                     'ff794484-8f24-4bdc-96e3-227c9dec2c26',
-                     'cd7fc92a-9bff-4bbd-a10a-ffd6a57a93a1',
-                     '3388e1e9-8292-4d6f-a5ee-c4ed2bae59a4',
-                     '868672a0-c22b-4337-9dcc-2fa5b6671592',
-                     '09ae740c-36d8-432d-bc84-de538dbac8fd',
-                     '03516574-c452-45ab-b217-8ea0357be747',
-                     '1b0e4f3b-a9e1-40b9-8c8b-85a65882c2a3',
-                     'de0762b3-698b-4a3b-92d2-388144edb15a',
-                     '77e1b0eb-4017-44b7-ab9d-898d35390b81',
-                     '905ad700-0a73-4da1-8bf5-b12bf6ba89a7',
-                     'f39aaaf4-e126-4d53-bdf3-98831f45d731',
-                     '1f78a1c6-1ced-4d80-b338-1c3bd8ac57a7',
-                     '4d9330b3-8ca8-41ef-8ca2-305da6ddc5f0',
-                     'aeb6cdb4-1b02-4bab-b398-4d3980097659',
-                     'c20f2c86-bd08-4cce-af94-b3339944676e',
-                     '249308c5-623b-41b9-9364-2589e49b5e02',
-                     '27f0d51d-2882-4168-bfca-cb415f666fb3',
-                     '8d506b65-f911-449e-bad8-c308a196e1c0',
-                     'c6203550-2435-4137-9c11-b0710f3ef4cf',
-                     '682deefb-fde9-4de2-8985-13371d04a8ff',
-                     'c8bfb1b1-398a-46a4-a1f4-fbdb5354ee78',
-                     '769ca60a-f4e7-446d-b2ba-b66a5a3e9313',
-                     '7ecfcde8-b7e1-4bb1-a671-b52d729903b5',
-                     '817d2b90-9299-4ef6-b484-46208ce69e19',
-                     '00152da3-1abe-458e-8895-121ca9008cf7',
-                     '94d95b97-24e4-4d98-8ecf-1dce6202c523',
-                     'ccc31e40-a65f-46b0-a194-b0517c33a7f6',
-                     'be4dcd74-ff51-4f99-8057-55a876b3ce56',
-                     '15079de2-7de2-4191-b8cf-7924036b4b97',
-                     'c8d8da8c-542f-4620-b90b-4a37d55d659f',
-                     '66cbd5e6-c86b-4659-b80c-11aa5a5fa6a7',
-                     '265357bd-a619-40b7-b9bc-9674d6e96400',
-                     '7d6ea31f-e36d-43e7-b68e-d9dbd45446f7',
-                     'b3c58f53-144a-4de7-807b-8fe140259d7f',
-                     '23322abe-6faf-4303-b08b-713e5127e019',
-                     'bedee5c5-a9ca-459f-899b-29482712d7c9',
-                     '69f485d0-40d5-430f-a5eb-6221ee14092d',
-                     'b0c01590-0085-4ab5-b0b0-27149fa0fb4a',
-                     '536dcdbb-2a88-40d8-bf68-8630306c2818',
-                     'ad875783-c49e-49ff-b82a-b0538026e089',
-                     '0ab41358-8323-4863-9f19-fdb344a75a35',)
-
-    LOG.info("sns received for ETL")
-
-    if response:
-        if response.get('Subject', None) != 'END':
-            msg = json.loads(response['Message'])
-            jsid = msg['jsid']
-            buid = msg['buid']
-            name = msg['name']
-            prio = msg["priority"]
-            if jsid.lower() in blocked_jsids:
-                LOG.info("Ignoring sns for %s", jsid)
-                return None
-
-            # Setup a check on this business unit down the road.
-            if 'count' in msg:
-                LOG.info("Creating check_solr_count task (%s, %s)" % (buid, msg['count']))
-                eta=datetime.datetime.now() + datetime.timedelta(minutes=20)
-                task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
-
-            LOG.info("Creating ETL Task (%s, %s, %s)" % (jsid, buid, name))
-            if int(prio) == 1:
-                task_priority_etl_to_solr.delay(jsid, buid, name)
-            else:
-                task_etl_to_solr.delay(jsid, buid, name)
 
 
 @staff_member_required

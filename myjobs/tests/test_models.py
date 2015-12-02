@@ -3,13 +3,16 @@ from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError
 from django.db.models import Q
 from django.utils.http import urlquote
 
 from setup import MyJobsBase
-from myjobs.models import User
+from myjobs.models import User, Role
 from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import (UserFactory, AppAccessFactory,
+                                    ActivityFactory, RoleFactory)
+from seo.tests.factories import CompanyUserFactory
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
 from myreports.models import Report
@@ -177,3 +180,117 @@ class UserManagerTests(MyJobsBase):
         user.delete()
         self.assertIn(pss, PartnerSavedSearch.objects.all())
         self.assertIn(report, Report.objects.all())
+
+
+class TestActivities(MyJobsBase):
+    """Tests the relationships between activities, roles, and app access."""
+
+    def setUp(self):
+        super(TestActivities, self).setUp()
+
+        self.app_access = AppAccessFactory()
+        self.company = CompanyFactory(app_access=[self.app_access])
+        self.activities = ActivityFactory.create_batch(
+            5, app_access=self.app_access)
+        self.role = RoleFactory(
+            company=self.company, activities=self.activities)
+
+    def test_role_unique_to_company(self):
+        """Roles should be unique to company by name."""
+
+        try:
+            # This should be allowed since the company is different
+            RoleFactory(name=self.role.name)
+        except IntegrityError:
+            self.fail("Creating a similar role for a different company should "
+                      "be allowed, but it isn't.")
+
+        # we shouldn't be allowed to create a role wit the same name in the
+        # same company
+        with self.assertRaises(IntegrityError):
+            RoleFactory(name=self.role.name, company=self.role.company)
+
+    def test_activity_names_unique(self):
+        """Activities should have unique names."""
+
+        activity = self.activities[0]
+        with self.assertRaises(IntegrityError):
+            ActivityFactory(name=activity.name)
+
+    def test_app_access_names_unique(self):
+        """App access levels should have unique names."""
+
+        with self.assertRaises(IntegrityError):
+            AppAccessFactory(name=self.app_access.name)
+
+    def test_automatic_role_admin_activities(self):
+        """
+        New activities should be added to all Admin roles automatically.
+        """
+
+        # add role to existing company
+        RoleFactory(company=self.company, name="Admin",
+                    activities=self.activities)
+        role_admins = RoleFactory.create_batch(
+            50, name="Admin", activities=self.activities)
+
+        # sanity check for initial numbers
+        for admin in Role.objects.filter(name="Admin"):
+            self.assertEqual(admin.activities.count(), 5)
+
+        new_activity =  ActivityFactory(
+            name="new activity", description="Just a new test activity.")
+
+        # new activity should be available for admins
+        for admin in Role.objects.filter(name="Admin"):
+            self.assertIn(new_activity, admin.activities.all())
+
+        # existing role should not have new activity
+        self.assertNotIn(new_activity, self.role.activities.all())
+
+    def test_can_method(self):
+        """
+        `User.can` should return False when a user isn't associated with the
+        correct activities and True when they are.
+        """
+
+        user = UserFactory(roles=[self.role])
+        CompanyUserFactory(user=user, company=self.company)
+        activities = self.role.activities.values_list('name', flat=True)
+
+        # check for a single activity
+        self.assertTrue(user.can(self.company, activities[0]))
+
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(self.company, "eat a burrito"))
+
+        with self.settings(ROLES_ENABLED=False):
+            self.company.member = False
+            self.company.save()
+
+            self.assertFalse(user.can(self.company, activities[0]))
+
+            self.company.member = True
+            self.company.save()
+
+        # check for multiple activities
+        self.assertTrue(user.can( self.company, *activities))
+
+        with self.settings(ROLES_ENABLED=True):
+            self.assertFalse(user.can(
+                self.company, activities[0], "eat a burrito"))
+
+    def test_activities(self):
+        """
+        `User.activities` should return a list of activities associated with
+        this user.
+        """
+
+        user = UserFactory()
+
+        self.assertItemsEqual(user.activities, [])
+
+        user.roles.add(self.role)
+        activities = self.role.activities.values_list('name', flat=True)
+
+        self.assertItemsEqual(user.activities, activities)

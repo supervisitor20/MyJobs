@@ -9,6 +9,7 @@ from seo.models import Company, Country
 from slugify import slugify
 from xmlparse import DEJobFeed, get_strptime, text_fields, get_mapped_mocs
 import uuid
+from django.utils.timezone import get_current_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +127,7 @@ def transform_for_postajob(job):
     solr_job['date_updated_exact'] = job['date_updated']
     solr_job['job_source_name'] = 'Post-a-Job'
     solr_job['date_updated'] = job['date_updated']
-    solr_job['salted_date'] = DEJobFeed.date_salt(job['date_updated'])
+    solr_job['salted_date'] = DEJobFeed.date_salt(job['date_new'])
     solr_job['reqid'] = job['reqid']
     solr_job['company_digital_strategies_customer'] = company.digital_strategies_customer
     solr_job['guid'] = job['guid']
@@ -286,7 +287,7 @@ def hr_xml_to_json(xml, business_unit):
     job['country_short_exact'] = country_short.upper()
     job['date_updated_exact'] = job['date_updated']
     job['job_source_name'] = business_unit.title
-    job['salted_date'] = DEJobFeed.date_salt(job['date_updated'])
+    job['salted_date'] = DEJobFeed.date_salt(job['date_new'])
     job['buid'] = business_unit.id
     job['reqid'] = reqid
     job['company_digital_strategies_customer'] = company.digital_strategies_customer
@@ -416,11 +417,14 @@ def make_redirect(job, business_unit):
         return redirect
     except Redirect.DoesNotExist:
         logger.debug("Creating new redirect for guid %s", guid)
+        # TODO: Make this change at the source of the data, and evaluate all places where we parse dates during imports 
+        #       for similar issues.  
+        localized_time = get_current_timezone().localize(job['date_new'], is_dst=False)
         redirect = Redirect(guid=guid,
                             buid=business_unit.id,
                             uid=None,
                             url=job['link'],
-                            new_date=job['date_new'],
+                            new_date=localized_time,
                             expired_date=None,
                             job_location=location,
                             job_title=job['title_exact'],

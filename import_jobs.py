@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import urllib
@@ -163,7 +162,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
 
     # Process the files.
     active_directory = os.path.join(directory, 'ActiveDirectory_%s' % guid)
-    files = os.listdir(active_directory)
+    files = sorted(os.listdir(active_directory))
     logger.info("Found %s jobs for guid %s", len(files), guid)
     for f in files:
         path = os.path.join(active_directory, f)
@@ -407,7 +406,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
             logging.debug("BUID:%s - SOLR - Delete chunk: %s" %
                          (buid, list(solr_del_uids)))
             conn.delete(q=delete_chunk)
-    
+
     # delete any jobs that may have been added via etl_to_solr
     conn.delete(q="buid:%s AND !uid:[0  TO *]" % buid)
 

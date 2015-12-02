@@ -13,7 +13,6 @@ from django.forms import (CharField, CheckboxSelectMultiple,
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
 from seo.models import Company, CompanyUser, SeoSite
-from mypartners.widgets import SplitDateDropDownField
 from postajob.fields import NoValidationChoiceField, SelectWithOptionClasses
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              OfflineProduct, Package, Product, ProductGrouping,
@@ -22,7 +21,7 @@ from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
 from postajob.payment import authorize_card, get_card, settle_transaction
 from postajob.widgets import ExpField
 from universal.forms import RequestForm
-from universal.helpers import get_object_or_none, get_company
+from universal.helpers import get_object_or_none
 
 
 def is_superuser_in_admin(request):
@@ -371,7 +370,7 @@ class PurchasedJobForm(PurchasedJobBaseForm):
         # product
         max_job_length = self.purchased_product.max_job_length
         job_length_index = [
-            choice[0] for choice in 
+            choice[0] for choice in
             self.fields['date_expired'].widget.choices].index(max_job_length)
 
         self.fields['date_expired'].widget.choices = self.fields[
@@ -431,7 +430,7 @@ class SitePackageForm(RequestForm):
             self.fields['sites'].queryset = self.request.user.get_sites()
 
             # Limit a user to only companies they have access to.
-            self.fields['owner'].queryset = self.request.user.get_companies()
+            self.fields['owner'].queryset = self.request.user.companies.all()
 
 
 class ProductForm(RequestForm):

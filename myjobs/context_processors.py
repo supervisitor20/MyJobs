@@ -12,7 +12,7 @@ def current_site_info(request):
     description -- gives the site a description
     keywords -- key words for SEO
     """
-    
+
     try:
         current_site = Site.objects.get_current()
         values = {

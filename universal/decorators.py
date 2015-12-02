@@ -26,7 +26,7 @@ def company_has_access(perm_field):
             # with this url as the next url.
             if request.user.is_anonymous():
                 params = {'next': request.get_full_path()}
-                next_url = build_url(reverse('home'), params)
+                next_url = build_url(reverse('login'), params)
                 return HttpResponseRedirect(next_url)
 
             # If the user is logged in, but they aren't a CompanyUser or they
@@ -85,7 +85,7 @@ def activate_user(view_func):
 # Rather than write a few different decorators, I decided to go with a
 # decorator factory and write partials to handle repetitive cases.
 def warn_when(condition, feature, message, link=None, link_text=None,
-              exception=None, redirect=True):
+              exception=None, redirect=True, enabled=True):
     """
     A decorator which displays a warning page for :feature: with :message: when
     the :condition: isn't met. If a :link: is provided, a button with that link
@@ -103,9 +103,14 @@ def warn_when(condition, feature, message, link=None, link_text=None,
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
+            # this decorator factory only works if called with enabled=True or
+            # settings.ROLES_ENABLED is False
+            if not enabled and settings.ROLES_ENABLED:
+                return view_func(request, *args, **kwargs)
+
             if request.user.is_anonymous() and redirect:
                 params = {'next': request.get_full_path()}
-                next_url = build_url(reverse('home'), params)
+                next_url = build_url(reverse('login'), params)
                 return HttpResponseRedirect(next_url)
 
             ctx = {'feature': feature,
@@ -141,6 +146,8 @@ warn_when_inactive = partial(
     link_text='Resend Activation')
 
 
+# TODO: Remove this decorator when Roles are deployed, as the internal check
+# in `requires` takes care of this already
 def has_access(feature):
     """
     Decorator that signifies which feature permissions are required in order to
@@ -166,4 +173,4 @@ def has_access(feature):
     return not_found_when(
         condition=lambda req: all(c(req) for c in conditions.get(feature, [])),
         message="Must have %s access to proceed." % feature,
-        feature=feature)
+        feature=feature, enabled=False)

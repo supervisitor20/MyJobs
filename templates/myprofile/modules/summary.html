@@ -1,6 +1,11 @@
 {% load i18n %}
-<b>{{ module.0.headline }}</b>
-<div class="clear"></div>
-<div>{{ module.0.the_summary }}</div>
-<div class="clear"></div>
-<a class="btn-link pull-right sum-edit" href="{% url 'handle_form' %}?id={{ module.0.id }}&module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
+
+<div class="product-card" id="{{module.0.get_model_name}}-{{module.0.id}}-item">
+    <div class="big-title">
+        {{ module.0.headline }}
+    </div>
+    <div class="product-details">
+        {{ module.0.the_summary }}
+    </div>
+    <a class="btn" href="{% url 'handle_form' %}?id={{ module.0.id }}&module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
+</div>

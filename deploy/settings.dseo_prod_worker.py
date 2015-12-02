@@ -39,7 +39,7 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         # Set version number to date that this file was last modified
         # This should update the cache key on deployments and ensure any servers
-        # deployed to on the same day will have matching keys. This won't clear 
+        # deployed to on the same day will have matching keys. This won't clear
         # the cache for multiple deployments per day.
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime(__file__))),
         'LOCATION': [
@@ -124,36 +124,3 @@ BROKER_VHOST = 'dseo-vhost'
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 CELERY_DEFAULT_ROUTING_KEY = 'dseo.default'
-CELERY_QUEUES = {
-    'priority': {
-        'binding_key': 'priority.#'
-    },
-    'dseo': {
-        'binding_key': 'dseo.#'
-    },
-    'solr': {
-        'binding_key': 'solr.#'
-    }
-}
-CELERY_ROUTES = {
-    'tasks.priority_etl_to_solr': {
-        'queue': 'priority',
-        'routing_key': 'priority.update_solr'
-    },
-    'tasks.task_update_solr': {
-        'queue': 'solr',
-        'routing_key': 'solr.update_solr'
-    },
-    'tasks.task_clear_solr': {
-        'queue': 'solr',
-        'routing_key': 'solr.clear_solr'
-    },
-    'tasks.etl_to_solr': {
-        'queue': 'solr',
-        'routing_key': 'solr.update_solr'
-    },
-    'tasks.check_solr_count': {
-        'queue': 'solr',
-        'routing_key': 'solr.update_solr'
-    },
-}

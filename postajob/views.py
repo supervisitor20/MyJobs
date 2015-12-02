@@ -425,14 +425,6 @@ def order_postajob(request):
     return html
 
 
-@user_is_allowed()
-@company_has_access('product_access')
-def is_company_user(request):
-    email = request.REQUEST.get('email')
-    exists = CompanyUser.objects.filter(user__email=email).exists()
-    return HttpResponse(json.dumps(exists))
-
-
 @csrf_exempt
 @user_is_allowed()
 @company_has_access('product_access')
@@ -458,7 +450,7 @@ class PostajobModelFormMixin(object):
     template_name = 'postajob/%s/form.html' % settings.PROJECT
 
     def get_queryset(self, request):
-        kwargs = {'owner__in': request.user.get_companies()}
+        kwargs = {'owner__in': request.user.company_set.all()}
         self.queryset = self.model.objects.filter(**kwargs)
         return self.queryset
 
@@ -792,7 +784,7 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
     def get_context_data(self, **kwargs):
         context = super(OfflinePurchaseFormView, self).get_context_data(**kwargs)
         context['show_product_labels'] = True
-        
+
         return context
 
 

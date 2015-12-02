@@ -1,4 +1,3 @@
-from settings import *
 facet_counts=({
     "state_slab": [('indiana/usa/jobs::Indiana',1),
                    ('new-jersey/usa/jobs::New Jersey',2),
@@ -36,7 +35,7 @@ facet_counts=({
                    ('none/nrw/jobs::None',6),
                    ('kentucky/usa/jobs::Kentucky',10),
                    ('california/usa/jobs::California',11),
-                   ('nevada/usa/jobs::Nevada',12),                   
+                   ('nevada/usa/jobs::Nevada',12),
                    ('none/nrw/jobs::None',6),
                    ('none/nrw/jobs::None',6),
                    ('none/nrw/jobs::None',6),

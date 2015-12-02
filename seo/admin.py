@@ -4,7 +4,6 @@ from django.contrib.admin import helpers
 from django.contrib.admin.util import unquote
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.views.main import ChangeList
-from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.contrib import messages
@@ -98,6 +97,10 @@ class SeoCeleryTaskAdmin(djcelery.admin.TaskMonitor):
                     args = ast.literal_eval(state.args)
                     kwargs = ast.literal_eval(state.kwargs)
                     tasks.task_update_solr.delay(*args, **kwargs)
+                if "etl_to_solr" in state.name:
+                    args = ast.literal_eval(state.args)
+                    kwargs = ast.literal_eval(state.kwargs)
+                    tasks.task_priority_etl_to_solr.delay(*args, **kwargs)
                 else:
                     messages.info(request,
                                   u"Resend not supported for that task type")
@@ -190,7 +193,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                 ('browse_facet_order_3', 'browse_facet_text_3',
                  'browse_facet_show_3'),
                 ('browse_facet_order_4', 'browse_facet_text_4',
-                 'browse_facet_show_4'),                 
+                 'browse_facet_show_4'),
                 ('browse_company_order', 'browse_company_text',
                  'browse_company_show'),
                 ('browse_moc_order', 'browse_moc_text', 'browse_moc_show'),
@@ -313,16 +316,10 @@ class BusinessUnitAdmin(admin.ModelAdmin):
     force_create.short_description = _("Force creation of business unit feed")
 
 
-class MyUserAdmin(UserAdmin):
-    filter_horizontal = ('user_permissions', 'groups')
-
-
 class GoogleAnalyticsForm(forms.ModelForm):
-    sites = MyModelMultipleChoiceField(SeoSite.objects.all(), my_model=SeoSite,
-                                       required=False,
-                                       widget=(admin.widgets\
-                                               .FilteredSelectMultiple('Sites',
-                                                                       False)))
+    sites = MyModelMultipleChoiceField(
+        SeoSite.objects.all(), my_model=SeoSite, required=False,
+        widget=(admin.widgets.FilteredSelectMultiple('Sites', False)))
     group = MyModelChoiceField(Group.objects.order_by('name'), my_model=Group,
                                required=False)
 
@@ -808,7 +805,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                     prefix = "%s-%s" % (prefix, prefixes[prefix])
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
-                formsets.append(formset) 
+                formsets.append(formset)
 
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
@@ -1083,7 +1080,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 self.log_change(request, new_object, change_message)
                 return self.response_change(request, new_object)
 
-        else:            
+        else:
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
@@ -1162,13 +1159,16 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     form = CompanyForm
     save_on_top = True
-    filter_horizontal = ('job_source_ids', 'prm_saved_search_sites')
+    filter_horizontal = ('job_source_ids', 'prm_saved_search_sites',
+                         'app_access')
     list_display = ('name', 'featured_on','company_user_count')
     list_filter = ('enhanced', 'digital_strategies_customer')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
-                               ('enhanced'), ('digital_strategies_customer')]}),
+                               ('posting_access'), ('enhanced'),
+                               ('digital_strategies_customer'),
+                               ('app_access')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
                                    ('og_img')]}),

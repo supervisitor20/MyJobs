@@ -75,14 +75,17 @@ def dashboard(request, template="mydashboard/mydashboard.html",
 
     authorized_microsites, buids = get_company_microsites(company)
 
-    admins = CompanyUser.objects.filter(company=company.id)
+    # roles are only enabled during development
+    if settings.ROLES_ENABLED:
+        admins = User.objects.filter(roles__company=company)
+    else:
+        admins = User.objects.filter(company=company)
 
-    # Removes main user from admin list to display other admins
-    admins = admins.exclude(user=request.user)
+    admins = admins.exclude(pk=request.user.pk)
     requested_microsite = request.REQUEST.get('microsite', '')
-    requested_date_button = request.REQUEST.get('date_button', False)    
-    candidates_page = request.REQUEST.get('page', 1)    
-          
+    requested_date_button = request.REQUEST.get('date_button', False)
+    candidates_page = request.REQUEST.get('page', 1)
+
     # the url value for 'All' in the select box is company name
     # which then gets replaced with all microsite urls for that company
     site_name = ''
@@ -447,7 +450,7 @@ def export_csv(request, candidates, models_excluded=[], fields_excluded=[]):
                 num += 1
             else:
                 break
-        
+
         instance = getattr(unit, unit.content_type.name.replace(" ", ""))
         fields = retrieve_fields(instance)
 

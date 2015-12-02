@@ -5,15 +5,12 @@ from urlparse import urlparse, parse_qs
 from django.conf import settings
 from django.contrib.auth.models import Group
 
-from mock import patch
-
 from myjobs.tests.setup import MyJobsBase
 from mysearches.models import SavedSearch
 from mysearches.helpers import (date_in_range, parse_feed,
                                 update_url_if_protected, url_sort_options,
                                 validate_dotjobs_url)
 
-from mysearches.tests.helpers import return_file
 from myjobs.tests.factories import UserFactory
 
 
@@ -22,13 +19,6 @@ class SavedSearchHelperTests(MyJobsBase):
         super(SavedSearchHelperTests, self).setUp()
         self.user = UserFactory()
         self.valid_url = 'http://www.my.jobs/jobs?location=chicago&q=nurse'
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchHelperTests, self).tearDown()
-        self.patcher.stop()
 
     def test_valid_dotjobs_url(self):
         url, soup = validate_dotjobs_url(self.valid_url, self.user)
@@ -117,7 +107,7 @@ class SavedSearchHelperTests(MyJobsBase):
         # If a frequency isn't specified, days_ago should be missing from
         # the url.
         self.assertNotIn('days_ago', query)
-    
+
         # Test to make sure sort by "Date" doesn't have anything added
         feed_url = url_sort_options(feed, "Date")
         self.assertEquals(feed_url, "http://www.my.jobs/jobs/feed/rss")

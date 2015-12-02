@@ -25,7 +25,9 @@ def init_tags(self):
     self.fields['tags'] = forms.CharField(
         label='Tags', max_length=255, required=False,
         help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.',
-        widget=forms.TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
+        widget=forms.TextInput(attrs={
+            'id': 'p-tags',
+            'autocomplete': 'off'})
     )
 
 
@@ -36,10 +38,10 @@ class ContactForm(NormalizedModelForm):
 
     # used to identify if location info is entered into a form
     __LOCATION_FIELDS = (
-        'label', 'address_line_one', 'address_line_two', 
+        'label', 'address_line_one', 'address_line_two',
         'city', 'state', 'postal_code')
     # similarly for partner information
-    __PARTNER_FIELDS = ('parnter-tags', 'partner_id', 'partnername')
+    __PARTNER_FIELDS = ('partner-tags', 'partner_id', 'partnername')
 
     def __init__(self, *args, **kwargs):
         super(ContactForm, self).__init__(*args, **kwargs)
@@ -70,7 +72,7 @@ class ContactForm(NormalizedModelForm):
         form_name = "Contact Information"
         model = Contact
         exclude = ['user', 'partner', 'locations', 'library', 'archived_on',
-                   'approval_status']
+                   'approval_status', 'last_action_time']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -90,7 +92,7 @@ class ContactForm(NormalizedModelForm):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
-
+        self.instance.update_last_action_time(False)
         contact = None
         if not self.instance.pk:
             contact = Contact.objects.filter(
@@ -107,11 +109,11 @@ class ContactForm(NormalizedModelForm):
 
         contact = contact or super(ContactForm, self).save(commit)
 
-        if any(self.cleaned_data.get(field) 
+        if any(self.cleaned_data.get(field)
                for field in self.__LOCATION_FIELDS
                if self.cleaned_data.get(field)):
             location = Location.objects.create(**{
-                field: self.cleaned_data[field] 
+                field: self.cleaned_data[field]
                 for field in self.__LOCATION_FIELDS})
 
             if location not in contact.locations.all():
@@ -190,7 +192,7 @@ class NewPartnerForm(NormalizedModelForm):
         form_name = "Partner Information"
         model = Contact
         exclude = ['user', 'partner', 'tags', 'locations', 'library',
-                   'approval_status', 'archived_on']
+                   'approval_status', 'archived_on', 'last_action_time']
         widgets = generate_custom_widgets(model)
         widgets['notes'] = forms.Textarea(
             attrs={'rows': 5, 'cols': 24,
@@ -207,7 +209,6 @@ class NewPartnerForm(NormalizedModelForm):
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
-
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
 
@@ -217,7 +218,7 @@ class NewPartnerForm(NormalizedModelForm):
                                          'company_id', 'ct'])
 
         create_contact = any(self.cleaned_data.get(field)
-                             for field in self.__CONTACT_FIELDS 
+                             for field in self.__CONTACT_FIELDS
                              if self.cleaned_data.get(field))
 
         if create_contact:
@@ -228,10 +229,10 @@ class NewPartnerForm(NormalizedModelForm):
             self.instance.partner = partner
             instance = super(NewPartnerForm, self).save(commit)
             partner.primary_contact = instance
-            
+
             if create_location:
                 location = Location.objects.create(**{
-                    field: self.cleaned_data[field] 
+                    field: self.cleaned_data[field]
                     for field in self.__LOCATION_FIELDS})
 
                 if location not in instance.locations.all():
@@ -279,7 +280,7 @@ class PartnerForm(NormalizedModelForm):
     """
     def __init__(self, *args, **kwargs):
         super(PartnerForm, self).__init__(*args, **kwargs)
-        contacts = Contact.objects.filter(partner=kwargs['instance'], 
+        contacts = Contact.objects.filter(partner=kwargs['instance'],
                                           archived_on__isnull=True)
         choices = [(contact.id, contact.name) for contact in contacts]
 
@@ -316,7 +317,7 @@ class PartnerForm(NormalizedModelForm):
 
     def save(self, user, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
-
+        self.instance.update_last_action_time(False)
         instance = super(PartnerForm, self).save(commit)
         # Explicity set the primary_contact for the partner and re-save.
         try:
@@ -327,7 +328,6 @@ class PartnerForm(NormalizedModelForm):
         instance.save()
         log_change(instance, self, user, instance, instance.name,
                    action_type=new_or_change)
-
         return instance
 
 
@@ -418,6 +418,7 @@ class ContactRecordForm(NormalizedModelForm):
     def save(self, user, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.partner = partner
+        self.instance.update_last_action_time(False)
 
         if new_or_change == ADDITION:
             self.instance.created_by = user
@@ -479,6 +480,9 @@ class LocationForm(NormalizedModelForm):
         new_or_change = CHANGE if self.instance.pk else ADDITION
 
         instance = super(LocationForm, self).save(commit)
+        for contact in instance.contacts.all():
+            contact.update_last_action_time()
+
         _, partner, _ = prm_worthy(request)
         log_change(instance, self, request.user, partner, instance.label,
                    action_type=new_or_change)

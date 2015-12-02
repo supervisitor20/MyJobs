@@ -1,5 +1,3 @@
-from mock import patch
-
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -11,7 +9,6 @@ from mypartners.tests.factories import ContactFactory, PartnerFactory
 from mysearches.forms import SavedSearchForm, PartnerSavedSearchForm, \
     PartnerSubSavedSearchForm
 from mysearches.forms import PartnerSavedSearch
-from mysearches.tests.helpers import return_file
 from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import UserFactory
 from registration.models import Invitation
@@ -30,13 +27,6 @@ class SavedSearchFormTests(MyJobsBase):
                      'jobs_per_email': 5,
                      'label': 'All jobs from www.my.jobs',
                      'sort_by': 'Relevance'}
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchFormTests, self).tearDown()
-        self.patcher.stop()
 
     def test_successful_form(self):
         form = SavedSearchForm(user=self.user, data=self.data)
@@ -113,18 +103,7 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         instance.created_by = self.user
         instance.custom_message = instance.partner_message
         self.assertTrue(form.is_valid())
-        form.save()
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
-
-    def tearDown(self):
-        super(PartnerSavedSearchFormTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
+        self.instance = form.save()
 
     def test_partner_saved_search_form_creates_invitation(self):
         """
@@ -211,3 +190,26 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         self.assertFalse(form.fields['is_active'].widget.attrs.get('disabled',
                                                                    False))
         self.assertTrue(form.is_valid())
+
+    def pssform_last_action_time_updated_on_edit(self):
+        """
+            Verify saving partner saved search form causes last_action_time to update
+        """
+        original_time = self.instance.last_action_time
+        new_form = PartnerSavedSearchForm(instance=self.instance, request=self.request, data=self.partner_search_data)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save()
+        self.assertEqual(self.instance.pk, new_instance.pk)
+        self.assertNotEqual(new_instance.last_action_time, original_time)
+
+    def pss_sub_form_last_action_time_updated_on_edit(self):
+        """
+            Verify saving partner saved search sub form causes last_action_time to update
+        """
+        original_time = self.instance.last_action_time
+        new_form = PartnerSubSavedSearchForm(instance=self.instance, request=self.request,
+                                             data=self.partner_search_data)
+        self.assertTrue(new_form.is_valid())
+        new_instance = new_form.save()
+        self.assertEqual(self.instance.pk, new_instance.pk)
+        self.assertNotEqual(new_instance.last_action_time, original_time)

@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from settings import *
-
 SOLR_FIXTURE = [
     {
         'buid': 0,
         'city': 'Indianapolis',
         'city_ac': 'Indianapolis',
         'city_exact': 'Indianapolis',
-        'city_slab': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',        
+        'city_slab': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',
         'city_slab_exact': 'indianapolis/indiana/usa/jobs::Indianapolis, IN',
         'city_slug': 'indianapolis',
         'company': 'Test Company',

@@ -1,7 +1,6 @@
 from django import forms
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.conf import settings
 
 from automation.source_codes import process_spreadsheet, add_source_codes
 from redirect.models import Redirect

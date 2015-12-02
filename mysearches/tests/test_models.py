@@ -12,6 +12,7 @@ from mock import patch, Mock
 from myjobs.tests.setup import MyJobsBase
 from mydashboard.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
+from myjobs.tests.helpers import return_file
 from mymessages.models import MessageInfo
 from mypartners.models import ContactRecord
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
@@ -23,27 +24,14 @@ from mysearches.tests.local.fake_feed_data import jobs, no_jobs
 from mysearches.tests.factories import (SavedSearchFactory,
                                         SavedSearchDigestFactory,
                                         PartnerSavedSearchFactory)
-from mysearches.tests.test_helpers import return_file
 from registration.models import ActivationProfile, Invitation
-from tasks import send_search_digests
-from universal.helpers import send_email
+from tasks import send_search_digests, requeue_missed_searches
 
 
 class SavedSearchModelsTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchModelsTests, self).setUp()
         self.user = UserFactory()
-
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
-
-    def tearDown(self):
-        super(SavedSearchModelsTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -69,6 +57,76 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue("Your profile is %s%% complete" %
                         self.user.profile_completion in email.body)
 
+    def requeue(self, search, digest):
+        """
+        Asserts that the given search has a last_sent of None and there are no
+        emails in mail.outbox. Requeues the provided search and then asserts
+        that last_sent was updated and a mail was sent if the provided digest is
+        not active, otherwise reasserts that last_sent is None and no emails
+        have been sent.
+        """
+        self.assertIsNone(search.last_sent)
+        self.assertEqual(len(mail.outbox), 0)
+        requeue_missed_searches()
+        search = SavedSearch.objects.get(pk=search.pk)
+        date = datetime.date.today()
+        outbox_count = 1
+        if digest.is_active:
+            date = None
+            outbox_count = 0
+
+        self.assertEqual(search.last_sent.date() if search.last_sent else None,
+                         date)
+        self.assertEqual(len(mail.outbox), outbox_count)
+
+    def test_requeue_weekly_saved_search(self):
+        """
+        Tests that weekly saved searches are requeued correctly individually in
+        addition to as part of a digest.
+        """
+        today = datetime.date.today().isoweekday()
+        two_days_ago = today - 2
+        if two_days_ago <= 0:
+            two_days_ago += 7
+        digest = SavedSearchDigestFactory(user=self.user,
+                                          is_active=True)
+        search = SavedSearchFactory(user=self.user, is_active=True,
+                                    frequency='W', day_of_week=two_days_ago)
+
+        self.requeue(search, digest)
+
+        digest.is_active = False
+        digest.save()
+        search.last_sent = None
+        search.save()
+        mail.outbox = []
+
+        self.requeue(search, digest)
+
+    def test_requeue_monthly_saved_search(self):
+        """
+        Tests that monthly saved searches are requeued correctly individually
+        in addition to as part of a digest.
+        """
+        today = datetime.date.today().day
+        last_week = today - 7
+        if last_week <= 0:
+            last_week += 31
+        digest = SavedSearchDigestFactory(user=self.user,
+                                          is_active=True)
+        search = SavedSearchFactory(user=self.user, is_active=True,
+                                    frequency='M', day_of_month=last_week)
+
+        self.requeue(search, digest)
+
+        digest.is_active = False
+        digest.save()
+        search.last_sent = None
+        search.save()
+        mail.outbox = []
+
+        self.requeue(search, digest)
+
     def test_send_search_digest_email(self):
         SavedSearchDigestFactory(user=self.user)
         send_search_digests()
@@ -79,7 +137,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertFalse(log.was_sent)
 
         search1 = SavedSearchFactory(user=self.user)
-        self.assertIsNone(SavedSearch.objects.get(pk=search1.pk).last_sent)
+        self.assertIsNone(search1.last_sent)
         send_search_digests()
         self.assertIsNotNone(SavedSearch.objects.get(pk=search1.pk).last_sent)
         self.assertEqual(len(mail.outbox), 1)
@@ -88,7 +146,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertTrue(log.was_sent)
 
         search2 = SavedSearchFactory(user=self.user)
-        self.assertIsNone(SavedSearch.objects.get(pk=search2.pk).last_sent)
+        self.assertIsNone(search2.last_sent)
         send_search_digests()
         self.assertIsNotNone(SavedSearch.objects.get(pk=search2.pk).last_sent)
         self.assertEqual(len(mail.outbox), 2)
@@ -111,7 +169,7 @@ class SavedSearchModelsTests(MyJobsBase):
         SavedSearchFactory(user=self.user)
         send_search_digests()
         self.assertEqual(len(mail.outbox), 1)
-    
+
     def test_initial_email(self):
         search = SavedSearchFactory(user=self.user, is_active=False,
                                     url='www.my.jobs/search?q=new+search')
@@ -173,7 +231,7 @@ class SavedSearchModelsTests(MyJobsBase):
     def test_unicode_in_saved_search(self):
         """Tests that saved search urls with unicode don't cause errors."""
         search = SavedSearchFactory(
-            user=self.user, 
+            user=self.user,
             url=u"warehouse.jobs/search?location=Roswell%2C+GA&q=Delivery+I"
                 "+%E2%80%93+Material+Handler%2FDriver+Helper+%E2%80%93+3rd"
                 "+Shift%2C+Part-time")
@@ -367,8 +425,6 @@ class PartnerSavedSearchTests(MyJobsBase):
                    inviting_company=self.partner_search.partner.owner,
                    added_saved_search=self.partner_search).save()
 
-        self.patcher = patch('urllib2.urlopen', return_file())
-        self.mock_urlopen = self.patcher.start()
         self.num_occurrences = lambda text, search_str: [match.start()
                                                          for match
                                                          in re.finditer(
@@ -377,14 +433,6 @@ class PartnerSavedSearchTests(MyJobsBase):
         # all jobs contain a default (blank) icon, so we can search for that if
         # we want a job count
         self.job_icon = 'http://png.nlx.org/100x50/logo.gif'
-
-    def tearDown(self):
-        super(PartnerSavedSearchTests, self).tearDown()
-        try:
-            self.patcher.stop()
-        except RuntimeError:
-            # patcher was stopped in a test
-            pass
 
     def test_send_partner_saved_search_as_saved_search(self):
         """

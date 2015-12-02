@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-from django.conf import settings
-
 from import_jobs import (DATA_DIR, add_company, remove_expired_jobs, update_solr, get_jobs_from_zipfile,
     filter_current_jobs, update_job_source)
 
@@ -10,6 +8,8 @@ from seo.models import BusinessUnit, Company
 from seo.tests.factories import BusinessUnitFactory, CompanyFactory
 from setup import DirectSEOBase
 from mock import patch
+import datetime
+from transform import hr_xml_to_json
 
 
 class ImportJobsTestCase(DirectSEOBase):
@@ -18,7 +18,7 @@ class ImportJobsTestCase(DirectSEOBase):
     def setUp(self):
         super(ImportJobsTestCase, self).setUp()
         self.businessunit = BusinessUnitFactory(id=0)
-        self.buid_id = self.businessunit.id        
+        self.buid_id = self.businessunit.id
         self.filepath = os.path.join(DATA_DIR, '0', 'dseo_feed_%s.xml' % self.buid_id)
 
     def tearDown(self):
@@ -28,7 +28,7 @@ class ImportJobsTestCase(DirectSEOBase):
     def test_solr_rm_feedfile(self):
         """
         Test that at the end of Solr parsing, the feed file is deleted.
-        
+
         """
         update_solr(self.buid_id)
         self.assertFalse(os.access(self.filepath, os.F_OK))
@@ -54,7 +54,7 @@ class ImportJobsTestCase(DirectSEOBase):
 
         # Both units should be attached to that company
         self.assertEqual(bu1.company_set.all()[0], bu2.company_set.all()[0])
-        self.assertEqual(bu1.company_set.all().count(), 1) 
+        self.assertEqual(bu1.company_set.all().count(), 1)
         self.assertIn(bu1, co.job_source_ids.all())
         self.assertIn(bu2, co.job_source_ids.all())
         self.assertEqual(co.name, bu1.title)
@@ -106,12 +106,12 @@ class ImportJobsTestCase(DirectSEOBase):
     def test_add_company(self):
         """
         Create environment to test for every possible case--
-        
+
          - Existing relationship but the name is different                 pk=10
          - No existing relationship, but the company exists in the database (as
            established by the BusinessUnit title matching a company name)  pk=11
          - No relationship and the company is not in the database          pk=12
-          
+
         Start with  2 Company objects and 3 BusinessUnit objects
         End up with 3 Company objects and 3 BusinessUnit objects
 
@@ -146,30 +146,28 @@ class ImportJobsTestCase(DirectSEOBase):
 
 class LoadETLTestCase(DirectSEOBase):
     fixtures = ['countries.json']
-    
+
     def setUp(self):
         super(LoadETLTestCase, self).setUp()
-
         self.zipfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'data',
                                     'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip') 
-        
         with open(self.zipfile) as zf:
             self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
-            
+
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
         self.guid = 'ce2ca701-eeca-4c13-96ba-e6bde9cb7060'
         self.name = "Test"
-    
+
     def tearDown(self):
         super(LoadETLTestCase, self).tearDown()
 
-    
+
     @patch('import_jobs.get_jobsfs_zipfile')
     def test_update_job_source(self, mock_jobsfs):
         mock_jobsfs.return_value = open(self.zipfile, 'rb')
-        
+
         count = self.conn.search('*:*').hits
         self.assertEqual(count, 0, "Jobs for buid in solr before the test.  Cannot guarantee correct behavior.")
         self.assertEqual(self.businessunit.associated_jobs, 4, "Initial Job Count does not match the factory")
@@ -179,33 +177,46 @@ class LoadETLTestCase(DirectSEOBase):
         count = self.conn.search('buid:%s' % self.buid).hits
         # Note the job count being one low here is due to one job being filtered out due to include_in_index_bit
         self.assertEqual(count, 38, "38 Jobs not in solr after call to update job source. Found %s" % count)
-        self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 38, 
+        self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 38,
                          "Job Count not updated after imports: Should be 38 was %s" % self.businessunit.associated_jobs)
-    
+
+    def test_salted_date_is_based_on_date_new(self):
+        add_company(self.businessunit)
+        
+        transformed_job = hr_xml_to_json(self.jobs[0], self.businessunit)
+        print "\nTRANSFORMED: %s\n" %  transformed_job['guid']
+
+        expected = datetime.datetime.strptime("2015-01-19", "%Y-%m-%d").date()
+        actual = transformed_job['salted_date'].date()
+
+        self.assertEqual(expected, actual, 
+                         "'Salted_date' is expected to be the same date as date_new, it is not. %s is not %s" %
+                             (actual, expected))
+
     def test_filtering_on_includeinindex_bit(self):
         """Test that filtering on the include_in_index bit works"""
-        
+
         #Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39, 
+        self.assertEqual(len(self.jobs), 39,
                          "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
-        
+
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
         self.assertEqual(len(filtered_jobs), 38,
                          "filter_current_jobs should rmeove jobs with the includeinindex bit set, "
                          "it's expected to return %s.  Instead it returned %s" % (38, len(filtered_jobs)))
-        
-    
+
+
     def test_businessunit_ignore_includeinindex(self):
         """Test that filtering on the include_in_index bit can be overridden on a per business unit basis."""
         # Set ignore_includeinindex on the test BusinessUnit
         self.businessunit.ignore_includeinindex = True
         self.businessunit.save()
-        
+
         #Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39, 
+        self.assertEqual(len(self.jobs), 39,
                          "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
-        
+
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
         self.assertEqual(len(filtered_jobs), 39,

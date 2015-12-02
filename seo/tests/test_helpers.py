@@ -8,7 +8,7 @@ from django.conf import settings
 from seo import helpers
 from seo.models import CustomFacet
 from seo.tests import factories
-from setup import DirectSEOBase
+from setup import DirectSEOBase, DirectSeoTCWithSiteAndConfig
 
 
 class SeoHelpersTestCase(DirectSEOBase):
@@ -110,7 +110,7 @@ class SeoHelpersTestCase(DirectSEOBase):
 
 class FuzzyInt(int):
     """
-    Overrides the equal method in int to return true if an integer is within 
+    Overrides the equal method in int to return true if an integer is within
     the FuzzyInt's range. This let's us set a range for AssertNumQueries to
     make tests less brittle.
 
@@ -130,7 +130,7 @@ class FuzzyInt(int):
 
 class SeoHelpersDjangoTestCase(DirectSEOBase):
 
-    @patch.object(CustomFacet, 'active_site_facet') 
+    @patch.object(CustomFacet, 'active_site_facet')
     def test_sqs_apply_custom_facets(self, mock_active):
         """
         Tests that correct query strings are added to search query sets for
@@ -139,8 +139,8 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
         no custom facets were being passed in
 
         Since this is the first place we're using mock, here's a brief
-        explanation. patch.object is a decorator that passes in 
-        an object (in this case CustomFacet.active_site_facet) 
+        explanation. patch.object is a decorator that passes in
+        an object (in this case CustomFacet.active_site_facet)
         to our function's local environment (where we've named it mock_active).
         We then override that objects behavior (it's return value in this case)
         to avoid having to set up a chain of sites and configurations
@@ -184,3 +184,24 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
                     self.assertNotEqual(query.find(term), -1)
                 for term in missing_terms:
                     self.assertEqual(query.find(term), -1)
+
+
+class HelpersTestsWithJobAndSite(DirectSeoTCWithSiteAndConfig):
+    """
+        Tests for helpers functions that require a job and/or a site to be configured
+        in order to operate.
+    """
+    def test_company_heading(self):
+        # test company_slug = None returns None
+        self.assertIsNone(helpers.bread_box_company_heading(None))
+        # test company slug w/ valid business unit returns business unit's title
+        company = factories.CompanyFactory()
+        company.company_slug = self.businessunit.title_slug
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)
+
+        # test company slug that does not match a business unit returns the company slug back, but "deslugified"
+        company.company_slug = 'thisslugisntvalid'
+        self.assertEqual(helpers.bread_box_company_heading(company.company_slug),
+                         company.company_slug.replace('-', ' ').title())
+        # extra test to ensure businessunit.title != company_slug
+        self.assertNotEqual(helpers.bread_box_company_heading(company.company_slug), self.businessunit.title)

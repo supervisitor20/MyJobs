@@ -2,7 +2,7 @@ import datetime
 import hashlib
 import random
 import re
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from pynliner import Pynliner
 
@@ -59,7 +59,7 @@ class RegistrationManager(models.Manager):
                     if not user.is_disabled and not user.is_verified:
                         user.delete()
                         profile.delete()
-            except DoesNotExist:
+            except ObjectDoesNotExist:
                 profile.delete()
 
 
@@ -67,7 +67,7 @@ class ActivationProfile(models.Model):
     user = models.ForeignKey('myjobs.User', verbose_name="user")
     activation_key = models.CharField(_('activation_key'), max_length=40)
     email = models.EmailField(max_length=255)
-    sent = models.DateTimeField(auto_now_add=True, default=datetime_now)
+    sent = models.DateTimeField(default=datetime_now, editable=False)
 
     ACTIVATED = "ALREADY ACTIVATED"
     objects = RegistrationManager()

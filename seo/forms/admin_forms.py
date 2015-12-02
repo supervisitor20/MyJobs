@@ -4,7 +4,6 @@ from taggit.forms import TagField, TagWidget
 
 from django.conf import settings
 from django import forms
-from django.core import validators
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -27,7 +26,7 @@ csrf_protect_m = method_decorator(csrf_protect)
 class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
     """
     Overrides the default ModelMultipleChoiceField.
-    As far as I can tell, the only alteration is that clean() no longer runs 
+    As far as I can tell, the only alteration is that clean() no longer runs
     validation on value. -- Ashley 8/19/13
 
     """
@@ -37,7 +36,7 @@ class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
         self.my_model = kwargs.pop('my_model', None)
         super(forms.ModelMultipleChoiceField, self)\
             .__init__(queryset, None, cache_choices, required, widget, label,
-                      initial, help_text, *args, **kwargs)    
+                      initial, help_text, *args, **kwargs)
 
     def clean(self, value):
         if self.required and not value:
@@ -54,12 +53,12 @@ class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
                                       pk)
         qs = self.my_model.objects.filter(pk__in=value)
         return qs
-        
+
 
 class MyModelChoiceField(forms.ModelChoiceField):
     """
     Overrides the default ModelChoiceField.
-    As far as I can tell, the only alteration is that to_python() no longer 
+    As far as I can tell, the only alteration is that to_python() no longer
     runs validation on primary key for value. -- Ashley 8/19/13
     """
     def __init__(self, queryset, empty_label=u"---------", cache_choices=False,
@@ -84,7 +83,7 @@ class RowPermissionsForm(forms.ModelForm):
     """
     Generic form used to filter selections on a ModelForms by the
     group of the user accessing the page.
-    
+
     """
     group = MyModelChoiceField(Group.objects.order_by('name'), my_model=Group,
                                required=False)
@@ -94,7 +93,7 @@ class RowPermissionsForm(forms.ModelForm):
         field_querysets = {'group': {'qs': Group.objects.all(),
                                      'field_type': MyModelChoiceField,
                                      'widget': forms.widgets.Select()}}
-        
+
         if user and not user.is_superuser:
             grps = [g.id for g in user.groups.all()]
             grp_qs = Group.objects.filter(id__in=grps)
@@ -115,7 +114,7 @@ class RowPermissionsForm(forms.ModelForm):
                 # the full queryset, which is undesired behavior.
                 self.fields[field].widget = attrs['widget']
                 self.fields[field].queryset = attrs['qs']
-                
+
         if user and not user.is_superuser and len(grp_qs) <= 1:
             self.fields['group'].empty_label = None
 
@@ -130,12 +129,12 @@ class SeoSiteReverseForm(forms.ModelForm):
 
     WARNING: Ensure that sites are in your ModelAdmin fieldsets, or all
              relationships to SeoSite will be deleted on form save.
-    
+
     Inputs:
     :forms.ModelForm:   Default django form object. Row permissions were
                         explicitley left out as the models that use this form
                         are intended for super user edits only.
-    
+
     Returns:
     :model_object:      saved model object. Which model depends on how this form
                         is subclassed.
@@ -175,8 +174,8 @@ class SeoSiteReverseForm(forms.ModelForm):
             model_object.save()
             model_object.seosite_set = added_sites
         return model_object
-        
-        
+
+
 class SeoSiteForm(RowPermissionsForm):
     configurations = MyModelMultipleChoiceField(
         Configuration.objects.all(),
@@ -243,7 +242,7 @@ class SeoSiteForm(RowPermissionsForm):
         # methods of the RowPermissionsAdmin class. That capability is the
         # main (only?) reason for creating a generic class in the first place.
         super(SeoSiteForm, self).__init__(data, user, *args, **kwargs)
-        this = kwargs.get('instance')
+        instance = kwargs.get('instance')
 
         # Override some undesired default behavior
         if hasattr(self, 'errors') and 'domain' in self.errors:
@@ -254,11 +253,11 @@ class SeoSiteForm(RowPermissionsForm):
             except IndexError:
                 pass
 
-        if this:
-            group = getattr(this, 'group') or Group()
+        if instance:
+            group = getattr(instance, 'group') or Group()
         else:
             group = Group()
-            
+
         models = {
             'configurations': Configuration,
             'google_analytics': GoogleAnalytics,
@@ -280,19 +279,17 @@ class SeoSiteForm(RowPermissionsForm):
             inner = {}
             form_field = self.fields[field]
 
+            inner['qs'] = form_field.queryset
             # If we're changing an existing SeoSite model, filter by its group.
             # Otherwise, filter as normal based on superuser status.
-            if field == 'special_commitments' or field == 'business_units' or\
-            field == 'featured_companies':
-                inner['qs'] = form_field.queryset
-            elif this:
+            if instance and field not in ['special_commitments',
+                                          'business_units',
+                                          'featured_companies']:
                 inner['qs'] = form_field.queryset.filter(group=group)
-            elif user.is_superuser:
-                inner['qs'] = form_field.queryset
-            else:
-                inner['qs'] = form_field.queryset.filter(group__in=request.user\
-                                                         .groups.all())
-                
+            elif user and not user.is_superuser:
+                inner['qs'] = form_field.queryset.filter(
+                    group__in=user.groups.all())
+
             inner['field_type'] = form_field
             inner['widget'] = form_field.widget
             field_querysets[field] = inner
@@ -301,7 +298,7 @@ class SeoSiteForm(RowPermissionsForm):
             grps = [g.id for g in user.groups.all()]
             grp_qs = Group.objects.filter(id__in=grps)
             self.readonly_fields = ('domain', 'name')
-    
+
         for field, attrs in field_querysets.items():
             self.fields[field].widget = attrs['widget']
             self.fields[field].queryset = attrs['qs']
@@ -309,7 +306,6 @@ class SeoSiteForm(RowPermissionsForm):
         if not user.is_superuser and len(grp_qs) <= 1:
             self.fields['group'].empty_label = None
 
-    
     def clean_configurations(self):
         data = self.cleaned_data['configurations']
         if data:
@@ -450,7 +446,7 @@ class CustomFacetForm(SiteRowPermissionsForm):
         customfacet.save()
         return self.instance
 
-        
+
     class Media:
         js = ("//d2e48ltfsb5exy.cloudfront.net/content_ms/files/ajax-solr/core/Core.js",
               "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/ajax-solr/core/AbstractManager.js",
@@ -461,7 +457,7 @@ class CustomFacetForm(SiteRowPermissionsForm):
               "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/ajax-solr/Widgets.js",
               "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/ajax-solr/managers/Manager.jquery.js",
               "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/facet_builder2.154-17.js")
-                    
+
     class Meta:
         model = CustomFacet
         exclude = ("name_slug", "url_slab")
@@ -470,7 +466,7 @@ class CustomFacetForm(SiteRowPermissionsForm):
 class CustomPageForm(SiteRowPermissionsForm):
     def __init__(self, data=None, user=None, *args, **kwargs):
         super(CustomPageForm, self).__init__(data, user, *args, **kwargs)
-        templates = filter(lambda x: x.endswith('.html'), 
+        templates = filter(lambda x: x.endswith('.html'),
                            os.listdir('%s/templates/flatpages' % settings.PROJECT_PATH))
         template_choices = (("flatpages/%s" % temp, temp) for temp in templates)
         self.fields['template_name'].widget = forms.widgets.Select(
@@ -478,7 +474,7 @@ class CustomPageForm(SiteRowPermissionsForm):
         self.fields['template_name'].help_text = None
         self.fields['content'].widget.attrs.update({
             'style': 'width: 80%; height: 440px'})
-        
+
     url = forms.RegexField(label=_("URL"), max_length=100, regex=r'^[-\w/\.~]+$',
         help_text = _("Example: '/about/contact/'. Make sure to have leading"
                       " and trailing slashes."),
@@ -487,7 +483,7 @@ class CustomPageForm(SiteRowPermissionsForm):
 
     class Meta:
         model = CustomPage
-        
+
 
 class BillboardImageForm(SiteRowPermissionsForm):
     def __init__(self, data=None, user=None, *args, **kwargs):
@@ -502,9 +498,9 @@ class BillboardImageForm(SiteRowPermissionsForm):
             site_vals = SeoSite.objects.none()
             initial_vals = []
         self.fields['sites'] = MyModelMultipleChoiceField(
-                                   site_vals, 
+                                   site_vals,
                                    my_model=SeoSite,
-                                   required=False, 
+                                   required=False,
                                    initial=initial_vals,
                                    widget=(admin.widgets\
                                                 .FilteredSelectMultiple('Sites',
@@ -522,7 +518,7 @@ class BillboardImageForm(SiteRowPermissionsForm):
         else:
             bi.save()
             bi.seosite_set = added_sites
-            
+
         return bi
 
     class Meta:
@@ -571,17 +567,17 @@ class ConfigurationForm(RowPermissionsForm):
         # the '=', it's calling 'form.save_m2m()' behind the scenes.
         # This is required because the Configuration model doesn't have sites or
         # group attributes (that is, the seo_configuration table doesn't have
-        # columns for that data). 
+        # columns for that data).
         configuration = super(ConfigurationForm, self).save(commit=commit)
         sites = self.cleaned_data['sites']
         group = self.cleaned_data['group']
-        
+
         if not configuration.pk:
             configuration.save()
 
         configuration.seosite_set = [s for s in sites if s.group == group]
         return self.instance
-        
+
     class Meta:
         model = Configuration
         widgets = {
@@ -606,7 +602,7 @@ class ConfigurationForm(RowPermissionsForm):
         ]
 
 
-class BusinessUnitForm(SeoSiteReverseForm):    
+class BusinessUnitForm(SeoSiteReverseForm):
     class Meta:
         model = BusinessUnit
 
@@ -665,8 +661,8 @@ class BusinessUnitForm(SeoSiteReverseForm):
 
         return bu
 
-        
-class CompanyForm(SeoSiteReverseForm):    
+
+class CompanyForm(SeoSiteReverseForm):
     job_source_ids_widget = FSM('Job Sources', reverse_lazy('buid_admin_fsm'),
                                 lazy=True)
     job_source_ids = MyModelMultipleChoiceField(BusinessUnit.objects.all(),
@@ -675,9 +671,9 @@ class CompanyForm(SeoSiteReverseForm):
                                                 widget=job_source_ids_widget)
     class Meta:
         model = Company
-        
-        
-class SpecialCommitmentForm(SeoSiteReverseForm):        
+
+
+class SpecialCommitmentForm(SeoSiteReverseForm):
     class Meta:
         model = SpecialCommitment
 
@@ -687,17 +683,17 @@ class SiteTagForm(forms.ModelForm):
         model = SiteTag
 
 
-class GoogleAnalyticsCampaignForm(SeoSiteReverseForm):        
+class GoogleAnalyticsCampaignForm(SeoSiteReverseForm):
     class Meta:
         model = GoogleAnalyticsCampaign
 
 
-class ATSSourceCodeForm(SeoSiteReverseForm):        
+class ATSSourceCodeForm(SeoSiteReverseForm):
     class Meta:
         model = ATSSourceCode
 
 
-class ViewSourceForm(SeoSiteReverseForm):        
+class ViewSourceForm(SeoSiteReverseForm):
     class Meta:
         model = ViewSource
 

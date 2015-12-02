@@ -12,7 +12,7 @@ class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
         'company': ('name',)
     }
 
-    related_string_Functions = {
+    related_string_functions = {
         'company': company_user_name
     }
 

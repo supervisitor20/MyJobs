@@ -1,4 +1,4 @@
-from django.conf.urls import *
+from django.conf.urls import include, patterns, url
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -35,7 +35,6 @@ urlpatterns = patterns(
     url(r'^emails/', include('myemails.urls')),
 )
 
-
 urlpatterns += patterns(
     '',
     url(r'^accounts/', include('registration.urls')),
@@ -53,3 +52,8 @@ urlpatterns += patterns(
 
 if repr(getattr(default_storage, 'connection', '')) != 'S3Connection:s3.amazonaws.com':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += patterns(
+    'myblocks.views',
+    url(r'^secure-blocks/$', 'secure_blocks', name='secure_blocks'),
+)

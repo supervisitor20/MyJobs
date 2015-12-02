@@ -20,8 +20,8 @@ def presave_solr(sender, instance, *args, **kwargs):
     we actually care about has been changed.
 
     """
-    ignore_fields = ['last_response', 'last_sent', 'date_updated',
-                     'last_login', 'date_joined']
+    ignore_fields = ['last_modified', 'last_response', 'last_sent',
+                     'date_updated', 'last_login', 'date_joined']
     setattr(instance, 'solr_update', False)
     if instance.pk:
         # The instance might have a pk but still not actually
@@ -182,7 +182,7 @@ def object_to_dict(model, obj):
         if (field_type != 'OneToOneField' and
                 not any(s in field.attname
                         for s in ['password', 'timezone',
-                                  'deactivate_type'])):
+                                  'deactivate_type', 'last_modified'])):
             field_name = "%s_%s" % (model.__name__, field.attname)
             solr_dict[field_name] = getattr(obj, field.attname)
     return solr_dict

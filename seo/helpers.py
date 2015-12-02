@@ -11,7 +11,6 @@ from urlparse import urljoin, urlparse, parse_qs, parse_qsl
 
 from django.conf import settings
 from django.shortcuts import redirect
-from django.template.defaultfilters import safe
 from django.utils.html import strip_tags
 from haystack.backends.solr_backend import SolrSearchQuery
 from haystack.inputs import Raw
@@ -21,7 +20,6 @@ from ordereddict import OrderedDict
 from seo_pysolr import Solr
 from seo.search_backend import DESearchQuerySet
 from seo.models import BusinessUnit, Company
-from seo.templatetags.seo_extras import facet_text, smart_truncate
 from seo.filters import FacetListWidget, CustomFacetListWidget
 from seo.search_transformer import transform_search
 from serializers import JSONExtraValuesSerializer
@@ -146,13 +144,6 @@ def build_filter_dict(slug_path):
                         for key, value in sorted(settings.SLUG_TAGS.items())])
 
 
-def canonical_path_from_filter_dict(filters):
-    """Builds a canonical url path from a dictionary of filter terms"""
-    term_paths = [''.join([filters[key], slug]) for key, slug in
-                  settings.SLUG_TAGS.items() if slug is not None]
-    return ''.join(term_paths)
-
-
 def build_results_heading(breadbox):
     """
     Builds a sensible, human-readable heading for the results page in the
@@ -242,63 +233,12 @@ def parse_location_slug(location_slug):
     return locations
 
 
-def parse_moc_slug(moc_slug):
-    """
-    Return {'moc': <moc_code>} dictionary.
-
-    """
-    moc_slug = moc_slug.strip('/').split('/')
-    return {'moc': moc_slug[1]}
-
-
-def get_nav_type(filters):
-    """
-    This method determines which type of primary nav we should build.
-    It's pretty heavy on business logic, so it makes sense to keep
-    it self contained within here.
-
-    Business Logic:
-        # if we have a moc_slug, build that nav
-        # if we have a facet_slug, build that nav
-        # else if we have a title_slug, build that nav
-        # else if we have a location_slug, build that nav
-            # if we have 3 location pieces, build city
-            # if we have 2 location pieces, build state
-            # if we have 1 piece, build country
-
-    """
-    nav_type = ''
-    moc_slug = filters["moc_slug"]
-    facet_slug = filters["facet_slug"]
-    title_slug = filters["title_slug"]
-    location_slug = filters["location_slug"]
-
-    if moc_slug:
-        nav_type = 'moc'
-    elif facet_slug:
-        nav_type = 'facet'
-    elif title_slug:
-        nav_type = 'title'
-    elif location_slug:
-        location_slug = location_slug.strip('/')
-        location_pieces = location_slug.split('/')
-        location_length = len(location_pieces)
-        if location_length == 3:
-            nav_type = 'city'
-        elif location_length == 2:
-            nav_type = 'state'
-        else:
-            nav_type = 'country'
-
-    return nav_type
-
-
 def job_breadcrumbs(job, company=False):
     """
     Generate breadcrumbs for job detail pages.
     Inputs:
         :job: Job document from Haystack
-        :company: Boolean, set to True to include comapny information in output
+        :company: Boolean, set to True to include company information in output
 
     Outputs:
         A list of dictionaries for each field in the breadbox
@@ -377,18 +317,31 @@ def _page_title(crumbs):
     return " in ".join([info_part, loc_part])
 
 
-def bread_box_company_heading(company_slug_value):
-    # TODO write test to hit this logic
+def bread_box_company_heading(company_slug_value, jobs=None):
+    """
+    Return the company header we have in the DB (if possible),
+    otherwise, return company string from job or company slug itself
+    :param company_slug_value: company filter provided
+    :param jobs: jobs matching the provided company
+    :return: business unit title or company slug value parameter
+    """
     if not company_slug_value:
         return None
-
     kwargs = {'title_slug': company_slug_value}
-    business_unit = BusinessUnit.objects.filter(**kwargs)
+    business_unit = BusinessUnit.objects.filter(**kwargs).first()
+
+    if business_unit:
+        return business_unit.title
 
     try:
-        return business_unit[0].title
-    except Exception:
-        return None
+        return jobs[0].company
+    except (IndexError, TypeError):
+        # No job provided
+        pass
+
+    # this is unlikely to happen as companies that do not exist in DB
+    # and do not have associated jobs are often 404'd.
+    return company_slug_value.replace('-', ' ').title()
 
 
 def location_from_job(job, num_locations):
@@ -401,6 +354,7 @@ def location_from_job(job, num_locations):
             return job.country
     except IndexError:
         return None
+
 
 def bread_box_location_heading(location_slug_value, jobs=None):
     if not location_slug_value:
@@ -438,7 +392,7 @@ def bread_box_location_heading(location_slug_value, jobs=None):
 def pull_moc_object_via_slug(moc_slug_value):
     if not moc_slug_value:
         return None
-    
+
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
     if len(moc_pieces) < 3: #moc url must be 3 parts
@@ -449,7 +403,7 @@ def pull_moc_object_via_slug(moc_slug_value):
     try:
         return Moc.objects.get(code=moc_code, branch=branch)
     except (Moc.DoesNotExist, Moc.MultipleObjectsReturned):
-        return None    
+        return None
 
 def bread_box_moc_heading(moc_slug_value):
     moc = pull_moc_object_via_slug(moc_slug_value)
@@ -527,7 +481,7 @@ def get_bread_box_headings(filters=None, jobs=None):
             bread_box_headings['moc_slug'] = moc
 
         company_slug_value = filters.get("company_slug")
-        company = bread_box_company_heading(company_slug_value)
+        company = bread_box_company_heading(company_slug_value, jobs)
         if company:
             bread_box_headings['company_slug'] = company
 
@@ -870,36 +824,6 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
     return widgets
 
 
-def split_locs(facet):
-    for f in facet:
-        loc_tuples = f[0].split('@@')
-        for atom in loc_tuples:
-            loc_tuples[loc_tuples.index(atom)] = atom.split('::')
-        facet[facet.index(f)] = dict(loc_tuples)
-
-    return facet
-
-
-def facet_data(jsids):
-    sqs = DESearchQuerySet().facet_limit(-1).facet_sort("count").\
-        facet_mincount(1)
-    sqs = sqs.facet("full_loc").facet("title").facet("country").facet("state")
-    sqs = _sqs_narrow_by_buid_and_site_package(sqs)
-    return sqs.facet_counts()['fields']
-
-
-def more_custom_facets(custom_facets, offset=0, num_items=0):
-    """Generates AJAX response for more custom_facets."""
-    custom_facets = combine_groups(custom_facets)[offset:offset+num_items]
-    items = []
-    for i in custom_facets:
-        url = i[0].url_slab.split("::")[0]
-        name = safe(smart_truncate(facet_text(i[0].url_slab)))
-        items.append({'url': url, 'name': name, 'count': i[1]})
-
-    return items
-
-
 def sqs_apply_custom_facets(custom_facets, sqs=None, exclude_facets=None):
     """
     Return a DESearchQuerySet filtered by the input list of saved searches and
@@ -1081,10 +1005,6 @@ def _sqs_narrow_by_buid_and_site_package(sqs, buids=None, site_packages=None):
     return sqs
 
 
-def related_jobs(job):
-    return _sqs_narrow_by_buid_and_site_package(DESearchQuerySet()).more_like_this(job)[0:10]
-
-
 def take(n, seq):
     "Return first n items of the seq as a list"
     return list(islice(seq, n))
@@ -1195,10 +1115,6 @@ def make_specialcommit_string(special_commits):
 
     """
     return ' '.join(special_commits.values_list('commit', flat=True))
-
-
-def make_sitetag_string(site_tags):
-    return ' '.join(site_tags)
 
 
 def determine_redirect(request, filters):
@@ -1441,7 +1357,7 @@ def jobs_and_counts(request, filters, num_jobs, fl=search_fields):
     return default_jobs, featured_jobs, facet_counts
 
 
-def get_company_data(filters):
+def get_company_thumbnail(filters):
     """
         Return the thumbnail for a company if it exists. Returns None if company does
         not have a thumbnail.

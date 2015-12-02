@@ -80,7 +80,8 @@ def serialize(fmt, data, values=None, order_by=None):
 
     # helper function to deal with different value types in a dict
     def convert(record, value):
-        val = record[value if value != 'communication_type' else 'contact_type']
+        val = record[value if value != 'communication_type'
+                     else 'contact_type']
         # strip html from strings
         if isinstance(val, basestring) and val.strip():
             val = html.fromstring(val).text_content()
@@ -126,3 +127,14 @@ def serialize(fmt, data, values=None, order_by=None):
         return output.getvalue()
     else:
         return data
+
+
+def determine_user_type(user):
+    if user is None:
+        return None
+
+    if user.groups.filter(name='Employer').exists():
+        return 'EMPLOYER'
+
+    if user.is_staff:
+        return 'STAFF'

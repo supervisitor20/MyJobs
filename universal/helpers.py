@@ -7,6 +7,7 @@ from urlparse import urlparse, urlunparse
 
 from django.db.models.loading import get_model
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.mail import EmailMessage
@@ -92,15 +93,16 @@ def get_company(request):
     Uses the myjobs_company cookie to determine what the current company is.
 
     """
-    if not request.user or request.user.is_anonymous():
+
+    if not request.user or not request.user.pk or request.user.is_anonymous():
         return None
 
     # If settings.SITE is set we're on a microsite, so get the company
     # based on the microsite we're on instead.
-    if settings.SITE.canonical_company:
+    if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
-        if company.companyuser_set.filter(user=request.user).exists():
+        if company.user_has_access(request.user):
             return company
 
     # If the current hit is for a non-microsite admin, we don't know what
@@ -112,18 +114,18 @@ def get_company(request):
     if company:
         company = get_object_or_404(get_model('seo', 'company'), pk=company)
 
-        # If the company cookie is correctly set, confirm that the user
-        # actually has access to that company.
-        if company not in request.user.get_companies():
+        if not company.user_has_access(request.user):
             company = None
 
     if not company:
-        try:
-            # If the company cookie isn't set, then the user should have
-            # only one company, so use that one.
-            company = request.user.get_companies()[0]
-        except IndexError:
-            company = None
+        # If the company cookie isn't set, then the user should have
+        # only one company, so use that one.
+        if settings.ROLES_ENABLED:
+            return get_model('seo', 'Company').objects.filter(
+                role__user=request.user).first()
+        else:
+            return request.user.company_set.first()
+
     return company
 
 
@@ -134,7 +136,9 @@ def get_company_or_404(request):
     company = get_company(request)
 
     if not company:
-        raise Http404
+        raise Http404("Either the company does not exist or the current user "
+                      "doesn't have access to it.")
+
     else:
         return company
 
@@ -190,8 +194,11 @@ def send_email(email_body, email_type=settings.GENERIC,
 
     if site:
         domain = site.email_domain
-        if site.canonical_company:
+        try:
             company_name = site.canonical_company.name
+        # using object instead of Company to avoid circular imports
+        except (ObjectDoesNotExist, AttributeError):
+            pass
 
     kwargs['company_name'] = company_name
     kwargs['domain'] = domain.lower()
@@ -270,3 +277,41 @@ def json_to_query(data, sep="__", parent=""):
             results[parent + key] = value
 
     return results
+
+
+def dict_identity(cls):
+    """Give instances of a class more value like semantics.
+
+    For this to work the instance members must also have value
+    semantics.
+
+    @dict_identity
+    class Num(object):
+        def __init__(self, val):
+            self.val = val
+
+    Num(2) == Num(3)
+    >>> True
+
+    This is helpful for unit tests where a class represents some kind
+    of value. It provides meaningful stringification and equality
+    based on the members of the instance.
+    """
+    def eq(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def ne(self, other):
+        return not self.__eq__(other)
+
+    def repr(self):
+        return "<%s %r>" % (cls.__name__, self.__dict__)
+
+    cls.__eq__ = eq
+    cls.__ne__ = ne
+    cls.__unicode__ = repr
+    cls.__str__ = repr
+    cls.__repr__ = repr
+    return cls

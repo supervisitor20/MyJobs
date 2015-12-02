@@ -6,6 +6,7 @@ from django.conf import settings
 from transform import transform_for_postajob
 from seo.tests.factories import CompanyFactory
 from setup import DirectSEOBase
+from argparse import Action
 
 
 class TransformJobs(DirectSEOBase):
@@ -77,7 +78,7 @@ class TransformJobs(DirectSEOBase):
                 'company': company.id,
                 'country': 'United States',
                 'country_short': 'USA',
-                'date_new': str(datetime.datetime.now()),
+                'date_new': str(datetime.datetime.now()-datetime.timedelta(days=i)),
                 'date_updated': str(datetime.datetime.now()),
                 'description': 'This is a description of a job. It might contain 特殊字符.',
                 'guid': i,
@@ -93,12 +94,6 @@ class TransformJobs(DirectSEOBase):
             }
             cleaned_job = transform_for_postajob(job)
 
-            # These fields will never be exact, so ignore them.
-            for field in ['date_updated', 'date_new', 'date_updated_exact',
-                          'salted_date', 'date_new_exact', 'description',
-                          'html_description', 'text']:
-                del cleaned_job[field]
-
             # These fields are dynamically generated using id information.
             temp_result = dict(result)
             temp_result['guid'] = i
@@ -107,5 +102,18 @@ class TransformJobs(DirectSEOBase):
             temp_result['apply_info'] = result['apply_info'] % i
             temp_result['id'] = result['id'] % i
 
-            for key in temp_result.keys():
+
+            testable_keys = set(temp_result.keys()) - set(['date_updated', 
+                'date_new', 'date_updated_exact', 'salted_date', 
+                'date_new_exact', 'description', 'html_description', 'text'])
+
+            for key in testable_keys:
                 self.assertEqual(cleaned_job[key], temp_result[key])
+
+            # Test salted_date
+            actual_salted_date = cleaned_job['salted_date'].date()
+            expected_salted_date = (datetime.datetime.now()-datetime.timedelta(days=i)).date()
+            self.assertEqual(actual_salted_date, expected_salted_date,
+                             "'Salted_date' is expected to be the same date as date_new, it is not. %s is not %s" %
+                             (actual_salted_date, expected_salted_date))
+                

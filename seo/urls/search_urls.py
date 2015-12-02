@@ -172,6 +172,8 @@ urlpatterns += patterns('seo.views.search_views',
         'v2_redirect', {'v2_redirect': 'state'}, name="v2_state"),
     url(r'(?P<country>[A-Z]{3})/(?P<city>\w+)/\w+/jobs$',
         'v2_redirect', {'v2_redirect': 'city-country'}, name="v2_city_country"),
+    url(r'^(?P<guid>[0-9A-Fa-f]{32})(?P<vsid>\d+)?(?P<debug>\+)?$',
+        'urls_redirect', name='urls_redirect'),
 )
 
 urlpatterns += patterns('seo.updates',
@@ -179,9 +181,9 @@ urlpatterns += patterns('seo.updates',
                         # to prevent bots.
                         url(r'^ajax/update_buid/$', 'update_businessunit'))
 
-urlpatterns += patterns('seo.views.search_views',
+urlpatterns += patterns('seo.views.import_views',
     url(r'sns_confirmation$', 'send_sns_confirm'),
     url(r'load_job_source', 'confirm_load_jobs_from_etl'),
-    url(r'^(?P<guid>[0-9A-Fa-f]{32})(?P<vsid>\d+)?(?P<debug>\+)?$',
-        'urls_redirect', name='urls_redirect'),
+    url(r'import_dashboard', 'import_dashboard'),
+
 )

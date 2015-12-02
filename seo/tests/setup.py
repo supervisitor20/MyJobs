@@ -1,19 +1,20 @@
 import os.path
 from contextlib import contextmanager
-from haystack import connections as haystack_connections
 
 from django.conf import settings
-from seo.search_backend import DESolrSearchBackend, DESolrEngine
-from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
 from django.test import TestCase
+from django.test.client import Client
 from django.template import context
 
-from seo_pysolr import Solr
 from import_jobs import DATA_DIR
+from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
+from seo.search_backend import DESolrSearchBackend, DESolrEngine
 from seo.tests.factories import BusinessUnitFactory
+from seo.tests.factories import SeoSiteFactory, ConfigurationFactory
+from seo_pysolr import Solr
 import solr_settings
 
 
@@ -26,6 +27,7 @@ class TestDESolrSearchBackend(DESolrSearchBackend):
 
 class TestDESolrEngine(DESolrEngine):
     backend = TestDESolrSearchBackend
+
 
 class TestSolrGrpSearchBackend(SolrGroupSearchBackend):
     def search(self, *args, **kwargs):
@@ -98,20 +100,21 @@ class DirectSEOBase(TestCase):
         setattr(settings, 'MIDDLEWARE_CLASSES',
                 self.base_middleware_classes)
 
+
 class DirectSEOTestCase(DirectSEOBase):
     def setUp(self):
         super(DirectSEOTestCase, self).setUp()
         self.solr_docs = solr_settings.SOLR_FIXTURE
         self.conn.add(self.solr_docs)
 
-        #uids and numjobs in feed file for test business unit 0
+        # uids and numjobs in feed file for test business unit 0
         self.feed_uids = [57621597, 57311147, 60351047, 59891656, 58867671,
                           57495178, 59773973, 59326433, 57311143, 57311166]
         self.feed_numjobs = 14
 
         self.businessunit = BusinessUnitFactory(id=0)
-        self.buid_id = self.businessunit.id        
-        #Ensure DATA_DIR used by import_jobs.download_feed_file exists
+        self.buid_id = self.businessunit.id
+        # Ensure DATA_DIR used by import_jobs.download_feed_file exists
         data_path = DATA_DIR
         if not os.path.exists(data_path):
             os.mkdir(data_path)
@@ -120,6 +123,28 @@ class DirectSEOTestCase(DirectSEOBase):
         super(DirectSEOTestCase, self).tearDown()
         self.conn.delete(q="*:*")
         self.assertEqual(self.conn.search(q='*:*').hits, 0)
+
+
+class DirectSeoTCWithSiteAndConfig(DirectSEOTestCase):
+    """
+        Test case with a job added and site configured
+        Attributes:
+            site - test seosite instance
+            config - config for test seosite
+            client - same as default client, but uses test seosite's domain as HTTP_HOST
+    """
+    def setUp(self):
+        super(DirectSeoTCWithSiteAndConfig, self).setUp()
+        self.site = SeoSiteFactory()
+        self.site.business_units.add(self.businessunit)
+
+        self.config = ConfigurationFactory.build(status=2)
+        self.config.save()
+
+        self.site.configurations.add(self.config)
+
+        # ensure tests in this class use the correct domain
+        self.client = Client(HTTP_HOST=self.site.domain)
 
 
 class SettingDoesNotExist:
