@@ -14,7 +14,6 @@ from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
@@ -1326,7 +1325,7 @@ def process_email(request):
     return HttpResponse(status=200)
 
 
-@staff_member_required
+@restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
 def manage_outreach_inboxes(request):
