@@ -758,7 +758,8 @@ def api_create_role(request):
         if request.POST.get("role_name", ""):
             role_name = request.POST['role_name']
 
-        matching_roles = Role.objects.filter(name=role_name)
+        # Role names must be unique
+        matching_roles = Role.objects.filter(name=role_name, company=company)
         if matching_roles.exists():
             response_data["success"] = "false"
             response_data["message"] = "Another role with this name already exists."
