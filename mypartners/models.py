@@ -747,8 +747,12 @@ class PRMAttachment(models.Model):
             filename = 'unnamed_file'
 
         uid = uuid4()
-        path_addon = "mypartners/%s/%s/%s" % (self.partner.owner.pk,
-                                              self.partner.pk, uid)
+        if self.partner:
+            partner = self.partner.pk
+            owner = self.partner.owner.pk
+        else:
+            partner = owner = 'none'
+        path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
         name = "%s/%s" % (path_addon, filename)
 
         # Make sure that in the unlikely event that a filepath/uid/filename
@@ -756,8 +760,7 @@ class PRMAttachment(models.Model):
         # is generated.
         while default_storage.exists(name):
             uid = uuid4()
-            path_addon = "mypartners/%s/%s/%s" % (self.partner.owner,
-                                                  self.partner.name, uid)
+            path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
             name = "%s/%s" % (path_addon, filename)
 
         return name
@@ -782,6 +785,9 @@ class PRMAttachment(models.Model):
                 key.key = self.attachment.name
                 key.set_acl('private')
         except AttributeError:
+            # If we're using(ileSystemStorage, default_storage will not have
+            # a "connection" attribute and we don't need to worry about
+            # S3 permissions.
             pass
 
         return instance
@@ -793,7 +799,8 @@ class PRMAttachment(models.Model):
 
     @property
     def partner(self):
-        return getattr(self.contact_record, 'partner', None)
+        return getattr(self, '_partner',
+                       getattr(self.contact_record, 'partner', None))
 
 
 class ContactLogEntry(models.Model):
