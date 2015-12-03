@@ -1,374 +1,510 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import {getCsrf} from 'util/cookie';
+import React, {Component, PropTypes} from 'react';
 import Button from 'react-bootstrap/lib/Button';
 
 
-// class to contain dynamic email editing states, type is text of button and function identifier, disabled is whether
-// the button is disabled or not. by default, it is not disabled
+/**
+ * Contain dynamic email editing states
+ *
+ * type is text of button function identifier
+ * disabled is whether the button is disabled or not
+ *
+ * by default, it is not disabled
+ */
 class ControlButton {
-  constructor(type, disabled=false, primary=false) {
+  constructor(type, disabled, primary, callback) {
     this.type = type;
     this.disabled = disabled;
     this.primary = primary;
+    this.callback = callback;
   }
 }
 
 // Display errors from client-side form validation.. red text above stuff
-var HelpText = React.createClass({
-  render: function() {
-    var message = this.props.message;
+function HelpText(props) {
+  const {message} = props;
+  return (
+    <div className="input-error">
+      {message}
+    </div>
+  );
+}
+
+HelpText.propTypes = {
+  message: PropTypes.string.isRequired,
+};
+
+
+/**
+ * creates span with buttons for saving, deleting, and canceling changes
+ * to an existing inbox
+ */
+class ControlButtons extends Component {
+  handleButtonClick(i) {
+    this.props.buttonClicked(this.props.buttons[i]);
+  }
+
+  render() {
+    const {buttons} = this.props;
+    const buttonComponents = buttons.map((button, i) => {
+      const classes = [
+        'pull-right',
+        'margin-top',
+      ];
+      if (button.primary) {
+        classes.push('primary');
+      }
+      return (
+        <Button
+          disabled={button.disabled}
+          className={classes}
+          onClick={() => this.handleButtonClick(i)}
+          key={i}>{button.type}</Button>
+      );
+    });
     return (
-      <div className="input-error">
-        {message}
+      <span>{buttonComponents}</span>
+    );
+  }
+}
+
+ControlButtons.propTypes = {
+  buttonClicked: PropTypes.func.isRequired,
+  buttons: PropTypes.arrayOf(PropTypes.object),
+};
+
+
+/**
+ * textbox for entering email usernames
+ *
+ * used in both add and edit functions
+ */
+class EmailInput extends Component {
+  emailChanged() {
+    this.props.emailFieldChanged(this.refs.email_input.value.trim());
+  }
+
+  render() {
+    return (
+      <div className="input-group">
+        <input
+          type="text"
+          className="email-input form-control"
+          id={this.props.id}
+          value={this.props.email}
+          onChange={() => this.emailChanged()}
+          ref="email_input" />
+        <span className="input-group-addon">@my.jobs</span>
       </div>
     );
   }
-});
+}
+
+EmailInput.propTypes = {
+  emailFieldChanged: PropTypes.func.isRequired,
+  id: PropTypes.string.isRequired,
+  email: PropTypes.string.isRequired,
+};
 
 
-// creates span with buttons for saving, deleting, and canceling changes to an existing inbox
-var ControlButtons = React.createClass({
-  handleButtonClick: function(i) {
-    this.props.buttonClicked(this.props.buttons[i]);
-  },
-  render: function() {
-    var buttons = this.props.buttons.map(function(button, i){
-          let classes = [
-              "pull-right",
-              "margin-top",
-          ]
-          if (button.primary) classes.push("primary")
-          return (
-              <Button disabled={button.disabled} className={classes} onClick={this.handleButtonClick.bind(this, i)} key={i}>{button.type}</Button>
-          );
-      }.bind(this));
-    return (
-    <span>{buttons}</span>
-    );
+/**
+ * individual inbox loaded from DB
+ *
+ * contains inbox textbox and control buttons
+ */
+class InboxRow extends Component {
+  constructor(props) {
+    super(props);
+    const {inbox} = props;
+    this.state = {
+      id: inbox.pk,
+      initial_email: inbox.fields.email,
+      current_email: inbox.fields.email,
+      validationMessages: [],
+    };
   }
-});
 
-
-// textbox for entering email usernames. used in both add and edit functionalities
-var EmailInput = React.createClass({
-  emailChanged: function(){
-    this.props.emailFieldChanged(this.refs.email_input.value.trim());
-  },
-  render: function(){
-    return (
-        <div className="input-group">
-          <input type="text" className="email-input form-control" id={this.props.id} value={this.props.email} onChange={this.emailChanged} ref="email_input" />
-          <span className="input-group-addon">@my.jobs</span>
-        </div>
-    )
-  },
-});
-
-
-// individual inbox loaded from DB, contains inbox textbox and control buttons
-var InboxRow = React.createClass({
-  emailFieldChanged: function(value) {
-    var validation_object = this.props.inboxManager.validateEmailInput(value);
+  emailFieldChanged(value) {
+    const {inboxManager} = this.props;
+    const validationObject = inboxManager.validateEmailInput(value);
     this.setState({
       current_email: value,
-      validation_messages: validation_object.messages
+      success: validationObject.success,
+      validationMessages: validationObject.messages,
     });
-    if (value != this.state.initial_email) {
-      this.setState({buttons: [new ControlButton("Save", !validation_object.success, true), new ControlButton("Cancel")]});
-    } else {
-      this.setState({buttons: [new ControlButton("Delete", false, true)]});
-    }
-  },
-  buttonClicked: function(button) {
-    switch(button.type) {
-      case "Delete":
-        this.deleteEmail();
-        break;
-      case "Save":
-        this.saveEmail();
-        break;
-      case "Cancel":
-        this.cancelChanges();
-        break;
-    };
-  },
-  deleteEmail:function() {
-    if (confirm("Are you sure you want to delete " + this.state.initial_email + "@my.jobs?")) {
-    } else {
+  }
+
+  deleteEmail() {
+    /*
+    // Taking out since eslint hates confirm.
+    // Need a real modal here.
+    const message = 'Are you sure you want to delete ' +
+      this.state.initial_email + '@my.jobs?';
+    if (!confirm(message)) {
       return;
     }
-    this.props.handleDelete(this.props.index)
+    */
+    this.props.handleDelete(this.props.index);
+  }
 
-  },
-  saveEmail: function() {
+  saveEmail() {
     this.props.loadInboxesFromApi();
     return;
-  },
-  cancelChanges: function() {
+  }
+
+  cancelChanges() {
     this.setState({
       current_email: this.state.initial_email,
-      buttons: [new ControlButton("Delete", false, true)],
-      validation_messages: [],
+      validationMessages: [],
     });
-  },
-  getInitialState: function() {
-    return {
-      id: this.props.inbox.pk,
-      initial_email: this.props.inbox.fields.email,
-      current_email: this.props.inbox.fields.email,
-      buttons: [new ControlButton("Delete", false, true)],
-      validation_messages: []
+  }
+
+  render() {
+    const validationMessages =
+      this.state.validationMessages.map((message, i) =>
+        <HelpText message={message} key={i} />
+      );
+    let buttons;
+    if (this.state.current_email !== this.state.initial_email) {
+      buttons = [
+        new ControlButton('Save', !this.state.success, true,
+          () => this.saveEmail()),
+        new ControlButton('Cancel', false, false, () => this.cancelChanges()),
+      ];
+    } else {
+      buttons = [
+        new ControlButton('Delete', false, true, () => this.deleteEmail()),
+      ];
     }
-  },
-  render: function(){
-    var validation_messages = this.state.validation_messages.map((message, i) =>
-    <HelpText message={message} key={i} />
-    );
     return (
-    <div className="clearfix product-card no-highlight">
-      {validation_messages}
-      <EmailInput id={this.state.id} email={this.state.current_email} emailFieldChanged={this.emailFieldChanged} />
-      <ControlButtons buttons={this.state.buttons} buttonClicked={this.buttonClicked} />
-    </div>
+      <div className="clearfix product-card no-highlight">
+        {validationMessages}
+        <EmailInput
+          id={this.state.id}
+          email={this.state.current_email}
+          emailFieldChanged={v => this.emailFieldChanged(v)} />
+        <ControlButtons
+          buttons={buttons}
+          buttonClicked={b => b.callback()} />
+      </div>
     );
-    }
-})
+  }
+}
+
+InboxRow.propTypes = {
+  inbox: PropTypes.object.isRequired,
+  inboxManager: PropTypes.object.isRequired,
+  handleDelete: PropTypes.func.isRequired,
+  loadInboxesFromApi: PropTypes.func.isRequired,
+  index: PropTypes.number.isRequired,
+};
 
 
 // container for all edit rows of objects loaded from DB
-var InboxList = React.createClass({
-  handleDelete: function(index) {
-    this.setState({
-      inboxes: this.state.inboxes.filter((_, i) => i !== index)
-    });
-  },
-  getInitialState: function() {
-    return {
+class InboxList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       inboxes: [],
     };
-  },
-  componentDidMount: function () {
+  }
+
+  componentDidMount() {
     this.loadInboxesFromApi();
-  },
-  loadInboxesFromApi: async function() {
+  }
+
+  handleDelete(index) {
+    this.setState({
+      inboxes: this.state.inboxes.filter((_, i) => i !== index),
+    });
+  }
+
+  async loadInboxesFromApi() {
     const results = await this.props.inboxManager.getExistingInboxes();
     this.setState({
       inboxes: results,
     });
-  },
-  render: function() {
+  }
+
+  render() {
     const {inboxes} = this.state;
     if (inboxes.length === 0) {
-      return (<div></div>)
+      return (<div></div>);
     }
+
     return (
-        <div className="col-xs-12 ">
-          <div className="wrapper-header">
-            <h2>Existing Inbox Management</h2>
-          </div>
-          <div className="partner-holder">
-            {inboxes.map((inbox_ob, i) =>
-                  <InboxRow inbox={inbox_ob} key={inbox_ob.pk} index={i} handleDelete={this.handleDelete} loadFromApi={this.loadInboxesFromApi} inboxManager={this.props.inboxManager} />
-            )}
-          </div>
+      <div className="col-xs-12 ">
+        <div className="wrapper-header">
+          <h2>Existing Inbox Management</h2>
         </div>
+        <div className="partner-holder">
+          {inboxes.map((inboxOb, i) =>
+            <InboxRow
+              inbox={inboxOb}
+              key={inboxOb.pk}
+              index={i}
+              handleDelete={index => this.handleDelete(index)}
+              loadInboxesFromApi={() => this.loadInboxesFromApi()}
+              inboxManager={this.props.inboxManager} />
+          )}
+        </div>
+      </div>
     );
   }
-});
+}
+
+InboxList.propTypes = {
+  inboxManager: PropTypes.object.isRequired,
+};
 
 
 // button for submitting a new email username
-var AddInboxButton = React.createClass({
-  render: function() {
-    return (
-      <Button disabled={this.props.add_disabled} className="primary pull-right margin-top">Add Inbox</Button>
-    );
-  }
-});
+function AddInboxButton(props) {
+  return (
+    <Button
+      disabled={props.addDisabled}
+      className="primary pull-right margin-top">
+        Add Inbox
+    </Button>
+  );
+}
+
+AddInboxButton.propTypes = {
+  addDisabled: PropTypes.bool.isRequired,
+};
 
 
 // container for add button and new inbox input field
-var AddInboxForm = React.createClass({
-  getInitialState: function(){
-    return {
-      add_disabled: true,
-      validation_messages: []
+class AddInboxForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      addDisabled: true,
+      validationMessages: [],
     };
-  },
-  emailFieldChanged: function(value) {
-      let validation_object = this.props.inboxManager.validateEmailInput(value);
-      this.setState({
-        current_email: value,
-        validation_messages: validation_object.messages
-      });
-      if (validation_object.success) {
-        this.setState({add_disabled: false});
-      } else {
-        this.setState({add_disabled: true});
-      };
-  },
-  submitInbox: function() {
+  }
+
+  emailFieldChanged(value) {
+    const {inboxManager} = this.props;
+    const validationObject = inboxManager.validateEmailInput(value);
+    this.setState({
+      current_email: value,
+      validationMessages: validationObject.messages,
+    });
+    if (validationObject.success) {
+      this.setState({addDisabled: false});
+    } else {
+      this.setState({addDisabled: true});
+    }
+  }
+
+  submitInbox() {
     // TODO: Submit API
-  },
-  render: function() {
-    var validation_messages = this.state.validation_messages.map((message) =>
-    <HelpText message={message} />
+  }
+
+  render() {
+    const validationMessages = this.state.validationMessages.map((message) =>
+      <HelpText message={message} />
     );
     return (
       <div className="col-xs-12">
-        {validation_messages}
-        <EmailInput emailFieldChanged={this.emailFieldChanged} />
-        <AddInboxButton add_disabled={this.state.add_disabled} />
+        {validationMessages}
+        <EmailInput emailFieldChanged={v => this.emailFieldChanged(v)} />
+        <AddInboxButton addDisabled={this.state.addDisabled} />
       </div>
     );
-  },
-});
+  }
+}
+
+AddInboxForm.propTypes = {
+  inboxManager: PropTypes.object.isRequired,
+};
 
 
 // inbox management app main page
-var InboxManagementPage = React.createClass({
-  render: function() {
-    return (
-        <div>
-          <div className="card-wrapper">
-            <div className="row">
-              <InboxList inboxManager={this.props.inboxManager} />
-            </div>
-          </div>
-          <div className="card-wrapper">
-            <div className="row">
-              <div className="col-xs-12 ">
-                <div className="wrapper-header">
-                  <h2>Add New Inbox</h2>
-                </div>
-                <div className="partner-holder no-highlight">
-                  <div className="product-card no-highlight clearfix">
-                    <AddInboxForm inboxManager={this.props.inboxManager} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+function InboxManagementPage(props) {
+  const {inboxManager} = props;
+  return (
+    <div>
+      <div className="card-wrapper">
+        <div className="row">
+          <InboxList inboxManager={inboxManager} />
         </div>
-    );
-  }
-});
-
-
-// overview main display page
-var OverviewPage = React.createClass({
-  render: function() {
-    return (
+      </div>
       <div className="card-wrapper">
         <div className="row">
           <div className="col-xs-12 ">
             <div className="wrapper-header">
-              <h2>Overview</h2>
+              <h2>Add New Inbox</h2>
             </div>
-            <div className="product-card no-highlight">
-              <p>Non User Outreach is a module that will help you manage and track positive outreach efforts by your employees</p>
+            <div className="partner-holder no-highlight">
+              <div className="product-card no-highlight clearfix">
+                <AddInboxForm inboxManager={inboxManager} />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-});
+    </div>
+  );
+}
 
+InboxManagementPage.propTypes = {
+  inboxManager: PropTypes.object.isRequired,
+};
 
-/// the container for the main page. the left side of the screen
-var Content = React.createClass({
-  render: function() {
-    var page = this.props.page;
-    switch(page) {
-        case "Overview":
-            page = <OverviewPage />;
-            break;
-        case "InboxManagement":
-            page = <InboxManagementPage inboxManager={this.props.inboxManager} />;
-            break;
-    };
-    return (
-      <div className="col-xs-8">
-          {page}
+// overview main display page
+function OverviewPage() {
+  return (
+    <div className="card-wrapper">
+      <div className="row">
+        <div className="col-xs-12 ">
+          <div className="wrapper-header">
+            <h2>Overview</h2>
+          </div>
+          <div className="product-card no-highlight">
+            <p>
+              Non User Outreach is a module that will help you manage
+              and track positive outreach efforts by your employees
+            </p>
+          </div>
+        </div>
       </div>
-    );
+    </div>
+  );
+}
+
+OverviewPage.propTypes = {};
+
+
+// the container for the main page. the left side of the screen
+function Content(props) {
+  const {page, inboxManager} = props;
+  let pageComponent;
+  switch (page) {
+  case 'Overview':
+    pageComponent = <OverviewPage />;
+    break;
+  case 'InboxManagement':
+    pageComponent = <InboxManagementPage inboxManager={inboxManager} />;
+    break;
+  default:
+    pageComponent = '';
   }
-});
+  return (
+    <div className="col-xs-8">
+        {pageComponent}
+    </div>
+  );
+}
+
+Content.propTypes = {
+  inboxManager: PropTypes.object.isRequired,
+  page: PropTypes.string.isRequired,
+};
 
 
 // menu link to inbox management app screen
-var InboxManagementButton = React.createClass({
-  handleClick: function() {
-    this.props.changePage("InboxManagement", ["Use this page to manage the various email addresses to which you will " +
-    "have your employees send outreach emails"]);
-  },
-  render: function() {
+class InboxManagementButton extends Component {
+  handleClick() {
+    const {changePage} = this.props;
+    changePage('InboxManagement', [
+      'Use this page to manage the various email addresses to which ' +
+      'you will have your employees send outreach emails',
+    ]);
+  }
+
+  render() {
     return (
-      <Button onClick={this.handleClick}>Inbox Management</Button>
+      <Button onClick={() => this.handleClick()}>Inbox Management</Button>
     );
   }
-});
+}
+
+InboxManagementButton.propTypes = {
+  changePage: PropTypes.func.isRequired,
+};
 
 
 // menu link to overview of the entire nuo module
-var OverviewButton = React.createClass({
-  handleClick: function(event) {
-    this.props.changePage("Overview");
-  },
-  render: function() {
+class OverviewButton extends Component {
+  handleClick() {
+    this.props.changePage('Overview');
+  }
+
+  render() {
     return (
-      <Button onClick={this.handleClick}>Overview</Button>
+      <Button onClick={() => this.handleClick()}>Overview</Button>
     );
   }
-});
+}
+
+OverviewButton.propTypes = {
+  changePage: PropTypes.func.isRequired,
+};
 
 
 // navigation links
-var Menu = React.createClass({
-  render: function() {
-    var tips_header;
-    if (this.props.tips && this.props.tips.length > 0) {
-      var tips = this.props.tips.map((tip, i) => <p key={i}>{tip}</p>
-      );
-      tips_header = <h2>Tips</h2>;
-    }
-    return (
-      <div className="col-xs-4">
-        <div className="sidebar">
-          <h2 className="top">Navigation</h2>
-          <OverviewButton changePage={this.props.changePage} />
-          <InboxManagementButton changePage={this.props.changePage} />
-          {tips_header}
-          {tips}
-        </div>
-      </div>
+function Menu(props) {
+  const {tips, changePage} = props;
+  let tipsHeader;
+  let tipsComponent;
+  if (tips && tips.length > 0) {
+    tipsComponent = tips.map((tip, i) => <p key={i}>{tip}</p>
     );
+    tipsHeader = <h2>Tips</h2>;
   }
-});
+  return (
+    <div className="col-xs-4">
+      <div className="sidebar">
+        <h2 className="top">Navigation</h2>
+        <OverviewButton changePage={changePage} />
+        <InboxManagementButton changePage={changePage} />
+        {tipsHeader}
+        {tipsComponent}
+      </div>
+    </div>
+  );
+}
+
+Menu.propTypes = {
+  tips: PropTypes.arrayOf(PropTypes.string).isRequired,
+  changePage: PropTypes.func.isRequired,
+};
 
 // the "master" container
-export var Container = React.createClass({
-  getInitialState: function() {
-    return {
-      page:"Overview",
-      company: "DirectEmployers",
+export class Container extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      page: 'Overview',
+      company: 'DirectEmployers',
       tips: [],
     };
-  },
-  // change what it displayed in the "Content" div. option parameter "tips" allows a list of tips to display
-  // beneath the navigation menu
-  changePage: function(page_input, tips=[]) {
-    this.setState({page:page_input, tips:tips})
-  },
+  }
 
-  render: function() {
+  /**
+   * change what is displayed in the "Content" div.
+   *
+   * option parameter "tips" allows a list of tips to display beneath
+   * the navigation menu
+   */
+  changePage(page, tips = []) {
+    this.setState({page, tips});
+  }
+
+  render() {
+    const {page, tips} = this.state;
     return (
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1><a href="/manage-users/" title="Back to Manage Users">DirectEmployers</a></h1>
+            <h1>
+              <a
+                href="/manage-users/"
+                title="Back to Manage Users">
+                  DirectEmployers
+              </a>
+            </h1>
           </div>
         </div>
 
@@ -383,11 +519,15 @@ export var Container = React.createClass({
         </div>
 
         <div className="row">
-          <Content page={this.state.page} inboxManager={this.props.inboxManager} />
-          <Menu changePage={this.changePage} tips={this.state.tips} />
+          <Content page={page} inboxManager={this.props.inboxManager} />
+          <Menu changePage={(p, t) => this.changePage(p, t)} tips={tips} />
         </div>
         <div className="clearfix"></div>
       </div>
     );
   }
-});
+}
+
+Container.propTypes = {
+  inboxManager: PropTypes.object.isRequired,
+};

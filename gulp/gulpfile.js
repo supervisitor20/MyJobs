@@ -1,23 +1,27 @@
-require('babel/register');
+require('babel-register')({
+  presets: ["es2015", "react", "stage-2"],
+});
+require('babel-polyfill');
 
+var fs = require('fs');
+var path = require('path');
 var gulp = require('gulp');
-var browserify = require('browserify');
-var babelify = require('babelify');
-var babel = require('gulp-babel');
+var webpack = require('webpack');
 var util = require('gulp-util');
-var buffer = require('vinyl-buffer');
-var source = require('vinyl-source-stream');
-var uglify = require('gulp-uglify');
-var sourcemaps = require('gulp-sourcemaps');
-var stripDebug = require('gulp-strip-debug');
 var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
+var eslint = require('gulp-eslint');
+
 
 // This build produces several javascript bundles.
 // * vendor.js - Contains all the libraries we use, bundled and minified.
 //     This code is shared by all other app bundles. It is expected to be
 //     larger than app bundles and shared by all pages needing this
 //     infrastructure.
+//
+//     In production this bundle also contains whatever code webpack deemed
+//     as common to all app bundles.
+//
 // * reporting.js, [other-apps].js, etc. - These contain mostly only code
 //     used in a specific application. There should be one for each "app"
 //     in our site.
@@ -26,167 +30,182 @@ var jasmine = require('gulp-jasmine');
 //
 // For development run the default target, then leave the watch target running.
 
-// Future: Add jshint to the application bundle builds in the hope that we
-//     can use it in a manner similar to how use use flake8 on python code.
-
 // These go in vendor.js and are left out of app specific bundles.
-var vendor_libs = [
-    'react',
-    'react-dom',
-    'react-bootstrap',
-    'react-autosuggest',
-    'babel/polyfill',
-    'fetch-polyfill',
-    'es6-promise',
+var vendorLibs = [
+  'react',
+  'react-dom',
+  // Importing all of react-bootstrap _really_ bloats the bundle.
+  // Just pull what we use.
+  'react-bootstrap/lib/Button.js',
+  'react-bootstrap/lib/Glyphicon.js',
+  'react-autosuggest',
+  'fetch-polyfill',
+  'babel-polyfill',
+  'es6-promise',
+  'warning',
 ];
 
 var dest = '../static/bundle';
 
 var strip_debug = true;
 
-gulp.task('vendor', function() {
-    return browserify([], { debug: true, list: true, })
-    .require(vendor_libs)
-    .on('package', function(pkg) {
-        util.log("Vendor package:", pkg.name)
-    })
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        this.emit('end');
-    })
-    .bundle()
-    .pipe(source('vendor.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(uglify({ mangle: false }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest));
+function webpackConfig() {
+  return {
+    entry: {
+      reporting: './src/reporting/main',
+      manageusers: './src/manageusers/manageusers',
+      nonuseroutreach: './src/nonuseroutreach/main',
+      vendor: vendorLibs,
+    },
+    resolve: {
+      root: path.resolve('src'),
+    },
+    output: {
+      path: '../static/bundle',
+      filename: '[name].js',
+    },
+    module: {
+      loaders: [
+        {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          loader: "babel-loader",
+          query: {
+            presets: ["es2015", "react", "stage-2"],
+          }
+        },
+      ],
+    },
+    plugins: [],
+  };
+}
+
+gulp.task('bundle', function(callback) {
+  var config = webpackConfig();
+  config.plugins.push(
+    // React is smaller, faster, and silent in this mode.
+    // The warning module is also silent in this mode.
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': '"production"',
+    }),
+    // Factor common code in to vendor.js.
+    // This also establishes the parent relationship between the vendor
+    // and app chunks.
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      filename: 'vendor.js',
+    }),
+    // No idea if Dedupe and OccurenceOrder are actually doing anything.
+    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.OccurenceOrderPlugin(),
+    // Minify.
+    // Warnings are off as the output isn't useful in a log.
+    // In development it can be useful to see this output to verify that
+    // dead code removal is doing something sane.
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false,
+      },
+    }));
+  webpack(config, function(err, stats) {
+    if(err) {
+      throw new util.PluginError("webpack", err);
+    }
+    util.log(stats.toString("minimal"));
+    fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
+    callback();
+  });
 });
 
-// If an app task starts logging that it is including packages, add those
-// packages to vendor_libs. If more libaries are processed in app specific
-// bundle processing, the build starts taking too long and that code will
-// be redownloaded for different apps, instead of shared by the vendor.js
-// bundle.
-//
-// The list of ok packages here are:
-// * de-build (thats us),
-// * babel-runtime
-// * process
-// * core-js
-//
-// Ideally this bundle would contain only de-build but I can't figure out
-// how to get the others into vendor.js, as they are processed differently
-// from ordinary node.js libraries.
+// Object to use for webpack's in memory cache. This seems to be the only
+// way to have an incremental build with webpack.
+var webpackCache = {};
 
-gulp.task('reporting', function() {
-    return browserify([], {
-        debug: true,
-        paths: ['./src'],
-    })
-    .external(vendor_libs)
-    .add('src/reporting/main.js')
-    .transform(babelify.configure({optional: 'runtime'}))
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .bundle()
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        // Unstick browserify on some errors. Keeps watch alive.
-        this.emit('end');
-    })
-    .pipe(source('reporting.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Consider adding this to production builds later when we are sure
-    // we won't need unminified code available.
-    //.pipe(uglify({ mangle: false }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest));
+gulp.task('dev-bundle', function(callback) {
+  // This bundle is tuned for build speed and development convenience.
+  var config = webpackConfig();
+  config.debug = true;
+  config.devtool = 'eval-source-map';
+  config.cache = webpackCache;
+  config.resolve.unsafeCache = true;
+  config.profile = true;
+  config.plugins.push(
+    // Still generate a vendor.js but don't bother factoring any common
+    // app code into it.
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      filename: 'vendor.js',
+      minChunks: Infinity,
+    }))
+  webpack(config, function(err, stats) {
+    if(err) {
+      throw new util.PluginError("webpack", err);
+    }
+    util.log(stats.toString('minimal'));
+    fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
+    callback();
+  });
 });
-
-// If an app task starts logging that it is including packages, add those
-// packages to vendor_libs.
-gulp.task('manageusers', function() {
-    return browserify([], {
-        debug: true,
-        paths: ['./src'],
-    })
-    .external(vendor_libs)
-    .add('src/manageusers/manageusers.js')
-    .transform(babelify)
-    .bundle()
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        // Unstick browserify on some errors. Keeps watch alive.
-        this.emit('end');
-    })
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .pipe(source('manageusers.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Do we want this in production builds?
-    .pipe(uglify({ mangle: false }))
-    // stripDebug() must come before sourcemaps.write()
-    // You should remove logging before committing, but this confirms logging won't be in production
-    .pipe(gulpif(strip_debug, stripDebug()))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest))
-});
-
-gulp.task('nonuseroutreach', function() {
-    return browserify([], {
-        debug: true,
-        paths: ['./src'],
-    })
-    .external(vendor_libs)
-    .add('src/nonuseroutreach/main.js')
-    .transform(babelify.configure({optional: 'runtime'}))
-    .bundle()
-    .on('error', function(error, meta) {
-        util.log("Browserify error:", error.toString());
-        // Unstick browserify on some errors. Keeps watch alive.
-        this.emit('end');
-    })
-    .on('package', function(pkg) {
-        util.log("Including package:", pkg.name)
-    })
-    .pipe(source('nonuseroutreach.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    // Do we want this in production builds?
-    .pipe(uglify({ mangle: false }))
-    // stripDebug() must come before sourcemaps.write()
-    // You should remove logging before committing, but this confirms logging won't be in production
-    .pipe(gulpif(strip_debug, stripDebug()))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(dest))
-});
-
-// By default, we strip logging. This disables that functionality.
-gulp.task('watch-no-strip', function() {
-    console.log("Keeping console and debugger statements.");
-    strip_debug = false;
-    gulp.watch('src/**/*', ['reporting', 'manageusers', 'nonuseroutreach']);
-});
-
-gulp.task('default', ['build']);
 
 gulp.task('test', function() {
-    return gulp.src(['./src/**/spec/*.js'])
-        .pipe(jasmine({
-            includeStackTrace: false,
-        }));
+  return gulp.src(['./src/**/spec/*.js'])
+    .pipe(jasmine({
+      includeStackTrace: false,
+    }));
 });
 
-gulp.task('build', ['vendor', 'reporting', 'manageusers', 'nonuseroutreach']);
+function lintOptions() {
+  return {
+    extends: 'airbnb',
+    env: {
+      jasmine: true,
+    },
+    parser: 'babel-eslint',
+    plugins: ['babel'],
+    rules: {
+      "babel/object-curly-spacing": 1,
+      "babel/no-await-in-loop": 2,
+    },
+  };
+}
+
+/**
+ * lint-fix: run eslint with fix mode on.
+ *
+ * This can be helpful in limited circumstances. Be careful.
+ *
+ * It is not part of watch or the default build. Let's keep it
+ * that way.
+ */
+gulp.task('lint-fix', function() {
+  function isFixed(file) {
+    return file.eslint != null && file.eslint.fixed;
+  };
+  var lintOpts = lintOptions();
+  lintOpts.fix = true;
+  return gulp.src(['./src/**/nonuseroutreachEngine.js'])
+    .pipe(eslint(lintOpts))
+    .pipe(eslint.format())
+    .pipe(gulpif(isFixed, gulp.dest("./src")));
+});
+
+gulp.task('lint', function() {
+  // Remove this exclusion when manageusers is ready.
+  return gulp.src(['./src/**/*.js', '!./src/reporting/**/*', '!./src/util/**/*', '!./src/manageusers/**/*'])
+    .pipe(eslint(lintOptions()))
+    .pipe(eslint.format());
+});
+
+// Build everything. Good way to start after a git checkout.
+gulp.task('build', ['bundle', 'lint', 'test']);
+
+gulp.task('watch-tasks', ['dev-bundle', 'test', 'lint']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {
-    return gulp.watch('src/**/*', ['test', 'reporting', 'manageusers', 'nonuseroutreach']);
+    return gulp.watch('src/**/*', ['watch-tasks']);
 });
 
-gulp.task('default', ['build', 'test']);
+// This is how we build in production.
+// In production NODE_ENV is set to 'production'.
+gulp.task('default', ['build']);
