@@ -1,12 +1,16 @@
 # Makefile for Sphinx documentation
 #
 
-GH_PAGES_SOURCES = doc/source doc/Makefile default_settings.py
+GH_PAGES_SOURCES = doc/source doc/Makefile default_settings.py \
+									 api automation moc_coding myblocks mydashboard myemails \
+									 myjobs mymessages mypartners myprofile myreports \
+									 mysearches mysignon postajob redirect registration seo \
+									 social_links solr universal wildcard
 SOURCE_SUBDIRS = users developers
 
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -W
+SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
