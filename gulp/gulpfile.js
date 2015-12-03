@@ -144,7 +144,7 @@ gulp.task('nonuseroutreach', function() {
     })
     .external(vendor_libs)
     .add('src/nonuseroutreach/main.js')
-    .transform(babelify.configure({optional: 'runtime'}))
+    .transform(babelify)
     .bundle()
     .on('error', function(error, meta) {
         util.log("Browserify error:", error.toString());
@@ -182,6 +182,7 @@ gulp.task('test', function() {
         }));
 });
 
+// Build everything. Good way to start after a git checkout.
 gulp.task('build', ['vendor', 'reporting', 'manageusers', 'nonuseroutreach']);
 
 // Leave this running in development for a pleasant experience.

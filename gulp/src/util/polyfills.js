@@ -8,18 +8,18 @@ import 'fetch-polyfill';
 
 export function installPolyfills() {
     // This gives us the Promise API.
-    es6PromisePolyfill();
+  es6PromisePolyfill();
 
     // IE8 doesn't define console unless the debugger is active.
-    if (!window.console) {
-        window.console = {
-            log: () => {},
-            error: () => {},
-        };
-    }
+  if (!window.console) {
+    window.console = {
+      log: () => {},
+      error: () => {},
+    };
+  }
 
     // IE8 doesn't have Date.now()
-    if (!Date.now) {
-        Date.now = function() { return new Date().getTime(); }
-    }
+  if (!Date.now) {
+    Date.now = () => new Date().getTime();
+  }
 }
