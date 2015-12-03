@@ -8,3 +8,5 @@ Developer Documentation
   styleguides/index.rst
   mypartners/index.rst
   seo/index.rst
+  testing/index.rst
+  contributing/index.rst
