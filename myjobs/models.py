@@ -710,6 +710,49 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 return is_company_user and company.member
 
+    def send_invite(self, email, company, role_name=None):
+        """
+        Sends an invitation to the `email` in regards to `role_name` for
+        `company`.
+
+        Inputs:
+            :email: The email address of the potential user being invited.
+            :company: The company inviting the user.
+            :role_name: The name of the role (optional) the user is to be
+            assigned.
+
+        Output:
+            The invited user if sucessful, otherwise None.
+
+        When roles are disabled, it is sufficient to pass `True` to
+        `role_name`, which will signify that the invited user should be invited
+        as a `CompanyUser`. If `role_name` is unspecified, only the invite is
+        sent.
+        """
+
+        can_invite = company.user_has_access(self) and self.can(
+            company, 'create user')
+
+        if not can_invite:
+            return None
+
+        user, _ = User.objects.create_user(
+            email=email, send_email=False, in_reserve=True)
+        Invitation = get_model('registration', 'Invitation')
+        Invitation.objects.create(
+            inviting_user=self, inviting_company=company, invitee=user)
+
+        if role_name:
+            if settings.ROLES_ENABLED:
+                assigned_role = Role.objects.get(name=role_name)
+                user.roles.add(assigned_role)
+            else:
+                CompanyUser = get_model('seo', 'CompanyUser')
+                CompanyUser.objects.get_or_create(user=user, company=company)
+
+        return user
+
+
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
 def delete_user(sender, instance, using, **kwargs):

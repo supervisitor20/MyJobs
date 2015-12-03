@@ -183,7 +183,7 @@ gulp.task('lint-fix', function() {
   };
   var lintOpts = lintOptions();
   lintOpts.fix = true;
-  return gulp.src(['./src/**/nonuseroutreachEngine.js'])
+  return gulp.src(['./src/somedir/**/*js'])
     .pipe(eslint(lintOpts))
     .pipe(eslint.format())
     .pipe(gulpif(isFixed, gulp.dest("./src")));
