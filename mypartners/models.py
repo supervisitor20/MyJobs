@@ -69,7 +69,7 @@ class Status(models.Model):
 
 class SearchParameterQuerySet(models.query.QuerySet):
     """
-    Defines a query set with a ``from_search`` method for filtering by query
+    Defines a query set with a `from_search` method for filtering by query
     parameters.
     """
 
@@ -83,16 +83,15 @@ class SearchParameterQuerySet(models.query.QuerySet):
             :filters: A JSON string which is an object to be passed to
                       filter().
             :filters: A dict of field: term pairs where field is a field of
-                         the ``ContactRecord`` model and term is search term
+                         the `ContactRecord` model and term is search term
                          you'd like to filter against.
 
-                         For ``datetime``, pass ``start_date`` and/or
-                         ``end_date`` instead.
+                         For `datetime`, pass `start_date` and/or `end_date`
+                         instead.
 
         Example:
             If you want to filter partners where the related contact record's
-            date time is before a certain date::
-
+            date time is before a certain date:
                 Partner.objects.from_search(filters=json.dumps({
                     'contactrecord': {
                         'date_time': {
@@ -448,7 +447,7 @@ class PartnerLibrary(models.Model):
     Programs (OFCCP).
 
     .. note:: For the differences between `state` and `st`, see the ofccp
-              module.
+    module.
 
     """
 
