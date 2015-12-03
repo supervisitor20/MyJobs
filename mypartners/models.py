@@ -785,7 +785,7 @@ class PRMAttachment(models.Model):
                 key.key = self.attachment.name
                 key.set_acl('private')
         except AttributeError:
-            # If we're using(ileSystemStorage, default_storage will not have
+            # If we're using FileSystemStorage, default_storage will not have
             # a "connection" attribute and we don't need to worry about
             # S3 permissions.
             pass
