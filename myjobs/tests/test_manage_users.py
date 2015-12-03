@@ -36,12 +36,18 @@ class ManageUsersTests(MyJobsBase):
         resolver = resolve('/manage-users/api/activities/')
         self.assertEqual(resolver.view_name, 'api_get_activities')
 
-    # Simply check that they all return 200
+    # Simply check that they all return 302 (because we aren't logged in with permission to view)
     # Don't actually modify data
     def test_apis_up(self):
         response = self.client.get('/manage-users/api/activities/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
+        response = self.client.get('/manage-users/api/roles/')
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get('/manage-users/api/users/')
+        self.assertEqual(response.status_code, 302)
+        
         # TODO How do you get a normal request to the view so that the view can pull out a company?
         # Or would it bet better to pass a company object directly?
 
