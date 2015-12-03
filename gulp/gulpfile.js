@@ -58,6 +58,9 @@ function webpackConfig() {
     },
     resolve: {
       root: path.resolve('src'),
+      // you can now require('file') instead of require('file.coffee')
+      extensions: ['', '.js', '.jsx'],
+
     },
     output: {
       path: '../static/bundle',
@@ -67,6 +70,14 @@ function webpackConfig() {
       loaders: [
         {
           test: /\.js$/,
+          exclude: /node_modules/,
+          loader: "babel-loader",
+          query: {
+            presets: ["es2015", "react", "stage-2"],
+          }
+        },
+        {
+          test: /\.jsx$/,
           exclude: /node_modules/,
           loader: "babel-loader",
           query: {
