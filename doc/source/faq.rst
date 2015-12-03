@@ -20,7 +20,7 @@ The company I'm attempting to access has PRM app-level access, so why do I
 still get a 403 when trying to access PRM?
   In addition to the company needing to have app-level access for the app which
   you are trying to access, the role assigned to the user needs to have
-  activities requiredf or that particular app's page. In the case of the PRM
+  activities required for that particular app's page. In the case of the PRM
   overview page, a role must include the "read partner" activity.
 
 How do I assign roles in the Django Admin?
@@ -44,7 +44,7 @@ Documentation
 =============
 
 Where is this hosted?
-  This documentation is hosted directly on github using their ``gh-pages``
+  This documentation is hosted directly on GitHub using their ``gh-pages``
   feature
 
 How do I edit this documentation?
@@ -61,7 +61,7 @@ How will I edit this document in the future?
   was merged into the ``quality-control`` branch.
 
 Why is it so ugly?
-  It's completely themable, so the current look is arbitrary.
+  It's completely themeable, so the current look is arbitrary.
 
 
 
