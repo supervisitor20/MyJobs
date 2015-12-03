@@ -1,11 +1,12 @@
-import {installPolyfills} from "../util/polyfills.js";
+import 'babel-polyfill';
+import {installPolyfills} from '../util/polyfills.js';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
-import {getCsrf} from 'util/cookie';
-import {DynamicReportApp} from "./view.js";
+import {getCsrf} from '../util/cookie';
+import {DynamicReportApp} from './DynamicReportApp.js';
 
-import React from "react";
-import ReactDOM from "react-dom";
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 installPolyfills();
 
@@ -17,5 +18,5 @@ const reportFinder = new ReportFinder(api, configBuilder);
 ReactDOM.render(
     <DynamicReportApp
         reportFinder={reportFinder}/>,
-    document.getElementById("reporting-app")
+    document.getElementById('reporting-app')
 );
