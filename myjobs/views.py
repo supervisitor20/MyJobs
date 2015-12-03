@@ -6,6 +6,7 @@ import urllib2
 from urlparse import urlparse
 import uuid
 
+from myreports.decorators import restrict_to_staff
 from django.conf import settings
 from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import user_passes_test
@@ -35,7 +36,6 @@ from registration.forms import RegistrationForm, CustomAuthForm
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
 from seo.models import Company
-from myreports.decorators import restrict_to_staff
 
 logger = logging.getLogger('__name__')
 
