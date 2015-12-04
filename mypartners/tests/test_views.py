@@ -3,16 +3,19 @@ from bs4 import BeautifulSoup
 import csv
 from datetime import datetime, date, timedelta
 import json
+from os import path
 import random
 import requests
 from StringIO import StringIO
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.urlresolvers import reverse
 from django.http import Http404
-from django.test.client import RequestFactory
+from django.test import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
 from myprofile.tests.factories import SecondaryEmailFactory
@@ -33,6 +36,7 @@ from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
+from mypartners.views import process_email
 from mysearches.models import PartnerSavedSearch
 
 
@@ -1149,6 +1153,40 @@ class EmailTests(MyPartnersTestCase):
         log_entry = ContactLogEntry.objects.get(object_id=record.pk)
         self.assertEqual(log_entry.action_flag, ADDITION)
         self.assertEqual(log_entry.user, self.staff_user)
+
+    def test_attachments_attach(self):
+        """
+        Confirms that files posted by SendGrid will be attached correctly.
+        """
+        self.assertEqual(len(mail.outbox), 0,
+                         'We should have no emails at test start')
+        self.assertEqual(
+            ContactRecord.objects.count(), 0,
+            'We should have no communication records at test start')
+        factory = RequestFactory()
+        self.data['attachments'] = 1
+        self.data['to'] = self.contact.email
+
+        request = factory.post(reverse('process_email'), self.data)
+        request.method = 'POST'
+        request.user = AnonymousUser()
+
+        actual_file = path.join(path.abspath(path.dirname(__file__)), 'data',
+                                'test.txt')
+        f = SimpleUploadedFile('test.txt', open(actual_file).read())
+        request.FILES['attachment1'] = f
+
+        response = process_email(request)
+        self.assertEqual(response.status_code, 200,
+                         'Successful email submissions return a 200')
+        self.assertEqual(len(mail.outbox), 1,
+                         'process_email should have sent one email')
+        self.assertEqual(ContactRecord.objects.count(), 1,
+                         'After ')
+        record = ContactRecord.objects.get()
+        self.assertEqual(record.prmattachment_set.count(), 1,
+                         ('The file posted earlier should be attached to the'
+                          'communication record that we just created'))
 
     def test_create_new_contact(self):
         new_email = 'test@my.jobs'
