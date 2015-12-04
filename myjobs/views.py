@@ -19,7 +19,6 @@ from django.shortcuts import render_to_response, redirect, render, Http404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
-from django.contrib.admin.views.decorators import staff_member_required
 
 from captcha.fields import ReCaptchaField
 
@@ -664,7 +663,8 @@ def api_get_roles(request):
         response_data[role_id]['users']['assigned'] = serializers.serialize("json", users_assigned, fields=('email'))
 
         # Retrieve users that can be assigned to this role
-        # This is simply a list of all users already assigned to roles associated with this company
+        # This is simply a list of all users already assigned to roles
+        # associated with this company
         users_available = []
         roles = Role.objects.filter(company=company)
         for role in roles:
@@ -795,7 +795,7 @@ def api_create_role(request):
         if users:
             for i, user in enumerate(users):
                 user_object = User.objects.filter(email=user)
-                user_object[0].roles.add( new_role.id )
+                user_object[0].roles.add(new_role.id)
 
         response_data["success"] = "true"
         return HttpResponse(json.dumps(response_data), content_type="application/json")
