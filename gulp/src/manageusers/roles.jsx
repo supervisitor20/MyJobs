@@ -1,6 +1,7 @@
 import React from 'react';
-import RolesList from './rolesList';
 import {Link} from 'react-router';
+
+import RolesList from './RolesList';
 
 class Roles extends React.Component {
   render() {

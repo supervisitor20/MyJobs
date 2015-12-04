@@ -1,6 +1,7 @@
 import React from 'react';
-import UsersList from './usersList';
-import AddUserButton from './addUserButton';
+
+import UsersList from './UsersList';
+import AddUserButton from './AddUserButton';
 
 class Users extends React.Component {
   render() {

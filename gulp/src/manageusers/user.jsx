@@ -2,11 +2,13 @@
 
 import React from 'react';
 import Button from 'react-bootstrap/lib/Button';
-import HelpText from './helpText';
-import RolesMultiselect from './RolesMultiselect';
 import {Link} from 'react-router';
-import {validateEmail} from 'util/validateEmail';
-import {getCsrf} from 'util/cookie';
+
+import {validateEmail} from 'util/ValidateEmail';
+import {getCsrf} from 'util/Cookie';
+
+import RolesMultiselect from './RolesMultiselect';
+import HelpText from './HelpText';
 
 class User extends React.Component {
   constructor(props) {

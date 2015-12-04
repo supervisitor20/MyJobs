@@ -1,5 +1,5 @@
 import React from 'react';
-import ActivitiesList from './activitiesList';
+import ActivitiesList from './ActivitiesList';
 
 class Activities extends React.Component {
   render() {
