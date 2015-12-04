@@ -4,7 +4,7 @@ import React from 'react';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
-import {getCsrf} from 'util/Cookie';
+import {getCsrf} from 'util/cookie';
 
 import HelpText from './HelpText';
 import ActivitiesMultiselect from './ActivitiesMultiselect';
