@@ -122,6 +122,10 @@ gulp.task('bundle', function(callback) {
       throw new util.PluginError("webpack", err);
     }
     util.log(stats.toString("minimal"));
+    if (stats.hasErrors()) {
+      callback('webpack error');
+      return;
+    }
     fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
@@ -152,6 +156,10 @@ gulp.task('dev-bundle', function(callback) {
       throw new util.PluginError("webpack", err);
     }
     util.log(stats.toString('minimal'));
+    if (stats.hasErrors()) {
+      callback('webpack error');
+      return;
+    }
     fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
