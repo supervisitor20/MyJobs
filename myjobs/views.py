@@ -611,7 +611,7 @@ def manage_users(request):
         }
 
     return render_to_response('manageusers/index.html', ctx,
-                                RequestContext(request))
+                              RequestContext(request))
 
 
 @restrict_to_staff()
@@ -771,7 +771,7 @@ def api_create_role(request):
         if request.POST.getlist("assigned_activities[]", ""):
             activities = request.POST.getlist("assigned_activities[]", "")
             # Create list of activity_ids from names
-            for i, activity in enumerate(activities):
+            for activity in enumerate(activities):
                 activity_object = Activity.objects.filter(name=activity)
                 activity_id = activity_object[0].id
                 activity_ids.append(activity_id)
