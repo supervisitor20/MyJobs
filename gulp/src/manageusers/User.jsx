@@ -4,7 +4,7 @@ import React from 'react';
 import Button from 'react-bootstrap/lib/Button';
 import {Link} from 'react-router';
 
-import {validateEmail} from 'util/ValidateEmail';
+import {validateEmail} from 'util/validateEmail';
 import {getCsrf} from 'util/Cookie';
 
 import RolesMultiselect from './RolesMultiselect';
