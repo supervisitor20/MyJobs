@@ -39,7 +39,9 @@ export class AddInboxForm extends Component {
     return (
       <div className="col-xs-12">
         {validationMessages}
-        <EmailInput emailFieldChanged={v => this.emailFieldChanged(v)} />
+        <EmailInput
+          id="add"
+          emailFieldChanged={v => this.emailFieldChanged(v)} />
         <AddInboxButton addDisabled={this.state.addDisabled} />
       </div>
     );

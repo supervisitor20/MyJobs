@@ -95,7 +95,7 @@ export class InboxRow extends Component {
       <div className="clearfix product-card no-highlight">
         {validationMessages}
         <EmailInput
-          id={this.state.id}
+          id={this.state.id.toString()}
           email={this.state.current_email}
           emailFieldChanged={v => this.emailFieldChanged(v)} />
         <ControlButtons

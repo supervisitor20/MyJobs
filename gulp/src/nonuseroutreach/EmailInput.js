@@ -29,5 +29,5 @@ export class EmailInput extends Component {
 EmailInput.propTypes = {
   emailFieldChanged: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
-  email: PropTypes.string.isRequired,
+  email: PropTypes.string,
 };
