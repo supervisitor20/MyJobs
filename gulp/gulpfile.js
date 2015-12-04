@@ -191,7 +191,7 @@ gulp.task('lint-fix', function() {
 
 gulp.task('lint', function() {
   // Remove this exclusion when manageusers is ready.
-  return gulp.src(['./src/**/*.js', '!./src/reporting/**/*', '!./src/util/**/*', '!./src/manageusers/**/*'])
+  return gulp.src(['./src/**/*.js', '!./src/manageusers/**/*'])
     .pipe(eslint(lintOptions()))
     .pipe(eslint.format());
 });
