@@ -1163,7 +1163,6 @@ def prm_export(request):
 
 
 @csrf_exempt
-@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
@@ -1307,7 +1306,7 @@ def process_email(request):
                 prm_attachment = PRMAttachment()
                 prm_attachment.attachment = attachment
                 prm_attachment.contact_record = record
-                setattr(prm_attachment, 'partner', contact.partner)
+                prm_attachment._partner = contact.partner
                 prm_attachment.save()
                 # The file pointer for this attachment is now at the end of the
                 # file; reset it to the beginning for future use.
