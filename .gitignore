@@ -21,7 +21,7 @@ gulp/node_modules/
 gulp/profile.json
 static/bundle/
 
-# Editor aritfacts
+# Editor artifacts
 *~
 *-
 *#
