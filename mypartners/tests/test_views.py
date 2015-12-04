@@ -1182,7 +1182,8 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(len(mail.outbox), 1,
                          'process_email should have sent one email')
         self.assertEqual(ContactRecord.objects.count(), 1,
-                         'After ')
+                         ('After process_email finishes, we should have one'
+                          'communication record'))
         record = ContactRecord.objects.get()
         self.assertEqual(record.prmattachment_set.count(), 1,
                          ('The file posted earlier should be attached to the'
