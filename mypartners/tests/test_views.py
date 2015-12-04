@@ -1158,19 +1158,25 @@ class EmailTests(MyPartnersTestCase):
         """
         Confirms that files posted by SendGrid will be attached correctly.
         """
+        # Sanity checks for initial state.
         self.assertEqual(len(mail.outbox), 0,
                          'We should have no emails at test start')
         self.assertEqual(
             ContactRecord.objects.count(), 0,
             'We should have no communication records at test start')
+
+        # Testing file attachments seems to require either a RequestFactory
+        # or a custom middleware. I chose the factory.
         factory = RequestFactory()
+
+        # Add some necessary data to our post dict.
         self.data['attachments'] = 1
         self.data['to'] = self.contact.email
 
         request = factory.post(reverse('process_email'), self.data)
-        request.method = 'POST'
         request.user = AnonymousUser()
 
+        # Grab our test file and attach it to the request.
         actual_file = path.join(path.abspath(path.dirname(__file__)), 'data',
                                 'test.txt')
         f = SimpleUploadedFile('test.txt', open(actual_file).read())
