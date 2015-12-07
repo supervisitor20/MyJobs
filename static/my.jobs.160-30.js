@@ -7,7 +7,7 @@ $(document).ready(function(){
     $(".date-activity").click(function () {
         $(".date-range-select-form").toggleClass('date-range-select-form-visible');
     });
-
+    
     var $loader = $("#ajax-busy"), timer;
     $loader.hide()
         .ajaxStart(function() {
