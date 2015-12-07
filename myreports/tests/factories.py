@@ -71,22 +71,8 @@ class ConfigurationFactory(DjangoModelFactory):
     is_active = True
 
 
-class ColumnFactory(DjangoModelFactory):
-    class Meta:
-        model = 'myreports.Column'
-
-    is_active = True
-
-
 class ConfigurationColumnFactory(DjangoModelFactory):
     class Meta:
         model = 'myreports.ConfigurationColumn'
-
-    is_active = True
-
-
-class InterfaceElementTypeFactory(DjangoModelFactory):
-    class Meta:
-        model = 'myreports.InterfaceElementType'
 
     is_active = True

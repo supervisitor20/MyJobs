@@ -84,12 +84,18 @@ class SavedSearchModelsTests(MyJobsBase):
         Tests that weekly saved searches are requeued correctly individually in
         addition to as part of a digest.
         """
-        today = datetime.date.today().isoweekday()
-        two_days_ago = today - 2
+        today = datetime.date.today()
+        two_days_ago = today.isoweekday() - 2
+        two_month_days_ago = today.day - 2
         if two_days_ago <= 0:
+            # Dates can't be negative or zero
             two_days_ago += 7
-        digest = SavedSearchDigestFactory(user=self.user,
-                                          is_active=True)
+        if two_month_days_ago == 0:
+            # According to mysearches/models.py, we can't have saved searches on
+            # the 31st. If two_month_days_ago==0, this would be the 31st.
+            two_days_ago -= 1
+
+        digest = SavedSearchDigestFactory(user=self.user, is_active=True)
         search = SavedSearchFactory(user=self.user, is_active=True,
                                     frequency='W', day_of_week=two_days_ago)
 
@@ -108,14 +114,16 @@ class SavedSearchModelsTests(MyJobsBase):
         Tests that monthly saved searches are requeued correctly individually
         in addition to as part of a digest.
         """
-        today = datetime.date.today().day
-        last_week = today - 7
-        if last_week <= 0:
-            last_week += 31
-        digest = SavedSearchDigestFactory(user=self.user,
-                                          is_active=True)
+        today = datetime.date.today()
+        two_days_ago = today.day - 2
+        if two_days_ago < 0:
+            two_days_ago += 31
+        elif two_days_ago == 0:
+            two_days_ago = 30
+
+        digest = SavedSearchDigestFactory(user=self.user, is_active=True)
         search = SavedSearchFactory(user=self.user, is_active=True,
-                                    frequency='M', day_of_month=last_week)
+                                    frequency='M', day_of_month=two_days_ago)
 
         self.requeue(search, digest)
 
