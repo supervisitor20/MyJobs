@@ -54,6 +54,7 @@ function webpackConfig() {
     entry: {
       reporting: './src/reporting/main',
       manageusers: './src/manageusers/manageusers',
+      nonuseroutreach: './src/nonuseroutreach/main',
       vendor: vendorLibs,
     },
     resolve: {
@@ -78,7 +79,7 @@ function webpackConfig() {
     plugins: [],
   };
 }
-
+cat
 gulp.task('bundle', function(callback) {
   var config = webpackConfig();
   config.plugins.push(

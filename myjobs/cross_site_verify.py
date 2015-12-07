@@ -107,7 +107,6 @@ def verify_cross_site_request(site_loader, method, host_site, origin,
 def cross_site_verify(fn):
     @wraps(fn)
     def verify(request):
-        import ipdb; ipdb.set_trace()
         method, origin, referer, xrw = (
             parse_request_meta(request.META))
 

@@ -57,21 +57,21 @@
 </div>
 {% endif %}
 
-{% if default_jobs or featured_jobs %}
-    {% if "network" in site_tags or site_config.show_saved_search_widget %}
+<!--{% if default_jobs or featured_jobs %}-->
+    <!--{% if "network" in site_tags or site_config.show_saved_search_widget %}-->
         <script src="//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js"></script>
         <div id="direct-saved-search-box" class="direct_rightColBox direct-action-box">
             <div data-secure-block-id="jkoons-test-id"></div>
         </div>
     {% endif %}
-    <a name="filters"></a>  
+    <a name="filters"></a>
     <div id="direct_shareDiv" class="direct_rightColBox direct_shareSolo" role="menu">
         <h3>{% trans "Share" %}</h3>
         {% include 'includes/add_this.html' %} <!--replace with my.jobs sharing when ready. JPS 10-4-12-->
     </div>
     <a href="#top" class="direct_mobileJumpLink">{% blocktrans %}Return to top{% endblocktrans %}</a>
 
-{% endif %}
+<!--{% endif %}-->
 <div id="direct_disambiguationDiv" class="direct_rightColBox" role="menu">
     {# If clear_breadcrumb exists, we know at least one search term that can be removed has been applied, so include the breadbox #}
     {% if breadbox.clear_breadcrumb %}
