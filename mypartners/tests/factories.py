@@ -109,3 +109,11 @@ class PRMAttachmentFactory(factory.django.DjangoModelFactory):
         filename='attachment.dat', data=b'This is an attachment.')
 
     contact_record = factory.SubFactory(ContactRecordFactory)
+
+
+class OutreachEmailAddressFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "mypartners.OutreachEmailAddress"
+
+    company = factory.SubFactory(CompanyFactory)
+    email = fuzzy.FuzzyText()
