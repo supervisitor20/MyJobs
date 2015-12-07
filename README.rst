@@ -39,5 +39,5 @@ http://directemployersfoundation.org
 
 We are hiring!
 --------------
-http://directemployersfoundation.org/careers
+http://directemployers.jobs
 

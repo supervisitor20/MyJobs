@@ -4,7 +4,7 @@ class RolesList extends React.Component {
   render() {
     return (
       <div>
-        <table className="table" id="no-more-tables">
+        <table className="table table-striped" id="no-more-tables">
           <thead>
             <tr>
               <th>Role</th>

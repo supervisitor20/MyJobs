@@ -3945,19 +3945,17 @@ h1 a {
   padding-left: 0px;
 }
 
-.panel {
+.product-card-full .table-striped thead th {
+  background: rgb(235, 235, 235);
 }
 
+.product-card-full .table-striped tbody tr:nth-child(odd) td{
+  background-color: transparent;
+}
 
-
-
-
-
-
-
-
-
-
+.product-card-full .table-striped tbody tr:nth-child(even) td{
+  background: rgb(235, 235, 235);
+}
 
 .product-card-full .row {
   padding: 15px;
@@ -3970,13 +3968,6 @@ h1 a {
 .FilteredMultiSelect {
   padding-right: 15px;
 }
-
-
-
-
-
-
-
 
 .wrapper-header + .product-card-full {
   border-top: 0;
