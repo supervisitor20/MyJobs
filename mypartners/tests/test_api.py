@@ -24,14 +24,17 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             Verify that the inbox list API will properly return any inboxes for the current company.
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        self.assertEqual(response.status_code, 200, msg="assert nuo inbox view works for proper user")
+        self.assertEqual(response.status_code, 200, msg="expected status 200, got %s, may be roles or perms issue" %
+                         response.status_code)
         response_json = json.loads(response.content)
 
         self.assertEqual(len(response_json), 1, msg="assert only user's company's inbox returned")
 
-        return_msg = "assert that the inbox that is returned is the one we created for the company"
-        self.assertEqual(response_json[0]["pk"], self.inbox.pk, msg=return_msg)
-        self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email, msg=return_msg)
+        return_msg = "error loading inbox api, expected {0}, got {1}"
+        self.assertEqual(response_json[0]["pk"], self.inbox.pk,
+                         msg=return_msg.format(response_json[0]["pk"], self.inbox.pk))
+        self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email,
+                         msg=return_msg.format(response_json[0]["fields"]["email"], self.inbox.email))
 
     def test_non_staff_cannot_use_view(self):
         """
