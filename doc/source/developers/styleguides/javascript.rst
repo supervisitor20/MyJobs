@@ -1,5 +1,5 @@
 ===========================
-JavaScript Codging Standard
+JavaScript Coding Standard
 ===========================
 
 Goals
