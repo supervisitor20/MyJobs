@@ -53,8 +53,8 @@ function webpackConfig() {
   return {
     entry: {
       reporting: './src/reporting/main',
-      nonuseroutreach: './src/nonuseroutreach/main',
       manageusers: './src/manageusers/main',
+      nonuseroutreach: './src/nonuseroutreach/main',
       vendor: vendorLibs,
     },
     resolve: {
