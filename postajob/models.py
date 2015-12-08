@@ -7,12 +7,14 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator
+from django.dispatch import receiver
 from django.db import models, DEFAULT_DB_ALIAS
 from django.db.models.query import QuerySet
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, m2m_changed
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+from import_jobs import delete_by_guid
 from location_data import countries, all_regions, country_list, state_list
 from universal.helpers import send_email
 
@@ -252,7 +254,6 @@ class Job(BaseModel):
 
     def remove_from_solr(self):
         from import_jobs import delete_by_guid
-
         guids = [location.guid for location in self.locations.all()]
         delete_by_guid(guids)
 
@@ -262,6 +263,20 @@ class Job(BaseModel):
     def on_sites(self):
         from seo.models import SeoSite
         return SeoSite.objects.filter(sitepackage__job=self)
+
+
+@receiver(
+    m2m_changed, sender=Job.locations.through, dispatch_uid='m2m_changed_job')
+def update_job_in_solr(sender, instance, action, **kwargs):
+    """
+    Once a job is no longer associated with any locations, it should be removed
+    from SOLR.
+    """
+    if action in ['post_remove', 'post_clear']:
+        guids = JobLocation.objects.filter(
+            jobs__isnull=True).values_list('guid', flat=True)
+
+        delete_by_guid(guids)
 
 
 class PurchasedJob(Job):
