@@ -10,7 +10,6 @@ Welcome to My.jobs's documentation!
   :maxdepth: 2
 
   developers/index
-  users/index
   faq
 
   
