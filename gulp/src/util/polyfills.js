@@ -10,6 +10,11 @@ export function installPolyfills() {
     // This gives us the Promise API.
   es6PromisePolyfill();
 
+  // Needed on ie8 to make sure fetch can find Promise.
+  if (!fetch.Promise) {
+    fetch.Promise = window.Promise;
+  }
+
     // IE8 doesn't define console unless the debugger is active.
   if (!window.console) {
     window.console = {
