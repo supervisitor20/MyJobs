@@ -32,6 +32,14 @@ class JobFactory(factory.django.DjangoModelFactory):
     date_expired = datetime.date.today()
     created_by = factory.SubFactory(UserFactory)
 
+    @factory.post_generation
+    def locations(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        locations = extracted or []
+        self.locations.add(*locations)
+
 
 class InvoiceFactory(factory.django.DjangoModelFactory):
     class Meta:
