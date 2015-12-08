@@ -46,7 +46,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 
 
-
 # Absolute URL used for cross site links, relative during local/staging
 # absolute during production
 ABSOLUTE_URL = "https://secure.my.jobs/"
