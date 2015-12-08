@@ -8,6 +8,9 @@ from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 DEBUG = True
 ROLES_ENABLED = True
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+
 DATABASES = {
     'default': dict({
         'NAME': 'redirect',
