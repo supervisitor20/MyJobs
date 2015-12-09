@@ -22,7 +22,7 @@ class TestSecureBlocks(DirectSEOBase):
         resp = self.make_sb_request('{"blocks": {}}')
         self.assertEqual(200, resp.status_code)
         result = json.loads(resp.content)
-        self.assertEqual({}, result, msg="secure block returned block when none was requested")
+        self.assertEqual({}, result, msg="got %s! secure block returned block when none was requested" % result)
 
     def test_secure_blocks_bad_parse(self):
         """Handle unparseable JSON."""

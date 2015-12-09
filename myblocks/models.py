@@ -421,8 +421,6 @@ class SavedSearchesListWidgetBlock(Block):
             'user':  user,
             'saved_searches': saved_searches,
             'saved_searches_view_url': saved_searches_url
-            # 'searches': filter(lambda x: not hasattr(x, 'partnersavedsearch'), saved_searches),
-            # 'ps_searches': filter(lambda x: hasattr(x, 'partnersavedsearch'), saved_searches)
         }
 
 

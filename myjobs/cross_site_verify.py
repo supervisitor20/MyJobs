@@ -80,7 +80,7 @@ def get_site(domain):
     if len(sites) == 0:
         raise DomainRelationshipException('not-valid-network-site')
     elif len(sites) > 1:
-        raise DomainRelationshipException('multiple sites returned, duplicate domain')
+        raise DomainRelationshipException('duplicate-domain-for-site')
     return sites[0]
 
 

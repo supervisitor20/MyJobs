@@ -90,7 +90,7 @@ function webpackConfig() {
     plugins: [],
   };
 }
-cat
+
 gulp.task('bundle', function(callback) {
   var config = webpackConfig();
   config.plugins.push(
