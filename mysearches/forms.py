@@ -35,8 +35,10 @@ class SavedSearchForm(BaseUserForm):
         initial = kwargs.get("instance")
         # TODO: Rework text_only overrides when this is promoted to SavedSearch
         text_only_kwargs = {'widget': HiddenInput(),
-                            'initial': initial.text_only if initial else False}
+                            'initial': initial.text_only if initial else False,
+                            'required': False}
         self.fields["text_only"] = BooleanField(**text_only_kwargs)
+
     feed = URLField(widget=HiddenInput())
     notes = CharField(label=_("Notes and Comments"),
                       widget=Textarea(
@@ -58,12 +60,14 @@ class SavedSearchForm(BaseUserForm):
                 raise ValidationError(_("This field is required."))
         return self.cleaned_data['day_of_month']
 
+    def clean_text_only(self):
+        if self.cleaned_data.get('text_only', None) is None:
+            self.cleaned_data['text_only'] = self.instance.text_only
+        return self.cleaned_data['text_only']
+
     def clean(self):
         cleaned_data = self.cleaned_data
         url = cleaned_data.get('url')
-
-        cleaned_data['text_only'] = self.instance.text_only
-        self._errors.pop('text_only', None)
 
         feed = validate_dotjobs_url(url, self.user)[1]
         if feed:

@@ -1,13 +1,10 @@
 """Generic helper functions."""
 
 from copy import copy, deepcopy
-import htmlentitydefs
 from HTMLParser import HTMLParser
 import re
 import urllib
 from urlparse import urlparse, urlunparse
-
-from bs4 import BeautifulSoup
 
 from django.db.models.loading import get_model
 from django.conf import settings
@@ -193,6 +190,23 @@ class HTMLTextExtractor(HTMLParser):
     """
     Accepts html input and transforms it into text suitable for a
     text-only email.
+
+    Sample input:
+    '''
+    <div><p>\tI'm a saved search!   \t</p>\n \n\n \n\n\t
+      <a href="foobar.com">\tI can include \tlinks</a></div>
+    '''
+
+    Sample output:
+    '''
+    \n\nI'm a saved search!\n\nfoobar.com\n\nI can include \tlinks
+    '''
+
+    Caveats:
+    - We remove whitespace at the beginning and end of each line but,
+        as demonstrated, we did not remove the tab that was inside the anchor.
+    - This started with two endlines. I'm banking on end users not caring but
+        it can be fixed if desired.
     """
     # Look on my works, ye Mighty, and despair!
     def __init__(self):
@@ -254,10 +268,11 @@ class HTMLTextExtractor(HTMLParser):
 
         # With a text-only email, newlines are our only formatting option.
         # Removing extraneous spaces here will allow the next statement to
-        # be more correct.
-        text = text.replace('\n \n', '\n\n')
+        # be more correct. We also replace special dashes.
+        text = text.replace('\n \n', '\n\n').replace(u'\u2013', u'-').replace(
+            u'\u2014', u'-')
 
-        # Replace 3+ newlines with one
+        # Replace 3+ newlines with two
         text = re.sub("[\n]{3,}", "\n\n", text)
 
         # Reduce spacing to one space
@@ -269,10 +284,15 @@ def extract_text_from_html(contents):
     """
     Use HTMLTextExtractor to extract text from HTML and return the result.
     """
+    with open('file.html', 'w') as f:
+        f.write(contents)
     extractor = HTMLTextExtractor()
     extractor.feed(contents)
     extractor.close()
-    return extractor.get_text()
+    contents = extractor.get_text()
+    with open('output.txt', 'w') as f:
+        f.write(contents)
+    return contents
 
 
 def send_email(email_body, email_type=settings.GENERIC, recipients=None,
