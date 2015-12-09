@@ -45,8 +45,10 @@ class Role extends React.Component {
 
         // Create availableUsers
         const availableUsersParsed = JSON.parse(roleObject.users.available);
-        const availableUsers = formatForMultiselect(availableUsersParsed);
 
+        const availableUsers = formatForMultiselect(availableUsersParsed);
+        console.log("availableUsers");
+        console.log(availableUsers);
         // Create assignedUsers
         const assignedUsersParsed = JSON.parse(roleObject.users.assigned);
         const assignedUsers = formatForMultiselect(assignedUsersParsed);
@@ -56,6 +58,7 @@ class Role extends React.Component {
 
         // Create availablePRMActivities
         let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
+
         availablePRMActivities = formatForMultiselect(availablePRMActivities);
 
         // Create assignedPRMActivities

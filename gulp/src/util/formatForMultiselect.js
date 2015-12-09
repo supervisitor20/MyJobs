@@ -1,4 +1,4 @@
-import {formatActivityName} from 'util/formatActivityName';
+import {formatActivityName} from './formatActivityName';
 
 // Input:
 // String
