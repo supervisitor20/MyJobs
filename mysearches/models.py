@@ -80,7 +80,9 @@ class SavedSearch(models.Model):
     # Custom messages were created for PartnerSavedSearches
     custom_message = models.TextField(max_length=300, blank=True, null=True)
 
-    text_only = models.BooleanField(default=False, blank=True)
+    text_only = models.BooleanField(
+        default=False, blank=True,
+        verbose_name=_("Send as a plain text email"))
 
     @property
     def content_type(self):
