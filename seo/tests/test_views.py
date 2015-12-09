@@ -2629,6 +2629,19 @@ class FlatpagesTestCase(DirectSEOBase):
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(secret_code, -1)
 
+    def test_unicode(self):
+        """
+        Tests that it is possible to create a custom page with unicode content
+        """
+
+        self.fp.content = u"這是一個測試"
+        self.fp.save()
+
+        fp = CustomPage.objects.get(pk=self.fp.pk)
+        self.assertEqual(fp.content, "這是一個測試",
+                         u"Expected the unicode string '這是一個測試', "
+                         u"but got %s instead." % fp.content)
+
 
 class ProtectedSiteTestCase(DirectSEOBase):
     fixtures = ['seo_views_testdata.json']
