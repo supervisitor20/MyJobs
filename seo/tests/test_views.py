@@ -2638,8 +2638,8 @@ class FlatpagesTestCase(DirectSEOBase):
         self.fp.save()
 
         fp = CustomPage.objects.get(pk=self.fp.pk)
-        self.assertEqual(fp.content, "這是一個測試",
-                         u"Expected the unicode string '這是一個測試', "
+        self.assertEqual(fp.content, u"這是一個測試",
+                         u"Expected the unicode string u'這是一個測試', "
                          u"but got %s instead." % fp.content)
 
 
