@@ -78,6 +78,11 @@ class SavedSearchWidgetBlockForm(BlockForm):
         model = models.SavedSearchWidgetBlock
 
 
+class SavedSearchesListWidgetBlockForm(BlockForm):
+    class Meta:
+        model = models.SavedSearchesListWidgetBlock
+
+
 class SearchBoxBlockForm(BlockForm):
     class Meta:
         model = models.SearchBoxBlock

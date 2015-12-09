@@ -383,6 +383,10 @@ class SavedSearch(models.Model):
         else:
             return "Saved Search %s for %s" % (self.url, self.email)
 
+    @property
+    def is_partner_saved_search(self):
+        return hasattr(self, 'partnersavedsearch')
+
     class Meta:
         verbose_name_plural = "saved searches"
 

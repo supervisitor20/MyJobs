@@ -398,12 +398,33 @@ class SavedSearchWidgetBlock(Block):
         return {
             'user': user,
             'search': search,
-            'success': success_email,
-            'is_pss': hasattr(search, 'partnersavedsearch'),
+            'success': success_email
         }
 
     def required_js(self):
         return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
+
+
+class SavedSearchesListWidgetBlock(Block):
+    base_template = 'myblocks/blocks/savedsearcheslistwidget.html'
+
+    def context(self, request, **kwargs):
+        saved_searches_url = request.build_absolute_uri(reverse('saved_search_main'))
+        user = request.user if request.user.is_authenticated() else None
+        saved_searches = SavedSearch.objects.none()
+        if user:
+            saved_searches = (SavedSearch.objects
+                              .filter(user=user)
+                              .order_by('-created_on'))
+
+        return {
+            'user':  user,
+            'saved_searches': saved_searches,
+            'saved_searches_view_url': saved_searches_url
+            # 'searches': filter(lambda x: not hasattr(x, 'partnersavedsearch'), saved_searches),
+            # 'ps_searches': filter(lambda x: hasattr(x, 'partnersavedsearch'), saved_searches)
+        }
+
 
 class SearchBoxBlock(Block):
     base_template = 'myblocks/blocks/searchbox.html'

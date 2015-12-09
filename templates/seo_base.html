@@ -36,9 +36,8 @@
     <script src="{{ STATIC_URL }}secure-block.168-30.js" type="text/javascript"></script>
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
-      console.log("{{ secure_blocks_domain}}");
       $(document).on("ready", function() {
-        var secure_block_url = "https://{{ secure_blocks_domain }}/secure-blocks/";
+        var secure_block_url = "https://secure.my.jobs/secure-blocks/";
         load_secure_blocks(secure_block_url);
       });
     </script>
@@ -128,7 +127,6 @@
 </div>
 {% endblock %}
 {% block directseo_outer_container %}
-<h2> here ia m</h2>
 <div id="direct_container">
     <div id="direct_innerContainer">
     {% block directseo_container %}

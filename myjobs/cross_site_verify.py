@@ -44,7 +44,7 @@ def guess_child_domain(host, origin, referer):
     raise DomainRelationshipException('no-child-info')
 
 
-def fail():
+def return_404():
     return HttpResponse(status=404, content="not found")
 
 
@@ -77,8 +77,10 @@ def xrw_ok(xrw):
 
 def get_site(domain):
     sites = SeoSite.objects.filter(domain=domain)
-    if len(sites) != 1:
-        return None
+    if len(sites) == 0:
+        raise DomainRelationshipException('not-valid-network-site')
+    elif len(sites) > 1:
+        raise DomainRelationshipException('multiple sites returned, duplicate domain')
     return sites[0]
 
 
@@ -122,7 +124,7 @@ def cross_site_verify(fn):
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)
-            return fail()
+            return return_404()
         return fn(request)
 
     return verify
