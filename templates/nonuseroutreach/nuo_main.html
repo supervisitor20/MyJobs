@@ -1,5 +1,6 @@
 {% extends "base-react.html" %}
 {% load compress %}
+{% load staticfiles %}
 
 {% block site-title %}
     <title>My.jobs - {{ company.name }} - Non-User Outreach Inbox Management</title>
@@ -57,8 +58,8 @@ SteelToe: https://github.com/jclem/steeltoe -->
 <!-- <script src="{{ STATIC_URL }}steeltoe.js"></script> -->
 
 {% compress js %}
-<script src="{{ STATIC_URL }}bundle/vendor.js"></script>
-<script src="{{ STATIC_URL }}bundle/nonuseroutreach.js"></script>
+<script src="{% static "bundle/vendor.js" %}"></script>
+<script src="{% static "bundle/nonuseroutreach.js" %}"></script>
 {% endcompress %}
 
 {% endblock %}
