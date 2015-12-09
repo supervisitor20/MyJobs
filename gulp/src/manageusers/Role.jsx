@@ -47,8 +47,7 @@ class Role extends React.Component {
         const availableUsersParsed = JSON.parse(roleObject.users.available);
 
         const availableUsers = formatForMultiselect(availableUsersParsed);
-        console.log("availableUsers");
-        console.log(availableUsers);
+
         // Create assignedUsers
         const assignedUsersParsed = JSON.parse(roleObject.users.assigned);
         const assignedUsers = formatForMultiselect(assignedUsersParsed);
