@@ -622,7 +622,7 @@ def api_get_activities(request):
     """
 
     activities = Activity.objects.all()
-    return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description')))
+    return HttpResponse(serializers.serialize("json", activities, fields=('name', 'description', 'app_access')))
 
 
 @restrict_to_staff()
@@ -651,10 +651,10 @@ def api_get_roles(request):
         # This company has access to various apps by means of multiple app_access_id's
         # Retrieve all activities with these app_access_id's
         available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
-        ctx[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+        ctx[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description', 'app_access'))
         # Retrieve all activities assigned to this role
         assigned_activities = role.activities.all()
-        ctx[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
+        ctx[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description', 'app_access'))
 
         # Retrieve users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
@@ -707,10 +707,11 @@ def api_get_specific_role(request, role_id=0):
     # This company has access to various apps by means of multiple app_access_id's
     # Retrieve all activities with these app_access_id's
     available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
-    ctx[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description'))
+
+    ctx[role_id]['activities']['available'] = serializers.serialize("json", available_activities, fields=('name', 'description', 'app_access'))
     # Retrieve all activities assigned to this role
     assigned_activities = role[0].activities.all()
-    ctx[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description'))
+    ctx[role_id]['activities']['assigned'] = serializers.serialize("json", assigned_activities, fields=('name', 'description', 'app_access'))
 
     # Retrieve users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)

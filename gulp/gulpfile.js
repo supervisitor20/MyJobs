@@ -37,6 +37,8 @@ var vendorLibs = [
   // Importing all of react-bootstrap _really_ bloats the bundle.
   // Just pull what we use.
   'react-bootstrap/lib/Button.js',
+  'react-bootstrap/lib/Accordion.js',
+  'react-bootstrap/lib/Panel.js',
   'react-bootstrap/lib/Glyphicon.js',
   'react-autosuggest',
   'fetch-polyfill',
