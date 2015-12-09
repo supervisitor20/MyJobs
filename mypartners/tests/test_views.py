@@ -3,16 +3,19 @@ from bs4 import BeautifulSoup
 import csv
 from datetime import datetime, date, timedelta
 import json
+from os import path
 import random
 import requests
 from StringIO import StringIO
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.urlresolvers import reverse
 from django.http import Http404
-from django.test.client import RequestFactory
+from django.test import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
 from myprofile.tests.factories import SecondaryEmailFactory
@@ -33,6 +36,7 @@ from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
+from mypartners.views import process_email
 from mysearches.models import PartnerSavedSearch
 
 
@@ -1150,6 +1154,47 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(log_entry.action_flag, ADDITION)
         self.assertEqual(log_entry.user, self.staff_user)
 
+    def test_attachments_attach(self):
+        """
+        Confirms that files posted by SendGrid will be attached correctly.
+        """
+        # Sanity checks for initial state.
+        self.assertEqual(len(mail.outbox), 0,
+                         'We should have no emails at test start')
+        self.assertEqual(
+            ContactRecord.objects.count(), 0,
+            'We should have no communication records at test start')
+
+        # Testing file attachments seems to require either a RequestFactory
+        # or a custom middleware. I chose the factory.
+        factory = RequestFactory()
+
+        # Add some necessary data to our post dict.
+        self.data['attachments'] = 1
+        self.data['to'] = self.contact.email
+
+        request = factory.post(reverse('process_email'), self.data)
+        request.user = AnonymousUser()
+
+        # Grab our test file and attach it to the request.
+        actual_file = path.join(path.abspath(path.dirname(__file__)), 'data',
+                                'test.txt')
+        f = SimpleUploadedFile('test.txt', open(actual_file).read())
+        request.FILES['attachment1'] = f
+
+        response = process_email(request)
+        self.assertEqual(response.status_code, 200,
+                         'Successful email submissions return a 200')
+        self.assertEqual(len(mail.outbox), 1,
+                         'process_email should have sent one email')
+        self.assertEqual(ContactRecord.objects.count(), 1,
+                         ('After process_email finishes, we should have one'
+                          'communication record'))
+        record = ContactRecord.objects.get()
+        self.assertEqual(record.prmattachment_set.count(), 1,
+                         ('The file posted earlier should be attached to the'
+                          'communication record that we just created'))
+
     def test_create_new_contact(self):
         new_email = 'test@my.jobs'
         self.data['to'] = new_email
@@ -1672,50 +1717,3 @@ class LocationViewTests(MyPartnersTestCase):
         # reload contact from DB, as it is holds "expired" data
         reload_contact = Contact.objects.get(pk=self.contact.pk)
         self.assertNotEqual(original_action_time.date(), reload_contact.last_action_time.date())
-
-
-class OutreachViewTests(MyPartnersTestCase):
-    """
-        These tests relate to views involved in Non-User Outreach functionality
-    """
-    def test_get_form_outreach_email(self):
-        """
-            Test that GET requests to the non user outreach inbox management system yields a 200
-        """
-        response = self.client.get(reverse('manage_outreach_inboxes'))
-        self.assertEqual(response.status_code, 200)
-        # check that response contains part of the rendered template, ensure we're getting the correct page
-        self.assertContains(response, 'id="inbox-form"')
-
-    def test_post_form_outreach_email(self):
-        """
-            Test to ensure POST will properly create outreach inbox
-        """
-        email_to_test = 'popeyes_chicken'
-        data = {'form-MAX_NUM_FORMS': 1000,
-                'form-TOTAL_FORMS': 1,
-                'form-INITIAL_FORMS': 0,
-                'form-0-email': email_to_test,
-                'form-0-id': [u'']
-                }
-        self.client.post(reverse('manage_outreach_inboxes'), data)
-
-        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
-        self.assertEqual(count_emails, 1)
-
-    def test_post_form_outreach_email_validation(self):
-        """
-            Test to ensure POST will properly create outreach inbox
-        """
-        email_to_test = 'popeyes_chicken@anothersite.com'
-        data = {'form-MAX_NUM_FORMS': 1000,
-                'form-TOTAL_FORMS': 1,
-                'form-INITIAL_FORMS': 0,
-                'form-0-email': email_to_test,
-                'form-0-id': [u'']
-                }
-        response = self.client.post(reverse('manage_outreach_inboxes'), data)
-
-        self.assertContains(response, "Enter a valid email username")
-        count_emails = OutreachEmailAddress.objects.filter(email=email_to_test).count()
-        self.assertEqual(count_emails, 0)

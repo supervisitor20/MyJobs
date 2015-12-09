@@ -8,6 +8,12 @@ from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
 DEBUG = True
 ROLES_ENABLED = False
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+
+STATIC_URL = "http://directemployers-staging.s3.amazonaws.com/Microsites/"
+
+
 DATABASES = {
     'default': dict({
         'NAME': 'redirect',
@@ -98,3 +104,6 @@ HAYSTACK_CONNECTIONS = {
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
 )
+
+EMAIL_HOST_USER = STAGING_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = STAGING_EMAIL_HOST_PASSWORD

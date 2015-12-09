@@ -7,6 +7,9 @@ from secrets import REDIRECT_PROD, REDIRECT_QC, ARCHIVE_PROD
 
 DEBUG = False
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_mj/files/"
 
 DATABASES = {
     'default': dict({
@@ -42,7 +45,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Browsers should only send the user's session cookie over https
 SESSION_COOKIE_SECURE = True
 
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_mj/files/"
 
 # Absolute URL used for cross site links, relative during local/staging
 # absolute during production
@@ -117,3 +119,6 @@ BROKER_HOST = '204.236.236.123'
 BROKER_PORT = 5672
 BROKER_USER = 'celery'
 BROKER_VHOST = 'dseo-vhost'
+
+EMAIL_HOST_USER = PRODUCTION_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = PRODUCTION_EMAIL_HOST_PASSWORD

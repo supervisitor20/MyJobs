@@ -1,6 +1,14 @@
 # Makefile for Sphinx documentation
 #
 
+GH_PAGES_SOURCES = doc/source doc/Makefile default_settings.py \
+									 api automation moc_coding myblocks mydashboard myemails \
+									 myjobs mymessages mypartners myprofile myreports \
+									 mysearches mysignon postajob redirect registration seo \
+									 social_links solr universal wildcard
+SOURCE_SUBDIRS = users developers
+
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
@@ -45,6 +53,7 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  ghpages    to make HTML files suitable for use on github"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -175,3 +184,20 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+ghpages:
+	git checkout gh-pages
+	rm -rf build _sources _static _modules
+	git checkout quality-control $(GH_PAGES_SOURCES)
+	git reset HEAD
+	cd doc && make html
+	cd ..
+	rm -rf $(SOURCE_SUBDIRS)
+	mv -fv doc/build/html/* ./
+	rm -rf $(GH_PAGES_SOURCES) build
+	git add -A
+	git commit -m "Generated gh-pages for $(git log master -1 \
+	--pretty=short \
+	--abbrev-commit)"
+	git push origin gh-pages
+	git checkout quality-control

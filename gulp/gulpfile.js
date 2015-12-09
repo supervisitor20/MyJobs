@@ -53,12 +53,15 @@ function webpackConfig() {
   return {
     entry: {
       reporting: './src/reporting/main',
-      manageusers: './src/manageusers/manageusers',
+      manageusers: './src/manageusers/main',
       nonuseroutreach: './src/nonuseroutreach/main',
       vendor: vendorLibs,
     },
     resolve: {
       root: path.resolve('src'),
+      // you can now require('file') instead of require('file.coffee')
+      extensions: ['', '.js', '.jsx'],
+
     },
     output: {
       path: '../static/bundle',
@@ -68,6 +71,14 @@ function webpackConfig() {
       loaders: [
         {
           test: /\.js$/,
+          exclude: /node_modules/,
+          loader: "babel-loader",
+          query: {
+            presets: ["es2015", "react", "stage-2"],
+          }
+        },
+        {
+          test: /\.jsx$/,
           exclude: /node_modules/,
           loader: "babel-loader",
           query: {
@@ -112,6 +123,10 @@ gulp.task('bundle', function(callback) {
       throw new util.PluginError("webpack", err);
     }
     util.log(stats.toString("minimal"));
+    if (stats.hasErrors()) {
+      callback('webpack error');
+      return;
+    }
     fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
@@ -142,6 +157,10 @@ gulp.task('dev-bundle', function(callback) {
       throw new util.PluginError("webpack", err);
     }
     util.log(stats.toString('minimal'));
+    if (stats.hasErrors()) {
+      callback('webpack error');
+      return;
+    }
     fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
@@ -190,8 +209,7 @@ gulp.task('lint-fix', function() {
 });
 
 gulp.task('lint', function() {
-  // Remove this exclusion when manageusers is ready.
-  return gulp.src(['./src/**/*.js', '!./src/manageusers/**/*'])
+  return gulp.src(['./src/**/*.js'])
     .pipe(eslint(lintOptions()))
     .pipe(eslint.format());
 });
