@@ -284,15 +284,10 @@ def extract_text_from_html(contents):
     """
     Use HTMLTextExtractor to extract text from HTML and return the result.
     """
-    with open('file.html', 'w') as f:
-        f.write(contents)
     extractor = HTMLTextExtractor()
     extractor.feed(contents)
     extractor.close()
-    contents = extractor.get_text()
-    with open('output.txt', 'w') as f:
-        f.write(contents)
-    return contents
+    return extractor.get_text()
 
 
 def send_email(email_body, email_type=settings.GENERIC, recipients=None,
