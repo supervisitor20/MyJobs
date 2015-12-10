@@ -811,12 +811,13 @@ class Page(models.Model):
         """
         Used on job detail pages, this returns a redirect to the
         appropriate url if:
-            1. There is no matching job (404).
-            2. The matching job isn't actually available on the site
-               because it belongs to a business unit or site package
-               not associated with that site (Redirect to home page).
-            3. It's missing slugs or the slugs are out of order
-               (Redirect to the page with slugs in the correct order).
+
+        1. There is no matching job (404).
+        2. The matching job isn't actually available on the site
+            because it belongs to a business unit or site package
+            not associated with that site (Redirect to home page).
+        3. It's missing slugs or the slugs are out of order
+            Redirect to the page with slugs in the correct order).
 
         If there is no redirect, returns None.
         """
@@ -878,15 +879,16 @@ class Page(models.Model):
         """
         Used on search result pages, this returns a redirect to the
         appropriate url if:
-            1. helpers.determine_redirect() supplies a redirect.
-               The redirect rules that function uses are defined
-               in the determine_redirect function.
-            2. There are no facet_counts (Redirect to home page).
-            3. There are no featured jobs, no default jobs, and
-               no query term applied. This means there are either
-               no jobs for the site or a series of filters that
-               should not be able to be applied were applied
-               (Redirects to home page).
+
+        1.  helpers.determine_redirect() supplies a redirect.
+            The redirect rules that function uses are defined
+            in the determine_redirect function.
+        2.  There are no facet_counts (Redirect to home page).
+        3.  There are no featured jobs, no default jobs, and
+            no query term applied. This means there are either
+            no jobs for the site or a series of filters that
+            should not be able to be applied were applied
+            (Redirects to home page).
 
         If there is no redirect, returns None.
         """
