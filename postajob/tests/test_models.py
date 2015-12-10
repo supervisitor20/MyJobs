@@ -1,8 +1,11 @@
 from datetime import date, timedelta
 
+from django.conf import settings
+from django.contrib.admin import ModelAdmin, AdminSite
 from django.contrib.auth.models import Group
 from django.core import mail
-from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.test.client import RequestFactory
 
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
@@ -74,6 +77,28 @@ class ModelTests(MyJobsBase):
         job.delete()
         self.assertEqual(Job.objects.all().count(), 0)
         self.assertEqual(JobLocation.objects.all().count(), 0)
+
+    def test_add_remove_job_locations(self):
+        """
+        Regression test, job locations that were removed from a job weren't
+        being removed from Solr
+        Tests that adding or removing locations results in Solr updates after
+        a job save
+        """
+        locations = JobLocationFactory.create_batch(2)
+        job = JobFactory(
+            owner=self.company, created_by=self.user, locations=locations)
+
+        self.assertEqual(self.ms_solr.search('*:*').hits, 2)
+
+        guid = locations[0].guid
+        job.locations.remove(locations[0])
+        self.assertEqual(self.ms_solr.search('guid:%s' % guid).hits, 0)
+        self.assertEqual(self.ms_solr.search('guid:%s' %
+                                             locations[1].guid).hits, 1)
+
+        job.locations.remove(locations[1])
+        self.assertEqual(self.ms_solr.search('*:*').hits, 0)
 
     def test_job_add_to_solr(self):
         job = JobFactory(owner=self.company, created_by=self.user)

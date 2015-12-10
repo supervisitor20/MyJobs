@@ -153,11 +153,12 @@ class JobLocationForm(forms.ModelForm):
 
 class BaseJobLocationFormSet(BaseModelFormSet):
     def clean(self):
-        if any(self.errors):
+        forms_changed = any([form.has_changed() for form in self.forms])
+
+        if any(self.errors) or not forms_changed:
             return
 
-        has_locations = (all(form.has_changed for form in self.forms) and
-                         all(not data['DELETE'] for data in self.cleaned_data))
+        has_locations = any([not data['DELETE'] for data in self.cleaned_data])
 
         if not self.forms or not has_locations:
             raise ValidationError("Job postings must have at least one "
