@@ -5,10 +5,10 @@ Developer Documentation
 .. toctree::
   :maxdepth: 1
 
-  styleguides/index.rst
   myblocks/index.rst
-  mypartners/index.rst
-  seo/index.rst
-  testing/index.rst
-  contributing/index.rst
-
+  mypartners/index
+  postajob/index
+  seo/index
+  styleguides/index
+  testing/index
+  contributing/index

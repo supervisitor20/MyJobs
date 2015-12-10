@@ -942,6 +942,12 @@ class ViewTests(PostajobTestBase):
             self.assertTrue(text in response.content.decode('utf-8'))
 
     def test_job_add_and_remove_locations(self):
+        """
+        Tests that jobs can be added and removed using the form located at
+        /job/update/%id
+        """
+
+        # add the location to the form
         location = {
             'form-0-city': 'Indianapolis',
             'form-0-state': 'Indiana',
@@ -957,6 +963,7 @@ class ViewTests(PostajobTestBase):
         self.assertEqual(Job.objects.count(), 1)
         self.assertEqual(JobLocation.objects.count(), 1)
 
+        # remove a location form the form
         job = Job.objects.get()
         location = job.locations.first()
         self.job_form_data['id'] = job.pk
@@ -964,9 +971,9 @@ class ViewTests(PostajobTestBase):
         self.job_form_data.update({
             'form-0-id': location.pk,
             'form-0-DELETE': 'on',
-            'form-1-city': 'Muncie',
-            'form-1-state': 'Indiana',
-            'form-1-country': 'United States',
+            'form-1-city': location.city,
+            'form-1-state': location.state,
+            'form-1-country': location.country
         })
         self.client.post(reverse('job_update', args=[job.pk]),
                          data=self.job_form_data, follow=True)
