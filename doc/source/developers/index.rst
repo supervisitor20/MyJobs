@@ -5,7 +5,7 @@ Developer Documentation
 .. toctree::
   :maxdepth: 1
 
-  myblocks/index.rst
+  myblocks/index
   mypartners/index
   postajob/index
   seo/index
