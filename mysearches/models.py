@@ -10,7 +10,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.loader import render_to_string
 import uuid
 
-from myjobs.models import User
 from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
                                 url_sort_options)
@@ -546,7 +545,7 @@ class PartnerSavedSearch(SavedSearch):
                               "of this saved search.")
     unsubscribed = models.BooleanField(default=False)
     tags = models.ManyToManyField('mypartners.Tag', null=True)
-    created_by = models.ForeignKey(User, editable=False,
+    created_by = models.ForeignKey('myjobs.User', editable=False,
                                    related_name='created_by',
                                    on_delete=models.SET_NULL,
                                    null=True)
@@ -634,7 +633,7 @@ class SavedSearchLog(models.Model):
                                        "SendGrid may not have responded yet - "
                                        "give it a few minutes."))
     reason = models.TextField()
-    recipient = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    recipient = models.ForeignKey('myjobs.User', on_delete=models.SET_NULL, null=True)
     recipient_email = models.EmailField(max_length=255, blank=False)
     new_jobs = models.IntegerField()
     backfill_jobs = models.IntegerField()
