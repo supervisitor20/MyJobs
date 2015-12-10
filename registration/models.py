@@ -199,9 +199,11 @@ class Invitation(models.Model):
         context = {'invitation': self,
                    'activation_key': ap.activation_key}
 
+        text_only = False
         if self.added_saved_search:
             initial_email = self.added_saved_search.initial_email(send=False)
             context['initial_search_email'] = initial_email
+            text_only = self.added_saved_search.text_only
 
         body = render_to_string('registration/invitation_email.html',
                                 context)
@@ -219,7 +221,8 @@ class Invitation(models.Model):
         fail_message = None
         try:
             self.invitee.email_user(body, email_type=settings.INVITATION,
-                                    inviter=from_, headers=headers)
+                                    inviter=from_, headers=headers,
+                                    text_only=text_only)
         except Exception as e:
             fail_message = getattr(e, 'smtp_error', e.message)
         else:

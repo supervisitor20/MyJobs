@@ -80,6 +80,10 @@ class SavedSearch(models.Model):
     # Custom messages were created for PartnerSavedSearches
     custom_message = models.TextField(max_length=300, blank=True, null=True)
 
+    text_only = models.BooleanField(
+        default=False, blank=True,
+        verbose_name=_("Send as a plain text email"))
+
     @property
     def content_type(self):
         """
@@ -199,7 +203,7 @@ class SavedSearch(models.Model):
                     send_email(message, email_type=settings.SAVED_SEARCH,
                                recipients=[self.email],
                                label=self.label.strip(),
-                               headers=headers)
+                               headers=headers, text_only=self.text_only)
                 except Exception as e:
                     log_kwargs['was_sent'] = False
                     log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
