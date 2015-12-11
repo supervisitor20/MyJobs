@@ -777,7 +777,7 @@ def task_clear_bu_cache(buid, **kwargs):
 def task_update_solr(jsid, **kwargs):
     try:
         import_jobs.update_solr(jsid, **kwargs)
-        if kwargs['clear_cache']:
+        if kwargs.get('clear_cache', False):
             task_clear_bu_cache.delay(buid=int(jsid), countdown=1500)
     except Exception as e:
         logging.error(traceback.format_exc(sys.exc_info()))

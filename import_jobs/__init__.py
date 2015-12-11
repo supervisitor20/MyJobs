@@ -22,7 +22,7 @@ from seo.models import BusinessUnit, Company
 from transform import hr_xml_to_json, make_redirect
 import re
 
-from .solr import add_jobs, chunk, delete_by_guid
+from import_jobs.solr import add_jobs, chunk, delete_by_guid
 
 logger = logging.getLogger(__name__)
 
