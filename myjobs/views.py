@@ -618,6 +618,7 @@ def manage_users(request):
 @requires("read role")
 def api_get_activities(request):
     """
+    GET /manage-users/api/activities/
     Retrieves all activities
     """
 
