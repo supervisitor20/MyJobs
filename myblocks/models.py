@@ -75,8 +75,9 @@ def raw_base_template(obj):
 
 class Block(models.Model):
     """
-        Base class for all individual block objects. Stores information for
-        rendering the block.
+    Base class for all individual block objects. Stores information for
+    rendering the block.
+
     """
     base_template = None
     base_head = None
@@ -266,7 +267,8 @@ class JobDetailHeaderBlock(Block):
 
 class LoginBlock(Block):
     """
-        Specialized block containing logic for use login functions
+    Specialized block containing logic for use login functions
+
     """
     base_template = 'myblocks/blocks/login.html'
 
@@ -383,9 +385,10 @@ class RegistrationBlock(Block):
 
 class SavedSearchWidgetBlock(Block):
     """
-        Secure Block. What is rendered is based heavily on whether or not the
-        user is signed in to an account. Block renders as a customizable saved
-        search module.
+    Secure Block. What is rendered is based heavily on whether or not the
+    user is signed in to an account. Block renders as a customizable saved
+    search module.
+
     """
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
@@ -593,8 +596,9 @@ class Row(models.Model):
 
 class Page(models.Model):
     """
-        Blocks webpage container. Comprised of rows of blocks to form a highly
-        customizable webpage.
+    Blocks webpage container. Comprised of rows of blocks to form a highly
+    customizable webpage.
+
     """
     base_template = 'myblocks/myblocks_base.html'
     base_head = 'myblocks/head/page.html'
@@ -837,6 +841,7 @@ class Page(models.Model):
             Redirect to the page with slugs in the correct order).
 
         If there is no redirect, returns None.
+
         """
         job_id = kwargs.get('job_id', '')
         job = context_tools.get_job(request, job_id)
@@ -908,6 +913,7 @@ class Page(models.Model):
             (Redirects to home page).
 
         If there is no redirect, returns None.
+
         """
 
         filters = context_tools.get_filters(request)
