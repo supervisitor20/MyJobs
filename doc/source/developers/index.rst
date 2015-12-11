@@ -3,7 +3,7 @@ Developer Documentation
 =======================
 
 .. toctree::
-  :maxdepth: 1
+  :maxdepth: 2
 
   myblocks/index
   mypartners/index
