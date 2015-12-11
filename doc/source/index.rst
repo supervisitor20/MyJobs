@@ -7,7 +7,7 @@ Welcome to My.jobs's documentation!
 ===================================
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 2
 
   developers/index
   faq
