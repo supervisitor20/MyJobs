@@ -14,7 +14,6 @@ from django.db.models.signals import pre_delete, m2m_changed
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
-from import_jobs import delete_by_guid
 from location_data import countries, all_regions, country_list, state_list
 from universal.helpers import send_email
 
@@ -272,6 +271,10 @@ def update_job_in_solr(sender, instance, action, **kwargs):
     Once a job is no longer associated with any locations, it should be removed
     from SOLR.
     """
+
+    # circular imports; I hate this
+    from import_jobs import delete_by_guid
+
     if action in ['post_remove', 'post_clear']:
         guids = JobLocation.objects.filter(
             jobs__isnull=True).values_list('guid', flat=True)
