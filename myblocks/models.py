@@ -74,6 +74,10 @@ def raw_base_template(obj):
 
 
 class Block(models.Model):
+    """
+        Base class for all individual block objects. Stores information for
+        rendering the block.
+    """
     base_template = None
     base_head = None
 
@@ -261,6 +265,9 @@ class JobDetailHeaderBlock(Block):
 
 
 class LoginBlock(Block):
+    """
+        Specialized block containing logic for use login functions
+    """
     base_template = 'myblocks/blocks/login.html'
 
     def context(self, request, **kwargs):
@@ -375,6 +382,11 @@ class RegistrationBlock(Block):
 
 
 class SavedSearchWidgetBlock(Block):
+    """
+        Secure Block. What is rendered is based heavily on whether or not the
+        user is signed in to an account. Block renders as a customizable saved
+        search module.
+    """
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
@@ -404,6 +416,7 @@ class SavedSearchWidgetBlock(Block):
 
     def required_js(self):
         return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
+
 
 class SearchBoxBlock(Block):
     base_template = 'myblocks/blocks/searchbox.html'
@@ -579,6 +592,10 @@ class Row(models.Model):
 
 
 class Page(models.Model):
+    """
+        Blocks webpage container. Comprised of rows of blocks to form a highly
+        customizable webpage.
+    """
     base_template = 'myblocks/myblocks_base.html'
     base_head = 'myblocks/head/page.html'
     templatetag_library = templatetag_library()
