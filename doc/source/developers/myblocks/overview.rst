@@ -1,6 +1,6 @@
-===================
+=========
 Overview
-===================
+=========
 
 MyBlocks was originally conceived as an idea to extend the customization of
 Microsites webpages while offering a method for ease of reuse of components.

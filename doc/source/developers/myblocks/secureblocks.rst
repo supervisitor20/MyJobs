@@ -7,7 +7,7 @@ small reusable components that can be added to any webpage that is tied to a
 secure (log in enabled, https) webpage.
 
 Cross Site Verify
-======================
+=================
 
 Cross Site Verification was designed to satisfy the need for innumerable https
 certificates in order to supply user information for display on various
@@ -23,7 +23,7 @@ is a secure site, it makes the call to and returns from itself.
 .. autofunction:: myjobs.cross_site_verify.cross_site_verify
 
 Secure Blocks Widgets
-========================
+=====================
 
 Within a microsites page, a div can be created with a special data key
 (data-secure-block-id). This tag indicates that the value of that key is tied
