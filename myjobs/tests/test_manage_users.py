@@ -92,6 +92,43 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
+    def test_edit_role(self):
+        """
+        Tests editing a role
+        """
+
+        expected_role_pk = self.role.pk
+
+        # api_create_role requires POST
+        data_to_post = {}
+        data_to_post['role_name'] = "NEW ROLE NAME"
+        response = self.client.get(reverse('api_edit_role',
+                                            args=[expected_role_pk]),
+                                            data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "POST method required.")
+
+        # api_edit_role requires at least one activity
+        data_to_post = {}
+        data_to_post['role_name'] = "NEW ROLE NAME"
+        response = self.client.post(reverse('api_edit_role',
+                                            args=[expected_role_pk]),
+                                            data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"],
+                         "At least one activity must be assigned.")
+
+        # Should be able to edit a role
+        data_to_post = {}
+        data_to_post['role_name'] = "NEW ROLE NAME"
+        data_to_post['assigned_activities[]'] = ['read role']
+        response = self.client.post(reverse('api_edit_role',
+                                            args=[expected_role_pk]),
+                                            data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
 
     def test_get_roles(self):
         """
