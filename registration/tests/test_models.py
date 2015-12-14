@@ -289,7 +289,7 @@ class InvitationModelTests(MyJobsBase):
             # but not a normal user creation email
             self.assertEqual(len(mail.outbox), 1)
             email = mail.outbox.pop()
-            self.assertTrue('reserved' in email.body)
+            self.assertIn("invited you to join My.jobs.", email.body)
 
         self.assertEqual(len(users), 2)
         self.assertItemsEqual(users, set(users))

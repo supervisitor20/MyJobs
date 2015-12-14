@@ -15,9 +15,10 @@
         of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ reason }}
     </p>
 
-    {% if invitation.invitee.is_verified %}
+    {% if invitation.added_permission %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
-    {% else %}
+    {% endif %}
+    {% if not invitation.invitee.is_verified %}
         <p>Please click on the Activate Account button below to get started.</p>
 
         <p><a href="https://secure.my.jobs{{ url }}?verify={{ invitation.invitee.user_guid}}" class="btn">Activate Account</a></p>
