@@ -153,13 +153,15 @@ class Command(BaseCommand):
 
                     # The OneToOneField fields is useless in every single case
                     # so far.
-                    if field_type == 'OneToOneField' or \
-                            any(s in field.attname
-                                for s in ['password', 'deactivate_type']):
+                    if field_type == 'OneToOneField' or any(
+                            s in field.attname
+                            for s in ['password', 'deactivate_type',
+                                      'text_only']):
                         continue
 
                     field_data = {
-                        'field_name': "%s_%s" % (model.__name__, field.attname),
+                        'field_name': "%s_%s" % (model.__name__,
+                                                 field.attname),
                         'type': 'string',
                         'indexed': 'true',
                         'stored': 'true',
@@ -187,7 +189,3 @@ class Command(BaseCommand):
         })
 
         print loader.get_template('solr_schema_base.xml').render(context)
-
-
-
-
