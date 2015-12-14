@@ -130,6 +130,37 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
+
+
+
+
+    def test_delete_role(self):
+        """
+        Tests deleting a role
+        """
+
+        expected_role_pk = self.role.pk
+
+        # api_delete_role requires POST
+        response = self.client.get(reverse('api_delete_role',
+                                            args=[expected_role_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "DELETE method required.")
+
+        # api_delete_role an arg of an existing role
+        # Role 100000 doest not exist
+        response = self.client.delete(reverse('api_delete_role',
+                                            args=[100000]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+
+        # Should be able to delete an existing role
+        response = self.client.delete(reverse('api_delete_role',
+                                            args=[expected_role_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
+
     def test_get_roles(self):
         """
         Tests that the Roles API returns the proper data in the
