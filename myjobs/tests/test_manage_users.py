@@ -1,109 +1,186 @@
-from django.core.urlresolvers import resolve
+from django.core.urlresolvers import resolve, reverse
+from django.conf import settings
+from django.test.client import RequestFactory
 from tastypie.models import create_api_key
 from myjobs.models import User, Role, Activity
 from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
+                                    ActivityFactory)
 from seo.tests.factories import CompanyFactory
-from django.test.client import RequestFactory
 from myjobs.tests.test_views import TestClient
 from setup import MyJobsBase
 from random import randint
+from myjobs.decorators import MissingActivity
 import json
 
 class ManageUsersTests(MyJobsBase):
     """
     Tests the manage users APIs, which is used to CRUD roles and users.
     """
-    def setUp(self):
-        # super(ManageUsersTests, self).setUp()
-        # self.client = TestClient(path='/manage-users/',
-        #                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        # self.user = UserFactory()
-        # self.client.login_user(self.user)
 
+    def setUp(self):
         super(ManageUsersTests, self).setUp()
-        self.user = UserFactory()
-        create_api_key(User, instance=self.user, created=True)
-        self.client = TestClient(
-            path='/manage-users/',
-            data={'email': 'foo@example.com',
-                  'username': self.user.email,
-                  'api_key': self.user.api_key.key})
+        settings.ROLES_ENABLED = True
+
+        self.app_access = AppAccessFactory()
+        self.company = CompanyFactory(app_access=[self.app_access])
+        self.role = RoleFactory(company=self.company)
+        self.user = UserFactory(roles=[self.role], is_staff=True)
+        self.activities = [
+            ActivityFactory(name=activity, app_access=self.app_access)
+            for activity in [
+                "read role", "create role", "update role", "delete role",
+                "read activity", "read user", "create user", "update user",
+                "delete user",]]
+        self.role.activities = [activity for activity in self.activities]
+        # login the user so that we don't get redirected to the login page
+        self.client = TestClient()
+        self.client.login_user(self.user)
 
     def test_activities(self):
-        """Tests that activites are returned."""
+        """
+        Tests that the Activities API returns the proper data in the
+        proper form
+        """
+        response = self.client.get(reverse('api_get_activities'))
 
-        # records not owned by user
-        # partner = PartnerFactory(name="Wrong Partner")
-        # ContactRecordFactory.create_batch(10, partner=partner)
+        output = json.loads(response.content)
+        first_result = output[0]
 
-        self.client.path += 'api/activities'
-        response = self.client.post()
-        print response
+        name = first_result['fields']['name']
+        self.assertIsInstance(name, unicode)
 
-        # output = json.loads(response.content)
-        # print output
+        description = first_result['fields']['description']
+        self.assertIsInstance(description, unicode)
 
-        # output = json.loads(response.content)
-        #
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(len(output), 10)
+    def test_roles(self):
+        """
+        Tests that the Roles API returns the proper data in the
+        proper form
+        """
+        expected_role_pk = self.role.pk
 
+        response = self.client.get(reverse('api_get_roles'))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
 
+        role_id = first_result['role']['id']
+        self.assertIsInstance(role_id, int)
 
+        role_name = first_result['role']['name']
+        self.assertIsInstance(role_name, unicode)
 
+        activities = first_result['activities']
 
+        activities_available = json.loads(activities['available'])
+        activity_available_name = activities_available[0]['fields']['name']
+        self.assertIsInstance(activity_available_name, unicode)
 
+        activities_assigned = json.loads(activities['assigned'])
+        activity_assigned_name = activities_available[0]['fields']['name']
+        self.assertIsInstance(activity_assigned_name, unicode)
 
-    def test_urls(self):
-        # Confirm URL resolves to proper view
-        resolver = resolve('/manage-users/')
-        self.assertEqual(resolver.view_name, 'manage_users')
-        resolver = resolve('/manage-users/api/roles/')
-        self.assertEqual(resolver.view_name, 'api_get_roles')
-        resolver = resolve('/manage-users/api/roles/99/')
-        self.assertEqual(resolver.view_name, 'api_get_specific_role')
-        resolver = resolve('/manage-users/api/roles/create/')
-        self.assertEqual(resolver.view_name, 'api_create_role')
-        resolver = resolve('/manage-users/api/roles/edit/99/')
-        self.assertEqual(resolver.view_name, 'api_edit_role')
-        resolver = resolve('/manage-users/api/roles/delete/99/')
-        self.assertEqual(resolver.view_name, 'api_delete_role')
-        resolver = resolve('/manage-users/api/activities/')
-        self.assertEqual(resolver.view_name, 'api_get_activities')
+        users = first_result['users']
 
-    # Simply check that they all return 302 (because we aren't logged in with permission to view)
-    # Don't actually modify data
-    # def test_apis_up(self):
-    #     response = self.client.get('/manage-users/api/activities/')
-    #     self.assertEqual(response.status_code, 302)
-    #
-    #     response = self.client.get('/manage-users/api/roles/')
-    #     self.assertEqual(response.status_code, 302)
-    #
-    #     response = self.client.get('/manage-users/api/users/')
-    #     self.assertEqual(response.status_code, 302)
+        users_available = json.loads(users['available'])
+        users_available_id = users_available[0]['pk']
+        self.assertIsInstance(users_available_id, int)
+        users_available_email = users_available[0]['fields']['email']
+        self.assertIsInstance(users_available_email, unicode)
 
-        # TODO How do you get a normal request to the view so that the view can pull out a company?
-        # Or would it bet better to pass a company object directly?
+        users_assigned = json.loads(users['assigned'])
+        users_assigned_id = users_assigned[0]['pk']
+        self.assertIsInstance(users_assigned_id, int)
+        users_assigned_email = users_assigned[0]['fields']['email']
+        self.assertIsInstance(users_assigned_email, unicode)
 
+    def test_specific_role(self):
+        """
+        Tests that the Roles API returns the proper (specific role) data in the
+        proper form
+        """
+        expected_role_pk = self.role.pk
 
-        # response = self.client.get('/manage-users/api/roles/',  request)
-        # print response.status_code
-        # self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('api_get_specific_role',
+                                           args=[expected_role_pk]))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
 
-        # for x in range(0, 10):
-        #     response = self.client.get('/manage-users/api/roles/' + randint(0,50) + '/')
-        #     self.assertEqual(response.status_code, 200)
-        #
-        #     # Won't edit data. Requires POST method.
-        #     response = self.client.get('/manage-users/api/roles/edit/' + randint(0,50) + '/')
-        #     self.assertEqual(response.status_code, 200)
-        #
-        #     # Won't edit data. Requires DELETE method.
-        #     response = self.client.get('/manage-users/api/roles/delete/' + randint(0,50) + '/')
-        #     self.assertEqual(response.status_code, 200)
-        #
-        # # Won't edit data. Requires POST method.
-        # response = self.client.get('/manage-users/api/roles/create/')
-        # self.assertEqual(response.status_code, 200)
+        role_id = first_result['role']['id']
+        self.assertIsInstance(role_id, int)
+
+        role_name = first_result['role']['name']
+        self.assertIsInstance(role_name, unicode)
+
+        activities = first_result['activities']
+
+        activities_available = json.loads(activities['available'])
+        activity_available_name = activities_available[0]['fields']['name']
+        self.assertIsInstance(activity_available_name, unicode)
+
+        activities_assigned = json.loads(activities['assigned'])
+        activity_assigned_name = activities_available[0]['fields']['name']
+        self.assertIsInstance(activity_assigned_name, unicode)
+
+        users = first_result['users']
+
+        users_available = json.loads(users['available'])
+        users_available_id = users_available[0]['pk']
+        self.assertIsInstance(users_available_id, int)
+        users_available_email = users_available[0]['fields']['email']
+        self.assertIsInstance(users_available_email, unicode)
+
+        users_assigned = json.loads(users['assigned'])
+        users_assigned_id = users_assigned[0]['pk']
+        self.assertIsInstance(users_assigned_id, int)
+        users_assigned_email = users_assigned[0]['fields']['email']
+        self.assertIsInstance(users_assigned_email, unicode)
+
+    def test_specific_user(self):
+        """
+        Tests that the Users API returns the proper (specific user) data in the
+        proper form
+        """
+        expected_role_pk = self.role.pk
+        expected_user_pk = self.user.pk
+
+        response = self.client.get(reverse('api_get_specific_user',
+                                           args=[expected_user_pk]))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
+
+        status = first_result['status']
+        self.assertIsInstance(status, bool)
+
+        email = first_result['email']
+        self.assertIsInstance(email, unicode)
+
+        roles_available = json.loads(first_result['roles']['available'])
+        roles_available_id = roles_available[0]['pk']
+        self.assertIsInstance(roles_available_id, int)
+
+        roles_available_name = roles_available[0]['fields']['name']
+        self.assertIsInstance(roles_available_name, unicode)
+
+    def test_users(self):
+        """
+        Tests that the Users API returns the proper data in the proper form
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_users'))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
+
+        status = first_result['status']
+        self.assertIsInstance(status, bool)
+
+        email = first_result['email']
+        self.assertIsInstance(email, unicode)
+
+        roles = json.loads(first_result['roles'])
+        role_id = roles[0]['pk']
+        self.assertIsInstance(role_id, int)
+
+        role_name = roles[0]['fields']['name']
+        self.assertIsInstance(role_name, unicode)
