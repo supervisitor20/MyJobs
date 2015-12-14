@@ -1,5 +1,5 @@
 import logging
-from django.http import Http404
+from django.http import HttpResponse
 from django.conf import settings
 
 from functools import wraps
@@ -42,6 +42,10 @@ def guess_child_domain(host, origin, referer):
         return referer
 
     raise DomainRelationshipException('no-child-info')
+
+
+def return_404():
+    return HttpResponse(status=404, content="not found")
 
 
 def is_permitted_method(method):
@@ -120,7 +124,7 @@ def cross_site_verify(fn):
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)
-            raise Http404()
+            return return_404()
         return fn(request)
 
     return verify
