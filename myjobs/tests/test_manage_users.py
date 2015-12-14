@@ -1,16 +1,17 @@
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import reverse
+# from django.core.urlresolvers import resolve,
 from django.conf import settings
-from django.test.client import RequestFactory
-from tastypie.models import create_api_key
-from myjobs.models import User, Role, Activity
+# from django.test.client import RequestFactory
+# from tastypie.models import create_api_key
+# from myjobs.models import User, Role, Activity
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
                                     ActivityFactory)
 from seo.tests.factories import CompanyFactory
-from myjobs.tests.test_views import TestClient
+# from myjobs.tests.test_views import TestClient
 from setup import MyJobsBase
-from random import randint
-from myjobs.decorators import MissingActivity
+# from random import randint
+# from myjobs.decorators import MissingActivity
 import json
 
 class ManageUsersTests(MyJobsBase):
@@ -53,7 +54,46 @@ class ManageUsersTests(MyJobsBase):
         description = first_result['fields']['description']
         self.assertIsInstance(description, unicode)
 
-    def test_roles(self):
+    def test_create_role(self):
+        """
+        Tests creating a role
+        """
+
+        expected_role_name = self.role.name
+
+        # api_create_role requires POST
+        response = self.client.get(reverse('api_create_role'))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "POST method required.")
+
+        # api_create_role requires a uniquely named role
+        response = self.client.post(reverse('api_create_role'),
+                                    data={'role_name': expected_role_name})
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"],
+                         "Another role with this name already exists.")
+
+        # Roles must have at least one activity
+        data_to_post = {}
+        data_to_post['role_name'] = "TEST ROLE"
+        response = self.client.post(reverse('api_create_role'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"],
+                         "Each role must have at least one activity.")
+
+        # A role with a unique name an one activity should be created just fine
+        data_to_post = {}
+        data_to_post['role_name'] = "TEST ROLE"
+        data_to_post['assigned_activities[]'] = ['read role']
+        response = self.client.post(reverse('api_create_role'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
+
+
+    def test_get_roles(self):
         """
         Tests that the Roles API returns the proper data in the
         proper form
@@ -77,7 +117,7 @@ class ManageUsersTests(MyJobsBase):
         self.assertIsInstance(activity_available_name, unicode)
 
         activities_assigned = json.loads(activities['assigned'])
-        activity_assigned_name = activities_available[0]['fields']['name']
+        activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
 
         users = first_result['users']
@@ -94,7 +134,7 @@ class ManageUsersTests(MyJobsBase):
         users_assigned_email = users_assigned[0]['fields']['email']
         self.assertIsInstance(users_assigned_email, unicode)
 
-    def test_specific_role(self):
+    def test_get_specific_role(self):
         """
         Tests that the Roles API returns the proper (specific role) data in the
         proper form
@@ -119,7 +159,7 @@ class ManageUsersTests(MyJobsBase):
         self.assertIsInstance(activity_available_name, unicode)
 
         activities_assigned = json.loads(activities['assigned'])
-        activity_assigned_name = activities_available[0]['fields']['name']
+        activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
 
         users = first_result['users']
@@ -136,7 +176,7 @@ class ManageUsersTests(MyJobsBase):
         users_assigned_email = users_assigned[0]['fields']['email']
         self.assertIsInstance(users_assigned_email, unicode)
 
-    def test_specific_user(self):
+    def test_get_specific_user(self):
         """
         Tests that the Users API returns the proper (specific user) data in the
         proper form
@@ -162,7 +202,7 @@ class ManageUsersTests(MyJobsBase):
         roles_available_name = roles_available[0]['fields']['name']
         self.assertIsInstance(roles_available_name, unicode)
 
-    def test_users(self):
+    def test_get_users(self):
         """
         Tests that the Users API returns the proper data in the proper form
         """
