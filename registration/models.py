@@ -186,10 +186,10 @@ class Invitation(models.Model):
 
         super(Invitation, self).save(*args, **kwargs)
 
-    def send(self, invitation_reason=""):
+    def send(self, reason=""):
         """
         Inputs:
-            :invitation_reason: A custom reason to be included in the email.
+            :reason: A custom reason to be included in the email.
                                 This reason should not include punctuation.
 
         Outputs:
@@ -197,19 +197,19 @@ class Invitation(models.Model):
             the ```Invitation.email``` address. Tailored messages are sent if
             ```Invitation.added_saved_search``` or
             ```Invitation.added_permission are set. If neither are set and no
-            ```invitation_reason``` is set, a generic email is sent.
+            ```reason``` is set, a generic email is sent.
 
         """
         activiation_profile, _ = ActivationProfile.objects.get_or_create(
             user=self.invitee, email=self.invitee.email)
 
-        if not invitation_reason:
+        if not reason:
             if self.added_saved_search:
-                invitation_reason = ("in order to begin receiving their "
+                reason = ("in order to begin receiving their "
                                      "available job opportunities on a "
                                      "regular basis.")
             elif self.added_permission:
-                invitation_reason = ("in order to help administer their "
+                reason = ("in order to help administer their "
                                      "recruitment and outreach tools.")
 
         if activiation_profile.activation_key_expired():
@@ -218,7 +218,7 @@ class Invitation(models.Model):
 
         context = {'invitation': self,
                    'activation_key': activiation_profile.activation_key,
-                   'invitation_reason': invitation_reason + "."}
+                   'reason': reason + "."}
 
         text_only = False
         if self.added_saved_search:

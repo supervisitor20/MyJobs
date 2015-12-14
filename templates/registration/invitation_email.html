@@ -12,7 +12,7 @@
         {% else %}
             {{ invitation.inviting_user.email }}
         {% endif %}
-        of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ invitation_reason }}
+        of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ reason }}
     </p>
 
     {% if invitation.invitee.is_verified %}
