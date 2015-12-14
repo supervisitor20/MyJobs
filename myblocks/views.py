@@ -84,6 +84,15 @@ class BlockView(View):
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
+    """
+    Attempt to retrieve blocks objects for all items in the blocks element of the
+    request body. secured by cross site verification wrapper
+
+    :url: /secure-blocks/
+    :param request: ajax request potentially containing array of element ids for blocks
+    :return: dictionary containing all matched blocks or Suspicious Operation (400)
+
+    """
     try:
         if request.method == 'POST':
             blocks = json.loads(request.body)[u'blocks']
