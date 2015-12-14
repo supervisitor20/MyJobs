@@ -1,10 +1,13 @@
 """Sources of data suitable for reporting on."""
 import json
 from datetime import timedelta, datetime
+from operator import __or__
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
 from universal.helpers import dict_identity
+
+from django.db.models import Q
 
 
 def get_datasource_json_driver(datasource_name):
@@ -197,8 +200,8 @@ class ContactsFilter(object):
         new_root = dict(self.__dict__)
         locations = new_root.get('locations', None)
         if locations:
+            new_locations = dict(locations)
             if 'city' in locations:
-                new_locations = dict(locations)
                 del new_locations['city']
             new_root['locations'] = new_locations
         return ContactsFilter(**new_root)
@@ -211,8 +214,8 @@ class ContactsFilter(object):
         new_root = dict(self.__dict__)
         locations = new_root.get('locations', None)
         if locations:
+            new_locations = dict(locations)
             if 'state' in locations:
-                new_locations = dict(locations)
                 del new_locations['state']
             new_root['locations'] = new_locations
         return ContactsFilter(**new_root)
@@ -236,7 +239,14 @@ class ContactsFilter(object):
                     last_action_time__lte=self.date[1] + timedelta(days=1))
 
         if self.tags:
-            qs = qs.filter(tags__name__in=self.tags)
+            or_qs = []
+            for tag_ors in self.tags:
+                or_qs.append(
+                    reduce(
+                        __or__,
+                        map(lambda t: Q(tags__name__iexact=t), tag_ors)))
+            for or_q in or_qs:
+                qs = qs.filter(or_q)
 
         if self.partner:
             qs = qs.filter(partner__pk__in=self.partner)

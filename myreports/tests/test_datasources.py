@@ -237,7 +237,39 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
-            ContactsFilter(tags=['EaSt']),
+            ContactsFilter(tags=[['EaSt']]),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = {self.john.name}
+        self.assertEqual(expected, names)
+
+    def test_filter_by_tags_or(self):
+        """Should show only contact with correct tags in or configuration."""
+        ds = ContactsDataSource()
+        recs = ds.run(
+            self.company,
+            ContactsFilter(tags=[['EaSt', 'wEsT']]),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = {self.john.name, self.sue.name}
+        self.assertEqual(expected, names)
+
+    def test_filter_by_tags_and(self):
+        """Should show only contact with correct tags in and configuration."""
+        ds = ContactsDataSource()
+        recs = ds.run(
+            self.company,
+            ContactsFilter(tags=[['EaSt'], ['wEsT']]),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = set()
+        self.assertEqual(expected, names)
+
+        # Now try adding another tag.
+        self.john.tags.add(self.west_tag)
+        recs = ds.run(
+            self.company,
+            ContactsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
         names = set([r['name'] for r in recs])
         expected = {self.john.name}
