@@ -742,8 +742,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        if not reason and role_name:
-            reason = "as a(n) %s for %s" % (role_name, company)
+        if not reason:
+            if role_name:
+                reason = "as a(n) %s for %s." % (role_name, company)
+            else:
+                reason = "."
 
         invitation.send(reason)
 

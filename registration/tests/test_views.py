@@ -2,6 +2,7 @@ import datetime
 from bs4 import BeautifulSoup
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.urlresolvers import reverse
 
@@ -14,6 +15,7 @@ from mypartners.models import Contact
 from mypartners.tests.factories import PartnerFactory
 from myprofile.models import SecondaryEmail
 from mysearches.models import SavedSearch
+from mysearches.tests.factories import SavedSearchFactory
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
 from seo.tests.setup import DirectSEOBase
@@ -206,6 +208,15 @@ class RegistrationViewTests(MyJobsBase):
         Tests that saved search invitation emails are formatted correctly.
 
         """
+        saved_search = SavedSearchFactory(user=self.user)
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.added_saved_search = saved_search
+        invitation.save()
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to begin receiving their available job "
+                      "opportunities on a regular basis", email.body)
 
     def test_permission_invitation_message(self):
         """
@@ -213,12 +224,26 @@ class RegistrationViewTests(MyJobsBase):
         formatted correctly.
 
         """
+        group = Group.objects.create(name="Employers")
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.added_permission = group
+        invitation.save()
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to help administer their recruitment and "
+                      "outreach tools.", email.body)
 
     def test_generic_invitation_message(self):
         """
         Tests that generic invitation emails are formatted correctly.
 
         """
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("has invited you to join My.jobs.", email.body)
 
     def test_custom_invitation_message(self):
         """
@@ -226,6 +251,11 @@ class RegistrationViewTests(MyJobsBase):
         correctly.
 
         """
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send("in order to do some custom stuff.")
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to do some custom stuff.", email.body)
 
 
 class MergeUserTests(MyJobsBase):
