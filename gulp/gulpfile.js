@@ -70,11 +70,17 @@ function webpackConfig() {
           test: /\.js$/,
           exclude: /node_modules/,
           loader: "babel-loader",
+          query: {
+            cacheDirectory: true,
+          },
         },
         {
           test: /\.jsx$/,
           exclude: /node_modules/,
           loader: "babel-loader",
+          query: {
+            cacheDirectory: true,
+          },
         },
       ],
     },
@@ -131,7 +137,7 @@ gulp.task('dev-bundle', function(callback) {
   // This bundle is tuned for build speed and development convenience.
   var config = webpackConfig();
   config.debug = true;
-  config.devtool = 'eval-source-map';
+  config.devtool = 'eval-cheap-module-source-map';
   config.cache = webpackCache;
   config.resolve.unsafeCache = true;
   config.profile = true;
