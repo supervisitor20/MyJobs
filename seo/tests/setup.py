@@ -64,6 +64,12 @@ class DirectSEOBase(TestCase):
                            "character set utf8 collate utf8_unicode_ci")
             cursor.execute("alter table django_redirect convert to "
                            "character set utf8 collate utf8_unicode_ci")
+            # We have a data migration that does this, but we don't run
+            # migrations during tests (Django 1.6.5
+            cursor.execute("ALTER TABLE django_flatpage CONVERT TO "
+                           "CHARACTER SET utf8 COLLATE utf8_general_ci")
+            cursor.execute("ALTER TABLE seo_custompage CONVERT TO "
+                           "CHARACTER SET utf8 COLLATE utf8_general_ci")
 
         setattr(settings, 'ROOT_URLCONF', 'dseo_urls')
         setattr(settings, "PROJECT", 'dseo')

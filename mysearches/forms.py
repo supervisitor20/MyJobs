@@ -31,6 +31,14 @@ class SavedSearchForm(BaseUserForm):
         choices = make_choices(self.user)
         self.fields["email"] = ChoiceField(widget=Select(), choices=choices,
                                            initial=choices[0][0])
+
+        initial = kwargs.get("instance")
+        # TODO: Rework text_only overrides when this is promoted to SavedSearch
+        text_only_kwargs = {'widget': HiddenInput(),
+                            'initial': initial.text_only if initial else False,
+                            'required': False}
+        self.fields["text_only"] = BooleanField(**text_only_kwargs)
+
     feed = URLField(widget=HiddenInput())
     notes = CharField(label=_("Notes and Comments"),
                       widget=Textarea(
@@ -51,6 +59,11 @@ class SavedSearchForm(BaseUserForm):
             if not self.cleaned_data['day_of_month']:
                 raise ValidationError(_("This field is required."))
         return self.cleaned_data['day_of_month']
+
+    def clean_text_only(self):
+        if self.cleaned_data.get('text_only', None) is None:
+            self.cleaned_data['text_only'] = self.instance.text_only
+        return self.cleaned_data['text_only']
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -162,6 +175,7 @@ class PartnerSavedSearchForm(RequestForm):
             label='Tags', max_length=255, required=False,
             widget=TextInput(attrs={'id': 'p-tags', 'placeholder': 'Tags'})
         )
+        self.initial['text_only'] = self.instance.text_only
 
         if self.instance and self.instance.pk:
             # If it's an edit make the email recipient unchangeable (for
@@ -190,7 +204,7 @@ class PartnerSavedSearchForm(RequestForm):
         model = PartnerSavedSearch
         fields = ('label', 'url', 'url_extras', 'is_active', 'email',
                   'frequency', 'day_of_month', 'day_of_week', 'jobs_per_email',
-                  'partner_message', 'notes')
+                  'partner_message', 'notes', 'text_only')
         exclude = ('provider', 'sort_by', 'unsubscriber', 'unsubscribed', 'last_action_time')
         widgets = {
             'notes': Textarea(attrs={'rows': 5, 'cols': 24}),
