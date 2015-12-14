@@ -1409,7 +1409,8 @@ class CompanyUser(models.Model):
             invitation = Invitation.objects.create(
                 invitee=self.user, inviting_company=self.company,
                 added_permission=group,
-                inviting_user=inviting_user).save(using=using)
+                inviting_user=inviting_user)
+            invitation.save(using=using)
             invitation.send()
 
         return super(CompanyUser, self).save(*args, **kwargs)
