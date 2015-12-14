@@ -719,7 +719,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             :email: The email address of the potential user being invited.
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
-            assigned.
+                        assigned.
+            :reason: The readon for the invite, included in the email body. If
+                     a ```role_name``` is provided but reason is not, then the
+                     recipient will be notified that they are being invited to
+                     assume that role for the ```company``` which was provided.
+                     If neither is provided, a generic invitation email is sent
+                     instead.
 
         Output:
             The invited user if sucessful, otherwise None.
@@ -742,13 +748,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        if not reason:
-            if role_name:
-                reason = "as a(n) %s for %s." % (role_name, company)
-            else:
-                reason = "."
+        if not reason and role_name:
+            reason = "as a(n) %s for %s" % (role_name, company)
 
-        invitation.send(reason)
+        invitation.send(reason + ".")
 
         if role_name:
             if settings.ROLES_ENABLED:
