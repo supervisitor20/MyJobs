@@ -2,9 +2,6 @@
 Frequently Asked Questions
 ==========================
 
-.. contents::
-  :local:
-
 User Management
 ===============
 
