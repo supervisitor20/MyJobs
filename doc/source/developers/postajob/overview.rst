@@ -1,4 +1,3 @@
-===========
 Quick Start
 ===========
 
@@ -7,7 +6,7 @@ quickly. For a more detailed look at how the  various parts are related and
 funtion, see the :ref:`product-life-cycle` section.
 
 Posting Directly to a Microsite
-===============================
+-------------------------------
 
 .. note:: 
 
@@ -38,7 +37,7 @@ Enabling job posting for a single site is a three-step process:
      $ firefox http://example-company.com/posting/all
 
 Selling Job Postings to Others
-==============================
+------------------------------
 
 .. todo::
 
