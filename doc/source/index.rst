@@ -6,15 +6,14 @@
 Welcome to My.jobs's documentation!
 ===================================
 
-Contents:
-
 .. toctree::
-   :maxdepth: 2
+  :maxdepth: 2
 
-   job_posting
+  developers/index
+  users/index
+  faq
 
-
-
+  
 
 Indices and tables
 ==================

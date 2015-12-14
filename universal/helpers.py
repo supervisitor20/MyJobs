@@ -277,3 +277,41 @@ def json_to_query(data, sep="__", parent=""):
             results[parent + key] = value
 
     return results
+
+
+def dict_identity(cls):
+    """Give instances of a class more value like semantics.
+
+    For this to work the instance members must also have value
+    semantics.
+
+    @dict_identity
+    class Num(object):
+        def __init__(self, val):
+            self.val = val
+
+    Num(2) == Num(3)
+    >>> True
+
+    This is helpful for unit tests where a class represents some kind
+    of value. It provides meaningful stringification and equality
+    based on the members of the instance.
+    """
+    def eq(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def ne(self, other):
+        return not self.__eq__(other)
+
+    def repr(self):
+        return "<%s %r>" % (cls.__name__, self.__dict__)
+
+    cls.__eq__ = eq
+    cls.__ne__ = ne
+    cls.__unicode__ = repr
+    cls.__str__ = repr
+    cls.__repr__ = repr
+    return cls

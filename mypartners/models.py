@@ -69,7 +69,7 @@ class Status(models.Model):
 
 class SearchParameterQuerySet(models.query.QuerySet):
     """
-    Defines a query set with a `from_search` method for filtering by query
+    Defines a query set with a ``from_search`` method for filtering by query
     parameters.
     """
 
@@ -83,15 +83,16 @@ class SearchParameterQuerySet(models.query.QuerySet):
             :filters: A JSON string which is an object to be passed to
                       filter().
             :filters: A dict of field: term pairs where field is a field of
-                         the `ContactRecord` model and term is search term
+                         the ``ContactRecord`` model and term is search term
                          you'd like to filter against.
 
-                         For `datetime`, pass `start_date` and/or `end_date`
-                         instead.
+                         For ``datetime``, pass ``start_date`` and/or
+                         ``end_date`` instead.
 
         Example:
             If you want to filter partners where the related contact record's
-            date time is before a certain date:
+            date time is before a certain date::
+
                 Partner.objects.from_search(filters=json.dumps({
                     'contactrecord': {
                         'date_time': {
@@ -447,7 +448,7 @@ class PartnerLibrary(models.Model):
     Programs (OFCCP).
 
     .. note:: For the differences between `state` and `st`, see the ofccp
-    module.
+              module.
 
     """
 
@@ -747,8 +748,12 @@ class PRMAttachment(models.Model):
             filename = 'unnamed_file'
 
         uid = uuid4()
-        path_addon = "mypartners/%s/%s/%s" % (self.partner.owner.pk,
-                                              self.partner.pk, uid)
+        if self.partner:
+            partner = self.partner.pk
+            owner = self.partner.owner.pk
+        else:
+            partner = owner = 'none'
+        path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
         name = "%s/%s" % (path_addon, filename)
 
         # Make sure that in the unlikely event that a filepath/uid/filename
@@ -756,8 +761,7 @@ class PRMAttachment(models.Model):
         # is generated.
         while default_storage.exists(name):
             uid = uuid4()
-            path_addon = "mypartners/%s/%s/%s" % (self.partner.owner,
-                                                  self.partner.name, uid)
+            path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
             name = "%s/%s" % (path_addon, filename)
 
         return name
@@ -782,6 +786,9 @@ class PRMAttachment(models.Model):
                 key.key = self.attachment.name
                 key.set_acl('private')
         except AttributeError:
+            # If we're using FileSystemStorage, default_storage will not have
+            # a "connection" attribute and we don't need to worry about
+            # S3 permissions.
             pass
 
         return instance
@@ -793,7 +800,8 @@ class PRMAttachment(models.Model):
 
     @property
     def partner(self):
-        return getattr(self.contact_record, 'partner', None)
+        return getattr(self, '_partner',
+                       getattr(self.contact_record, 'partner', None))
 
 
 class ContactLogEntry(models.Model):

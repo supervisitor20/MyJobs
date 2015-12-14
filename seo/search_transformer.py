@@ -612,7 +612,7 @@ class SearchTransformer(object):
 
             return query
         except Exception as e:
-            logging.warn("Could not handle search '%s': %s" %
+            logger.warn("Could not handle search '%s': %s" %
                          (input_query, e.message))
             return input_query
 

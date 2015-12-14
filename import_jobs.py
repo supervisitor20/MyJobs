@@ -162,7 +162,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
 
     # Process the files.
     active_directory = os.path.join(directory, 'ActiveDirectory_%s' % guid)
-    files = os.listdir(active_directory)
+    files = sorted(os.listdir(active_directory))
     logger.info("Found %s jobs for guid %s", len(files), guid)
     for f in files:
         path = os.path.join(active_directory, f)

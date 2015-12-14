@@ -10,10 +10,10 @@ import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
 
-from django.forms.models import modelformset_factory
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.shortcuts import render_to_response, get_object_or_404
@@ -31,8 +31,9 @@ from email_parser import build_email_dicts, get_datetime_from_str
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import has_access, warn_when_inactive
-from myjobs.models import User, Activity
-from myjobs.decorators import requires, MissingActivity
+from myjobs.models import User
+
+from myjobs.decorators import requires
 from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -1163,7 +1164,6 @@ def prm_export(request):
 
 
 @csrf_exempt
-@requires("create partner", "create contact", "create communication record")
 def process_email(request):
     """
     Creates a contact record from an email received via POST.
@@ -1307,7 +1307,7 @@ def process_email(request):
                 prm_attachment = PRMAttachment()
                 prm_attachment.attachment = attachment
                 prm_attachment.contact_record = record
-                setattr(prm_attachment, 'partner', contact.partner)
+                prm_attachment._partner = contact.partner
                 prm_attachment.save()
                 # The file pointer for this attachment is now at the end of the
                 # file; reset it to the beginning for future use.
@@ -1328,38 +1328,54 @@ def process_email(request):
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')
-def manage_outreach_inboxes(request):
+def nuo_main(request):
+    """
+    View for non user outreach module
+    GET /prm/view/nonuseroutreach
+    """
     company = get_company_or_404(request)
-    OutreachEmailInboxFormset = modelformset_factory(OutreachEmailAddress,
-                                                     exclude=('company',), extra=1,
-                                                     can_delete=True)
-    if request.method == 'GET':
-        formset = OutreachEmailInboxFormset(queryset=OutreachEmailAddress.objects.filter(company=company))
-
-    if request.method == 'POST':
-        formset = OutreachEmailInboxFormset(request.POST)
-        if formset.is_valid():
-            for form in formset:
-                # forced to overwrite normal processing in order to assign company to outreach email
-                # did not want to include company on user provided form for fear of manipulation
-                if form.cleaned_data.get('DELETE'):
-                    form.instance.delete()
-                elif form.cleaned_data.get('email'):
-                    instance = form.save(commit=False)
-                    instance.company = company
-                    instance.save()
-            # re-initialize formset now that processing is finished
-            return HttpResponseRedirect(reverse('manage_outreach_inboxes'))
 
     ctx = {
-        'formset': formset,
-        'company': company,
-        'view_name': 'PRM',
-    }
+        "company": company
+        }
 
-    return render_to_response('mypartners/nonuseroutreach/outreach_inbox_management.html',
-                              ctx,
-                              RequestContext(request))
+    return render_to_response('nonuseroutreach/nuo_main.html', ctx,
+                                RequestContext(request))
+
+
+#TODO: Add proper activities for the APIs
+@restrict_to_staff()
+@requires("create partner", "create contact", "create communication record")
+@has_access('prm')
+def api_get_nuo_inbox_list(request):
+    """
+    Retrieves all non user outreach inboxes for a company. Returns json object with id, email of each
+    GET /prm/api/nonuseroutreach/inbox/list
+    """
+    company = get_company_or_404(request)
+
+    inboxes = OutreachEmailAddress.objects.filter(company=company)
+    return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
+
+
+@restrict_to_staff()
+@requires("create partner", "create contact", "create communication record")
+@has_access('prm')
+def api_save_nuo_inbox(request):
+    """
+    stub for save api
+    """
+    pass
+
+
+@restrict_to_staff()
+@requires("create partner", "create contact", "create communication record")
+@has_access('prm')
+def api_delete_nuo_inbox(request):
+    """
+    stub for delete api
+    """
+    pass
 
 
 @requires('read tag')

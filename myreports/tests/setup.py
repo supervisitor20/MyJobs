@@ -10,14 +10,14 @@ from myreports.tests.factories import (
     UserTypeFactory, ReportingTypeFactory, UserReportingTypesFactory,
     ReportTypeFactory, ReportingTypeReportTypesFactory, DataTypeFactory,
     ReportTypeDataTypesFactory, PresentationTypeFactory,
-    ReportPresentationFactory, ConfigurationFactory, ColumnFactory,
-    ConfigurationColumnFactory, InterfaceElementTypeFactory)
+    ReportPresentationFactory, ConfigurationFactory,
+    ConfigurationColumnFactory)
 
 from myreports.models import (
     UserType, ReportingType, UserReportingTypes, ReportType,
     ReportingTypeReportTypes, DataType, ReportTypeDataTypes,
-    PresentationType, ReportPresentation, Configuration, Column,
-    ConfigurationColumn, InterfaceElementType)
+    PresentationType, ReportPresentation, Configuration,
+    ConfigurationColumn)
 
 
 class MyReportsTestCase(TestCase):
@@ -28,7 +28,8 @@ class MyReportsTestCase(TestCase):
     def setUp(self):
         settings.ROLES_ENABLED = False
         self.client = TestClient()
-        self.user = UserFactory(email='testuser@directemployers.org')
+        self.user = UserFactory(
+            email='testuser@directemployers.org', is_staff=True)
         self.user.set_password('aa')
         self.company = CompanyFactory(name='Test Company')
         self.partner = PartnerFactory(name='Test Partner', owner=self.company)
@@ -119,7 +120,8 @@ def create_full_fixture():
     rt_con = ReportTypeFactory(
         id=2,
         report_type="Contacts",
-        description="Contacts Report")
+        description="Contacts Report",
+        datasource="contacts")
     rt_comm = ReportTypeFactory(
         id=3,
         report_type="Communication Records",
@@ -203,82 +205,81 @@ def create_full_fixture():
     con_con = ConfigurationFactory.create(
         id=3, name="Basic Report")
 
-    InterfaceElementType.objects.all().delete()
-    int_dead = InterfaceElementTypeFactory.create(
-        id=1,
-        interface_element_type="inactive",
-        description="Inactive Element Type",
-        element_code="div",
-        is_active=False)
-
-    Column.objects.all().delete()
-    col_1 = ColumnFactory.create(
-        id=1,
-        column_name=u'inactive-zzz',
-        is_active=False)
-    col_2 = ColumnFactory.create(
-        id=2,
-        column_name=u'maybe-inactive-zzz')
-    col_4 = ColumnFactory.create(
-        id=4,
-        column_name=u'name')
-    col_5 = ColumnFactory.create(
-        id=5,
-        column_name=u'email')
-    col_6 = ColumnFactory.create(
-        id=6,
-        column_name=u'locations')
-    col_7 = ColumnFactory.create(
-        id=7,
-        column_name=u'tags')
-    col_8 = ColumnFactory.create(
-        id=8,
-        column_name=u'partner')
-
     ConfigurationColumn.objects.all().delete()
     ConfigurationColumnFactory.create(
         id=1,
+        column_name="dead",
+        output_format="text",
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_1,
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
-        id=2,
-        configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_2,
         multi_value_expansion=False,
         is_active=False)
     ConfigurationColumnFactory.create(
-        id=4,
+        id=3,
+        column_name="name",
+        order=100,
+        output_format="text",
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_4,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
-        id=5,
+        id=4,
+        column_name="partner",
+        order=101,
+        output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Partners',
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_5,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=5,
+        column_name="email",
+        order=102,
+        output_format="text",
+        configuration=con_con,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=6,
+        column_name="phone",
+        order=103,
+        output_format="text",
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_6,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=7,
+        column_name="date",
+        order=104,
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_7,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=8,
+        column_name="notes",
+        order=105,
+        output_format="text",
         configuration=con_con,
-        interface_element_type=int_dead,
-        column=col_8,
         multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=9,
+        column_name="locations",
+        order=106,
+        output_format="city_state_list",
+        filter_interface_type='city_state',
+        filter_interface_display='Location',
+        configuration=con_con,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=10,
+        column_name="tags",
+        order=107,
+        output_format="comma_sep",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Tags',
+        configuration=con_con,
+        multi_value_expansion=False,
+        has_help=True)
 
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(

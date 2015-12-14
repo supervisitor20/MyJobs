@@ -280,6 +280,47 @@ class TestActivities(MyJobsBase):
             self.assertFalse(user.can(
                 self.company, activities[0], "eat a burrito"))
 
+    def test_send_invite_method(self):
+        """
+        `User.send_invite called without a role should send an invitation
+        email, optionally assiging the reserved user to a role if one was
+        passed in.
+        """
+
+        activity = ActivityFactory(
+            name="create user", app_access=self.app_access)
+        self.role.activities.add(activity)
+        admin_user = UserFactory(email="admin@users.com", roles=[self.role])
+        CompanyUserFactory(user=admin_user, company=self.company)
+
+        # sanity check
+        self.assertTrue(admin_user.can(self.company, 'create user'))
+
+        with self.settings(ROLES_ENABLED=True):
+            user = admin_user.send_invite('regular@joe.com', self.company)
+            self.assertFalse(
+                user.can(self.company, 'create user'),
+                "User shouldn't be able to 'create user', but can")
+
+            user = admin_user.send_invite(
+                'regular@joe.com', self.company, role_name=self.role.name)
+            self.assertTrue(
+                user.can(self.company, 'create user'),
+                "User should be able to 'create user' but can't.")
+
+        with self.settings(ROLES_ENABLED=False):
+            user = admin_user.send_invite('regular@joe.com', self.company)
+            self.assertFalse(
+                user.can(self.company, 'create user'),
+                "User shouldn't be able to 'create user', but can.")
+
+            user = admin_user.send_invite(
+                'regular@joe.com', self.company, True)
+            self.assertTrue(
+                user.can(self.company, 'create user'),
+                "User should be able to 'create user', but can't")
+
+
     def test_activities(self):
         """
         `User.activities` should return a list of activities associated with
