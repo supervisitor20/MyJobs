@@ -80,6 +80,9 @@ export class SearchInput extends Component {
           this.onSelect(keySelectedIndex);
           return;
         }
+      } else if (event.key === 'Escape') {
+        killEvent = true;
+        this.clear('');
       }
       if (killEvent) {
         event.preventDefault();
