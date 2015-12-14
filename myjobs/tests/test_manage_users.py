@@ -292,3 +292,24 @@ class ManageUsersTests(MyJobsBase):
 
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
+
+    def test_delete_user(self):
+        """
+        Tests deleting a user
+        """
+        expected_user_pk = self.user.pk
+
+        # api_delete_user requires DELETE
+        response = self.client.get(reverse('api_delete_user',
+                                            args=[expected_user_pk]))
+        output = json.loads(response.content)
+        print output
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "DELETE method required.")
+
+        # Delete this user
+        response = self.client.delete(reverse('api_delete_user',
+                                            args=[expected_user_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
+        self.assertEqual(output["message"], "User deleted.")
