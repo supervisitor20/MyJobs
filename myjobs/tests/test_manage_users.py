@@ -130,10 +130,6 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
-
-
-
-
     def test_delete_role(self):
         """
         Tests deleting a role
@@ -292,6 +288,34 @@ class ManageUsersTests(MyJobsBase):
 
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
+
+    def test_create_user(self):
+        """
+        Tests creating a user
+        """
+
+        # api_create_user requires POST
+        response = self.client.get(reverse('api_create_user'))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "POST method required.")
+
+        # Users must be assigned to at least one role
+        data_to_post = {}
+        data_to_post['user_email'] = "timothy@leary.com"
+        response = self.client.post(reverse('api_create_user'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"],
+                         "Each user must be assigned to at least one role.")
+
+        # Should be able to create a user
+        data_to_post = {}
+        data_to_post['user_email'] = "timothy@leary.com"
+        data_to_post['assigned_roles[]'] = [self.role.name]
+        response = self.client.post(reverse('api_create_user'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
 
     def test_delete_user(self):
         """
