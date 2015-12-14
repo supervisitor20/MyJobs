@@ -26,7 +26,6 @@ class RegistrationViewTests(MyJobsBase):
     Test the registration views.
 
     """
-
     def setUp(self):
         """
         These tests use the default backend, since we know it's
@@ -165,6 +164,7 @@ class RegistrationViewTests(MyJobsBase):
         prompted to change their password.
         """
         invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send()
         key = invitation.invitee.activationprofile_set.first().activation_key
         response = self.client.get(
             reverse('invitation_activate', kwargs={'activation_key': key}),
@@ -181,6 +181,7 @@ class RegistrationViewTests(MyJobsBase):
         has already been used.
         """
         invitation = InvitationFactory(invitee_email=self.user.email)
+        invitation.send()
         self.assertFalse(invitation.accepted)
         profile = self.user.activationprofile_set.all()[0]
         key = profile.activation_key
@@ -195,9 +196,36 @@ class RegistrationViewTests(MyJobsBase):
         response = self.client.get(reverse('invitation_activate', args=[key]))
         self.assertTrue('Thanks for registering!' in response.content)
         invitation = Invitation.objects.get()
+        invitation.send()
         self.assertTrue(invitation.accepted)
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.in_reserve)
+
+    def test_saved_search_invitation_message(self):
+        """
+        Tests that saved search invitation emails are formatted correctly.
+
+        """
+
+    def test_permission_invitation_message(self):
+        """
+        Tests that invitation emails where permissions are changed are
+        formatted correctly.
+
+        """
+
+    def test_generic_invitation_message(self):
+        """
+        Tests that generic invitation emails are formatted correctly.
+
+        """
+
+    def test_custom_invitation_message(self):
+        """
+        Test that invitation messages with custom reasons are formatted
+        correctly.
+
+        """
 
 
 class MergeUserTests(MyJobsBase):

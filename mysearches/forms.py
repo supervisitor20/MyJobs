@@ -291,7 +291,8 @@ class PartnerSavedSearchForm(RequestForm):
                 'inviting_company': instance.partner.owner,
                 'added_saved_search': instance,
             }
-            Invitation(**invite_args).save()
+            invitation = Invitation.objects.create(**invite_args)
+            invitation.send()
             # Default sort_by for new Partner Saved Searches, see PD-912
         partner = instance.partner
         contact = Contact.objects.filter(partner=partner,

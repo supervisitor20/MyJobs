@@ -184,20 +184,27 @@ class Invitation(models.Model):
         else:
             self.invitee_email = self.invitee.email
 
-        if not self.pk:
-            self.send()
-
         super(Invitation, self).save(*args, **kwargs)
 
-    def send(self):
+    def send(self, invitation_reason=""):
         ap = ActivationProfile.objects.get_or_create(user=self.invitee,
                                                      email=self.invitee_email)[0]
+        if not invitation_reason:
+            if self.added_saved_search:
+                invitation_reason = ("in order to begin receiving their "
+                                     "available job opportunities on a "
+                                     "regular basis")
+            elif self.added_permission:
+                invitation_reason = ("in order to help administer their "
+                                     "recruitment and outreach tools")
+
         if ap.activation_key_expired():
             ap.reset_activation()
             ap = ActivationProfile.objects.get(pk=ap.pk)
 
         context = {'invitation': self,
-                   'activation_key': ap.activation_key}
+                   'activation_key': ap.activation_key,
+                   'invitation_reason': invitation_reason}
 
         text_only = False
         if self.added_saved_search:

@@ -6,43 +6,18 @@
     Dear {% if invitation.invitee.get_full_name %}{{ invitation.invitee.get_full_name }}{% else %}{{ invitation.invitee_email }}{% endif %},
 
     {% url 'invitation_activate' activation_key as url %}
-    {% if invitation.added_saved_search %}
-        <p>
-            {% if inviting_user_name %}
-                {{ inviting_user_name }}
-            {% else %}
-                {{ invitation.inviting_user.email }}
-            {% endif %}
-            of {{ invitation.inviting_company.name }} has invited you to join My.jobs in order to begin receiving
-            {{ invitation.inviting_company.name }}'s available job opportunities on
-            a regular basis.
-        </p>
-    {% elif invitation.added_permission %}
-        <p>
-            {% if inviting_user_name %}
-                {{ inviting_user_name }}
-            {% else %}
-                {{ invitation.inviting_user.email }}
-            {% endif %}
-            has reserved a spot for you to join My.jobs in order to help
-            administer {{ invitation.inviting_company.name }}'s recruitment
-            and outreach tools.
-        </p>
+    <p>
+        {% if inviting_user_name %}
+            {{ inviting_user_name }}
+        {% else %}
+            {{ invitation.inviting_user.email }}
+        {% endif %}
+        of {{ invitation.inviting_company.name }} has invited you to join My.jobs {{ invitation_reason }}.
+    </p>
 
+    {% if invitation.invitee.is_verified %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
     {% else %}
-        <p>
-            Your colleague
-            {% if inviting_user_name %}
-                {{ inviting_user_name }}
-            {% else %}
-                {{ invitation.inviting_user.email }}
-            {% endif %}
-            has reserved a spot for you to join My.jobs.
-        </p>
-    {% endif %}
-
-    {% if not invitation.invitee.is_verified %}
         <p>Please click on the Activate Account button below to get started.</p>
 
         <p><a href="https://secure.my.jobs{{ url }}?verify={{ invitation.invitee.user_guid}}" class="btn">Activate Account</a></p>

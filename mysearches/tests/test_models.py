@@ -427,11 +427,13 @@ class PartnerSavedSearchTests(MyJobsBase):
         # Partner searches are normally created with a form, which creates
         # invitations as a side effect. We're not testing the form, so we
         # can fake an invitation here.
-        Invitation(invitee_email=self.partner_search.email,
-                   invitee=self.partner_search.user,
-                   inviting_user=self.partner_search.created_by,
-                   inviting_company=self.partner_search.partner.owner,
-                   added_saved_search=self.partner_search).save()
+        invitation = Invitation.objects.create(
+            invitee_email=self.partner_search.email,
+            invitee=self.partner_search.user,
+            inviting_user=self.partner_search.created_by,
+            inviting_company=self.partner_search.partner.owner,
+            added_saved_search=self.partner_search).save()
+        invitation.send()
 
         self.num_occurrences = lambda text, search_str: [match.start()
                                                          for match
