@@ -327,7 +327,6 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.get(reverse('api_delete_user',
                                             args=[expected_user_pk]))
         output = json.loads(response.content)
-        print output
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "DELETE method required.")
 
@@ -337,3 +336,35 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
         self.assertEqual(output["message"], "User deleted.")
+
+    def test_edit_user(self):
+        """
+        Tests editing a user
+        """
+
+        expected_role_pk = self.role.pk
+        expected_role_name = self.role.name
+
+        # api_edit_user requires POST
+        response = self.client.get(reverse('api_edit_user',
+                                            args=[expected_role_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "POST method required.")
+
+        # api_edit_user requires at least one role
+        response = self.client.post(reverse('api_edit_user',
+                                            args=[expected_role_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"],
+                         "A user must be assigned to at least one role.")
+
+        # Should be able to edit a user
+        data_to_post = {}
+        data_to_post['assigned_roles[]'] = [self.role.name]
+        response = self.client.post(reverse('api_edit_user',
+                                            args=[expected_role_pk]),
+                                            data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
