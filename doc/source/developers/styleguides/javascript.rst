@@ -2,11 +2,6 @@
 JavaScript Coding Standard
 ===========================
 
-.. contents::
-  :depth: 2
-  :local:
-  :backlinks: entry
-
 Goals
 =====
 
