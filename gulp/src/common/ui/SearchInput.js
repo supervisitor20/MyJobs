@@ -116,9 +116,26 @@ export class SearchInput extends Component {
     this.setState(this.getDefaultState(newValue));
   }
 
+  suggestId() {
+    const {id} = this.props;
+    return id + '-suggestions';
+  }
+
+  itemId(index) {
+    const id = this.suggestId();
+    if (index <= 0) {
+      return null;
+    }
+    return this.suggestId(id) + '-' + index.toString();
+  }
+
   render() {
-    const {theme, placeholder} = this.props;
+    const {id, theme, placeholder} = this.props;
     const {value, items, keySelectedIndex} = this.state;
+    const suggestId = id + '-suggestions';
+
+    const showItems = Boolean(items.length);
+    const activeId = this.itemId(keySelectedIndex);
 
     return (
       <div
@@ -133,18 +150,25 @@ export class SearchInput extends Component {
           onBlur={e => this.onInputBlur(e)}
           onKeyDown={e => this.onInputKeyDown(e)}
           value={value}
-          type="search" />
-        {items.length ?
+          type="search"
+          aria-autocomplete="list"
+          aria-owns={suggestId}
+          aria-expanded={showItems}
+          aria-activedescendant={activeId}/>
+        {showItems ?
           <ul
+            id={this.suggestId()}
             className={theme.suggestions}
             onMouseEnter={() => this.onMouseInMenu(true)}
             onMouseLeave={() => this.onMouseInMenu(false)}>
             {items.map((item, index) =>
-              <li className={classnames(
-                theme.item,
-                {
-                  [theme.itemActive]: index === keySelectedIndex,
-                })}>
+              <li
+                id={this.itemId(index)}
+                className={classnames(
+                  theme.item,
+                  {
+                    [theme.itemActive]: index === keySelectedIndex,
+                  })}>
                 <a
                   href="#"
                   onClick={() => this.onSelect(index)}>
