@@ -172,16 +172,16 @@ SearchInput.defaultProps = {
 
 SearchInput.propTypes = {
   /**
-   * Id for the autosuggest input. Must be unique within the page.
+   * Id for the input control. Must be unique within the page.
+   *
+   * Intended to support wai-aria.
    */
   id: PropTypes.string.isRequired,
 
   /**
    * Callback: the user has selected an item.
    *
-   * key: key for item selected by the user.
-   *
-   * After this callback the input will be cleared to a blank string.
+   * obj: the object selected by the user.
    */
   onSelect: PropTypes.func.isRequired,
 

@@ -1,5 +1,6 @@
 import {intersperse, flatMap} from '../array';
 
+
 const add200 = (item, index) => item + index + 200;
 
 describe('intersperse', () => {

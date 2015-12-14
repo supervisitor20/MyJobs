@@ -38,8 +38,28 @@ export function AndOrContainer(props) {
 }
 
 AndOrContainer.propTypes = {
+  /**
+   * Array of arrays of tag objects.
+   */
   andGroup: PropTypes.array.isRequired,
+
+  /**
+   * Callback: The user has added a tag.
+   *
+   * index: the index within the andGroup where the tag was added.
+   * tag: the new tag object.
+   */
   addTag: PropTypes.func.isRequired,
+
+  /**
+   * Callback: The user has removed a tag.
+   * index: the index within the andGroup where the tag was added.
+   * tag: the new tag object. May contain only the key attribute.
+   */
   removeTag: PropTypes.func.isRequired,
+
+  /**
+   * Callback: the user wants hints for a given partial string.
+   */
   getHints: PropTypes.func.isRequired,
 };

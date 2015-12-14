@@ -74,6 +74,20 @@ export class AddNewBox extends Component {
 }
 
 AddNewBox.propTypes = {
+  /**
+   * Id for wai-aria. See SearchInput.
+   */
+  id: PropTypes.string.isRequired,
+
+  /**
+   * Callback: the user has added a tag.
+   *
+   * key: key for the tag selected by the user.
+   */
   addTag: PropTypes.func.isRequired,
+
+  /**
+   * Callback: the user wants hints for a given partial string.
+   */
   getHints: PropTypes.func.isRequired,
 };

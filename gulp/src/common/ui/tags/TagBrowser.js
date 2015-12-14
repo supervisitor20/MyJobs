@@ -60,5 +60,8 @@ export class TagBrowser extends Component {
 }
 
 TagBrowser.propTypes = {
+  /**
+   * Callback: The user wants hints for a given partial string.
+   */
   getHints: PropTypes.func.isRequired,
 };
