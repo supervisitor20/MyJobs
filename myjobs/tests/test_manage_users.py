@@ -245,13 +245,12 @@ class ManageUsersTests(MyJobsBase):
         Tests that the Users API returns the proper (specific user) data in the
         proper form
         """
-        expected_role_pk = self.role.pk
         expected_user_pk = self.user.pk
 
         response = self.client.get(reverse('api_get_specific_user',
                                            args=[expected_user_pk]))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        first_result = output[str(expected_user_pk)]
 
         status = first_result['status']
         self.assertIsInstance(status, bool)
@@ -270,11 +269,11 @@ class ManageUsersTests(MyJobsBase):
         """
         Tests that the Users API returns the proper data in the proper form
         """
-        expected_role_pk = self.role.pk
+        expected_user_pk = self.user.pk
 
         response = self.client.get(reverse('api_get_users'))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        first_result = output[str(expected_user_pk)]
 
         status = first_result['status']
         self.assertIsInstance(status, bool)
