@@ -341,20 +341,20 @@ class ManageUsersTests(MyJobsBase):
         """
         Tests editing a user
         """
-
+        expected_user_pk = self.user.pk
         expected_role_pk = self.role.pk
         expected_role_name = self.role.name
 
         # api_edit_user requires POST
         response = self.client.get(reverse('api_edit_user',
-                                            args=[expected_role_pk]))
+                                            args=[expected_user_pk]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
         # User must exist
         response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_role_pk + 1]))
+                                            args=[expected_user_pk + 1]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "User does not exist.")
@@ -362,7 +362,7 @@ class ManageUsersTests(MyJobsBase):
 
         # api_edit_user requires at least one role
         response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_role_pk]))
+                                            args=[expected_user_pk]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"],
@@ -372,7 +372,7 @@ class ManageUsersTests(MyJobsBase):
         data_to_post = {}
         data_to_post['assigned_roles[]'] = [self.role.name]
         response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_role_pk]),
+                                            args=[expected_user_pk]),
                                             data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
