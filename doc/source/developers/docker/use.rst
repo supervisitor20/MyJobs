@@ -77,7 +77,7 @@ Rerun this any time we change requirements.txt.
 
 ``(cd dk2/dev && ln -s ../../requirements.txt .)`` Need this symlink.
 
-``dk rebuilddev`` Also takes a long time.
+``dk rebuilddev`` Also takes a long time. [If it hits a glitch run this command again]
 
 Build the Background Containers
 ===============================
