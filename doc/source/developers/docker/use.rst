@@ -163,3 +163,15 @@ Start a new terminal
 
 ``dk runmicrosites``
 
+Access Local Containers with a Browser
+======================================
+
+Add to ``/etc/hosts``:
+
+``$myip secure.my.jobs www.my.jobs``
+
+Add other microsites as needed.
+
+Go to http://secure.my.jobs. you should have to click through a security
+warning.
+
