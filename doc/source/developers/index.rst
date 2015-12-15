@@ -9,6 +9,7 @@ Developer Documentation
   mypartners/index
   postajob/index
   seo/index
+  docker/index
   styleguides/index
   testing/index
   contributing/index

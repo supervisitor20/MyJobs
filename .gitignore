@@ -6,6 +6,10 @@
 static/*.gz
 static/*/*.gz
 
+# Docker
+dk2/dev/requirements.txt
+dk2/revproxy/
+
 # Misc
 files/
 reports/
