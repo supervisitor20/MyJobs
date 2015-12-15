@@ -207,10 +207,10 @@ class Invitation(models.Model):
             if self.added_saved_search:
                 reason = ("in order to begin receiving their "
                                      "available job opportunities on a "
-                                     "regular basis.")
+                                     "regular basis")
             elif self.added_permission:
                 reason = ("in order to help administer their "
-                                     "recruitment and outreach tools.")
+                                     "recruitment and outreach tools")
 
         if activiation_profile.activation_key_expired():
             activiation_profile.reset_activation()
