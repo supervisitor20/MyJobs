@@ -73,9 +73,11 @@ Terminal Setup (Both)
 Build the Development Image
 ===========================
 
-``(cd dk2/dev && ln -s ../../requirements.txt .``
+Rerun this any time we change requirements.txt.
 
-``dk rebuild dev`` Also takes a long time.
+``(cd dk2/dev && ln -s ../../requirements.txt .)`` Need this symlink.
+
+``dk rebuilddev`` Also takes a long time.
 
 Build the Background Containers
 ===============================
@@ -111,7 +113,9 @@ Load Data into MySql and Solr
 friends in ``solr_config/``
 
 ``mysql -u root -p -h $myip``
+
 ``mysql> SET GLOBAL max_allowed_packet=1073741824;``
+
 ``exit``
 
 ``mysql -u root -p -h $myip <dbbackup.sql`` assuming that your database backup
@@ -120,8 +124,11 @@ file is ``dbbackup.sql``
 ``exit`` Exits the interactive container.
 
 ``dk backgroundstop``
+
 ``docker ps`` Verify no running containers.
+
 ``dk background``
+
 ``docker ps`` Should show mysql, solr, and revproxy running.
 
 Configure MyJobs to Run in Docker Containers
@@ -130,8 +137,11 @@ Configure MyJobs to Run in Docker Containers
 Appropriate settings, obtained from other developers, go in these files:
 
 * ``secrets.py``
+
 * ``settings_myjobs/settings.py``
+
 * ``settings_dseo/settings.py``
+
 * ``dev_settings.py``
 
 Verify that Django Works
@@ -146,8 +156,10 @@ We run these services in the interactively in the foreground as it's convenient
 to have instant scrollable/searchable access to their logs.
 
 Start a new terminal.
+
 ``dk runsecure``
 
 Start a new terminal
+
 ``dk runmicrosites``
 
