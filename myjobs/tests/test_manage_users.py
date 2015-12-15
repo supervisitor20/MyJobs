@@ -280,17 +280,21 @@ class ManageUsersTests(MyJobsBase):
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
 
-    def test_create_user(self):
+    def test_create_user_require_post(self):
         """
         Tests creating a user
+        Require POST
         """
-        # api_create_user requires POST
         response = self.client.get(reverse('api_create_user'))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
-        # Users must be assigned to at least one role
+    def test_create_user_user_must_have_role(self):
+        """
+        Tests creating a user
+        Users must be assigned to at least one role
+        """
         data_to_post = {}
         data_to_post['user_email'] = "timothy@leary.com"
         response = self.client.post(reverse('api_create_user'), data_to_post)
@@ -299,7 +303,10 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "Each user must be assigned to at least one role.")
 
-        # Should be able to create a user
+    def test_create_user(self):
+        """
+        Tests creating a user
+        """
         data_to_post = {}
         data_to_post['user_email'] = "timothy@leary.com"
         data_to_post['assigned_roles[]'] = [self.role.name]
@@ -307,20 +314,25 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
-    def test_delete_user(self):
+    def test_delete_user_require_post(self):
         """
         Tests deleting a user
+        Require DELETE
         """
         expected_user_pk = self.user.pk
 
-        # api_delete_user requires DELETE
         response = self.client.get(reverse('api_delete_user',
                                            args=[expected_user_pk]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "DELETE method required.")
 
-        # Delete this user
+    def test_delete_user(self):
+        """
+        Tests deleting a user
+        """
+        expected_user_pk = self.user.pk
+
         response = self.client.delete(reverse('api_delete_user',
                                               args=[expected_user_pk]))
         output = json.loads(response.content)
@@ -330,11 +342,10 @@ class ManageUsersTests(MyJobsBase):
     def test_edit_user_require_post(self):
         """
         Tests editing a user
-        Require Post
+        Require POST
         """
         expected_user_pk = self.user.pk
 
-        # api_edit_user requires POST
         response = self.client.get(reverse('api_edit_user',
                                            args=[expected_user_pk]))
         output = json.loads(response.content)
@@ -348,7 +359,6 @@ class ManageUsersTests(MyJobsBase):
         """
         expected_user_pk = self.user.pk
 
-        # User must exist
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk + 1]))
         output = json.loads(response.content)
@@ -362,7 +372,6 @@ class ManageUsersTests(MyJobsBase):
         """
         expected_user_pk = self.user.pk
 
-        # api_edit_user requires at least one role
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk]))
         output = json.loads(response.content)
@@ -376,8 +385,7 @@ class ManageUsersTests(MyJobsBase):
         Edit user
         """
         expected_user_pk = self.user.pk
-
-        # Should be able to edit a user
+        
         data_to_post = {}
         data_to_post['assigned_roles[]'] = [self.role.name]
         response = self.client.post(reverse('api_edit_user',
