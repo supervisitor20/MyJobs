@@ -44,7 +44,7 @@ def guess_child_domain(host, origin, referer):
     raise DomainRelationshipException('no-child-info')
 
 
-def return_404(content="not found"):
+def return_404(return_message="not found"):
     """
     Return a HttpResponse with a status code of 404. This is used in lieu
     of raise Http404 due to middleware issues that were encountered. This
@@ -52,7 +52,7 @@ def return_404(content="not found"):
     :return: HttpResponse 404
     
     """
-    return HttpResponse(status=404, content)
+    return HttpResponse(status=404, content=return_message)
 
 
 def is_permitted_method(method):
