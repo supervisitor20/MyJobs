@@ -130,7 +130,7 @@ class TestReportConfiguration(MyReportsTestCase):
                 ColumnConfiguration(
                     column='tags',
                     format='comma_sep',
-                    filter_interface='search_multiselect',
+                    filter_interface='tags',
                     filter_display='Tags',
                     help=True),
             ])
