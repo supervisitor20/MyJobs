@@ -1,10 +1,10 @@
-from ubuntu:14.10
+from ubuntu:15.10
 
 env DEBIAN_FRONTEND=noninteractive
 
-run apt-get --yes install wget
-run wget --quiet http://archive.apache.org/dist/lucene/solr/5.1.0/solr-5.1.0.tgz
 run apt-get update
+run apt-get --yes install wget
+run wget http://archive.apache.org/dist/lucene/solr/5.1.0/solr-5.1.0.tgz
 run apt-cache search openjdk8
 run apt-get --yes install unzip openjdk-8-jre-headless
 

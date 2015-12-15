@@ -28,12 +28,18 @@ fi
 
 init() {
     initsolrdata
+    initmysqldata
     initrevproxycerts
 }
 
 initsolrdata() {
     docker build -t darrint/solrdata solrdata
     docker create --name solrdata darrint/solrdata true
+}
+
+initmysqldata() {
+    docker build -t darrint/mysqldata mysqldata
+    docker create --name mysqldata darrint/mysqldata true
 }
 
 initrevproxycerts() {
@@ -53,14 +59,15 @@ debugargs() {
 
 pull() {
     docker pull mysql:5.5
-    docker pull ubuntu:14.10
+    docker pull ubuntu:14.04
+    docker pull ubuntu:15.10
     docker pull jwilder/nginx-proxy
 }
 
 background() {
-     docker build \
-         -t darrint/solr \
-         solr
+    docker build \
+        -t darrint/solr \
+        solr
     docker build \
          -t darrint/revproxy \
          nginx-proxy
@@ -74,7 +81,7 @@ background() {
         --name mysql \
         -d \
         -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
-        -v $(pwd)/../../mysql/mysql:/var/lib/mysql \
+        --volumes-from mysqldata \
         --expose=3306 \
         -p 3306:3306 \
         mysql:5.5
@@ -96,14 +103,20 @@ backgroundstop() {
     docker rm revproxy || true
 }
 
+restartsecure() {
+    docker stop secure.my.jobs
+    docker rm secure.my.jobs
+    runsecure
+}
+
 maint() {
     docker run \
         --rm \
         --net=host \
         --volumes-from solrdata \
+        --volumes-from mysqldata \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
-        -v $(pwd)/../../mysql/mysql:/var/lib/mysql \
         -w=/MyJobs \
         -it \
         "$1" \
