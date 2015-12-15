@@ -352,6 +352,14 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
+        # User must exist
+        response = self.client.post(reverse('api_edit_user',
+                                            args=[expected_role_pk + 1]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertEqual(output["message"], "User does not exist.")
+
+
         # api_edit_user requires at least one role
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_role_pk]))
