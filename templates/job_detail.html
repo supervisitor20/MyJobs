@@ -32,20 +32,25 @@
         <h3>
           <span class="direct_jobListingCompany" itemprop="hiringOrganization" 
             itemscope itemtype="http://schema.org/Organization">
-          <span itemprop="name">{{the_job.company}}</span>
+            <span itemprop="name">{{the_job.company}}</span>
           </span>
           <span class="direct_highlightedText">
             <span itemprop="title">{{ the_job.title|cut:"?"|cut:"~" }}</span> in 
             <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">
               <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                {% if the_job.city != None %}
-                <span itemprop="addressLocality">{{ the_job.city }}</span>
+                {% if the_job.state_short %}
+                {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state_short }}</span>
+                {% else %}
+                    {% if the_job.city %}
+                    <span itemprop="addressLocality">{{ the_job.city }}</span>
+                    {% endif %}    
+                {% endif %}                
+                {% if the_job.country_short|lower == "usa" and the_job.state_short %}
+                    <meta itemprop="addressCountry" content="{{ the_job.country }}" />
+                {% else %}
+                    <span itemprop="addressCountry">{{ job.country }}</span>
                 {% endif %}
-                {% if the_job.state != None %}
-                <span itemprop="addressRegion">{{ the_job.state }}</span>
-                {% endif %} 
-                <span itemprop="addressCountry">{{ the_job.country }}</span>
-              </span>
+              </span>  
             </span>
           </span>
         </h3>
