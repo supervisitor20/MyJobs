@@ -1,17 +1,10 @@
 from django.core.urlresolvers import reverse
-# from django.core.urlresolvers import resolve,
 from django.conf import settings
-# from django.test.client import RequestFactory
-# from tastypie.models import create_api_key
-# from myjobs.models import User, Role, Activity
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
                                     ActivityFactory)
 from seo.tests.factories import CompanyFactory
-# from myjobs.tests.test_views import TestClient
 from setup import MyJobsBase
-# from random import randint
-# from myjobs.decorators import MissingActivity
 import json
 
 
@@ -334,9 +327,10 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["success"], "true")
         self.assertEqual(output["message"], "User deleted.")
 
-    def test_edit_user(self):
+    def test_edit_user_require_post(self):
         """
         Tests editing a user
+        Require Post
         """
         expected_user_pk = self.user.pk
 
@@ -347,12 +341,26 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
+    def test_edit_user_user_must_exist(self):
+        """
+        Tests editing a user
+        User must exist
+        """
+        expected_user_pk = self.user.pk
+
         # User must exist
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk + 1]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "User does not exist.")
+
+    def test_edit_user_user_must_have_role(self):
+        """
+        Tests editing a user
+        User must have role
+        """
+        expected_user_pk = self.user.pk
 
         # api_edit_user requires at least one role
         response = self.client.post(reverse('api_edit_user',
@@ -361,6 +369,13 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"],
                          "A user must be assigned to at least one role.")
+
+    def test_edit_user(self):
+        """
+        Tests editing a user
+        Edit user
+        """
+        expected_user_pk = self.user.pk
 
         # Should be able to edit a user
         data_to_post = {}
