@@ -777,6 +777,8 @@ def task_clear_bu_cache(buid, **kwargs):
 def task_update_solr(jsid, **kwargs):
     try:
         import_jobs.update_solr(jsid, **kwargs)
+        if kwargs.get('clear_cache', False):
+            task_clear_bu_cache.delay(buid=int(jsid), countdown=1500)
     except Exception as e:
         logging.error(traceback.format_exc(sys.exc_info()))
         raise task_update_solr.retry(exc=e)
@@ -795,7 +797,8 @@ def task_etl_to_solr(guid, buid, name):
 @task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)
 def task_priority_etl_to_solr(guid, buid, name):
     try:
-        import_jobs.update_job_source(guid, buid, name, clear_cache=True)
+        import_jobs.update_job_source(guid, buid, name)
+        task_clear_bu_cache.delay(buid=int(buid), countdown=1500)
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)

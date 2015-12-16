@@ -19,10 +19,10 @@ from seo_pysolr import Solr
 from xmlparse import DEv2JobFeed
 from seo.helpers import slices, create_businessunit
 from seo.models import BusinessUnit, Company
-import tasks
 from transform import hr_xml_to_json, make_redirect
 import re
 
+from import_jobs.solr import add_jobs, chunk, delete_by_guid
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'directseo.settings'
 FEED_FILE_PREFIX = "dseo_feed_"
 
 
-def update_job_source(guid, buid, name, clear_cache=False):
+def update_job_source(guid, buid, name):
     """Composed method for resopnding to a guid update."""
 
     assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid), \
@@ -71,9 +71,7 @@ def update_job_source(guid, buid, name, clear_cache=False):
     bu.associated_jobs = len(job_ids)
     bu.date_updated = datetime.datetime.utcnow()
     bu.save()
-    if clear_cache:
-        # Clear cache in 25 minutes to allow for solr replication
-        tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
+        
 
 
 def add_redirect(job, bu):
@@ -423,9 +421,6 @@ def update_solr(buid, download=True, force=True, set_title=False,
                                          updated=updated)
     bu.associated_jobs = len(jobs)
     bu.save()
-    if clear_cache:
-        # Clear cache in 25 minutes to allow for solr replication
-        tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
     #Update the Django database to reflect company additions and name changes
     add_company(bu)
     if delete_feed:
@@ -595,14 +590,7 @@ def _build_solr_delete_query(old_jobs):
     return delete_query
 
 
-def chunk(iterable, chunk_size=1024):
-    """
-    Create chunks from a list.
 
-    """
-    iterator = iter(iterable)
-    for first in iterator:
-        yield chain([first], islice(iterator, chunk_size - 1))
 
 
 def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
@@ -627,46 +615,3 @@ def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
     return expired
 
 
-def add_jobs(jobs, upload_chunk_size=1024):
-    """
-    Loads a solr-ready json list of jobs into solr.
-
-    inputs:
-        :jobs: A list of solr-ready, json-formatted jobs.
-
-    outputs:
-        The ids of jobs loaded into solr.
-    """
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-
-    # Chunk them
-    jobs = chunk(jobs, upload_chunk_size)
-    job_ids = list()
-    for job_group in jobs:
-        job_group = list(job_group)
-        conn.add(job_group)
-        job_ids.extend(j['id'] for j in job_group)
-    return job_ids
-
-
-def delete_by_guid(guids):
-    """
-    Removes a jobs from solr by guid.
-
-    inputs:
-        :guids: A list of guids
-
-    outputs:
-        The number of jobs that were requested to be deleted. This may
-        be higher than the number of actual jobs deleted if a guid
-        passed in did not correspond to a job in solr.
-    """
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    if not guids:
-        return 0
-    num_guids = len(guids)
-    guids = chunk(guids)
-    for guid_group in guids:
-        delete_str = " OR ".join(guid_group)
-        conn.delete(q="guid: (%s)" % delete_str)
-    return num_guids
