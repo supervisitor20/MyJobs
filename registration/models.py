@@ -211,7 +211,7 @@ class Invitation(models.Model):
                 reason = ("in order to help administer their recruitment and "
                           "outreach tools")
 
-        reason = " " if reason else "" + reason + "."
+        reason = (" " if reason else "") + reason + "."
 
         if activiation_profile.activation_key_expired():
             activiation_profile.reset_activation()
