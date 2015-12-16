@@ -48,19 +48,23 @@ class ManageUsersTests(MyJobsBase):
         description = first_result['fields']['description']
         self.assertIsInstance(description, unicode)
 
-    def test_create_role(self):
+    def test_create_role_require_post(self):
         """
         Tests creating a role
+        Requires POST
         """
-        expected_role_name = self.role.name
-
-        # api_create_role requires POST
         response = self.client.get(reverse('api_create_role'))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
-        # api_create_role requires a uniquely named role
+    def test_create_role_unique_role(self):
+        """
+        Tests creating a role
+        Roles must have a unique name per company
+        """
+        expected_role_name = self.role.name
+
         response = self.client.post(reverse('api_create_role'),
                                     data={'role_name': expected_role_name})
         output = json.loads(response.content)
@@ -68,7 +72,11 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "Another role with this name already exists.")
 
-        # Roles must have at least one activity
+    def test_create_role_require_activity(self):
+        """
+        Tests creating a role
+        Roles must have at least one activity
+        """
         data_to_post = {}
         data_to_post['role_name'] = "TEST ROLE"
         response = self.client.post(reverse('api_create_role'), data_to_post)
@@ -77,7 +85,10 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "Each role must have at least one activity.")
 
-        # A role with a unique name an one activity should be created just fine
+    def test_create_role(self):
+        """
+        Tests creating a role
+        """
         data_to_post = {}
         data_to_post['role_name'] = "TEST ROLE"
         data_to_post['assigned_activities[]'] = ['read role']
@@ -85,14 +96,13 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
-    def test_edit_role(self):
+    def test_edit_role_require_post(self):
         """
         Tests editing a role
+        Requires POST
         """
-
         expected_role_pk = self.role.pk
 
-        # api_create_role requires POST
         data_to_post = {}
         data_to_post['role_name'] = "NEW ROLE NAME"
         response = self.client.get(reverse('api_edit_role',
@@ -102,7 +112,13 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "POST method required.")
 
-        # api_edit_role requires at least one activity
+    def test_edit_role_require_activity(self):
+        """
+        Tests editing a role
+        Requires at least one actvity
+        """
+        expected_role_pk = self.role.pk
+
         data_to_post = {}
         data_to_post['role_name'] = "NEW ROLE NAME"
         response = self.client.post(reverse('api_edit_role',
@@ -113,7 +129,12 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "At least one activity must be assigned.")
 
-        # Should be able to edit a role
+    def test_edit_role(self):
+        """
+        Tests editing a role
+        """
+        expected_role_pk = self.role.pk
+
         data_to_post = {}
         data_to_post['role_name'] = "NEW ROLE NAME"
         data_to_post['assigned_activities[]'] = ['read role']
@@ -123,25 +144,34 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
-    def test_delete_role(self):
+    def test_delete_role_require_post(self):
         """
         Tests deleting a role
+        Requires POST
         """
         expected_role_pk = self.role.pk
 
-        # api_delete_role requires POST
         response = self.client.get(reverse('api_delete_role',
                                            args=[expected_role_pk]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
         self.assertEqual(output["message"], "DELETE method required.")
 
-        # api_delete_role an arg of an existing role
-        # Role 100000 doest not exist
+    def test_delete_role_role_most_exist(self):
+        """
+        Tests deleting a role
+        Role must exist
+        """
         response = self.client.delete(reverse('api_delete_role',
                                               args=[100000]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
+
+    def test_delete_role(self):
+        """
+        Tests deleting a role
+        """
+        expected_role_pk = self.role.pk
 
         # Should be able to delete an existing role
         response = self.client.delete(reverse('api_delete_role',
@@ -149,10 +179,11 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
 
-    def test_get_roles(self):
+    def test_get_roles_contain_roles(self):
         """
         Tests that the Roles API returns the proper data in the
         proper form
+        Contains role information
         """
         expected_role_pk = self.role.pk
 
@@ -166,6 +197,18 @@ class ManageUsersTests(MyJobsBase):
         role_name = first_result['role']['name']
         self.assertIsInstance(role_name, unicode)
 
+    def test_get_roles_contain_activities(self):
+        """
+        Tests that the Roles API returns the proper data in the
+        proper form
+        Contains activities information
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_roles'))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
+
         activities = first_result['activities']
 
         activities_available = json.loads(activities['available'])
@@ -175,6 +218,18 @@ class ManageUsersTests(MyJobsBase):
         activities_assigned = json.loads(activities['assigned'])
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
+
+    def test_get_roles_contain_users(self):
+        """
+        Tests that the Roles API returns the proper data in the
+        proper form
+        Contains users information
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_roles'))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
 
         users = first_result['users']
 
@@ -190,10 +245,11 @@ class ManageUsersTests(MyJobsBase):
         users_assigned_email = users_assigned[0]['fields']['email']
         self.assertIsInstance(users_assigned_email, unicode)
 
-    def test_get_specific_role(self):
+    def test_get_specific_role_contains_role(self):
         """
         Tests that the Roles API returns the proper (specific role) data in the
         proper form
+        Contain role
         """
         expected_role_pk = self.role.pk
 
@@ -208,6 +264,19 @@ class ManageUsersTests(MyJobsBase):
         role_name = first_result['role']['name']
         self.assertIsInstance(role_name, unicode)
 
+    def test_get_specific_role_contains_activities(self):
+        """
+        Tests that the Roles API returns the proper (specific role) data in the
+        proper form
+        Contain activities
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_specific_role',
+                                           args=[expected_role_pk]))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
+
         activities = first_result['activities']
 
         activities_available = json.loads(activities['available'])
@@ -217,6 +286,19 @@ class ManageUsersTests(MyJobsBase):
         activities_assigned = json.loads(activities['assigned'])
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
+
+    def test_get_specific_role_contains_users(self):
+        """
+        Tests that the Roles API returns the proper (specific role) data in the
+        proper form
+        Contain users
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_specific_role',
+                                           args=[expected_role_pk]))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
 
         users = first_result['users']
 
@@ -385,7 +467,7 @@ class ManageUsersTests(MyJobsBase):
         Edit user
         """
         expected_user_pk = self.user.pk
-        
+
         data_to_post = {}
         data_to_post['assigned_roles[]'] = [self.role.name]
         response = self.client.post(reverse('api_edit_user',
