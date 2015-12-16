@@ -205,12 +205,11 @@ class Invitation(models.Model):
 
         if not reason:
             if self.added_saved_search:
-                reason = ("in order to begin receiving their "
-                                     "available job opportunities on a "
-                                     "regular basis")
+                reason = ("in order to begin receiving their available job "
+                          "opportunities on a regular basis")
             elif self.added_permission:
-                reason = ("in order to help administer their "
-                                     "recruitment and outreach tools")
+                reason = ("in order to help administer their recruitment and "
+                          "outreach tools")
 
         if activiation_profile.activation_key_expired():
             activiation_profile.reset_activation()
@@ -218,7 +217,7 @@ class Invitation(models.Model):
 
         context = {'invitation': self,
                    'activation_key': activiation_profile.activation_key,
-                   'reason': reason + "."}
+                   'reason': "{}{}.".format(" " if reason else "", reason)}
 
         text_only = False
         if self.added_saved_search:
