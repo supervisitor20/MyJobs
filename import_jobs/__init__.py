@@ -37,9 +37,9 @@ FEED_FILE_PREFIX = "dseo_feed_"
 def update_job_source(guid, buid, name):
     """Composed method for resopnding to a guid update."""
 
-    assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid), \
+    assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
            "%s is not a valid guid" % guid
-    assert re.match(r'^\d+$', str(buid),  "%s is not a valid buid" % buid)
+    assert re.match(r'^\d+$', str(buid)),  "%s is not a valid buid" % buid
 
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
