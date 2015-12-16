@@ -1797,6 +1797,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         all work.
 
         """
+        SeoSite.objects.get(id=1).delete()
         ats = factories.ATSSourceCodeFactory.build()
         ats.save()
         gac = factories.GACampaignFactory.build()
