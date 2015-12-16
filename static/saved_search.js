@@ -5,9 +5,9 @@ var base_url = 'https://secure.my.jobs';
 var ss_url = encodeURIComponent(window.location.href);
 var most_recent_html = '';
 
-$(document).ready(function(){
-    get_default_widget_html(false);
-});
+//$(document).ready(function(){
+//    get_default_widget_html(false);
+//});
 
 function handle_error() {
     // Fills with the most recent text and then overwrites applicable parts
@@ -33,7 +33,7 @@ function save_search() {
     // Otherwise, uses the currently provided user to create a saved search.
 
     if (user_email != 'None' && user_email != 'undefined' && user_email) {
-        $('.saved-search-form').html('<em class="saved-search-widget-loading">Saving this search</em>');
+        $('#saved-search-control').html('<em class="saved-search-widget-loading"> Saving </em>');
         create_saved_search();
     }
     else {
@@ -48,24 +48,24 @@ function save_search() {
     }
 }
 
-function reload_default_widget(data) {
-    if(data.error) {
-        handle_error();
-    }
-    else {
-        get_default_widget_html(true);
-    }
-}
-
-function get_default_widget_html(success) {
-    if(success) {
-        ajax_url = base_url + '/saved-search/widget/?callback=fill&success=' + user_email + '&url=' + ss_url;
-    }
-    else {
-        ajax_url = base_url + '/saved-search/widget/?callback=fill&url=' + ss_url;
-    }
-    jsonp_ajax_call(ajax_url);
-}
+//function reload_default_widget(data) {
+//    if(data.error) {
+//        handle_error();
+//    }
+//    else {
+//        get_default_widget_html(true);
+//    }
+//}
+//
+//function get_default_widget_html(success) {
+//    if(success) {
+//        ajax_url = base_url + '/saved-search/widget/?callback=fill&success=' + user_email + '&url=' + ss_url;
+//    }
+//    else {
+//        ajax_url = base_url + '/saved-search/widget/?callback=fill&url=' + ss_url;
+//    }
+//    jsonp_ajax_call(ajax_url);
+//}
 
 
 function create_saved_search() {
@@ -77,25 +77,25 @@ function create_user() {
 }
 
 
-//function jsonp_ajax_call(ajax_url) {
-//    $.ajax({
-//        url: ajax_url,
-//        dataType: "jsonp",
-//        type: "GET",
-//        crossDomain: true,
-//        jsonp: false,
-//        processData: false,
-//        headers: {
-//            'Content-Type': "application/json",
-//            Accept: 'text/javascript'
-//        },
-//        complete: function() {
-//            $('#saved-search-email').keyup(function(event) {
-//                var ENTER = 13; // The keycode of the enter button
-//                if (event.which === ENTER) {
-//                    save_search();
-//                }
-//            });
-//        }
-//    });
-//}
+function jsonp_ajax_call(ajax_url) {
+    $.ajax({
+        url: ajax_url,
+        dataType: "jsonp",
+        type: "GET",
+        crossDomain: true,
+        jsonp: false,
+        processData: false,
+        headers: {
+            'Content-Type': "application/json",
+            Accept: 'text/javascript'
+        },
+        complete: function() {
+            $('#saved-search-email').keyup(function(event) {
+                var ENTER = 13; // The keycode of the enter button
+                if (event.which === ENTER) {
+                    save_search();
+                }
+            });
+        }
+    });
+}
