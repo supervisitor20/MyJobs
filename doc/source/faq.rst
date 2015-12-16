@@ -45,6 +45,12 @@ User Management
     and select a company, you should see a section called "App-Level Access"
     near the top. Note that it could take a moment for the page to load.
 
+  I'm already a CompanyUser, so why don't I have an "Employer" menu?
+    Because you don't have permission to access anything that would show up in
+    the employer menu. With roles enabled, CompanyUser means absolutely
+    nothing. It's only reason for existing is to support the old system, which
+    is still in use in production.
+
 
 Documentation
 =============
