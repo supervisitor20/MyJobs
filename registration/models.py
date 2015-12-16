@@ -211,13 +211,16 @@ class Invitation(models.Model):
                 reason = ("in order to help administer their recruitment and "
                           "outreach tools")
 
+        reason = " " if reason else "" + reason + "."
+
         if activiation_profile.activation_key_expired():
             activiation_profile.reset_activation()
-            ap = ActivationProfile.objects.get(pk=activiation_profile.pk)
+            application_profile  = ActivationProfile.objects.get(
+                pk=activiation_profile.pk)
 
         context = {'invitation': self,
                    'activation_key': activiation_profile.activation_key,
-                   'reason': "{}{}.".format(" " if reason else "", reason)}
+                   'reason': reason}
 
         text_only = False
         if self.added_saved_search:
