@@ -18,14 +18,14 @@
                             {% endif %}
                             <span class="hiringPlace" itemscope itemtype="http://schema.org/Place">
                                 <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                                    {% if job.state %}
+                                    {% if job.state_short %}
                                         {% if job.city %}<span itemprop="addressLocality">{{ job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ job.state_short }}</span>
                                     {% else %}
                                         {% if job.city %}
                                             <span itemprop="addressLocality">{{ job.city }}</span>
                                         {% endif %}
                                     {% endif %}
-                                    {% if job.country_short|lower == "usa" and job.state %}
+                                    {% if job.country_short|lower == "usa" and job.state_short %}
                                         <meta itemprop="addressCountry" content="{{ job.country }}" />
                                     {% else %}
                                         <span itemprop="addressCountry">{{ job.country }}</span>

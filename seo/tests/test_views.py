@@ -17,6 +17,7 @@ from django.contrib.redirects.models import Redirect
 from django.template import Template, Context
 from django.template import RequestContext as TemplateContext
 from django.test.client import RequestFactory
+from django.test.utils import override_settings
 from django.utils.http import urlquote
 from django.core.urlresolvers import reverse
 
@@ -1128,7 +1129,6 @@ class TemplateTestCase(DirectSEOTestCase):
         resp = template.render(context)
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
-
     def test_xss_job_listing(self):
         settings.SITE_TITLE = "Acme"
         settings.SITE_DESCRIPTION = "test"
@@ -1715,6 +1715,81 @@ class SeoViewsTestCase(DirectSEOTestCase):
         test_search_not(self)
         test_title_boost(self)
 
+    def test_job_detail_heading(self):
+        """
+        Test to make sure job location is printed with commas, appropriately.
+        """
+        SeoSite.objects.get(id=1).delete()
+        ats = factories.ATSSourceCodeFactory.build()
+        ats.save()
+        gac = factories.GACampaignFactory.build()
+        gac.save()
+        site = factories.SeoSiteFactory.build(
+            google_analytics_campaigns=gac,
+            view_sources=factories.ViewSourceFactory(id=1),
+            id=1)
+        site.save()
+        site.ats_source_codes.add(ats),
+        site.special_commitments.add(factories.SpecialCommitmentFactory(id=1))
+        site.save()
+        view_source = factories.ViewSourceFactory.build()
+        view_source.save()
+        special_commitment = factories.SpecialCommitmentFactory.build()
+        special_commitment.save()
+        
+        # Job lookup by guid, check for full location.
+        resp = self.client.get(
+            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress"><span itemprop="addressLocality">Indianapolis</span>, <span itemprop="addressRegion">Indiana</span><meta itemprop="addressCountry" content="United States')
+        
+        # Job lookup by guid, check for empty state case.
+        self.conn.delete(q="*:*")
+        solr_docs_copy = deepcopy(self.solr_docs)
+        kwargs1 = {
+            'id': 'seo.joblisting.1',
+            'state': None
+        }
+        solr_docs_copy[0].update(kwargs1)
+        self.conn.add(solr_docs_copy)
+        resp = self.client.get(
+            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress"><span itemprop="addressLocality">Indianapolis</span><span itemprop="addressCountry">United States</span>')
+        
+        # Job lookup by guid, check for empty city case.
+        self.conn.delete(q="*:*")
+        solr_docs_copy = deepcopy(self.solr_docs)
+        kwargs1 = {
+            'id': 'seo.joblisting.1',
+            'city': ''
+        }
+        solr_docs_copy[0].update(kwargs1)
+        self.conn.add(solr_docs_copy)
+        resp = self.client.get(
+            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress"><span itemprop="addressRegion">Indiana</span><meta itemprop="addressCountry" content="United States')
+        
+        # Job lookup by guid, check for empty city and state case.
+        self.conn.delete(q="*:*")
+        solr_docs_copy = deepcopy(self.solr_docs)
+        kwargs1 = {
+            'id': 'seo.joblisting.1',
+            'city': None,
+            'state':''
+        }
+        solr_docs_copy[0].update(kwargs1)
+        self.conn.add(solr_docs_copy)
+        resp = self.client.get(
+            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress"><span itemprop="addressCountry">United States</span></span>')
+
     def test_job_detail(self):
         """
         Test that job detail pages return no server errors and that objects
@@ -1759,6 +1834,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Indianapolis, Indiana, United States')
 
         # etree.parse breaks here; BeautifulSoup does not
         soup = BeautifulSoup(resp.content)
