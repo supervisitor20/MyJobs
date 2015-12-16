@@ -59,10 +59,7 @@
 
 {% if default_jobs or featured_jobs %}
     {% if "network" in site_tags or site_config.show_saved_search_widget %}
-        <script src="//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js"></script>
-        <div id="direct-saved-search-box" class="direct_rightColBox direct-action-box">
-            <div id="de-myjobs-widget"></div>
-        </div>
+    <div data-secure-block-id="saved-search-test"></div>
     {% endif %}
     <a name="filters"></a>  
     <div id="direct_shareDiv" class="direct_rightColBox direct_shareSolo" role="menu">
