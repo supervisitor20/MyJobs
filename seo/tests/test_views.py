@@ -1835,7 +1835,6 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'Indianapolis, Indiana, United States')
 
         # etree.parse breaks here; BeautifulSoup does not
         soup = BeautifulSoup(resp.content)
