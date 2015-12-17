@@ -1734,11 +1734,12 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in full location test")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressLocality">Indianapolis</span>, '
                                   '<span itemprop="addressRegion">Indiana</span>'
-                                  '<meta itemprop="addressCountry" content="United States')
+                                  '<meta itemprop="addressCountry" content="United States'
+                                  , msg_prefix='Full location test is failing')
         
         # Job lookup by guid, check for empty state case.
         self.conn.delete(q="*:*")
@@ -1752,10 +1753,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in test for no state")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressLocality">Indianapolis</span>'
-                                  '<span itemprop="addressCountry">United States</span>')
+                                  '<span itemprop="addressCountry">United States</span>'
+                                  , msg_prefix='Location without state test is failing')
         
         # Job lookup by guid, check for empty city case.
         self.conn.delete(q="*:*")
@@ -1769,10 +1771,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in test for no city")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressRegion">Indiana</span>'
-                                  '<meta itemprop="addressCountry" content="United States')
+                                  '<meta itemprop="addressCountry" content="United States'
+                                  , msg_prefix='Location without city test is failing')
         
         # Job lookup by guid, check for empty city and state case.
         self.conn.delete(q="*:*")
@@ -1787,9 +1790,10 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in test for no city or state")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
-                                  '<span itemprop="addressCountry">United States</span></span>')
+                                  '<span itemprop="addressCountry">United States</span></span>'
+                                  , msg_prefix='Location without city or state test is failing')
 
     def test_job_detail(self):
         """
