@@ -45,7 +45,7 @@ export class Container extends Component {
           <div className="col-sm-12">
             <div className="breadcrumbs">
               <span>
-                Non-User Outreach
+                Non-User Outreach Inbox Management
               </span>
             </div>
           </div>
