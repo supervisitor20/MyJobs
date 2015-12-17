@@ -1735,9 +1735,9 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'\
-                                  '<span itemprop="addressLocality">Indianapolis</span>, '\
-                                  '<span itemprop="addressRegion">Indiana</span>'\
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
+                                  '<span itemprop="addressLocality">Indianapolis</span>, '
+                                  '<span itemprop="addressRegion">Indiana</span>'
                                   '<meta itemprop="addressCountry" content="United States')
         
         # Job lookup by guid, check for empty state case.
@@ -1753,8 +1753,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'\
-                                  '<span itemprop="addressLocality">Indianapolis</span>'\
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
+                                  '<span itemprop="addressLocality">Indianapolis</span>'
                                   '<span itemprop="addressCountry">United States</span>')
         
         # Job lookup by guid, check for empty city case.
@@ -1770,8 +1770,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'\
-                                  '<span itemprop="addressRegion">Indiana</span>'\
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
+                                  '<span itemprop="addressRegion">Indiana</span>'
                                   '<meta itemprop="addressCountry" content="United States')
         
         # Job lookup by guid, check for empty city and state case.
@@ -1788,7 +1788,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'\
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressCountry">United States</span></span>')
 
     def test_job_detail(self):
