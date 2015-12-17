@@ -140,6 +140,8 @@ def get_url_prefix_qc_staging(request):
     :return: url prefix of qc or staging, if applicable, otherwise empty string
 
     """
+    if not request.META.get('HTTP_HOST'):
+        return ''
     host_prefix = request.META.get('HTTP_HOST').split('.', 1)[0]
     return host_prefix if host_prefix in settings.ENV_URL_PREFIXES else ''
 

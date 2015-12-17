@@ -23,6 +23,8 @@ def extract_hostname(url):
 
 
 def remove_test_prefix(url):
+    if not url:
+        return url
     url_split = url.split('.', 1)
     return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
 
@@ -30,7 +32,7 @@ def remove_test_prefix(url):
 def parse_request_meta(meta):
     method = meta.get('REQUEST_METHOD', '')
 
-    origin = extract_hostname('HTTP_ORIGIN')
+    origin = extract_hostname(meta.get('HTTP_ORIGIN'))
 
     referer = extract_hostname(meta.get('HTTP_REFERER'))
 
