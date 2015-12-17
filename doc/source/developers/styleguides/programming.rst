@@ -2,11 +2,6 @@
 Programming Guide
 =================
 
-.. contents::
-  :depth: 2
-  :local:
-  :backlinks: entry
-
 Goal of this Guide
 ==================
 

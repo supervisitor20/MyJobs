@@ -105,6 +105,15 @@ def verify_cross_site_request(site_loader, method, host_site, origin,
 
 
 def cross_site_verify(fn):
+    """
+    Decorator for use with cross site verified APIs. In the event of a request,
+    this function verifies that the host site is a parent of the origin
+    (calling) site.
+
+    :param fn: wrapped API function
+    :return: wrapped function call or 404 if error
+
+    """
     @wraps(fn)
     def verify(request):
         method, origin, referer, xrw = (

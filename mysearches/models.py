@@ -10,7 +10,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.template.loader import render_to_string
 import uuid
 
-from myjobs.models import User
 from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
                                 url_sort_options)
@@ -79,6 +78,10 @@ class SavedSearch(models.Model):
 
     # Custom messages were created for PartnerSavedSearches
     custom_message = models.TextField(max_length=300, blank=True, null=True)
+
+    text_only = models.BooleanField(
+        default=False, blank=True,
+        verbose_name=_("Send as a plain text email"))
 
     @property
     def content_type(self):
@@ -199,7 +202,7 @@ class SavedSearch(models.Model):
                     send_email(message, email_type=settings.SAVED_SEARCH,
                                recipients=[self.email],
                                label=self.label.strip(),
-                               headers=headers)
+                               headers=headers, text_only=self.text_only)
                 except Exception as e:
                     log_kwargs['was_sent'] = False
                     log_kwargs['reason'] = getattr(e, 'smtp_error', e.message)
@@ -542,7 +545,7 @@ class PartnerSavedSearch(SavedSearch):
                               "of this saved search.")
     unsubscribed = models.BooleanField(default=False)
     tags = models.ManyToManyField('mypartners.Tag', null=True)
-    created_by = models.ForeignKey(User, editable=False,
+    created_by = models.ForeignKey('myjobs.User', editable=False,
                                    related_name='created_by',
                                    on_delete=models.SET_NULL,
                                    null=True)
@@ -630,7 +633,7 @@ class SavedSearchLog(models.Model):
                                        "SendGrid may not have responded yet - "
                                        "give it a few minutes."))
     reason = models.TextField()
-    recipient = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    recipient = models.ForeignKey('myjobs.User', on_delete=models.SET_NULL, null=True)
     recipient_email = models.EmailField(max_length=255, blank=False)
     new_jobs = models.IntegerField()
     backfill_jobs = models.IntegerField()

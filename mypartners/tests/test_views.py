@@ -856,6 +856,7 @@ class SearchEditTests(MyPartnersTestCase):
                                                 created_by=self.staff_user,
                                                 user=self.contact.user,
                                                 partner=self.partner,)
+
     def test_render_new_form(self):
         url = self.get_url(company=self.company.id,
                            partner=self.partner.id)
@@ -933,7 +934,8 @@ class SearchEditTests(MyPartnersTestCase):
         error_msg = 'That URL does not contain feed information'
         self.assertIn(error_msg, errors['url'])
 
-    def test_create_new_saved_search(self):
+    def _create_new_saved_search(self, **kwargs):
+        mail.outbox = []
         self.search.delete()
         url = self.get_url('partner_savedsearch_save',
                            company=self.company.id,
@@ -950,12 +952,14 @@ class SearchEditTests(MyPartnersTestCase):
                 'jobs_per_email': 5,
                 'partner_message': '',
                 'notes': ''}
+        data.update(kwargs)
         post = data.copy()
         post.update({'company': self.company.id,
                      'partner': self.partner.id})
 
         response = self.client.post(url, post)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200,
+                         "partner_savedsearch_save view did not return a 200")
 
         # Set the translated values,
         data.update({'day_of_month': None,
@@ -966,7 +970,28 @@ class SearchEditTests(MyPartnersTestCase):
                              msg="%s != %s for field %s" %
                                  (v, getattr(search, k), k))
 
-        self.assertEqual(search.last_action_time.date(), datetime.now().date())
+        self.assertEqual(search.last_action_time.date(), datetime.now().date(),
+                         ("Upon sending a saved search, its last_action_time "
+                          "should be updated to today"))
+
+    def test_create_new_saved_search(self):
+        """
+        Test initial partner saved search invitations as HTML.
+        """
+        self._create_new_saved_search()
+        body = mail.outbox.pop().body
+        self.assertTrue(BeautifulSoup(body, 'html.parser').find(),
+                        "This saved search email contains no html but should")
+
+    def test_create_text_only_saved_search(self):
+        """
+        Test initial partner saved search invitations as plain text.
+        """
+        self._create_new_saved_search(text_only=True)
+        body = mail.outbox.pop().body
+        self.assertFalse(BeautifulSoup(body, 'html.parser').find(),
+                         "This saved search email contains "
+                         "html but should not")
 
     def test_update_existing_saved_search(self):
         """

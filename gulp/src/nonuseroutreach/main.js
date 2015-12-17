@@ -1,3 +1,4 @@
+import 'babel/polyfill';
 import {installPolyfills} from '../util/polyfills.js';
 import Api from './api';
 import {getCsrf} from 'util/cookie';
