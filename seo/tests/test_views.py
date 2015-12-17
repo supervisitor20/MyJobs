@@ -1740,13 +1740,13 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                   '<span itemprop="addressRegion">Indiana</span>'
                                   '<meta itemprop="addressCountry" content="United States'
                                   , msg_prefix='Full location test is failing')
-        
+
         # Job lookup by guid, check for empty state case.
         self.conn.delete(q="*:*")
         solr_docs_copy = deepcopy(self.solr_docs)
         kwargs1 = {
             'id': 'seo.joblisting.1',
-            'state': None
+            'state': ''
         }
         solr_docs_copy[0].update(kwargs1)
         self.conn.add(solr_docs_copy)
