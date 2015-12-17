@@ -79,20 +79,38 @@ class BlockView(View):
         setattr(self, 'page', page)
 
 
+def are_secure_blocks_enabled(request):
+    """
+    Temporary function to conditionally enable secure widgets/disable their
+    counterparts based on whether or not the user signed in is staff
+    :param request:
+    :return: True if staff/widgets unrestricted, false if restricted and not
+        staff
+
+    """
+    if (not settings.RESTRICT_SECURE_BLOCKS_TO_STAFF) or request.user.is_staff:
+        return True
+    return False
+
+
 # The django csrf exemption should stay first in this list.
 @django_csrf_exempt
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
     """
-    Attempt to retrieve blocks objects for all items in the blocks element of the
-    request body. secured by cross site verification wrapper
+    Attempt to retrieve blocks objects for all items in the blocks element of
+    the request body. secured by cross site verification wrapper. Dependent on
+    are_secure_blocks_enabled check
 
     :url: /secure-blocks/
     :param request: ajax request potentially containing array of element ids for blocks
     :return: dictionary containing all matched blocks or Suspicious Operation (400)
 
     """
+    if not are_secure_blocks_enabled(request):
+        raise SuspiciousOperation("Secure Blocks only enabled for staff users")
+
     try:
         if request.method == 'POST':
             blocks = json.loads(request.body)[u'blocks']

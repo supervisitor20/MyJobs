@@ -19,13 +19,18 @@ def extract_hostname(url):
     if url is None:
         return None
     else:
-        return urlparse(url).hostname
+        return remove_test_prefix(urlparse(url).hostname)
+
+
+def remove_test_prefix(url):
+    url_split = url.split('.', 1)
+    return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
 
 
 def parse_request_meta(meta):
     method = meta.get('REQUEST_METHOD', '')
 
-    origin = extract_hostname(meta.get('HTTP_ORIGIN'))
+    origin = extract_hostname('http://qc.www.my.jobs/')
 
     referer = extract_hostname(meta.get('HTTP_REFERER'))
 

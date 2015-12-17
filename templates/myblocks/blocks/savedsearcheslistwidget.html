@@ -4,7 +4,7 @@
     <strong>Searches</strong>
     <ul>
         {% for search in saved_searches|slice:":5" %}
-        <li><a href="{{search.url}}">{{search.label}}</a> - {{search.last_sent|default:"Not yet sent"}}</li>
+        <li><a href="{{ search.url }}">{{ search.label }}</a> - Sent: {{ search.last_sent|default:"Never" }}</li>
         {% endfor %}
     </ul>
 {% if saved_searches.count > 5 %}
