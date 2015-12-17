@@ -21,7 +21,9 @@ Preparation
 
 * Clone MyJobs repo.
 * Add these to the root of the repo (get from another developer):
+
   * Permanently:
+  
     * Settings.py
 
     * Dev_settings.py
@@ -29,6 +31,7 @@ Preparation
     * Secrets.py
 
   * Temporarily:
+  
     * Dump of development MySQL database (named dbbackup.sql). For example:
 
       ```
