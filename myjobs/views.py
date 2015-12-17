@@ -655,22 +655,26 @@ def api_get_roles(request):
         # This company has access to various apps by means of multiple
         # app_access_id's
         # Retrieve all activities with these app_access_id's
-        available_activities = \
-            Activity.objects.filter(app_access__in=company.app_access.all())
-        ctx[role_id]['activities']['available'] = \
-            serializers.serialize("json", available_activities,
-                                  fields=('name', 'description'))
+        available_activities = Activity.objects.filter(
+            app_access__in=company.app_access.all())
+        ctx[role_id]['activities']['available'] = serializers.serialize(
+            "json",
+            available_activities,
+            fields=('name', 'description'))
         # Retrieve all activities assigned to this role
         assigned_activities = role.activities.all()
-        ctx[role_id]['activities']['assigned'] = \
-            serializers.serialize("json", assigned_activities,
-                                  fields=('name', 'description'))
+        ctx[role_id]['activities']['assigned'] = serializers.serialize(
+            "json",
+            assigned_activities,
+            fields=('name', 'description'))
 
         # Retrieve users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
         ctx[role_id]['users'] = {}
-        ctx[role_id]['users']['assigned'] = \
-            serializers.serialize("json", users_assigned, fields=('email'))
+        ctx[role_id]['users']['assigned'] = serializers.serialize(
+            "json",
+            users_assigned,
+            fields=('email'))
 
         # Retrieve users that can be assigned to this role
         # This is simply a list of all users already assigned to roles
@@ -683,8 +687,10 @@ def api_get_roles(request):
             for user in users:
                 if user not in users_available:
                     users_available.append(user)
-        ctx[role_id]['users']['available'] = \
-            serializers.serialize("json", users_available, fields=('email'))
+        ctx[role_id]['users']['available'] = serializers.serialize(
+            "json",
+            users_available,
+            fields=('email'))
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -719,23 +725,26 @@ def api_get_specific_role(request, role_id=0):
     # This company has access to various apps by means of multiple
     # app_access_id's
     # Retrieve all activities with these app_access_id's
-    available_activities = \
-        Activity.objects.filter(app_access__in=company.app_access.all())
-    ctx[role_id]['activities']['available'] = \
-        serializers.serialize("json", available_activities,
-                              fields=('name', 'description'))
+    available_activities = Activity.objects.filter
+    (app_access__in=company.app_access.all())
+    ctx[role_id]['activities']['available'] = serializers.serialize(
+        "json",
+        available_activities,
+        fields=('name', 'description'))
     # Retrieve all activities assigned to this role
     assigned_activities = role[0].activities.all()
-    ctx[role_id]['activities']['assigned'] = \
-        serializers.serialize("json",
-                              assigned_activities,
-                              fields=('name', 'description'))
+    ctx[role_id]['activities']['assigned'] = serializers.serialize(
+        "json",
+        assigned_activities,
+        fields=('name', 'description'))
 
     # Retrieve users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)
     ctx[role_id]['users'] = {}
-    ctx[role_id]['users']['assigned'] = \
-        serializers.serialize("json", users_assigned, fields=('email'))
+    ctx[role_id]['users']['assigned'] = serializers.serialize(
+        "json",
+        users_assigned,
+        fields=('email'))
 
     # Retrieve users that can be assigned to this role
     # This is simply a list of all users already assigned to roles associated
@@ -748,8 +757,10 @@ def api_get_specific_role(request, role_id=0):
         for user in users:
             if user not in users_available:
                 users_available.append(user)
-    ctx[role_id]['users']['available'] = \
-        serializers.serialize("json", users_available, fields=('email'))
+    ctx[role_id]['users']['available'] = serializers.serialize(
+        "json",
+        users_available,
+        fields=('email'))
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -869,9 +880,9 @@ def api_edit_role(request, role_id=0):
         # INPUT - role_name
         role_name = request.POST.get("role_name", "")
         # Role names must be unique
-        matching_roles = Role.objects \
-                             .filter(name=role_name, company=company) \
-                             .exclude(pk=role_id)
+        matching_roles = Role.objects.filter(
+            name=role_name,
+            company=company).exclude(pk=role_id)
 
         if matching_roles.exists():
             ctx["success"] = "false"
@@ -1063,13 +1074,16 @@ def api_get_specific_user(request, user_id=0):
     # Available Roles (constrained by company)
     ctx[user[0].id]["roles"] = {}
     available_roles = Role.objects.filter(company=company)
-    ctx[user[0].id]["roles"]["available"] = \
-        serializers.serialize("json", available_roles)
+    ctx[user[0].id]["roles"]["available"] = serializers.serialize(
+        "json",
+        available_roles)
 
     # Assigned Roles
     roles_assigned_to_user = user[0].roles.all()
-    ctx[user[0].id]["roles"]["assigned"] = \
-        serializers.serialize("json", roles_assigned_to_user, fields=('name'))
+    ctx[user[0].id]["roles"]["assigned"] = serializers.serialize(
+        "json",
+        roles_assigned_to_user,
+        fields=('name'))
 
     # Status
     # TODO: This is NOT the same as status
