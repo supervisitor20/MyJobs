@@ -170,7 +170,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
         with open(path) as _f:
             try:
                 yield etree.fromstring(_f.read())
-            except Exception, e:
+            except Exception as e:
                 logger.error("Unable to parse XML document for job %s", path)
                 logger.exception(e)
                 raise
