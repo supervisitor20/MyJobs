@@ -725,8 +725,8 @@ def api_get_specific_role(request, role_id=0):
     # This company has access to various apps by means of multiple
     # app_access_id's
     # Retrieve all activities with these app_access_id's
-    available_activities = Activity.objects.filter
-    (app_access__in=company.app_access.all())
+    available_activities = Activity.objects.filter(
+        app_access__in=company.app_access.all())
     ctx[role_id]['activities']['available'] = serializers.serialize(
         "json",
         available_activities,
