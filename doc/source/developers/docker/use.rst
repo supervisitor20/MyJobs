@@ -20,11 +20,8 @@ Preparation
 =============
 
 * Clone MyJobs repo.
-
 * Add these to the root of the repo (get from another developer):
-
   * Permanently:
-
     * Settings.py
 
     * Dev_settings.py
@@ -32,7 +29,6 @@ Preparation
     * Secrets.py
 
   * Temporarily:
-
     * Dump of development MySQL database (named dbbackup.sql). For example:
 
       ```
@@ -47,7 +43,7 @@ Preparation
       ```
       cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
       ```
-      
+
       If you make a dump from a newer version of Solr than what is in production
       you're going to have a bad time.
 
