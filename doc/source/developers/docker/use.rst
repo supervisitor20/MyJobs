@@ -34,16 +34,20 @@ Preparation
   * Temporarily:
 
     * Dump of development MySQL database (named dbbackup.sql). For example:
+
       ```
       mysqldump -u root -p --all-databases > dbbackup.sql;
       ```
+
       If you make a dump from a newer version of MySQL than what is in production
       you're going to have a bad time.
 
     * An archive of a working Solr configuration. For example:
+
       ```
       cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
       ```
+      
       If you make a dump from a newer version of Solr than what is in production
       you're going to have a bad time.
 
