@@ -979,6 +979,18 @@ class ViewTests(PostajobTestBase):
                          data=self.job_form_data, follow=True)
         self.assertEqual(JobLocation.objects.count(), 1)
 
+    def test_that_location_is_required(self):
+        """User should not be able to submit a job form without a location."""
+
+        # remove locations from the form
+        self.job_form_data.pop('form-0-city')
+        self.job_form_data.pop('form-0-state')
+        self.job_form_data.pop('form-0-country')
+        self.client.post(reverse('job_add'), data=self.job_form_data)
+        self.assertEqual(Job.objects.count(), 0)
+        self.assertEqual(JobLocation.objects.count(), 0)
+
+
     def test_purchasedjob_form(self):
         purchased_product = PurchasedProductFactory(
             product=self.product, owner=self.company)
