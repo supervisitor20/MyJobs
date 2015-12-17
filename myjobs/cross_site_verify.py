@@ -30,7 +30,7 @@ def remove_test_prefix(url):
 def parse_request_meta(meta):
     method = meta.get('REQUEST_METHOD', '')
 
-    origin = extract_hostname('http://qc.www.my.jobs/')
+    origin = extract_hostname('HTTP_ORIGIN')
 
     referer = extract_hostname(meta.get('HTTP_REFERER'))
 
