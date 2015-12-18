@@ -11,7 +11,7 @@ from itertools import chain
 
 from registration import signals as reg_signals
 from registration.models import ActivationProfile
-from myjobs.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ProfileUnits(models.Model):
@@ -26,7 +26,7 @@ class ProfileUnits(models.Model):
     date_updated = models.DateTimeField(default=datetime.datetime.now,
                                         editable=False)
     content_type = models.ForeignKey(ContentType, editable=False, null=True)
-    user = models.ForeignKey(User, editable=False)
+    user = models.ForeignKey('myjobs.User', editable=False)
 
     def save(self, *args, **kwargs):
         """
@@ -222,11 +222,9 @@ def save_primary(sender, instance, created, **kwargs):
 
 
 def delete_primary(sender, instance, **kwargs):
-    try:
-        user = instance.user
+    user = instance.user
+    if user:
         user.add_primary_name(update=True, f_name="", l_name="")
-    except User.DoesNotExist:
-        pass
 
 post_save.connect(save_primary, sender=Name, dispatch_uid="save_primary")
 post_delete.connect(delete_primary, sender=Name, dispatch_uid="delete_primary")

@@ -2,6 +2,7 @@ import datetime
 from bs4 import BeautifulSoup
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.urlresolvers import reverse
 
@@ -14,6 +15,7 @@ from mypartners.models import Contact
 from mypartners.tests.factories import PartnerFactory
 from myprofile.models import SecondaryEmail
 from mysearches.models import SavedSearch
+from mysearches.tests.factories import SavedSearchFactory
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
 from seo.tests.setup import DirectSEOBase
@@ -26,7 +28,6 @@ class RegistrationViewTests(MyJobsBase):
     Test the registration views.
 
     """
-
     def setUp(self):
         """
         These tests use the default backend, since we know it's
@@ -165,6 +166,7 @@ class RegistrationViewTests(MyJobsBase):
         prompted to change their password.
         """
         invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send()
         key = invitation.invitee.activationprofile_set.first().activation_key
         response = self.client.get(
             reverse('invitation_activate', kwargs={'activation_key': key}),
@@ -181,6 +183,7 @@ class RegistrationViewTests(MyJobsBase):
         has already been used.
         """
         invitation = InvitationFactory(invitee_email=self.user.email)
+        invitation.send()
         self.assertFalse(invitation.accepted)
         profile = self.user.activationprofile_set.all()[0]
         key = profile.activation_key
@@ -195,9 +198,64 @@ class RegistrationViewTests(MyJobsBase):
         response = self.client.get(reverse('invitation_activate', args=[key]))
         self.assertTrue('Thanks for registering!' in response.content)
         invitation = Invitation.objects.get()
+        invitation.send()
         self.assertTrue(invitation.accepted)
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.in_reserve)
+
+    def test_saved_search_invitation_message(self):
+        """
+        Tests that saved search invitation emails are formatted correctly.
+
+        """
+        saved_search = SavedSearchFactory(user=self.user)
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.added_saved_search = saved_search
+        invitation.save()
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to begin receiving their available job "
+                      "opportunities on a regular basis", email.body)
+
+    def test_permission_invitation_message(self):
+        """
+        Tests that invitation emails where permissions are changed are
+        formatted correctly.
+
+        """
+        group = Group.objects.create(name="Employers")
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.added_permission = group
+        invitation.save()
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to help administer their recruitment and "
+                      "outreach tools.", email.body)
+
+    def test_generic_invitation_message(self):
+        """
+        Tests that generic invitation emails are formatted correctly.
+
+        """
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send()
+
+        email = mail.outbox.pop()
+        self.assertIn("has invited you to join My.jobs.", email.body)
+
+    def test_custom_invitation_message(self):
+        """
+        Test that invitation messages with custom reasons are formatted
+        correctly.
+
+        """
+        invitation = InvitationFactory(inviting_user=self.user)
+        invitation.send("in order to do some custom stuff.")
+
+        email = mail.outbox.pop()
+        self.assertIn("in order to do some custom stuff.", email.body)
 
 
 class MergeUserTests(MyJobsBase):

@@ -17,6 +17,8 @@ from django.utils.translation import ugettext_lazy as _
 from location_data import countries, all_regions, country_list, state_list
 from universal.helpers import send_email
 
+from import_jobs.solr import add_jobs, delete_by_guid
+from transform import transform_for_postajob
 
 class BaseManagerMixin(object):
     def filter_by_sites(self, sites):
@@ -219,8 +221,6 @@ class Job(BaseModel):
         state_short, reqid, title, uid, and zipcode.
 
         """
-        from import_jobs import add_jobs
-        from transform import transform_for_postajob
 
         jobs = self.solr_dict()
         if jobs:
@@ -252,7 +252,7 @@ class Job(BaseModel):
         [location.delete() for location in locations]
 
     def remove_from_solr(self):
-        from import_jobs import delete_by_guid
+        
         guids = [location.guid for location in self.locations.all()]
         delete_by_guid(guids)
 
@@ -271,10 +271,6 @@ def update_job_in_solr(sender, instance, action, **kwargs):
     Once a job is no longer associated with any locations, it should be removed
     from SOLR.
     """
-
-    # circular imports; I hate this
-    from import_jobs import delete_by_guid
-
     if action in ['post_remove', 'post_clear']:
         guids = JobLocation.objects.filter(
             jobs__isnull=True).values_list('guid', flat=True)
