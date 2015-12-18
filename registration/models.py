@@ -184,20 +184,43 @@ class Invitation(models.Model):
         else:
             self.invitee_email = self.invitee.email
 
-        if not self.pk:
-            self.send()
-
         super(Invitation, self).save(*args, **kwargs)
 
-    def send(self):
-        ap = ActivationProfile.objects.get_or_create(user=self.invitee,
-                                                     email=self.invitee_email)[0]
-        if ap.activation_key_expired():
-            ap.reset_activation()
-            ap = ActivationProfile.objects.get(pk=ap.pk)
+    def send(self, reason=""):
+        """
+        Inputs:
+            :reason: A custom reason to be included in the email.
+                                This reason should not include punctuation.
+
+        Outputs:
+            An invitation email is sent to the ```Invitation.invitee``` using
+            the ```Invitation.email``` address. Tailored messages are sent if
+            ```Invitation.added_saved_search``` or
+            ```Invitation.added_permission are set. If neither are set and no
+            ```reason``` is set, a generic email is sent.
+
+        """
+        activiation_profile, _ = ActivationProfile.objects.get_or_create(
+            user=self.invitee, email=self.invitee.email)
+
+        if not reason:
+            if self.added_saved_search:
+                reason = ("in order to begin receiving their available job "
+                          "opportunities on a regular basis")
+            elif self.added_permission:
+                reason = ("in order to help administer their recruitment and "
+                          "outreach tools")
+
+        reason = (" " if reason else "") + reason + "."
+
+        if activiation_profile.activation_key_expired():
+            activiation_profile.reset_activation()
+            application_profile  = ActivationProfile.objects.get(
+                pk=activiation_profile.pk)
 
         context = {'invitation': self,
-                   'activation_key': ap.activation_key}
+                   'activation_key': activiation_profile.activation_key,
+                   'reason': reason}
 
         text_only = False
         if self.added_saved_search:
@@ -226,8 +249,8 @@ class Invitation(models.Model):
         except Exception as e:
             fail_message = getattr(e, 'smtp_error', e.message)
         else:
-            ap.sent = datetime_now()
-            ap.save()
+            activiation_profile.sent = datetime_now()
+            activiation_profile.save()
 
         if self.added_saved_search and hasattr(self.added_saved_search,
                                                'partnersavedsearch'):
