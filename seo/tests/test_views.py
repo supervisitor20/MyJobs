@@ -1758,7 +1758,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressLocality">Indiandapolis</span>'
                                   '<span itemprop="addressCountry">United States</span>'
-                                  , msg_prefix='Location without state test is failing %s' % solr_docs_copy[0])
+                                  , msg_prefix='Location without state test is failing %s' % self.conn.search('guid:11111111111111111111111111111111').docs)
+                                #   , msg_prefix='Location without state test is failing %s' % solr_docs_copy[0])
 
         # Job lookup by guid, check for empty city case.
         self.conn.delete(q="*:*")
