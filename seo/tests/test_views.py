@@ -1754,7 +1754,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in test for no state")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
                                   '<span itemprop="addressLocality">Indiandapolis</span>'
