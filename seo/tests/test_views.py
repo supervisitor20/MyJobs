@@ -6,7 +6,6 @@ import uuid
 import default_settings
 import itertools
 import json
-import time
 from StringIO import StringIO
 from collections import OrderedDict
 
@@ -1750,16 +1749,16 @@ class SeoViewsTestCase(DirectSEOTestCase):
             'state': ''
         }
         solr_docs_copy[0].update(kwargs1)
+        # import ipdb; ipdb.set_trace()
         self.conn.add(solr_docs_copy)
-        time.sleep(5)
         resp = self.client.get(
             u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
             HTTP_HOST='buckconsultants.jobs')
         self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in test for no state")
         self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
-                                  '<span itemprop="addressLocality">Indianapolis</span>'
+                                  '<span itemprop="addressLocality">Indiandapolis</span>'
                                   '<span itemprop="addressCountry">United States</span>'
-                                  , msg_prefix='Location without state test is failing')
+                                  , msg_prefix='Location without state test is failing %s' % solr_docs_copy[0])
 
         # Job lookup by guid, check for empty city case.
         self.conn.delete(q="*:*")
