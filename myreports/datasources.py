@@ -141,8 +141,13 @@ class ContactsDataSource(object):
             Tag.objects
             .filter(contact__in=contacts_qs)
             .filter(name__icontains=partial))
-        names_qs = tags_qs.values('name').distinct()
-        return [{'key': t['name'], 'display':t['name']} for t in names_qs]
+        names_qs = tags_qs.values('name', 'hex_color').distinct()
+        return [
+            {
+                'key': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in names_qs]
 
     def help_partner(self, company, filter, partial):
         """Get help for the partner field."""

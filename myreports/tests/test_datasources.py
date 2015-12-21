@@ -42,9 +42,9 @@ class TestContactsDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east')
-        self.west_tag = TagFactory.create(name='west')
-        self.bad_tag = TagFactory.create(name='bad')
+        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(
@@ -343,6 +343,12 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.help_tags(self.company, ContactsFilter(), "E")
         actual = set([r['key'] for r in recs])
         self.assertEqual({'east', 'west'}, actual)
+
+    def test_help_tags_colors(self):
+        """Tags should have colors"""
+        ds = ContactsDataSource()
+        recs = ds.help_tags(self.company, ContactsFilter(), "east")
+        self.assertEqual("aaaaaa", recs[0]['hexColor'])
 
     def test_help_partner(self):
         """Should provide list of partner completions."""

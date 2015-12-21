@@ -14,7 +14,7 @@ export function Tag(props) {
         classNames(
           'tag-name',
           {'removable': removeTag})}
-      style={{backgroundColor: hexColor}}>
+      style={{backgroundColor: '#' + hexColor}}>
         {display}
         {removeTag ?
           <i
