@@ -23,7 +23,7 @@ Preparation
 * Add these to the root of the repo (get from another developer):
 
   * Permanently:
-  
+
     * Settings.py
 
     * Dev_settings.py
@@ -31,11 +31,11 @@ Preparation
     * Secrets.py
 
   * Temporarily:
-  
+
     * Dump of development MySQL database (named dbbackup.sql). For example:
 
       ```
-      mysqldump -u root -p --all-databases > dbbackup.sql;
+      mysqldump -u root -p db > dbbackup.sql;
       ```
 
       If you make a dump from a newer version of MySQL than what is in production
@@ -95,6 +95,16 @@ Terminal Setup (Both)
 
 ``. dk2/env.sh`` This makes the ``dk`` convenience function available.
 
+Initialize the Data Volumes and Certs
+=====================================
+
+This sets aside some volumes which will not be deleted when containers are
+removed.
+
+It also initializes some self signed ssl certificates for the reverse proxy.
+
+``dk init``
+
 Build the Development Image
 ===========================
 
@@ -143,8 +153,8 @@ friends in ``solr_config/``
 
 ``exit``
 
-``mysql -u root -p -h $myip <dbbackup.sql`` assuming that your database backup
-file is ``dbbackup.sql``
+``mysql -u root -p -h $myip db <dbbackup.sql`` assuming that your database
+backup file is ``dbbackup.sql``
 
 ``exit`` Exits the interactive container.
 
