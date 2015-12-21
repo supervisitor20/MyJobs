@@ -147,17 +147,6 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         contact = Contact.objects.get(id=contact.id)
         self.assertTrue(contact.user)
 
-    def test_initial_email_has_unsubscription_options(self):
-        """
-        The initial email received for a partner saved search should have an
-        unsubscribe link included
-        """
-        # ensure email received with the correct content
-        for phrase in ["Deactivate this saved search",
-                       "Deactivate all saved searches",
-                       "Unsubscribe from all My.jobs emails"]:
-            self.assertIn(phrase, mail.outbox[0].body)
-
     def test_sort_by_date_initially(self):
         instance = PartnerSavedSearch.objects.get()
         self.assertEqual(instance.sort_by, 'Date')

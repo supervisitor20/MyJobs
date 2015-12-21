@@ -260,6 +260,21 @@ def save_edit_form(request):
                 return HttpResponse(json.dumps(form.errors))
 
 
+@user_is_allowed(SavedSearch, 'id')
+def unsubscribe_confirmation(request):
+    unsub_links = {
+        "all_searches": reverse('unsubscribe') + "?id=digest",
+        "all_email": reverse('unsubscribe_all') + "?id=all"
+    }
+    search_id = request.REQUEST.get('id')
+    if search_id is not None and search_id.isdigit():
+        unsub_links['single_search'] = reverse(
+            'unsubscribe') + "?id={}".format(search_id)
+    return render_to_response(
+        'mysearches/saved_search_unsubscribe_confirmation.html',
+        {'links': unsub_links}, RequestContext(request))
+
+
 @user_is_allowed(SavedSearch, 'id', pass_user=True)
 def unsubscribe(request, user=None):
     """

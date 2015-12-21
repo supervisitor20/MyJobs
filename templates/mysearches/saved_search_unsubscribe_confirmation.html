@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div class="row">
+        <div class="span12">
+            <h1>
+                Really Unsubscribe?
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span8">
+            {% if links.single_search %}
+                <a href="{{ links.single_search }}">
+                    {% trans "Unsubscribe from a single saved search" %}
+                </a>
+            {% endif %}
+            <a href="{{ links.all_searches }}">
+                {% trans "Unsubscribe from all saved searches" %}
+            </a>
+            <a href="{{ links.all_email }}">
+                {% trans "Unsubscribe from all MyJobs email" %}
+            </a>
+            <a href="{% url 'saved_search_main' %}">
+                {% trans "I've changed my mind" %}
+            </a>
+        </div>
+    </div>
+{% endblock %}
