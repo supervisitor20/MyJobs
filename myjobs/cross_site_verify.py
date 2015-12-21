@@ -19,14 +19,7 @@ def extract_hostname(url):
     if url is None:
         return None
     else:
-        return remove_test_prefix(urlparse(url).hostname)
-
-
-def remove_test_prefix(url):
-    if not url:
-        return url
-    url_split = url.split('.', 1)
-    return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
+        return urlparse(url).hostname
 
 
 def parse_request_meta(meta):
@@ -147,7 +140,7 @@ def cross_site_verify(fn):
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)
-            return return_404()
+            return return_404(return_message=e.message)
         return fn(request)
 
     return verify

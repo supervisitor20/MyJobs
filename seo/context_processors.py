@@ -1,8 +1,8 @@
 from seo.cache import get_site_config, get_secure_blocks_site, \
-    get_url_prefix_qc_staging
+    is_testing_environment
 
 
 def site_config_context(request):
     return {'site_config': get_site_config(request),
-            'testing_host_prefix': get_url_prefix_qc_staging(request),
+            'is_testing_environment': is_testing_environment(request),
             'secure_blocks_domain': get_secure_blocks_site(request)}
