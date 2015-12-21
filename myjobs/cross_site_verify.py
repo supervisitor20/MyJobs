@@ -19,7 +19,14 @@ def extract_hostname(url):
     if url is None:
         return None
     else:
-        return urlparse(url).hostname
+        return remove_test_prefix(urlparse(url).hostname)
+
+
+def remove_test_prefix(url):
+    if not url:
+        return url
+    url_split = url.split('.', 1)
+    return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
 
 
 def parse_request_meta(meta):

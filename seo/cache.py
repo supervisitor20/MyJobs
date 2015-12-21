@@ -131,19 +131,19 @@ def get_site_config(request):
     return site_config
 
 
-def is_testing_environment(request):
+def get_url_prefix_qc_staging(request):
     """
-    Returns whether or not the host is a testing environment. Currently used
-    in seo_base.html template to determine whether to use http or https for
-    cross site requests
+    Returns the url prefix of the current host if the current host url starts
+    with qc or staging. For use with indicating which secure host to ping for
+    secure blocks API
     :param request:
-    :return: True if qc or staging, otherwise False
+    :return: url prefix of qc or staging, if applicable, otherwise empty string
 
     """
     if not request.META.get('HTTP_HOST'):
-        return False
+        return ''
     host_prefix = request.META.get('HTTP_HOST').split('.', 1)[0]
-    return True if host_prefix in settings.ENV_URL_PREFIXES else False
+    return host_prefix if host_prefix in settings.ENV_URL_PREFIXES else ''
 
 
 def get_secure_blocks_site(request):
