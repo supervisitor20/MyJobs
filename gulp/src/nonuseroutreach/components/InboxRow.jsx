@@ -92,15 +92,17 @@ export class InboxRow extends Component {
       ];
     }
     return (
-      <div className="clearfix product-card no-highlight">
+      <div className="product-card no-highlight clearfix ">
         {validationMessages}
-        <EmailInput
-          id={this.state.id.toString()}
-          email={this.state.current_email}
-          emailFieldChanged={v => this.emailFieldChanged(v)} />
-        <ControlButtons
-          buttons={buttons}
-          buttonClicked={b => b.callback()} />
+        <div className="col-xs-12">
+          <EmailInput
+            id={this.state.id.toString()}
+            email={this.state.current_email}
+            emailFieldChanged={v => this.emailFieldChanged(v)} />
+          <ControlButtons
+            buttons={buttons}
+            buttonClicked={b => b.callback()} />
+          </div>
       </div>
     );
   }

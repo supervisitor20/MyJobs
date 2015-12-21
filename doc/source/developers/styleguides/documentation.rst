@@ -2,11 +2,6 @@
 Writing Documentation
 =====================
 
-.. contents::
-  :depth: 2
-  :local:
-  :backlinks: entry
-
 This guide sets the standard to be used for documentation that exists outside
 of source code. For guidance on how to document your source code, see the
 :doc:`programming` and :doc:`javascript` guides. If you find that this guide

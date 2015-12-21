@@ -60,7 +60,6 @@ function load_secure_blocks(dashboard_url) {
     element_id = $(block).data('secure-block-id');
     request[element_id] = $(block).data();
   });
-
   if (!$.isEmptyObject(request)) {
     secure_block(dashboard_url, request).fail(function(xhr, text, error) {
         console.error("dashboard fail: ", xhr, text, error);

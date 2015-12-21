@@ -11,7 +11,7 @@ from django.views.decorators.csrf import (
 
 from myjobs.autoserialize import autoserialize
 from myjobs.cross_site_verify import cross_site_verify
-
+from myreports.decorators import restrict_to_staff
 from myblocks.models import Page, Block
 
 logger = logging.getLogger(__name__)
@@ -80,13 +80,15 @@ class BlockView(View):
 
 
 # The django csrf exemption should stay first in this list.
+@restrict_to_staff()
 @django_csrf_exempt
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
     """
-    Attempt to retrieve blocks objects for all items in the blocks element of the
-    request body. secured by cross site verification wrapper
+    Attempt to retrieve blocks objects for all items in the blocks element of
+    the request body. secured by cross site verification wrapper. Currently
+    restricted for non-staff users
 
     :url: /secure-blocks/
     :param request: ajax request potentially containing array of element ids for blocks

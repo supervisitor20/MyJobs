@@ -4,6 +4,8 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
+import {formatActivityName} from 'util/formatActivityName';
+
 import Overview from './Overview';
 import Roles from './Roles';
 import Role from './Role';
@@ -52,7 +54,7 @@ export class App extends React.Component {
         if (parsedResults.hasOwnProperty(i)) {
           activitiesTableRows.push(
             <tr key={parsedResults[i].pk}>
-              <td>{parsedResults[i].fields.name}</td>
+              <td>{formatActivityName(parsedResults[i].fields.name)}</td>
               <td>{parsedResults[i].fields.description}</td>
             </tr>
           );
