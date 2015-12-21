@@ -3,8 +3,7 @@
 *.db
 *.flv
 *.wmv
-static/*.gz
-static/*/*.gz
+*.gz
 
 # Docker
 dk2/dev/requirements.txt
@@ -70,3 +69,10 @@ settings.py
 
 # Documentation
 doc/build
+
+# Deployment
+static/admin/
+static/django_extensions
+static/endless_pagination
+static/fsm
+collected_static/
