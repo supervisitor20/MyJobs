@@ -8,6 +8,7 @@ import {Tag} from './Tag';
  */
 export function AndBox(props) {
   const {id, addTag, getHints, orGroup, removeTag} = props;
+  const {highlights, highlightTag} = props;
   return (
     <div className="andBox">
       <SearchInput
@@ -28,7 +29,9 @@ export function AndBox(props) {
             key={i.key}
             display={i.display}
             hexColor={i.hexColor}
-            removeTag={() => removeTag(i)}/>
+            removeTag={() => removeTag(i)}
+            onClick={() => highlightTag(i)}
+            highlight={Boolean(highlights[i.key])}/>
         )
       }
     </div>
@@ -64,4 +67,15 @@ AndBox.propTypes = {
    * List of tags already selected by the user for this box.
    */
   orGroup: PropTypes.array.isRequired,
+
+  /**
+   * Object containing currently highlighted tag keys.
+   * { tagkey: true }
+   */
+  highlights: PropTypes.object.isRequired,
+
+  /**
+   * Callback: the user highlighted a tag
+   */
+  highlightTag: PropTypes.func.isRequired,
 };

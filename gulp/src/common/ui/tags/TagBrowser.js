@@ -30,6 +30,7 @@ export class TagBrowser extends Component {
   }
 
   render() {
+    const {highlights, highlightTag} = this.props;
     const {tags, searchValue} = this.state;
     return (
       <div>
@@ -51,7 +52,9 @@ export class TagBrowser extends Component {
             <Tag
               key={i.key}
               display={i.display}
-              hexColor={i.hexColor}/>
+              hexColor={i.hexColor}
+              onClick={() => highlightTag(i)}
+              highlight={Boolean(highlights[i.key])}/>
           )
         }
         </div>
@@ -65,4 +68,15 @@ TagBrowser.propTypes = {
    * Callback: The user wants hints for a given partial string.
    */
   getHints: PropTypes.func.isRequired,
+
+  /**
+   * Object containing currently highlighted tag keys.
+   * { tagkey: true }
+   */
+  highlights: PropTypes.object.isRequired,
+
+  /**
+   * Callback: the user highlighted a tag
+   */
+  highlightTag: PropTypes.func.isRequired,
 };

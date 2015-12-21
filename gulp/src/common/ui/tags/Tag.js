@@ -6,15 +6,17 @@ import classNames from 'classnames';
  * Show a single tag.
  */
 export function Tag(props) {
-  const {display, hexColor, removeTag} = props;
+  const {display, hexColor, removeTag, onClick, highlight} = props;
 
   return (
     <div
       className={
         classNames(
           'tag-name',
+          {'faded': highlight},
           {'removable': removeTag})}
-      style={{backgroundColor: '#' + hexColor}}>
+      style={{backgroundColor: '#' + hexColor}}
+      onClick={() => onClick()}>
         {display}
         {removeTag ?
           <i
@@ -42,4 +44,14 @@ Tag.propTypes = {
    * Optional: If not present, no UI for tags removal will appear.
    */
   removeTag: PropTypes.func,
+
+  /**
+   * Callback: user clicked the tag
+   */
+  onClick: PropTypes.func.isRequired,
+
+  /**
+   * Is this tag currently highlighted?
+   */
+  highlight: PropTypes.bool,
 };
