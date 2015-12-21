@@ -104,9 +104,15 @@ backgroundstop() {
 }
 
 restartsecure() {
-    docker stop secure.my.jobs
-    docker rm secure.my.jobs
-    runsecure
+    docker stop secure.my.jobs || true
+    docker rm secure.my.jobs || true
+    runsecure || true
+}
+
+restartmicrosites() {
+    docker stop star.jobs || true
+    docker rm star.jobs || true
+    runmicrosites || true
 }
 
 maint() {
