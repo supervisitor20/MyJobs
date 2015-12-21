@@ -1,5 +1,6 @@
 import React, {PropTypes} from 'react';
 import classNames from 'classnames';
+import tinycolor from 'tinycolor2';
 
 
 /**
@@ -8,6 +9,14 @@ import classNames from 'classnames';
 export function Tag(props) {
   const {display, hexColor, removeTag, onClick, highlight} = props;
 
+  let backgroundColor;
+  if (highlight) {
+    backgroundColor = tinycolor(hexColor)
+      .saturate(30).darken(25).toHexString();
+  } else {
+    backgroundColor = '#' + hexColor;
+  }
+
   return (
     <div
       className={
@@ -15,7 +24,7 @@ export function Tag(props) {
           'tag-name',
           {'faded': highlight},
           {'removable': removeTag})}
-      style={{backgroundColor: '#' + hexColor}}
+      style={{backgroundColor}}
       onClick={() => onClick()}>
         {display}
         {removeTag ?
