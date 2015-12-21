@@ -287,6 +287,29 @@ class ManageUsersTests(MyJobsBase):
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
 
+    def test_get_specific_role_activities_contain_app_access(self):
+        """
+        Tests that the Roles API returns the proper (specific role) data in the
+        proper form
+        Contain app_access
+        """
+        expected_role_pk = self.role.pk
+
+        response = self.client.get(reverse('api_get_specific_role',
+                                           args=[expected_role_pk]))
+        output = json.loads(response.content)
+        first_result = output[str(expected_role_pk)]
+
+        activities = first_result['activities']
+
+        activities_available = json.loads(activities['available'])
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
+
+        activities_assigned = json.loads(activities['assigned'])
+        activities_assigned_app_access = activities_assigned[0]['fields']['app_access']
+        self.assertIsInstance(activities_assigned_app_access, int)
+
     def test_get_specific_role_contains_users(self):
         """
         Tests that the Roles API returns the proper (specific role) data in the

@@ -604,7 +604,6 @@ def manage_users(request):
     """
     View for manage users
     """
-
     company = get_company_or_404(request)
 
     ctx = {
@@ -622,9 +621,7 @@ def api_get_activities(request):
     GET /manage-users/api/activities/
     Retrieves all activities
     """
-
     activities = Activity.objects.all()
-
     return HttpResponse(serializers.serialize("json", activities,
                                               fields=('name', 'description')))
 
@@ -636,7 +633,6 @@ def api_get_roles(request):
     GET /manage-users/api/roles/
     Retrieves all roles associated with a company
     """
-
     ctx = {}
 
     company = get_company_or_404(request)
@@ -702,7 +698,6 @@ def api_get_specific_role(request, role_id=0):
     GET /manage-users/api/roles/NUMBER
     Retrieves specific role
     """
-
     ctx = {}
 
     # Check if role exists
@@ -730,13 +725,13 @@ def api_get_specific_role(request, role_id=0):
     ctx[role_id]['activities']['available'] = serializers.serialize(
         "json",
         available_activities,
-        fields=('name', 'description'))
+        fields=('name', 'description', 'app_access'))
     # Retrieve all activities assigned to this role
     assigned_activities = role[0].activities.all()
     ctx[role_id]['activities']['assigned'] = serializers.serialize(
         "json",
         assigned_activities,
-        fields=('name', 'description'))
+        fields=('name', 'description', 'app_access'))
 
     # Retrieve users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)
@@ -852,7 +847,6 @@ def api_edit_role(request, role_id=0):
     Returns:
     :success:                   boolean
     """
-
     ctx = {}
     if request.method != "POST":
         ctx["success"] = "false"
@@ -951,7 +945,6 @@ def api_delete_role(request, role_id=0):
     Returns:
     :success:                   boolean
     """
-
     ctx = {}
 
     if request.method != "DELETE":
@@ -994,7 +987,6 @@ def api_get_users(request):
     GET /manage-users/api/users/
     Retrieves all users associated with a company
     """
-
     ctx = {}
 
     company = get_company_or_404(request)
@@ -1039,7 +1031,6 @@ def api_get_specific_user(request, user_id=0):
     GET /manage-users/api/users/NUMBER
     Retrieves specific user
     """
-
     ctx = {}
 
     company = get_company_or_404(request)
@@ -1107,7 +1098,6 @@ def api_create_user(request):
     Returns:
     :success:                   boolean
     """
-
     ctx = {}
 
     if request.method != "POST":
@@ -1175,7 +1165,6 @@ def api_edit_user(request, user_id=0):
     Returns:
     :success:                   boolean
     """
-
     ctx = {}
 
     if request.method != "POST":
@@ -1253,7 +1242,6 @@ def api_delete_user(request, user_id=0):
     Returns:
     :success:                   boolean
     """
-
     ctx = {}
 
     if request.method != "DELETE":
