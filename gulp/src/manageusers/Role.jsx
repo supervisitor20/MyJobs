@@ -57,7 +57,6 @@ class Role extends React.Component {
 
         // Create availablePRMActivities
         let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
-
         availablePRMActivities = formatForMultiselect(availablePRMActivities);
 
         // Create assignedPRMActivities

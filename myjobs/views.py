@@ -725,13 +725,13 @@ def api_get_specific_role(request, role_id=0):
     ctx[role_id]['activities']['available'] = serializers.serialize(
         "json",
         available_activities,
-        fields=('name', 'description'))
+        fields=('name', 'description', 'app_access'))
     # Retrieve all activities assigned to this role
     assigned_activities = role[0].activities.all()
     ctx[role_id]['activities']['assigned'] = serializers.serialize(
         "json",
         assigned_activities,
-        fields=('name', 'description'))
+        fields=('name', 'description', 'app_access'))
 
     # Retrieve users already assigned to this role
     users_assigned = User.objects.filter(roles__id=role_id)
