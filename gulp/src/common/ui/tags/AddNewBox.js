@@ -43,6 +43,7 @@ export class AddNewBox extends Component {
           id="zzzzz"
           onSelect={t => this.handleAddTag(t)}
           getHints={v => getHints(v)}
+          placeholder="Type item and hit Enter"
           onBlur={() => this.onSuggestBlur()}
           theme={{
             root: 'dropdown search-input',

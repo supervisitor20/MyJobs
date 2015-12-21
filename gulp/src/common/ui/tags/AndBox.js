@@ -15,6 +15,7 @@ export function AndBox(props) {
         emptyOnSelect
         onSelect={t => addTag(t)}
         getHints={p => getHints(p)}
+        placeholder="Type item and hit Enter"
         theme={{
           root: 'open dropdown search-input',
           suggestions: 'dropdown-menu',

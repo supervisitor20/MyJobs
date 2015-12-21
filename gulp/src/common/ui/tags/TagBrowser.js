@@ -39,6 +39,7 @@ export class TagBrowser extends Component {
             className="search-input"
             type="search"
             value={searchValue}
+            placeholder="Type item and hit Enter"
             onChange={e => this.onChangeSearch(e)}/>
           <span className="search-icon">
             <i className="fa fa-search"></i>
