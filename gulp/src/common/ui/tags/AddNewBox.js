@@ -46,7 +46,7 @@ export class AddNewBox extends Component {
           placeholder="Type item and hit Enter"
           onBlur={() => this.onSuggestBlur()}
           theme={{
-            root: 'dropdown search-input',
+            root: 'dropdown search',
             rootOpen: 'open',
             suggestions: 'dropdown-menu',
             input: 'search-input',

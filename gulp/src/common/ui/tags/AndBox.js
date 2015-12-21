@@ -17,7 +17,7 @@ export function AndBox(props) {
         getHints={p => getHints(p)}
         placeholder="Type item and hit Enter"
         theme={{
-          root: 'open dropdown search-input',
+          root: 'open dropdown search',
           suggestions: 'dropdown-menu',
           input: 'search-input',
           itemActive: 'active',
