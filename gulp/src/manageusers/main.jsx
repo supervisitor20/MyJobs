@@ -99,7 +99,7 @@ export class App extends React.Component {
           tablesOfActivitiesByApp.push(
             <span>
               <h3>{app_ids_with_names[app_id]}</h3>
-              <table className="table table-striped">
+              <table className="table table-striped table-activities">
                 <thead>
                   <tr>
                     <th>Activity</th>

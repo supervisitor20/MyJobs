@@ -3925,6 +3925,18 @@ h1 a {
   font-weight: bold;
 }
 
+.table-activities tr td:first-child, .table-activities tr th:first-child {
+  width: 50%;
+}
+
+.product-card-full h3 {
+  font-size: 1em;
+  color: black;
+  font-weight: bold;
+  margin-left: 8px;
+  margin-top: 15px;
+}
+
 .breadcrumbs {
   font-weight: bold;
   padding: 5px;
