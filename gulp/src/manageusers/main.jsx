@@ -4,8 +4,6 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
-import {formatActivityName} from 'util/formatActivityName';
-
 import Overview from './Overview';
 import Roles from './Roles';
 import Role from './Role';
@@ -47,45 +45,45 @@ export class App extends React.Component {
   callActivitiesAPI() {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function getActivities(results) {
-      // Define legend matching app_id to app name
+      // Define legend matching appID to app name
       // TODO: Information like this should probably be in the db
-      const app_names_legend = {};
-      app_names_legend[1] = "PRM";
-      app_names_legend[2] = "User Management";
+      const appNamesLegend = {};
+      appNamesLegend[1] = 'PRM';
+      appNamesLegend[2] = 'User Management';
 
       // Parse API JSON response
       const parsedResults = JSON.parse(results);
 
       // Sort activities by app_access
-      parsedResults.sort(function(a, b) {
+      parsedResults.sort(function sortActivities(a, b) {
         return a.fields.app_access - b.fields.app_access;
       });
 
-      // Create unique array of app_ids present
-      const app_ids = [];
+      // Create unique array of appIDs present
+      const appIDs = [];
       for (let i = 0; i < parsedResults.length; i++) {
         if (parsedResults.hasOwnProperty(i)) {
-          if(app_ids.indexOf(parsedResults[i].fields.app_access) == -1){
-            app_ids.push(parsedResults[i].fields.app_access)
+          if (appIDs.indexOf(parsedResults[i].fields.app_access) === -1) {
+            appIDs.push(parsedResults[i].fields.app_access);
           }
         }
-      };
+      }
 
       // Create an array of apps (names/ids) that exist in our parsedResults
-      const app_ids_with_names = {};
-      for (let i = 1; i <= app_ids.length; i++) {
-        app_ids_with_names[i] = app_names_legend[i];
-      };
+      const appIDsWithNames = {};
+      for (let i = 1; i <= appIDs.length; i++) {
+        appIDsWithNames[i] = appNamesLegend[i];
+      }
 
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
-      for (let app_id in app_ids_with_names) {
-        if (app_ids_with_names.hasOwnProperty(app_id)) {
+      for (const appID in appIDsWithNames) {
+        if (appIDsWithNames.hasOwnProperty(appID)) {
           // For each app, build list of rows from parsedResults
           let activityRows = [];
-          activityRows = parsedResults.map(function(obj){
-            // Only use activities of a certain app_id
-            if(obj.fields.app_access == app_id){
+          activityRows = parsedResults.map(function buildRow(obj) {
+            // Only use activities of a certain appID
+            if (obj.fields.app_access === appID) {
               return (
                 <tr>
                   <td>{obj.fields.name}</td>
@@ -96,7 +94,7 @@ export class App extends React.Component {
           });
           tablesOfActivitiesByApp.push(
             <span>
-              <h3>{app_ids_with_names[app_id]}</h3>
+              <h3>{appIDsWithNames[appID]}</h3>
               <table className="table table-striped table-activities">
                 <thead>
                   <tr>
@@ -109,7 +107,7 @@ export class App extends React.Component {
                 </tbody>
               </table>
             </span>
-          )
+          );
         }
       }
       this.setState({

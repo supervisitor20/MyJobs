@@ -208,7 +208,7 @@ gulp.task('lint-fix', function() {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(['./src/**/*.js'])
+  return gulp.src(['./src/**/*.js', './src/**/*.jsx'])
     .pipe(eslint(lintOptions()))
     .pipe(eslint.format());
 });
