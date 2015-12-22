@@ -57,74 +57,108 @@ export class ReportFinder {
 // Future: consider restructuring this class so that it's methods which mutate
 // state operate on and return a new react state object.
 export class ReportConfiguration {
-    constructor(rpId, filters, api, newReportNote) {
-      this.rpId = rpId;
-      this.filters = filters;
-      this.simpleFilter = {};
-      this.multiFilter = {};
-      this.api = api;
-      this.newReportNote = newReportNote;
-    }
+  constructor(rpId, filters, api, newReportNote) {
+    this.rpId = rpId;
+    this.filters = filters;
+    this.simpleFilter = {};
+    this.multiFilter = {};
+    this.andOrFilter = {};
+    this.api = api;
+    this.newReportNote = newReportNote;
+  }
 
-    async getHints(field, partial) {
-      return await this.api.getHelp(
-            this.rpId, this.getFilter(), field, partial);
-    }
+  async getHints(field, partial) {
+    return await this.api.getHelp(
+      this.rpId, this.getFilter(), field, partial);
+  }
 
-    setFilter(field, value) {
-      if (value === undefined || value === null || value === '') {
-        delete this.simpleFilter[field];
-      } else {
-        this.simpleFilter[field] = value;
+  setFilter(field, value) {
+    if (value === undefined || value === null || value === '') {
+      delete this.simpleFilter[field];
+    } else {
+      this.simpleFilter[field] = value;
+    }
+  }
+
+  addToMultifilter(field, obj) {
+    if (!(field in this.multiFilter)) {
+      this.multiFilter[field] = [];
+    }
+    if (this.multiFilter[field].findIndex(i => i.key === obj.key) === -1) {
+      this.multiFilter[field].push(obj);
+    }
+  }
+
+  removeFromMultifilter(field, obj) {
+    const index = this.multiFilter[field].findIndex(i => i.key === obj.key);
+    if (index !== -1) {
+      this.multiFilter[field].splice(index, 1);
+    }
+  }
+
+  addToAndOrFilter(field, index, obj) {
+    if (!(field in this.andOrFilter)) {
+      this.andOrFilter[field] = [];
+    }
+    if (!(index in this.andOrFilter[field])) {
+      this.andOrFilter[field][index] = [];
+    }
+    this.andOrFilter[field][index].push(obj);
+  }
+
+  removeFromAndOrFilter(field, index, obj) {
+    const found = this.andOrFilter[field][index].findIndex(i => i.key === obj.key);
+    if (found !== -1) {
+      this.andOrFilter[field][index].splice(found, 1);
+      if (this.andOrFilter[field][index].length < 1) {
+        this.andOrFilter[field].splice(index, 1);
       }
     }
+  }
 
-    addToMultifilter(field, obj) {
-      if (!(field in this.multiFilter)) {
-        this.multiFilter[field] = [];
-      }
-      if (this.multiFilter[field].findIndex(i => i.key === obj.key) === -1) {
-        this.multiFilter[field].push(obj);
-      }
-    }
-
-    removeFromMultifilter(field, obj) {
-      const index = this.multiFilter[field].findIndex(i => i.key === obj.key);
-      if (index !== -1) {
-        this.multiFilter[field].splice(index, 1);
+  getFilter() {
+    const filter = {...this.simpleFilter};
+    for (const key in this.multiFilter) {
+      if (this.multiFilter.hasOwnProperty(key)) {
+        filter[key] = this.multiFilter[key].map(o => o.key);
       }
     }
-
-    getFilter() {
-      const filter = {...this.simpleFilter};
-      for (const key in this.multiFilter) {
-        if (this.multiFilter.hasOwnProperty(key)) {
-          filter[key] = this.multiFilter[key].map(o => o.key);
-        }
+    for (const key in this.andOrFilter) {
+      if (this.andOrFilter.hasOwnProperty(key)) {
+        filter[key] = this.andOrFilter[key].map(
+          arr => arr.map(o => o.key));
       }
-      return filter;
     }
+    return filter;
+  }
 
-    getMultiFilter(key) {
-      return this.multiFilter[key];
-    }
+  getMultiFilter(key) {
+    return this.multiFilter[key];
+  }
 
-    async run(name) {
-      const reportId = await this.api.runReport(this.rpId, name, this.getFilter());
-      this.newReportNote(reportId);
-      return reportId;
+  getAndOrFilter(key) {
+    if (!this.andOrFilter.hasOwnProperty(key)) {
+      return [];
     }
+    return this.andOrFilter[key];
+  }
+
+  async run(name) {
+    const reportId = await this.api.runReport(this.rpId, name, this.getFilter());
+    this.newReportNote(reportId);
+    return reportId;
+  }
 }
 
 // This factory just builds a ReportConfiguration.
 //
 // Having it makes unit testing easier.
 export class ReportConfigurationBuilder {
-    constructor(api) {
-      this.api = api;
-    }
+  constructor(api) {
+    this.api = api;
+  }
 
-    async build(rpId, filters, cb) {
-      return new ReportConfiguration(rpId, filters, this.api, cb);
-    }
+  async build(rpId, filters, cb) {
+    return new ReportConfiguration(rpId, filters, this.api, cb);
+  }
 }
