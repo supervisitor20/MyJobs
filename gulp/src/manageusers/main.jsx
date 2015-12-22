@@ -23,7 +23,7 @@ export class App extends React.Component {
     super(props);
     this.state = {
       rolesTableRows: [],
-      activitiesTableRows: [],
+      tablesOfActivitiesByApp: [],
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
@@ -47,21 +47,76 @@ export class App extends React.Component {
   callActivitiesAPI() {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function getActivities(results) {
+      // Define legend matching app_id to app name
+      // TODO: Ideally this information would be in the db
+      const app_names_legend = {};
+      app_names_legend[1] = "PRM";
+      app_names_legend[2] = "User Management";
+
+      // Parse API JSON response
       const parsedResults = JSON.parse(results);
 
-      const activitiesTableRows = [];
+      // Sort activities by app_access
+      parsedResults.sort(function(a, b) {
+        return a.fields.app_access - b.fields.app_access;
+      });
+
+      // Create unique array of app_ids present
+      const app_ids = [];
       for (let i = 0; i < parsedResults.length; i++) {
         if (parsedResults.hasOwnProperty(i)) {
-          activitiesTableRows.push(
-            <tr key={parsedResults[i].pk}>
-              <td>{formatActivityName(parsedResults[i].fields.name)}</td>
-              <td>{parsedResults[i].fields.description}</td>
-            </tr>
-          );
+          if(app_ids.indexOf(parsedResults[i].fields.app_access) == -1){
+            app_ids.push(parsedResults[i].fields.app_access)
+          }
         }
       }
+
+      // Create an array of apps (names/ids) that exist in our parsedResults
+      const app_ids_with_names = {};
+      for (let i = 1; i <= app_ids.length; i++) {
+        app_ids_with_names[i] = app_names_legend[i];
+      };
+
+      // Build a table for each app present
+      const tablesOfActivitiesByApp = [];
+      for (let app_id in app_ids_with_names) {
+        if (app_ids_with_names.hasOwnProperty(app_id)) {
+
+          // For each app, build list of rows from parsedResults
+          let activityRows = [];
+          activityRows = parsedResults.map(function(obj){
+            // Only use activities of a certain app_id
+            if(obj.fields.app_access == app_id){
+              return (
+                <tr>
+                  <td>{obj.fields.name}</td>
+                  <td>{obj.fields.description}</td>
+                </tr>
+              );
+            }
+          });
+
+          tablesOfActivitiesByApp.push(
+            <span>
+              <h3>{app_ids_with_names[app_id]}</h3>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityRows}
+                </tbody>
+              </table>
+            </span>
+          )
+        }
+      }
+
       this.setState({
-        activitiesTableRows: activitiesTableRows,
+        tablesOfActivitiesByApp: tablesOfActivitiesByApp,
       });
     }.bind(this));
   }
@@ -156,7 +211,7 @@ export class App extends React.Component {
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
                 this.props.children, {
-                  activitiesTableRows: this.state.activitiesTableRows,
+                  tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,

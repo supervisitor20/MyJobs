@@ -10,7 +10,7 @@ class Activities extends React.Component {
             <h2>Activities</h2>
           </div>
           <div className="product-card-full no-highlight">
-            <ActivitiesList activitiesTableRows={this.props.activitiesTableRows} />
+            <ActivitiesList tablesOfActivitiesByApp={this.props.tablesOfActivitiesByApp} />
           </div>
         </div>
       </div>
@@ -19,11 +19,11 @@ class Activities extends React.Component {
 }
 
 Activities.propTypes = {
-  activitiesTableRows: React.PropTypes.array.isRequired,
+  tablesOfActivitiesByApp: React.PropTypes.array.isRequired,
 };
 
 Activities.defaultProps = {
-  activitiesTableRows: [],
+  tablesOfActivitiesByApp: [],
 };
 
 export default Activities;

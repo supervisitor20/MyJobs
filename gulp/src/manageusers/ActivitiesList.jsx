@@ -5,15 +5,9 @@ class ActivitiesList extends React.Component {
     return (
       <div>
         <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Activity</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.props.activitiesTableRows}
-          </tbody>
+
+          {this.props.tablesOfActivitiesByApp}
+
         </table>
       </div>
     );
@@ -21,7 +15,7 @@ class ActivitiesList extends React.Component {
 }
 
 ActivitiesList.propTypes = {
-  activitiesTableRows: React.PropTypes.array.isRequired,
+  tablesOfActivitiesByApp: React.PropTypes.array.isRequired,
 };
 
 export default ActivitiesList;
