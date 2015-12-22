@@ -4258,6 +4258,7 @@ a.btn.pull-right {
   }
   #nav .main-nav{
     height: 50px !important;
+    width: 50px !important;
   }
 }
 @media(min-width:992px){
