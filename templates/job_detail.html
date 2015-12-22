@@ -32,20 +32,27 @@
         <h3>
           <span class="direct_jobListingCompany" itemprop="hiringOrganization" 
             itemscope itemtype="http://schema.org/Organization">
-          <span itemprop="name">{{the_job.company}}</span>
+            <span itemprop="name">{{the_job.company}}</span>
           </span>
           <span class="direct_highlightedText">
             <span itemprop="title">{{ the_job.title|cut:"?"|cut:"~" }}</span> in 
             <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">
+              {% spaceless %}
               <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                {% if the_job.city != None %}
-                <span itemprop="addressLocality">{{ the_job.city }}</span>
-                {% endif %}
-                {% if the_job.state != None %}
-                <span itemprop="addressRegion">{{ the_job.state }}</span>
-                {% endif %} 
-                <span itemprop="addressCountry">{{ the_job.country }}</span>
+                  {% if the_job.state %}
+                    {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state }}</span>
+                  {% else %}
+                    {% if the_job.city %}
+                        <span itemprop="addressLocality">{{ the_job.city }}</span>
+                    {% endif %}
+                  {% endif %}
+                  {% if the_job.country_short|lower == "usa" and the_job.state %}
+                      <meta itemprop="addressCountry" content="{{ the_job.country }}" />
+                  {% else %}
+                      <span itemprop="addressCountry">{{ the_job.country }}</span>
+                  {% endif %}
               </span>
+              {% endspaceless %}
             </span>
           </span>
         </h3>
@@ -54,7 +61,7 @@
     <div id="direct_listingDiv">
         <meta itemprop="datePosted" content="{{the_job.date_updated|date:'c'}}"/>
         <div id="direct_jobDescriptionText" itemprop="description">
-            {% if the_job.html_description %}        
+            {% if the_job.html_description %}
                 {{ the_job.html_description|safe|cut:"??"|cut:"~" }}
             {% else %}
                 {{ the_job.description|safe|linebreaks|cut:"??"|cut:"~" }}
@@ -63,7 +70,7 @@
             <meta name="de-buid-associated-jobs" content="{{the_job.buid.associated_jobs}}"/>
             <meta name="de-buid-title" content="{{the_job.buid.title}}"/>
             <meta name="de-buid-date-crawled" content="{{the_job.buid.date_crawled|date:'c'}}"/>
-            <meta name="de-buid-date-updated" content="{{the_job.buid.date_updated|date:'c'}}"/>        
+            <meta name="de-buid-date-updated" content="{{the_job.buid.date_updated|date:'c'}}"/>
             <meta name="de-special-commits" content="{% for commitment in site_commitments.all %}{{commitment.commit}} {% endfor %}"/>
             <meta name="de-buid-title-slug" content="{{the_job.buid.title_slug}}"/>
         </div>
