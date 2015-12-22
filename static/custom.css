@@ -3905,12 +3905,10 @@ span.helptext {
 /*Manage Users*/
 /*New*/
 
-
 .FilteredMultiSelect select, .FilteredMultiSelect button {
   margin-top: 15px;
   height: 200px;
 }
-
 
 section {
   border: 1px solid #333333;

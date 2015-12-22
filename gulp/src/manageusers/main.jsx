@@ -48,7 +48,7 @@ export class App extends React.Component {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function getActivities(results) {
       // Define legend matching app_id to app name
-      // TODO: Ideally this information would be in the db
+      // TODO: Information like this should probably be in the db
       const app_names_legend = {};
       app_names_legend[1] = "PRM";
       app_names_legend[2] = "User Management";
@@ -69,7 +69,7 @@ export class App extends React.Component {
             app_ids.push(parsedResults[i].fields.app_access)
           }
         }
-      }
+      };
 
       // Create an array of apps (names/ids) that exist in our parsedResults
       const app_ids_with_names = {};
@@ -81,7 +81,6 @@ export class App extends React.Component {
       const tablesOfActivitiesByApp = [];
       for (let app_id in app_ids_with_names) {
         if (app_ids_with_names.hasOwnProperty(app_id)) {
-
           // For each app, build list of rows from parsedResults
           let activityRows = [];
           activityRows = parsedResults.map(function(obj){
@@ -95,7 +94,6 @@ export class App extends React.Component {
               );
             }
           });
-
           tablesOfActivitiesByApp.push(
             <span>
               <h3>{app_ids_with_names[app_id]}</h3>
@@ -114,7 +112,6 @@ export class App extends React.Component {
           )
         }
       }
-
       this.setState({
         tablesOfActivitiesByApp: tablesOfActivitiesByApp,
       });
