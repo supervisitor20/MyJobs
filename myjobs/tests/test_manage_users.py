@@ -49,7 +49,7 @@ class ManageUsersTests(MyJobsBase):
         self.assertIsInstance(description, unicode)
 
         app_access = first_result['fields']['app_access']
-        self.assertIsInstance(app_access, unicode)
+        self.assertIsInstance(app_access, int)
 
     def test_create_role_require_post(self):
         """
