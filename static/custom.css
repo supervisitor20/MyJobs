@@ -3927,6 +3927,10 @@ h1 a {
   width: 50%;
 }
 
+.table-activities {
+  margin-bottom: 0px;
+}
+
 .product-card-full h3 {
   font-size: 1em;
   color: black;
