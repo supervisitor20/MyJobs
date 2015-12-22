@@ -2,7 +2,7 @@ from datetime import datetime
 
 from unittest import TestCase
 
-from myreports.datasources import (
+from myreports.datasources.contacts import (
     ContactsDataSource, ContactsFilter, ContactsDataSourceJsonDriver)
 from myreports.report_configuration import (
     ReportConfiguration, ColumnConfiguration)

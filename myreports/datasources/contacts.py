@@ -1,4 +1,4 @@
-"""Sources of data suitable for reporting on."""
+"""Contacts DataSource"""
 import json
 from datetime import timedelta, datetime
 from operator import __or__
@@ -8,11 +8,6 @@ from mypartners.models import Contact, Location, Tag, Partner, Status
 from universal.helpers import dict_identity
 
 from django.db.models import Q
-
-
-def get_datasource_json_driver(datasource_name):
-    if datasource_name == 'contacts':
-        return ContactsDataSourceJsonDriver(ContactsDataSource())
 
 
 class ContactsDataSourceJsonDriver(object):
