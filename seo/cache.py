@@ -134,8 +134,7 @@ def get_site_config(request):
 def get_url_prefix_qc_staging(request):
     """
     Returns the url prefix of the current host if the current host url starts
-    with qc or staging. For use with indicating which secure host to ping for
-    secure blocks API
+    with qc or staging.
     :param request:
     :return: url prefix of qc or staging, if applicable, otherwise empty string
 
