@@ -1,44 +1,30 @@
 import React, {PropTypes, Component} from 'react';
-import Autosuggest from 'react-autosuggest';
+import {SearchInput} from 'common/ui/SearchInput';
 
 
 export class WizardFilterSearchDropdown extends Component {
-  async loadOptions(input, cb) {
-    const {getHints} = this.props;
-    const hints = await getHints(input);
-    cb(null, hints);
+  onSearchSelect(value) {
+    const {updateFilter} = this.props;
+    updateFilter(value.key);
   }
 
-  suggestionRenderer(suggestion) {
-    return (
-      <a href="#">
-        {suggestion.display}
-      </a>
-    );
+  async getHints(input) {
+    const {getHints} = this.props;
+    const hints = await getHints(input);
+    return hints;
   }
 
   render() {
-    const {id, updateFilter, placeholder} = this.props;
+    const {id, placeholder} = this.props;
     const eid = 'filter-autosuggest-' + id;
 
     return (
-      <Autosuggest
+      <SearchInput
         id={eid}
-        cache={false}
-        suggestions={(input, cb) =>
-          this.loadOptions(input, cb)}
-        suggestionRenderer={(s, i) =>
-          this.suggestionRenderer(s, i)}
-        suggestionValue={s => s.key}
-        theme={{
-          root: 'dropdown open',
-          suggestions: 'dropdown-menu',
-        }}
-        inputAttributes={{
-          type: 'search',
-          placeholder: placeholder,
-          onChange: v => updateFilter(v),
-        }}/>
+        callSelectWhenEmpty
+        placeholder={placeholder}
+        onSelect={v => this.onSearchSelect(v)}
+        getHints={p => this.getHints(p)}/>
     );
   }
 }

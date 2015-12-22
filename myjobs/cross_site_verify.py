@@ -23,6 +23,11 @@ def extract_hostname(url):
 
 
 def remove_test_prefix(url):
+    """
+    Removes test prefix (qc, staging) from incoming requests, if it exists.
+    :param url:
+    :return: url without qc, staging prefixes
+    """
     if not url:
         return url
     url_split = url.split('.', 1)
@@ -136,6 +141,16 @@ def cross_site_verify(fn):
             parse_request_meta(request.META))
 
         host_site = settings.SITE
+
+        if remove_test_prefix(host_site.domain) != host_site.domain:
+            """
+            If the host site has a testing prefix, try to remove it.
+            This is to prevent data refreshed from production from breaking
+            the cross-site verify logic.
+            """
+            trimmed_domain = remove_test_prefix(host_site.domain)
+            non_test_site = SeoSite.objects.filter(domain=trimmed_domain).first()
+            host_site = (non_test_site or host_site)
 
         try:
             verify_cross_site_request(get_site, method, host_site, origin,

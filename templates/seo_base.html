@@ -37,7 +37,7 @@
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       $(document).on("ready", function() {
-        var secure_block_url = "{% if testing_host_prefix %}http{% else %}https{% endif %}://{{ testing_host_prefix }}{{ secure_blocks_domain }}/secure-blocks/";
+        var secure_block_url = "{% if testing_host_prefix %}http://{{ testing_host_prefix }}.{% else %}https://{% endif %}{{ secure_blocks_domain }}/secure-blocks/";
         load_secure_blocks(secure_block_url);
       });
     </script>
