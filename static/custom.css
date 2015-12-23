@@ -3901,7 +3901,6 @@ span.helptext {
 
 
 
-
 /*Manage Users*/
 /*New*/
 
@@ -4246,8 +4245,6 @@ a.btn.pull-right {
 	#no-more-tables td:before {
     content: attr(data-title);
   }
-
-
 }
 @media(min-width:768px){
 
@@ -4260,11 +4257,19 @@ a.btn.pull-right {
     height: 50px !important;
     width: 50px !important;
   }
+  /* New Topbar based on Bootstrap 3 */
+  .topbar-new #logged-in-li {
+    height: 33px !important;
+    font-size: 2em !important;
+  }
+  .topbar-new #nav ul#pop-menu li a {
+    height: 45px !important;
+  }
 }
 @media(min-width:992px){
   .topbar-inner {
     height: 30px !important;
-    }
+  }
 }
 @media(min-width:1200px){
 
