@@ -20,6 +20,9 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+# django misbehaves without this, and setup_environ() was deprecated with
+# Django 1.4
+import settings
 
 # -- General configuration ------------------------------------------------
 

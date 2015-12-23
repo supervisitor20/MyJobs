@@ -1798,7 +1798,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
     }
-    
+
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 

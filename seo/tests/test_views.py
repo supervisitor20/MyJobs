@@ -6,6 +6,7 @@ import uuid
 import default_settings
 import itertools
 import json
+import re
 from StringIO import StringIO
 from collections import OrderedDict
 
@@ -1128,7 +1129,6 @@ class TemplateTestCase(DirectSEOTestCase):
         resp = template.render(context)
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
-
     def test_xss_job_listing(self):
         settings.SITE_TITLE = "Acme"
         settings.SITE_DESCRIPTION = "test"
@@ -1714,6 +1714,33 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         test_search_not(self)
         test_title_boost(self)
+
+    def test_job_detail_heading(self):
+        """
+        Test to make sure job location is printed with commas, appropriately.
+        """
+        SeoSite.objects.get(id=1).delete()
+        ats = factories.ATSSourceCodeFactory()
+        gac = factories.GACampaignFactory()
+        site = factories.SeoSiteFactory(
+            google_analytics_campaigns=gac,
+            view_sources=factories.ViewSourceFactory(id=1),
+            id=1)
+        site.ats_source_codes.add(ats),
+        site.special_commitments.add(factories.SpecialCommitmentFactory(id=1))
+        view_source = factories.ViewSourceFactory()
+        special_commitment = factories.SpecialCommitmentFactory()
+        
+        # Job lookup by guid, check for full location.
+        resp = self.client.get(
+            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in full location test")
+        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
+                                  '<span itemprop="addressLocality">Indianapolis</span>, '
+                                  '<span itemprop="addressRegion">Indiana</span>'
+                                  '<meta itemprop="addressCountry" content="United States'
+                                  , msg_prefix='Full location test is failing')
 
     def test_job_detail(self):
         """

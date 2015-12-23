@@ -1,10 +1,10 @@
-{% if user.is_authenticated %}
+{% if user.is_authenticated and saved_searches.count %}
 <div class="direct_rightColBox direct-action-box">
 <div id="de-myjobs-widget">
     <strong>Searches</strong>
     <ul>
         {% for search in saved_searches|slice:":5" %}
-        <li><a href="{{search.url}}">{{search.label}}</a> - {{search.last_sent|default:"Not yet sent"}}</li>
+        <li><a href="{{ search.url }}">{{ search.label }}</a> - Sent: {{ search.last_sent|default:"Never" }}</li>
         {% endfor %}
     </ul>
 {% if saved_searches.count > 5 %}

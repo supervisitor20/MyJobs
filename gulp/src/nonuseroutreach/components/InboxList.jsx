@@ -42,7 +42,7 @@ export class InboxList extends Component {
         <div className="wrapper-header">
           <h2>Existing Inbox Management</h2>
         </div>
-        <div className="partner-holder">
+        <div className="partner-holder no-highlight">
           {inboxes.map((inboxOb, i) =>
             <InboxRow
               inbox={inboxOb}

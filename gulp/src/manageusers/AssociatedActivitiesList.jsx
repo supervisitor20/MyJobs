@@ -1,5 +1,7 @@
 import React from 'react';
 
+import {formatActivityName} from 'util/formatActivityName';
+
 class AssociatedActivitiesList extends React.Component {
   constructor(props) {
     super(props);
@@ -8,7 +10,7 @@ class AssociatedActivitiesList extends React.Component {
     const associatedActivitiesShortList = this.props.activities.map( (activity, index) => {
       return (
         <li key={index}>
-          {activity.fields.name}
+          {formatActivityName(activity.fields.name)}
         </li>
       );
     });

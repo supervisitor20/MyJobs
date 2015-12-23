@@ -155,7 +155,7 @@ class BaseJobLocationFormSet(BaseModelFormSet):
     def clean(self):
         forms_changed = any([form.has_changed() for form in self.forms])
 
-        if any(self.errors) or not forms_changed:
+        if any(self.errors):
             return
 
         has_locations = any([not data['DELETE'] for data in self.cleaned_data])

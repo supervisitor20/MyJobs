@@ -19,7 +19,19 @@ def extract_hostname(url):
     if url is None:
         return None
     else:
-        return urlparse(url).hostname
+        return remove_test_prefix(urlparse(url).hostname)
+
+
+def remove_test_prefix(url):
+    """
+    Removes test prefix (qc, staging) from incoming requests, if it exists.
+    :param url:
+    :return: url without qc, staging prefixes
+    """
+    if not url:
+        return url
+    url_split = url.split('.', 1)
+    return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
 
 
 def parse_request_meta(meta):
@@ -44,8 +56,15 @@ def guess_child_domain(host, origin, referer):
     raise DomainRelationshipException('no-child-info')
 
 
-def return_404():
-    return HttpResponse(status=404, content="not found")
+def return_404(return_message="not found"):
+    """
+    Return a HttpResponse with a status code of 404. This is used in lieu
+    of raise Http404 due to middleware issues that were encountered. This
+    can be fleshed out in the future to contain varied content messages.
+    :return: HttpResponse 404
+    
+    """
+    return HttpResponse(status=404, content=return_message)
 
 
 def is_permitted_method(method):
@@ -123,6 +142,16 @@ def cross_site_verify(fn):
 
         host_site = settings.SITE
 
+        if remove_test_prefix(host_site.domain) != host_site.domain:
+            """
+            If the host site has a testing prefix, try to remove it.
+            This is to prevent data refreshed from production from breaking
+            the cross-site verify logic.
+            """
+            trimmed_domain = remove_test_prefix(host_site.domain)
+            non_test_site = SeoSite.objects.filter(domain=trimmed_domain).first()
+            host_site = (non_test_site or host_site)
+
         try:
             verify_cross_site_request(get_site, method, host_site, origin,
                                       referer, xrw)
@@ -133,7 +162,7 @@ def cross_site_verify(fn):
             logger.warn(
                 "Rejected cross site request; reason : %s\n" +
                 "data: %s", e.message, data)
-            return return_404()
+            return return_404(return_message=e.message)
         return fn(request)
 
     return verify
