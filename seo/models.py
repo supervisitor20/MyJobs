@@ -1406,9 +1406,12 @@ class CompanyUser(models.Model):
         # and not being invited, so only create an invitation if we can
         # determine who is inviting them.
         if not self.pk and inviting_user:
-            Invitation(invitee=self.user, inviting_company=self.company,
-                       added_permission=group,
-                       inviting_user=inviting_user).save(using=using)
+            invitation = Invitation.objects.create(
+                invitee=self.user, inviting_company=self.company,
+                added_permission=group,
+                inviting_user=inviting_user)
+            invitation.save(using=using)
+            invitation.send()
 
         return super(CompanyUser, self).save(*args, **kwargs)
 

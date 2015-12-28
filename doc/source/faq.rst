@@ -22,6 +22,12 @@ User Management
     activities required for that particular app's page. In the case of the PRM
     overview page, a role must include the "read partner" activity.
 
+  I think I'm having an existential crisis. I don't have permissions to assign
+  roles, so how would I be assigned a role with the "read partner" activity?
+    It is assumed that someone for the company already exists as an admin who
+    can assign that role for you. If not, you'll need to assign yourself as an
+    Admin from the console.
+
   How do I assign roles in the Django Admin?
     You don't. That was a design decision to discourage employees from managing
     users on behalf of the member. Assigning roles should be done from the
@@ -38,6 +44,13 @@ User Management
     If you navigate to "Companies" in the Django admin (under "Common Tasks")
     and select a company, you should see a section called "App-Level Access"
     near the top. Note that it could take a moment for the page to load.
+
+  I'm already a CompanyUser, so why don't I have an "Employer" menu?
+    Because you don't have permission to access anything that would show up in
+    the employer menu. With roles enabled, CompanyUser means absolutely
+    nothing. It's only reason for existing is to support the old system, which
+    is still in use in production.
+
 
 Documentation
 =============

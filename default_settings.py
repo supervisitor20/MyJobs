@@ -645,3 +645,5 @@ SEARCH_SNIPPETS = 2
 EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
 
 CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'
+
+ENV_URL_PREFIXES = ['qc', 'staging']

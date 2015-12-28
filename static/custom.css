@@ -4165,6 +4165,10 @@ a.btn.pull-right, button.btn.pull-right {
   margin-right: 8px;
 }
 
+button.btn.pull-right[data-reactid] {
+  margin-right: 0;
+}
+
 a.btn.pull-right {
   padding-top: 10px;
 }

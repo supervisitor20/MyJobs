@@ -37,10 +37,9 @@ FEED_FILE_PREFIX = "dseo_feed_"
 def update_job_source(guid, buid, name):
     """Composed method for resopnding to a guid update."""
 
-    assert(re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid),
-           "%s is not a valid guid" % guid)
-    assert(re.match(r'^\d+$', str(buid)),
-           "%s is not a valid buid" % buid)
+    assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
+           "%s is not a valid guid" % guid
+    assert re.match(r'^\d+$', str(buid)),  "%s is not a valid buid" % buid
 
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
@@ -112,8 +111,8 @@ def get_jobsfs_zipfile(guid):
     url = 'http://jobsfs.directemployers.org/%s/ActiveDirectory_%s.zip' % \
         (guid, guid)
     req = urllib2.Request(url)
-    authheader = "Basic %s" % base64.encodestring('%s:%s' % ('microsites',
-                                                             'di?dsDe4'))
+    authheader = "Basic %s" % base64.encodestring('%s:%s' % (settings.JOBSFS_USERNAME,
+                                                             settings.JOBSFS_PASSWORD))
     req.add_header("Authorization", authheader)
     resp = urllib2.urlopen(req, timeout=30)
     return resp
@@ -169,7 +168,12 @@ def get_jobs_from_zipfile(zipfileobject, guid):
                         f, guid)
             continue
         with open(path) as _f:
-            yield etree.fromstring(_f.read())
+            try:
+                yield etree.fromstring(_f.read())
+            except Exception as e:
+                logger.error("Unable to parse XML document for job %s", path)
+                logger.exception(e)
+                raise
 
     # clean up after ourselves.
     shutil.rmtree(directory)
