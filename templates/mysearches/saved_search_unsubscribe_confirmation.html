@@ -11,28 +11,25 @@
     </div>
     <div class="row">
         <div class="span8">
+            <div>
+                <h4>
+                    Unsubscribe:
+                </h4>
+            </div>
             {% if links.single_search %}
-                <div>
-                    <a href="{{ links.single_search }}">
-                        {% trans "Unsubscribe from a single saved search" %}
-                    </a>
-                </div>
-            {% endif %}
-            <div>
-                <a href="{{ links.all_searches }}">
-                    {% trans "Unsubscribe from all saved searches" %}
+                <a class="btn" href="{{ links.single_search }}">
+                    {% trans "This Search" %}
                 </a>
-            </div>
-            <div>
-            <a href="{{ links.all_email }}">
-                {% trans "Unsubscribe from all MyJobs email" %}
+            {% endif %}
+                <a class="btn" href="{{ links.all_searches }}">
+                    {% trans "All Searches" %}
+                </a>
+            <a class="btn" href="{{ links.all_email }}">
+                {% trans "Everything" %}
             </a>
-            </div>
-            <div>
-            <a href="{% url 'saved_search_main' %}">
+            <a class="btn primary" href="{% url 'saved_search_main' %}">
                 {% trans "I've changed my mind" %}
             </a>
-            </div>
         </div>
     </div>
 {% endblock %}

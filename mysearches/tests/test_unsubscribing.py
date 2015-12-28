@@ -40,20 +40,19 @@ class UnsubscribingTests(MyJobsBase):
         response = self.client.get(unsub_link)
         contents = BeautifulSoup(response.content)
 
+        # Magic! If this is a digest, we shouldn't have an unsub link for
+        # single searches. If expected_num_links is 2, we'll exclude that.
+        expected_link_types = set(["Everything", "All Searches",
+                                   "This Search"][:expected_num_links])
+
         # All links start with the word "Unsubscribe". If that changes, this
         # will need modification as well.
-        links = contents.findAll('a', text=re.compile("Unsubscribe"))
+        links = contents.findAll('a', text=re.compile("|".join(
+            expected_link_types)))
         self.assertEqual(len(links), expected_num_links,
                          msg=("Expected {0} unsubscribe links, "
                               "found {1}").format(
                              expected_num_links, len(links)))
-
-        # Magic! If this is a digest, we shouldn't have an unsub link for
-        # single searches. If expected_num_links is 2, we'll exclude that.
-        expected_link_types = set([
-            "Unsubscribe from all MyJobs email",
-            "Unsubscribe from all saved searches",
-            "Unsubscribe from a single saved search"][:expected_num_links])
         found_link_types = {link.text.strip() for link in links}
         self.assertEqual(found_link_types, expected_link_types,
                          ("Expected to find links ({0}), "
