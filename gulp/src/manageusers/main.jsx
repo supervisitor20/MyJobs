@@ -83,7 +83,7 @@ export class App extends React.Component {
           let activityRows = [];
           activityRows = parsedResults.map(function buildRow(obj) {
             // Only use activities of a certain appID
-            if (obj.fields.app_access == appID) {
+            if (obj.fields.app_access.toString() === appID) {
               return (
                 <tr>
                   <td>{obj.fields.name}</td>
