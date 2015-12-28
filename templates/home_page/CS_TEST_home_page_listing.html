@@ -48,6 +48,10 @@
     {% include 'includes/add_this.html' %}<!--temp rollback of my.jobs sharing [JPS 10.4.12]-->
 </div>
 <a href="#top" class="direct_mobileJumpLink">{% blocktrans %}Return to top{% endblocktrans %}</a>
+{% if "network" in site_tags or site_config.show_saved_search_widget %}
+    <div data-secure-block-id="saved-search"></div>
+{% endif %}
+<div data-secure-block-id="saved-search-list"></div>
 <div id="direct_disambiguationDiv" class="direct_rightColBox">
 {% for widget in widgets %}
 {% if widget.render %}
