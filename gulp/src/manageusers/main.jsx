@@ -27,6 +27,7 @@ export class App extends React.Component {
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
+      company: companyName,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
@@ -123,11 +124,12 @@ export class App extends React.Component {
     }.bind(this));
   }
   render() {
+    const {company} = this.state;
     return (
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1>DirectEmployers</h1>
+            <h1>{company}</h1>
           </div>
         </div>
 
