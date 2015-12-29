@@ -24,7 +24,7 @@ class PartnersDataSource(object):
             'dataSource': record.data_source,
             'date': record.last_action_time,
             'name': record.name,
-            'primary_contact':
+            'primaryContact':
                 self.extract_primary_contact(record.primary_contact),
             'tags': [t.name for t in record.tags.all()],
             'uri': record.uri,
@@ -160,16 +160,6 @@ class PartnersFilter(object):
             qs = qs.filter(primary_contact=contact_qs)
 
         return qs
-
-
-# Fields:
-#
-# Data Source
-# Last Action Time
-# Name
-# Primary Contact
-# Tags
-# Uri
 
 
 # Filters:

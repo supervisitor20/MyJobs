@@ -296,18 +296,42 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=31,
         column_name="name",
-        order=103,
+        order=104,
         output_format="text",
         configuration=con_part,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=32,
         column_name="date",
-        order=104,
+        order=105,
         configuration=con_part,
         output_format="us_date",
         filter_interface_type='date_range',
         filter_interface_display='Date',
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=33,
+        column_name="primaryContact",
+        order=106,
+        output_format="text",
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=34,
+        column_name="tags",
+        order=107,
+        output_format="comma_sep",
+        filter_interface_type='tags',
+        filter_interface_display='Tags',
+        configuration=con_part,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=35,
+        column_name="uri",
+        order=108,
+        output_format="text",
+        configuration=con_part,
         multi_value_expansion=False)
 
     ReportPresentation.objects.all().delete()
