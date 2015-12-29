@@ -515,7 +515,7 @@ h1 > small > a:hover {
 }
 
 .product-card + .product-card {
-    border-top: 0;
+    border-top: none;
 }
 
 .product-card:not(.no-highlight):hover,
@@ -617,7 +617,7 @@ h1 > small > a:hover {
 .sidebar {
     background-color: #F7F7F7;
     border: 1px solid #E5E5E5;
-    border-top: 0;
+    border-top: none;
     box-sizing: border-box;
     box-shadow: 2px 2px 3px #BBB;
     padding: 10px;
@@ -791,11 +791,11 @@ h1 > small > a:hover {
 }
 
 .partner-pagination + .partner-sort {
-    border-top: 0;
+    border-top: none;
 }
 
 .partner-sort + .product-card {
-    border-top: 0;
+    border-top: none;
 }
 
 .partner-sort {
@@ -3984,7 +3984,7 @@ h1 a {
 }
 
 .wrapper-header + .product-card-full {
-  border-top: 0;
+  border-top: none;
 }
 
 
