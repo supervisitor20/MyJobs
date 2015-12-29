@@ -20,8 +20,6 @@ class MyJobsHelpersTests(MyJobsBase):
 
     def test_login_dont_remember_me(self):
         self.assertEqual(Session.objects.count(), 0)
-        response = self.client.post(reverse('home'),
-                                    data=self.login_params)
         self.assertEqual(Session.objects.count(), 1)
 
         session = Session.objects.all()[0]
