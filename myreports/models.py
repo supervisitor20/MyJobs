@@ -193,6 +193,7 @@ class ReportPresentationManager(models.Manager):
         query_filter = dict(
             presentation_type__is_active=True,
             configuration__is_active=True,
+            report_data=rtdt,
             is_active=True)
         return ReportPresentation.objects.filter(**query_filter)
 

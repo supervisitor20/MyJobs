@@ -24,12 +24,19 @@ class PartnersDataSource(object):
             'dataSource': record.data_source,
             'date': record.last_action_time,
             'name': record.name,
-            'primary_contact': record.primary_contact,
+            'primary_contact':
+                self.extract_primary_contact(record.primary_contact),
             'tags': [t.name for t in record.tags.all()],
             'uri': record.uri,
         }
 
-    def filter_types(self):
+    def extract_primary_contact(self, contact):
+        if contact is None:
+            return None
+        else:
+            return contact.name
+
+    def filter_type(self):
         return PartnersFilter
 
     def help_city(self, company, filter, partial):

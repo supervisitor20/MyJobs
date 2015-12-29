@@ -116,7 +116,8 @@ def create_full_fixture():
     rt_partners = ReportTypeFactory(
         id=1,
         report_type="Partners",
-        description="Partners Report")
+        description="Partners Report",
+        datasource="partners")
     rt_con = ReportTypeFactory(
         id=2,
         report_type="Contacts",
@@ -188,6 +189,8 @@ def create_full_fixture():
         report_type=rt_con, data_type=dt_maybe_dead, is_active=False)
     rtdt_conn_unagg = ReportTypeDataTypesFactory.create(
         report_type=rt_con, data_type=dt_unagg)
+    rtdt_part_unagg = ReportTypeDataTypesFactory.create(
+        report_type=rt_partners, data_type=dt_unagg)
 
     PresentationType.objects.all().delete()
     pre_dead = PresentationTypeFactory.create(
@@ -203,7 +206,9 @@ def create_full_fixture():
     ConfigurationFactory.create(
         id=2, name="Maybe Inactive")
     con_con = ConfigurationFactory.create(
-        id=3, name="Basic Report")
+        id=3, name="Contact Basic Report")
+    con_part = ConfigurationFactory.create(
+        id=4, name="Parnter Basic Report")
 
     ConfigurationColumn.objects.all().delete()
     ConfigurationColumnFactory.create(
@@ -281,6 +286,30 @@ def create_full_fixture():
         multi_value_expansion=False,
         has_help=True)
 
+    ConfigurationColumnFactory.create(
+        id=30,
+        column_name="dataSource",
+        order=103,
+        output_format="text",
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=31,
+        column_name="name",
+        order=103,
+        output_format="text",
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=32,
+        column_name="date",
+        order=104,
+        configuration=con_part,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
+        multi_value_expansion=False)
+
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(
         id=1, presentation_type=pre_maybe_dead, configuration=con_con,
@@ -297,3 +326,7 @@ def create_full_fixture():
         id=4, presentation_type=pre_csv, configuration=con_dead,
         display_name="Dead Configuration",
         report_data=rtdt_conn_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=5, presentation_type=pre_csv, configuration=con_part,
+        display_name="Partner CSV",
+        report_data=rtdt_part_unagg, is_active=True)
