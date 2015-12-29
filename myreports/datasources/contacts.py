@@ -12,88 +12,6 @@ from universal.helpers import dict_identity
 from django.db.models import Q
 
 
-class ContactsDataSourceJsonDriver(object):
-    """Translate from web api values to ContactsDataSource objects."""
-    def __init__(self, ds):
-        self.ds = ds
-
-    def run(self, company, filter_spec, order_spec):
-        """Run the report.
-
-        company: company model object for this run.
-        filter_spec: string with json object representing the user filter
-        order_spec: string with json list of fields in "[+-]field" form
-
-        returns: list of relatively flat dictionaries.
-        """
-        return self.ds.run(
-            company,
-            self.build_filter(filter_spec),
-            self.build_order(order_spec))
-
-    def help(self, company, filter_spec, field, partial):
-        """Get help values for a particular field.
-
-        company: company model object for this run.
-        filter_spec: string with json object for the current user filter.
-        field: which field we are getting help for
-        partial: the user input in the field so far
-        """
-        method = getattr(self.ds, 'help_' + field)
-        return method(company, self.build_filter(filter_spec), partial)
-
-    def build_filter(self, filter_json):
-        """Build a ContactsFilter for the given filter_json"""
-        kwargs = {}
-        filter_spec = json.loads(filter_json)
-        date_strings = filter_spec.get('date', None)
-        if date_strings is not None:
-            dates = [
-                (datetime.strptime(d, "%Y-%m-%d") if d else None)
-                for d in date_strings]
-
-            kwargs['date'] = dates
-
-        kwargs['locations'] = filter_spec.get('locations', None)
-        kwargs['tags'] = filter_spec.get('tags', None)
-        kwargs['partner'] = filter_spec.get('partner', None)
-
-        return ContactsFilter(**kwargs)
-
-    def build_order(self, order_spec):
-        """Build a list of order_by fields from the given order_spec."""
-        return json.loads(order_spec)
-
-    def encode_filter_interface(self, report_configuration):
-        """Describe the filter_interface in python primitives.
-
-        Output is suitable for serializing to JSON.
-        """
-        column_configs = report_configuration.columns
-        filters = [
-            self.encode_single_filter_interface(c)
-            for c in column_configs
-            if c.filter_interface is not None
-        ]
-
-        help_available = dict(
-            (c.column, True)
-            for c in column_configs
-            if c.help)
-
-        return {
-            'filters': filters,
-            'help': help_available,
-        }
-
-    def encode_single_filter_interface(self, column_config):
-        return {
-            'interface_type': column_config.filter_interface,
-            'filter': column_config.column,
-            'display': column_config.filter_display
-        }
-
-
 class ContactsDataSource(object):
     def run(self, company, filter, order):
         """Run the query with the given company, filter, and ordering.
@@ -107,6 +25,9 @@ class ContactsDataSource(object):
         qs_ordered = qs_filtered.order_by(*order)
         qs_distinct = qs_ordered.distinct()
         return [self.extract_record(r) for r in qs_distinct]
+
+    def filter_type(self):
+        return ContactsFilter
 
     def help_city(self, company, filter, partial):
         """Get help for the city field."""
@@ -193,6 +114,15 @@ class ContactsFilter(object):
         self.locations = locations
         self.tags = tags
         self.partner = partner
+
+    @classmethod
+    def filter_key_types(self):
+        return {
+            'date': 'date_range',
+            'locations': 'pass',
+            'tags': 'pass',
+            'partner': 'pass',
+        }
 
     def clone_without_city(self):
         """City help needs it's filter cleared before searching for help.

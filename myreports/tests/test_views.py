@@ -474,7 +474,7 @@ class TestReportsApi(MyReportsTestCase):
             reverse('help_api'),
             data={
                 'rp_id': 3,
-                'filter': json.dumps({'state': 'IL'}),
+                'filter': json.dumps({'locations': {'state': 'IL'}}),
                 'field': 'city',
                 'partial': 'i',
             })
