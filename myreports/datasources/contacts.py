@@ -1,7 +1,9 @@
 """Contacts DataSource"""
 import json
-from datetime import timedelta, datetime
+from datetime import datetime
 from operator import __or__
+
+from myreports.datasources.util import filter_date_range
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
@@ -225,18 +227,7 @@ class ContactsFilter(object):
 
         qs: the query set to receive the filter
         """
-        if self.date is not None:
-            if (self.date[0] is not None and
-                    self.date[1] is not None):
-                qs = qs.filter(
-                    last_action_time__range=tuple([
-                        self.date[0],
-                        self.date[1] + timedelta(days=1)]))
-            elif self.date[0] is not None:
-                qs = qs.filter(last_action_time__gte=self.date[0])
-            elif self.date[1] is not None:
-                qs = qs.filter(
-                    last_action_time__lte=self.date[1] + timedelta(days=1))
+        qs = filter_date_range(self.date, 'last_action_time', qs)
 
         if self.tags:
             or_qs = []
