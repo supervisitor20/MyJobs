@@ -234,9 +234,9 @@ def ajax_get_facets(request, filter_path, facet_type):
                                                   sort_order=sort_order)
 
 
-        #TODO: This may throw off num_items and offset. Add slicing to each
-        #field list to return the correct number of facet constraints/counts
-        #Jason McLaughlin 09/10/2012
+        # TODO: This may throw off num_items and offset. Add slicing to each
+        # field list to return the correct number of facet constraints/counts
+        # Jason McLaughlin 09/10/2012
         facet_counts = default_jobs.add_facet_count(featured_jobs).get('fields')
         facet_results = facet_counts['%s_slab' % _type]
 
@@ -723,7 +723,7 @@ def syndication_feed(request, filter_path, feed_type):
     max_items, num_items, offset, days_ago = 1000, 500, 0, 0
     if request.GET:
         sqs = helpers.prepare_sqs_from_search_params(request.GET)
-        #Leave num_items and offset at defaults if they're not in QueryDict
+        # Leave num_items and offset at defaults if they're not in QueryDict
         date_sort = request.GET.get(u'date_sort', date_sort)
         try:
             new_num_items = request.GET.get(u'num_items')
@@ -783,12 +783,12 @@ def syndication_feed(request, filter_path, feed_type):
     next_offset = num_items + offset
     if next_offset < job_count:
         next_num_items = min(num_items, job_count-next_offset)
-        #build the link to the next page
+        # build the link to the next page
         next_uri = "{h}?num_items={ni}&offset={no}".format(
             h=request.build_absolute_uri().split("?")[0],
             ni=next_num_items,
             no=next_offset)
-        #Add other attributes back to next_uri
+        # Add other attributes back to next_uri
         request_attributes = [u'&%s=%s' % (key, value) for(key, value)
                               in request.GET.items() if
                               key not in ('num_items', 'offset', 'amp')]
@@ -1376,7 +1376,7 @@ def new_sitemap_index(request):
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(days=1)
     midnight = datetime.time.max
-    #The latest date/time in sitemaps is yesterday, midnight (time.max)
+    # The latest date/time in sitemaps is yesterday, midnight (time.max)
     latest_datetime = datetime.datetime.combine(yesterday, midnight)
     # Number of days to go back from today.
     history = 30
@@ -1394,7 +1394,7 @@ def new_sitemap_index(request):
     current_site = Site.objects.get_current()
     protocol = request.is_secure() and 'https' or 'http'
 
-    #List of tuples: (sitemap url, lastmod date)
+    # List of tuples: (sitemap url, lastmod date)
     sites_dates = []
     for date in sorted(sitemaps.keys(), reverse=True):
         pages = sitemaps[date]['count']
@@ -1733,7 +1733,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         total_featured_jobs, total_default_jobs,
         num_jobs, site_config.percent_featured)
 
-    #if we return no jobs based on the search, verify company information provided
+    # if we return no jobs based on the search, verify company information provided
     if num_default_jobs == 0 and num_featured_jobs == 0:
         company_obj = Company.objects.filter(company_slug=filters['company_slug'])
         if not company_obj and filters['company_slug']:

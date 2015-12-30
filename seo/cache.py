@@ -54,7 +54,7 @@ def get_facet_count_key(filters=None, query_string=None):
     filters = filters or ''
     query_string = query_string or ''
 
-    #We use a hash to ensure key length is under memcache's 250 character limit
+    # We use a hash to ensure key length is under memcache's 250 character limit
     return "browsefacets::%s%s%s" % (
         settings.SITE_ID,
         hashlib.md5(unicode(filters)).hexdigest(),

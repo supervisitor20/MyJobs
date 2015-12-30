@@ -437,9 +437,9 @@ class CustomFacetForm(SiteRowPermissionsForm):
             except SeoSiteFacet.MultipleObjectsReturned:
                 pass
 
-        #Adds keyword tags to customfacet. If tags don't get added here,
-        #no keyword tags are passed to CustomFacet.save() for new
-        #custom facets.
+        # Adds keyword tags to customfacet. If tags don't get added here,
+        # no keyword tags are passed to CustomFacet.save() for new
+        # custom facets.
         keywords = self.cleaned_data['keyword']
 
         customfacet.keyword.add(*keywords)
