@@ -207,7 +207,7 @@ def requires(*activities, **callbacks):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            #TODO: Remove this logic once feature is rolled out. for the
+            # TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
 

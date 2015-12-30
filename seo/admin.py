@@ -88,8 +88,8 @@ class SeoCeleryTaskAdmin(djcelery.admin.TaskMonitor):
         can be completely represented by strings in task state.
 
         """
-        #Using python's ast.literal_eval to evaluate string representations
-        #of args and kwargs as a tuple and dictionary
+        # Using python's ast.literal_eval to evaluate string representations
+        # of args and kwargs as a tuple and dictionary
         import ast
         with current_app.default_connection() as connection:
             for state in queryset:
@@ -239,9 +239,9 @@ class ConfigurationAdmin (admin.ModelAdmin):
     @check_message_queue
     def save_model(self, request, obj, form, change):
         if obj.status == [1, 2]:
-            #Force an evaluation of obj site keys. When obj.seosite_set was used
-            #in queries for qs, an error would be thrown if the two objects had
-            #been queried from different databases
+            # Force an evaluation of obj site keys. When obj.seosite_set was used
+            # in queries for qs, an error would be thrown if the two objects had
+            # been queried from different databases
             obj_site_keys = [site.pk for site in obj.seosite_set.all()]
             qs = Configuration.objects.filter(seosite__pk__in=obj_site_keys,
                                               status=obj.status)
@@ -986,9 +986,9 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 formset = FormSet(instance=self.model(), prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-        #overwrite for the "parent_site" form information...
-        #django-extensions does not allow for addition of the widget
-        #in the form declaration
+        # overwrite for the "parent_site" form information...
+        # django-extensions does not allow for addition of the widget
+        # in the form declaration
         form.fields['parent_site'].widget = ForeignKeySearchInput(
             opts.get_field('parent_site').rel,['name','domain'])
         form.fields['parent_site'].help_text=('Use the left field to do'
@@ -1093,9 +1093,9 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-        #overwrite for the "parent_site" form information...
-        #django-extensions does not allow for addition of the widget
-        #in the form declaration
+        # overwrite for the "parent_site" form information...
+        # django-extensions does not allow for addition of the widget
+        # in the form declaration
         form.fields['parent_site'].widget = ForeignKeySearchInput(
             opts.get_field('parent_site').rel,['name','domain'])
         form.fields['parent_site'].help_text=('Use the left field to do'
@@ -1181,7 +1181,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class SpecialCommitmentAdmin(admin.ModelAdmin):
     form = SpecialCommitmentForm
     save_on_top = True
-    #filter_horizontal = ('job_source_ids',)
+    # filter_horizontal = ('job_source_ids',)
     list_display = ('name', 'commit' , 'committed_sites')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [

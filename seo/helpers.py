@@ -138,8 +138,8 @@ def build_filter_dict(slug_path):
     slug_value_list = settings.SLUG_TAG_PARSING_REGEX.findall(slug_path)
     slugs_dict = dict([(key, value.strip('/')) for (value, key) in
                        slug_value_list])
-    #We use an ordered dict to ensure that the the string representation of
-    #identicial filters are equal if they have the same filters
+    # We use an ordered dict to ensure that the the string representation of
+    # identicial filters are equal if they have the same filters
     return OrderedDict([(key, slugs_dict.get(value.strip('/')))
                         for key, value in sorted(settings.SLUG_TAGS.items())])
 
@@ -395,7 +395,7 @@ def pull_moc_object_via_slug(moc_slug_value):
 
     moc_slug_value = moc_slug_value.strip('/')
     moc_pieces = moc_slug_value.split('/')
-    if len(moc_pieces) < 3: #moc url must be 3 parts
+    if len(moc_pieces) < 3: # moc url must be 3 parts
         return None
     moc_code = moc_pieces[1]
     branch = moc_pieces[2]
@@ -669,7 +669,7 @@ def featured_default_jobs(f, d, total, percent_f, offset=0):
         f_offset = int(math.ceil(offset*percent_f))
         f = f-f_offset
 
-        #if f is negative, we add that many jobs to d_offset
+        # if f is negative, we add that many jobs to d_offset
         d_offset = offset - f_offset - min(0, f)
         d = d - d_offset
         f_offset = f_offset - min(0, d)
@@ -680,14 +680,14 @@ def featured_default_jobs(f, d, total, percent_f, offset=0):
     f = max(0, f)
     d = max(0, d)
 
-    #Fill percent_f of total from f
+    # Fill percent_f of total from f
     num_featured_jobs = min(f, int(math.ceil(total * percent_f)))
 
-    #Fill remaining total from d
+    # Fill remaining total from d
     num_default_jobs = min(total - num_featured_jobs, d)
     num_default_jobs = max(0, num_default_jobs)
 
-    #If total isn't filled, increase f
+    # If total isn't filled, increase f
     num_featured_jobs = min(f, total-num_default_jobs)
     num_featured_jobs = max(0, num_featured_jobs)
 
@@ -860,19 +860,19 @@ def create_sq(custom_facets):
         A list of Haystack SearchQuery objects
 
     """
-    #maps boolean_operation codes to their operator functions. Default is or_
+    # maps boolean_operation codes to their operator functions. Default is or_
     op_map = [("", operator.or_),
               ("or", operator.or_),
               ("and", operator.and_)]
 
     result_sq = SolrSearchQuery()
     facets_by_op = defaultdict(list)
-    #map each facet to a it's boolean_operation in a dict
+    # map each facet to a it's boolean_operation in a dict
     map(lambda facet: facets_by_op[facet.get_op()].append(facet), custom_facets)
     for op, op_func in op_map:
-        #Create an op_list for custom facets of current operation type
+        # Create an op_list for custom facets of current operation type
         op_facets = facets_by_op[op]
-        #Create a Search Query for each customfacet in op_list
+        # Create a Search Query for each customfacet in op_list
         if op_facets:
             op_query_list = [SQ(content=Raw(cf.saved_querystring)) for cf in
                              op_facets if cf.saved_querystring]

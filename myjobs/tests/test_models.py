@@ -82,7 +82,7 @@ class UserManagerTests(MyJobsBase):
         client = TestClient()
         user = UserFactory()
 
-        #Anonymous user
+        # Anonymous user
         resp = client.get(reverse('view_profile'))
         path = resp.request.get('PATH_INFO')
         self.assertRedirects(resp, reverse('home') + '?next=' + path)
@@ -102,7 +102,7 @@ class UserManagerTests(MyJobsBase):
         resp = client.get(reverse('view_profile'))
         self.assertTrue(resp.status_code, 200)
 
-        #Disabled user
+        # Disabled user
         user.is_disabled = True
         user.save()
         resp = client.get(reverse('view_profile'))

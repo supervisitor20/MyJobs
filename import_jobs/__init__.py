@@ -71,7 +71,7 @@ def update_job_source(guid, buid, name):
     bu.associated_jobs = len(job_ids)
     bu.date_updated = datetime.datetime.utcnow()
     bu.save()
-        
+
 
 
 def add_redirect(job, bu):
@@ -412,7 +412,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
     # delete any jobs that may have been added via etl_to_solr
     conn.delete(q="buid:%s AND !uid:[0  TO *]" % buid)
 
-    #Update business unit information: title, dates, and associated_jobs
+    # Update business unit information: title, dates, and associated_jobs
     if set_title or not bu.title or (bu.title != jobfeed.job_source_name and
                                      jobfeed.job_source_name):
         bu.title = jobfeed.job_source_name
@@ -421,7 +421,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
                                          updated=updated)
     bu.associated_jobs = len(jobs)
     bu.save()
-    #Update the Django database to reflect company additions and name changes
+    # Update the Django database to reflect company additions and name changes
     add_company(bu)
     if delete_feed:
         os.remove(filepath)
@@ -613,5 +613,3 @@ def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
         query = "id:(%s)" % " OR ".join([str(x) for x in jobs])
         conn.delete(q=query)
     return expired
-
-
