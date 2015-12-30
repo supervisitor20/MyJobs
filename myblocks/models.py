@@ -383,7 +383,30 @@ class RegistrationBlock(Block):
         return 'registration-%s' % self.id
 
 
-class SavedSearchWidgetBlock(Block):
+class SecureBlock(Block):
+    """
+    Custom abstract base class for secure blocks retrieved through ajax.
+    Required JS are bundled into the template
+
+    """
+    def render_for_ajax(self, request, params):
+        """
+            Render template then append all required js tags
+
+        """
+        rendered_template = super(SecureBlock,
+                                  self).render_for_ajax(request,
+                                                        params)
+        static_string = '<script src="%s"></script>'
+        required_js = [static_string % js for js in self.required_js()]
+        return '%s %s' % (rendered_template, ''.join(required_js))
+
+    class Meta:
+        abstract = True
+
+
+
+class SavedSearchWidgetBlock(SecureBlock):
     """
     Secure Block. What is rendered is based heavily on whether or not the
     user is signed in to an account. Block renders as a customizable saved
@@ -417,10 +440,15 @@ class SavedSearchWidgetBlock(Block):
         }
 
     def required_js(self):
-        return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
+        return ['%ssaved-search.js' % settings.STATIC_URL]
 
 
-class SavedSearchesListWidgetBlock(Block):
+class SavedSearchesListWidgetBlock(SecureBlock):
+    """
+    Widget for displaying users 5 most recent saved searches. If there are
+    more than five, a link back to the saved search page is provided.
+
+    """
     base_template = 'myblocks/blocks/savedsearcheslistwidget.html'
 
     def context(self, request, **kwargs):

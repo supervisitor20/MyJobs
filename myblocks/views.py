@@ -80,8 +80,8 @@ class BlockView(View):
 
 
 # The django csrf exemption should stay first in this list.
-@restrict_to_staff()
 @django_csrf_exempt
+@restrict_to_staff()
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
@@ -109,7 +109,7 @@ def secure_blocks(request):
     response = {}
 
     for element_id in blocks:
-        block = Block.objects.filter(element_id=element_id).first()
+        block = Block.objects.filter(element_id=element_id).first().cast()
         if block is None:
             logger.warn("Failed block lookup: %s", element_id)
         else:
