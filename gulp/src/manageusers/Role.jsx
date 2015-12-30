@@ -159,7 +159,7 @@ class Role extends React.Component {
         assignedUsers: this.refs.users.state.assignedUsers,
       });
       return;
-    };
+    }
 
     // Combine all assigned activites
     const assignedPRMActivities = this.refs.activitiesPRM.state.assignedActivities;
@@ -197,11 +197,11 @@ class Role extends React.Component {
 
     // Format assigned activities
     let formattedAssignedActivities = [];
-    if(assignedActivities) {
+    if (assignedActivities) {
       formattedAssignedActivities = assignedActivities.map( obj => {
         return reverseFormatActivityName(obj.name);
       });
-    };
+    }
 
     assignedUsers = assignedUsers.map( obj => {
       return obj.name;

@@ -515,7 +515,7 @@ h1 > small > a:hover {
 }
 
 .product-card + .product-card {
-    border-top: 0;
+    border-top: none;
 }
 
 .product-card:not(.no-highlight):hover,
@@ -617,7 +617,7 @@ h1 > small > a:hover {
 .sidebar {
     background-color: #F7F7F7;
     border: 1px solid #E5E5E5;
-    border-top: 0;
+    border-top: none;
     box-sizing: border-box;
     box-shadow: 2px 2px 3px #BBB;
     padding: 10px;
@@ -791,11 +791,11 @@ h1 > small > a:hover {
 }
 
 .partner-pagination + .partner-sort {
-    border-top: 0;
+    border-top: none;
 }
 
 .partner-sort + .product-card {
-    border-top: 0;
+    border-top: none;
 }
 
 .partner-sort {
@@ -3905,12 +3905,10 @@ span.helptext {
 /*Manage Users*/
 /*New*/
 
-
 .FilteredMultiSelect select, .FilteredMultiSelect button {
   margin-top: 15px;
   height: 200px;
 }
-
 
 section {
   border: 1px solid #333333;
@@ -3923,6 +3921,22 @@ a:hover {
 h1 a {
   font-size: 38.5px;
   font-weight: bold;
+}
+
+.table-activities tr td:first-child, .table-activities tr th:first-child {
+  width: 50%;
+}
+
+.table-activities {
+  margin-bottom: 0px;
+}
+
+.product-card-full h3 {
+  font-size: 1em;
+  color: black;
+  font-weight: bold;
+  margin-left: 8px;
+  margin-top: 15px;
 }
 
 .breadcrumbs {
@@ -3970,7 +3984,7 @@ h1 a {
 }
 
 .wrapper-header + .product-card-full {
-  border-top: 0;
+  border-top: none;
 }
 
 
@@ -4145,9 +4159,10 @@ h1 a {
 .product-card-full {
   background-color: #F7F7F7;
   box-sizing: border-box;
-  padding: 15 15 15 10px;
+  /*padding: 15 15 15 10px;*/
   border: 1px solid #E5E5E5;
   position: relative;
+  padding-top: 1px;
 }
 
 .product-card-full .label-warning, .product-card-full .label-success{
@@ -4157,6 +4172,10 @@ h1 a {
 
 .product-card-full input[readonly] {
   background-color: #D8D8D8;
+}
+
+.product-card-full .activities-wrapper span:not(:first-child) h3{
+  margin-top: 35px;
 }
 
 a.btn.pull-right, button.btn.pull-right {
