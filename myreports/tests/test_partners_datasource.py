@@ -28,10 +28,14 @@ class TestPartnersDataSource(MyJobsBase):
         self.partner_a = PartnerFactory(
             owner=self.company,
             last_action_time='2015-09-30 13:23',
+            uri='http://www.example.com/',
+            data_source="zap",
             name="aaa")
         self.partner_b = PartnerFactory(
             owner=self.company,
             last_action_time='2015-10-03',
+            uri='http://www.asdf.com/',
+            data_source="bcd",
             name="bbb")
         # An unapproved parther. Associated data should be filtered out.
         self.partner_unapp = PartnerFactory(
@@ -251,6 +255,24 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.help_tags(self.company, PartnersFilter(), "east")
         self.assertEqual("aaaaaa", recs[0]['hexColor'])
+
+    def test_help_uri(self):
+        ds = PartnersDataSource()
+        recs = ds.help_uri(
+            self.company,
+            PartnersFilter(),
+            "ex")
+        actual = set([r['key'] for r in recs])
+        self.assertEqual({'http://www.example.com/'}, actual)
+
+    def test_help_data_source(self):
+        ds = PartnersDataSource()
+        recs = ds.help_data_source(
+            self.company,
+            PartnersFilter(),
+            "z")
+        actual = set([r['key'] for r in recs])
+        self.assertEqual({'zap'}, actual)
 
     def test_order(self):
         """Should order results as we expect."""

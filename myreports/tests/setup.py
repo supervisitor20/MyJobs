@@ -288,9 +288,11 @@ def create_full_fixture():
 
     ConfigurationColumnFactory.create(
         id=30,
-        column_name="dataSource",
+        column_name="data_source",
         order=103,
         output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='Data Source',
         configuration=con_part,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
@@ -311,7 +313,7 @@ def create_full_fixture():
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         id=33,
-        column_name="primaryContact",
+        column_name="primary_contact",
         order=106,
         output_format="text",
         configuration=con_part,
@@ -331,6 +333,8 @@ def create_full_fixture():
         column_name="uri",
         order=108,
         output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='URL',
         configuration=con_part,
         multi_value_expansion=False)
 

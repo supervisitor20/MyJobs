@@ -21,10 +21,10 @@ class PartnersDataSource(object):
 
     def extract_record(self, record):
         return {
-            'dataSource': record.data_source,
+            'data_source': record.data_source,
             'date': record.last_action_time,
             'name': record.name,
-            'primaryContact':
+            'primary_contact':
                 self.extract_primary_contact(record.primary_contact),
             'tags': [t.name for t in record.tags.all()],
             'uri': record.uri,
@@ -76,6 +76,29 @@ class PartnersDataSource(object):
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in names_qs]
+
+    def help_uri(self, company, filter, partial):
+        """Get help for the uri field."""
+        partners_qs = self.filtered_query_set(company, filter)
+
+        uris_qs = (
+            partners_qs
+            .filter(uri__icontains=partial)
+            .values('uri').distinct())
+        return [{'key': c['uri'], 'display': c['uri']} for c in uris_qs]
+
+    def help_data_source(self, company, filter, partial):
+        """Get help for the data_source field."""
+        partners_qs = self.filtered_query_set(company, filter)
+
+        data_sources_qs = (
+            partners_qs
+            .filter(data_source__icontains=partial)
+            .values('data_source').distinct())
+        return [
+            {'key': c['data_source'], 'display': c['data_source']}
+            for c in data_sources_qs
+        ]
 
     def filtered_query_set(self, company, filter):
         """Create a query set with security, safety, and user filters applied.
@@ -160,12 +183,3 @@ class PartnersFilter(object):
             qs = qs.filter(primary_contact=contact_qs)
 
         return qs
-
-
-# Filters:
-#
-# City
-# State
-# URL
-# Source
-# Tags
