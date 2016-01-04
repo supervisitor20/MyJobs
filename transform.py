@@ -263,9 +263,9 @@ def hr_xml_to_json(xml, business_unit):
     # Use dateutil here because datetime.strptime does not support this format.
     try:
         date_new = data.get('validFrom')
-        job['date_new'] = date_parse(date_new).replace(tzinfo=None)
+        job['date_new'] = date_parse(date_new)
         updated = date_parse(app.find('.//CreationDateTime').text)
-        job['date_updated'] = updated.replace(tzinfo=None)
+        job['date_updated'] = updated
     except ValueError:
         logger.error("Unable to parse string %s as a date", date_new)
         raise
@@ -417,8 +417,8 @@ def make_redirect(job, business_unit):
         return redirect
     except Redirect.DoesNotExist:
         logger.debug("Creating new redirect for guid %s", guid)
-        # TODO: Make this change at the source of the data, and evaluate all places where we parse dates during imports 
-        #       for similar issues.  
+        # TODO: Make this change at the source of the data, and evaluate all places where we parse dates during imports
+        #       for similar issues.
         localized_time = get_current_timezone().localize(job['date_new'], is_dst=False)
         redirect = Redirect(guid=guid,
                             buid=business_unit.id,
