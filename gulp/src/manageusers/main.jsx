@@ -198,9 +198,9 @@ export class App extends React.Component {
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
               <Link to="/" className="btn">Overview</Link>
+              <Link to="users" className="btn">Users</Link>
               <Link to="roles" className="btn">Roles</Link>
               <Link to="activities" className="btn">Activities</Link>
-              <Link to="users" className="btn">Users</Link>
             </div>
           </div>
 
