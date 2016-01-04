@@ -1,6 +1,4 @@
 """Partners DataSource"""
-import json
-from datetime import datetime
 from operator import __or__
 
 from mypartners.models import Contact, Partner, Status, Location, Tag

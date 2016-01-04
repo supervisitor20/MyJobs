@@ -1,6 +1,4 @@
 """Contacts DataSource"""
-import json
-from datetime import datetime
 from operator import __or__
 
 from myreports.datasources.util import filter_date_range
