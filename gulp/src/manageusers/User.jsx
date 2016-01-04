@@ -230,10 +230,10 @@ class User extends React.Component {
     const action = this.props.location.query.action;
 
     if (action === 'Edit') {
-      userEmailInput = <input id="id_userEmail" maxLength="255" name="id_userEmail" type="email" readOnly value={this.state.userEmail} size="35"/>;
+      userEmailInput = <div class="col-sm-10"><input id="id_userEmail" className="input-large" maxLength="255" name="id_userEmail" type="email" readOnly value={this.state.userEmail} size="35"/></div>;
       deleteUserButton = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>;
     } else {
-      userEmailInput = <input id="id_userEmail" maxLength="255" name="id_userEmail" type="email" value={this.state.userEmail} onChange={this.onTextChange} size="35"/>;
+      userEmailInput = <div class="col-sm-10"><input id="id_userEmail" className="input-large" maxLength="255" name="id_userEmail" type="email" value={this.state.userEmail} onChange={this.onTextChange} size="35"/></div>;
     }
 
     const userEmailHelp = this.state.userEmailHelp;
@@ -249,21 +249,17 @@ class User extends React.Component {
             </div>
             <div className="product-card-full no-highlight">
 
-              <div className="row">
-                <div className="col-xs-12">
-                  <HelpText message={userEmailHelp} />
-                  <label htmlFor="id_userEmail">User Email*:</label>
-                  {userEmailInput}
-                </div>
+              <div className="row no-gutter">
+                <HelpText message={userEmailHelp} />
+                <label htmlFor="id_userEmail" className="col-sm-2 control-label">User Email* </label>
+                {userEmailInput}
               </div>
 
               <div className="row">
                 <div className="col-xs-12">
-                  <hr/>
                   <HelpText message={roleMultiselectHelp} />
                   <RolesMultiselect availableRoles={this.state.availableRoles} assignedRoles={this.state.assignedRoles} ref="roles"/>
                   <span id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                  <hr />
                 </div>
               </div>
 
