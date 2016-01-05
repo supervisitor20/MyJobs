@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import re
 
 from django.core import mail
+from django.core.urlresolvers import reverse
 
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.setup import MyJobsBase
@@ -118,3 +119,32 @@ class UnsubscribingTests(MyJobsBase):
                              model=SavedSearchDigestFactory._meta.model))
 
         self.assert_unsub_link(expected_num_links=2)
+
+    def test_unsubscribe_with_no_id(self):
+        """
+        If someone messes with a url and removes the id parameter, we shouldn't
+        show a 500 page.
+        """
+        response = self.client.get(reverse('unsubscribe_confirmation'))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('unsubscribe'))
+        self.assertEqual(response.status_code, 404)
+
+    def test_unsubscribe_multiple_times(self):
+        """
+        We used to filter on active saved searches when unsubscribing. Removing
+        that filter but only updating the database to toggle is_active to False
+        if it isn't already enables users to unsubscribe from a single saved
+        search multiple times.
+
+        One example use case is if the user forgot that they unsubscribed from
+        a given search already and clicks again. Previously, we would show a
+        generic 404 page.
+        """
+        search = SavedSearchFactory(user=self.user)
+        response = self.client.get(reverse('unsubscribe') +
+                                   '?id={id_}'.format(id_=search.pk))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('unsubscribe') +
+                                   '?id={id_}'.format(id_=search.pk))
+        self.assertEqual(response.status_code, 200)

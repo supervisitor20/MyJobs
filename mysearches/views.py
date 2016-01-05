@@ -291,19 +291,21 @@ def unsubscribe(request, user=None):
     try:
         search_id = int(search_id)
         saved_search = get_object_or_404(SavedSearch, id=search_id,
-                                         user=user,
-                                         is_active=True)
+                                         user=user)
 
         # saved_search is a single search rather than a queryset this time
         cache = [saved_search]
-        saved_search.is_active = False
-        has_pss = hasattr(saved_search, 'partnersavedsearch')
-        if has_pss:
-            saved_search.partnersavedsearch.unsubscribed = True
-            saved_search.partnersavedsearch.save()
-            # method expects an iterable and I didn't want to run another query
-            user.send_opt_out_notifications([saved_search.partnersavedsearch])
-        saved_search.save()
+        if saved_search.is_active:
+            saved_search.is_active = False
+            has_pss = hasattr(saved_search, 'partnersavedsearch')
+            if has_pss:
+                saved_search.partnersavedsearch.unsubscribed = True
+                saved_search.partnersavedsearch.save()
+                # method expects an iterable and I didn't want to run
+                # another query
+                user.send_opt_out_notifications(
+                    [saved_search.partnersavedsearch])
+            saved_search.save()
 
     except ValueError:
         digest = SavedSearchDigest.objects.get_or_create(
@@ -331,6 +333,8 @@ def unsubscribe(request, user=None):
         # that queryset; Make a copy and then update the queryset
         cache = list(saved_searches)
         saved_searches.update(is_active=False)
+    except TypeError:
+        raise Http404
 
     return render_to_response('mysearches/saved_search_disable.html',
                               {'search_id': search_id,

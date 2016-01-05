@@ -93,6 +93,8 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
                         # The value may not be an int; Saved searches, for
                         # example, pass 'digest' when working with digests
                         pass
+                    except TypeError:
+                        return HttpResponseForbidden()
 
             # Everything passed; Continue to the desired view
             return view_func(request, *args, **kwargs)
