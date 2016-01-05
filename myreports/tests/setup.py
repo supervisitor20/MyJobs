@@ -367,7 +367,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=63,
         column_name="communication_type",
-        order=106,
+        order=109,
         filter_interface_type='search_select',
         filter_interface_display='Communication Type',
         configuration=con_comm,
@@ -390,7 +390,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=66,
         column_name="date_time",
-        order=109,
+        order=106,
         configuration=con_comm,
         output_format="us_date",
         filter_interface_type='date_range',
@@ -462,10 +462,13 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=76,
         column_name="partner",
-        order=119,
+        order=122,
         output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Partners',
         configuration=con_comm,
-        multi_value_expansion=False)
+        multi_value_expansion=False,
+        has_help=True)
     ConfigurationColumnFactory.create(
         id=77,
         column_name="subject",
@@ -486,7 +489,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=79,
         column_name="locations",
-        order=122,
+        order=102,
         output_format="city_state_list",
         filter_interface_type='city_state',
         filter_interface_display='Contact Location',
