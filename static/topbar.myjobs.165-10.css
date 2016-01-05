@@ -503,7 +503,7 @@ ul.submenu > li > a:hover {
         font-size: 2em;
         height: 25px;
         padding: 10px;
-        white-space: nowrap;
+        /*white-space: nowrap;*/
         overflow: hidden;
         text-overflow: ellipsis;
     }
