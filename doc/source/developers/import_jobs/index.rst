@@ -2,7 +2,7 @@
 Imports Documentation
 =====================
 
-OUr Job imports for direct_seo sites tend to follow the idea of the Extract, 
+Our Job imports for direct_seo sites tend to follow the idea of the Extract, 
 Transform, Load (ETL) process.  What this means is that to load jobs we 
 generally start with getting the source files, extract the pertinent data for 
 each job from them, transform it from the source format to something solr 
