@@ -219,7 +219,7 @@ def gz(context):
         # the static files to not be loaded at all. No longer serving .gz
         # files will also give us the opportunity to see what impact the
         # static files actually have on load time.
-        #return '.gz'
+        # return '.gz'
     else:
         return ''
 

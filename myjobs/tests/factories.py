@@ -31,6 +31,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         roles = extracted or []
         self.roles.add(*roles)
 
+
 class AppAccessFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'myjobs.AppAccess'
@@ -40,7 +41,7 @@ class AppAccessFactory(factory.django.DjangoModelFactory):
 
 class ActivityFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model =  'myjobs.Activity'
+        model = 'myjobs.Activity'
 
     app_access = factory.SubFactory(AppAccessFactory)
     name = factory.Sequence(lambda n: 'test activity %s' % n)

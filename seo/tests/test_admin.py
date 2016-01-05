@@ -33,7 +33,7 @@ class SeoAdminTestCase(DirectSEOBase):
                                 'group':group_for_new_site.pk,
                                 'postajob_filter_type':'this site only',
                                 'parent_site':parent_seo_site.pk})
-        self.assertEqual(resp.status_code, 302) #redirect on successful add
+        self.assertEqual(resp.status_code, 302) # redirect on successful add
         self.assertFalse("field-parent_site errors" in resp)
         created_site = SeoSite.objects.get(domain='newdomain_testnormal')
         self.assertEqual(created_site.parent_site, parent_seo_site)

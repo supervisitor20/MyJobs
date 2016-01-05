@@ -62,11 +62,11 @@ class UserManagerTests(MyJobsBase):
         """
         user = UserFactory()
         gravatar_url = "http://www.gravatar.com/avatar/c160f8cc69a4f0b" \
-                              "f2b0362752353d060?s=20&d=mm"
+                       "f2b0362752353d060?s=20&d=mm"
         no_gravatar_url = ("<div class='gravatar-blank gravatar-danger' "
-                               "style='height: 20px; width: 20px'>"
-                               "<span class='gravatar-text' "
-                               "style='font-size:13.0px;'>A</span></div>")
+                           "style='height: 20px; width: 20px'>"
+                           "<span class='gravatar-text' "
+                           "style='font-size:13.0px;'>A</span></div>")
         generated_gravatar_url = user.get_gravatar_url()
         self.assertEqual(no_gravatar_url, generated_gravatar_url)
         status_code = urllib.urlopen(gravatar_url).getcode()
@@ -82,7 +82,7 @@ class UserManagerTests(MyJobsBase):
         client = TestClient()
         user = UserFactory()
 
-        #Anonymous user
+        # Anonymous user
         resp = client.get(reverse('view_profile'))
         path = resp.request.get('PATH_INFO')
         self.assertRedirects(resp, reverse('home') + '?next=' + path)
@@ -102,7 +102,7 @@ class UserManagerTests(MyJobsBase):
         resp = client.get(reverse('view_profile'))
         self.assertTrue(resp.status_code, 200)
 
-        #Disabled user
+        # Disabled user
         user.is_disabled = True
         user.save()
         resp = client.get(reverse('view_profile'))
@@ -123,7 +123,7 @@ class UserManagerTests(MyJobsBase):
         self.assertIn('Saved Search', resp.content)
 
         # Inactive user
-        user.is_verified= False
+        user.is_verified = False
         user.save()
         resp = client.get()
         self.assertIn('unavailable', resp.content)
@@ -231,14 +231,12 @@ class TestActivities(MyJobsBase):
         # add role to existing company
         RoleFactory(company=self.company, name="Admin",
                     activities=self.activities)
-        role_admins = RoleFactory.create_batch(
-            50, name="Admin", activities=self.activities)
 
         # sanity check for initial numbers
         for admin in Role.objects.filter(name="Admin"):
             self.assertEqual(admin.activities.count(), 5)
 
-        new_activity =  ActivityFactory(
+        new_activity = ActivityFactory(
             name="new activity", description="Just a new test activity.")
 
         # new activity should be available for admins
@@ -274,7 +272,7 @@ class TestActivities(MyJobsBase):
             self.company.save()
 
         # check for multiple activities
-        self.assertTrue(user.can( self.company, *activities))
+        self.assertTrue(user.can(self.company, *activities))
 
         with self.settings(ROLES_ENABLED=True):
             self.assertFalse(user.can(
@@ -319,7 +317,6 @@ class TestActivities(MyJobsBase):
             self.assertTrue(
                 user.can(self.company, 'create user'),
                 "User should be able to 'create user', but can't")
-
 
     def test_activities(self):
         """

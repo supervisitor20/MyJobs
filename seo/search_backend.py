@@ -13,7 +13,7 @@ from seo_pysolr import Solr
 
 
 class DESearchQuerySet(SearchQuerySet):
-    #Tracks which parameters have been added with add_param
+    # Tracks which parameters have been added with add_param
     search_parameters = []
 
     def narrow_exclude(self, query):
@@ -89,8 +89,8 @@ class DESearchQuerySet(SearchQuerySet):
         clone.query.set_facet_sort(sort)
         return clone
 
-    #TODO. Replace redundant methods with set_param.
-    #Jason McLaughlin 09/27/2012
+    # TODO. Replace redundant methods with set_param.
+    # Jason McLaughlin 09/27/2012
     def add_param(self, param, value):
         """
         Sets an arbitrary Solr parameter.
@@ -200,7 +200,7 @@ class DESolrSearchQuery(SolrSearchQuery):
                         'facet_sort', 'facet_offset', 'bf']
         attr_to_copy.extend(self.search_parameters)
 
-        #Copy attributes from Search query to search_kwargs
+        # Copy attributes from Search query to search_kwargs
         for attr_name in attr_to_copy:
             attr = getattr(self, attr_name, False)
             if attr:
@@ -220,7 +220,7 @@ class DESolrSearchQuery(SolrSearchQuery):
         """
         self.bf = bf
 
-    #TODO Replace redundant set_foo methods with set_param
+    # TODO Replace redundant set_foo methods with set_param
     def set_param(self, param, value):
         self.search_parameters.append(param)
         setattr(self, param, value)
@@ -565,4 +565,3 @@ def get_identifier(obj_or_string):
     return u"%s.%s.%s" % (obj_or_string._meta.app_label,
                           obj_or_string._meta.module_name,
                           obj_or_string.uid)
-

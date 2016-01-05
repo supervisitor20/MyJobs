@@ -4,8 +4,6 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
-import {formatActivityName} from 'util/formatActivityName';
-
 import Overview from './Overview';
 import Roles from './Roles';
 import Role from './Role';
@@ -23,10 +21,11 @@ export class App extends React.Component {
     super(props);
     this.state = {
       rolesTableRows: [],
-      activitiesTableRows: [],
+      tablesOfActivitiesByApp: [],
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
+      company: companyName,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
@@ -47,21 +46,73 @@ export class App extends React.Component {
   callActivitiesAPI() {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function getActivities(results) {
+      // Define legend matching appID to app name
+      // TODO: Information like this should probably be in the db
+      const appNamesLegend = {};
+      appNamesLegend[1] = 'PRM';
+      appNamesLegend[2] = 'User Management';
+
+      // Parse API JSON response
       const parsedResults = JSON.parse(results);
 
-      const activitiesTableRows = [];
+      // Sort activities by app_access
+      parsedResults.sort(function sortActivities(a, b) {
+        return a.fields.app_access - b.fields.app_access;
+      });
+
+      // Create unique array of appIDs present
+      const appIDs = [];
       for (let i = 0; i < parsedResults.length; i++) {
         if (parsedResults.hasOwnProperty(i)) {
-          activitiesTableRows.push(
-            <tr key={parsedResults[i].pk}>
-              <td>{formatActivityName(parsedResults[i].fields.name)}</td>
-              <td>{parsedResults[i].fields.description}</td>
-            </tr>
+          if (appIDs.indexOf(parsedResults[i].fields.app_access) === -1) {
+            appIDs.push(parsedResults[i].fields.app_access);
+          }
+        }
+      }
+
+      // Create an array of apps (names/ids) that exist in our parsedResults
+      const appIDsWithNames = {};
+      for (let i = 1; i <= appIDs.length; i++) {
+        appIDsWithNames[i] = appNamesLegend[i];
+      }
+
+      // Build a table for each app present
+      const tablesOfActivitiesByApp = [];
+      for (const appID in appIDsWithNames) {
+        if (appIDsWithNames.hasOwnProperty(appID)) {
+          // For each app, build list of rows from parsedResults
+          let activityRows = [];
+          activityRows = parsedResults.map(function buildRow(obj) {
+            // Only use activities of a certain appID
+            if (obj.fields.app_access.toString() === appID) {
+              return (
+                <tr>
+                  <td>{obj.fields.name}</td>
+                  <td>{obj.fields.description}</td>
+                </tr>
+              );
+            }
+          });
+          tablesOfActivitiesByApp.push(
+            <span>
+              <h3>{appIDsWithNames[appID]}</h3>
+              <table className="table table-striped table-activities">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityRows}
+                </tbody>
+              </table>
+            </span>
           );
         }
       }
       this.setState({
-        activitiesTableRows: activitiesTableRows,
+        tablesOfActivitiesByApp: tablesOfActivitiesByApp,
       });
     }.bind(this));
   }
@@ -123,11 +174,12 @@ export class App extends React.Component {
     }.bind(this));
   }
   render() {
+    const {company} = this.state;
     return (
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1>DirectEmployers</h1>
+            <h1>{company}</h1>
           </div>
         </div>
 
@@ -156,7 +208,7 @@ export class App extends React.Component {
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
                 this.props.children, {
-                  activitiesTableRows: this.state.activitiesTableRows,
+                  tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,

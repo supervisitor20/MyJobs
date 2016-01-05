@@ -25,7 +25,7 @@ class DESolrSitemap(SolrSitemap):
     operations to Solr itself using its `start` and `rows` parameters.
 
     """
-    #Required solr document fields. date_new is used by lastmod()
+    # Required solr document fields. date_new is used by lastmod()
     required_fields = ['date_new']
 
     def __init__(self, fields=None, queryclass=DESearchQuerySet, **kwargs):
@@ -58,7 +58,7 @@ class DESolrSitemap(SolrSitemap):
         return "monthly"
 
     def lastmod(self, obj):
-        #Creates a datetime object from date_new
+        # Creates a datetime object from date_new
         return datetime.datetime.strptime(obj.get('date_new'), "%Y-%m-%d-%H%M%S")
 
     def priority(self, obj):

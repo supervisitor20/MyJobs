@@ -623,7 +623,9 @@ def api_get_activities(request):
     """
     activities = Activity.objects.all()
     return HttpResponse(serializers.serialize("json", activities,
-                                              fields=('name', 'description')))
+                                              fields=('name',
+                                                      'description',
+                                                      'app_access')))
 
 
 @restrict_to_staff()

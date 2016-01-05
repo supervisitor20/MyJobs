@@ -63,7 +63,8 @@ class TaskTests(MyJobsBase):
             u.delete()
 
     def test_event_with_no_user(self):
-        EmailLog.objects.create(email='test@example.com', event=STOP_SENDING[0],
+        EmailLog.objects.create(email='test@example.com',
+                                event=STOP_SENDING[0],
                                 received=datetime.datetime.now(),
                                 processed=False)
 
