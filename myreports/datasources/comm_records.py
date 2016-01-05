@@ -25,7 +25,7 @@ class CommRecordsDataSource(object):
             'contact_phone': record.contact_phone,
             'communication_type': record.contact_type,
             'created_on': record.created_on,
-            'created_by': record.created_by,
+            'created_by': self.extract_user_email(record.created_by),
             'date_time': record.date_time,
             'job_applications': record.job_applications,
             'job_hires': record.job_hires,
@@ -39,6 +39,12 @@ class CommRecordsDataSource(object):
             'subject': record.subject,
             'tags': [t.name for t in record.tags.all()],
         }
+
+    def extract_user_email(self, user):
+        if user:
+            return user.email
+        else:
+            return None
 
     def filter_type(self):
         return CommRecordsFilter
@@ -137,9 +143,9 @@ class CommRecordsDataSource(object):
 
 @dict_identity
 class CommRecordsFilter(object):
-    def __init__(self, date=None, locations=None, tags=None,
+    def __init__(self, date_time=None, locations=None, tags=None,
                  communication_type=None, partner=None, contact=None):
-        self.date = date
+        self.date_time = date_time
         self.locations = locations
         self.tags = tags
         self.communication_type = communication_type
@@ -149,8 +155,9 @@ class CommRecordsFilter(object):
     @classmethod
     def filter_key_types(self):
         return {
-            'date': 'date_range',
+            'date_time': 'date_range',
             'partner': 'pass',
+            'contact': 'pass',
             'communication_type': 'pass',
             'locations': 'pass',
             'tags': 'pass',
@@ -186,7 +193,7 @@ class CommRecordsFilter(object):
         return CommRecordsFilter(**new_root)
 
     def filter_query_set(self, qs):
-        qs = filter_date_range(self.date, 'date_time', qs)
+        qs = filter_date_range(self.date_time, 'date_time', qs)
 
         if self.communication_type:
             qs = qs.filter(contact_type=self.communication_type)

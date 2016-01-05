@@ -135,7 +135,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             CommRecordsFilter(
-                date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
+                date_time=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
         subjects = set([r['subject'] for r in recs])
         expected = {self.record_1.subject}
@@ -147,7 +147,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             CommRecordsFilter(
-                date=[None, datetime(2015, 9, 30)]),
+                date_time=[None, datetime(2015, 9, 30)]),
             [])
         subjects = set([r['subject'] for r in recs])
         expected = {self.record_1.subject, self.record_2.subject}
@@ -159,7 +159,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.run(
             self.company,
             CommRecordsFilter(
-                date=[datetime(2015, 10, 1), None]),
+                date_time=[datetime(2015, 10, 1), None]),
             [])
         subjects = set([r['subject'] for r in recs])
         expected = {self.record_3.subject}

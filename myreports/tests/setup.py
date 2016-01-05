@@ -491,9 +491,7 @@ def create_full_fixture():
         has_help=True)
     ConfigurationColumnFactory.create(
         id=79,
-        column_name="locations",
         order=102,
-        output_format="city_state_list",
         filter_interface_type='city_state',
         filter_interface_display='Contact Location',
         filter_only=True,
