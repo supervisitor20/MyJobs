@@ -25,6 +25,9 @@ from myreports.datasources import get_datasource_json_driver
 from myreports.report_configuration import (
     ReportConfiguration, ColumnConfiguration)
 
+from cStringIO import StringIO
+import csv
+
 
 @requires('read partner', 'read contact', 'read communication record')
 @has_access('prm')
@@ -618,6 +621,11 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = content_disposition % (
         report.name.replace(' ', '_'), report.pk)
 
-    response.write(serialize('csv', records, values=values))
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(values)
+    for record in records:
+        writer.writerow([unicode(record[v]).encode('utf-8') for v in values])
+    response.write(output.getvalue())
 
     return response
