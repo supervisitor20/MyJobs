@@ -1,3 +1,5 @@
+/* global companyName */
+
 import React, {Component, PropTypes} from 'react';
 
 import {Content} from './Content';
