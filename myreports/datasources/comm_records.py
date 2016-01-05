@@ -150,6 +150,8 @@ class CommRecordsFilter(object):
     def filter_key_types(self):
         return {
             'date': 'date_range',
+            'partner': 'pass',
+            'communication_type': 'pass',
             'locations': 'pass',
             'tags': 'pass',
         }
