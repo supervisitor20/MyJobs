@@ -3,10 +3,14 @@ Developer Documentation
 =======================
 
 .. toctree::
-  :maxdepth: 1
+  :maxdepth: 2
 
-  styleguides/index.rst
-  mypartners/index.rst
-  seo/index.rst
-  testing/index.rst
-  contributing/index.rst
+  myblocks/index
+  mypartners/index
+  postajob/index
+  seo/index
+  docker/index
+  styleguides/index
+  testing/index
+  contributing/index
+  etl_imports

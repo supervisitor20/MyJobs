@@ -33,7 +33,7 @@ urlpatterns = patterns('',
         },
         name='password_reset_done'),
 
-    #Registration URLS
+    # Registration URLS
     url(r'^register/complete/$',
         RegistrationComplete.as_view(), name='register_complete'),
     url(r'^activate/(?P<activation_key>(\S+))/$', activate,

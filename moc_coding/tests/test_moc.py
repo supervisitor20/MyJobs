@@ -64,11 +64,11 @@ class MocTestCase(DirectSEOBase):
         self.assertEqual(len(mocs), 2)
 
     def test_authentication(self):
-        #If user isn't logged in, redirect to login view
+        # If user isn't logged in, redirect to login view
         resp = self.client.get('/mocmaps/newmap/?onet=99999999')
         self.assertEqual(resp.status_code, 302)
 
-        #superusers should get a JSON 'success' response
+        # superusers should get a JSON 'success' response
         login = self.client.login(email=self.superuser.email,
                                   password='iam')
 
@@ -79,7 +79,7 @@ class MocTestCase(DirectSEOBase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn('success', resp.content)
 
-        #Staff should get a JSON error message
+        # Staff should get a JSON error message
         login = self.client.login(email=self.staff_user.email,
                                   password='123')
         resp =self.client.get(

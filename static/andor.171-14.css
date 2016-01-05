@@ -1,0 +1,236 @@
+.section {
+    background-color: #F7F7F7 !important;
+}
+
+.andor-container {
+    margin-bottom: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.andor-container .tag-name {
+    cursor: move;
+    z-index: 100;
+}
+
+.andor-container .tag-name.faded {
+    color: #b5aea3;
+    cursor: pointer;
+}
+
+.search {
+    position: relative;
+    display: table;
+    border-collapse: separate;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.search * {
+    box-sizing: border-box;
+}
+
+.search-label {
+    border-top-left-radius: 4px;
+}
+
+.search-icon {
+    border-top-right-radius: 4px;
+}
+
+.search-label,
+.search-input,
+.search-icon {
+    display: table-cell;
+}
+
+.search-label,
+.search-icon {
+    padding: 6px 10px;
+    background-color: #FFE57B;
+    text-align: center;
+    vertical-align: middle;
+    width: 1%;
+}
+
+.search-label {
+    border-top: 1px solid #E5E5E5;
+    border-left: 1px solid #E5E5E5;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.search-icon {
+    border-top: 1px solid #E5E5E5;
+    border-right: 1px solid #E5E5E5;
+    border-bottom: 1px solid #E5E5E5;
+    position: relative;
+}
+
+.search-icon div {
+    width: 13px;
+    height: 14px;
+    display: inline-block;
+}
+
+.search-icon .fa {
+    position: absolute;
+    top: 9px;
+    left: 10px;
+}
+
+.search-icon:hover {
+    cursor: pointer;
+}
+
+.search-icon:hover .fa {
+    animation: bounce 1s linear infinite;
+}
+
+input[type="search"].search-input {
+    height: 35px;
+    border: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    border-top: 1px solid #E5E5E5;
+    border-bottom: 1px solid #E5E5E5;
+    border-radius: 0;
+    width: 100%;
+    float: left;
+    z-index: 2;
+}
+
+.item-container {
+    margin-bottom: 10px;
+    border-left: 1px solid #E5E5E5;
+    border-right: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+    position: relative;
+    background-color: #FFF;
+    max-height: 125px;
+    overflow-y: scroll;
+}
+
+.item-container div {
+    display: inline-block;
+    margin: 3px;
+}
+
+.andBox {
+    border: 1px solid #b5aea3;
+    width: 280px;
+    min-height: 136px;
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 0 5px 10px 0;
+    float: left;
+    background-color: #FFF;
+}
+
+.andBox .tag-name {
+    display: inline-block;
+    margin: 3px 3px 0 3px;
+    max-width: 98%;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+.andBox .tag-name.removable {
+    padding-right: 25px;
+}
+
+.tag-name.removable .close {
+    position: absolute;
+    right: 3px;
+}
+
+.andBox input[type="search"] {
+    width: 100%;
+    border-radius: 0;
+    border: 0;
+    box-sizing: border-box;
+    height: 35px;
+    border-bottom: 1px solid #b5aea3;
+    margin-bottom: 0;
+}
+
+.andor-container .andBox:last-of-type {
+    margin-right: 0;
+}
+
+.or-spacing {
+    display: inline-block;
+    float: left;
+    margin-top: 50px;
+    margin-right: 5px;
+    font-weight: 700;
+    font-size: 1.3em;
+    color: #9B9A9A;
+    text-shadow: 0 1px 1px #FFF;
+}
+
+.add-new-bucket {
+    padding: 10px;
+    border: 2px dashed #b5aea3;
+    background-color: #FFF;
+    position: relative;
+    width: 280px;
+    height: 136px;
+    box-sizing: border-box;
+    display: inline-block;
+    float: left;
+}
+
+.inside-bucket {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: table;
+}
+
+.add-new-bucket:hover {
+    cursor: pointer;
+}
+
+.add-new-bucket.color .inside-bucket,
+.add-new-bucket:hover .inside-bucket {
+    background-color: #9B9A9A;
+    color: #FFF;
+}
+
+.add-new-bucket.color .inside-bucket .bucket-icon-green,
+.add-new-bucket:hover .inside-bucket .bucket-icon-green {
+    color: #FFF;
+}
+
+.bucket-text {
+    vertical-align: middle;
+    display: table-cell;
+    font-size: 1.2em;
+}
+
+.bucket-icon-green {
+    color: #009900;
+}
+
+@keyframes bounce {
+    0%   {top: 9px;}
+    25%  {top: 7px;}
+    50%  {top: 9px;}
+    75%  {top: 11px;}
+    100% {top: 9px;}
+}
+
+@media screen and (max-width: 500px) {
+    .andBox {
+        width: 93%;
+    }
+
+    .add-new-bucket {
+        width: 100%;
+    }
+}

@@ -192,7 +192,7 @@ class ViewSourceViewTests(RedirectBase):
         response = self.client.get(
             reverse('home', args=[self.redirect_guid,
                                   self.manipulation.view_source]))
-        #content = json.loads(response.content)
+        # content = json.loads(response.content)
         test_url = '%s?%s' % (self.redirect.url,
                               self.manipulation.value_1[1:])
         self.assertEqual(response['Location'], test_url)
@@ -368,7 +368,7 @@ class ViewSourceViewTests(RedirectBase):
         response = self.client.get(
             reverse('home', args=[self.redirect_guid,
                                   self.manipulation.view_source]))
-        #content = json.loads(response.content)
+        # content = json.loads(response.content)
         url = self.manipulation.value_1 + self.redirect.url
         test_url = url + self.manipulation.value_2
         self.assertEqual(response['Location'], test_url)

@@ -1,7 +1,8 @@
+import 'babel/polyfill';
 import {installPolyfills} from '../util/polyfills.js';
 import Api from './api';
 import {getCsrf} from 'util/cookie';
-import {Container} from'./Container';
+import {Container} from'./components/Container';
 import {InboxManagement} from './nonuseroutreachEngine';
 import React from 'react';
 import ReactDOM from 'react-dom';

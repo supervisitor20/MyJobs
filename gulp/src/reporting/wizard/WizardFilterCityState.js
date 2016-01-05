@@ -1,5 +1,5 @@
 import React, {PropTypes, Component} from 'react';
-import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
+import {SearchInput} from 'common/ui/SearchInput';
 
 
 export class WizardFilterCityState extends Component {
@@ -10,8 +10,8 @@ export class WizardFilterCityState extends Component {
 
     updateField(field, value) {
       const {updateFilter} = this.props;
-      const newState = {...this.state};
-      newState[field] = value;
+      const newState = {};
+      newState[field] = value.key;
       this.setState(newState);
       updateFilter(newState);
     }
@@ -20,17 +20,19 @@ export class WizardFilterCityState extends Component {
       const {id, getHints} = this.props;
       return (
         <span>
-          <WizardFilterSearchDropdown
+          <SearchInput
             id={id + '-city'}
+            callSelectWhenEmpty
             placeholder="city"
-            updateFilter={v =>
+            onSelect={v =>
               this.updateField('city', v)}
             getHints={v =>
               getHints('city', v)}/>
-          <WizardFilterSearchDropdown
+          <SearchInput
             id={id + '-state'}
+            callSelectWhenEmpty
             placeholder="state"
-            updateFilter={v =>
+            onSelect={v =>
               this.updateField('state', v)}
             getHints={v =>
               getHints('state', v)}/>

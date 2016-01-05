@@ -8,6 +8,9 @@ from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 DEBUG = True
 ROLES_ENABLED = True
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+
 DATABASES = {
     'default': dict({
         'NAME': 'redirect',
@@ -99,3 +102,6 @@ HAYSTACK_CONNECTIONS = {
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
 )
+
+EMAIL_HOST_USER = QC_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = QC_EMAIL_HOST_PASSWORD

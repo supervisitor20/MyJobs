@@ -4,6 +4,8 @@ from default_settings import *
 from dseo_celery import *
 from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
 
 ALLOWED_HOSTS = ['*', ]
 

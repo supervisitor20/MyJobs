@@ -88,7 +88,7 @@ class JobPostingTests(TestCase):
         This is a little verbose - these additions are being appended to the
         list immediately so that we can adequately revert if something fails.
         """
-        #Users:
+        # Users:
         # These are all superusers at the moment as the admin page is being
         # used to log in. It isn't guaranteed that a given microsite has a
         # login page set up.

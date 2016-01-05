@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 
 from seo.views import search_views
 
-#Lazily matches any repition of alphanumeric characters, /, or -
+# Lazily matches any repition of alphanumeric characters, /, or -
 SLUG_RE = '[/\w-]+?'
 
 urlpatterns = patterns('seo.views.search_views',

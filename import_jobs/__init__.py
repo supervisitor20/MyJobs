@@ -19,10 +19,10 @@ from seo_pysolr import Solr
 from xmlparse import DEv2JobFeed
 from seo.helpers import slices, create_businessunit
 from seo.models import BusinessUnit, Company
-import tasks
 from transform import hr_xml_to_json, make_redirect
 import re
 
+from import_jobs.solr import add_jobs, chunk, delete_by_guid
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +34,12 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'directseo.settings'
 FEED_FILE_PREFIX = "dseo_feed_"
 
 
-def update_job_source(guid, buid, name, clear_cache=False):
+def update_job_source(guid, buid, name):
     """Composed method for resopnding to a guid update."""
 
-    assert(re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid),
-           "%s is not a valid guid" % guid)
-    assert(re.match(r'^\d+$', str(buid)),
-           "%s is not a valid buid" % buid)
+    assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
+           "%s is not a valid guid" % guid
+    assert re.match(r'^\d+$', str(buid)),  "%s is not a valid buid" % buid
 
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
@@ -72,9 +71,7 @@ def update_job_source(guid, buid, name, clear_cache=False):
     bu.associated_jobs = len(job_ids)
     bu.date_updated = datetime.datetime.utcnow()
     bu.save()
-    if clear_cache:
-        # Clear cache in 25 minutes to allow for solr replication
-        tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
+
 
 
 def add_redirect(job, bu):
@@ -114,8 +111,8 @@ def get_jobsfs_zipfile(guid):
     url = 'http://jobsfs.directemployers.org/%s/ActiveDirectory_%s.zip' % \
         (guid, guid)
     req = urllib2.Request(url)
-    authheader = "Basic %s" % base64.encodestring('%s:%s' % ('microsites',
-                                                             'di?dsDe4'))
+    authheader = "Basic %s" % base64.encodestring('%s:%s' % (settings.JOBSFS_USERNAME,
+                                                             settings.JOBSFS_PASSWORD))
     req.add_header("Authorization", authheader)
     resp = urllib2.urlopen(req, timeout=30)
     return resp
@@ -171,7 +168,12 @@ def get_jobs_from_zipfile(zipfileobject, guid):
                         f, guid)
             continue
         with open(path) as _f:
-            yield etree.fromstring(_f.read())
+            try:
+                yield etree.fromstring(_f.read())
+            except Exception as e:
+                logger.error("Unable to parse XML document for job %s", path)
+                logger.exception(e)
+                raise
 
     # clean up after ourselves.
     shutil.rmtree(directory)
@@ -410,7 +412,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
     # delete any jobs that may have been added via etl_to_solr
     conn.delete(q="buid:%s AND !uid:[0  TO *]" % buid)
 
-    #Update business unit information: title, dates, and associated_jobs
+    # Update business unit information: title, dates, and associated_jobs
     if set_title or not bu.title or (bu.title != jobfeed.job_source_name and
                                      jobfeed.job_source_name):
         bu.title = jobfeed.job_source_name
@@ -419,10 +421,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
                                          updated=updated)
     bu.associated_jobs = len(jobs)
     bu.save()
-    if clear_cache:
-        # Clear cache in 25 minutes to allow for solr replication
-        tasks.task_clear_bu_cache.delay(buid=bu.id, countdown=1500)
-    #Update the Django database to reflect company additions and name changes
+    # Update the Django database to reflect company additions and name changes
     add_company(bu)
     if delete_feed:
         os.remove(filepath)
@@ -591,14 +590,7 @@ def _build_solr_delete_query(old_jobs):
     return delete_query
 
 
-def chunk(iterable, chunk_size=1024):
-    """
-    Create chunks from a list.
 
-    """
-    iterator = iter(iterable)
-    for first in iterator:
-        yield chain([first], islice(iterator, chunk_size - 1))
 
 
 def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
@@ -621,48 +613,3 @@ def remove_expired_jobs(buid, active_ids, upload_chunk_size=1024):
         query = "id:(%s)" % " OR ".join([str(x) for x in jobs])
         conn.delete(q=query)
     return expired
-
-
-def add_jobs(jobs, upload_chunk_size=1024):
-    """
-    Loads a solr-ready json list of jobs into solr.
-
-    inputs:
-        :jobs: A list of solr-ready, json-formatted jobs.
-
-    outputs:
-        The ids of jobs loaded into solr.
-    """
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-
-    # Chunk them
-    jobs = chunk(jobs, upload_chunk_size)
-    job_ids = list()
-    for job_group in jobs:
-        job_group = list(job_group)
-        conn.add(job_group)
-        job_ids.extend(j['id'] for j in job_group)
-    return job_ids
-
-
-def delete_by_guid(guids):
-    """
-    Removes a jobs from solr by guid.
-
-    inputs:
-        :guids: A list of guids
-
-    outputs:
-        The number of jobs that were requested to be deleted. This may
-        be higher than the number of actual jobs deleted if a guid
-        passed in did not correspond to a job in solr.
-    """
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    if not guids:
-        return 0
-    num_guids = len(guids)
-    guids = chunk(guids)
-    for guid_group in guids:
-        delete_str = " OR ".join(guid_group)
-        conn.delete(q="guid: (%s)" % delete_str)
-    return num_guids

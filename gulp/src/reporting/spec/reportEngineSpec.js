@@ -99,10 +99,41 @@ describe('ReportConfiguration', () => {
   it('can remove items from multifilters', () => {
     config.addToMultifilter('tag', {key: 'red', display: 'Red'});
     config.addToMultifilter('tag', {key: 'blue', display: 'Blue'});
-    config.removeFromMultifilter('tag', {key: 'red', display: 'Red'});
+    config.removeFromMultifilter('tag', {key: 'red'});
+    config.removeFromMultifilter('tag', {key: 'red'});
     expect(config.getFilter()).toEqual({
       tag: ['blue'],
     });
+  });
+
+  it('can remember and/or filters', () => {
+    config.addToAndOrFilter('tag', 0, {key: 'red', display: 'Red'});
+    expect(config.getFilter()).toEqual({
+      tag: [['red']],
+    });
+  });
+
+  it('can remove items from and/or filters', () => {
+    config.addToAndOrFilter('tag', 0, {key: 'red', display: 'Red'});
+    config.addToAndOrFilter('tag', 0, {key: 'blue', display: 'Blue'});
+    config.removeFromAndOrFilter('tag', 0, {key: 'red'});
+    config.removeFromAndOrFilter('tag', 0, {key: 'red'});
+    expect(config.getFilter()).toEqual({
+      tag: [['blue']],
+    });
+  });
+
+  it('can return sane data for missing and/or filters', () => {
+    expect(config.getAndOrFilter('tag')).toEqual([]);
+  });
+
+  it('removes empty tag lists on demand for and/or filters', () => {
+    config.addToAndOrFilter('tag', 0, {key: 'red', display: 'Red'});
+    config.addToAndOrFilter('tag', 1, {key: 'red', display: 'Red'});
+    config.addToAndOrFilter('tag', 0, {key: 'blue', display: 'Blue'});
+    config.removeFromAndOrFilter('tag', 0, {key: 'red'});
+    config.removeFromAndOrFilter('tag', 0, {key: 'blue'});
+    expect(config.getFilter()).toEqual({tag: [['red']]});
   });
 
   it('can run the report', promiseTest(async () => {

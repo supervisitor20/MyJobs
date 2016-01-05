@@ -66,7 +66,7 @@ def region_select(country="usa", selected="az", html_id="",
     :html_str:      HTML <select> block or error message
 
     """
-    #there is a single file per country, else it returns null.
+    # there is a single file per country, else it returns null.
     country = country.lower()
     selected = selected.lower()
     data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/%s_regions.json' % country

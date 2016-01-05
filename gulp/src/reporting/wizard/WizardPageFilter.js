@@ -4,9 +4,10 @@ import warning from 'warning';
 
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
-import {WizardFilterMultiCollect} from './WizardFilterMultiCollect';
+import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
+import {SearchInput} from 'common/ui/SearchInput';
 
 export class WizardPageFilter extends Component {
   componentDidMount() {
@@ -33,6 +34,18 @@ export class WizardPageFilter extends Component {
   removeFromMultifilter(filter, value) {
     const {reportConfig} = this.props;
     reportConfig.removeFromMultifilter(filter, value);
+    this.updateState();
+  }
+
+  addToAndOrFilter(filter, index, value) {
+    const {reportConfig} = this.props;
+    reportConfig.addToAndOrFilter(filter, index, value);
+    this.updateState();
+  }
+
+  removeFromAndOrFilter(filter, index, value) {
+    const {reportConfig} = this.props;
+    reportConfig.removeFromAndOrFilter(filter, index, value);
     this.updateState();
   }
 
@@ -90,11 +103,23 @@ export class WizardPageFilter extends Component {
               this.getHints(f, v)}/>
         ));
         break;
+      case 'tags':
+        rows.push(this.renderRow(col.display, col.filter,
+          <WizardFilterTags
+            tags={reportConfig.getAndOrFilter(col.filter)}
+            addTag={(i, t) =>
+              this.addToAndOrFilter(col.filter, i, t)}
+            removeTag={(i, t) =>
+              this.removeFromAndOrFilter(col.filter, i, t)}
+            getHints={v => this.getHints(col.filter, v)}/>
+        ));
+        break;
       case 'search_multiselect':
         rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterMultiCollect
+          <SearchInput
             id={col.filter}
-            addItem={v =>
+            emptyOnSelect
+            onSelect={v =>
               this.addToMultifilter(col.filter, v)}
             getHints={v =>
               this.getHints(col.filter, v)}/>

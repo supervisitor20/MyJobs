@@ -61,7 +61,7 @@ class AdminSignalsTestCase(SignalsTestCase):
                     self.site.id, {'post': 'yes'}, follow=True)
             company = Company.objects.get(id=self.company.id)
             self.assertEqual(company.canonical_microsite, None)
-            #Ensure we're getting a message about the canonical microsite being
-            #changed
+            # Ensure we're getting a message about the canonical microsite being
+            # changed
             self.assertNotEqual(response.content.find(
                     'Canonical microsite for %s removed' % company.name), -1)

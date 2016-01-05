@@ -28,5 +28,6 @@ class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
 admin.site.register(Partner)
 admin.site.register(Contact)
 admin.site.register(CommonEmailDomain)
-admin.site.register(OutreachEmailAddress) #TODO: Remove this once NUO Module is live
+# TODO: Remove this once NUO Module is live
+admin.site.register(OutreachEmailAddress)
 admin.site.register(OutreachEmailDomain, OutreachEmailDomainAdmin)

@@ -452,7 +452,7 @@ SLUG_TAG_PARSING_REGEX = re.compile('([/\w\(\)-]+?)/(jobs|jobs-in|new-jobs|'
 # Max number of filters bots can apply.
 ROBOT_FILTER_LEVEL = 2
 
-#This is the canonical order that filter paths will be redirected to
+# This is the canonical order that filter paths will be redirected to
 SLUG_TAGS = OrderedDict([
     ('title_slug', '/jobs-in/'),
     ('location_slug', '/jobs/'),
@@ -645,3 +645,5 @@ SEARCH_SNIPPETS = 2
 EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
 
 CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'
+
+ENV_URL_PREFIXES = ['qc', 'staging']

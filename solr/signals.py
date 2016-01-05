@@ -179,7 +179,7 @@ def object_to_dict(model, obj):
         field_type = field.get_internal_type()
         if (field_type != 'OneToOneField' and
                 not any(s in field.attname
-                        for s in ['password', 'timezone',
+                        for s in ['password', 'timezone', 'text_only',
                                   'deactivate_type', 'last_modified'])):
             field_name = "%s_%s" % (model.__name__, field.attname)
             solr_dict[field_name] = getattr(obj, field.attname)
