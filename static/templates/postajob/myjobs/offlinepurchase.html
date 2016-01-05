@@ -1,0 +1,32 @@
+{% extends "postajob/myjobs/postajob_template.html" %}
+{% load i18n %}
+
+{% block site-title %}
+<title>Offline Purchase Overview - My.jobs</title>
+<meta name="title" content="Offline Purchase Overvivew - My.jobs">
+{% endblock %}
+{% load i18n %}
+
+{% block page_title %}
+Offline Purchase
+{% endblock page_title %}
+
+{% block goback_link %}
+<a href="{% url 'purchasedmicrosite_admin_overview' %}">Back to Admin Overview</a>
+{% endblock %}
+
+{% block postajob_content %}
+<div class="row">
+    <div class="span8">
+        {% include "postajob/includes/offlinepurchase_formBox.html" with wrapper_title="Offline Purchases" %}
+    </div>
+    <div class="span4">
+        {% include "postajob/includes/postajob_navigation.html" with primary_btn=True url_name="add" btn_name="Add an Offline Purchase" %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra-js %}
+
+{% endblock %}

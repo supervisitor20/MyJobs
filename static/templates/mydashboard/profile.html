@@ -1,0 +1,62 @@
+{% load user_ops %}
+        <div class="formBox" id="company-information">
+
+                <h3 class="hide-mobile">Company Information</h3><h3 class="candidate-activity-mobile">Microsites</h3>
+                
+                <div class="accordion" id="details-user-list-collapse">
+                    <div class="accordion-group">
+                        <div class="accordion-heading details-heading">
+                    	   <a class="accordion-toggle" data-toggle="collapse" data-parent="#details-user-list-collapse" href="#user-list-details-table">User List<span class="pull-right"><i class="icon icon-plus"></i></span></a>
+                    	</div>
+                		<div id="user-list-details-table" class="accordion-body collapse">
+                           <ul class="link-list">
+                                {% with user_name=admin_you.get_full_name %}
+                                <li>
+                                    {% if not user_name %}{{ admin_you.email }}{% else %}{{ user_name }}{% endif %} (You)
+                                </li>
+                                {% endwith %}
+                                {% for admin in company_admins %}
+                                    {% with user_name=user.get_full_name %}
+                                    <li>
+                                        {% if not user_name %}{{ user.email }}{% else %}{{ user_name }}{% endif %}
+                                    </li>
+                                    {% endwith %}
+                                {% endfor %} 
+                           </ul>
+                        </div>{# /accordion-body #}
+            		</div>{# /accordion-group #}
+       			 </div>{# /accordion #}
+       			 
+       			 <div class="accordion hide-mobile" id="details-microsites-collapse">
+                    <div class="accordion-group">
+                        <div class="accordion-heading details-heading">
+                    	   <a class="accordion-toggle" data-toggle="collapse" data-parent="#details-microsites-collapse" href="#microsites-details-table">Microsites<span class="pull-right"><i class="icon icon-minus"></i></span></a>
+                    	</div>
+                		<div id="microsites-details-table" class="accordion-body in collapse">
+                           <table id="row-link-table">                            
+                           {% for url in company_microsites %}                    
+                           <tr>
+                                <td>                                
+                                <div class="microsite-name"><a href="{% url 'microsite_activity' %}?company={{ company_id }}&url={{url.url}}">{{url.url|url_domain}}</a></div>
+                                </td>
+                           </tr>
+                           {% endfor %}                    
+                           </table>
+                        </div>{# /accordion-body #}
+            		</div>{# /accordion-group #}
+       			 </div>{# /accordion #}
+       			 
+       			 <table id="row-link-table" class="candidate-activity-mobile">                            
+                    {% for url in company_microsites %}                    
+                    <tr>
+                        <td>                        
+                        <a href="microsite?company={{ company_id }}&url={{url.url}}"><h4 class="mobile-site-links">{{url.url|url_domain}}</h4></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                 </table>
+                 
+            </div>{# /formBox #}
+            
+                            

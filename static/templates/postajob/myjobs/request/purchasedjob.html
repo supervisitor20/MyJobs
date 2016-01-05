@@ -1,0 +1,149 @@
+{% extends "postajob/myjobs/postajob_template.html" %}
+{% load i18n %}
+{% load postajob_tags %}
+
+{% block site-title %}
+<title>Purchased Job Request - My.jobs</title>
+<meta name="title" content="Purchased Job Request - My.jobs">
+{% endblock %}
+{% load i18n %}
+
+
+{% block page_title %}
+Purchased Job Request
+{% endblock page_title %}
+
+
+{% block postajob_content %}
+<div class="row">
+    <div class="span8">
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Title</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.title }}</div>
+        <div class="clear"></div>
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Posting Company</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.owner.name }}</div>
+        <div class="clear"></div>
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Posting User</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{% if object.created_by %}{{ object.created_by.email }}{% else %}User deleted{% endif %} {% if object.created_by in company.companyprofile.blocked_users.all %}<strong>(Blocked)</strong>{% endif %}</div>
+        <div class="clear"></div>
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Requisition ID</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.reqid }}</div>
+        <div class="clear"></div>
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Description</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.description }}</div>
+        <div class="clear"></div>
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>City</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.city }}</div>
+        <div class="clear"></div>
+
+        {% if object.state %}
+            <div class="span3 form-label pull-left purchasedjob-request-label"><b>State</b></div>
+            <div class="profile-form-input purchasedjob-request-field">{{ object.state }}</div>
+            <div class="clear"></div>
+        {% endif %}
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Country</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.country }}</div>
+        <div class="clear"></div>
+
+        {% if object.zipcode %}
+            <div class="span3 form-label pull-left purchasedjob-request-label"><b>Zip Code</b></div>
+            <div class="profile-form-input purchasedjob-request-field">{{ object.zipcode }}</div>
+            <div class="clear"></div>
+        {% endif %}
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>Expires On</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{{ object.date_expired }}</div>
+        <div class="clear"></div>
+
+        {% if object.apply_link %}
+            <div class="span3 form-label pull-left purchasedjob-request-label"><b>Application Link</b></div>
+            <div class="profile-form-input purchasedjob-request-field">{{ object.apply_link }}</div>
+            <div class="clear"></div>
+        {% else %}
+            <div class="span3 form-label pull-left purchasedjob-request-label"><b>Application Instructions</b></div>
+            <div class="profile-form-input purchasedjob-request-field">{{ object.apply_info }}</div>
+            <div class="clear"></div>
+        {% endif %}
+
+        <div class="span3 form-label pull-left purchasedjob-request-label"><b>On Sites</b></div>
+        <div class="profile-form-input purchasedjob-request-field">{% get_job_links object max_sites=None %}</div>
+        <div class="clear"></div>
+
+        {% if request_obj.deny_reason %}
+            <div class="span3 form-label pull-left purchasedjob-request-label"><b>Reason for Rejection</b></div>
+            <div class="profile-form-input purchasedjob-request-field">{{ request_obj.deny_reason }}</div>
+            <div class="clear"></div>
+        {% endif %}
+
+        {% if not request_obj.action_taken %}
+            {% if not object.is_approved %}
+                <form id="job-approval" action="{% url 'approve_admin_request' pk=request_obj.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="actions">
+                        {% if object.created_by %}
+                            <button id="block" type="button" data-toggle="modal" data-target="#block-confirm" class="btn primary pull-right">{% trans 'Block User' %}</button>
+                        {% endif %}
+                        <button id="deny" type="button" data-toggle="modal" data-target="#deny-confirm" class="btn primary pull-right">{% trans 'Deny' %}</button>
+                        <button type="submit" class="btn primary pull-right">{% trans 'Approve' %}</button>
+                    </div>
+                </form>
+                <div id="deny-confirm" class="modal hide fade row">
+                    <div class="modal-header">{% trans 'Really Deny?' %}</div>
+                    <div class="modal-body">{% blocktrans %}Are you sure you want to deny this job posting?{% endblocktrans %}</div>
+                    <div class="modal-footer">
+                        <div class="actions">
+                            <form action="{% url 'deny_admin_request' pk=request_obj.pk %}" method="post">
+                                {% csrf_token %}
+                                Why is this request being denied?
+                                <div class="clear"></div>
+                                <input type="text" id="deny-reason" name="deny-reason">
+                                <div class="clear"></div>
+                                <button data-dismiss="modal" class="btn primary pull-right">{% trans 'Cancel' %}</button>
+                                <button type="submit" class="btn primary" disabled="disabled">{% trans 'Deny' %}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% if object.created_by %}
+                    <div id="block-confirm" class="modal hide fade row">
+                        <div class="modal-header">{% trans 'Really Block?' %}</div>
+                        <div class="modal-body">{% blocktrans %}Are you sure you want to block this user from posting further jobs?{% endblocktrans %}</div>
+                        <div class="modal-footer">
+                            <div class="actions">
+                                <form action="{% url 'block_admin_request' pk=request_obj.pk %}" method="post">
+                                    {% csrf_token %}
+                                    Why is this request being denied?
+                                    <div class="clear"></div>
+                                    <input type="text" id="block-reason" name="block-reason">
+                                    <div class="clear"></div>
+                                    <button data-dismiss="modal" class="btn primary pull-right">{% trans 'Cancel' %}</button>
+                                    <button type="submit" class="btn primary pull-right" disabled="disabled">{% trans 'Block User' %}</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
+    </div>
+    <div class="span4">
+        {% include "postajob/includes/postajob_navigation.html" %}
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra-js %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}postajob.159-9.css{{ gz }}">
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/bootstrap-modalmanager.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/bootstrap-modal.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}postajob.160-13.js"></script>
+{% endblock %}

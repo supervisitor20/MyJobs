@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load compress %}
+{% load staticfiles %}
+
+{% block site-title %}
+    <title>My.jobs - Reports - {{ company.name }} (beta)</title>
+    <meta name="title" content="My.jobs - Reports - {{ company.name }}">
+{% endblock %}
+
+{% block meta-extra %}
+<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
+<link rel="stylesheet" href="{{STATIC_URL}}andor.171-14.css">
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="span12">
+            <h1 class="bottom-bordered">{{ company.name }} <small>Dynamic Reports (beta)</small></h1>
+        </div>
+    </div>
+    <!-- This UI is a placeholder for QA purposes.
+         It is not intended to set any precedent. -->
+    <div class="row">
+        <div id="reporting-app" class="span12">
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra-js %}
+{% compress js %}
+<script src="{% static "bundle/vendor.js" %}"></script>
+<script src="{% static "bundle/reporting.js" %}"></script>
+{% endcompress %}
+{% endblock %}
