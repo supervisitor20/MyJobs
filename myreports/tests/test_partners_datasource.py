@@ -105,7 +105,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_date_range(self):
-        """Should show only contact with last_action_time in range."""
+        """Should show only partner with last_action_time in range."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -117,7 +117,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_date_before(self):
-        """Should show only contact with last_action_time before date."""
+        """Should show only partner with last_action_time before date."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -129,7 +129,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_date_after(self):
-        """Should show only contact with last_action_time after date."""
+        """Should show only partner with last_action_time after date."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -141,7 +141,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_state(self):
-        """Should show only contacts with correct state."""
+        """Should show only partners with correct state."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -155,7 +155,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_city(self):
-        """Should show only contacts with correct city."""
+        """Should show only partners with correct city."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -169,7 +169,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags(self):
-        """Should show only contact with correct tags."""
+        """Should show only partner with correct tags."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -180,7 +180,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_or(self):
-        """Should show only contact with correct tags in or configuration."""
+        """Should show only partner with correct tags in or configuration."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -191,7 +191,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_and(self):
-        """Should show only contact with correct tags in and configuration."""
+        """Should show only partner with correct tags in and configuration."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
