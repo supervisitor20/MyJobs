@@ -313,6 +313,17 @@ class TestContactsDataSource(MyJobsBase):
         expected = [self.sue.name]
         self.assertEqual(expected, names)
 
+    def test_filter_by_partners(self):
+        """Should filter by partners."""
+        ds = ContactsDataSource()
+        recs = ds.run(
+            self.company,
+            ContactsFilter(partner=[self.partner_a.pk]),
+            [])
+        subjects = set([r['name'] for r in recs])
+        expected = {self.john.name}
+        self.assertEqual(expected, subjects)
+
     def test_help_city(self):
         """Should complete city and ignore current city filter."""
         ds = ContactsDataSource()
