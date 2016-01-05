@@ -346,10 +346,13 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         id=60,
         column_name="contact",
-        order=103,
+        order=123,
         output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Contacts',
         configuration=con_comm,
-        multi_value_expansion=False)
+        multi_value_expansion=False,
+        has_help=True)
     ConfigurationColumnFactory.create(
         id=61,
         column_name="contact_email",
