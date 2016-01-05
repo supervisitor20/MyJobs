@@ -1,4 +1,5 @@
 /* global $ */
+/* global companyName */
 
 import React from 'react';
 import {render} from 'react-dom';
