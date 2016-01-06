@@ -112,17 +112,22 @@ class PartnersDataSource(object):
 
 @dict_identity
 class PartnersFilter(object):
-    def __init__(self, date=None, locations=None, tags=None):
+    def __init__(self, date=None, locations=None, tags=None,
+                 data_source=None, uri=None):
         self.date = date
         self.locations = locations
         self.tags = tags
+        self.data_source = data_source
+        self.uri = uri
 
     @classmethod
     def filter_key_types(self):
         return {
             'date': 'date_range',
+            'data_source': 'pass',
             'locations': 'pass',
             'tags': 'pass',
+            'uri': 'pass',
         }
 
     def clone_without_city(self):
@@ -155,6 +160,12 @@ class PartnersFilter(object):
 
     def filter_query_set(self, qs):
         qs = filter_date_range(self.date, 'last_action_time', qs)
+
+        if self.data_source:
+            qs = qs.filter(data_source__iexact=self.data_source)
+
+        if self.uri:
+            qs = qs.filter(uri__iexact=self.uri)
 
         if self.tags:
             or_qs = []

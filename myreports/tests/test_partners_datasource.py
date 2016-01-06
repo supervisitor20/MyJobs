@@ -211,6 +211,28 @@ class TestPartnersDataSource(MyJobsBase):
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
+    def test_filter_by_data_source(self):
+        """Should show only partner with correct tags in or configuration."""
+        ds = PartnersDataSource()
+        recs = ds.run(
+            self.company,
+            PartnersFilter(data_source="zap"),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = {self.partner_a.name}
+        self.assertEqual(expected, names)
+
+    def test_filter_by_uri(self):
+        """Should show only partner with correct tags in or configuration."""
+        ds = PartnersDataSource()
+        recs = ds.run(
+            self.company,
+            PartnersFilter(uri="http://www.asdf.com/"),
+            [])
+        names = set([r['name'] for r in recs])
+        expected = {self.partner_b.name}
+        self.assertEqual(expected, names)
+
     def test_filter_by_empty_things(self):
         """Empty filters should not filter, just like missing filters."""
         ds = PartnersDataSource()
