@@ -65,14 +65,28 @@ class SavedSearchResourceTests(MyJobsBase):
             data={'email': 'alice@example.com',
                   'url': 'www.my.jobs/jobs'})
         create_api_key(User, instance=self.user, created=True)
+        self.client.data['username'] = self.user.email
+        self.client.data['api_key'] = self.user.api_key.key
+
+    def test_special_characters_in_url(self):
+        """
+        Magic happens before control is handed to our view, resulting in
+        quoted things becoming unquoted. We should not unquote said things
+        inside our views as bad things can happen (%23 unquoting to # and
+        becoming a fragment).
+        """
+        self.client.data['url'] = 'www.my.jobs/search?q=c%23'
+        response = self.client.get()
+        self.assertEqual(response.status_code, 200)
+        search = SavedSearch.objects.last()
+        self.assertFalse(search.feed.endswith('#'))
+        self.assertTrue(search.feed.endsWith('%23'))
 
     def test_new_search_existing_user(self):
         for data in [('alice@example.com', 'www.my.jobs/search?q=django'),
                      ('ALICE@EXAMPLE.COM', 'www.my.jobs/search?q=python')]:
             self.client.data['email'] = data[0]
             self.client.data['url'] = data[1]
-            self.client.data['username'] = self.user.email
-            self.client.data['api_key'] = self.user.api_key.key
             response = self.client.get()
             self.assertEqual(response.status_code, 200)
             search = SavedSearch.objects.all()[0]
@@ -90,8 +104,6 @@ class SavedSearchResourceTests(MyJobsBase):
 
     def test_new_search_new_user(self):
         self.client.data['email'] = 'new@example.com'
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(SavedSearch.objects.count(), 0)
@@ -105,8 +117,6 @@ class SavedSearchResourceTests(MyJobsBase):
         SecondaryEmail.objects.create(user=self.user,
                                       email='secondary@example.com')
         self.client.data['email'] = 'secondary@example.com'
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(SavedSearch.objects.count(), 1)
@@ -119,8 +129,6 @@ class SavedSearchResourceTests(MyJobsBase):
 
     def test_new_search_invalid_url(self):
         self.client.data['url'] = 'google.com'
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -130,8 +138,6 @@ class SavedSearchResourceTests(MyJobsBase):
 
     def test_new_search_no_url(self):
         del self.client.data['url']
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -141,8 +147,6 @@ class SavedSearchResourceTests(MyJobsBase):
 
     def test_no_email(self):
         del self.client.data['email']
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -151,6 +155,8 @@ class SavedSearchResourceTests(MyJobsBase):
         self.assertEqual(SavedSearch.objects.count(), 0)
 
     def test_no_auth(self):
+        del self.client.data['username']
+        del self.client.data['api_key']
         response = self.client.get()
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.content, '')
@@ -170,8 +176,6 @@ class SavedSearchResourceTests(MyJobsBase):
             self.assertEqual(SavedSearch.objects.count(), 0)
 
     def test_existing_search(self):
-        self.client.data['username'] = self.user.email
-        self.client.data['api_key'] = self.user.api_key.key
         response = self.client.get()
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
