@@ -80,7 +80,7 @@ class SavedSearchResourceTests(MyJobsBase):
         self.assertEqual(response.status_code, 200)
         search = SavedSearch.objects.last()
         self.assertFalse(search.feed.endswith('#'))
-        self.assertTrue(search.feed.endsWith('%23'))
+        self.assertTrue(search.feed.endswith('%23'))
 
     def test_new_search_existing_user(self):
         for data in [('alice@example.com', 'www.my.jobs/search?q=django'),
