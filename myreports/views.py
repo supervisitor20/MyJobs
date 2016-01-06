@@ -22,8 +22,6 @@ from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
 from myreports.datasources import get_datasource_json_driver
-from myreports.report_configuration import (
-    ReportConfiguration, ColumnConfiguration)
 
 from cStringIO import StringIO
 import csv
