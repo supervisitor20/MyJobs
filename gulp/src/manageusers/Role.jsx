@@ -315,9 +315,9 @@ class Role extends React.Component {
             </div>
             <div className="product-card-full no-highlight">
               <div className="row no-gutter">
-                  <HelpText message={roleNameHelp} />
                   <label htmlFor="id_role_name" className="col-sm-3 control-label">Role Name* </label>
-                  <div class="col-sm-9"><input id="id_role_name" className="input-large" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange}/></div>
+                  <input id="id_role_name" className="col-sm-5" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange}/>
+                  <HelpText message={roleNameHelp} styleName="col-sm-4" />
               </div>
 
               <div className="row">
@@ -341,7 +341,6 @@ class Role extends React.Component {
                   <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
 
                   <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                  
                 </div>
               </div>
 
