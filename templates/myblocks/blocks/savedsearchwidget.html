@@ -1,3 +1,9 @@
+{% comment %}
+Default widget for Saved Search. The purpose of this template is to allow a
+modifiable saved search widget block that can be included on any page. Note the
+various Saved Search States and update them accordingly.
+{% endcomment %}
+
 <script>
     var user_email = {% if user %} '{{ user.email }}' {% else %} 'None' {% endif %};
 </script>
@@ -5,19 +11,17 @@
 <div id="direct-saved-search-box" class="direct_rightColBox direct-action-box">
 <div id="direct-saved-search">
     <div class="saved-search-form">
-    {% if success %}
-        <em class="success">Success</em>{% if not user %}<p>Your search was successfully saved. Results will be sent to {{ success }}.</p>{% endif %}
-    {% endif %}
-    {% if not search and not success %}
+    {% if not search %}
         <div id="cta-saved-search-form">Get new jobs sent directly to your inbox!</div>
         <input placeholder="Your email address" type="text" id="saved-search-email" name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}>
-        <div class="direct-action-btn" id="saved-search-btn"><a href="#" onclick="save_search();">Save Search to My.jobs</a></div>
+        <div class="direct-action-btn" id="saved-search-btn"><a href="" id="ss-btn-link">Save Search to My.jobs</a></div>
         <em class="subtext">Cancel Anytime</em>
-    {% elif search %}
-                {% if not success %}
-                    <p><b>This search is being sent to {{ search.email }}.</b></p>
-                {% endif %}
-                <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
+    {% elif search.is_active %}
+        <p><b>This search is being sent to {{ search.email }}.</b></p>
+        <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
+    {% else %}
+        <p><b>This saved search is currently inactive!</b></p>
+        <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Activate Search</a></div>
     {% endif %}
     </div>
 </div>

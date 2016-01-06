@@ -416,8 +416,8 @@ class SavedSearchWidgetBlock(SecureBlock):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
-        saved_search_url = kwargs.get('url')
-        success_email = kwargs.get('success_email')
+        saved_search_url = request.META['HTTP_REFERER']
+        # success_email = kwargs.get('success_email')
         search = None
         user = request.user if request.user.is_authenticated() else None
 
@@ -427,16 +427,16 @@ class SavedSearchWidgetBlock(SecureBlock):
                               url=saved_search_url)
                       .first())
 
-        if success_email and not search:
-            search = (SavedSearch.objects
-                      .filter(user__email=success_email,
-                              url=saved_search_url)
-                      .first())
+        # if success_email and not search:
+        #     search = (SavedSearch.objects
+        #               .filter(user__email=success_email,
+        #                       url=saved_search_url)
+        #               .first())
 
         return {
             'user': user,
             'search': search,
-            'success': success_email
+            # 'success': success_email
         }
 
     def required_js(self):
