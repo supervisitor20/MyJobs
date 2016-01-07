@@ -43,7 +43,7 @@ class UnsubscribingTests(MyJobsBase):
 
         # Magic! If this is a digest, we shouldn't have an unsub link for
         # single searches. If expected_num_links is 2, we'll exclude that.
-        expected_link_types = set(["Everything", "All Searches",
+        expected_link_types = set(["All MyJobs Communication", "All Searches",
                                    "This Search"][:expected_num_links])
 
         # All links start with the word "Unsubscribe". If that changes, this
