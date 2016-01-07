@@ -63,8 +63,8 @@ class UnsubscribingTests(MyJobsBase):
         self.assertTrue(
             # contents.find returns None, which is falsy, if it can't find
             # what we're searching for.
-            contents.find('a', text=re.compile("I've changed my mind")),
-            msg="""Didn't find an "I've changed my mind" link""")
+            contents.find('a', text=re.compile("Cancel")),
+            msg="""Didn't find a "Cancel" link""")
 
     def test_single_search_emails_have_unsubscription_options(self):
         """
