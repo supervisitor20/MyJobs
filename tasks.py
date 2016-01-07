@@ -286,7 +286,7 @@ def process_user_events(email):
     logs = EmailLog.objects.filter(email=email).order_by('-received')
     newest_log = logs[0]
 
-    filter_by_event = lambda x, num=None: [log for log in logs[:num]
+    filter_by_event = lambda x, num = None: [log for log in logs[:num]
                                            if log.event in x]
 
     max_errors = 3
@@ -351,7 +351,7 @@ def process_batch_events():
     emails = set(EmailLog.objects.values_list('email', flat=True).filter(
         processed=False))
 
-    result = group(process_user_events.subtask((email, ))
+    result = group(process_user_events.subtask((email,))
                    for email in emails).apply()
     result.join()
 
@@ -375,7 +375,7 @@ def process_batch_events():
                             headers=headers)
 
     # These users have not responded in 90 days. Stop sending emails.
-    users = User.objects.filter(last_response__lte=now-timedelta(days=180))
+    users = User.objects.filter(last_response__lte=now - timedelta(days=180))
     users.update(opt_in_myjobs=False)
 
 
