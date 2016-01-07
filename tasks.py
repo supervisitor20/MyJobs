@@ -788,6 +788,7 @@ def task_update_solr(jsid, **kwargs):
 def task_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
+        BusinessUnit.clear_cache(int(buid))
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
@@ -798,7 +799,7 @@ def task_etl_to_solr(guid, buid, name):
 def task_priority_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
-        task_clear_bu_cache.delay(buid=int(buid), countdown=1500)
+        BusinessUnit.clear_cache(int(buid))
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
