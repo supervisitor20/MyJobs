@@ -10,13 +10,13 @@ High Level Requirements
 Form layouts should handle all layout widths automatically. For testing, this
 includes two primary widths
 
-*Wide*:
+**Wide**:
 Used in layouts when the form is in a span 8.
 
-*Narrow*:
+**Narrow**:
 Used in mobile layouts and when the form is in a span 4 (ie the side bar).
 
-*Form Validation*:
+**Form Validation**:
 
 - Validation errors should be able to stack when there are multiple errors
 - Non field form errors should appear at the top of a form in a red alert
@@ -27,18 +27,18 @@ Used in mobile layouts and when the form is in a span 4 (ie the side bar).
 Alignement
 ==========
 
-*Wide Width*
+**Wide Width**
 
 - Labels should be in a span3 column to the left of the field they label
 - Label text should be right aligned
-- Required forms should use *bold* text
+- Required forms should use **bold** text
 - Inputs should take the rest of the parent column width
 - Inputs should be left aligned
 - Buttons should be in the column with inputs
 - Buttons should align left in a row
 - Buttons should be ordered with most important to the left, least to the right
 
-*Narrow Width*
+**Narrow Width**
 
 - Labels should appear above the input they label
 - Labels should be left aligned
@@ -78,6 +78,7 @@ Locations
 ----
 - Select list for country
 - Select list for region
+
  - default should be "Select Region..."
  - text field if there no json file available for selected country
 
@@ -90,6 +91,7 @@ Date
 Time
 ----
 - set of three drop downs in sequence. 
+
  - Hours (1-12)
  - Minutes (0-59)
  - AM/PM
@@ -99,7 +101,6 @@ Booleans
 - Presented as a checkbox
 - If multiple checkboxes are presented as one control, include a left aligned 
   label to the right of the checkbox
-
 
 .. image:: ../../_static/forms.png
     :alt: form input usage examples
