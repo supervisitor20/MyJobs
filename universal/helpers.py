@@ -2,6 +2,7 @@
 
 from copy import copy, deepcopy
 from HTMLParser import HTMLParser
+from pkgutil import simplegeneric
 import re
 import urllib
 from urlparse import urlparse, urlunparse
@@ -428,3 +429,15 @@ def dict_identity(cls):
     cls.__str__ = repr
     cls.__repr__ = repr
     return cls
+
+@simplegeneric
+def invitation_reason(reason=None):
+    raise NotImplementedError
+
+@invitation_reason.register(str)
+def str_invitation_reaason(reason):
+    return {"message": reason}
+
+@invitation_reason.register(None)
+def none_invitation_reason(reason):
+    return {"message": ""}

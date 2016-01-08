@@ -8,12 +8,20 @@ from pynliner import Pynliner
 
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import Group
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now as datetime_now
 from django.utils.translation import ugettext_lazy as _
 
-from universal.helpers import send_email
+from universal.helpers import invitation_reason, send_email
+
+
+@invitation_reason.register(Group)
+def group_invitation_reason(reason):
+    return {"message": "in order to help administer their recruitment "
+                       "and outreach tools.",
+            "group": reason}
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -186,7 +194,7 @@ class Invitation(models.Model):
 
         super(Invitation, self).save(*args, **kwargs)
 
-    def send(self, reason=""):
+    def send(self, reason=None):
         """
         Inputs:
             :reason: A custom reason to be included in the email.
@@ -203,33 +211,22 @@ class Invitation(models.Model):
         activiation_profile, _ = ActivationProfile.objects.get_or_create(
             user=self.invitee, email=self.invitee.email)
 
-        if not reason:
-            if self.added_saved_search:
-                reason = ("in order to begin receiving their available job "
-                          "opportunities on a regular basis")
-            elif self.added_permission:
-                reason = ("in order to help administer their recruitment and "
-                          "outreach tools")
-
-        reason = (" " if reason else "") + reason + "."
+        reason_context = invitation_reason(reason)
+        reason_context["message"] = "%s%s." % (
+            " " if reason else "", reason_context["message"])
 
         if activiation_profile.activation_key_expired():
             activiation_profile.reset_activation()
-            application_profile  = ActivationProfile.objects.get(
-                pk=activiation_profile.pk)
+            ActivationProfile.objects.get(pk=activiation_profile.pk)
 
         context = {'invitation': self,
-                   'activation_key': activiation_profile.activation_key,
-                   'reason': reason}
+                   'activation_key': activiation_profile.activation_key}
 
-        text_only = False
-        if self.added_saved_search:
-            initial_email = self.added_saved_search.initial_email(send=False)
-            context['initial_search_email'] = initial_email
-            text_only = self.added_saved_search.text_only
+        context.update(reason_context)
 
-        body = render_to_string('registration/invitation_email.html',
-                                context)
+        text_only = context.get("text_only", False)
+
+        body = render_to_string('registration/invitation_email.html', context)
         body = Pynliner().from_string(body).run()
 
         if self.inviting_user:

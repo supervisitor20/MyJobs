@@ -27,7 +27,7 @@ from django.utils.translation import ugettext_lazy as _
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
 from registration import signals as custom_signals
 from mymessages.models import Message, MessageInfo
-from universal.helpers import get_domain, send_email
+from universal.helpers import get_domain, send_email, invitation_reason
 
 BAD_EMAIL = ['dropped', 'bounce']
 STOP_SENDING = ['unsubscribe', 'spamreport']
@@ -958,3 +958,8 @@ class Role(models.Model):
             activity = None
 
         return activity
+
+
+@invitation_reason.register(Role)
+def role_invitation_reason(reason):
+    {"message": "as a(n) %s for %s." % (reason.name, reason.company)}

@@ -14,7 +14,7 @@ from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
                                 url_sort_options)
 import mypartners.helpers
-from universal.helpers import send_email
+from universal.helpers import invitation_reason, send_email
 
 
 FREQUENCY_CHOICES = (
@@ -403,6 +403,15 @@ class SavedSearch(models.Model):
         headers = {'X-SMTPAPI': category}
         send_email(message, email_type=settings.SAVED_SEARCH_DISABLED,
                    recipients=[self.email], headers=headers)
+
+
+@invitation_reason.register(SavedSearch)
+def saved_search_invitation_reason(reason):
+    return {"message": "in order to begin receiving their available job "
+                       "opportunities on a regular basis",
+            "saved_search": reason,
+            "initial_search_email": reason.initial_email(send=False),
+            "text_only": reason.text_only}
 
 
 class SavedSearchDigest(models.Model):
