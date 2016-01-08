@@ -56,6 +56,7 @@ Changes made to a field in error:
   there are multiple errors, each one gets its own line below the field
 * if additional details are available for an error, they should be placed in a 
   hidden div below the error.
+  
   * To access this div, a tree arrow whould be placed aligned right on the 
     description row. This arrow toggles the div. 
   * The div should appear in the main DOM layer, not as a floating element.
