@@ -303,8 +303,14 @@ function setPrimaryName(){
 }
 
 function removeRequiredChanges(){
+    $.each($(".required"), function( index, value ) {
+        var thisHelpText = $(this).children().data("helptext");
+        if (thisHelpText !== undefined){
+            $(value).siblings('.error-text').replaceWith("<div class='helptext'>" + thisHelpText + "</div>");
+        }
+    });
     $(".required").contents().unwrap();
-    $(".error-text i").remove();
+    $(".error-text").remove();
 }
 
 function jsonErrors(index, errors){
@@ -328,16 +334,15 @@ function jsonErrors(index, errors){
     if(errors[index][0].indexOf("password") != -1)
         $error.val("");
     // insert new errors after the relevant inputs
-    if(errors[index][1][0].indexOf("required") != -1){
-        $error.val("");
-        $error.attr("placeholder",errors[index][1]);
-    }else{
-        var field = $error.parents("fieldset"),
-            error_box = $(".error-box");
-
-        error_box.empty();
-        $.each(errors[index][1], function(index, value){
-            error_box.append("<div class='error-text'><small><em>" + value + "</em></small></div>");
-        });
-    }
+    $.each(errors[index][1], function(index, value){
+        var value = "<div class='error-text'>" + value + "</div>";
+        if ($error.parent().siblings('.helptext').length) {
+            $error.data("helptext",$error.parent().siblings('.helptext').text())
+            $error.parent().siblings('.helptext').replaceWith(value)
+        } else if ($error.parent().siblings('.error-text').length) {
+            $error.parent().siblings('.error-text').replaceWith(value)
+        } else {
+            $error.parent().after(value)
+        }
+    });
 }
