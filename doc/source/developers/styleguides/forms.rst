@@ -24,8 +24,8 @@ Used in mobile layouts and when the form is in a span 4 (ie the side bar).
 * Validation warnings should replace any help text on the form
 * Validation details (if applicable) should be hidden by default
  
-Alignement
-==========
+Aligement
+=========
 
 **Wide Width**
 
@@ -52,12 +52,12 @@ Changes made to a field in error:
 * input border turns red
 * label turns red
 * help text is hidden (if applicable)
-* a warning icon and error description are shown immediatly below the fold. If
+* a warning icon and error description are shown immediately below the fold. If
   there are multiple errors, each one gets its own line below the field
 * if additional details are available for an error, they should be placed in a 
   hidden div below the error.
   
-  * To access this div, a tree arrow whould be placed aligned right on the 
+  * To access this div, a tree arrow would be placed aligned right on the 
     description row. This arrow toggles the div. 
   * The div should appear in the main DOM layer, not as a floating element.
 
