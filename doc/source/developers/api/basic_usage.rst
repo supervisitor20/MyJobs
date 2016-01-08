@@ -1,5 +1,3 @@
-**DirectEmployers Association**
-
 =======================
 My.jobs API Basic Usage
 =======================
