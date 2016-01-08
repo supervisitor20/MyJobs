@@ -1,5 +1,5 @@
 ===================================
-Forms * Layout and Input Type Usage
+Forms: Layout and Input Type Usage
 ===================================
 
 This guide covers the use of forms and specific input types. At the bottom of
