@@ -1226,10 +1226,10 @@ def api_edit_user(request, user_id=0):
                 # 3. Is that one user this user?
                 if unicode(users_with_admin[0].id) == user_id:
                     ctx["success"] = "false"
-                    ctx["message"] = "To remove the Admin role from this user \
-                                      you must first assign it to another user.\
-                                      Every company must have at least one \
-                                      user with the Admin role."
+                    ctx["message"] = ("To remove the Admin role from this user "
+                                      "you must first assign it to another
+                                      "user. Every company must have at least "
+                                      "one user with the Admin role.")              
                     return HttpResponse(json.dumps(ctx),
                                         content_type="application/json")
 
