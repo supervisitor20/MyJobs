@@ -748,9 +748,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        if not reason and role_name:
-            reason = "as a(n) %s for %s" % (role_name, company)
-
         invitation.send(reason + ".")
 
         if role_name:
@@ -758,6 +755,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 assigned_role = Role.objects.get(
                     company=company, name=role_name)
                 user.roles.add(assigned_role)
+                reason = invitation_reason(assigned_role)
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
                 CompanyUser.objects.get_or_create(user=user, company=company)
