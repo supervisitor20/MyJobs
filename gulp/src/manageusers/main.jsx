@@ -127,9 +127,9 @@ export class App extends React.Component {
           results[key].users.assigned = JSON.parse(results[key].users.assigned);
 
           let editRoleLink;
-          if (results[key].role.name !== "Admin") {
+          if (results[key].role.name !== 'Admin') {
             editRoleLink = <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
-          };
+          }
 
           rolesTableRows.push(
             <tr key={results[key].role.id}>
