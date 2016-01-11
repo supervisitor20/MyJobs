@@ -19,27 +19,29 @@
         <meta itemprop="specialCommitments" content="{{site_commitments_string}}" />
         {% endif %}
         <div class="direct_joblocation">
-        {% if show_co_names %}        
+        {% if show_co_names %}
         <span  class="hiringOrganization" itemprop="hiringOrganization" itemscope itemtype="http://schema.org/Organization">
             <b itemprop="name">{{ job.company }}</b>
         </span>
         <span class="listingHyphen">-</span>
         {% endif %}
         <span class="hiringPlace" itemscope itemtype="http://schema.org/Place">
+            {% spaceless %}
             <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                {% if job.state_short %}
-                {% if job.city %}<span itemprop="addressLocality">{{ job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ job.state_short }}</span>
+                {% if job.state %}
+                    {% if job.city %}<span itemprop="addressLocality">{{ job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ job.state }}</span>
                 {% else %}
                     {% if job.city %}
-                    <span itemprop="addressLocality">{{ job.city }}</span>
-                    {% endif %}    
-                {% endif %}                
-                {% if job.country_short|lower == "usa" and job.state_short %}
+                        <span itemprop="addressLocality">{{ job.city }}</span>,
+                    {% endif %}
+                {% endif %}
+                {% if job.country_short|lower == "usa" and job.state %}
                     <meta itemprop="addressCountry" content="{{ job.country }}" />
                 {% else %}
                     <span itemprop="addressCountry">{{ job.country }}</span>
-                {% endif %}  
+                {% endif %}
             </span>
+            {% endspaceless %}
         </span>
     </div>
     {% if query_string %}
