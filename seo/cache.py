@@ -39,7 +39,7 @@ def get_total_jobs_count():
     if not jobs_count:
         jobs_count = get_jobs(custom_facets=settings.DEFAULT_FACET,
                               jsids=settings.SITE_BUIDS).count()
-        cache.set(jobs_count_key, jobs_count, MINUTES_TO_CACHE_JOB_DATA*60)
+        cache.set(jobs_count_key, jobs_count, MINUTES_TO_CACHE_JOB_DATA * 60)
     return jobs_count
 
 
