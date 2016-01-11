@@ -27,7 +27,7 @@ from django.utils.translation import ugettext_lazy as _
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
 from registration import signals as custom_signals
 from mymessages.models import Message, MessageInfo
-from universal.helpers import get_domain, send_email, invitation_reason
+from universal.helpers import get_domain, send_email, invitation_context
 
 BAD_EMAIL = ['dropped', 'bounce']
 STOP_SENDING = ['unsubscribe', 'spamreport']
@@ -755,7 +755,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 assigned_role = Role.objects.get(
                     company=company, name=role_name)
                 user.roles.add(assigned_role)
-                reason = invitation_reason(assigned_role)
+                reason = invitation_context(assigned_role)
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
                 CompanyUser.objects.get_or_create(user=user, company=company)
@@ -958,6 +958,8 @@ class Role(models.Model):
         return activity
 
 
-@invitation_reason.register(Role)
-def role_invitation_reason(reason):
-    {"message": "as a(n) %s for %s." % (reason.name, reason.company)}
+@invitation_context.register(Role)
+def role_invitation_context(obj):
+    """Returns a message and the role."""
+    return {"message": "as a(n) %s for %s." % (obj.name, obj.company),
+            "role": obj}

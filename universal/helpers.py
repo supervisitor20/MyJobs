@@ -431,13 +431,19 @@ def dict_identity(cls):
     return cls
 
 @simplegeneric
-def invitation_reason(reason=None):
-    raise NotImplementedError
+def invitation_context(instance):
+    """
+    Returns a context dictionary to be used when rendering an invitation email.
+    Minimally complete implementations should return a dictionary with a
+    `message` key, which should be a string.
 
-@invitation_reason.register(str)
-def str_invitation_reaason(reason):
-    return {"message": reason}
+    Calling this function without arguments will raise a runtime error.
+    """
+    raise TypeError(
+        "object of type '%s' has no invitation_context." % type(
+            instance).__name__)
 
-@invitation_reason.register(None)
-def none_invitation_reason(reason):
-    return {"message": ""}
+@invitation_context.register(str)
+def str_invitation_reaason(instance):
+    """Returns the string verbatim as the `message`."""
+    return {"message": instance}

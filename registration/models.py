@@ -14,11 +14,11 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now as datetime_now
 from django.utils.translation import ugettext_lazy as _
 
-from universal.helpers import invitation_reason, send_email
+from universal.helpers import invitation_context, send_email
 
 
-@invitation_reason.register(Group)
-def group_invitation_reason(reason):
+@invitation_context.register(Group)
+def group_invitation_context(reason):
     return {"message": "in order to help administer their recruitment "
                        "and outreach tools.",
             "group": reason}
@@ -211,7 +211,7 @@ class Invitation(models.Model):
         activiation_profile, _ = ActivationProfile.objects.get_or_create(
             user=self.invitee, email=self.invitee.email)
 
-        reason_context = invitation_reason(reason)
+        reason_context = invitation_context(reason)
         reason_context["message"] = "%s%s." % (
             " " if reason else "", reason_context["message"])
 
