@@ -22,6 +22,8 @@ Step 1: Call the user API to see if the email submitted already exists
     :header-rows: 0
     :stub-columns: 1
 
+    * - Example
+      - https://secure.my.jobs/api/v1/user/?email=pat@email.com&username=you@yourcompany.com&api_key=1234567890abcdefghijklmnop
     * - URL
       - https://secure.my.jobs/api/v1/user/
     * - Required Parameters
@@ -56,8 +58,6 @@ Step 1: Call the user API to see if the email submitted already exists
         **user_created**
 
         Returns true if the user was created, false if the user already exists.
-    * - Example
-      - https://secure.my.jobs/api/v1/user/?email=pat@email.com&username=you@yourcompany.com&api_key=1234567890abcdefghijklmnop
 
 Step 2: Call the saved search API to create the saved search
 
@@ -65,6 +65,8 @@ Step 2: Call the saved search API to create the saved search
     :header-rows: 0
     :stub-columns: 1
 
+    * - Example
+      - https://secure.my.jobs/api/v1/savedsearch/?callback=finish_ss&email=pat@email.com&url=http%3A%2F%2Fwww.my.jobs%2Fjobs%2F%3Fq%3Dinternet&username=you@yourcompany.com&api_key=1234567890abcdefghijklmnop
     * - URL
       - https://secure.my.jobs/api/v1/savedsearch/
     * - Required Parameters
@@ -109,8 +111,6 @@ Step 2: Call the saved search API to create the saved search
         **new_search**
 
         Returns true if this is a new search and false if the saved search already exists. My.jobs will not allow duplicate searches to be setup.
-    * - Example
-      - https://secure.my.jobs/api/v1/savedsearch/?callback=finish_ss&email=pat@email.com&url=http%3A%2F%2Fwww.my.jobs%2Fjobs%2F%3Fq%3Dinternet&username=you@yourcompany.com&api_key=1234567890abcdefghijklmnop
 
 About this Document
 ===================
