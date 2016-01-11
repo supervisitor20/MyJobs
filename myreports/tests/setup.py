@@ -275,7 +275,7 @@ def create_full_fixture():
         column_name="tags",
         order=107,
         output_format="comma_sep",
-        filter_interface_type='search_multiselect',
+        filter_interface_type='tags',
         filter_interface_display='Tags',
         configuration=con_con,
         multi_value_expansion=False,

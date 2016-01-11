@@ -63,6 +63,10 @@ class SavedSearchWidgetBlockAdmin(BlockAdmin):
     form = forms.SavedSearchWidgetBlockForm
 
 
+class SavedSearchesListWidgetBlockAdmin(BlockAdmin):
+    form = forms.SavedSearchWidgetBlockForm
+
+
 class SearchBoxBlockAdmin(BlockAdmin):
     form = forms.SearchBoxBlockForm
 
@@ -123,6 +127,7 @@ admin.site.register(models.JobDetailBreadboxBlock, JobDetailBreadboxBlockAdmin)
 admin.site.register(models.JobDetailHeaderBlock, JobDetailHeaderBlockAdmin)
 admin.site.register(models.MoreButtonBlock, MoreButtonBlockAdmin)
 admin.site.register(models.SavedSearchWidgetBlock, SavedSearchWidgetBlockAdmin)
+admin.site.register(models.SavedSearchesListWidgetBlock, SavedSearchesListWidgetBlockAdmin)
 admin.site.register(models.SearchBoxBlock, SearchBoxBlockAdmin)
 admin.site.register(models.SearchFilterBlock, SearchFilterBlockAdmin)
 admin.site.register(models.VeteranSearchBox, VeteranSearchBoxAdmin)

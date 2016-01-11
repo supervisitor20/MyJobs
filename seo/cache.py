@@ -54,7 +54,7 @@ def get_facet_count_key(filters=None, query_string=None):
     filters = filters or ''
     query_string = query_string or ''
 
-    #We use a hash to ensure key length is under memcache's 250 character limit
+    # We use a hash to ensure key length is under memcache's 250 character limit
     return "browsefacets::%s%s%s" % (
         settings.SITE_ID,
         hashlib.md5(unicode(filters)).hexdigest(),
@@ -129,6 +129,20 @@ def get_site_config(request):
                 site_config = Configuration.objects.get(id=2)
         cache.set(config_cache_key, site_config, timeout)
     return site_config
+
+
+def get_url_prefix_qc_staging(request):
+    """
+    Returns the url prefix of the current host if the current host url starts
+    with qc or staging.
+    :param request:
+    :return: url prefix of qc or staging, if applicable, otherwise empty string
+
+    """
+    if not request.META.get('HTTP_HOST'):
+        return ''
+    host_prefix = request.META.get('HTTP_HOST').split('.', 1)[0]
+    return host_prefix if host_prefix in settings.ENV_URL_PREFIXES else ''
 
 
 def get_secure_blocks_site(request):

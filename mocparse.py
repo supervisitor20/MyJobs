@@ -194,8 +194,8 @@ def find_moc_with_non_matching_onet(onet_file, moc_file):
     for line in map_file:
         onet_code, onet_title = line.split('\t')
         # Do we really need these two commented lines in the code?
-        #onet_code = onet_code.replace('-','')
-        #onet_code = onet_code.replace('.', '')
+        # onet_code = onet_code.replace('-','')
+        # onet_code = onet_code.replace('.', '')
         onets.append(onet_code)
 
     map_file.close()

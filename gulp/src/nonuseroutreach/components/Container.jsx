@@ -10,7 +10,7 @@ export class Container extends Component {
     super(props);
     this.state = {
       page: 'Overview',
-      company: 'DirectEmployers',
+      company: companyName,
       tips: [],
     };
   }
@@ -26,7 +26,7 @@ export class Container extends Component {
   }
 
   render() {
-    const {page, tips} = this.state;
+    const {page, company, tips} = this.state;
     return (
       <div>
         <div className="row">
@@ -35,7 +35,7 @@ export class Container extends Component {
               <a
                 href="/manage-users/"
                 title="Back to Manage Users">
-                  DirectEmployers
+                  {company}
               </a>
             </h1>
           </div>
@@ -45,7 +45,7 @@ export class Container extends Component {
           <div className="col-sm-12">
             <div className="breadcrumbs">
               <span>
-                Non-User Outreach
+                Non-User Outreach Inbox Management
               </span>
             </div>
           </div>

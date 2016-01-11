@@ -39,3 +39,6 @@ CACHES = {
 SOLR = {
     'default': 'http://ec2-54-225-127-98.compute-1.amazonaws.com:8983/solr'
 }
+
+EMAIL_HOST_USER = STAGING_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = STAGING_EMAIL_HOST_PASSWORD

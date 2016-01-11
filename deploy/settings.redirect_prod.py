@@ -42,11 +42,14 @@ CACHES = {
 }
 
 # Uncomment for Django Debug Toolbar
-#MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-#INSTALLED_APPS += ('debug_toolbar',)
+# MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+# INSTALLED_APPS += ('debug_toolbar',)
 
 NEW_RELIC_TRACKING = True
 
 SOLR = {
     'default': 'http://solr_server:8983/solr/seo'
 }
+
+EMAIL_HOST_USER = PRODUCTION_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = PRODUCTION_EMAIL_HOST_PASSWORD

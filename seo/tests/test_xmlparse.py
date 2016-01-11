@@ -47,7 +47,7 @@ class JobFeedTestCase(DirectSEOBase):
         self.unused_field_feed = os.path.join(self.testdir, 'dseo_feed_1.xml')
         self.no_onet_feed = os.path.join(self.testdir, 'dseo_feed_no_onets.xml')
 
-        #Ensures DATA_DIR used by import_jobs.download_feed_file exists
+        # Ensures DATA_DIR used by import_jobs.download_feed_file exists
         data_path = DATA_DIR
         if not os.path.exists(data_path):
             os.mkdir(data_path)
@@ -172,7 +172,7 @@ class JobFeedTestCase(DirectSEOBase):
         self.assertEqual(jobs[0]['description'].find('&amp;'), -1)
 
     def test_markdown_code_blocks(self):
-        #test that code blocks are not in html job descriptions
+        # test that code blocks are not in html job descriptions
         results = DEv2JobFeed(
                     'seo/tests/data/dseo_feed_0.markdown.xml',
                     jsid=0)
@@ -371,4 +371,3 @@ class JobFeedTestCase(DirectSEOBase):
         site_package2.delete()
         site_package.delete()
         business_unit.delete()
-

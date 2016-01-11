@@ -1,30 +1,8 @@
-.. note::
+.. _product-life-cycle:
 
-    Pardon for the often vague terminology It is my understanding that such
-    phrasing is yet to be finalized, hence it's usage.
-
-    The purpose of this document is to catalog the functionality made
-    available by the postajob application. As such, no attempt is made to
-    annotate the exact location of certain interface elements. This document is
-    also, by its very nature, non-exhaustive. 
-
-    The brave reader who finishes this should thus not hope to understand
-    postajob in its entirely, but rather cease to be confused entirely. In
-    plain English, it is my hope that, the dialog surrounding postajob
-    transforms from, "Huh?!", to "Ah...I think...".
-
-===========
-Job Posting
-===========
-
+========
 Overview
 ========
-The new job posting feature allows purchased microsite owners to create and sell
-products individually or in groups. Any My.jobs user, then has the ability to
-purchase these products to post job listings, subject to a moderator's
-approval. The only prerequisite to using the job posting feature is the
-existence of a site-package, which may be created by a DirectEmployers staff
-member.
 
 Product Life Cycle
 ==================

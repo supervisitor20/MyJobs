@@ -52,27 +52,27 @@ class SeoHelpersTestCase(DirectSEOBase):
         """
         p = Decimal(0.5)
         input_outputs = [
-            #Getting jobs from sets of 25 featured andj
-            #55 default, 50% split, in slices of 20 and 10
+            # Getting jobs from sets of 25 featured andj
+            # 55 default, 50% split, in slices of 20 and 10
             ((25, 55, 20, p, 0), (10, 10, 0, 0)),
             ((25, 55, 20, p, 20), (10, 10, 10, 10)),
             ((25, 55, 20, p, 40), (5, 15, 20, 20)),
             ((25, 55, 10, p, 60), (0, 10, 30, 35)),
             ((25, 55, 20, p, 70), (0, 10, 35, 45)),
-            #Offset higher than available jobs
+            # Offset higher than available jobs
             ((0, 50, 20, p, 50), (0, 0, 25, 50))
         ]
         io2 = []
         for i, o in input_outputs:
-            #Reverse counts for featured and default jobs
+            # Reverse counts for featured and default jobs
             io2.append(((i[1], i[0], i[2], i[3], i[4]),
                         (o[1], o[0], o[3], o[2])))
-            #No Featured Facet jobs
+            # No Featured Facet jobs
             io2.append(((0, 90, i[2], i[3], i[4]),
                         (0, i[2], int(i[4]*i[3]), i[4])))
         input_outputs.extend(io2)
-        #Rounding should favor featured jobs. Here the first element to be
-        #returned is a featured job, and the second is a default job
+        # Rounding should favor featured jobs. Here the first element to be
+        # returned is a featured job, and the second is a default job
         input_outputs.append(((1, 1, 1, p, 0), (1, 0, 0, 0)))
         input_outputs.append(((1, 1, 1, p, 1), (0, 1, 1, 0)))
 

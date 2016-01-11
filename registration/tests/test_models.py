@@ -229,6 +229,7 @@ class InvitationModelTests(MyJobsBase):
         Ensures that there is no way to edit an invitation once it is sent
         """
         invitation = InvitationFactory()
+        invitation.send()
         resp = self.client.get(reverse(
             'admin:registration_invitation_changelist'))
         contents = BeautifulSoup(resp.content)
@@ -260,6 +261,7 @@ class InvitationModelTests(MyJobsBase):
             'admin:registration_invitation_add'),
             {'invitee_email': 'email@example.com'})
         invitation = Invitation.objects.get()
+        invitation.send()
         self.assertEqual(invitation.inviting_user, self.admin)
 
     def test_invitation_form_creates_invitee(self):
@@ -287,7 +289,7 @@ class InvitationModelTests(MyJobsBase):
             # but not a normal user creation email
             self.assertEqual(len(mail.outbox), 1)
             email = mail.outbox.pop()
-            self.assertTrue('reserved' in email.body)
+            self.assertIn("invited you to join My.jobs.", email.body)
 
         self.assertEqual(len(users), 2)
         self.assertItemsEqual(users, set(users))
@@ -298,7 +300,8 @@ class InvitationModelTests(MyJobsBase):
                      {'invitee': self.admin},
                      {'invitee_email': 'new_user@example.com'}]:
             args.update({'inviting_user': self.admin})
-            Invitation(**args).save()
+            invitation = Invitation.objects.create(**args)
+            invitation.send()
         self.assertEqual(User.objects.count(), 2)
 
     def test_invitation_model_save_failure(self):
@@ -312,7 +315,7 @@ class InvitationModelTests(MyJobsBase):
                                       'Invitee information does not match'),
                                      ({}, 'Invitee not provided')]:
             with self.assertRaises(ValidationError) as e:
-                Invitation(**args).save()
+                invitation = Invitation.objects.create(**args)
             self.assertEqual(e.exception.messages, [exception_text])
 
     def companyuser_invitation(self, user, company):
@@ -389,8 +392,10 @@ class InvitationModelTests(MyJobsBase):
 
     def test_invitation_emails_new_user(self):
         self.assertEqual(len(mail.outbox), 0)
-        Invitation(invitee_email='prm_user@company.com',
-                   inviting_user=self.admin).save()
+        invitation = Invitation.objects.create(
+            invitee_email='prm_user@company.com',
+            inviting_user=self.admin)
+        invitation.send()
         self.assertEqual(len(mail.outbox), 1)
 
         user = User.objects.get(email='prm_user@company.com')
@@ -421,8 +426,9 @@ class InvitationModelTests(MyJobsBase):
     def test_invitation_email_with_name(self):
         PrimaryNameFactory(user=self.admin)
 
-        Invitation(invitee_email='prm_user@company.com',
-                   inviting_user=self.admin).save()
+        invitation = Invitation.objects.create(
+            invitee_email='prm_user@company.com', inviting_user=self.admin)
+        invitation.send()
 
         email = mail.outbox.pop()
         self.assertTrue(self.admin.get_full_name() in email.body)
