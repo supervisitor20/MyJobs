@@ -717,7 +717,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 return is_company_user and company.member
 
-    def send_invite(self, email, company, role_name=None, reason=""):
+    def send_invite(self, email, company, role_name=None):
         """
         Sends an invitation to the `email` in regards to `role_name` for
         `company`.
@@ -727,12 +727,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
                         assigned.
-            :reason: The readon for the invite, included in the email body. If
-                     a ```role_name``` is provided but reason is not, then the
-                     recipient will be notified that they are being invited to
-                     assume that role for the ```company``` which was provided.
-                     If neither is provided, a generic invitation email is sent
-                     instead.
 
         Output:
             The invited user if sucessful, otherwise None.
@@ -755,17 +749,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        invitation.send(reason + ".")
-
         if role_name:
             if settings.ROLES_ENABLED:
                 assigned_role = Role.objects.get(
                     company=company, name=role_name)
                 user.roles.add(assigned_role)
-                reason = invitation_context(assigned_role)
+                context_object = assigned_role
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
-                CompanyUser.objects.get_or_create(user=user, company=company)
+                company_user = CompanyUser.objects.get_or_create(
+                    user=user, company=company)
+                context_object = company_user
+
+        invitation.send(context_object)
 
         return user
 

@@ -36,7 +36,8 @@ from seo.search_backend import DESearchQuerySet
 from myjobs.models import User, Activity
 from mypartners.models import Tag
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
-from universal.helpers import get_domain, get_object_or_none
+from universal.helpers import (get_domain, get_object_or_none,
+                               invitation_context)
 
 import decimal
 
@@ -1424,6 +1425,13 @@ class CompanyUser(models.Model):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         self.group.add(group)
         self.save()
+
+
+@invitation_context.register(CompanyUser)
+def role_invitation_context(company_user):
+    """Returns a message and the role."""
+    return {"message": " as a(n) Admin for %s." % (company_user.company),
+            "role": role}
 
 
 @receiver(post_delete, sender=CompanyUser,
