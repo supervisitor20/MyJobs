@@ -405,6 +405,8 @@ def dict_identity(cls):
             self.val = val
 
     Num(2) == Num(3)
+    >>> False
+    Num(2) == Num(2) # Would have been False
     >>> True
 
     This is helpful for unit tests where a class represents some kind

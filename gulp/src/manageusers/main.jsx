@@ -125,6 +125,12 @@ export class App extends React.Component {
         if (results.hasOwnProperty(key)) {
           results[key].activities = JSON.parse(results[key].activities.assigned);
           results[key].users.assigned = JSON.parse(results[key].users.assigned);
+
+          let editRoleLink;
+          if (results[key].role.name !== 'Admin') {
+            editRoleLink = <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
+          }
+
           rolesTableRows.push(
             <tr key={results[key].role.id}>
               <td data-title="Role">{results[key].role.name}</td>
@@ -135,7 +141,7 @@ export class App extends React.Component {
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td data-title="Edit">
-               <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>
+                {editRoleLink}
               </td>
             </tr>
           );
@@ -199,9 +205,9 @@ export class App extends React.Component {
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
               <Link to="/" className="btn">Overview</Link>
+              <Link to="users" className="btn">Users</Link>
               <Link to="roles" className="btn">Roles</Link>
               <Link to="activities" className="btn">Activities</Link>
-              <Link to="users" className="btn">Users</Link>
             </div>
           </div>
 

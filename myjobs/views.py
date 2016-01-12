@@ -1107,6 +1107,8 @@ def api_create_user(request):
         ctx["message"] = "POST method required."
         return HttpResponse(json.dumps(ctx), content_type="application/json")
     else:
+        company = get_company_or_404(request)
+
         if request.POST.get("user_email", ""):
             user_email = request.POST['user_email']
 
@@ -1129,7 +1131,7 @@ def api_create_user(request):
             roles = request.POST.getlist("assigned_roles[]", "")
             # Create list of role_ids from names
             for i, role in enumerate(roles):
-                role_object = Role.objects.filter(name=role)
+                role_object = Role.objects.filter(company=company).filter(name=role)
                 role_id = role_object[0].id
                 role_ids.append(role_id)
         # At least one role must be selected
@@ -1191,6 +1193,7 @@ def api_edit_user(request, user_id=0):
         company_roles = Role.objects.filter(company=company)
         # 2. List user's roles
         roles_assigned_to_user = user[0].roles.all()
+
         # 3. Overlap?
         if bool(set(company_roles) & set(roles_assigned_to_user)) == "False":
             ctx["success"] = "false"
@@ -1208,12 +1211,35 @@ def api_edit_user(request, user_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
+        # Companies must have at least one user assigned to an Admin role.
+        # Check that -- if this user is edited -- this will be the case.
+        # 1. Is Admin not in assigned_roles?
+        if "Admin" not in assigned_roles:
+            # 2. Does this company only have one user assigned to Admin role?
+            admin_role = (Role
+                          .objects
+                          .filter(company=company)
+                          .filter(name="Admin"))
+            users_with_admin = User.objects.filter(roles__id=admin_role[0].id)
+
+            if len(users_with_admin) <= 1:
+                # 3. Is that one user this user?
+                if unicode(users_with_admin[0].id) == user_id:
+                    ctx["success"] = "false"
+                    ctx["message"] = ("To remove the Admin role from this "
+                                      "user you must first assign the role to "
+                                      "another user. That is, every company "
+                                      "must have at least one user assigned "
+                                      "to the Admin role.")
+                    return HttpResponse(json.dumps(ctx),
+                                        content_type="application/json")
+
         # Update the user
 
         # Create list of assigned_roles_ids from role names
         assigned_roles_ids = []
         for i, role in enumerate(assigned_roles):
-            role_object = Role.objects.filter(name=role)
+            role_object = Role.objects.filter(company=company).filter(name=role)
             role_id = role_object[0].id
             assigned_roles_ids.append(role_id)
 
