@@ -203,16 +203,30 @@ class Invitation(models.Model):
         activation_profile, _ = ActivationProfile.objects.get_or_create(
             user=self.invitee, email=self.invitee.email)
 
-        context = invitation_context(reason)
+        if not reason:
+            if self.added_saved_search:
+                reason = ("in order to begin receiving their available job "
+                          "opportunities on a regular basis")
+            elif self.added_permission:
+                reason = ("in order to help administer their recruitment and "
+                          "outreach tools")
+
+        reason = (" " if reason else "") + reason + "."
 
         if activation_profile.activation_key_expired():
             activation_profile.reset_activation()
-            activation_profile = ActivationProfile.objects.get(
+            activation_profile  = ActivationProfile.objects.get(
                 pk=activation_profile.pk)
 
-        context.update({
-            'invitation': self,
-            'activitation_key': activation_profile.activation_key})
+        context = {'invitation': self,
+                   'activation_key': activation_profile.activation_key,
+                   'reason': reason}
+
+        text_only = False
+        if self.added_saved_search:
+            initial_email = self.added_saved_search.initial_email(send=False)
+            context['initial_search_email'] = initial_email
+            text_only = self.added_saved_search.text_only
 
         body = render_to_string('registration/invitation_email.html',
                                 context)
@@ -231,7 +245,7 @@ class Invitation(models.Model):
         try:
             self.invitee.email_user(body, email_type=settings.INVITATION,
                                     inviter=from_, headers=headers,
-                                    text_only=context.get('text_only', False))
+                                    text_only=text_only)
         except Exception as e:
             fail_message = getattr(e, 'smtp_error', e.message)
         else:
