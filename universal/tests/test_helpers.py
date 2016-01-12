@@ -1,11 +1,11 @@
 """Tests for various universal helpers."""
-from unittest import TestCase
 from django.contrib.auth.models import Group
 from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import RoleFactory
+from myjobs.tests.setup import MyJobsBase
 from universal.helpers import invitation_context
 
-class InvitationContextTests(TestCase):
+class InvitationContextTests(MyJobsBase):
     """Tests for the generic invitation_context function."""
     def test_saved_search_invitation_context(self):
         """
@@ -18,7 +18,7 @@ class InvitationContextTests(TestCase):
         context = invitation_context(saved_search)
 
         self.assertEqual(context, {
-            "message": "in order to begin receiving their available job "
+            "message": " in order to begin receiving their available job "
                        "opportunities on a regular basis.",
             "saved_search": saved_search,
             "initial_search_email": saved_search.initial_email(send=False),
@@ -33,7 +33,7 @@ class InvitationContextTests(TestCase):
         group = Group(name="Test")
         context = invitation_context(group)
         self.assertEqual(context, {
-            "message": "in order to help administer their recruitment and "
+            "message": " in order to help administer their recruitment and "
                        "outreach tools.",
             "group": group})
 
@@ -44,7 +44,7 @@ class InvitationContextTests(TestCase):
 
         """
         context = invitation_context("This is a test")
-        self.assertEqual(context, {"message": "This is a test."})
+        self.assertEqual(context, {"message": " This is a test."})
 
     def test_role_invitation_context(self):
         """
@@ -54,7 +54,7 @@ class InvitationContextTests(TestCase):
         role = RoleFactory()
         context = invitation_context(role)
         self.assertEqual(context, {
-            "message": "as a(n) %s for %s." % (role.name, role.company),
+            "message": " as a(n) %s for %s." % (role.name, role.company),
             "role": role})
 
     def test_unimplemented_invitation_context(self):
