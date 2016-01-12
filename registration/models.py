@@ -231,7 +231,7 @@ class Invitation(models.Model):
         try:
             self.invitee.email_user(body, email_type=settings.INVITATION,
                                     inviter=from_, headers=headers,
-                                    text_only=text_only)
+                                    text_only=context.get('text_only', False))
         except Exception as e:
             fail_message = getattr(e, 'smtp_error', e.message)
         else:
