@@ -40,7 +40,7 @@ class UsersMultiselect extends React.Component {
     return (
         <div className="row">
           <div className="col-xs-6">
-            <label>Users Available:</label>
+            <label>Users Available</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={bootstrapClasses}
@@ -52,7 +52,7 @@ class UsersMultiselect extends React.Component {
             />
           </div>
           <div className="col-xs-6">
-            <label>Users Assigned:</label>
+            <label>Users Assigned</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
