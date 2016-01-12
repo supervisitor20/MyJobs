@@ -14,3 +14,4 @@ Developer Documentation
   testing/index
   contributing/index
   etl_imports
+  api/index

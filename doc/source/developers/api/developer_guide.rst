@@ -98,7 +98,7 @@ Requirements
 * curl package is installed
 * A user exists and has an api key:
 
-.. code-block::
+::
 
     $ ./manage.py shell
     > from myjobs.models import User
@@ -111,7 +111,7 @@ The api key is available as user.api_key.key
 Saved Search
 ------------
 
-.. code-block::
+::
 
     $ curl -H "CONTENT-TYPE: application/json" -H "ACCEPT: text/javascript" “localhost:8000/api/v1/savedsearch/?username=<api email>&api_key=<user’s api key>&email=<existing email or secondary email>&url=www.my.jobs/jobs/?q=c%23
 
@@ -123,7 +123,7 @@ User
 
 Warning: This creates an account and sends a confirmation email if it didn't exist
 
-.. code-block::
+::
 
     $ curl -H "CONTENT-TYPE: application/json" -H "ACCEPT: text/javascript" “localhost:8000/api/v1/user/?username=<api email>&api_key=<user’s api key>&email=<new or existing email address>”
 
