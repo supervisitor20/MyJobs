@@ -446,4 +446,4 @@ def invitation_context(instance):
 @invitation_context.register(str)
 def str_invitation_reaason(string):
     """Returns the string verbatim as the `message`."""
-    return {"message": string}
+    return {"message": (" " if string else "") + string + "."}

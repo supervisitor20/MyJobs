@@ -19,7 +19,7 @@ class InvitationContextTests(TestCase):
 
         self.assertEqual(context, {
             "message": "in order to begin receiving their available job "
-                       "opportunities on a regular basis",
+                       "opportunities on a regular basis.",
             "saved_search": saved_search,
             "initial_search_email": saved_search.initial_email(send=False),
             "text_only": saved_search.text_only})
@@ -44,7 +44,7 @@ class InvitationContextTests(TestCase):
 
         """
         context = invitation_context("This is a test")
-        self.assertEqual(context, {"message": "This is a test"})
+        self.assertEqual(context, {"message": "This is a test."})
 
     def test_role_invitation_context(self):
         """

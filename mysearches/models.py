@@ -412,8 +412,8 @@ def saved_search_invitation_context(saved_search):
     or not the invitation email should be sent as text-only.
 
     """
-    return {"message": "in order to begin receiving their available job "
-                       "opportunities on a regular basis",
+    return {"message": " in order to begin receiving their available job "
+                       "opportunities on a regular basis.",
             "saved_search": saved_search,
             "initial_search_email": saved_search.initial_email(send=False),
             "text_only": saved_search.text_only}

@@ -36,7 +36,7 @@ DEACTIVE_TYPES_AND_NONE = ['none'] + BAD_EMAIL + STOP_SENDING
 
 @invitation_context.register(Group)
 def group_invitation_context(group):
-    return {"message": "in order to help administer their recruitment and "
+    return {"message": " in order to help administer their recruitment and "
                        "outreach tools.",
             "group": group}
 
@@ -968,5 +968,5 @@ class Role(models.Model):
 @invitation_context.register(Role)
 def role_invitation_context(role):
     """Returns a message and the role."""
-    return {"message": "as a(n) %s for %s." % (role.name, role.company),
+    return {"message": " as a(n) %s for %s." % (role.name, role.company),
             "role": role}
