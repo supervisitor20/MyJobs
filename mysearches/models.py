@@ -406,7 +406,7 @@ class SavedSearch(models.Model):
 
 
 @invitation_context.register(SavedSearch)
-def saved_search_invitation_context(obj):
+def saved_search_invitation_context(saved_search):
     """
     Returns a message, the saved search, the initial search email, and whether
     or not the invitation email should be sent as text-only.
@@ -414,9 +414,9 @@ def saved_search_invitation_context(obj):
     """
     return {"message": "in order to begin receiving their available job "
                        "opportunities on a regular basis",
-            "saved_search": obj,
-            "initial_search_email": obj.initial_email(send=False),
-            "text_only": obj.text_only}
+            "saved_search": saved_search,
+            "initial_search_email": saved_search.initial_email(send=False),
+            "text_only": saved_search.text_only}
 
 
 class SavedSearchDigest(models.Model):

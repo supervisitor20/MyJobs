@@ -444,6 +444,6 @@ def invitation_context(instance):
             instance).__name__)
 
 @invitation_context.register(str)
-def str_invitation_reaason(instance):
+def str_invitation_reaason(string):
     """Returns the string verbatim as the `message`."""
-    return {"message": instance}
+    return {"message": string}

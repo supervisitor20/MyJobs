@@ -34,6 +34,13 @@ STOP_SENDING = ['unsubscribe', 'spamreport']
 DEACTIVE_TYPES_AND_NONE = ['none'] + BAD_EMAIL + STOP_SENDING
 
 
+@invitation_context.register(Group)
+def group_invitation_context(group):
+    return {"message": "in order to help administer their recruitment and "
+                       "outreach tools.",
+            "group": group}
+
+
 class CustomUserManager(BaseUserManager):
     # Characters used for passwor generation with ambiguous ones ignored.
     # string.strip() doesn't play nicely with quote characters...
@@ -959,7 +966,7 @@ class Role(models.Model):
 
 
 @invitation_context.register(Role)
-def role_invitation_context(obj):
+def role_invitation_context(role):
     """Returns a message and the role."""
-    return {"message": "as a(n) %s for %s." % (obj.name, obj.company),
-            "role": obj}
+    return {"message": "as a(n) %s for %s." % (role.name, role.company),
+            "role": role}
