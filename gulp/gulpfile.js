@@ -60,7 +60,10 @@ function webpackConfig() {
       root: path.resolve('src'),
       // you can now require('file') instead of require('file.coffee')
       extensions: ['', '.js', '.jsx'],
-
+      // Thank you internet man! http://stackoverflow.com/a/32444088
+      alias: {
+        'react': path.join(__dirname, 'node_modules', 'react'),
+      },
     },
     output: {
       path: '../static/bundle',
