@@ -210,9 +210,7 @@ class RegistrationViewTests(MyJobsBase):
         """
         saved_search = SavedSearchFactory(user=self.user)
         invitation = InvitationFactory(inviting_user=self.user)
-        invitation.added_saved_search = saved_search
-        invitation.save()
-        invitation.send()
+        invitation.send(saved_search)
 
         email = mail.outbox.pop()
         self.assertIn("in order to begin receiving their available job "
@@ -226,9 +224,8 @@ class RegistrationViewTests(MyJobsBase):
         """
         group = Group.objects.create(name="Employers")
         invitation = InvitationFactory(inviting_user=self.user)
-        invitation.added_permission = group
         invitation.save()
-        invitation.send()
+        invitation.send(group)
 
         email = mail.outbox.pop()
         self.assertIn("in order to help administer their recruitment and "
