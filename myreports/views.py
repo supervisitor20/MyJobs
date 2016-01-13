@@ -21,7 +21,7 @@ from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
-from myreports.datasources import get_datasource_json_driver
+from myreports.datasources import ds_json_drivers
 
 from cStringIO import StringIO
 import csv
@@ -490,7 +490,7 @@ def filters_api(request):
 
     report_configuration = (report_pres.configuration.build_configuration())
 
-    driver = get_datasource_json_driver(datasource)
+    driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
 
     return HttpResponse(content_type='application/json',
@@ -518,7 +518,7 @@ def help_api(request):
 
     report_pres = ReportPresentation.objects.get(id=rp_id)
     datasource = report_pres.report_data.report_type.datasource
-    driver = get_datasource_json_driver(datasource)
+    driver = ds_json_drivers[datasource]
 
     company = request.user.companyuser_set.first().company
 
