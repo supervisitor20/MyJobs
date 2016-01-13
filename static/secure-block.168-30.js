@@ -55,7 +55,18 @@ function jsonp_secure_block(secure_block_url, data) {
   });
 }
 
-function populate_secure_blocks(request) {
+function clean_up_temporary_data() {
+  $("[data-secure-block-id]").each(function() {
+    var block = $(this);
+    $.each($(block).data(), function(key) {
+      if (key.indexOf("__once") >= 0) {
+        $(block).removeData(key);
+      }
+    })
+  });
+}
+
+function populate_secure_blocks(request, callback) {
   if (!$.isEmptyObject(request)) {
     secure_block(saved_dashboard_url, request).fail(function(xhr, text, error) {
         console.error("dashboard fail: ", xhr, text, error);
@@ -63,6 +74,10 @@ function populate_secure_blocks(request) {
         $.each(data, function(key, value) {
         $("[data-secure-block-id=" + key + "]").html(value);
         });
+        if (typeof callback === "function") {
+          callback();
+        }
+      //clean_up_temporary_data();
     });
   }
 }
@@ -78,12 +93,12 @@ function load_secure_blocks(dashboard_url) {
   populate_secure_blocks(request);
 }
 
-function reload_secure_block(block_id) {
+function reload_secure_block(block_id, callback) {
   // reload an individual secure block that may have changed state
   var request = {};
-  var block = $("[data-secure-block-id|=block_id]");
+  var block = $("[data-secure-block-id=" + block_id + "]");
   if (block) {
-    request[element_id] = block_id;
-    populate_secure_blocks(request);
+    request[block_id] = block.data();
+    populate_secure_blocks(request, callback);
   }
 }

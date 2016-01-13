@@ -389,6 +389,17 @@ class SecureBlock(Block):
     Required JS are bundled into the template
 
     """
+
+    def context(self, request, **kwargs):
+        """
+        Setup context of secure block by appending any kwargs to context
+        dict.
+        :param request:
+        :param kwargs: jQuery Data attributes provided from calling site
+        :return: kwargs dict to serve as context dictionary
+        """
+        return kwargs
+
     def render_for_ajax(self, request, params):
         """
             Render template then append all required js tags
@@ -416,8 +427,8 @@ class SavedSearchWidgetBlock(SecureBlock):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
+        context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
         saved_search_url = request.META['HTTP_REFERER']
-        # success_email = kwargs.get('success_email')
         search = None
         user = request.user if request.user.is_authenticated() else None
 
@@ -432,12 +443,11 @@ class SavedSearchWidgetBlock(SecureBlock):
         #               .filter(user__email=success_email,
         #                       url=saved_search_url)
         #               .first())
-
-        return {
+        context.update({
             'user': user,
             'search': search,
-            # 'success': success_email
-        }
+        })
+        return context
 
     def required_js(self):
         return ['%ssaved-search.js' % settings.STATIC_URL]

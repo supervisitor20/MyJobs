@@ -151,11 +151,16 @@ class SavedSearchResource(ModelResource):
                        'notes': notes}
 
         # if there's no search for that email/user, create it
+        # if it exists and is inactive, activate it
         new_search = False
         try:
-            SavedSearch.objects.get(user=search_args['user'],
-                                    email__iexact=search_args['email'],
-                                    url=search_args['url'])
+            existing_search = SavedSearch.objects.get(user=search_args['user'],
+                                            email__iexact=search_args['email'],
+                                            url=search_args['url'])
+            if existing_search and not existing_search.is_active:
+                existing_search.is_active = True
+                existing_search.save()
+
         except SavedSearch.DoesNotExist:
             search = SavedSearch(**search_args)
             search.save()
