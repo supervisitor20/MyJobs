@@ -74,7 +74,9 @@ function populate_secure_blocks(request, callback) {
         $.each(data, function(key, value) {
         $("[data-secure-block-id=" + key + "]").html(value);
         });
+      debugger;
         if (typeof callback === "function") {
+          debugger;
           callback();
         }
       //clean_up_temporary_data();
