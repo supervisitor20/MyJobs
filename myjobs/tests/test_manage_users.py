@@ -218,10 +218,15 @@ class ManageUsersTests(MyJobsBase):
         activities_available = json.loads(activities['available'])
         activity_available_name = activities_available[0]['fields']['name']
         self.assertIsInstance(activity_available_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
 
         activities_assigned = json.loads(activities['assigned'])
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
+
 
     def test_get_roles_contain_users(self):
         """
