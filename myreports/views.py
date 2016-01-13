@@ -24,7 +24,6 @@ from universal.decorators import has_access
 from myreports.datasources import ds_json_drivers
 
 from cStringIO import StringIO
-import csv
 import unicodecsv
 
 

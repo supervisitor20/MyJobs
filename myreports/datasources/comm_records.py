@@ -59,7 +59,8 @@ class CommRecordsDataSource(DataSource):
     def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
         modified_filter_spec = filter_spec.clone_without_city()
-        comm_records_qs = self.filtered_query_set(company, modified_filter_spec)
+        comm_records_qs = self.filtered_query_set(
+            company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
@@ -70,7 +71,8 @@ class CommRecordsDataSource(DataSource):
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
         modified_filter_spec = filter_spec.clone_without_state()
-        comm_records_qs = self.filtered_query_set(company, modified_filter_spec)
+        comm_records_qs = self.filtered_query_set(
+            company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
