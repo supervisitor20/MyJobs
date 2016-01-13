@@ -80,14 +80,14 @@ def get_common_tasks(apps, request):
             # do those actions
             if perms.get('change', False):
                 try:
-                    common_group[index]['admin_url'] = \
-                        reverse('admin:%s_%s_changelist' % url_info)
+                    common_group[index]['admin_url'] = reverse(
+                        'admin:%s_%s_changelist' % url_info)
                 except NoReverseMatch:
                     pass
             if perms.get('add', False):
                 try:
-                    common_group[index]['add_url'] = reverse('admin:%s_%s_add' %
-                                                             url_info)
+                    common_group[index]['add_url'] = reverse(
+                        'admin:%s_%s_add' % url_info)
                 except NoReverseMatch:
                     pass
         else:
