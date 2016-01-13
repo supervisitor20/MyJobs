@@ -19,7 +19,8 @@ class ManageUsersTests(MyJobsBase):
 
         self.app_access = AppAccessFactory()
         self.company = CompanyFactory(app_access=[self.app_access])
-        self.role = RoleFactory(company=self.company)
+        self.role = RoleFactory(company=self.company, name="Admin")
+        self.otherRole = RoleFactory(company=self.company, name="OtherRole")
         self.user = UserFactory(roles=[self.role], is_staff=True)
         self.activities = [
             ActivityFactory(name=activity, app_access=self.app_access)
@@ -47,6 +48,9 @@ class ManageUsersTests(MyJobsBase):
 
         description = first_result['fields']['description']
         self.assertIsInstance(description, unicode)
+
+        app_access = first_result['fields']['app_access']
+        self.assertIsInstance(app_access, int)
 
     def test_create_role_require_post(self):
         """
@@ -214,10 +218,15 @@ class ManageUsersTests(MyJobsBase):
         activities_available = json.loads(activities['available'])
         activity_available_name = activities_available[0]['fields']['name']
         self.assertIsInstance(activity_available_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
 
         activities_assigned = json.loads(activities['assigned'])
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
+
 
     def test_get_roles_contain_users(self):
         """
@@ -484,6 +493,21 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "A user must be assigned to at least one role.")
 
+    def test_edit_user_one_user_per_company_must_be_admin(self):
+        """
+        Tests editing a user, every company must have one user assigned to admin
+        Edit user
+        """
+        expected_user_pk = self.user.pk
+
+        data_to_post = {}
+        data_to_post['assigned_roles[]'] = [self.otherRole.name]
+        response = self.client.post(reverse('api_edit_user',
+                                            args=[expected_user_pk]),
+                                    data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+
     def test_edit_user(self):
         """
         Tests editing a user
@@ -492,7 +516,7 @@ class ManageUsersTests(MyJobsBase):
         expected_user_pk = self.user.pk
 
         data_to_post = {}
-        data_to_post['assigned_roles[]'] = [self.role.name]
+        data_to_post['assigned_roles[]'] = [self.role.name, self.otherRole.name]
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk]),
                                     data_to_post)

@@ -298,7 +298,7 @@ PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mydashboard', 'mysignon', 'mymessages', 'mypartners',
                 'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
                 'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
-                'automation', 'universal')
+                'automation', 'universal', 'import_jobs')
 
 INSTALLED_APPS += PROJECT_APPS
 
@@ -452,7 +452,7 @@ SLUG_TAG_PARSING_REGEX = re.compile('([/\w\(\)-]+?)/(jobs|jobs-in|new-jobs|'
 # Max number of filters bots can apply.
 ROBOT_FILTER_LEVEL = 2
 
-#This is the canonical order that filter paths will be redirected to
+# This is the canonical order that filter paths will be redirected to
 SLUG_TAGS = OrderedDict([
     ('title_slug', '/jobs-in/'),
     ('location_slug', '/jobs/'),

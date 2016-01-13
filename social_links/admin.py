@@ -228,9 +228,9 @@ class MicrositeCarouselAdmin(admin.ModelAdmin):
             not obj.group):
             obj.group = request.user.groups.all()[0]
         if obj.is_active:
-            #Force an evaluation of obj site keys. When obj.seosite_set was used
-            #in queries for qs, an error would be thrown if the two objects had
-            #been queried from different databases
+            # Force an evaluation of obj site keys. When obj.seosite_set was used
+            # in queries for qs, an error would be thrown if the two objects had
+            # been queried from different databases
             obj_site_keys = [site.pk for site in obj.seosite_set.all()]
             qs = MicrositeCarousel.objects.filter(seosite__pk__in=obj_site_keys,
                                                   is_active=1)

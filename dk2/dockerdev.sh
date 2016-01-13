@@ -1,5 +1,5 @@
 set -e
-#set -x
+# set -x
 
 cd "$(dirname $0)"
 

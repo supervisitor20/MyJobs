@@ -89,7 +89,7 @@ class HelpersTests(MyPartnersTestCase):
             contact_type=contact_record.contact_type,
             contact=contact_record.contact.pk,
             contact_email=contact_record.contact_email,
-            #contact_phone=contact_record.contact_phone,
+            # contact_phone=contact_record.contact_phone,
             length_0="00",
             length_1="30",
             date_time_0="Aug",

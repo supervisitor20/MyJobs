@@ -93,6 +93,8 @@ def user_is_allowed(model=None, pk_name=None, pass_user=False):
                         # The value may not be an int; Saved searches, for
                         # example, pass 'digest' when working with digests
                         pass
+                    except TypeError:
+                        return HttpResponseForbidden()
 
             # Everything passed; Continue to the desired view
             return view_func(request, *args, **kwargs)
@@ -207,7 +209,7 @@ def requires(*activities, **callbacks):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            #TODO: Remove this logic once feature is rolled out. for the
+            # TODO: Remove this logic once feature is rolled out. for the
             #      moment, we only want this decorator factory to work in QC
             #      and Staging.
 
