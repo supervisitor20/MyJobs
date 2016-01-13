@@ -87,7 +87,7 @@ export class App extends React.Component {
             // Only use activities of a certain appID
             if (obj.fields.app_access.toString() === appID) {
               return (
-                <tr>
+                <tr key={obj.pk}>
                   <td>{obj.fields.name}</td>
                   <td>{obj.fields.description}</td>
                 </tr>
@@ -95,7 +95,7 @@ export class App extends React.Component {
             }
           });
           tablesOfActivitiesByApp.push(
-            <span>
+            <span key={appID}>
               <h3>{appIDsWithNames[appID]}</h3>
               <table className="table table-striped table-activities">
                 <thead>
