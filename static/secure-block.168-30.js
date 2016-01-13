@@ -55,17 +55,6 @@ function jsonp_secure_block(secure_block_url, data) {
   });
 }
 
-function clean_up_temporary_data() {
-  $("[data-secure-block-id]").each(function() {
-    var block = $(this);
-    $.each($(block).data(), function(key) {
-      if (key.indexOf("__once") >= 0) {
-        $(block).removeData(key);
-      }
-    })
-  });
-}
-
 function populate_secure_blocks(request, callback) {
   if (!$.isEmptyObject(request)) {
     secure_block(saved_dashboard_url, request).fail(function(xhr, text, error) {
@@ -74,12 +63,9 @@ function populate_secure_blocks(request, callback) {
         $.each(data, function(key, value) {
         $("[data-secure-block-id=" + key + "]").html(value);
         });
-      debugger;
         if (typeof callback === "function") {
-          debugger;
           callback();
         }
-      //clean_up_temporary_data();
     });
   }
 }
@@ -97,6 +83,8 @@ function load_secure_blocks(dashboard_url) {
 
 function reload_secure_block(block_id, callback) {
   // reload an individual secure block that may have changed state
+  // callback is an optional argument of a function that should be called
+  // upon completion of the reload
   var request = {};
   var block = $("[data-secure-block-id=" + block_id + "]");
   if (block) {

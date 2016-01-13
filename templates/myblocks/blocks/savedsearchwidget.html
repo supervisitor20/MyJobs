@@ -17,28 +17,26 @@ ss-btn-link
 
 {# Below script is required to store user information for included JS #}
 <script>
-    var user_email{% if user %}='{{ user.email }}'{% endif %};
+    var existing_user_email{% if user %}='{{ user.email }}'{% endif %};
 </script>
 <link rel="stylesheet" type="text/css" href="//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/widget/def.myjobs.widget.154-10.css">
 <div id="direct-saved-search-box" class="direct_rightColBox direct-action-box">
 <div id="direct-saved-search">
     <div class="saved-search-form">
-    {% if error__once %}
-    <em class="warning">Something went wrong!</em>
-    {% endif %}
-
+    <em class="warning">{{ error }}</em>
     {% if new_user_email %}
-    {# The block below is shown when anonymous user successfully adds an email #}
+    {# The block below is shown when anonymous user successfully adds an email or user adds alternate email #}
         <em class="success">Success</em><p>Your search was successfully saved. Results will be sent to {{ new_user_email }}.</p>
 
     {% elif not search %}
     {# The block below is for the widget given that the saved search is not saved #}
         <div id="cta-saved-search-form">Get new jobs sent directly to your inbox!</div>
-        <input placeholder="Your email address" type="text" id="saved-search-email" name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}>
+        <input placeholder="Your email address" type="text"
+               id="saved-search-email" name="saved-search-email" {% if user.email %}value="{{  user.email }}"{% endif %}>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
         <div class="direct-action-btn" id="saved-search-btn">
             <a href="" id="ss-btn-link">
-                {% if not error__once %}
+                {% if not error %}
                 Save Search to My.jobs
                 {% else %}
                 Try Again
@@ -57,7 +55,6 @@ ss-btn-link
         <p><b>You have saved this search, but email sending has been deactivated</b></p>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
         <div class="direct-action-btn" id="saved-search-btn"><a href="" id="ss-btn-link">Activate Emails</a></div>
-    {% endif %}
     {% endif %}
     </div>
 </div>
