@@ -12,7 +12,7 @@ class HelpText extends React.Component {
 
 HelpText.propTypes = {
   message: React.PropTypes.string.isRequired,
-  styleName: React.PropTypes.string.isNotRequired,
+  styleName: React.PropTypes.string.isRequired,
 };
 
 HelpText.defaultProps = {
