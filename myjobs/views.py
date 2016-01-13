@@ -617,7 +617,7 @@ def manage_users(request):
 
 @restrict_to_staff()
 @requires("read role")
-def api_get_activities():
+def api_get_activities(request):
     """
     GET /manage-users/api/activities/
     Retrieves all activities
@@ -1033,8 +1033,6 @@ def api_get_users(request):
                            .objects
                            .filter(invitee_email=user.email)
                            .order_by('-invited'))
-            print user.email
-            print invitations
             if invitations:
                 lastInvitation = invitations[0].invited.strftime('%Y-%m-%d')
             else:
@@ -1097,8 +1095,6 @@ def api_get_specific_user(request, user_id=0):
         fields=('name'))
 
     # Status
-    # TODO: This is NOT the same as status
-    # Waiting on email invitation work
     ctx[user[0].id]["status"] = user[0].is_verified
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
@@ -1172,17 +1168,6 @@ def api_create_user(request):
         if created:
             # Assign roles to this user
             new_user.roles.add(*role_ids)
-
-            # TODO: Fix the test_create_user test
-            # print "Made it inside /user/create/"
-            # print "user_email"
-            # print user_email
-            # print "company"
-            # print company
-            # print "roles"
-            # print roles
-
-            # Send user an email
             request.user.send_invite(user_email,
                                      company,
                                      role_name=roles)

@@ -227,7 +227,6 @@ class ManageUsersTests(MyJobsBase):
         activity_available_app_access = activities_available[0]['fields']['app_access']
         self.assertIsInstance(activity_available_app_access, int)
 
-
     def test_get_roles_contain_users(self):
         """
         Tests that the Roles API returns the proper data in the
@@ -417,24 +416,17 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "Each user must be assigned to at least one role.")
 
-    # TODO: Fix this test
-    # def test_create_user(self):
-    #     """
-    #     Tests creating a user
-    #     """
-    #     data_to_post = {}
-    #     data_to_post['user_email'] = "andy@kaufman.com"
-    #     data_to_post['assigned_roles[]'] = [self.role.name]
-    #
-    #     print "About to POST..."
-    #
-    #     response = self.client.post(reverse('api_create_user'), data_to_post)
-    #
-    #     print "POST'd"
-    #     print response
-    #
-    #     output = json.loads(response.content)
-    #     self.assertEqual(output["success"], "true")
+    def test_create_user(self):
+        """
+        Tests creating a user
+        """
+        data_to_post = {}
+        data_to_post['user_email'] = "andy@kaufman.com"
+        data_to_post['assigned_roles[]'] = [self.role.name]
+
+        response = self.client.post(reverse('api_create_user'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
 
     def test_delete_user_require_post(self):
         """
@@ -524,7 +516,8 @@ class ManageUsersTests(MyJobsBase):
         expected_user_pk = self.user.pk
 
         data_to_post = {}
-        data_to_post['assigned_roles[]'] = [self.role.name, self.otherRole.name]
+        data_to_post['assigned_roles[]'] = [self.role.name]
+
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk]),
                                     data_to_post)
