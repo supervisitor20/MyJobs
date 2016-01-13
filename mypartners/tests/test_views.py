@@ -1476,7 +1476,6 @@ class PartnerLibraryTestCase(MyPartnersTestCase):
         cls.partner_library = PartnerLibrary.objects.all()
 
 
-@skip("Update the code being tested to support SNI")
 class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
     def test_errd_reachable(self):
