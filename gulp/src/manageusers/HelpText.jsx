@@ -3,7 +3,7 @@ import React from 'react';
 class HelpText extends React.Component {
   render() {
     return (
-      <div className="input-error">
+      <div className={'input-error ' + this.props.styleName}>
         {this.props.message}
       </div>
     );
@@ -12,10 +12,12 @@ class HelpText extends React.Component {
 
 HelpText.propTypes = {
   message: React.PropTypes.string.isRequired,
+  styleName: React.PropTypes.string.isNotRequired,
 };
 
 HelpText.defaultProps = {
   message: '',
+  styleName: '',
 };
 
 export default HelpText;
