@@ -17,9 +17,22 @@ class TestFormatters(TestCase):
         """Test that strings values pass through."""
         self.assertEqual("a", StringFormatter().format("a"))
 
+    def test_formatting_none(self):
+        """Run None through formatters."""
+        self.assertEqual("", StringFormatter().format(None))
+        self.assertEqual("", JoinFormatter(',').format(None))
+        self.assertEqual("", StrftimeFormatter("%m/%02d/%Y").format(None))
+        self.assertEqual(
+            [],
+            MultiFieldDescend(
+                ['a'],
+                NoopFormatter())
+            .format(None))
+
     def test_string_conversion(self):
         """Test that non string values are converted to strings."""
         self.assertEqual("3", StringFormatter().format(3))
+        self.assertEqual("False", StringFormatter().format(False))
 
     def test_unicode(self):
         """Test that unicode values pass through without damage."""
@@ -59,3 +72,13 @@ class TestFormatters(TestCase):
         self.assertEqual(
             ["Indy", "IN"],
             formatter.format({"city": "Indy", "state": "IN"}))
+
+    def test_multifield_descend_missing_key(self):
+        """Test that we can handle missing dictionary keys."""
+        formatter = MultiFieldDescend(
+            ['city', 'state'],
+            NoopFormatter())
+
+        self.assertEqual(
+            ["Indy", None],
+            formatter.format({"city": "Indy"}))

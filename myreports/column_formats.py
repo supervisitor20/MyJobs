@@ -1,4 +1,5 @@
 """Format utilities for translating from saved report json to text."""
+from collections import Iterable
 from universal.helpers import dict_identity
 
 
@@ -6,7 +7,10 @@ from universal.helpers import dict_identity
 class StringFormatter(object):
     """Take the given (usually text) value and format it as unicode text."""
     def format(self, value):
-        return unicode(value)
+        if value is not None:
+            return unicode(value)
+        else:
+            return ''
 
 
 @dict_identity
@@ -24,8 +28,12 @@ class JoinFormatter(object):
             self.inner_formatter = inner_formatter
 
     def format(self, values):
-        return self.between.join(
-            self.inner_formatter.format(v) for v in values)
+        if isinstance(values, Iterable) and not isinstance(values, str):
+            return self.between.join(
+                self.inner_formatter.format(v) for v in values)
+        else:
+            # Fail somewhat gracefully if we set things up wrong.
+            return StringFormatter().format(values)
 
 
 @dict_identity
@@ -38,7 +46,10 @@ class StrftimeFormatter(object):
         self.strftime_format = strftime_format
 
     def format(self, value):
-        return value.strftime(self.strftime_format)
+        if value is not None:
+            return value.strftime(self.strftime_format)
+        else:
+            return ''
 
 
 @dict_identity
@@ -53,7 +64,11 @@ class MultiFieldDescend(object):
         self.inner = inner
 
     def format(self, value):
-        return self.inner.format([value[f] for f in self.fields])
+        if value is not None:
+            return self.inner.format(
+                [value.get(f, None) for f in self.fields])
+        else:
+            return []
 
 
 """Dictionary of codes used in the db to name useful formatters."""
