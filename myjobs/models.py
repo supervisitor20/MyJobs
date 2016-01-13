@@ -749,6 +749,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
+        context_object = ""
         if role_name:
             if settings.ROLES_ENABLED:
                 assigned_role = Role.objects.get(
@@ -757,7 +758,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 context_object = assigned_role
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
-                company_user = CompanyUser.objects.get_or_create(
+                company_user, _ = CompanyUser.objects.get_or_create(
                     user=user, company=company)
                 context_object = company_user
 

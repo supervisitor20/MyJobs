@@ -441,6 +441,7 @@ def invitation_context(instance):
 
     Calling this function without arguments will raise a runtime error.
     """
+    import ipdb; ipdb.set_trace()
     raise TypeError(
         "object of type '%s' has no invitation_context." % type(
             instance).__name__)

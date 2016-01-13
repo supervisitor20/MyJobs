@@ -1428,10 +1428,10 @@ class CompanyUser(models.Model):
 
 
 @invitation_context.register(CompanyUser)
-def role_invitation_context(company_user):
-    """Returns a message and the role."""
+def company_user_invitation_context(company_user):
+    """Returns a message and the company user."""
     return {"message": " as a(n) Admin for %s." % (company_user.company),
-            "role": role}
+            "company_user": company_user}
 
 
 @receiver(post_delete, sender=CompanyUser,
