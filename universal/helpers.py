@@ -440,8 +440,8 @@ def invitation_context(instance):
     `message` key, which should be a string.
 
     Calling this function without arguments will raise a runtime error.
+
     """
-    import ipdb; ipdb.set_trace()
     raise TypeError(
         "object of type '%s' has no invitation_context." % type(
             instance).__name__)
@@ -449,4 +449,5 @@ def invitation_context(instance):
 @invitation_context.register(str)
 def str_invitation_reaason(string):
     """Returns the string verbatim as the `message`."""
+
     return {"message": (" " if string else "") + string + "."}

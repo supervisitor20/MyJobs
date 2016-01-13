@@ -1413,7 +1413,7 @@ class CompanyUser(models.Model):
                 added_permission=group,
                 inviting_user=inviting_user)
             invitation.save(using=using)
-            invitation.send()
+            invitation.send(self)
 
         return super(CompanyUser, self).save(*args, **kwargs)
 
