@@ -658,13 +658,13 @@ def api_get_roles(request):
         ctx[role_id]['activities']['available'] = serializers.serialize(
             "json",
             available_activities,
-            fields=('name', 'description'))
+            fields=('name', 'description', 'app_access'))
         # Retrieve all activities assigned to this role
         assigned_activities = role.activities.all()
         ctx[role_id]['activities']['assigned'] = serializers.serialize(
             "json",
             assigned_activities,
-            fields=('name', 'description'))
+            fields=('name', 'description', 'app_access'))
 
         # Retrieve users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
