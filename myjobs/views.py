@@ -229,7 +229,7 @@ def contact_faq(request):
 
     """
     faq = FAQ.objects.filter(is_visible=True).order_by('question')
-    if not faq.count() > 0:
+    if faq.count() <= 0:
         return HttpResponseRedirect(reverse('contact'))
     data_dict = {'faq': faq}
     return render_to_response('contact-faq.html',
@@ -617,7 +617,7 @@ def manage_users(request):
 
 @restrict_to_staff()
 @requires("read role")
-def api_get_activities(request):
+def api_get_activities():
     """
     GET /manage-users/api/activities/
     Retrieves all activities
