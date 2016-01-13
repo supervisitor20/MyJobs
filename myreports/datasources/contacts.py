@@ -11,7 +11,7 @@ from django.db.models import Q
 
 
 class ContactsDataSource(object):
-    def run(self, company, filter, order):
+    def run(self, company, filter_spec, order):
         """Run the query with the given company, filter, and ordering.
 
         returns: list of relatively flat dictionaries.
@@ -19,7 +19,7 @@ class ContactsDataSource(object):
         The dictionaries have depth only for locations and tags. This is to
         allow for some flexibility in formatting at report download time.
         """
-        qs_filtered = self.filtered_query_set(company, filter)
+        qs_filtered = self.filtered_query_set(company, filter_spec)
         qs_ordered = qs_filtered.order_by(*order)
         qs_distinct = qs_ordered.distinct()
         return [self.extract_record(r) for r in qs_distinct]
@@ -27,10 +27,10 @@ class ContactsDataSource(object):
     def filter_type(self):
         return ContactsFilter
 
-    def help_city(self, company, filter, partial):
+    def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
-        modified_filter = filter.clone_without_city()
-        contacts_qs = self.filtered_query_set(company, modified_filter)
+        modified_filter_spec = filter_spec.clone_without_city()
+        contacts_qs = self.filtered_query_set(company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__in=contacts_qs)
@@ -38,10 +38,10 @@ class ContactsDataSource(object):
         city_qs = locations_qs.values('city').distinct()
         return [{'key': c['city'], 'display': c['city']} for c in city_qs]
 
-    def help_state(self, company, filter, partial):
+    def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
-        modified_filter = filter.clone_without_state()
-        contacts_qs = self.filtered_query_set(company, modified_filter)
+        modified_filter_spec = filter_spec.clone_without_state()
+        contacts_qs = self.filtered_query_set(company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__in=contacts_qs)
@@ -49,9 +49,9 @@ class ContactsDataSource(object):
         state_qs = locations_qs.values('state').distinct()
         return [{'key': s['state'], 'display': s['state']} for s in state_qs]
 
-    def help_tags(self, company, filter, partial):
+    def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        contacts_qs = self.filtered_query_set(company, filter)
+        contacts_qs = self.filtered_query_set(company, filter_spec)
 
         tags_qs = (
             Tag.objects
@@ -65,9 +65,9 @@ class ContactsDataSource(object):
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
-    def help_partner(self, company, filter, partial):
+    def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        contacts_qs = self.filtered_query_set(company, filter)
+        contacts_qs = self.filtered_query_set(company, filter_spec)
         partners_qs = (
             Partner.objects
             .filter(contact__in=contacts_qs)
@@ -91,7 +91,7 @@ class ContactsDataSource(object):
             'tags': [t.name for t in record.tags.all()],
         }
 
-    def filtered_query_set(self, company, filter):
+    def filtered_query_set(self, company, filter_spec):
         """Create a query set with security, safety, and user filters applied.
         """
         qs_company = Contact.objects.filter(partner__owner=company)
@@ -100,7 +100,7 @@ class ContactsDataSource(object):
             .filter(approval_status__code__iexact=Status.APPROVED)
             .filter(partner__approval_status__code__iexact=Status.APPROVED)
             .filter(archived_on__isnull=True))
-        qs_filtered = filter.filter_query_set(qs_live)
+        qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
 
 

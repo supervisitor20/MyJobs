@@ -12,8 +12,8 @@ from django.db.models import Q
 
 
 class CommRecordsDataSource(object):
-    def run(self, company, filter, order):
-        qs_filtered = self.filtered_query_set(company, filter)
+    def run(self, company, filter_spec, order):
+        qs_filtered = self.filtered_query_set(company, filter_spec)
         qs_ordered = qs_filtered.order_by(*order)
         qs_distinct = qs_ordered.distinct()
         return [self.extract_record(r) for r in qs_distinct]
@@ -49,10 +49,10 @@ class CommRecordsDataSource(object):
     def filter_type(self):
         return CommRecordsFilter
 
-    def help_city(self, company, filter, partial):
+    def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
-        modified_filter = filter.clone_without_city()
-        comm_records_qs = self.filtered_query_set(company, modified_filter)
+        modified_filter_spec = filter_spec.clone_without_city()
+        comm_records_qs = self.filtered_query_set(company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
@@ -60,10 +60,10 @@ class CommRecordsDataSource(object):
         city_qs = locations_qs.values('city').distinct()
         return [{'key': c['city'], 'display': c['city']} for c in city_qs]
 
-    def help_state(self, company, filter, partial):
+    def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
-        modified_filter = filter.clone_without_state()
-        comm_records_qs = self.filtered_query_set(company, modified_filter)
+        modified_filter_spec = filter_spec.clone_without_state()
+        comm_records_qs = self.filtered_query_set(company, modified_filter_spec)
         locations_qs = (
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
@@ -71,9 +71,9 @@ class CommRecordsDataSource(object):
         state_qs = locations_qs.values('state').distinct()
         return [{'key': c['state'], 'display': c['state']} for c in state_qs]
 
-    def help_tags(self, company, filter, partial):
+    def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        comm_records_qs = self.filtered_query_set(company, filter)
+        comm_records_qs = self.filtered_query_set(company, filter_spec)
 
         tags_qs = (
             Tag.objects
@@ -87,9 +87,9 @@ class CommRecordsDataSource(object):
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
-    def help_communication_type(self, company, filter, partial):
+    def help_communication_type(self, company, filter_spec, partial):
         """Get help for the communication type field."""
-        comm_records_qs = self.filtered_query_set(company, filter)
+        comm_records_qs = self.filtered_query_set(company, filter_spec)
 
         contact_types_qs = (
             comm_records_qs
@@ -101,9 +101,9 @@ class CommRecordsDataSource(object):
                 'display': c['contact_type'],
             } for c in contact_types_qs]
 
-    def help_partner(self, company, filter, partial):
+    def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        comm_records_qs = self.filtered_query_set(company, filter)
+        comm_records_qs = self.filtered_query_set(company, filter_spec)
         partner_qs = (
             Partner.objects
             .filter(name__icontains=partial)
@@ -115,9 +115,9 @@ class CommRecordsDataSource(object):
                 'display': c['name'],
             } for c in partner_qs]
 
-    def help_contact(self, company, filter, partial):
+    def help_contact(self, company, filter_spec, partial):
         """Get help for the contact field."""
-        comm_records_qs = self.filtered_query_set(company, filter)
+        comm_records_qs = self.filtered_query_set(company, filter_spec)
         contact_qs = (
             Contact.objects
             .filter(name__icontains=partial)
@@ -129,7 +129,7 @@ class CommRecordsDataSource(object):
                 'display': c['name'],
             } for c in contact_qs]
 
-    def filtered_query_set(self, company, filter):
+    def filtered_query_set(self, company, filter_spec):
         """Create a query set with security, safety, and user filters applied.
         """
         qs_company = ContactRecord.objects.filter(partner__owner=company)
@@ -137,7 +137,7 @@ class CommRecordsDataSource(object):
             qs_company
             .filter(approval_status__code__iexact=Status.APPROVED)
             .filter(archived_on__isnull=True))
-        qs_filtered = filter.filter_query_set(qs_live)
+        qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
 
 
