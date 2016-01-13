@@ -6,7 +6,7 @@ class Status extends React.Component {
     if (this.props.status === true) {
       button = <span className="label label-success">Active</span>;
     } else if (this.props.status === false) {
-      button = <span className="label label-warning">Pending<br/>{this.props.lastResponse}</span>;
+      button = <span className="label label-warning">Pending since:<br/>{this.props.lastResponse}</span>;
     }
     return (
       <span>

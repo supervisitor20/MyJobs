@@ -32,6 +32,7 @@ from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialWorkForm)
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
+from registration.models import Invitation
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
 
@@ -1020,9 +1021,20 @@ def api_get_users(request):
         # Status
         ctx[user.id]["status"] = user.is_verified
 
-        # Last response
-        ctx[user.id]["lastResponse"] = user.last_response.strftime('%Y-%m-%d')
-
+        # Calculate pending since date
+        # Didn't use user.last_response because that 'denotes the last time
+        # they interacted with any email, not just invitations.' -Troy 1/13/16
+        # Instead 1) Find all invitations for this user
+        # 2) get the latest such invitation and 3) use that date
+        invitations = (Invitation
+                       .objects
+                       .filter(invitee_email=user.email)
+                       .order_by('-invited'))
+        if invitations:
+            lastResponse = invitations[0].invited.strftime('%Y-%m-%d')
+        else:
+            lastResponse = ''
+        ctx[user.id]["lastResponse"] = lastResponse
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
