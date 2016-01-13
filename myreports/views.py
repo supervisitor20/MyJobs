@@ -25,6 +25,7 @@ from myreports.datasources import ds_json_drivers
 
 from cStringIO import StringIO
 import csv
+import unicodecsv
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -620,10 +621,10 @@ def download_dynamic_report(request):
         report.name.replace(' ', '_'), report.pk)
 
     output = StringIO()
-    writer = csv.writer(output)
+    writer = unicodecsv.writer(output, encoding='utf-8')
     writer.writerow(values)
     for record in records:
-        writer.writerow([unicode(record[v]).encode('utf-8') for v in values])
+        writer.writerow([unicode(record[v]) for v in values])
     response.write(output.getvalue())
 
     return response
