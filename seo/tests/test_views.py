@@ -1730,19 +1730,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
             id=1)
         site.ats_source_codes.add(ats),
         site.special_commitments.add(factories.SpecialCommitmentFactory(id=1))
-        view_source = factories.ViewSourceFactory()
-        special_commitment = factories.SpecialCommitmentFactory()
+        factories.ViewSourceFactory()
+        factories.SpecialCommitmentFactory()
 
         # Job lookup by guid, check for full location.
         resp = self.client.get(
-            u'/indianapolis-in/retail-associate-розничная-ассоциированных/11111111111111111111111111111111/job/',
+            (u'/indianapolis-in/retail-associate-розничная-ассоциированных/'
+             u'11111111111111111111111111111111/job/'),
             HTTP_HOST='buckconsultants.jobs')
-        self.assertEqual(resp.status_code, 200, msg="Not receiving 200 response in full location test")
-        self.assertContains(resp, 'itemtype="http://schema.org/PostalAddress">'
-                                  '<span itemprop="addressLocality">Indianapolis</span>, '
-                                  '<span itemprop="addressRegion">Indiana</span>'
-                                  '<meta itemprop="addressCountry" content="United States'
-                                  , msg_prefix='Full location test is failing')
+        self.assertEqual(resp.status_code, 200,
+                         msg=("Not receiving 200 response in "
+                              "full location test"))
+        self.assertContains(resp, (
+            'itemtype="http://schema.org/PostalAddress">'
+            '<span itemprop="addressLocality">Indianapolis</span>, '
+            '<span itemprop="addressRegion">Indiana</span>'
+            '<meta itemprop="addressCountry" content="United States'),
+            msg_prefix='Full location test is failing')
 
     def test_job_detail(self):
         """
