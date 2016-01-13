@@ -4167,9 +4167,14 @@ h1 a {
   padding-top: 1px;
 }
 
-.product-card-full .label-warning, .product-card-full .label-success{
+.product-card-full .label-success{
   height: 42px;
   padding-top: 15px;
+}
+
+.product-card-full .label-warning {
+  height: 42px;
+  padding-top: 8px;
 }
 
 .product-card-full input[readonly] {

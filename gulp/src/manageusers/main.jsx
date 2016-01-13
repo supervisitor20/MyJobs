@@ -166,7 +166,7 @@ export class App extends React.Component {
                 <AssociatedRolesList roles={results[key].roles}/>
               </td>
               <td data-title="Status">
-                <Status status={results[key].status}/>
+                <Status status={results[key].status} lastResponse={results[key].lastResponse}/>
               </td>
               <td data-title="Edit">
                 <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>

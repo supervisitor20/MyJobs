@@ -1017,11 +1017,12 @@ def api_get_users(request):
                                                       roles_assigned_to_user,
                                                       fields=('name'))
 
-        # TODO Do assigned roles and available roles, I use this on front end
         # Status
-        # TODO: This is NOT the same as status
-        # Waiting on email invitation work
         ctx[user.id]["status"] = user.is_verified
+
+        # Last response
+        ctx[user.id]["lastResponse"] = user.last_response.strftime('%Y-%m-%d')
+
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -1112,26 +1113,15 @@ def api_create_user(request):
         if request.POST.get("user_email", ""):
             user_email = request.POST['user_email']
 
-        matching_users = User.objects.filter(email=user_email)
-        if matching_users.exists():
-            # TODO This user is already in the system. Email the user an
-            # invitation to accept this role.
-            # It will look something like this, according to Edwin on 11/30
-            # request.user.send_invite(some_email_address, company,
-            #                         role_name="PRM_USER")
-
-            ctx["success"] = "false"
-            ctx["message"] = "User already exists. Role invitation email sent."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-            # TODO If they accept, add them to the role(S)
-
         role_ids = []
         if request.POST.getlist("assigned_roles[]", ""):
             roles = request.POST.getlist("assigned_roles[]", "")
             # Create list of role_ids from names
             for i, role in enumerate(roles):
-                role_object = Role.objects.filter(company=company).filter(name=role)
+                role_object = (Role
+                               .objects
+                               .filter(company=company)
+                               .filter(name=role))
                 role_id = role_object[0].id
                 role_ids.append(role_id)
         # At least one role must be selected
@@ -1141,12 +1131,47 @@ def api_create_user(request):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
+        # Does user already exist?
+        # If so, 1) update their roles and 2) send them an email
+        matching_user = User.objects.filter(email=user_email)
+        if matching_user.exists():
+            # 1) Update their roles
+            # Remove all preexisting roles for this user
+            for currently_assigned_role in matching_user[0].roles.all():
+                matching_user[0].roles.remove(currently_assigned_role.id)
+            # Add new roles
+            matching_user[0].roles.add(*role_ids)
+            # 2) Send user an email
+            request.user.send_invite(user_email,
+                                     company,
+                                     role_name=roles)
+            ctx["success"] = "false"
+            ctx["message"] = "User already exists. Role invitation email sent."
+            return HttpResponse(json.dumps(ctx),
+                                content_type="application/json")
+
         # Create User
         new_user, created = User.objects.create_user(email=user_email)
         if created:
             # Assign roles to this user
             new_user.roles.add(*role_ids)
+
+            # TODO: Fix the test_create_user test
+            # print "Made it inside /user/create/"
+            # print "user_email"
+            # print user_email
+            # print "company"
+            # print company
+            # print "roles"
+            # print roles
+
+            # Send user an email
+            request.user.send_invite(user_email,
+                                     company,
+                                     role_name=roles)
+
             ctx["success"] = "true"
+            ctx["message"] = "User created. Invitation email sent."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
