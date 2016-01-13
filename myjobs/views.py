@@ -1294,6 +1294,10 @@ def api_edit_user(request, user_id=0):
             if currently_assigned_role.id not in assigned_roles_ids:
                 user[0].roles.remove(currently_assigned_role.id)
 
+        # Notify the user
+        request.user.send_invite(user[0].email,
+                                 company,
+                                 role_name=assigned_roles)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
