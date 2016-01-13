@@ -6,7 +6,7 @@ class Status extends React.Component {
     if (this.props.status === true) {
       button = <span className="label label-success">Active</span>;
     } else if (this.props.status === false) {
-      button = <span className="label label-warning">Pending since:<br/>{this.props.lastResponse}</span>;
+      button = <span className="label label-warning">Pending since:<br/>{this.props.lastInvitation}</span>;
     }
     return (
       <span>
@@ -18,12 +18,12 @@ class Status extends React.Component {
 
 Status.propTypes = {
   status: React.PropTypes.bool.isRequired,
-  lastResponse: React.PropTypes.bool.isRequired,
+  lastInvitation: React.PropTypes.bool.isRequired,
 };
 
 Status.defaultProps = {
   status: false,
-  lastResponse: false,
+  lastInvitation: false,
 };
 
 export default Status;

@@ -1026,15 +1026,20 @@ def api_get_users(request):
         # they interacted with any email, not just invitations.' -Troy 1/13/16
         # Instead 1) Find all invitations for this user
         # 2) get the latest such invitation and 3) use that date
-        invitations = (Invitation
-                       .objects
-                       .filter(invitee_email=user.email)
-                       .order_by('-invited'))
-        if invitations:
-            lastResponse = invitations[0].invited.strftime('%Y-%m-%d')
+        if user.is_verified == True:
+            lastInvitation = ''
         else:
-            lastResponse = ''
-        ctx[user.id]["lastResponse"] = lastResponse
+            invitations = (Invitation
+                           .objects
+                           .filter(invitee_email=user.email)
+                           .order_by('-invited'))
+            print user.email
+            print invitations
+            if invitations:
+                lastInvitation = invitations[0].invited.strftime('%Y-%m-%d')
+            else:
+                lastInvitation = ''
+        ctx[user.id]["lastInvitation"] = lastInvitation
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
