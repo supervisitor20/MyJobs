@@ -1,7 +1,9 @@
 """Contacts DataSource"""
 from operator import __or__
 
-from myreports.datasources.util import filter_date_range
+from myreports.datasources.util import (
+    DataSource, DataSourceFilter, dispatch_help_by_field_name,
+    filter_date_range)
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
@@ -10,7 +12,7 @@ from universal.helpers import dict_identity
 from django.db.models import Q
 
 
-class ContactsDataSource(object):
+class ContactsDataSource(DataSource):
     def run(self, company, filter_spec, order):
         """Run the query with the given company, filter, and ordering.
 
@@ -26,6 +28,10 @@ class ContactsDataSource(object):
 
     def filter_type(self):
         return ContactsFilter
+
+    def help(self, company, filter_spec, field, partial):
+        return dispatch_help_by_field_name(
+            self, company, filter_spec, field, partial)
 
     def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
@@ -105,7 +111,7 @@ class ContactsDataSource(object):
 
 
 @dict_identity
-class ContactsFilter(object):
+class ContactsFilter(DataSourceFilter):
     """Represent a ContactsDataSource user filter."""
     def __init__(self, date=None, locations=None, tags=None, partner=None):
         self.date = date

@@ -5,7 +5,8 @@ from datetime import datetime
 from myreports.report_configuration import (
      ReportConfiguration, ColumnConfiguration)
 from myreports.datasources.util import (
-    filter_date_range, DataSourceJsonDriver)
+    filter_date_range, DataSourceJsonDriver, dispatch_help_by_field_name,
+    DataSource)
 from myreports.datasources.partners import PartnersFilter
 
 
@@ -61,15 +62,15 @@ class TestUtils(TestCase):
         self.assertEqual([], result.filters)
 
 
-class MockDataSource(object):
+class MockDataSource(DataSource):
     def __init__(self):
         self.calls = []
 
     def filter_type(self):
         return PartnersFilter
 
-    def help_city(self, company, filter, partial):
-        self.calls.append(['help_city', company, filter, partial])
+    def help(self, company, filter, field, partial):
+        self.calls.append(['help', company, filter, field, partial])
         return 'aaa'
 
     def run(self, company, filter, order):
@@ -148,12 +149,12 @@ class TestDataSourceJsonDriver(TestCase):
         """Test that order is built properly."""
         self.assertEqual(['name'], self.driver.build_order('["name"]'))
 
-    def test_help_cities(self):
+    def test_help(self):
         """Test that city help gets plumbed to datasource correctly."""
         result = self.driver.help('company', '{}', 'city', 'zzz')
         self.assertEqual('aaa', result)
         self.assertEqual([
-            ['help_city', 'company', PartnersFilter(), 'zzz']
+            ['help', 'company', PartnersFilter(), 'city', 'zzz']
             ], self.ds.calls)
 
     def test_run(self):
@@ -182,3 +183,31 @@ class TestDataSourceJsonDriver(TestCase):
         expected = PartnersFilter(
             date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
         self.assertEquals(expected, result)
+
+
+class SomeDataSource(DataSource):
+    def filter_type(self):
+        pass
+
+    def run(self, company, filter_spec, order_spec):
+        pass
+
+    def help(self, company, filter_spec, field, partial):
+        return dispatch_help_by_field_name(
+                self, company, filter_spec, field, partial)
+
+    def help_name(self, company, filter_spec, partial):
+        return partial + ' zz'
+
+
+class TestHelpDispatch(TestCase):
+    def test_help_dispatch(self):
+        ds = SomeDataSource()
+        self.assertEquals('aa zz', ds.help(None, None, 'name', 'aa'))
+
+    def test_help_dispatch_missing_method(self):
+        ds = SomeDataSource()
+        try:
+            ds.help(None, None, 'zz', None)
+        except AttributeError:
+            pass

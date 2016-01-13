@@ -4,14 +4,17 @@ from operator import __or__
 from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
 
-from myreports.datasources.util import filter_date_range
+from myreports.datasources.util import (
+    DataSource, DataSourceFilter, dispatch_help_by_field_name,
+    filter_date_range)
+
 
 from universal.helpers import dict_identity
 
 from django.db.models import Q
 
 
-class CommRecordsDataSource(object):
+class CommRecordsDataSource(DataSource):
     def run(self, company, filter_spec, order):
         qs_filtered = self.filtered_query_set(company, filter_spec)
         qs_ordered = qs_filtered.order_by(*order)
@@ -48,6 +51,10 @@ class CommRecordsDataSource(object):
 
     def filter_type(self):
         return CommRecordsFilter
+
+    def help(self, company, filter_spec, field, partial):
+        return dispatch_help_by_field_name(
+            self, company, filter_spec, field, partial)
 
     def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
@@ -142,7 +149,7 @@ class CommRecordsDataSource(object):
 
 
 @dict_identity
-class CommRecordsFilter(object):
+class CommRecordsFilter(DataSourceFilter):
     def __init__(self, date_time=None, locations=None, tags=None,
                  communication_type=None, partner=None, contact=None):
         self.date_time = date_time
