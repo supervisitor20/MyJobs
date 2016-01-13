@@ -35,7 +35,8 @@
                         <span itemprop="addressLocality">{{ job.city }}</span>,
                     {% endif %}
                 {% endif %}
-                {% if job.country_short|lower == "usa" and job.state %}
+                {% is_special_case job as special_case %}
+                {% if special_case %}
                     <meta itemprop="addressCountry" content="{{ job.country }}" />
                 {% else %}
                     <span itemprop="addressCountry">{{ job.country }}</span>
