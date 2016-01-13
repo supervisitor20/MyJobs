@@ -512,7 +512,7 @@ def help_api(request):
     """
     request_data = request.POST
     rp_id = request_data['rp_id']
-    filter = request_data['filter']
+    filter_spec = request_data['filter']
     field = request_data['field']
     partial = request_data['partial']
 
@@ -522,7 +522,7 @@ def help_api(request):
 
     company = request.user.companyuser_set.first().company
 
-    result = driver.help(company, filter, field, partial)
+    result = driver.help(company, filter_spec, field, partial)
 
     return HttpResponse(content_type="application/json",
                         content=json.dumps(result))
