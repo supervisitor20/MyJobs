@@ -76,6 +76,7 @@ $(document).on("click", "button#register", function(e) {
     e.preventDefault();
     csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     var form = $('form#registration-form');
+    form.children('.form-error').remove();
     var json_data = form.serialize()+'&action=register&csrfmiddlewaretoken='+csrf_token;
     user_email = $("#id_email").val();
     $.ajax({
@@ -108,6 +109,18 @@ $(document).on("click", "button#register", function(e) {
             }else{
                 // Remove all required field changes, if any
                 removeRequiredChanges();
+
+                // If they're already registered, cancel other errors, and display the appropriate warning.
+                var search = '__all__';
+                $.each(json.errors, function(index, value){
+                    $.each(value, function(key, cell){
+                        if (search.indexOf(cell) !== -1) {
+                            console.log(json.errors[index][1]);
+                            form.prepend("<div class='form-error'>"+json.errors[index][1]+"</div>");
+                            return;
+                        }
+                    });
+                });
 
                 // For every error passed by json, run jsonError function
                 for (var index in json.errors) {

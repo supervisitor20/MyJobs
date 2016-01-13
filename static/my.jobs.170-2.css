@@ -4545,6 +4545,16 @@ body.modal-open {
     opacity: 1;
 }
 
+.form-error {
+    border: #900 1px solid;
+    background-color: #a95051;
+    color: #fff;
+    margin: 10px 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 3px;
+}
+
 /*Candidate menu items*/
 .no-show {
     display: none !important;
