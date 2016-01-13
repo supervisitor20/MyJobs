@@ -112,20 +112,22 @@ $(document).on("click", "button#register", function(e) {
 
                 // If they're already registered, cancel other errors, and display the appropriate warning.
                 var search = '__all__';
+                var exitLoop=false;
                 $.each(json.errors, function(index, value){
                     $.each(value, function(key, cell){
                         if (search.indexOf(cell) !== -1) {
-                            console.log(json.errors[index][1]);
                             form.prepend("<div class='form-error'>"+json.errors[index][1]+"</div>");
-                            return;
+                            exitLoop=true;
                         }
                     });
                 });
-
-                // For every error passed by json, run jsonError function
-                for (var index in json.errors) {
-                    jsonErrors(index, json.errors);
+                if (!exitLoop) {
+                    // For every error passed by json, run jsonError function
+                    for (var index in json.errors) {
+                        jsonErrors(index, json.errors);
+                    }
                 }
+
             }
         }
     });

@@ -193,23 +193,16 @@ class RegistrationForm(forms.Form):
                                            'autocomplete': 'off'},
                                     render_value=False))
 
-    def clean_email(self):
-        """
-        Validate that the username is alphanumeric and is not already
-        in use.
-
-        """
-        if User.objects.get_email_owner(self.cleaned_data['email']):
-            raise forms.ValidationError(_("A user with that email already exists."))
-        else:
-            return self.cleaned_data['email']
 
     def clean(self):
         """
-        Verify that the values entered into the two password fields
-        match.
-
+        Validate that the username is not already in use and that
+        the values entered into the two password fields match.
         """
+
+        if 'email' in self.cleaned_data and User.objects.get_email_owner(self.cleaned_data['email']):
+            raise forms.ValidationError(_("A user with that email already exists."))
+
         if 'password1' in self._errors:
             self._errors['password1'] = [
                 error if error.endswith('.') else 'Password Error: ' + error
