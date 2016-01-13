@@ -72,21 +72,14 @@ class DataSourceJsonDriver(object):
         for key, data in filter_spec.iteritems():
             key_type = types.get(key, None)
             if key_type is None:
-                message = 'DataSource %s does not have filter key %s' % (
-                    self.ds.__class__.__name__,
-                    repr(key))
-
-                raise KeyError(message)
-
-            if key_type == 'date_range':
+                kwargs[key] = data
+            elif key_type == 'date_range':
                 date_strings = filter_spec.get(key, None)
                 dates = [
                     (datetime.strptime(d, "%Y-%m-%d") if d else None)
                     for d in date_strings]
 
                 kwargs[key] = dates
-            elif key_type == 'pass':
-                kwargs[key] = data
             else:
                 message = 'DataSource %s has unknown filter key type %s' % (
                     self.ds.__class__.__name__,

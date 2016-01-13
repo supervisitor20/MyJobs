@@ -117,9 +117,6 @@ class ContactsFilter(object):
     def filter_key_types(self):
         return {
             'date': 'date_range',
-            'locations': 'pass',
-            'tags': 'pass',
-            'partner': 'pass',
         }
 
     def clone_without_city(self):

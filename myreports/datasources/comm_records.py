@@ -156,11 +156,6 @@ class CommRecordsFilter(object):
     def filter_key_types(self):
         return {
             'date_time': 'date_range',
-            'partner': 'pass',
-            'contact': 'pass',
-            'communication_type': 'pass',
-            'locations': 'pass',
-            'tags': 'pass',
         }
 
     def clone_without_city(self):

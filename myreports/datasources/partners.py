@@ -124,10 +124,6 @@ class PartnersFilter(object):
     def filter_key_types(self):
         return {
             'date': 'date_range',
-            'data_source': 'pass',
-            'locations': 'pass',
-            'tags': 'pass',
-            'uri': 'pass',
         }
 
     def clone_without_city(self):
