@@ -318,12 +318,38 @@ class TestActivities(MyJobsBase):
                 user.can(self.company, 'create user'),
                 "User should be able to 'create user', but can't")
 
+    def test_invite_with_custom_message(self):
+        """
+        `User.send_invite` called with a message should show that message,
+        even if a role was specified.
+
+        """
+        activity = ActivityFactory(
+            name="create user", app_access=self.app_access)
+        self.role.activities.add(activity)
+        admin_user = UserFactory(email="admin@users.com", roles=[self.role])
+        CompanyUserFactory(user=admin_user, company=self.company)
+
+        with self.settings(ROLES_ENABLED=True):
+            admin_user.send_invite('regular@joe.com', self.company,
+                                   role_name=self.role.name,
+                                   message='to do stuff')
+
+            email = mail.outbox.pop()
+            self.assertIn("to do stuff.", email.body)
+        with self.settings(ROLES_ENABLED=False):
+            admin_user.send_invite('regular@joe.com', self.company,
+                                   role_name=True, message='to do stuff')
+
+            email = mail.outbox.pop()
+            self.assertIn("to do stuff", email.body)
+
     def test_activities(self):
         """
         `User.activities` should return a list of activities associated with
         this user.
-        """
 
+        """
         user = UserFactory()
 
         self.assertItemsEqual(user.activities, [])
