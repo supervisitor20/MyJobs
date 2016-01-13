@@ -18,7 +18,7 @@ class Status extends React.Component {
 
 Status.propTypes = {
   status: React.PropTypes.bool.isRequired,
-  lastInvitation: React.PropTypes.bool.isRequired,
+  lastInvitation: React.PropTypes.string.isRequired,
 };
 
 Status.defaultProps = {
