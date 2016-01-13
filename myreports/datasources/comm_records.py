@@ -78,20 +78,20 @@ class CommRecordsDataSource(object):
         tags_qs = (
             Tag.objects
             .filter(contactrecord__in=comm_records_qs)
-            .filter(name__icontains=partial))
-        names_qs = tags_qs.values('name', 'hex_color').distinct()
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
         return [
             {
                 'key': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
-            } for t in names_qs]
+            } for t in tags_qs]
 
     def help_communication_type(self, company, filter, partial):
         """Get help for the communication type field."""
         comm_records_qs = self.filtered_query_set(company, filter)
 
-        ct_qs = (
+        contact_types_qs = (
             comm_records_qs
             .filter(contact_type__icontains=partial)
             .values('contact_type').distinct())
@@ -99,7 +99,7 @@ class CommRecordsDataSource(object):
             {
                 'key': c['contact_type'],
                 'display': c['contact_type'],
-            } for c in ct_qs]
+            } for c in contact_types_qs]
 
     def help_partner(self, company, filter, partial):
         """Get help for the partner field."""

@@ -66,14 +66,14 @@ class PartnersDataSource(object):
         tags_qs = (
             Tag.objects
             .filter(partner__in=partners_qs)
-            .filter(name__icontains=partial))
-        names_qs = tags_qs.values('name', 'hex_color').distinct()
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
         return [
             {
                 'key': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
-            } for t in names_qs]
+            } for t in tags_qs]
 
     def help_uri(self, company, filter, partial):
         """Get help for the uri field."""

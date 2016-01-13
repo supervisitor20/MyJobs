@@ -56,14 +56,14 @@ class ContactsDataSource(object):
         tags_qs = (
             Tag.objects
             .filter(contact__in=contacts_qs)
-            .filter(name__icontains=partial))
-        names_qs = tags_qs.values('name', 'hex_color').distinct()
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
         return [
             {
                 'key': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
-            } for t in names_qs]
+            } for t in tags_qs]
 
     def help_partner(self, company, filter, partial):
         """Get help for the partner field."""
@@ -71,9 +71,9 @@ class ContactsDataSource(object):
         partners_qs = (
             Partner.objects
             .filter(contact__in=contacts_qs)
-            .filter(name__icontains=partial))
-        data_qs = partners_qs.values('name', 'pk').distinct()
-        return [{'key': t['pk'], 'display':t['name']} for t in data_qs]
+            .filter(name__icontains=partial)
+            .values('name', 'pk').distinct())
+        return [{'key': t['pk'], 'display':t['name']} for t in partners_qs]
 
     def extract_record(self, record):
         """Translate from a query set record to a dictionary."""
