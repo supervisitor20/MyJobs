@@ -28,7 +28,7 @@ class JoinFormatter(object):
             self.inner_formatter = inner_formatter
 
     def format(self, values):
-        if isinstance(values, Iterable) and not isinstance(values, str):
+        if isinstance(values, Iterable) and not isinstance(values, basestring):
             return self.between.join(
                 self.inner_formatter.format(v) for v in values)
         else:

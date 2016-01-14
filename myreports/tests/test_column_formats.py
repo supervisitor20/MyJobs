@@ -12,6 +12,11 @@ class NoopFormatter(object):
         return value
 
 
+class DisallowFormatter(object):
+    def format(self, value):
+        raise AssertionError("This formatter should never be called.")
+
+
 class TestFormatters(TestCase):
     def test_string_format(self):
         """Test that strings values pass through."""
@@ -20,7 +25,9 @@ class TestFormatters(TestCase):
     def test_formatting_none(self):
         """Run None through formatters."""
         self.assertEqual("", StringFormatter().format(None))
-        self.assertEqual("", JoinFormatter(',').format(None))
+        self.assertEqual(
+            "",
+            JoinFormatter(',', DisallowFormatter()).format(None))
         self.assertEqual("", StrftimeFormatter("%m/%02d/%Y").format(None))
         self.assertEqual(
             [],
@@ -52,6 +59,12 @@ class TestFormatters(TestCase):
         self.assertEqual(
             "a, b, c",
             formatter.format(["a", "b", "c"]))
+
+    def test_join_bare_string(self):
+        """Test that join handles bare strings reasonably."""
+        formatter = JoinFormatter(", ", DisallowFormatter())
+        self.assertEqual('a', formatter.format('a'))
+        self.assertEqual(u'a', formatter.format(u'a'))
 
     def test_sub_join(self):
         """Test that we can compose join and other formatters."""
