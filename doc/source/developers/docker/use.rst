@@ -211,8 +211,8 @@ Go to http://secure.my.jobs. You should have to click through a security
 warning.
 
 
-Set Up Docker with Windows VM
-=============================
+Set Up Docker with VM of Windows
+================================
 
 To use a Windows or other VM in conjunction with Docker (IE Testing, etc)
 
