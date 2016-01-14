@@ -1,5 +1,5 @@
 """Format utilities for translating from saved report json to text."""
-from collections import Iterable
+from collections import Iterable, Mapping
 from universal.helpers import dict_identity
 
 
@@ -64,12 +64,30 @@ class MultiFieldDescend(object):
         self.inner = inner
 
     def format(self, value):
-        if value is not None:
+        if value is None:
+            return []
+        elif isinstance(value, Mapping):
             return self.inner.format(
                 [value.get(f, None) for f in self.fields])
         else:
-            return []
+            return self.inner.format([value])
 
+
+@dict_identity
+class SingleFieldDescend(object):
+    """Format a single item from a value which supports __getitem__.
+    """
+    def __init__(self, field, inner):
+        self.field = field
+        self.inner = inner
+
+    def format(self, value):
+        if value is None:
+            return ''
+        elif isinstance(value, Mapping):
+            return value.get(self.field, None)
+        else:
+            return self.inner.format(value)
 
 """Dictionary of codes used in the db to name useful formatters."""
 COLUMN_FORMATS = {
@@ -82,4 +100,8 @@ COLUMN_FORMATS = {
             MultiFieldDescend(
                 ['city', 'state'],
                 JoinFormatter(", ", StringFormatter()))),
+    'tags_list':
+        JoinFormatter(
+            ", ",
+            SingleFieldDescend('name', StringFormatter())),
 }

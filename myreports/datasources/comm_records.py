@@ -5,7 +5,7 @@ from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range)
+    dispatch_help_by_field_name, filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 
@@ -40,7 +40,7 @@ class CommRecordsDataSource(DataSource):
             'notes': record.notes,
             'partner': record.partner.name,
             'subject': record.subject,
-            'tags': [t.name for t in record.tags.all()],
+            'tags': extract_tags(record.tags.all()),
         }
 
     def extract_user_email(self, user):

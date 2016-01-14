@@ -5,7 +5,8 @@ from datetime import datetime
 from myreports.report_configuration import (
      ReportConfiguration, ColumnConfiguration)
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range)
+    dispatch_help_by_field_name, filter_date_range,
+    extract_tags)
 from myreports.datasources.base import DataSource
 from myreports.datasources.jsondriver import DataSourceJsonDriver
 from myreports.datasources.partners import PartnersFilter
@@ -17,6 +18,12 @@ class MockQuerySet(object):
 
     def filter(self, **kwargs):
         return MockQuerySet(filters=self.filters + [kwargs])
+
+
+class MockTag(object):
+    def __init__(self, name, hex_color):
+        self.name = name
+        self.hex_color = hex_color
 
 
 class TestUtils(TestCase):
@@ -61,6 +68,21 @@ class TestUtils(TestCase):
         qs = MockQuerySet()
         result = filter_date_range(None, 'zz', qs)
         self.assertEqual([], result.filters)
+
+    def test_extract_tag_list(self):
+        """Should grab only the names from the list."""
+        tag_list = [
+            MockTag('TagA', '#aaaaaa'),
+            MockTag('TagB', '#bbbbbb'),
+        ]
+
+        result = extract_tags(tag_list)
+
+        expected = [
+            {'name': 'TagA', 'hex_color': '#aaaaaa'},
+            {'name': 'TagB', 'hex_color': '#bbbbbb'},
+        ]
+        self.assertEqual(expected, result)
 
 
 class MockDataSource(DataSource):

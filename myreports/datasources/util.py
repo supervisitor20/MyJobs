@@ -43,3 +43,14 @@ def filter_date_range(dates, field, qs):
     elif begin is not None:
         qs = qs.filter(**filter_arg(field, 'gte', begin))
     return qs
+
+
+def extract_tags(tag_list):
+    """Extract name + hex_color + ... from tags."""
+    return [
+        {
+            'name': t.name,
+            'hex_color': t.hex_color,
+        }
+        for t in tag_list
+    ]

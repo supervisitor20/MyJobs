@@ -2,7 +2,7 @@
 from operator import __or__
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range)
+    dispatch_help_by_field_name, filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
@@ -94,7 +94,7 @@ class ContactsDataSource(DataSource):
                 for l in record.locations.all()
             ],
             'date': record.last_action_time,
-            'tags': [t.name for t in record.tags.all()],
+            'tags': extract_tags(record.tags.all()),
         }
 
     def filtered_query_set(self, company, filter_spec):

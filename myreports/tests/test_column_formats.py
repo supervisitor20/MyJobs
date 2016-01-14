@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from myreports.column_formats import (
     StringFormatter, JoinFormatter, StrftimeFormatter,
-    MultiFieldDescend)
+    MultiFieldDescend, SingleFieldDescend)
 
 
 class NoopFormatter(object):
@@ -33,6 +33,12 @@ class TestFormatters(TestCase):
             [],
             MultiFieldDescend(
                 ['a'],
+                NoopFormatter())
+            .format(None))
+        self.assertEqual(
+            '',
+            SingleFieldDescend(
+                None,
                 NoopFormatter())
             .format(None))
 
@@ -95,3 +101,26 @@ class TestFormatters(TestCase):
         self.assertEqual(
             ["Indy", None],
             formatter.format({"city": "Indy"}))
+
+    def test_multifield_descend_non_dict(self):
+        """Test that we can handle non-dicts."""
+        formatter = MultiFieldDescend(
+            ['city', 'state'],
+            StringFormatter())
+
+        self.assertEqual("[1]", formatter.format(1))
+
+    def test_single_field_descend(self):
+        """Test that we can descend a single field in a dict."""
+        formatter = SingleFieldDescend('name', NoopFormatter())
+        self.assertEqual("aa", formatter.format({'name': 'aa', 'b': 'c'}))
+
+    def test_single_field_descend_missing_key(self):
+        """Test that we can descend a dict when the key is missing."""
+        formatter = SingleFieldDescend('name', NoopFormatter())
+        self.assertEqual(None, formatter.format({'b': 'c'}))
+
+    def test_single_field_descend_non_dict(self):
+        """Test that we can handle non-dicts."""
+        formatter = SingleFieldDescend('name', StringFormatter())
+        self.assertEqual('1', formatter.format(1))

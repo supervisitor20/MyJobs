@@ -4,7 +4,7 @@ from operator import __or__
 from mypartners.models import Contact, Partner, Status, Location, Tag
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range)
+    dispatch_help_by_field_name, filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 
@@ -27,7 +27,7 @@ class PartnersDataSource(DataSource):
             'name': record.name,
             'primary_contact':
                 self.extract_primary_contact(record.primary_contact),
-            'tags': [t.name for t in record.tags.all()],
+            'tags': extract_tags(record.tags.all()),
             'uri': record.uri,
         }
 
