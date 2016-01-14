@@ -97,7 +97,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.partner_archived.archive()
 
     def test_run_unfiltered(self):
-        """Should show only appropriate data for this user."""
+        """Make sure we only get data for this user."""
         ds = PartnersDataSource()
         recs = ds.run(self.company, PartnersFilter(), [])
         names = set([r['name'] for r in recs])
@@ -169,7 +169,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags(self):
-        """Should show only partner with correct tags."""
+        """Show only partner with correct tags."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -180,7 +180,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_or(self):
-        """Should show only partner with correct tags in or configuration."""
+        """Show only partner with correct tags in 'or' configuration."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -191,7 +191,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_and(self):
-        """Should show only partner with correct tags in and configuration."""
+        """Show only partner with correct tags in 'and' configuration."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -212,7 +212,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_data_source(self):
-        """Should show only partner with correct tags in or configuration."""
+        """Check datasource filter works at all."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -223,7 +223,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_uri(self):
-        """Should show only partner with correct tags in or configuration."""
+        """Check uri filter works at all."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -246,7 +246,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_help_city(self):
-        """Should complete city and ignore current city filter."""
+        """Check city help works and ignores current city filter."""
         ds = PartnersDataSource()
         recs = ds.help_city(
             self.company,
@@ -256,7 +256,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
-        """Should complete state and ignore current state filter."""
+        """Check state help works and ignores current state filter."""
         ds = PartnersDataSource()
         recs = ds.help_state(
             self.company,
@@ -266,7 +266,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
-        """Should provide list of tag completions."""
+        """Check tags help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_tags(self.company, PartnersFilter(), "E")
         actual = set([r['key'] for r in recs])
@@ -279,6 +279,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual("aaaaaa", recs[0]['hexColor'])
 
     def test_help_uri(self):
+        """Check uri help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_uri(
             self.company,
@@ -288,6 +289,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual({'http://www.example.com/'}, actual)
 
     def test_help_data_source(self):
+        """Check data_source help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_data_source(
             self.company,
@@ -297,7 +299,7 @@ class TestPartnersDataSource(MyJobsBase):
         self.assertEqual({'zap'}, actual)
 
     def test_order(self):
-        """Should order results as we expect."""
+        """Check ordering results works at all."""
         ds = PartnersDataSource()
         recs = ds.run(
             self.company,
@@ -310,13 +312,13 @@ class TestPartnersDataSource(MyJobsBase):
 
 class TestPartnersFilterCloning(TestCase):
     def test_clone_without_empty(self):
-        """Test clearing filter fields on an empty filter."""
+        """Cloning empty filters shouldn't crash."""
         filter = PartnersFilter()
         self.assertEqual(PartnersFilter(), filter.clone_without_city())
         self.assertEqual(PartnersFilter(), filter.clone_without_state())
 
     def test_clone_without_full(self):
-        """Test clearing filter fields that are populated."""
+        """Cloning should remove certain fields."""
         filter = PartnersFilter(
                 tags=['C'],
                 locations={'city': 'A', 'state': 'B'})
