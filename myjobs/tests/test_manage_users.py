@@ -396,10 +396,7 @@ class ManageUsersTests(MyJobsBase):
         # uses to make the request. Therefore, the API should only return two
         # roles
         self.assertEqual(len(roles_assigned),2)
-
-
-
-
+        
     def test_get_users(self):
         """
         Tests that the Users API returns the proper data in the proper form
