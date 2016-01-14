@@ -1,6 +1,8 @@
-=======================
-Developer Documentation
-=======================
+================
+Saved Search API
+================
+
+The saved search API allows users and saved searches to be created from a given job search on the microsite platform.
 
 .. toctree::
   :maxdepth: 2
@@ -13,4 +15,5 @@ Developer Documentation
   styleguides/index
   testing/index
   contributing/index
+  api/index
   import_jobs/index
