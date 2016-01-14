@@ -24,15 +24,17 @@ ss-btn-link
 <div id="direct-saved-search">
     <div class="saved-search-form">
     <em class="warning">{{ error }}</em>
-    {% if new_user_email %}
+    {% if new_user_success %}
     {# The block below is shown when anonymous user successfully adds an email or user adds alternate email #}
-        <em class="success">Success</em><p>Your search was successfully saved. Results will be sent to {{ new_user_email }}.</p>
+        <em class="success">Success</em><p>Your search was successfully saved. Results will be sent to {{ current_input }}.</p>
 
     {% elif not search %}
     {# The block below is for the widget given that the saved search is not saved #}
         <div id="cta-saved-search-form">Get new jobs sent directly to your inbox!</div>
         <input placeholder="Your email address" type="text"
-               id="saved-search-email" name="saved-search-email" {% if user.email %}value="{{  user.email }}"{% endif %}>
+               id="saved-search-email" name="saved-search-email"
+               {% if current_input %}value="{{  current_input }}"
+               {% elif user.email %}value="{{  user.email }}"{% endif %}>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
         <div class="direct-action-btn" id="saved-search-btn">
             <a href="" id="ss-btn-link">

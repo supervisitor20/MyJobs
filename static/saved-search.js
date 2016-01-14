@@ -10,8 +10,7 @@ var ss_url = encodeURIComponent(window.location.href);
 // stores the secure blocks container div for reference in the script
 var blocks_widget_div;
 
-// temporary code for storing the fact that there is a new user/the email provided
-var new_user;
+//global variables for interacting with secure blocks template assigned values
 var email_input;
 
 $('#saved-search-btn').click(function(e) {
@@ -20,6 +19,7 @@ $('#saved-search-btn').click(function(e) {
   save_search();
 });
 
+//borrowed from gulp/src/util/validateEmail.js
 function validateEmail(email) {
   const re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
   return re.test(email);
@@ -30,9 +30,6 @@ function handle_error(error) {
   // with the error message. Uses the most recent text to ensure formatting
   // and variables supplied by myjobs are persistent, so the experience
   // for logged in users continues to be the same.
-  //$(".warning").remove();
-  //$('.saved-search-form').prepend('<em class="warning">Something went wrong!</em>');
-  //$('#ss-btn-link').html('Try saving this search again');
   var error = error || "Something went wrong!"
   $(blocks_widget_div).data("error", error);
   reload_widget(remove_error_flag);
@@ -42,37 +39,12 @@ function remove_error_flag() {
   $(blocks_widget_div).data("error", "");
 }
 
-//function save_search() {
-//  // If there is any hint that there isn't a well-defined user email
-//  // provided, attempts to get a user from the input and create a new user.
-//  // Otherwise, uses the currently provided user to create a saved search.
-//  if (existing_user_email) {
-//    email_input = existing_user_email
-//    $('.saved-search-form').html('<em class="saved-search-widget-loading"> Saving </em>');
-//    create_saved_search();
-//  }
-//  else {
-//    try {
-//      existing_user_email = $('#saved-search-email').val();
-//      if (!validate_email(email_input)) {
-//        handle_error("Enter a valid email (user@example.com)");
-//      }
-//      else {
-//        $('.saved-search-form').html('<em class="saved-search-widget-loading"> Saving </em>');
-//        create_user();
-//      }
-//    }
-//    catch(err) {
-//      handle_error();
-//    }
-//  }
-//}
-
 function save_search() {
   // If there is any hint that there isn't a well-defined user email
   // provided, attempts to get a user from the input and create a new user.
   // Otherwise, uses the currently provided user to create a saved search.
   email_input = $('#saved-search-email').val();
+  $(blocks_widget_div).data("current_input", email_input);
   if (!validate_email(email_input)) {
     handle_error("Enter a valid email (user@example.com)");
   }
@@ -93,10 +65,14 @@ function check_save_success(data) {
   }
   else {
     if (existing_user_email != email_input) {
-      $(blocks_widget_div).data("new_user_email", email_input);
+      $(blocks_widget_div).data("new_user_success", true);
     }
-    reload_widget();
+    reload_widget(remove_success_flag);
     }
+}
+
+function remove_success_flag() {
+  $(blocks_widget_div).data("new_user_false", true);
 }
 
 function reload_widget(callback) {
@@ -116,7 +92,6 @@ function create_saved_search() {
 }
 
 function create_user() {
-  new_user = true;
   jsonp_ajax_call(base_url + "/api/v1/user/?callback=create_saved_search&email=" + email_input + ss_api_str + "&source=" + window.location.hostname,
     "create_saved_search");
 }
@@ -137,7 +112,6 @@ function jsonp_ajax_call(ajax_url, callback) {
       Accept: 'text/javascript'
     },
     error: function(xhr, status, thrown) {
-      debugger;
       handle_error();
     },
   });
