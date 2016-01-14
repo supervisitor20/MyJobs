@@ -1,7 +1,7 @@
 from myreports.datasources.contacts import ContactsDataSource
 from myreports.datasources.partners import PartnersDataSource
 from myreports.datasources.comm_records import CommRecordsDataSource
-from myreports.datasources.util import DataSourceJsonDriver
+from myreports.datasources.jsondriver import DataSourceJsonDriver
 
 
 ds_json_drivers = {

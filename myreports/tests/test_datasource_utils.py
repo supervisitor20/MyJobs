@@ -5,8 +5,9 @@ from datetime import datetime
 from myreports.report_configuration import (
      ReportConfiguration, ColumnConfiguration)
 from myreports.datasources.util import (
-    filter_date_range, DataSourceJsonDriver, dispatch_help_by_field_name,
-    DataSource)
+    dispatch_help_by_field_name, filter_date_range)
+from myreports.datasources.base import DataSource
+from myreports.datasources.jsondriver import DataSourceJsonDriver
 from myreports.datasources.partners import PartnersFilter
 
 

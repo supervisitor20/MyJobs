@@ -5,8 +5,8 @@ from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
 
 from myreports.datasources.util import (
-    DataSource, DataSourceFilter, dispatch_help_by_field_name,
-    filter_date_range)
+    dispatch_help_by_field_name, filter_date_range)
+from myreports.datasources.base import DataSource, DataSourceFilter
 
 
 from universal.helpers import dict_identity
