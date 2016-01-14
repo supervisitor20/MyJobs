@@ -21,7 +21,7 @@ def arrange_jobs(context):
         'show_co_names': show_co_names,
         'title_term': context.get('title_term'),
         'query_string': query_string,
-        'site_tags': context.get('site_tags')
+        'site_tags': context.get('site_tags'),
     }
 
 
