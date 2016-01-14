@@ -409,9 +409,11 @@ class SavedSearch(models.Model):
 def saved_search_invitation_context(saved_search):
     """
     Returns a message, the saved search, the initial search email, and whether
-    or not the invitation email should be sent as text-only.
+    or not the invitation email should be sent as text-only. For partner saved
+    seaches, the custom message is also attached if available.
 
     """
+
     return {"message": " in order to begin receiving their available job "
                        "opportunities on a regular basis.",
             "saved_search": saved_search,

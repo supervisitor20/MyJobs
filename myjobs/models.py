@@ -717,7 +717,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 return is_company_user and company.member
 
-    def send_invite(self, email, company, role_name=None, message=""):
+    def send_invite(self, email, company, role_name=None):
         """
         Sends an invitation to the `email` in regards to `role_name` for
         `company`.
@@ -727,9 +727,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
                         assigned.
-            :message: Custom message to be used for the invitation. If not
-                      specified, the default one provided by
-                      `invitation_context` will be used.
 
         Output:
             The invited user if sucessful, otherwise None.
@@ -752,18 +749,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        context_object = message
+        context_object = ""
         if role_name:
             if settings.ROLES_ENABLED:
                 assigned_role = Role.objects.get(
                     company=company, name=role_name)
                 user.roles.add(assigned_role)
-                context_object = message or assigned_role
+                context_object = assigned_role
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
                 company_user, _ = CompanyUser.objects.get_or_create(
                     user=user, company=company)
-                context_object = message or company_user
+                context_object = company_user
 
         invitation.send(context_object)
 
