@@ -4,16 +4,18 @@ from django.core.urlresolvers import reverse
 from django.test import RequestFactory
 
 from myjobs.tests.setup import MyJobsBase
+from myjobs.tests.test_views import TestClient
 from mypartners.models import Contact
 from mypartners.tests.factories import ContactFactory, PartnerFactory
-from mysearches.forms import SavedSearchForm, PartnerSavedSearchForm, \
-    PartnerSubSavedSearchForm
+from mysearches.forms import (SavedSearchForm, PartnerSavedSearchForm,
+                              PartnerSubSavedSearchForm)
 from mysearches.forms import PartnerSavedSearch
 from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import UserFactory
+from mypartners.views import partner_savedsearch_save
 from registration.models import Invitation
 from seo.models import SeoSite
-from seo.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
 class SavedSearchFormTests(MyJobsBase):
@@ -72,7 +74,8 @@ class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
         self.user = UserFactory()
-        self.company = CompanyFactory()
+        self.company = CompanyFactory(member=True)
+        CompanyUserFactory(user=self.user, company=self.company)
         self.partner = PartnerFactory(owner=self.company)
 
         self.contact = ContactFactory(user=None, email='new_user@example.com',
@@ -85,9 +88,12 @@ class PartnerSavedSearchFormTests(MyJobsBase):
             'sort_by': 'Relevance',
             'jobs_per_email': 5,
             'email': self.contact.email,
+            'partner_message': "some partner message"
         }
 
         settings.SITE = SeoSite.objects.first()
+        settings.SITE.canonical_company = self.company
+        settings.SITE.save()
         # This request is only used in RequestForms, where all we care about
         # is request.user.
         self.request = RequestFactory().get(
@@ -115,6 +121,25 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         self.assertTrue(invitation.invitee.in_reserve)
         contact = Contact.objects.get(pk=self.contact.pk)
         self.assertEqual(invitation.invitee, contact.user)
+
+    def test_partner_saved_search_invitation_has_initial_mail(self):
+        """
+        When an invitation is created for a partner saved search, the
+        invitaiton email should contain the initial saved search and any custom
+        message that was inserted into the form.
+
+        """
+        client = TestClient()
+        client.login_user(self.user)
+        url = "%s?partner=%s" % (reverse('partner_savedsearch_save'),
+                                 self.partner.pk)
+        response = client.post(url, self.partner_search_data)
+
+        email = mail.outbox.pop()
+        # inspect email for the custom message
+        self.assertIn("some partner message", email.body)
+        # inspect the email for the initial saved search
+        self.assertIn("My Saved Searches", email.body)
 
     def test_user_only_linked_to_contact_after_pss_created(self):
         """

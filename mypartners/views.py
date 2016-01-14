@@ -664,7 +664,7 @@ def partner_savedsearch_save(request):
     if it is needed.
 
     """
-    company, partner, user = prm_worthy(request)
+    company, partner, _ = prm_worthy(request)
     item_id = request.REQUEST.get('id', None)
 
     if item_id:

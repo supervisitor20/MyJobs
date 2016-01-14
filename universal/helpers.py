@@ -95,7 +95,6 @@ def get_company(request):
     Uses the myjobs_company cookie to determine what the current company is.
 
     """
-
     if not request.user or not request.user.pk or request.user.is_anonymous():
         return None
 

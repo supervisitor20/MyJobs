@@ -295,7 +295,7 @@ class PartnerSavedSearchForm(RequestForm):
             # Default sort_by for new Partner Saved Searches, see PD-912
         partner = instance.partner
         contact = Contact.objects.filter(partner=partner,
-                                         user=instance.user)[0]
+                                         user=instance.user).first()
         log_change(instance, self, instance.created_by, partner,
                    contact.email, action_type=is_new_or_change)
 
