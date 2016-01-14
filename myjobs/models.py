@@ -284,7 +284,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                                            help_text=_('Checking this allows '
                                                        'employers to send '
                                                        'emails to you.'))
-
+    # The last time they interacted with any email, not just invitations.
+    # -Troy 1/13/16
     last_response = models.DateField(default=datetime.datetime.now, blank=True)
 
     # Password Settings
