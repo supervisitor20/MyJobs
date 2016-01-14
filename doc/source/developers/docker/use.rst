@@ -209,3 +209,33 @@ Add other microsites as needed.
 
 Go to http://secure.my.jobs. You should have to click through a security
 warning.
+
+
+Set Up Docker with VM of Windows
+================================
+
+To use a Windows or other VM in conjunction with Docker (IE Testing, etc)
+
+* Import a valid image into Virtual Box. Below are steps for a Windows VM are
+    below
+
+    * Download image from https://dev.windows.com/en-us/microsoft-edge/tools/vms/
+
+    * Extract OVA file from downloaded zip file
+
+    * Launch VirtualBox
+
+    * Navigate File -> Import Appliance.. Select extracted OVA File
+
+* Right click new VM image, Settings -> Network -> Attached To -> NAT
+
+* From the console, run ``VBoxManage modifyvm "VM name" --natdnshostresolver1 on``
+
+    * Replace "VM Name" with the name of the image you created
+
+* From VirtualBox GUI, Select "Snapshots" and create a snapshot of the Image
+
+    * This is useful for temporary licenses such as those for Windows. To reload
+        the snapshot later, simply right-click and "Restore Snapshot"
+
+* DNS entries in the host computers hosts file are available on Windows VM
