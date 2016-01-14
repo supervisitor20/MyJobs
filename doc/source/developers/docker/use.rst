@@ -211,8 +211,8 @@ Go to http://secure.my.jobs. You should have to click through a security
 warning.
 
 
-Set Up Multiple VMs (OSX)
-=========================
+Set Up Docker with Windows VM
+=============================
 
 To use a Windows or other VM in conjunction with Docker (IE Testing, etc)
 
