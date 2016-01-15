@@ -720,7 +720,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             :email: The email address of the potential user being invited.
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
-                        assigned.
+                        assigned. Can be either a string or array of strings.
             :reason: The readon for the invite, included in the email body. If
                      a ```role_name``` is provided but reason is not, then the
                      recipient will be notified that they are being invited to
@@ -759,9 +759,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         if role_name:
             if settings.ROLES_ENABLED:
-                assigned_role = Role.objects.get(
-                    company=company, name=role_name)
-                user.roles.add(assigned_role)
+                # role_name could be an array like ["Admin", "PRM User"]
+                if isinstance(role_name, list):
+                    for role in role_name:
+                        user.roles.add(role)
+                else:
+                    assigned_role = Role.objects.get(
+                        company=company, name=role_name)
+                    user.roles.add(assigned_role)
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
                 CompanyUser.objects.get_or_create(user=user, company=company)
