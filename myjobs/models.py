@@ -752,8 +752,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not reason and role_name:
             # role_name could be an array like ["Admin", "PRM User"]
             if isinstance(role_name, list):
-                role_name = ', '.join(role_name)
-            reason = "as a(n) %s for %s" % (role_name, company)
+                role_name_string = ', '.join(role_name)
+            else:
+                role_name_string = role_name
+            reason = "as a(n) %s for %s" % (role_name_string, company)
 
         invitation.send(reason + ".")
 
