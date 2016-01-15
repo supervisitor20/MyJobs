@@ -760,9 +760,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         if role_name:
             if settings.ROLES_ENABLED:
                 # role_name could be an array like ["Admin", "PRM User"]
+                # TODO User Management is adding roles to users BEFORE calling
+                # this helper function. So that work is duplicative. Keep adding
+                # role functionality here, but remove it from User Management
                 if isinstance(role_name, list):
-                    for role in role_name:
-                        user.roles.add(role)
+                    for name in role_name:
+                        assigned_role = Role.objects.get(
+                            company=company, name=name)
+                        user.roles.add(assigned_role)
                 else:
                     assigned_role = Role.objects.get(
                         company=company, name=role_name)
