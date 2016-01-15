@@ -28,7 +28,8 @@ class RegistrationFormTests(MyJobsBase):
             {'data': {'email': 'alice@example.com',
                       'password1': '5UuYquA@',
                       'password2': '5UuYquA@'},
-            'error': [['email', [u"A user with that email already exists."]]]},
+            #__all__ refers to a form level error.
+            'error': [['__all__', [u"A user with that email already exists."]]]},
             # Mismatched passwords.
             {'data': {'email': 'foo@example.com',
                       'password1': '5UuYquA@',

@@ -4506,6 +4506,17 @@ body.modal-open {
 .error-text {
     color: #900;
     margin-bottom: 5px;
+    font-size: 10pt;
+    font-style: italic;
+}
+
+.error-text:before {
+  content: '';
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+  margin-right: 6px;
+  background-image: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20xmlns%3Axlink%3D%22http%3A//www.w3.org/1999/xlink%22%20viewBox%3D%220%200%20100%20100%22%20enable-background%3D%22new%200%200%20100%20100%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20fill%3D%22%23990000%22%20d%3D%22M50%2C1C22.938%2C1%2C1%2C22.938%2C1%2C50c0%2C27.062%2C21.938%2C49%2C49%2C49c27.062%2C0%2C49-21.938%2C49-49C99%2C22.938%2C77.062%2C1%2C50%2C1z%20%20%20M50%2C83.709c-4.164%2C0-7.54-3.376-7.54-7.54s3.376-7.54%2C7.54-7.54c4.164%2C0%2C7.54%2C3.376%2C7.54%2C7.54S54.164%2C83.709%2C50%2C83.709z%20%20%20M57.54%2C55.297c0%2C4.164-3.376%2C7.541-7.54%2C7.541c-4.164%2C0-7.54-3.377-7.54-7.541V23.831c0-4.164%2C3.376-7.54%2C7.54-7.54%20%20c4.164%2C0%2C7.54%2C3.376%2C7.54%2C7.54V55.297z%22%3E%3C/path%3E%3C/svg%3E);
 }
 
 .required-border {
@@ -4532,6 +4543,16 @@ body.modal-open {
 .required textarea:-moz-placeholder {
     color: #900;
     opacity: 1;
+}
+
+.form-error {
+    border: #900 1px solid;
+    background-color: #a95051;
+    color: #fff;
+    margin: 10px 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 3px;
 }
 
 /*Candidate menu items*/
