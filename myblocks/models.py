@@ -397,12 +397,13 @@ class SecureBlock(Block):
         :param request:
         :param kwargs: jQuery Data attributes provided from calling site
         :return: kwargs dict to serve as context dictionary
+
         """
         return kwargs
 
     def render_for_ajax(self, request, params):
         """
-            Render template then append all required js tags
+        Render template then append all required js tags
 
         """
         rendered_template = super(SecureBlock,
@@ -427,7 +428,6 @@ class SavedSearchWidgetBlock(SecureBlock):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
-        # import ipdb; ipdb.set_trace()
         context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
         saved_search_url = request.META['HTTP_REFERER']
         search = None

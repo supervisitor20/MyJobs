@@ -82,7 +82,7 @@ class BlockView(View):
 
 # The django csrf exemption should stay first in this list.
 @django_csrf_exempt
-# @restrict_to_staff()
+@restrict_to_staff()
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
