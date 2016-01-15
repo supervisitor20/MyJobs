@@ -176,7 +176,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_change_password_success(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': '7dY=Ybtk',
                                       'new_password2': '7dY=Ybtk'},
                                 follow=True)
@@ -186,7 +186,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_change_password_failure(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': '7dY=Ybtk',
                                       'new_password2': 'notNew'}, follow=True)
 
@@ -198,7 +198,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_password_without_lowercase_failure(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': 'SECRET',
                                       'new_password2': 'SECRET'}, follow=True)
 
@@ -213,7 +213,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_password_without_uppercase_failure(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': 'secret',
                                       'new_password2': 'secret'}, follow=True)
 
@@ -228,7 +228,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_password_without_digit_failure(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': 'Secret',
                                       'new_password2': 'Secret'}, follow=True)
 
@@ -242,7 +242,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_password_without_punctuation_failure(self):
         resp = self.client.post(reverse('edit_account')+'?password',
-                                data={'password': '5UuYquA@',
+                                data={'password': self.password,
                                       'new_password1': 'S3cr37',
                                       'new_password2': 'S3cr37'}, follow=True)
 
@@ -719,7 +719,7 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(reverse('edit_account')+'?password',
-                                    data={'password': '5UuYquA@',
+                                    data={'password': self.password,
                                           'new_password1': '7dY=Ybtk',
                                           'new_password2': '7dY=Ybtk'})
 
@@ -774,7 +774,7 @@ class MyJobsViewsTests(MyJobsBase):
         for email in [self.user.email, self.user.email.upper()]:
             response = self.client.post(reverse('home'),
                                         data={'username': email,
-                                              'password': '5UuYquA@',
+                                              'password': self.password,
                                               'action': 'login'})
 
             self.assertEqual(response.status_code, 200)
@@ -794,7 +794,7 @@ class MyJobsViewsTests(MyJobsBase):
         """
         response = self.client.post(reverse('home'),
                                     data={'username': self.user.email,
-                                          'password': '5UuYquA@',
+                                          'password': self.password,
                                           'action': 'login'})
 
         self.assertTrue(response.cookies['myguid'])
@@ -1019,8 +1019,8 @@ class MyJobsViewsTests(MyJobsBase):
         self.client.post(reverse('home'),
                          {'action': 'register',
                           'email': 'default@example.com',
-                          'password1': '5UuYquA@',
-                          'password2': '5UuYquA@'})
+                          'password1': self.password,
+                          'password2': self.password})
         user = User.objects.get(email='default@example.com')
         # settings.SITE.domain == jobs.directemployers.org.
         self.assertEqual(user.source, 'jobs.directemployers.org')
@@ -1036,8 +1036,8 @@ class MyJobsViewsTests(MyJobsBase):
         self.client.post(reverse('home'),
                          {'action': 'register',
                           'email': 'microsite@example.com',
-                          'password1': '5UuYquA@',
-                          'password2': '5UuYquA@'})
+                          'password1': self.password,
+                          'password2': self.password})
 
         user = User.objects.get(email='microsite@example.com')
         self.assertEqual(user.source, last_site)
@@ -1085,8 +1085,8 @@ class MyJobsViewsTests(MyJobsBase):
         self.client.logout()
         self.assertEqual(len(mail.outbox), 0)
         self.client.post(reverse('home'), data={'email': 'new@example.com',
-                                                'password1': '5UuYquA@',
-                                                'password2': '5UuYquA@',
+                                                'password1': self.password,
+                                                'password2': self.password,
                                                 'action': 'register'})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject,
