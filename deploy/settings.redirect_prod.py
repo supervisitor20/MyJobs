@@ -42,8 +42,8 @@ CACHES = {
 }
 
 # Uncomment for Django Debug Toolbar
-#MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-#INSTALLED_APPS += ('debug_toolbar',)
+# MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+# INSTALLED_APPS += ('debug_toolbar',)
 
 NEW_RELIC_TRACKING = True
 

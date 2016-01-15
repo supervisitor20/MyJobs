@@ -104,7 +104,7 @@ class ExtraValuesSerializer(Serializer):
         """
         self.options = options
         self.stream = options.get("stream", StringIO())
-        #self.selected_fields = fields
+        # self.selected_fields = fields
         self.use_natural_keys = options.get("use_natural_keys", False)
         self.start_serialization()
         self.handle_item('publisher', self.publisher)
@@ -187,11 +187,11 @@ class XMLExtraValuesSerializer(ExtraValuesSerializer):
     def finish_handle_item(self, field_name, value, attributes=None):
         self.indent(2)
         if attributes:
-            #AttributesImpl applies an xml character escape. & became &amp;
-            #This repeated itself in 'next' links &amp;&amp;&amp
-            #This is mostly a cosmetic fix, so if it causes problems in other
-            #attributes, consider removing rather than trying to fix for
-            #special cases
+            # AttributesImpl applies an xml character escape. & became &amp;
+            # This repeated itself in 'next' links &amp;&amp;&amp
+            # This is mostly a cosmetic fix, so if it causes problems in other
+            # attributes, consider removing rather than trying to fix for
+            # special cases
             for key in attributes:
                 attributes[key] = unescape(attributes[key])
             attributes = AttributesImpl(attributes)

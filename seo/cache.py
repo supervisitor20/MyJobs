@@ -39,7 +39,7 @@ def get_total_jobs_count():
     if not jobs_count:
         jobs_count = get_jobs(custom_facets=settings.DEFAULT_FACET,
                               jsids=settings.SITE_BUIDS).count()
-        cache.set(jobs_count_key, jobs_count, MINUTES_TO_CACHE_JOB_DATA*60)
+        cache.set(jobs_count_key, jobs_count, MINUTES_TO_CACHE_JOB_DATA * 60)
     return jobs_count
 
 
@@ -54,7 +54,7 @@ def get_facet_count_key(filters=None, query_string=None):
     filters = filters or ''
     query_string = query_string or ''
 
-    #We use a hash to ensure key length is under memcache's 250 character limit
+    # We use a hash to ensure key length is under memcache's 250 character limit
     return "browsefacets::%s%s%s" % (
         settings.SITE_ID,
         hashlib.md5(unicode(filters)).hexdigest(),

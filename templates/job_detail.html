@@ -43,7 +43,7 @@
                     {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state }}</span>
                   {% else %}
                     {% if the_job.city %}
-                        <span itemprop="addressLocality">{{ the_job.city }}</span>
+                        <span itemprop="addressLocality">{{ the_job.city }}</span>,
                     {% endif %}
                   {% endif %}
                   {% if the_job.country_short|lower == "usa" and the_job.state %}

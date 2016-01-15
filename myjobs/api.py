@@ -118,7 +118,6 @@ class SavedSearchResource(ModelResource):
 
         # Confirm that url was provided, and that it's a valid .jobs search
         url = request.GET.get('url', '')
-        url = unquote(url)
 
         if not url:
             data = {'error': 'No .JOBS feed provided'}

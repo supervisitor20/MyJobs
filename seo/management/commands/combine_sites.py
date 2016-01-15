@@ -67,7 +67,8 @@ class Command(BaseCommand):
         for site_a in location_sites:
             domain_a = site_a.domain.rstrip('.jobs')
             name_a = site_a.name.rstrip(' Jobs')
-            #Don't check a location combo if there are no redirects starting with that location
+            # Don't check a location combo if there are no redirects starting
+            # with that location
             if not SeoSiteRedirect.objects.filter(
                     redirect_url__startswith=domain_a).exists():
                 continue

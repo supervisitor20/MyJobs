@@ -1107,7 +1107,7 @@ def partner_get_referrals(request):
 @user_passes_test(lambda u: User.objects.is_group_member(u, 'Employer'))
 @requires("read communication record")
 def prm_export(request):
-    #TODO: investigate using django's builtin serialization for XML
+    # TODO: investigate using django's builtin serialization for XML
     company, partner, user = prm_worthy(request)
     file_format = request.REQUEST.get('file_format', 'csv')
     fields = retrieve_fields(ContactRecord)
@@ -1343,7 +1343,7 @@ def nuo_main(request):
                                 RequestContext(request))
 
 
-#TODO: Add proper activities for the APIs
+# TODO: Add proper activities for the APIs
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
 @has_access('prm')

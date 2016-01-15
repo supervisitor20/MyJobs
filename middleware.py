@@ -150,7 +150,7 @@ class MultiHostMiddleware:
         # see if the cache has it
         my_site = cache.get(site_cache_key)
         if not my_site:
-            #DO NOT add filters to prefetched objects. Use only with .all()
+            # DO NOT add filters to prefetched objects. Use only with .all()
             sites = SeoSite.objects.select_related('group',
                                                    'microsite_carousel',
                                                    'view_sources',
@@ -300,4 +300,3 @@ class RedirectOverrideMiddleware(object):
 
         if choice:
             return redirect(choice.new_path, permanent=True)
-

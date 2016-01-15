@@ -159,7 +159,7 @@ class Role extends React.Component {
         assignedUsers: this.refs.users.state.assignedUsers,
       });
       return;
-    };
+    }
 
     // Combine all assigned activites
     const assignedPRMActivities = this.refs.activitiesPRM.state.assignedActivities;
@@ -197,11 +197,11 @@ class Role extends React.Component {
 
     // Format assigned activities
     let formattedAssignedActivities = [];
-    if(assignedActivities) {
+    if (assignedActivities) {
       formattedAssignedActivities = assignedActivities.map( obj => {
         return reverseFormatActivityName(obj.name);
       });
-    };
+    }
 
     assignedUsers = assignedUsers.map( obj => {
       return obj.name;
@@ -314,17 +314,14 @@ class Role extends React.Component {
               <h2>{action} Role</h2>
             </div>
             <div className="product-card-full no-highlight">
-              <div className="row">
-                <div className="col-xs-12">
-                  <HelpText message={roleNameHelp} />
-                  <label htmlFor="id_role_name">Role Name*:</label>
-                  <input id="id_role_name" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange}/>
-                </div>
+              <div className="row no-gutter">
+                  <label htmlFor="id_role_name" className="col-sm-3 control-label">Role Name* </label>
+                  <input id="id_role_name" className="col-sm-5" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange}/>
+                  <HelpText message={roleNameHelp} styleName="col-sm-4" />
               </div>
 
               <div className="row">
                 <div className="col-xs-12">
-                  <hr/>
 
                   <label>Activities:</label>
 
@@ -341,13 +338,9 @@ class Role extends React.Component {
                     </Panel>
                   </Accordion>
 
-                  <hr/>
-
                   <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
 
                   <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-
-                  <hr />
                 </div>
               </div>
 

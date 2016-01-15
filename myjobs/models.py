@@ -277,7 +277,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                                            help_text=_('Checking this allows '
                                                        'employers to send '
                                                        'emails to you.'))
-
+    # The last time they interacted with any email, not just invitations.
+    # -Troy 1/13/16
     last_response = models.DateField(default=datetime.datetime.now, blank=True)
 
     # Password Settings
@@ -719,7 +720,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             :email: The email address of the potential user being invited.
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
-                        assigned.
+                        assigned. Can be either a string or array of strings.
             :reason: The readon for the invite, included in the email body. If
                      a ```role_name``` is provided but reason is not, then the
                      recipient will be notified that they are being invited to
@@ -749,15 +750,30 @@ class User(AbstractBaseUser, PermissionsMixin):
             inviting_user=self, inviting_company=company, invitee=user)
 
         if not reason and role_name:
-            reason = "as a(n) %s for %s" % (role_name, company)
+            # role_name could be an array like ["Admin", "PRM User"]
+            if isinstance(role_name, list):
+                role_name_string = ', '.join(role_name)
+            else:
+                role_name_string = role_name
+            reason = "as a(n) %s for %s" % (role_name_string, company)
 
         invitation.send(reason + ".")
 
         if role_name:
             if settings.ROLES_ENABLED:
-                assigned_role = Role.objects.get(
-                    company=company, name=role_name)
-                user.roles.add(assigned_role)
+                # role_name could be an array like ["Admin", "PRM User"]
+                # TODO User Management is adding roles to users BEFORE calling
+                # this helper function. So that work is duplicative. Keep adding
+                # role functionality here, but remove it from User Management
+                if isinstance(role_name, list):
+                    for name in role_name:
+                        assigned_role = Role.objects.get(
+                            company=company, name=name)
+                        user.roles.add(assigned_role)
+                else:
+                    assigned_role = Role.objects.get(
+                        company=company, name=role_name)
+                    user.roles.add(assigned_role)
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
                 CompanyUser.objects.get_or_create(user=user, company=company)

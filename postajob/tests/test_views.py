@@ -430,7 +430,7 @@ class ViewTests(PostajobTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Job.objects.all().count(), 0)
 
-        #Link. Should be successful.
+        # Link. Should be successful.
         test_data = dict(self.job_form_data)
         response = self.client.post(reverse('job_add'), data=test_data)
         self.assertEqual(response.status_code, 302)
@@ -1164,4 +1164,3 @@ class PurchasedJobActionTests(PostajobTestBase):
 
         self.assertFalse(add_job_link in response.content)
         self.assertTrue('id="block-modal"' in response.content)
-

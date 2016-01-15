@@ -126,7 +126,7 @@ class CustomFacet(BaseSavedSearch):
     always_show = models.BooleanField("Show With or Without Results",
                                       default=False)
 
-    #Final querystring to send to solr. Updates when object is saved.
+    # Final querystring to send to solr. Updates when object is saved.
     saved_querystring = models.CharField(max_length=10000, blank=True)
 
     objects = CustomFacetManager()
@@ -211,7 +211,7 @@ class CustomFacet(BaseSavedSearch):
         results = []
         for attr, val in self._attr_dict().items():
             if any(val):
-                #Build an SQ that joins non empty items in val with boolean or
+                # Build an SQ that joins non empty items in val with boolean or
                 filt = reduce(operator.or_,
                               [SQ((u"%s__exact" % attr, i)) for i in val if i])
                 results.append(filt)
@@ -219,7 +219,7 @@ class CustomFacet(BaseSavedSearch):
             results.append(SQ(content=Raw(self.querystring)))
 
         if results:
-            #Build a SQ that joins each non empty SQ in results with boolean and
+            # Build a SQ that joins each non empty SQ in results with boolean and
             retval = reduce(operator.and_, filter(lambda x: x, results))
         else:
             retval = SQ()
@@ -501,7 +501,8 @@ class SeoSite(Site):
         # This will effectively expire the page cache for custom_cache_page
         # views_
         configs = Configuration.objects.filter(seosite__in=sites)
-        # https://docs.djangoproject.com/en/dev/topics/db/queries/#query-expressions
+        # https://docs.djangoproject.com
+        # /en/dev/topics/db/queries/#query-expressions
         configs.update(revision=models.F('revision') + 1)
         Configuration.clear_caches(configs)
         # Delete domain-based cache entries that don't use the
@@ -526,8 +527,8 @@ class SeoSite(Site):
         return choices
 
     def save(self, *args, **kwargs):
-        #always call clean if the parent_site entry exists to prevent invalid
-        #relationships
+        # always call clean if the parent_site entry exists to prevent invalid
+        # relationships
         if self.parent_site: self.clean_fields()
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
@@ -1041,7 +1042,7 @@ class Configuration(models.Model):
     defaultBlurb = models.TextField('Blurb Text', blank=True, null=True)
     defaultBlurbTitle = models.CharField('Blurb Title', max_length=100,
                                          blank=True, null=True)
-    #default_blurb_always_show = models.BooleanField('Always Show',
+    # default_blurb_always_show = models.BooleanField('Always Show',
     #                                                default=False)
     browse_country_show = models.BooleanField('Show', default=True)
     browse_state_show = models.BooleanField('Show', default=True)
@@ -1169,7 +1170,7 @@ class Configuration(models.Model):
     objects = models.Manager()
     this_site = ConfigBySiteManager()
 
-    #Value from 0 to 1 showing what percent of featured jobs to display per page
+    # Value from 0 to 1 showing what percent of featured jobs to display per page
     percent_featured = models.DecimalField(
         max_digits=3, decimal_places=2,
         default=decimal.Decimal('.5'),
@@ -1497,7 +1498,7 @@ def update_canonical_microsites(sender, old_domain, **kwargs):
     """
     companies = Company.objects.filter(
             canonical_microsite='http://%s' % old_domain)
-    #Log messages now because the queryset becomes empty after the update
+    # Log messages now because the queryset becomes empty after the update
     for company in companies:
         MessageQueue.put(
           'Canonical microsite for {0} changed from {1} to {2}'.format(

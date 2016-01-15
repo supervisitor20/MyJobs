@@ -1103,14 +1103,15 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
     def test_topbar_with_multiple_companies(self):
         """
-        Simple test that checks to see if the rendered topbar has the correct companies.
-
+        Simple test that checks to see if the rendered topbar has the correct
+        companies.
         """
         response = self.client.get(reverse('topbar'),
                                    HTTP_X_REQUEST_WITH='XMLHttpRequest')
 
         str_to_find = 'var data = '
-        # Find the index of where json is generated from template tag 'json_companies'
+        # Find the index of where json is generated from template tag
+        # 'json_companies'
         begin = response.content.find(str_to_find) + len(str_to_find)
         # Find the corresponding ;
         end = response.content.find(';', begin)
@@ -1132,7 +1133,6 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         The get_company_name` template tag should return the list of companies
         to which a user belongs
         """
-
 
         template = """{% load common_tags %}
                       {% get_company_name user as company_name %}
