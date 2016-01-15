@@ -10,8 +10,9 @@ var ss_url = encodeURIComponent(window.location.href);
 // stores the secure blocks container div for reference in the script
 var blocks_widget_div;
 
-//global variables for interacting with secure blocks template assigned values
+//global iables for interacting with secure blocks template assigned values
 var email_input;
+
 
 $('#saved-search-btn').click(function(e) {
   e.preventDefault();
@@ -21,7 +22,7 @@ $('#saved-search-btn').click(function(e) {
 
 //borrowed from gulp/src/util/validateEmail.js
 function validateEmail(email) {
-  const re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+  var re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
   return re.test(email);
 }
 
@@ -43,9 +44,9 @@ function save_search() {
   // If there is any hint that there isn't a well-defined user email
   // provided, attempts to get a user from the input and create a new user.
   // Otherwise, uses the currently provided user to create a saved search.
-  email_input = $('#saved-search-email').val();
-  $(blocks_widget_div).data("current_input", email_input);
-  if (!validate_email(email_input)) {
+  email_input = $('#saved-search-email').val() || existing_user_email;
+  $(blocks_widget_div).data("current-input", email_input);
+  if ($('#saved-search-email') & !validate_email(email_input)) {
     handle_error("Enter a valid email (user@example.com)");
   }
   else {
@@ -64,15 +65,15 @@ function check_save_success(data) {
     handle_error();
   }
   else {
-    if (existing_user_email != email_input) {
-      $(blocks_widget_div).data("new_user_success", true);
+    if (typeof email_input != 'undefined' & existing_user_email != email_input) {
+      $(blocks_widget_div).data("new-user-success", true);
     }
     reload_widget(remove_success_flag);
     }
 }
 
 function remove_success_flag() {
-  $(blocks_widget_div).data("new_user_false", true);
+  $(blocks_widget_div).data("new-user-success", true);
 }
 
 function reload_widget(callback) {
@@ -87,6 +88,7 @@ function reload_widget(callback) {
 
 
 function create_saved_search() {
+  debugger;
   jsonp_ajax_call(base_url + "/api/v1/savedsearch/?callback=check_save_success&email=" + email_input + ss_api_str + "&url=" + ss_url,
     "check_save_success");
 }

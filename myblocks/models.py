@@ -427,6 +427,7 @@ class SavedSearchWidgetBlock(SecureBlock):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
+        # import ipdb; ipdb.set_trace()
         context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
         saved_search_url = request.META['HTTP_REFERER']
         search = None
@@ -438,11 +439,6 @@ class SavedSearchWidgetBlock(SecureBlock):
                               url=saved_search_url)
                       .first())
 
-        # if success_email and not search:
-        #     search = (SavedSearch.objects
-        #               .filter(user__email=success_email,
-        #                       url=saved_search_url)
-        #               .first())
         context.update({
             'user': user,
             'search': search,
