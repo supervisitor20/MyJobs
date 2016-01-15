@@ -1013,7 +1013,7 @@ def api_get_users(request):
         ctx[user.id]["email"] = user.email
 
         # Roles
-        roles_assigned_to_user = user.roles.all()
+        roles_assigned_to_user = user.roles.filter(company=company)
         ctx[user.id]["roles"] = serializers.serialize("json",
                                                       roles_assigned_to_user,
                                                       fields=('name'))
@@ -1088,7 +1088,7 @@ def api_get_specific_user(request, user_id=0):
         available_roles)
 
     # Assigned Roles
-    roles_assigned_to_user = user[0].roles.all()
+    roles_assigned_to_user = user[0].roles.filter(company=company)
     ctx[user[0].id]["roles"]["assigned"] = serializers.serialize(
         "json",
         roles_assigned_to_user,
@@ -1149,8 +1149,11 @@ def api_create_user(request):
         matching_user = User.objects.filter(email=user_email)
         if matching_user.exists():
             # 1) Update their roles
-            # Remove all preexisting roles for this user
-            for currently_assigned_role in matching_user[0].roles.all():
+            # Remove all preexisting roles for this user associated with this
+            # company
+            for currently_assigned_role in (matching_user[0]
+                                            .roles
+                                            .filter(company=company)):
                 matching_user[0].roles.remove(currently_assigned_role.id)
             # Add new roles
             matching_user[0].roles.add(*role_ids)
@@ -1158,7 +1161,7 @@ def api_create_user(request):
             request.user.send_invite(user_email,
                                      company,
                                      role_name=roles)
-            ctx["success"] = "false"
+            ctx["success"] = "true"
             ctx["message"] = "User already exists. Role invitation email sent."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
@@ -1275,7 +1278,7 @@ def api_edit_user(request, user_id=0):
             user[0].roles.add(assigned_role)
 
         # Remove roles from user if not in new list
-        for currently_assigned_role in user[0].roles.all():
+        for currently_assigned_role in user[0].roles.filter(company=company):
             if currently_assigned_role.id not in assigned_roles_ids:
                 user[0].roles.remove(currently_assigned_role.id)
 
