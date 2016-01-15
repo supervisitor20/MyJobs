@@ -1161,7 +1161,7 @@ def api_create_user(request):
             request.user.send_invite(user_email,
                                      company,
                                      role_name=roles)
-            ctx["success"] = "false"
+            ctx["success"] = "true"
             ctx["message"] = "User already exists. Role invitation email sent."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
