@@ -23,6 +23,7 @@ from myjobs.models import User, EmailLog, FAQ
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
 from mypartners.tests.factories import PartnerFactory
+from myprofile.tests.factories import SecondaryEmailFactory
 from mysearches.models import PartnerSavedSearch
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 from myprofile.models import Name, Education
@@ -118,9 +119,11 @@ class TestClient(Client):
 class MyJobsViewsTests(MyJobsBase):
     def setUp(self):
         super(MyJobsViewsTests, self).setUp()
-        self.user = UserFactory()
+        self.password = '5UuYquA@'
+        self.user = User.objects.create_superuser(
+            password=self.password, email='alice@example.com')
         self.client = TestClient()
-        self.client.login_user(self.user)
+        self.client.login(email=self.user.email, password=self.password)
         self.events = ['open', 'delivered', 'click']
 
         self.email_user = UserFactory(email='accounts@my.jobs')
@@ -163,6 +166,13 @@ class MyJobsViewsTests(MyJobsBase):
         else:
             return_json = ','.join(messages)
             return '['+return_json+']'
+
+    def test_admin_filters_secondary_emails(self):
+        se = SecondaryEmailFactory(user=self.user)
+        response = self.client.post(reverse('admin:myjobs_user_changelist') + (
+            "?q=" + se.email))
+        self.assertTrue(all(email in response.content
+                            for email in [self.user.email, se.email]))
 
     def test_change_password_success(self):
         resp = self.client.post(reverse('edit_account')+'?password',
