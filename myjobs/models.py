@@ -771,7 +771,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def secondary_emails(self):
         return "<br />".join(self.profileunits_set.filter(
             secondaryemail__isnull=False).values_list(
-            'secondaryemail__email', flat=True)) or "None"
+                'secondaryemail__email', flat=True)) or "None"
     secondary_emails.short_description = "secondary emails"
     secondary_emails.allow_tags = True
 
