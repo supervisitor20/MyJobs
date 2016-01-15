@@ -1410,7 +1410,6 @@ class CompanyUser(models.Model):
         if not self.pk and inviting_user:
             invitation = Invitation.objects.create(
                 invitee=self.user, inviting_company=self.company,
-                added_permission=group,
                 inviting_user=inviting_user)
             invitation.save(using=using)
             invitation.send(self)

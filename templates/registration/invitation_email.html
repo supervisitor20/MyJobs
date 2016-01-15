@@ -15,7 +15,7 @@
         of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ message }}
     </p>
 
-    {% if group %}
+    {% if group or company_user %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
     {% endif %}
     {% if not invitation.invitee.is_verified %}
