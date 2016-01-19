@@ -4,7 +4,6 @@ import React, {Component} from 'react';
 
 export class Loading extends Component {
   componentWillMount() {
-    this.mounted = true;
     this.setState({
       show: false,
     });
