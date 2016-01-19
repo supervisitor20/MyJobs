@@ -7,36 +7,54 @@
 //
 // Last call of the "walk" is buildReportConfiguration.
 export class ReportFinder {
-    constructor(api, configBuilder) {
-      this.api = api;
-      this.configBuilder = configBuilder;
-    }
+  constructor(api, configBuilder) {
+    this.api = api;
+    this.configBuilder = configBuilder;
+    this.newReportSubscribers = {};
+  }
 
-    getReportingTypes() {
-      return this.api.getReportingTypes();
-    }
+  getReportingTypes() {
+    return this.api.getReportingTypes();
+  }
 
-    getReportTypes(reportingTypeId) {
-      return this.api.getReportTypes(reportingTypeId);
-    }
+  getReportTypes(reportingTypeId) {
+    return this.api.getReportTypes(reportingTypeId);
+  }
 
-    getDataTypes(reportTypeId) {
-      return this.api.getDataTypes(reportTypeId);
-    }
+  getDataTypes(reportTypeId) {
+    return this.api.getDataTypes(reportTypeId);
+  }
 
-    getPresentationTypes(reportTypeId, dataTypeId) {
-      return this.api.getPresentationTypes(reportTypeId, dataTypeId);
-    }
+  getPresentationTypes(reportTypeId, dataTypeId) {
+    return this.api.getPresentationTypes(reportTypeId, dataTypeId);
+  }
 
-    async buildReportConfiguration(rpId, newReportNotifier) {
-      const filters = await this.api.getFilters(rpId);
-      return this.configBuilder.build(
-            rpId, filters.filters, newReportNotifier);
-    }
+  async buildReportConfiguration(rpId) {
+    const filters = await this.api.getFilters(rpId);
+    return await this.configBuilder.build(
+      rpId, filters.filters, reportId => this.noteNewReport(reportId));
+  }
 
-    async getReportList() {
-      return await this.api.listReports();
+  async getReportList() {
+    return await this.api.listReports();
+  }
+
+  subscribeToReportList(callback) {
+    this.newReportSubscribers[callback] = callback;
+    return callback;
+  }
+
+  unsubscribeToReportList(ref) {
+    delete this.newReportSubscribers[ref];
+  }
+
+  noteNewReport(reportId) {
+    for (const ref in this.newReportSubscribers) {
+      if (this.newReportSubscribers.hasOwnProperty(ref)) {
+        this.newReportSubscribers[ref](reportId);
+      }
     }
+  }
 }
 
 // Gradually build a filter for a report run with help from the api.

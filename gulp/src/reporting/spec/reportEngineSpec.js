@@ -33,6 +33,22 @@ describe('ReportFinder', () => {
     expect(await finder.buildReportConfiguration(2)).toEqual(
       {rpId: 2, filters: {6: 6}});
   }));
+
+  describe('subscriptions', () => {
+    let newId = null;
+    const ref = finder.subscribeToReportList((id) => { newId = id; });
+
+    it('can inform subscribers of new reports', () => {
+      finder.noteNewReport(22);
+      expect(newId).toEqual(22);
+    });
+
+    it('can unsubscribe', () => {
+      finder.unsubscribeToReportList(ref);
+      finder.noteNewReport(33);
+      expect(newId).toEqual(22);
+    });
+  });
 });
 
 describe('ReportConfiguration', () => {
