@@ -56,7 +56,7 @@ ss-btn-link
     {# Custom code below is for the widget given that the saved search exists but is not active #}
         <p><b>You have saved this search, but email sending has been deactivated</b></p>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
-        <div class="direct-action-btn" id="saved-search-btn"><a href="" id="ss-btn-link">Activate Emails</a></div>
+        <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
     {% endif %}
     </div>
 </div>

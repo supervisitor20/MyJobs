@@ -429,11 +429,11 @@ class SavedSearchWidgetBlock(SecureBlock):
 
     def context(self, request, **kwargs):
         context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
-        saved_search_url = request.META['HTTP_REFERER']
+        saved_search_url = request.META.get('HTTP_REFERER', None)
         search = None
         user = request.user if request.user.is_authenticated() else None
 
-        if user:
+        if user and saved_search_url:
             search = (SavedSearch.objects
                       .filter(user=user,
                               url=saved_search_url)

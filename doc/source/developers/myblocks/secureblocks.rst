@@ -33,3 +33,11 @@ retrieve all secure blocks divs. The request is subject to the cross site
 verification step above.
 
 .. autofunction:: myblocks.views.secure_blocks
+
+.. autoclass:: myblocks.models.
+
+Saved Search Widget
+===================
+
+The Saved Search widget is the first of the secure-blocks widgets to have
+complex functionality. It incorporates Javascript, CSS, and HTML.

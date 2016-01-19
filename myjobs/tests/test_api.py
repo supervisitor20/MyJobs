@@ -9,6 +9,7 @@ from myjobs.tests.factories import UserFactory
 from myjobs.tests.test_views import TestClient
 from myprofile.models import SecondaryEmail
 from mysearches.models import SavedSearch
+from mysearches.tests.factories import SavedSearchFactory
 from setup import MyJobsBase
 
 
