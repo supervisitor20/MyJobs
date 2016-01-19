@@ -254,7 +254,7 @@ class DEJobFeed(JobFeed):
         """
         oneday = datetime.timedelta(hours=23, minutes=59, seconds=59)
         # midnight last night
-        lastnight = datetime.datetime(date.year, date.month, date.day)
+        lastnight = datetime.datetime(date.year, date.month, date.day, tzinfo=date.tzinfo)
         # midnight tonight
         tonight = lastnight + oneday
         # seconds since midnight last night

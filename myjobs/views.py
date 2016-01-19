@@ -32,6 +32,7 @@ from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialWorkForm)
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
+from registration.models import Invitation
 from tasks import process_sendgrid_event
 from universal.helpers import get_company_or_404
 
@@ -228,7 +229,7 @@ def contact_faq(request):
 
     """
     faq = FAQ.objects.filter(is_visible=True).order_by('question')
-    if not faq.count() > 0:
+    if faq.count() <= 0:
         return HttpResponseRedirect(reverse('contact'))
     data_dict = {'faq': faq}
     return render_to_response('contact-faq.html',
@@ -658,13 +659,13 @@ def api_get_roles(request):
         ctx[role_id]['activities']['available'] = serializers.serialize(
             "json",
             available_activities,
-            fields=('name', 'description'))
+            fields=('name', 'description', 'app_access'))
         # Retrieve all activities assigned to this role
         assigned_activities = role.activities.all()
         ctx[role_id]['activities']['assigned'] = serializers.serialize(
             "json",
             assigned_activities,
-            fields=('name', 'description'))
+            fields=('name', 'description', 'app_access'))
 
         # Retrieve users already assigned to this role
         users_assigned = User.objects.filter(roles__id=role_id)
@@ -1012,16 +1013,31 @@ def api_get_users(request):
         ctx[user.id]["email"] = user.email
 
         # Roles
-        roles_assigned_to_user = user.roles.all()
+        roles_assigned_to_user = user.roles.filter(company=company)
         ctx[user.id]["roles"] = serializers.serialize("json",
                                                       roles_assigned_to_user,
                                                       fields=('name'))
 
-        # TODO Do assigned roles and available roles, I use this on front end
         # Status
-        # TODO: This is NOT the same as status
-        # Waiting on email invitation work
         ctx[user.id]["status"] = user.is_verified
+
+        # Calculate pending since date
+        # Didn't use user.last_response because that 'denotes the last time
+        # they interacted with any email, not just invitations.' -Troy 1/13/16
+        # Instead 1) Find all invitations for this user
+        # 2) get the latest such invitation and 3) use that date
+        if user.is_verified == True:
+            lastInvitation = ''
+        else:
+            invitations = (Invitation
+                           .objects
+                           .filter(invitee_email=user.email)
+                           .order_by('-invited'))
+            if invitations:
+                lastInvitation = invitations[0].invited.strftime('%Y-%m-%d')
+            else:
+                lastInvitation = ''
+        ctx[user.id]["lastInvitation"] = lastInvitation
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -1072,15 +1088,13 @@ def api_get_specific_user(request, user_id=0):
         available_roles)
 
     # Assigned Roles
-    roles_assigned_to_user = user[0].roles.all()
+    roles_assigned_to_user = user[0].roles.filter(company=company)
     ctx[user[0].id]["roles"]["assigned"] = serializers.serialize(
         "json",
         roles_assigned_to_user,
         fields=('name'))
 
     # Status
-    # TODO: This is NOT the same as status
-    # Waiting on email invitation work
     ctx[user[0].id]["status"] = user[0].is_verified
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
@@ -1107,29 +1121,20 @@ def api_create_user(request):
         ctx["message"] = "POST method required."
         return HttpResponse(json.dumps(ctx), content_type="application/json")
     else:
+        company = get_company_or_404(request)
+
         if request.POST.get("user_email", ""):
             user_email = request.POST['user_email']
-
-        matching_users = User.objects.filter(email=user_email)
-        if matching_users.exists():
-            # TODO This user is already in the system. Email the user an
-            # invitation to accept this role.
-            # It will look something like this, according to Edwin on 11/30
-            # request.user.send_invite(some_email_address, company,
-            #                         role_name="PRM_USER")
-
-            ctx["success"] = "false"
-            ctx["message"] = "User already exists. Role invitation email sent."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-            # TODO If they accept, add them to the role(S)
 
         role_ids = []
         if request.POST.getlist("assigned_roles[]", ""):
             roles = request.POST.getlist("assigned_roles[]", "")
             # Create list of role_ids from names
             for i, role in enumerate(roles):
-                role_object = Role.objects.filter(name=role)
+                role_object = (Role
+                               .objects
+                               .filter(company=company)
+                               .filter(name=role))
                 role_id = role_object[0].id
                 role_ids.append(role_id)
         # At least one role must be selected
@@ -1139,12 +1144,39 @@ def api_create_user(request):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
+        # Does user already exist?
+        # If so, 1) update their roles and 2) send them an email
+        matching_user = User.objects.filter(email=user_email)
+        if matching_user.exists():
+            # 1) Update their roles
+            # Remove all preexisting roles for this user associated with this
+            # company
+            for currently_assigned_role in (matching_user[0]
+                                            .roles
+                                            .filter(company=company)):
+                matching_user[0].roles.remove(currently_assigned_role.id)
+            # Add new roles
+            matching_user[0].roles.add(*role_ids)
+            # 2) Send user an email
+            request.user.send_invite(user_email,
+                                     company,
+                                     role_name=roles)
+            ctx["success"] = "true"
+            ctx["message"] = "User already exists. Role invitation email sent."
+            return HttpResponse(json.dumps(ctx),
+                                content_type="application/json")
+
         # Create User
         new_user, created = User.objects.create_user(email=user_email)
         if created:
             # Assign roles to this user
             new_user.roles.add(*role_ids)
+            request.user.send_invite(user_email,
+                                     company,
+                                     role_name=roles)
+
             ctx["success"] = "true"
+            ctx["message"] = "User created. Invitation email sent."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
@@ -1191,6 +1223,7 @@ def api_edit_user(request, user_id=0):
         company_roles = Role.objects.filter(company=company)
         # 2. List user's roles
         roles_assigned_to_user = user[0].roles.all()
+
         # 3. Overlap?
         if bool(set(company_roles) & set(roles_assigned_to_user)) == "False":
             ctx["success"] = "false"
@@ -1208,12 +1241,35 @@ def api_edit_user(request, user_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
+        # Companies must have at least one user assigned to an Admin role.
+        # Check that -- if this user is edited -- this will be the case.
+        # 1. Is Admin not in assigned_roles?
+        if "Admin" not in assigned_roles:
+            # 2. Does this company only have one user assigned to Admin role?
+            admin_role = (Role
+                          .objects
+                          .filter(company=company)
+                          .filter(name="Admin"))
+            users_with_admin = User.objects.filter(roles__id=admin_role[0].id)
+
+            if len(users_with_admin) <= 1:
+                # 3. Is that one user this user?
+                if unicode(users_with_admin[0].id) == user_id:
+                    ctx["success"] = "false"
+                    ctx["message"] = ("To remove the Admin role from this "
+                                      "user you must first assign the role to "
+                                      "another user. That is, every company "
+                                      "must have at least one user assigned "
+                                      "to the Admin role.")
+                    return HttpResponse(json.dumps(ctx),
+                                        content_type="application/json")
+
         # Update the user
 
         # Create list of assigned_roles_ids from role names
         assigned_roles_ids = []
         for i, role in enumerate(assigned_roles):
-            role_object = Role.objects.filter(name=role)
+            role_object = Role.objects.filter(company=company).filter(name=role)
             role_id = role_object[0].id
             assigned_roles_ids.append(role_id)
 
@@ -1222,10 +1278,14 @@ def api_edit_user(request, user_id=0):
             user[0].roles.add(assigned_role)
 
         # Remove roles from user if not in new list
-        for currently_assigned_role in user[0].roles.all():
+        for currently_assigned_role in user[0].roles.filter(company=company):
             if currently_assigned_role.id not in assigned_roles_ids:
                 user[0].roles.remove(currently_assigned_role.id)
 
+        # Notify the user
+        request.user.send_invite(user[0].email,
+                                 company,
+                                 role_name=assigned_roles)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")

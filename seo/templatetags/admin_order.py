@@ -4,8 +4,10 @@ from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse, NoReverseMatch
 
-from seo.models import Company, GoogleAnalytics, SeoSite, Configuration, \
-    BusinessUnit
+from seo.models import (Company, CompanyUser, GoogleAnalytics, SeoSite,
+                        Configuration, BusinessUnit)
+from myjobs.models import User
+from redirect.models import CanonicalMicrosite
 from social_links.models import SocialLink
 
 register = template.Library()
@@ -29,7 +31,8 @@ def get_common_tasks(apps, request):
     """
     # This is the order that models will appear in the custom group
     common_task_models = [Group, SeoSite, Configuration, BusinessUnit,
-                          SocialLink, GoogleAnalytics, Company]
+                          SocialLink, GoogleAnalytics, Company, User,
+                          CompanyUser, CanonicalMicrosite]
     # model._meta.verbose_name_plural will be a unicode string (if we have set
     # the name) or a <django.utils.functional._proxy__ object ...>; calling a
     # string method on it gives us the actual name of the model
@@ -77,14 +80,14 @@ def get_common_tasks(apps, request):
             # do those actions
             if perms.get('change', False):
                 try:
-                    common_group[index]['admin_url'] = \
-                        reverse('admin:%s_%s_changelist' % url_info)
+                    common_group[index]['admin_url'] = reverse(
+                        'admin:%s_%s_changelist' % url_info)
                 except NoReverseMatch:
                     pass
             if perms.get('add', False):
                 try:
-                    common_group[index]['add_url'] = reverse('admin:%s_%s_add' %
-                                                             url_info)
+                    common_group[index]['add_url'] = reverse(
+                        'admin:%s_%s_add' % url_info)
                 except NoReverseMatch:
                     pass
         else:

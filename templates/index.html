@@ -46,10 +46,8 @@
             {% else %}
             <div class="sidebar homepage-center">
                 <h2 class="top">Create Account</h2>
-                <div class="error-box"></div>
                 {% include "includes/widget-user-registration.html" with form=registrationform%}
                 <h2>Log In</h2>
-                <div class="error-box"></div>
                 <input type="hidden" name="next" value="{{ nexturl }}">
                 {% include "includes/widget-login-username.html" with form=loginform %}
             </div>
