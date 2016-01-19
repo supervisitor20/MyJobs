@@ -433,7 +433,7 @@ class PartnerSavedSearchTests(MyJobsBase):
             inviting_user=self.partner_search.created_by,
             inviting_company=self.partner_search.partner.owner,
             added_saved_search=self.partner_search)
-        invitation.send()
+        invitation.send(self.partner_search)
 
         self.num_occurrences = lambda text, search_str: [match.start()
                                                          for match

@@ -2,6 +2,7 @@
 
 from copy import copy, deepcopy
 from HTMLParser import HTMLParser
+from pkgutil import simplegeneric
 import re
 import urllib
 from urlparse import urlparse, urlunparse
@@ -94,7 +95,6 @@ def get_company(request):
     Uses the myjobs_company cookie to determine what the current company is.
 
     """
-
     if not request.user or not request.user.pk or request.user.is_anonymous():
         return None
 
@@ -430,3 +430,23 @@ def dict_identity(cls):
     cls.__str__ = repr
     cls.__repr__ = repr
     return cls
+
+@simplegeneric
+def invitation_context(instance):
+    """
+    Returns a context dictionary to be used when rendering an invitation email.
+    Minimally complete implementations should return a dictionary with a
+    `message` key, which should be a string.
+
+    Calling this function without arguments will raise a runtime error.
+
+    """
+    raise TypeError(
+        "object of type '%s' has no invitation_context." % type(
+            instance).__name__)
+
+@invitation_context.register(str)
+def str_invitation_reaason(string):
+    """Returns the string verbatim as the `message`."""
+
+    return {"message": (" " if string else "") + string + "."}

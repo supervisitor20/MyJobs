@@ -322,8 +322,8 @@ class TestActivities(MyJobsBase):
         """
         `User.activities` should return a list of activities associated with
         this user.
-        """
 
+        """
         user = UserFactory()
 
         self.assertItemsEqual(user.activities, [])

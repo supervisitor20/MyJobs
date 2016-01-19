@@ -262,5 +262,5 @@ class InvitationForm(forms.ModelForm):
             if value is not None:
                 setattr(instance, field, value)
         instance.save()
-        instance.send()
+        instance.send(instance.added_saved_search or "")
         return instance
