@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.loading import get_model
 
 from myreports.helpers import serialize, determine_user_type
-from myreports.datasources import get_datasource_json_driver
+from myreports.datasources import ds_json_drivers
 from myreports.report_configuration import (
     ReportConfiguration, ColumnConfiguration)
 from myreports.result_encoder import report_hook, ReportJsonEncoder
@@ -185,6 +185,7 @@ class Configuration(models.Model):
             for cm in (
                 self.configurationcolumn_set
                 .filter(is_active=True)
+                .exclude(filter_only=True)
                 .order_by('order'))])
 
 
@@ -193,6 +194,7 @@ class ReportPresentationManager(models.Manager):
         query_filter = dict(
             presentation_type__is_active=True,
             configuration__is_active=True,
+            report_data=rtdt,
             is_active=True)
         return ReportPresentation.objects.filter(**query_filter)
 
@@ -295,7 +297,7 @@ class DynamicReport(models.Model):
     def regenerate(self):
         report_type = self.report_presentation.report_data.report_type
 
-        driver = get_datasource_json_driver(report_type.datasource)
+        driver = ds_json_drivers[report_type.datasource]
         data = driver.run(self.owner, self.filters, "[]")
 
         contents = json.dumps(data, cls=ReportJsonEncoder)
