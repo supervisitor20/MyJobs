@@ -37,6 +37,41 @@ verification step above.
 .. autoclass:: myblocks.models.SecureBlock
     :members:
 
+Testing a Secure Block Widget
+------------------------------
+
+To test a secure block widget, do the following:
+
+* Navigate to Django Admin
+
+* If parent site relationship is not set up, do the following:
+
+ * Navigate to Company, edit desired child company (currently my.jobs)
+
+ * Under "parent_site" drop down, select desired parent site (secure.my.jobs)
+
+ * Save
+
+* Locate the correct model under MyBlocks (ex. SavedSearchWidgetBlock)
+
+* Add new block
+
+ * The only required fields are element_id and template. Template will be
+   automatically populated with a default template. This can be edited
+   if needed.
+
+* If the element is not currently on any pages, add it with a
+  `<div data-secure-block-id="--YOUR ELEMENT ID--"></div>`
+
+ * This will only work on templates loaded from seo_base.html
+
+ * Currently, all testing is done on templates/CS_TEST_homepage_listing.html
+   If you would like to edit and use this page for testing, ensure the
+   configuration for your child site is set with the above as it's
+   homepage
+
+* Widget will populate on child site if the relationship was set up properly
+
 secure-block-xx-xx.js
 ---------------------
 
