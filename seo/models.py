@@ -80,17 +80,20 @@ class NonChainedForeignKey(ForeignKey):
         if value:
             object_class = model_instance.__class__
             potential_parent = object_class.objects.get(pk=value)
+            children = object_class.objects.filter(
+                **{self.name:model_instance})
 
             if value == model_instance.pk:
-                raise ValidationError('%s cannot be at parent entity of itself'
-                                        % model_instance)
-            elif object_class.objects.filter(**{
-                                        self.name:model_instance}).exists():
-                raise ValidationError('%s is a parent entity and cannot be a child'
-                                        % model_instance)
+                raise ValidationError('%s cannot be at parent entity of '
+                                      'itself' % model_instance)
+            elif children.exists():
+                error_list = ", ".join(str(child) for child in children)
+                raise ValidationError('%s is a parent of the following '
+                                      'entities so cannot be a child itself: '
+                                      '%s' % (model_instance, error_list))
             elif getattr(potential_parent, self.name):
-                raise ValidationError('%s is a child entity and cannot be a parent'
-                                        % potential_parent)
+                raise ValidationError('%s is a child entity and cannot be a '
+                                      'parent' % potential_parent)
         return value
 
 
