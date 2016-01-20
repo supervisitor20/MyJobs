@@ -73,7 +73,7 @@ function check_save_success(data) {
 }
 
 function remove_success_flag() {
-  $(blocks_widget_div).data("new-user-success", true);
+  $(blocks_widget_div).data("new-user-success", false);
 }
 
 function reload_widget(callback) {
@@ -88,7 +88,6 @@ function reload_widget(callback) {
 
 
 function create_saved_search() {
-  debugger;
   jsonp_ajax_call(base_url + "/api/v1/savedsearch/?callback=check_save_success&email=" + email_input + ss_api_str + "&url=" + ss_url,
     "check_save_success");
 }
