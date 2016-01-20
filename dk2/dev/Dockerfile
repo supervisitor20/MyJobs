@@ -1,17 +1,21 @@
-from ubuntu:14.04
+from ubuntu:trusty
 
 env DEBIAN_FRONTEND=noninteractive
 
 run apt-get update
+run apt-get --yes install \
+    wget curl software-properties-common \
+    apt-transport-https \
+    && apt-get clean
+run add-apt-repository -ys 'deb https://deb.nodesource.com/node_5.x trusty main'
+run curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
+run apt-get update
+
 run apt-get --yes build-dep python-mysqldb libgeos-dev && apt-get clean
 run apt-get --yes install python-setuptools python-dev apache2 python-pip \
-    mysql-client libxml2 libxml2-dev libxslt-dev python-mysqldb npm \
-    phantomjs python-ipdb strace && apt-get clean
+    mysql-client libxml2 libxml2-dev libxslt-dev python-mysqldb \
+    phantomjs python-ipdb strace nodejs && apt-get clean
 
-# Node.js
-
-run update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
-run npm install -g graceful-fs@2.0.1 less@1.6.1
 
 # My.Jobs
 
