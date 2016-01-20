@@ -132,6 +132,14 @@ class Block(models.Model):
                                                       self.template)
 
     def render_for_ajax(raw_self, request, params):
+        """
+        render the block template to be returned as a response to ajax call
+        :param raw_self: self before being cast to proper subclass
+        :param request: ajax request
+        :param params: keyword parameters
+        :return: template rendered for ajax
+
+        """
         self = raw_self.cast()
         context = self.context(request, **params)
         full_template = templatetag_library() + self.template
@@ -394,6 +402,7 @@ class SecureBlock(Block):
         """
         Setup context of secure block by appending any kwargs to context
         dict.
+
         :param request:
         :param kwargs: jQuery Data attributes provided from calling site
         :return: kwargs dict to serve as context dictionary
@@ -403,7 +412,7 @@ class SecureBlock(Block):
 
     def render_for_ajax(self, request, params):
         """
-        Render template then append all required js tags
+        Render template then append all required js tags (if applicable)
 
         """
         rendered_template = super(SecureBlock,
@@ -428,6 +437,11 @@ class SavedSearchWidgetBlock(SecureBlock):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
+        """
+        Add additional context variables to those passed in from the ajax call.
+        User object and search object added, if available
+
+        """
         context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
         saved_search_url = request.META.get('HTTP_REFERER', None)
         search = None
@@ -446,6 +460,10 @@ class SavedSearchWidgetBlock(SecureBlock):
         return context
 
     def required_js(self):
+        """
+        Return a list of all required javascript in URL format
+
+        """
         return ['%ssaved-search.js' % settings.STATIC_URL]
 
 
