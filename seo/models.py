@@ -87,14 +87,13 @@ class NonChainedForeignKey(ForeignKey):
                 raise ValidationError('%s cannot be at parent entity of '
                                       'itself' % model_instance)
             elif children.exists():
-                error_list = "\n\t".join(
-                    ["- %s" % child for child in children])
+                error_list = ", ".join(str(child) for child in children)
                 raise ValidationError('%s is a parent of the following '
-                                      'entities so cannot be a child itself:\n'
+                                      'entities so cannot be a child itself: '
                                       '%s' % (model_instance, error_list))
             elif getattr(potential_parent, self.name):
                 raise ValidationError('%s is a child entity and cannot be a '
-                                      ' parent' % potential_parent)
+                                      'parent' % potential_parent)
         return value
 
 
