@@ -77,7 +77,7 @@ def is_a_group_member(company, user, group):
     """
 
     if settings.ROLES_ENABLED:
-        return company.role_set.filter(user=user)
+        return user.roles.exists()
     else:
         try:
             return User.objects.is_group_member(user, group)
