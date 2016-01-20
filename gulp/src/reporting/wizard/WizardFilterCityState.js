@@ -10,10 +10,16 @@ export class WizardFilterCityState extends Component {
 
     updateField(field, value) {
       const {updateFilter} = this.props;
+
+      // Update parent
+      const newFilter = {...this.state};
+      newFilter[field] = value.key;
+      updateFilter(newFilter);
+
+      // Set internal state
       const newState = {};
       newState[field] = value.key;
       this.setState(newState);
-      updateFilter(newState);
     }
 
     render() {

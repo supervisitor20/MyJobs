@@ -1,11 +1,7 @@
 from datetime import datetime
 
-from unittest import TestCase
-
-from myreports.datasources import (
-    ContactsDataSource, ContactsFilter, ContactsDataSourceJsonDriver)
-from myreports.report_configuration import (
-    ReportConfiguration, ColumnConfiguration)
+from myreports.datasources.contacts import (
+    ContactsDataSource, ContactsFilter)
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
@@ -189,7 +185,7 @@ class TestContactsDataSource(MyJobsBase):
         self.archived_contact.archive()
 
     def test_run_unfiltered(self):
-        """Should show only appropriate data for this user."""
+        """Make sure we only get data for this user."""
         ds = ContactsDataSource()
         recs = ds.run(self.company, ContactsFilter(), [])
         names = set([r['name'] for r in recs])
@@ -244,7 +240,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_or(self):
-        """Should show only contact with correct tags in or configuration."""
+        """Show only contact with correct tags in 'or' configuration."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -255,7 +251,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_and(self):
-        """Should show only contact with correct tags in and configuration."""
+        """Show only contact with correct tags in 'and' configuration."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -317,8 +313,19 @@ class TestContactsDataSource(MyJobsBase):
         expected = [self.sue.name]
         self.assertEqual(expected, names)
 
+    def test_filter_by_partners(self):
+        """Should filter by partners."""
+        ds = ContactsDataSource()
+        recs = ds.run(
+            self.company,
+            ContactsFilter(partner=[self.partner_a.pk]),
+            [])
+        subjects = set([r['name'] for r in recs])
+        expected = {self.john.name}
+        self.assertEqual(expected, subjects)
+
     def test_help_city(self):
-        """Should complete city and ignore current city filter."""
+        """Check city help works and ignores current city filter."""
         ds = ContactsDataSource()
         recs = ds.help_city(
             self.company,
@@ -328,7 +335,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
-        """Should complete state and ignore current state filter."""
+        """Check state help works and ignores current state filter."""
         ds = ContactsDataSource()
         recs = ds.help_state(
             self.company,
@@ -338,7 +345,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
-        """Should provide list of tag completions."""
+        """Check tags help works at all."""
         ds = ContactsDataSource()
         recs = ds.help_tags(self.company, ContactsFilter(), "E")
         actual = set([r['key'] for r in recs])
@@ -351,7 +358,7 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual("aaaaaa", recs[0]['hexColor'])
 
     def test_help_partner(self):
-        """Should provide list of partner completions."""
+        """Check partner help works at all."""
         ds = ContactsDataSource()
         recs = ds.help_partner(self.company, ContactsFilter(), "A")
         self.assertEqual(
@@ -359,7 +366,7 @@ class TestContactsDataSource(MyJobsBase):
             recs)
 
     def test_order(self):
-        """Should order results as we expect."""
+        """Check ordering results works at all."""
         ds = ContactsDataSource()
         recs = ds.run(
             self.company,
@@ -368,145 +375,3 @@ class TestContactsDataSource(MyJobsBase):
         names = [r['name'] for r in recs]
         expected = [self.sue.name, self.john.name]
         self.assertEqual(expected, names)
-
-
-class MockDataSource(object):
-    def __init__(self):
-        self.calls = []
-
-    def help_city(self, company, filter, partial):
-        self.calls.append(['help_city', company, filter, partial])
-        return 'aaa'
-
-    def run(self, company, filter, order):
-        self.calls.append(['run', company, filter, order])
-        return 'aaa'
-
-
-class TestContactsDataSourceJsonDriver(TestCase):
-    def setUp(self):
-        super(TestContactsDataSourceJsonDriver, self).setUp()
-        self.ds = MockDataSource()
-        self.driver = ContactsDataSourceJsonDriver(self.ds)
-
-    def test_help_cities(self):
-        """Test that city help gets plumbed to datasource correctly."""
-        result = self.driver.help('company', '{}', 'city', 'zzz')
-        self.assertEqual('aaa', result)
-        self.assertEqual([
-            ['help_city', 'company', ContactsFilter(), 'zzz']
-            ], self.ds.calls)
-
-    def test_run(self):
-        """Test that json run calls are plumbed to datasource correctly."""
-        result = self.driver.run('company', '{}', '["zzz"]')
-        self.assertEqual('aaa', result)
-        self.assertEqual([
-            ['run', 'company', ContactsFilter(), ['zzz']]
-            ], self.ds.calls)
-
-    def test_empty_filter(self):
-        """Test that ContactsFilter has all proper defaults."""
-        result = self.driver.build_filter("{}")
-        self.assertEquals(ContactsFilter(), result)
-
-    def test_city_filter(self):
-        """Test that city filter is built properly."""
-        result = self.driver.build_filter(
-                '{"locations": {"city": "Indy"}}')
-        self.assertEquals(ContactsFilter(locations={'city': 'Indy'}), result)
-
-    def test_date_filters(self):
-        """Test that date filters are built properly."""
-        spec = '{"date": ["2015-09-01", "2015-09-30"]}'
-        result = self.driver.build_filter(spec)
-        expected = ContactsFilter(
-            date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
-        self.assertEquals(expected, result)
-
-    def test_order(self):
-        """Test that order is built properly."""
-        self.assertEqual(['name'], self.driver.build_order('["name"]'))
-
-    def test_encode_filter_interface(self):
-        """Test that filter interface is serialized properly."""
-        report_config = ReportConfiguration([
-            ColumnConfiguration(
-                column='name',
-                format='text'),
-            ColumnConfiguration(
-                column='date',
-                format='us_date',
-                filter_interface='date_range',
-                filter_display='Date'),
-            ColumnConfiguration(
-                column='locations',
-                format='city_state_list',
-                filter_interface='city_state',
-                filter_display='Locations',
-                help=True),
-            ColumnConfiguration(
-                column='tags',
-                format='comma_sep',
-                filter_interface='search_multiselect',
-                filter_display='Tags',
-                help=True),
-            ColumnConfiguration(
-                column='partner',
-                format='text',
-                filter_interface='search_multiselect',
-                filter_display='Partners',
-                help=True),
-        ])
-
-        self.assertEquals({
-            'filters': [
-                {
-                    'display': 'Date',
-                    'filter': 'date',
-                    'interface_type': 'date_range',
-                },
-                {
-                    'display': 'Locations',
-                    'filter': 'locations',
-                    'interface_type': 'city_state',
-                },
-                {
-                    'display': 'Tags',
-                    'filter': 'tags',
-                    'interface_type': 'search_multiselect',
-                },
-                {
-                    'display': 'Partners',
-                    'filter': 'partner',
-                    'interface_type': 'search_multiselect',
-                },
-            ],
-            'help': {
-                'partner': True,
-                'tags': True,
-                'locations': True,
-            },
-        }, self.driver.encode_filter_interface(report_config))
-
-
-class TestContactsFilterCloning(TestCase):
-    def test_clone_without_empty(self):
-        """Test clearing filter fields on an empty filter."""
-        filter = ContactsFilter()
-        self.assertEqual(ContactsFilter(), filter.clone_without_city())
-        self.assertEqual(ContactsFilter(), filter.clone_without_state())
-
-    def test_clone_without_full(self):
-        """Test clearing filter fields that are populated."""
-        filter = ContactsFilter(
-                tags=['C'],
-                locations={'city': 'A', 'state': 'B'})
-        expected_with_city = ContactsFilter(
-                tags=['C'],
-                locations={'city': 'A'})
-        expected_with_state = ContactsFilter(
-                tags=['C'],
-                locations={'state': 'B'})
-        self.assertEqual(expected_with_state, filter.clone_without_city())
-        self.assertEqual(expected_with_city, filter.clone_without_state())
