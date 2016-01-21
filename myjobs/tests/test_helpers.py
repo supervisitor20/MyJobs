@@ -11,7 +11,6 @@ from myjobs.tests.test_views import TestClient
 class MyJobsHelpersTests(MyJobsBase):
     def setUp(self):
         super(MyJobsHelpersTests, self).setUp()
-        self.user = UserFactory()
         self.client = TestClient()
 
         self.login_params = {'username': 'alice@example.com',
