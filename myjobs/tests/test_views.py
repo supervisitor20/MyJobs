@@ -35,8 +35,8 @@ class MyJobsViewsTests(MyJobsBase):
     def setUp(self):
         super(MyJobsViewsTests, self).setUp()
         self.password = '5UuYquA@'
-        self.user = User.objects.create_superuser(
-            password=self.password, email='alice@example.com')
+        self.user.is_superuser = True
+        self.user.save()
         self.client = TestClient()
         self.client.login(email=self.user.email, password=self.password)
         self.events = ['open', 'delivered', 'click']
@@ -1043,7 +1043,8 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         # Pull company names from json and self.companies
         jsond_company_names = [company['name'] for company in jsond]
-        actual_company_names = [company.name for company in self.companies]
+        actual_company_names = self.user.roles.values_list(
+            'company__name', flat=True)
 
         # Test if the lists of company names match!
         self.assertItemsEqual(jsond_company_names, actual_company_names)
