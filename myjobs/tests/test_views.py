@@ -1016,15 +1016,10 @@ class MyJobsTopbarViewsTests(MyJobsBase):
     # TODO: When selenium tests are available create company switching tests.
     def setUp(self):
         super(MyJobsTopbarViewsTests, self).setUp()
-        self.user = UserFactory()
-        self.client = TestClient()
-        self.client.login_user(self.user)
-
         self.companies = CompanyFactory.create_batch(size=3)
 
-        self.company_users = [CompanyUserFactory
-                              (user=self.user, company=company)
-                              for company in self.companies]
+        self.roles = RoleFactory.create_batch(size=3)
+        self.user.roles = self.roles
 
     def test_topbar_with_multiple_companies(self):
         """
@@ -1063,21 +1058,16 @@ class MyJobsTopbarViewsTests(MyJobsBase):
                       {% get_company_name user as company_name %}
                       {{ company_name }}"""
 
-        with self.settings(ROLES_ENABLED=False):
-            context = Context({'user': self.user})
-            Template(template).render(context)
-            self.assertItemsEqual(
-                context['company_name'], self.user.company_set.all())
+        roles = [RoleFactory(company=c) for c in self.companies]
 
-        with self.settings(ROLES_ENABLED=True):
-            roles = [RoleFactory(company=c) for c in self.companies]
+        self.user.roles = roles
 
-            self.user.roles = roles
-
-            context = Context({'user': self.user})
-            Template(template).render(context)
-            self.assertItemsEqual(
-                context['company_name'], self.user.company_set.all())
+        context = Context({'user': self.user})
+        Template(template).render(context)
+        context_company_names = [c.name for c in context['company_name']]
+        expected_company_names = [c for c in self.user.roles.values_list(
+            'company__name', flat=True)]
+        self.assertItemsEqual(context_company_names, expected_company_names)
 
     def test_can_template_tag(self):
         """
@@ -1089,53 +1079,28 @@ class MyJobsTopbarViewsTests(MyJobsBase):
                       {% can user company "read partner" as read_partner %}
                       {% can user company "read role" as read_role %}"""
 
-        app_access = AppAccessFactory()
-        self.companies[0].app_access.add(app_access)
-        activities = [
-            ActivityFactory(name="read role", app_access=app_access),
-            ActivityFactory(name="read partner", app_access=app_access)]
+        context = Context({
+            'user': self.user, 'company': self.company})
 
-        role = RoleFactory(company=self.companies[0], activities=activities)
+        self.role.activities = self.activities
+        self.user.roles.add(self.role)
+
+        context = Context({
+            'user': self.user, 'company': self.company})
+
+        Template(template).render(context)
+
+        self.assertTrue(context['read_partner'])
+        self.assertTrue(context['read_role'])
+
+        # disable PRM (by removing PRM-related activities when roles are
+        # enabled
+        self.role.remove_activity('read partner')
+        self.role.remove_activity('read role')
+
+        # recreate the context since the last rendering modified it
         context = Context({
             'user': self.user, 'company': self.companies[0]})
-
-        with self.settings(ROLES_ENABLED=False):
-            Template(template).render(context)
-
-            self.assertTrue(context['read_partner'])
-            self.assertFalse(context['read_role'])
-
-            # disable PRM (by disabling member when roles are disabled)
-            self.companies[0].member = False
-            self.companies[0].save()
-
-            # recreate the context since the last rendering modified it
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-            Template(template).render(context)
-
-            self.assertFalse(context['read_partner'])
-            self.assertFalse(context['read_role'])
-
-        with self.settings(ROLES_ENABLED=True):
-            self.user.roles.add(role)
-
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-
-            Template(template).render(context)
-
-            self.assertTrue(context['read_partner'])
-            self.assertTrue(context['read_role'])
-
-            # disable PRM (by removing PRM-related activities when roles are
-            # enabled
-            role.remove_activity('read partner')
-            role.remove_activity('read role')
-
-            # recreate the context since the last rendering modified it
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-            Template(template).render(context)
-            self.assertFalse(context['read_partner'])
-            self.assertFalse(context['read_role'])
+        Template(template).render(context)
+        self.assertFalse(context['read_partner'])
+        self.assertFalse(context['read_role'])

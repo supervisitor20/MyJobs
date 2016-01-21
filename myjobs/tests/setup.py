@@ -108,11 +108,12 @@ class MyJobsBase(TestCase):
             ActivityFactory(name=activity, app_access=self.app_access)
             for activity in [
                 "create communication record", "create contact",
-                "create partner saved search", "create partner", "create tag",
-                "delete tag", "delete partner", "read contact",
-                "read communication record", "read partner saved search",
-                "read partner", "read tag", "update communication record",
-                "update contact", "update partner", "update tag"]]
+                "create partner saved search", "create partner", "create role",
+                "create tag", "delete tag", "delete partner", "delete role",
+                "read contact", "read communication record",
+                "read partner saved search", "read partner", "read role",
+                "read tag", "update communication record", "update contact",
+                "update partner", "update role", "update tag"]]
 
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
