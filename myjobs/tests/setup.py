@@ -95,8 +95,6 @@ class TestClient(Client):
         request.session.save()
 
 
-
-
 class MyJobsBase(TestCase):
     def setUp(self):
         settings.ROOT_URLCONF = "myjobs_urls"
@@ -109,15 +107,16 @@ class MyJobsBase(TestCase):
             for activity in [
                 "create communication record", "create contact",
                 "create partner saved search", "create partner", "create role",
-                "create tag", "delete tag", "delete partner", "delete role",
-                "read contact", "read communication record",
-                "read partner saved search", "read partner", "read role",
-                "read tag", "update communication record", "update contact",
-                "update partner", "update role", "update tag"]]
+                "create tag", "create user", "delete tag", "delete partner",
+                "delete role", "delete user", "read contact",
+                "read communication record", "read partner saved search",
+                "read partner", "read role", "read user", "read tag",
+                "update communication record", "update contact",
+                "update partner", "update role", "update tag", "update user"]]
 
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
-        self.role = RoleFactory(company=self.company)
+        self.role = RoleFactory(company=self.company, name="Admin")
         self.user = UserFactory(roles=[self.role], is_staff=True)
 
         cache.clear()
