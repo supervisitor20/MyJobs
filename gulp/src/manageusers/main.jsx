@@ -52,8 +52,8 @@ export class App extends React.Component {
 
       // Create an array of unique app_access_names
       const appAccessNames = [];
-      for(const i in results){
-        if(appAccessNames.indexOf(results[i].app_access_name) === -1) {
+      for (const i in results) {
+        if (appAccessNames.indexOf(results[i].app_access_name) === -1) {
           appAccessNames.push(results[i].app_access_name);
         }
       }
@@ -62,41 +62,43 @@ export class App extends React.Component {
       const tablesOfActivitiesByApp = [];
       // First assemble rows needed for each table
       for (const i in appAccessNames) {
-        // For each app, build list of rows from results
-        let activityRows = [];
-        // Loop through all activities...
-        for(const j in results){
-          // ...and find the ones related to this app
-          if(results[j].app_access_name === appAccessNames[i]) {
-            activityRows.push(
-              <tr key={results[j].activity_id}>
-                <td>{results[j].activity_name}</td>
-                <td>{results[j].activity_description}</td>
-              </tr>
-            );
-          }
-        }
-        // Assemble this app's table
-        tablesOfActivitiesByApp.push(
-          <span key={i}>
-            <h3>{appAccessNames[i]}</h3>
-            <table className="table table-striped table-activities">
-              <thead>
-                <tr>
-                  <th>Activity</th>
-                  <th>Description</th>
+        if (appAccessNames.hasOwnProperty(i)) {
+          // For each app, build list of rows from results
+          const activityRows = [];
+          // Loop through all activities...
+          for (const j in results) {
+            // ...and find the ones related to this app
+            if (results[j].app_access_name === appAccessNames[i]) {
+              activityRows.push(
+                <tr key={results[j].activity_id}>
+                  <td>{results[j].activity_name}</td>
+                  <td>{results[j].activity_description}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {activityRows}
-              </tbody>
-            </table>
-          </span>
-        );
+              );
+            }
+          }
+          // Assemble this app's table
+          tablesOfActivitiesByApp.push(
+            <span key={i}>
+              <h3>{appAccessNames[i]}</h3>
+              <table className="table table-striped table-activities">
+                <thead>
+                  <tr>
+                    <th>Activity</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityRows}
+                </tbody>
+              </table>
+            </span>
+          );
+        }
       }
-    this.setState({
-      tablesOfActivitiesByApp: tablesOfActivitiesByApp,
-    });
+      this.setState({
+        tablesOfActivitiesByApp: tablesOfActivitiesByApp,
+      });
     }.bind(this));
   }
   callRolesAPI() {
