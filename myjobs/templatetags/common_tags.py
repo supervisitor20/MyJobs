@@ -77,7 +77,8 @@ def is_a_group_member(company, user, group):
     """
 
     if settings.ROLES_ENABLED:
-        return user.roles.exists()
+        # deleted users don't have a PK
+        return user.pk and user.roles.exists()
     else:
         try:
             return User.objects.is_group_member(user, group)
