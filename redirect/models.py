@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
@@ -16,6 +17,19 @@ CHOICES = ['sourcecodetag', 'amptoamp', 'cframe', 'anchorredirectissue',
 
 
 CHOICE_LIST = tuple((choice, choice) for choice in CHOICES)
+
+
+def make_yesno_image(view_source):
+    tag = '<img src="{img}" alt={alt}>'
+    img_string = 'admin/img/icon-%s.gif'
+    options = {'img': img_string % 'no',
+               'alt': 'False'}
+    if view_source in settings.EXCLUDED_VIEW_SOURCES:
+        options = {'img': img_string % 'yes',
+                   'alt': 'True'}
+    options['img'] = static(options['img'])
+    tag = tag.format(**options)
+    return tag
 
 
 class DestinationManipulation(models.Model):
@@ -54,11 +68,9 @@ class DestinationManipulation(models.Model):
         else:
             tag = str(self.view_source)
 
-        tag += '<br><span class="float-right">Excluded <img src="/static/admin/img/icon-%s.gif" alt=%s></span>'
-        if self.view_source in settings.EXCLUDED_VIEW_SOURCES:
-            tag %= ('yes', 'True')
-        else:
-            tag %= ('no', 'False')
+        tag += ''.join(['<br><span class="float-right">Excluded ',
+                        make_yesno_image(self.view_source),
+                        '</span>'])
         return tag
 
     get_view_source_name.short_description = 'View source'
@@ -258,12 +270,7 @@ class ViewSource(models.Model):
         super(ViewSource, self).save(*args, **kwargs)
 
     def is_excluded(self):
-        tag = '<img src="/static/admin/img/icon-%s.gif" alt=%s>'
-        if self.view_source_id in settings.EXCLUDED_VIEW_SOURCES:
-            tag %= ('yes', 'True')
-        else:
-            tag %= ('no', 'False')
-        return tag
+        return make_yesno_image(self.view_source_id)
     is_excluded.short_description = 'excluded'
     is_excluded.allow_tags = True
 
