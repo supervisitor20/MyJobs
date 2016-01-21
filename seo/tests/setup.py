@@ -96,6 +96,11 @@ class DirectSEOBase(TestCase):
 
         setattr(settings, 'MEMOIZE', False)
 
+        # As we added tests that created more and more companies, we
+        # approached the hardcoded companies in import_jobs_testdata.json.
+        # When we hit those ids, we began to get IntegrityErrors during
+        # testing. Reset the sequence used by CompanyFactory to clear this
+        # build-up.
         CompanyFactory.reset_sequence()
 
     def tearDown(self):
