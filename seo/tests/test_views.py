@@ -31,7 +31,7 @@ from moc_coding.tests import factories as moc_factories
 from myblocks.models import BlockOrder, Page, RowOrder
 from myblocks.tests.factories import (ContentBlockFactory, PageFactory,
                                       RowFactory)
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from postajob.models import SitePackage
 from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
@@ -383,7 +383,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
 
         password = 'abcdef123456!!!!!!'
         user = UserFactory(password=password)
-        factories.CompanyUserFactory(user=user, company=company)
+        user.roles.add(RoleFactory(company=company))
         credentials = {
             'username': user.email,
             'password': password
