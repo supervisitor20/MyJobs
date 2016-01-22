@@ -760,8 +760,7 @@ def api_get_specific_role(request, role_id=0):
             activity['assigned_activities'].append(assigned_activity.name)
 
         activities.append(activity)
-
-    json_res = []
+    
     json_obj = dict(
         role_id = int(role_id),
         role_name = role.name,
@@ -769,9 +768,8 @@ def api_get_specific_role(request, role_id=0):
         assigned_users = assigned_users,
         activities = activities,
     )
-    json_res.append(json_obj)
 
-    return HttpResponse(json.dumps(json_res), mimetype='application/json')
+    return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
 
 @restrict_to_staff()
