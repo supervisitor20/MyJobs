@@ -753,14 +753,20 @@ def api_get_specific_role(request, role_id=0):
 
         activity['available_activities'] = []
         for available_activity in available_activities.filter(app_access=app_access.id):
-            activity['available_activities'].append(available_activity.name)
+            available_activity_more = {}
+            available_activity_more['id'] = available_activity.id
+            available_activity_more['name'] = available_activity.name
+            activity['available_activities'].append(available_activity_more)
 
         activity['assigned_activities'] = []
         for assigned_activity in role.activities.all():
-            activity['assigned_activities'].append(assigned_activity.name)
+            assigned_activity_more = {}
+            assigned_activity_more['id'] = assigned_activity.id
+            assigned_activity_more['name'] = assigned_activity.name
+            activity['assigned_activities'].append(assigned_activity_more)
 
         activities.append(activity)
-    
+
     json_obj = dict(
         role_id = int(role_id),
         role_name = role.name,
