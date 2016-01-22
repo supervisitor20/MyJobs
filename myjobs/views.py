@@ -720,56 +720,58 @@ def api_get_specific_role(request, role_id=0):
 
     company = get_company_or_404(request)
 
-    ctx[role_id] = {}
-
     role = Role.objects.filter(id=role_id).filter(company=company)
 
-    ctx[role_id]['role'] = {}
-    ctx[role_id]['role']['id'] = role[0].id
-    ctx[role_id]['role']['name'] = role[0].name
-
-    ctx[role_id]['activities'] = {}
-    # This company has access to various apps by means of multiple
-    # app_access_id's
-    # Retrieve all activities with these app_access_id's
-    available_activities = Activity.objects.filter(
-        app_access__in=company.app_access.all())
-    ctx[role_id]['activities']['available'] = serializers.serialize(
-        "json",
-        available_activities,
-        fields=('name', 'description', 'app_access'))
-    # Retrieve all activities assigned to this role
-    assigned_activities = role[0].activities.all()
-    ctx[role_id]['activities']['assigned'] = serializers.serialize(
-        "json",
-        assigned_activities,
-        fields=('name', 'description', 'app_access'))
-
-    # Retrieve users already assigned to this role
-    users_assigned = User.objects.filter(roles__id=role_id)
-    ctx[role_id]['users'] = {}
-    ctx[role_id]['users']['assigned'] = serializers.serialize(
-        "json",
-        users_assigned,
-        fields=('email'))
-
-    # Retrieve users that can be assigned to this role
-    # This is simply a list of all users already assigned to roles associated
-    # with this company
-    users_available = []
+    # Retrieve users that can be assigned to this role. In other words, users
+    # already assigned to roles associated with this company
+    available_users = []
     roles = Role.objects.filter(company=company)
     for role in roles:
         role_id_temp = role.id
         users = User.objects.filter(roles__id=role_id_temp)
         for user in users:
-            if user not in users_available:
-                users_available.append(user)
-    ctx[role_id]['users']['available'] = serializers.serialize(
-        "json",
-        users_available,
-        fields=('email'))
+            if user.email not in available_users:
+                available_users.append(user.email)
+    # Retrieve users already assigned to this particular role
+    assigned_users = []
+    users = User.objects.filter(roles__id=role_id)
+    for user in users:
+        if user.email not in assigned_users:
+            assigned_users.append(user.email)
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    # Build list of apps this company can access
+    # For each app, build list of:
+    #   app_access_name
+    #   available_activities
+    #   assigned_activities
+    activities = []
+    # Retrieve all available_activities for this company
+    available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
+    for app_access in company.app_access.all():
+        activity = {}
+        activity['app_access_name'] = app_access.name
+
+        activity['available_activities'] = []
+        for available_activity in available_activities.filter(app_access=app_access.id):
+            activity['available_activities'].append(available_activity.name)
+
+        activity['assigned_activities'] = []
+        for assigned_activity in role.activities.all():
+            activity['assigned_activities'].append(assigned_activity.name)
+
+        activities.append(activity)
+
+    json_res = []
+    json_obj = dict(
+        role_id = int(role_id),
+        role_name = role.name,
+        available_users = available_users,
+        assigned_users = assigned_users,
+        activities = activities,
+    )
+    json_res.append(json_obj)
+
+    return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 
 @restrict_to_staff()
