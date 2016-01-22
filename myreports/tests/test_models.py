@@ -1,6 +1,7 @@
 import json
 
 from myreports.tests.setup import MyReportsTestCase
+from myreports.tests.factories import ConfigurationColumnFactory
 
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
@@ -129,12 +130,20 @@ class TestReportConfiguration(MyReportsTestCase):
                     help=True),
                 ColumnConfiguration(
                     column='tags',
-                    format='comma_sep',
+                    format='tags_list',
                     filter_interface='tags',
                     filter_display='Tags',
                     help=True),
             ])
         config_model = Configuration.objects.get(id=3)
+        # Add a filter_only column.
+        ConfigurationColumnFactory.create(
+            filter_interface_type='city_state',
+            filter_interface_display='Contact Location',
+            filter_only=True,
+            configuration=config_model,
+            multi_value_expansion=False,
+            has_help=True)
         self.maxDiff = 10000
         self.assertEqual(
             expected_config.columns,

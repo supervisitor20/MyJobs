@@ -164,6 +164,7 @@ export class SearchInput extends Component {
             {items.map((item, index) =>
               <li
                 id={this.itemId(index)}
+                key={item.key}
                 className={classnames(
                   theme.item,
                   {

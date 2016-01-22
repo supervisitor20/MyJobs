@@ -27,11 +27,18 @@ from django.utils.translation import ugettext_lazy as _
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
 from registration import signals as custom_signals
 from mymessages.models import Message, MessageInfo
-from universal.helpers import get_domain, send_email
+from universal.helpers import get_domain, send_email, invitation_context
 
 BAD_EMAIL = ['dropped', 'bounce']
 STOP_SENDING = ['unsubscribe', 'spamreport']
 DEACTIVE_TYPES_AND_NONE = ['none'] + BAD_EMAIL + STOP_SENDING
+
+
+@invitation_context.register(Group)
+def group_invitation_context(group):
+    return {"message": " in order to help administer their recruitment and "
+                       "outreach tools.",
+            "group": group}
 
 
 class CustomUserManager(BaseUserManager):
@@ -711,7 +718,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 return is_company_user and company.member
 
-    def send_invite(self, email, company, role_name=None, reason=""):
+    def send_invite(self, email, company, role_name=None):
         """
         Sends an invitation to the `email` in regards to `role_name` for
         `company`.
@@ -720,13 +727,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             :email: The email address of the potential user being invited.
             :company: The company inviting the user.
             :role_name: The name of the role (optional) the user is to be
-                        assigned. Can be either a string or array of strings.
-            :reason: The readon for the invite, included in the email body. If
-                     a ```role_name``` is provided but reason is not, then the
-                     recipient will be notified that they are being invited to
-                     assume that role for the ```company``` which was provided.
-                     If neither is provided, a generic invitation email is sent
-                     instead.
+                        assigned.
 
         Output:
             The invited user if sucessful, otherwise None.
@@ -749,36 +750,29 @@ class User(AbstractBaseUser, PermissionsMixin):
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 
-        if not reason and role_name:
-            # role_name could be an array like ["Admin", "PRM User"]
-            if isinstance(role_name, list):
-                role_name_string = ', '.join(role_name)
-            else:
-                role_name_string = role_name
-            reason = "as a(n) %s for %s" % (role_name_string, company)
-
-        invitation.send(reason + ".")
-
+        context_object = ""
         if role_name:
             if settings.ROLES_ENABLED:
-                # role_name could be an array like ["Admin", "PRM User"]
-                # TODO User Management is adding roles to users BEFORE calling
-                # this helper function. So that work is duplicative. Keep adding
-                # role functionality here, but remove it from User Management
-                if isinstance(role_name, list):
-                    for name in role_name:
-                        assigned_role = Role.objects.get(
-                            company=company, name=name)
-                        user.roles.add(assigned_role)
-                else:
-                    assigned_role = Role.objects.get(
-                        company=company, name=role_name)
-                    user.roles.add(assigned_role)
+                assigned_role = Role.objects.get(
+                    company=company, name=role_name)
+                user.roles.add(assigned_role)
+                context_object = assigned_role
             else:
                 CompanyUser = get_model('seo', 'CompanyUser')
-                CompanyUser.objects.get_or_create(user=user, company=company)
+                company_user, _ = CompanyUser.objects.get_or_create(
+                    user=user, company=company)
+                context_object = company_user
+
+        invitation.send(context_object)
 
         return user
+
+    def secondary_emails(self):
+        return "<br />".join(self.profileunits_set.filter(
+            secondaryemail__isnull=False).values_list(
+                'secondaryemail__email', flat=True)) or "None"
+    secondary_emails.short_description = "secondary emails"
+    secondary_emails.allow_tags = True
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
@@ -974,3 +968,10 @@ class Role(models.Model):
             activity = None
 
         return activity
+
+
+@invitation_context.register(Role)
+def role_invitation_context(role):
+    """Returns a message and the role."""
+    return {"message": " as a(n) %s for %s." % (role.name, role.company),
+            "role": role}

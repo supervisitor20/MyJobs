@@ -56,6 +56,7 @@ export class AndOrContainer extends Component {
         highlights={highlights}/>
       {content}
       <AddNewBox
+        id="add-new-box"
         addTag={t => addTag(newIndex, t)}
         getHints={v => getHints(v)}/>
       </div>

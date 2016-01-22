@@ -456,3 +456,9 @@ def url_for_sort_field(context, field):
 @register.assignment_tag
 def get_custom_page(flatpage):
     return get_object_or_none(CustomPage, pk=flatpage.pk)
+
+
+@register.assignment_tag(takes_context=True)
+def is_special_case(context, job):
+    return ((job.country_short or '').lower() in ['usa', 'can']
+            and bool(job.state))

@@ -36,7 +36,8 @@ from seo.search_backend import DESearchQuerySet
 from myjobs.models import User, Activity
 from mypartners.models import Tag
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
-from universal.helpers import get_domain, get_object_or_none
+from universal.helpers import (get_domain, get_object_or_none,
+                               invitation_context)
 
 import decimal
 
@@ -79,17 +80,20 @@ class NonChainedForeignKey(ForeignKey):
         if value:
             object_class = model_instance.__class__
             potential_parent = object_class.objects.get(pk=value)
+            children = object_class.objects.filter(
+                **{self.name:model_instance})
 
             if value == model_instance.pk:
-                raise ValidationError('%s cannot be at parent entity of itself'
-                                        % model_instance)
-            elif object_class.objects.filter(**{
-                                        self.name:model_instance}).exists():
-                raise ValidationError('%s is a parent entity and cannot be a child'
-                                        % model_instance)
+                raise ValidationError('%s cannot be at parent entity of '
+                                      'itself' % model_instance)
+            elif children.exists():
+                error_list = ", ".join(str(child) for child in children)
+                raise ValidationError('%s is a parent of the following '
+                                      'entities so cannot be a child itself: '
+                                      '%s' % (model_instance, error_list))
             elif getattr(potential_parent, self.name):
-                raise ValidationError('%s is a child entity and cannot be a parent'
-                                        % potential_parent)
+                raise ValidationError('%s is a child entity and cannot be a '
+                                      'parent' % potential_parent)
         return value
 
 
@@ -1409,10 +1413,9 @@ class CompanyUser(models.Model):
         if not self.pk and inviting_user:
             invitation = Invitation.objects.create(
                 invitee=self.user, inviting_company=self.company,
-                added_permission=group,
                 inviting_user=inviting_user)
             invitation.save(using=using)
-            invitation.send()
+            invitation.send(self)
 
         return super(CompanyUser, self).save(*args, **kwargs)
 
@@ -1424,6 +1427,13 @@ class CompanyUser(models.Model):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         self.group.add(group)
         self.save()
+
+
+@invitation_context.register(CompanyUser)
+def company_user_invitation_context(company_user):
+    """Returns a message and the company user."""
+    return {"message": " as a(n) Admin for %s." % (company_user.company),
+            "company_user": company_user}
 
 
 @receiver(post_delete, sender=CompanyUser,
