@@ -492,8 +492,10 @@ class TestDynamicReports(MyReportsTestCase):
     def setUp(self):
         super(TestDynamicReports, self).setUp()
 
-        self.xlsx = PresentationType.objects.get(
-            presentation_type='xlsx')
+        self.json_pass = PresentationType.objects.get(
+            presentation_type='json_pass')
+        self.json_pass.is_active = True
+        self.json_pass.save()
 
     def find_report_presentation(self, datasource, presentation_type):
         return ReportPresentation.objects.get(
@@ -516,7 +518,7 @@ class TestDynamicReports(MyReportsTestCase):
 
         report_presentation = self.find_report_presentation(
             'contacts',
-            'csv')
+            'json_pass')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -538,10 +540,12 @@ class TestDynamicReports(MyReportsTestCase):
         resp = self.client.get(reverse('download_dynamic_report'),
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
-        lines = resp.content.splitlines()
-        self.assertEquals(11, len(lines))
-        first_found_name = lines[1].split(',')[0]
-        expected_name = u'name-0 \u2019'.encode('utf-8')
+
+        response_data = json.loads(resp.content)
+        self.assertEquals(10, len(response_data['records']))
+
+        first_found_name = response_data['records'][0]['name']
+        expected_name = u'name-0 \u2019'
         self.assertEqual(expected_name, first_found_name)
 
     def test_dynamic_partners_report(self):
@@ -556,7 +560,7 @@ class TestDynamicReports(MyReportsTestCase):
 
         report_presentation = self.find_report_presentation(
             'partners',
-            'csv')
+            'json_pass')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -578,11 +582,12 @@ class TestDynamicReports(MyReportsTestCase):
         resp = self.client.get(reverse('download_dynamic_report'),
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
-        lines = resp.content.splitlines()
-        self.assertEquals(22, len(lines))
-        first_found_name = lines[-1].split(',')[1]
-        expected_name = u'partner-19 \u2019'.encode('utf-8')
-        self.assertEqual(expected_name, first_found_name)
+        response_data = json.loads(resp.content)
+        self.assertEquals(21, len(response_data['records']))
+
+        last_found_name = response_data['records'][-1]['name']
+        expected_name = u'partner-19 \u2019'
+        self.assertEqual(expected_name, last_found_name)
 
     def test_dynamic_comm_records_report(self):
         """Create some test data, run, list, and download a commrec report."""
@@ -600,7 +605,7 @@ class TestDynamicReports(MyReportsTestCase):
 
         report_presentation = self.find_report_presentation(
             'comm_records',
-            'csv')
+            'json_pass')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -622,11 +627,12 @@ class TestDynamicReports(MyReportsTestCase):
         resp = self.client.get(reverse('download_dynamic_report'),
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
-        lines = resp.content.splitlines()
-        self.assertEquals(21, len(lines))
-        first_found_name = lines[-1].split(',')[15]
-        expected_name = u'subject-19 \u2019'.encode('utf-8')
-        self.assertEqual(expected_name, first_found_name)
+        response_data = json.loads(resp.content)
+        self.assertEquals(20, len(response_data['records']))
+
+        last_subject = response_data['records'][-1]['subject']
+        expected_subject = u'subject-19 \u2019'
+        self.assertEqual(expected_subject, last_subject)
 
     def test_dynamic_report_with_filter(self):
         """Create some test data, run filtered, and download a report."""
@@ -643,7 +649,7 @@ class TestDynamicReports(MyReportsTestCase):
 
         report_presentation = self.find_report_presentation(
             'contacts',
-            'csv')
+            'json_pass')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -662,11 +668,12 @@ class TestDynamicReports(MyReportsTestCase):
         resp = self.client.get(reverse('download_dynamic_report'),
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
-        lines = resp.content.splitlines()
-        self.assertEquals(2, len(lines))
-        first_found_name = lines[1].split(',')[0]
-        expected_name = 'name-2'
-        self.assertEqual(expected_name, first_found_name)
+        response_data = json.loads(resp.content)
+        self.assertEquals(1, len(response_data['records']))
+
+        found_name = response_data['records'][0]['name']
+        expected_name = u'name-2'
+        self.assertEqual(expected_name, found_name)
 
     def test_dynamic_partners_report_xlsx(self):
         """Run a report through the xlsx presentation type.

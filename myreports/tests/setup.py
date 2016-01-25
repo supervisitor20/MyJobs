@@ -204,6 +204,11 @@ def create_full_fixture():
         id=3, presentation_type="csv", description="Unformatted CSV")
     pre_xlsx = PresentationTypeFactory.create(
         id=4, presentation_type="xlsx", description="Excel xlsx")
+    pre_json = PresentationTypeFactory.create(
+        id=5,
+        is_active=False,
+        presentation_type="json_pass",
+        description="JSON Passthrough")
 
     Configuration.objects.all().delete()
     con_dead = ConfigurationFactory.create(
@@ -536,4 +541,16 @@ def create_full_fixture():
     ReportPresentationFactory.create(
         id=9, presentation_type=pre_xlsx, configuration=con_comm,
         display_name="Communication Record Excel Spreadsheet",
+        report_data=rtdt_comm_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=10, presentation_type=pre_json, configuration=con_part,
+        display_name="Partner JSON Passthrough",
+        report_data=rtdt_part_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=11, presentation_type=pre_json, configuration=con_con,
+        display_name="Contact JSON Passthrough",
+        report_data=rtdt_con_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=12, presentation_type=pre_json, configuration=con_comm,
+        display_name="Communication Record JSON Passthrough",
         report_data=rtdt_comm_unagg, is_active=True)
