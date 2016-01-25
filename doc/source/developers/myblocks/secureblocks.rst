@@ -25,12 +25,13 @@ is a secure site, it makes the call to and returns from itself.
 Secure Blocks Widgets
 =====================
 
-Within a microsites page, a div can be created with a special data key
+Within a microsites page, a div can be created with a special data attribute
 (data-secure-block-id). This tag indicates that the value of that data
-attribute is tied to a secure block element_id which should be loaded into the
-contents of that div. One API call is made to the parent of the microsite
-(or itself, if it has no parent) to retrieve all secure blocks divs.
-The request is subject to the cross site verification step above.
+attribute is tied to a secure block element_id. That secure block's template
+will then be rendered by the parent site and returned to the div. One API
+call is made to the parent of the microsite (or itself, if it has no parent)
+to retrieve all secure blocks divs. The request is subject to the cross site
+verification step above.
 
 .. autofunction:: myblocks.views.secure_blocks
 
