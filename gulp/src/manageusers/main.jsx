@@ -47,56 +47,40 @@ export class App extends React.Component {
   callActivitiesAPI() {
     // Get activities once, and only once
     $.get('/manage-users/api/activities/', function getActivities(results) {
-      // Define legend matching appID to app name
-      // TODO: Information like this should probably be in the db
-      const appNamesLegend = {};
-      appNamesLegend[1] = 'PRM';
-      appNamesLegend[2] = 'User Management';
+      // Create an array of tables, each a list of activities of a
+      // particular app_access
 
-      // Parse API JSON response
-      const parsedResults = JSON.parse(results);
-
-      // Sort activities by app_access
-      parsedResults.sort(function sortActivities(a, b) {
-        return a.fields.app_access - b.fields.app_access;
-      });
-
-      // Create unique array of appIDs present
-      const appIDs = [];
-      for (let i = 0; i < parsedResults.length; i++) {
-        if (parsedResults.hasOwnProperty(i)) {
-          if (appIDs.indexOf(parsedResults[i].fields.app_access) === -1) {
-            appIDs.push(parsedResults[i].fields.app_access);
-          }
+      // Create an array of unique app_access_names
+      const appAccessNames = [];
+      for (const i in results) {
+        if (appAccessNames.indexOf(results[i].app_access_name) === -1) {
+          appAccessNames.push(results[i].app_access_name);
         }
-      }
-
-      // Create an array of apps (names/ids) that exist in our parsedResults
-      const appIDsWithNames = {};
-      for (let i = 1; i <= appIDs.length; i++) {
-        appIDsWithNames[i] = appNamesLegend[i];
       }
 
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
-      for (const appID in appIDsWithNames) {
-        if (appIDsWithNames.hasOwnProperty(appID)) {
-          // For each app, build list of rows from parsedResults
-          let activityRows = [];
-          activityRows = parsedResults.map(function buildRow(obj) {
-            // Only use activities of a certain appID
-            if (obj.fields.app_access.toString() === appID) {
-              return (
-                <tr key={obj.pk}>
-                  <td>{obj.fields.name}</td>
-                  <td>{obj.fields.description}</td>
+      // First assemble rows needed for each table
+      for (const i in appAccessNames) {
+        if (appAccessNames.hasOwnProperty(i)) {
+          // For each app, build list of rows from results
+          const activityRows = [];
+          // Loop through all activities...
+          for (const j in results) {
+            // ...and find the ones related to this app
+            if (results[j].app_access_name === appAccessNames[i]) {
+              activityRows.push(
+                <tr key={results[j].activity_id}>
+                  <td>{results[j].activity_name}</td>
+                  <td>{results[j].activity_description}</td>
                 </tr>
               );
             }
-          });
+          }
+          // Assemble this app's table
           tablesOfActivitiesByApp.push(
-            <span key={appID}>
-              <h3>{appIDsWithNames[appID]}</h3>
+            <span key={i}>
+              <h3>{appAccessNames[i]}</h3>
               <table className="table table-striped table-activities">
                 <thead>
                   <tr>
