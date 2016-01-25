@@ -10,6 +10,13 @@ import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
 
 export class WizardPageFilter extends Component {
+  constructor() {
+    super();
+    this.state = {
+      reportName: 'Report Name',
+    };
+  }
+
   componentDidMount() {
     this.updateState();
   }
@@ -71,6 +78,7 @@ export class WizardPageFilter extends Component {
 
   render() {
     const {reportConfig} = this.props;
+    const {reportName} = this.state;
 
     const rows = [];
     reportConfig.filters.forEach(col => {
@@ -150,7 +158,7 @@ export class WizardPageFilter extends Component {
         <hr/>
         {this.renderRow('', 'submit',
           <Button
-            onClick={() => reportConfig.run()}>
+            onClick={() => reportConfig.run(reportName)}>
             Run Report
           </Button>)}
 

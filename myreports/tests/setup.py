@@ -188,7 +188,7 @@ def create_full_fixture():
         report_type=rt_con, data_type=dt_dead)
     ReportTypeDataTypesFactory.create(
         report_type=rt_con, data_type=dt_maybe_dead, is_active=False)
-    rtdt_conn_unagg = ReportTypeDataTypesFactory.create(
+    rtdt_con_unagg = ReportTypeDataTypesFactory.create(
         report_type=rt_con, data_type=dt_unagg)
     rtdt_part_unagg = ReportTypeDataTypesFactory.create(
         report_type=rt_partners, data_type=dt_unagg)
@@ -197,11 +197,13 @@ def create_full_fixture():
 
     PresentationType.objects.all().delete()
     pre_dead = PresentationTypeFactory.create(
-        id=1, presentation_type="Inactive", is_active=False)
+        id=1, description="Inactive", is_active=False)
     pre_maybe_dead = PresentationTypeFactory.create(
-        id=2, presentation_type="Maybe Inactive")
+        id=2, description="Maybe Inactive")
     pre_csv = PresentationTypeFactory.create(
-        id=3, presentation_type="Unformatted CSV")
+        id=3, presentation_type="csv", description="Unformatted CSV")
+    pre_xlsx = PresentationTypeFactory.create(
+        id=4, presentation_type="xlsx", description="Excel xlsx")
 
     Configuration.objects.all().delete()
     con_dead = ConfigurationFactory.create(
@@ -502,19 +504,19 @@ def create_full_fixture():
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(
         id=1, presentation_type=pre_maybe_dead, configuration=con_con,
-        display_name="Dead", report_data=rtdt_conn_unagg, is_active=False)
+        display_name="Dead", report_data=rtdt_con_unagg, is_active=False)
     ReportPresentationFactory.create(
         id=2, presentation_type=pre_dead, configuration=con_con,
         display_name="Dead Presentation",
-        report_data=rtdt_conn_unagg, is_active=True)
+        report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
         id=3, presentation_type=pre_csv, configuration=con_con,
         display_name="Contact CSV",
-        report_data=rtdt_conn_unagg, is_active=True)
+        report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
         id=4, presentation_type=pre_csv, configuration=con_dead,
         display_name="Dead Configuration",
-        report_data=rtdt_conn_unagg, is_active=True)
+        report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
         id=5, presentation_type=pre_csv, configuration=con_part,
         display_name="Partner CSV",
@@ -522,4 +524,16 @@ def create_full_fixture():
     ReportPresentationFactory.create(
         id=6, presentation_type=pre_csv, configuration=con_comm,
         display_name="Communication Record CSV",
+        report_data=rtdt_comm_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=7, presentation_type=pre_xlsx, configuration=con_con,
+        display_name="Contact Excel Spreadsheet",
+        report_data=rtdt_con_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=8, presentation_type=pre_xlsx, configuration=con_part,
+        display_name="Partner Excel Spreadsheet",
+        report_data=rtdt_part_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=9, presentation_type=pre_xlsx, configuration=con_comm,
+        display_name="Communication Record Excel Spreadsheet",
         report_data=rtdt_comm_unagg, is_active=True)
