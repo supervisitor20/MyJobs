@@ -41,71 +41,18 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId, function getRole(results) {
-        const roleObject = results[this.props.params.roleId];
-
-        const roleName = roleObject.role.name;
-
-        // Create availableUsers
-        const availableUsersParsed = JSON.parse(roleObject.users.available);
-
-        const availableUsers = formatForMultiselect(availableUsersParsed);
-
-        // Create assignedUsers
-        const assignedUsersParsed = JSON.parse(roleObject.users.assigned);
-        const assignedUsers = formatForMultiselect(assignedUsersParsed);
-
-        const availableActivitiesParsed = JSON.parse(roleObject.activities.available);
-        const assignedActivitiesParsed = JSON.parse(roleObject.activities.assigned);
-
-        // // Create availablePRMActivities
-        // let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
-        // availablePRMActivities = formatForMultiselect(availablePRMActivities);
-        //
-        // // Create assignedPRMActivities
-        // let assignedPRMActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 1);
-        // assignedPRMActivities = formatForMultiselect(assignedPRMActivities);
-        //
-        // // Create availableUserManagementActivities
-        // let availableUserManagementActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 2);
-        // availableUserManagementActivities = formatForMultiselect(availableUserManagementActivities);
-        //
-        // // Create assignedUserManagementActivities
-        // let assignedUserManagementActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 2);
-        // assignedUserManagementActivities = formatForMultiselect(assignedUserManagementActivities);
-
-
-        // Goal: starting with this fake data, refactor JS to handle apps dynamically
-        let availablePRMActivities = [{'id': 1,'name': 'binky',}, {'id': 2,'name': 'daniel',},];
-        let assignedPRMActivities = [];
-        let availableUserManagementActivities = [{'id': 3,'name': 'ted',}, {'id': 4,'name': 'wilber',}];
-        let assignedUserManagementActivities = [];
-
-        let activities = [
-          {
-            'app_access_name':'PRM',
-            'available_activities': [{'id': 1,'name': 'binky',}, {'id': 2,'name': 'daniel',},],
-            'assigned_activities': [],
-          },
-          {
-            'app_access_name':'User Management',
-            'available_activities': [{'id': 3,'name': 'ted',}, {'id': 4,'name': 'wilber',}],
-            'assigned_activities': [],
-          },
-          ,
-          {
-            'app_access_name':'Doodles',
-            'available_activities': [{'id': 5,'name': 'wabby',}, {'id': 6,'name': 'goofy',}],
-            'assigned_activities': [{'id': 7,'name': 'woogs',},],
-          },
-        ];
+        const roleName = results.role_name;
+        const availableUsers = results.available_users;
+        const assignedUsers = results.assigned_users;
+        const activities = results.activities;
 
         this.setState({
           apiResponseHelp: '',
           roleName: roleName,
-          availablePRMActivities: availablePRMActivities,
-          assignedPRMActivities: assignedPRMActivities,
-          availableUserManagementActivities: availableUserManagementActivities,
-          assignedUserManagementActivities: assignedUserManagementActivities,
+          // availablePRMActivities: availablePRMActivities,
+          // assignedPRMActivities: assignedPRMActivities,
+          // availableUserManagementActivities: availableUserManagementActivities,
+          // assignedUserManagementActivities: assignedUserManagementActivities,
           availableUsers: availableUsers,
           assignedUsers: assignedUsers,
           activities: activities,
@@ -123,6 +70,8 @@ class Role extends React.Component {
             break;
           }
         }
+
+        // TODO do what I did to /roles/ too
 
         // Create availableUsers
         const availableUsersParsed = JSON.parse(roleObject.users.available);
@@ -158,10 +107,10 @@ class Role extends React.Component {
     this.setState({
       apiResponseHelp: '',
       roleName: this.state.roleName,
-      availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+      // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+      // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+      // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+      // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
     });
@@ -180,10 +129,10 @@ class Role extends React.Component {
         apiResponseHelp: '',
         roleNameHelp: 'Role name empty.',
         roleName: this.state.roleName,
-        availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-        assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-        availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-        assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+        // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+        // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+        // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+        // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
       });
@@ -206,6 +155,9 @@ class Role extends React.Component {
         assignedActivities.push(assigned_activities[j])
       }
     }
+
+    console.log("assignedActivities");
+    console.log(assignedActivities);
 
     // User must select AT LEAST ONE activity
     if (assignedActivities.length < 1) {
@@ -243,6 +195,10 @@ class Role extends React.Component {
     let formattedAssignedActivities = [];
     if (assignedActivities) {
       formattedAssignedActivities = assignedActivities.map( obj => {
+        console.log("original word is:")
+        console.log(obj.name);
+        console.log("after transformation it is");
+        console.log(reverseFormatActivityName(obj.name));
         return reverseFormatActivityName(obj.name);
       });
     }
