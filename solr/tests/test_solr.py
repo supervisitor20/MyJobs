@@ -179,7 +179,7 @@ class SolrTests(MyJobsBase):
         A saved search with a null recipient should never be inserted in Solr
         """
         solr = Solr()
-        SavedSearchFactory()
+        SavedSearchFactory(user=self.user)
         update_solr_task(self.test_solr)
         results = solr.search(q='*:*')
         # One hit for the search, one for its recipient
