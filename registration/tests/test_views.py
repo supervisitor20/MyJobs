@@ -40,7 +40,7 @@ class RegistrationViewTests(MyJobsBase):
         if self.old_activation is None:
             settings.ACCOUNT_ACTIVATION_DAYS = 7  # pragma: no cover
 
-        self.data = {'email': 'alice@example.com',
+        self.data = {'email': 'alice1@example.com',
                      'password1': 'swordfish',
                      'send_email': True}
         self.user, _ = User.objects.create_user(**self.data)

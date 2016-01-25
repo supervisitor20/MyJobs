@@ -21,7 +21,7 @@ class RegistrationFormTests(MyJobsBase):
         # Create a user so we can verify that duplicate usernames aren't
         # permitted.
         User.objects.create_user(**{
-            'email':'alice@example.com', 'password1':'5UuYquA@'})
+            'email':'alice1@example.com', 'password1':'5UuYquA@'})
 
         invalid_data_dicts = [
             # Already-existing username.

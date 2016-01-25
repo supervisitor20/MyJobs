@@ -286,7 +286,7 @@ class SolrTests(MyJobsBase):
                     no_match()
 
             solr.delete()
-            user = UserFactory()
+            user = UserFactory(email="alice1@example.com")
             user.user_guid = '1e5f7e122156483f98727366afe06e0b'
             user.save()
             parse_log([log], self.test_solr)

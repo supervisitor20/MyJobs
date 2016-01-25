@@ -25,7 +25,8 @@ class EventTests(MyJobsBase):
     def setUp(self):
         super(EventTests, self).setUp()
         self.product = posting_factories.ProductFactory()
-        self.company_user = CompanyUserFactory(company=self.product.owner)
+        self.company_user = CompanyUserFactory(company=self.product.owner,
+                                               user=self.user)
 
         self.purchased_product = posting_factories.PurchasedProductFactory(
             product=self.product, owner=self.product.owner)

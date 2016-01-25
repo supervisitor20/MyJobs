@@ -21,7 +21,6 @@ from seo.tests.factories import CompanyFactory, CompanyUserFactory
 class SavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchFormTests, self).setUp()
-        self.user = UserFactory()
         self.data = {'url': 'http://www.my.jobs/jobs',
                      'feed': 'http://www.my.jobs/jobs/feed/rss?',
                      'email': self.user.email,
@@ -73,8 +72,6 @@ class SavedSearchFormTests(MyJobsBase):
 class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
-        self.user = UserFactory()
-        self.company = CompanyFactory(member=True)
         CompanyUserFactory(user=self.user, company=self.company)
         self.partner = PartnerFactory(owner=self.company)
 

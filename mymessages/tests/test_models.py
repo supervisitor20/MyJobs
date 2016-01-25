@@ -10,7 +10,6 @@ from mymessages.models import Message, MessageInfo
 class MessageTests(MyJobsBase):
     def setUp(self):
         super(MessageTests, self).setUp()
-        self.user = UserFactory()
         self.message = Message.objects.create(subject='subject',
                                               body='body',
                                               message_type='success')

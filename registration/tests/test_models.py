@@ -26,7 +26,7 @@ class RegistrationModelTests(MyJobsBase):
 
     """
     user_info = {'password1': 'swordfish',
-                 'email': 'alice@example.com',
+                 'email': 'alice1@example.com',
                  'send_email': True}
 
     def setUp(self):

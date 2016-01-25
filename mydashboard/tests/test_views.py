@@ -31,13 +31,12 @@ SEARCH_OPTS = ['django', 'python', 'programming']
 class MyDashboardViewsTests(MyJobsBase):
     def setUp(self):
         super(MyDashboardViewsTests, self).setUp()
-        self.staff_user = UserFactory()
+        self.staff_user = self.user
         group = Group.objects.get(name=CompanyUser.GROUP_NAME)
         self.staff_user.groups.add(group)
 
         self.business_unit = BusinessUnitFactory()
 
-        self.company = CompanyFactory(id=1)
         self.company.job_source_ids.add(self.business_unit)
         self.admin = CompanyUserFactory(user=self.staff_user,
                                         company=self.company)
