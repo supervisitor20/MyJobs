@@ -144,8 +144,9 @@ class Event(models.Model):
             subject = 'An update on your %s' % self.model.name
 
         if settings.ROLES_ENABLED:
-            recipients = Role.objects.filter(company=company).values_list(
-                'user__email', flat=True)
+            recipients = Role.objects.filter(
+                company=recipient_company).values_list(
+                    'user__email', flat=True)
         else:
             recipients = User.objects.filter(
                 company=recipient_company).values_list('email', flat=True)
