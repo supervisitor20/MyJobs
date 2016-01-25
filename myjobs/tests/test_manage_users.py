@@ -45,14 +45,20 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         first_result = output[0]
 
-        name = first_result['fields']['name']
-        self.assertIsInstance(name, unicode)
+        activity_name = first_result['activity_name']
+        self.assertIsInstance(activity_name, unicode)
 
-        description = first_result['fields']['description']
-        self.assertIsInstance(description, unicode)
+        app_access_name = first_result['app_access_name']
+        self.assertIsInstance(app_access_name, unicode)
 
-        app_access = first_result['fields']['app_access']
-        self.assertIsInstance(app_access, int)
+        activity_description = first_result['activity_description']
+        self.assertIsInstance(activity_description, unicode)
+
+        activity_id = first_result['activity_id']
+        self.assertIsInstance(activity_id, int)
+
+        app_access_id = first_result['app_access_id']
+        self.assertIsInstance(app_access_id, int)
 
     def test_create_role_require_post(self):
         """
