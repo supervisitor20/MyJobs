@@ -3,6 +3,7 @@ from myreports.presentation.base import Presentation
 
 
 class Csv(Presentation):
+    """Write csv based presentation formats."""
     def content_type(self):
         return 'text/csv'
 

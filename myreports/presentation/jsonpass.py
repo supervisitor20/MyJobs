@@ -3,6 +3,10 @@ from myreports.presentation.base import Presentation
 
 
 class JsonPass(Presentation):
+    """Write report data as a single json file.
+
+    Useful as a rough passthrough for testing.
+    """
     def content_type(self):
         return 'application/json'
 
