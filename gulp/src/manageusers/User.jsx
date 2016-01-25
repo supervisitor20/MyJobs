@@ -225,15 +225,15 @@ class User extends React.Component {
   render() {
     let deleteUserButton = '';
 
-    let userEmailInput = '';
+    let userEmailEdit = '';
 
     const action = this.props.location.query.action;
 
     if (action === 'Edit') {
-      userEmailInput = <input id="id_userEmail" maxLength="255" name="id_userEmail" type="email" readOnly value={this.state.userEmail} size="35"/>;
+      userEmailEdit = true;
       deleteUserButton = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>;
     } else {
-      userEmailInput = <input id="id_userEmail" maxLength="255" name="id_userEmail" type="email" value={this.state.userEmail} onChange={this.onTextChange} size="35"/>;
+      userEmailEdit = false;
     }
 
     const userEmailHelp = this.state.userEmailHelp;
@@ -249,21 +249,17 @@ class User extends React.Component {
             </div>
             <div className="product-card-full no-highlight">
 
-              <div className="row">
-                <div className="col-xs-12">
-                  <HelpText message={userEmailHelp} />
-                  <label htmlFor="id_userEmail">User Email*:</label>
-                  {userEmailInput}
-                </div>
+              <div className="row no-gutter">
+                <label htmlFor="id_userEmail" className="col-sm-2 control-label">User Email* </label>
+                <input id="id_userEmail" className="col-sm-6" maxLength="255" name="id_userEmail" type="email" readOnly={userEmailEdit} value={this.state.userEmail} onChange={this.onTextChange} size="35" />
+                <HelpText message={userEmailHelp} styleName="col-sm-4" />
               </div>
 
               <div className="row">
                 <div className="col-xs-12">
-                  <hr/>
                   <HelpText message={roleMultiselectHelp} />
                   <RolesMultiselect availableRoles={this.state.availableRoles} assignedRoles={this.state.assignedRoles} ref="roles"/>
                   <span id="role_select_help" className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                  <hr />
                 </div>
               </div>
 

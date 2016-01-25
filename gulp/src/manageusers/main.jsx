@@ -87,7 +87,7 @@ export class App extends React.Component {
             // Only use activities of a certain appID
             if (obj.fields.app_access.toString() === appID) {
               return (
-                <tr>
+                <tr key={obj.pk}>
                   <td>{obj.fields.name}</td>
                   <td>{obj.fields.description}</td>
                 </tr>
@@ -95,7 +95,7 @@ export class App extends React.Component {
             }
           });
           tablesOfActivitiesByApp.push(
-            <span>
+            <span key={appID}>
               <h3>{appIDsWithNames[appID]}</h3>
               <table className="table table-striped table-activities">
                 <thead>
@@ -125,6 +125,12 @@ export class App extends React.Component {
         if (results.hasOwnProperty(key)) {
           results[key].activities = JSON.parse(results[key].activities.assigned);
           results[key].users.assigned = JSON.parse(results[key].users.assigned);
+
+          let editRoleLink;
+          if (results[key].role.name !== 'Admin') {
+            editRoleLink = <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
+          }
+
           rolesTableRows.push(
             <tr key={results[key].role.id}>
               <td data-title="Role">{results[key].role.name}</td>
@@ -135,7 +141,7 @@ export class App extends React.Component {
                 <AssociatedUsersList users={results[key].users.assigned}/>
               </td>
               <td data-title="Edit">
-               <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>
+                {editRoleLink}
               </td>
             </tr>
           );
@@ -160,7 +166,7 @@ export class App extends React.Component {
                 <AssociatedRolesList roles={results[key].roles}/>
               </td>
               <td data-title="Status">
-                <Status status={results[key].status}/>
+                <Status status={results[key].status} lastInvitation={results[key].lastInvitation}/>
               </td>
               <td data-title="Edit">
                 <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
@@ -199,9 +205,9 @@ export class App extends React.Component {
             <div className="sidebar">
               <h2 className="top">Navigation</h2>
               <Link to="/" className="btn">Overview</Link>
+              <Link to="users" className="btn">Users</Link>
               <Link to="roles" className="btn">Roles</Link>
               <Link to="activities" className="btn">Activities</Link>
-              <Link to="users" className="btn">Users</Link>
             </div>
           </div>
 

@@ -30,7 +30,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, '../../data/'))
 sys.path.insert(0, os.path.join(BASE_DIR))
 sys.path.insert(0, os.path.join(BASE_DIR, '../'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'directseo.settings'
 FEED_FILE_PREFIX = "dseo_feed_"
 
 
@@ -39,7 +38,7 @@ def update_job_source(guid, buid, name):
 
     assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
            "%s is not a valid guid" % guid
-    assert re.match(r'^\d+$', str(buid)),  "%s is not a valid buid" % buid
+    assert re.match(r'^\d+$', str(buid)), "%s is not a valid buid" % buid
 
     logger.info("Updating Job Source %s", guid)
     # Make the BusinessUnit and Company
@@ -292,7 +291,7 @@ def update_solr(buid, download=True, force=True, set_title=False,
         # Get current worker process id, to prevent race conditions.
         try:
             p = current_process()
-            process_id =  p.index
+            process_id = p.index
         except:
             process_id = 0
         filepath = os.path.join(data_dir, str(process_id), FEED_FILE_PREFIX + str(buid) +
@@ -475,7 +474,7 @@ def download_feed_file(buid, data_dir=DATA_DIR):
     # Get current worker process id, to prevent race conditions.
     try:
         p = current_process()
-        process_id =  p.index
+        process_id = p.index
     except AttributeError:
         process_id = 0
 

@@ -19,8 +19,11 @@ class ManageUsersTests(MyJobsBase):
 
         self.app_access = AppAccessFactory()
         self.company = CompanyFactory(app_access=[self.app_access])
-        self.role = RoleFactory(company=self.company)
-        self.user = UserFactory(roles=[self.role], is_staff=True)
+        self.otherCompany = CompanyFactory(app_access=[self.app_access])
+        self.role = RoleFactory(company=self.company, name="Admin")
+        self.otherRole = RoleFactory(company=self.company, name="OtherRole")
+        self.otherRoleAtOtherCompany = RoleFactory(company=self.otherCompany, name="otherRoleAtOtherCompany")
+        self.user = UserFactory(roles=[self.role, self.otherRole, self.otherRoleAtOtherCompany], is_staff=True)
         self.activities = [
             ActivityFactory(name=activity, app_access=self.app_access)
             for activity in [
@@ -217,10 +220,14 @@ class ManageUsersTests(MyJobsBase):
         activities_available = json.loads(activities['available'])
         activity_available_name = activities_available[0]['fields']['name']
         self.assertIsInstance(activity_available_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
 
         activities_assigned = json.loads(activities['assigned'])
         activity_assigned_name = activities_assigned[0]['fields']['name']
         self.assertIsInstance(activity_assigned_name, unicode)
+        activity_available_app_access = activities_available[0]['fields']['app_access']
+        self.assertIsInstance(activity_available_app_access, int)
 
     def test_get_roles_contain_users(self):
         """
@@ -365,6 +372,31 @@ class ManageUsersTests(MyJobsBase):
         roles_available_name = roles_available[0]['fields']['name']
         self.assertIsInstance(roles_available_name, unicode)
 
+    def test_get_specific_user_with_unique_roles_list(self):
+        """
+        Given a user who has roles assigned through multiple companies, test
+        that getting a specific user will return a unique list of roles (i.e.
+        roles for that company)
+        """
+        expected_user_pk = self.user.pk
+
+        # self.company is being used for self.client.get (not self.otherCompany)
+        response = self.client.get(reverse('api_get_specific_user',
+                                           args=[expected_user_pk]))
+
+        output = json.loads(response.content)
+        first_result = output[str(expected_user_pk)]
+        roles_assigned = json.loads(first_result['roles']['assigned'])
+
+        # This user is assigned to the following roles:
+        #   role
+        #   otherRole
+        #   otherRoleAtOtherCompany
+        # But role and otherRole are associated with the company self.client.get
+        # uses to make the request. Therefore, the API should only return two
+        # roles
+        self.assertEqual(len(roles_assigned),2)
+
     def test_get_users(self):
         """
         Tests that the Users API returns the proper data in the proper form
@@ -381,12 +413,38 @@ class ManageUsersTests(MyJobsBase):
         email = first_result['email']
         self.assertIsInstance(email, unicode)
 
+        lastInvitation = first_result['lastInvitation']
+        self.assertIsInstance(lastInvitation, unicode)
+
         roles = json.loads(first_result['roles'])
         role_id = roles[0]['pk']
         self.assertIsInstance(role_id, int)
 
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
+
+    def test_get_users_with_unique_roles_list(self):
+        """
+        Given a user who has roles assigned through multiple companies, test
+        that getting a list of users will only return a unique list of roles
+        (i.e. roles for the current company)
+        """
+        expected_user_pk = self.user.pk
+
+        response = self.client.get(reverse('api_get_users'))
+        output = json.loads(response.content)
+        first_result = output[str(expected_user_pk)]
+
+        roles = json.loads(first_result['roles'])
+
+        # This user is assigned to the following roles:
+        #   role
+        #   otherRole
+        #   otherRoleAtOtherCompany
+        # But role and otherRole are associated with the company self.client.get
+        # uses to make the request. Therefore, the API should only return two
+        # roles
+        self.assertEqual(len(roles),2)
 
     def test_create_user_require_post(self):
         """
@@ -404,7 +462,7 @@ class ManageUsersTests(MyJobsBase):
         Users must be assigned to at least one role
         """
         data_to_post = {}
-        data_to_post['user_email'] = "timothy@leary.com"
+        data_to_post['user_email'] = "andy@kaufman.com"
         response = self.client.post(reverse('api_create_user'), data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "false")
@@ -416,8 +474,9 @@ class ManageUsersTests(MyJobsBase):
         Tests creating a user
         """
         data_to_post = {}
-        data_to_post['user_email'] = "timothy@leary.com"
+        data_to_post['user_email'] = "andy@kaufman.com"
         data_to_post['assigned_roles[]'] = [self.role.name]
+
         response = self.client.post(reverse('api_create_user'), data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
@@ -487,6 +546,21 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "A user must be assigned to at least one role.")
 
+    def test_edit_user_one_user_per_company_must_be_admin(self):
+        """
+        Tests editing a user, every company must have one user assigned to admin
+        Edit user
+        """
+        expected_user_pk = self.user.pk
+
+        data_to_post = {}
+        data_to_post['assigned_roles[]'] = [self.otherRole.name]
+        response = self.client.post(reverse('api_edit_user',
+                                            args=[expected_user_pk]),
+                                    data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+
     def test_edit_user(self):
         """
         Tests editing a user
@@ -496,6 +570,7 @@ class ManageUsersTests(MyJobsBase):
 
         data_to_post = {}
         data_to_post['assigned_roles[]'] = [self.role.name]
+
         response = self.client.post(reverse('api_edit_user',
                                             args=[expected_user_pk]),
                                     data_to_post)

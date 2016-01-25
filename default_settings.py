@@ -9,7 +9,7 @@ from os.path import abspath, dirname, basename, join
 
 from secrets import *
 
-ROLES_ENABLED = False
+ROLES_ENABLED = True
 
 djcelery.setup_loader()
 
@@ -298,7 +298,7 @@ PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mydashboard', 'mysignon', 'mymessages', 'mypartners',
                 'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
                 'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
-                'automation', 'universal')
+                'automation', 'universal', 'import_jobs')
 
 INSTALLED_APPS += PROJECT_APPS
 
