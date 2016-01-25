@@ -51,8 +51,7 @@ class RegistrationFormTests(MyJobsBase):
         self.failUnless(form.is_valid())
 
     def test_custom_password_reset_form(self):
-        user = UserFactory(is_active=True)
-        form = CustomPasswordResetForm({'email':user.email})
+        form = CustomPasswordResetForm({'email':self.user.email})
         self.assertTrue(form.is_valid())
         user = UserFactory(email='alice2@example.com', is_active=False)
         form = CustomPasswordResetForm({'email':user.email})
