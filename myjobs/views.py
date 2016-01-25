@@ -623,10 +623,19 @@ def api_get_activities(request):
     Retrieves all activities
     """
     activities = Activity.objects.all()
-    return HttpResponse(serializers.serialize("json", activities,
-                                              fields=('name',
-                                                      'description',
-                                                      'app_access')))
+
+    json_res = []
+    for activity in activities:
+        json_obj = dict(
+            activity_id = activity.id,
+            activity_name = activity.name,
+            activity_description = activity.description,
+            app_access_id = activity.app_access.id,
+            app_access_name = activity.app_access.name,
+        )
+        json_res.append(json_obj)
+
+    return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 
 @restrict_to_staff()
