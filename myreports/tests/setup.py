@@ -1,7 +1,6 @@
-from django.test import TestCase
 from django.conf import settings
 
-from myjobs.tests.test_views import TestClient
+from myjobs.tests.setup import MyJobsBase, TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
@@ -20,25 +19,15 @@ from myreports.models import (
     ConfigurationColumn)
 
 
-class MyReportsTestCase(TestCase):
+class MyReportsTestCase(MyJobsBase):
     """
     Base class for all MyReports Tests. Identical to `django.test.TestCase`
     except that it provides a MyJobs TestClient instance and a logged in user.
     """
     def setUp(self):
-        settings.ROLES_ENABLED = False
-        self.client = TestClient()
-        self.user = UserFactory(
-            email='testuser@directemployers.org', is_staff=True)
-        self.user.set_password('aa')
-        self.company = CompanyFactory(name='Test Company')
+        super(MyReportsTestCase, self).setUp()
+        self.role.activities = self.activities
         self.partner = PartnerFactory(name='Test Partner', owner=self.company)
-
-        # associate company to user
-        CompanyUserFactory(user=self.user, company=self.company)
-
-        self.client.login_user(self.user)
-
         create_full_fixture()
 
 

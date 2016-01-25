@@ -99,6 +99,9 @@ class UserType(models.Model):
         'ReportingType', through='UserReportingTypes')
     objects = UserTypeManager()
 
+    def __unicode__(self):
+        return self.user_type
+
 
 class ReportingTypeManager(models.Manager):
     def active_for_user(self, user):
@@ -116,11 +119,17 @@ class ReportingType(models.Model):
     is_active = models.BooleanField(default=False)
     objects = ReportingTypeManager()
 
+    def __unicode__(self):
+        return self.reporting_type
+
 
 class UserReportingTypes(models.Model):
     user_type = models.ForeignKey('UserType')
     reporting_type = models.ForeignKey('ReportingType')
     is_active = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s to %s" % (self.user_type, self.reporting_type)
 
 
 class ReportTypeManager(models.Manager):

@@ -4,7 +4,7 @@ import csv
 import json
 from cStringIO import StringIO
 
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from seo.tests.factories import CompanyUserFactory
 from mypartners.tests.factories import ContactRecordFactory, TagFactory
 from mypartners.models import ContactRecord
@@ -137,27 +137,21 @@ class TestUserType(MyReportsTestCase):
 
     def test_jobseeker(self):
         """User object exists but has no relevant privileges."""
-        user = UserFactory.create()
+        user = UserFactory.create(email='alice1@example.com')
         self.assert_user_type(None, user)
 
     def test_employer(self):
         """User is an employer."""
-        cuser = CompanyUserFactory.create()
-        user = cuser.user
-        self.assert_user_type('EMPLOYER', user)
+        self.assert_user_type('EMPLOYER', self.user)
 
     def test_staff(self):
         """User is staff."""
-        user = UserFactory.create()
-        user.is_staff = True
-        self.assert_user_type('STAFF', user)
+        self.user.roles.clear()
+        self.assert_user_type('STAFF', self.user)
 
     def test_both(self):
         """User is both employer and staff."""
-        cuser = CompanyUserFactory.create()
-        user = cuser.user
-        user.is_staff = True
-        self.assert_user_type('EMPLOYER', user)
+        self.assert_user_type('EMPLOYER', self.user)
 
     def assert_user_type(self, expected, user):
         """Handle details of determining and checking user_type."""
