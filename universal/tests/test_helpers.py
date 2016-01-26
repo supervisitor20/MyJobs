@@ -14,7 +14,7 @@ class InvitationContextTests(MyJobsBase):
         initial email, and whether that saved search is text only.
 
         """
-        saved_search = SavedSearchFactory(text_only=True)
+        saved_search = SavedSearchFactory(user=self.user, text_only=True)
         context = invitation_context(saved_search)
 
         self.assertEqual(context, {
