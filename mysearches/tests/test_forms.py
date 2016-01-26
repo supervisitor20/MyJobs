@@ -72,6 +72,7 @@ class SavedSearchFormTests(MyJobsBase):
 class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
+        self.role.activities = self.activities
         CompanyUserFactory(user=self.user, company=self.company)
         self.partner = PartnerFactory(owner=self.company)
 
@@ -126,11 +127,9 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         message that was inserted into the form.
 
         """
-        client = TestClient()
-        client.login_user(self.user)
-        url = "%s?partner=%s" % (reverse('partner_savedsearch_save'),
-                                 self.partner.pk)
-        response = client.post(url, self.partner_search_data)
+        url = "%s?partner=%s" % (
+            reverse('partner_savedsearch_save'), self.partner.pk)
+        response = self.client.post(url, self.partner_search_data)
 
         email = mail.outbox.pop()
         # inspect email for the custom message
