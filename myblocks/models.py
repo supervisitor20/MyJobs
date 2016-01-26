@@ -132,6 +132,14 @@ class Block(models.Model):
                                                       self.template)
 
     def render_for_ajax(raw_self, request, params):
+        """
+        render the block template to be returned as a response to ajax call
+        :param raw_self: self before being cast to proper subclass
+        :param request: ajax request
+        :param params: keyword parameters
+        :return: template rendered for ajax
+
+        """
         self = raw_self.cast()
         context = self.context(request, **params)
         full_template = templatetag_library() + self.template
@@ -383,7 +391,43 @@ class RegistrationBlock(Block):
         return 'registration-%s' % self.id
 
 
-class SavedSearchWidgetBlock(Block):
+class SecureBlock(Block):
+    """
+    Custom abstract base class for secure blocks retrieved through ajax.
+    Required JS are bundled into the template
+
+    """
+
+    def context(self, request, **kwargs):
+        """
+        Setup context of secure block by appending any kwargs to context
+        dict.
+
+        :param request:
+        :param kwargs: jQuery Data attributes provided from calling site
+        :return: kwargs dict to serve as context dictionary
+
+        """
+        return kwargs
+
+    def render_for_ajax(self, request, params):
+        """
+        Render template then append all required js tags (if applicable)
+
+        """
+        rendered_template = super(SecureBlock,
+                                  self).render_for_ajax(request,
+                                                        params)
+        static_string = '<script src="%s"></script>'
+        required_js = [static_string % js for js in self.required_js()]
+        return '%s %s' % (rendered_template, ''.join(required_js))
+
+    class Meta:
+        abstract = True
+
+
+
+class SavedSearchWidgetBlock(SecureBlock):
     """
     Secure Block. What is rendered is based heavily on whether or not the
     user is signed in to an account. Block renders as a customizable saved
@@ -393,34 +437,42 @@ class SavedSearchWidgetBlock(Block):
     base_template = 'myblocks/blocks/savedsearchwidget.html'
 
     def context(self, request, **kwargs):
-        saved_search_url = kwargs.get('url')
-        success_email = kwargs.get('success_email')
+        """
+        Add additional context variables to those passed in from the ajax call.
+        User object and search object added, if available
+
+        """
+        context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
+        saved_search_url = request.META.get('HTTP_REFERER', None)
         search = None
         user = request.user if request.user.is_authenticated() else None
 
-        if user:
+        if user and saved_search_url:
             search = (SavedSearch.objects
                       .filter(user=user,
                               url=saved_search_url)
                       .first())
 
-        if success_email and not search:
-            search = (SavedSearch.objects
-                      .filter(user__email=success_email,
-                              url=saved_search_url)
-                      .first())
-
-        return {
+        context.update({
             'user': user,
             'search': search,
-            'success': success_email
-        }
+        })
+        return context
 
     def required_js(self):
-        return ['//d2e48ltfsb5exy.cloudfront.net/myjobs/tools/def.myjobs.widget.153-05.js']
+        """
+        Return a list of all required javascript in URL format
+
+        """
+        return ['%ssaved-search.js' % settings.STATIC_URL]
 
 
-class SavedSearchesListWidgetBlock(Block):
+class SavedSearchesListWidgetBlock(SecureBlock):
+    """
+    Widget for displaying users 5 most recent saved searches. If there are
+    more than five, a link back to the saved search page is provided.
+
+    """
     base_template = 'myblocks/blocks/savedsearcheslistwidget.html'
 
     def context(self, request, **kwargs):
