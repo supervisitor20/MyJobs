@@ -13,6 +13,9 @@
             {{ invitation.inviting_user.email }}
         {% endif %}
         of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ message }}
+
+        {{ link_text|safe }}
+
     </p>
 
     {% if group or company_user %}
