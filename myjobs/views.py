@@ -599,7 +599,6 @@ def topbar(request):
     return response
 
 
-@restrict_to_staff()
 @requires("read role")
 def manage_users(request):
     """
@@ -615,7 +614,6 @@ def manage_users(request):
                               RequestContext(request))
 
 
-@restrict_to_staff()
 @requires("read role")
 def api_get_activities(request):
     """
@@ -629,7 +627,6 @@ def api_get_activities(request):
                                                       'app_access')))
 
 
-@restrict_to_staff()
 @requires("read role")
 def api_get_roles(request):
     """
@@ -694,7 +691,6 @@ def api_get_roles(request):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
@@ -763,7 +759,6 @@ def api_get_specific_role(request, role_id=0):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('create role')
 def api_create_role(request):
     """
@@ -834,7 +829,6 @@ def api_create_role(request):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('update role')
 def api_edit_role(request, role_id=0):
     """
@@ -935,7 +929,6 @@ def api_edit_role(request, role_id=0):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('delete role')
 def api_delete_role(request, role_id=0):
     """
@@ -983,7 +976,6 @@ def api_delete_role(request, role_id=0):
                             content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('read user')
 def api_get_users(request):
     """
@@ -1042,7 +1034,6 @@ def api_get_users(request):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('read user')
 def api_get_specific_user(request, user_id=0):
     """
@@ -1100,7 +1091,6 @@ def api_get_specific_user(request, user_id=0):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('create user')
 def api_create_user(request):
     """
@@ -1185,7 +1175,6 @@ def api_create_user(request):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('update user')
 def api_edit_user(request, user_id=0):
     """
@@ -1291,7 +1280,6 @@ def api_edit_user(request, user_id=0):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@restrict_to_staff()
 @requires('delete user')
 def api_delete_user(request, user_id=0):
     """
