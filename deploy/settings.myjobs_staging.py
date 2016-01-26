@@ -6,7 +6,6 @@ import os
 from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
 
 DEBUG = True
-ROLES_ENABLED = False
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
