@@ -7,6 +7,7 @@ from django.core.urlresolvers import clear_url_caches
 from django.test import TestCase
 
 from myjobs.tests.helpers import return_file
+from seo.models import SeoSite
 
 
 class MyJobsBase(TestCase):
@@ -28,6 +29,7 @@ class MyJobsBase(TestCase):
 
         self.patcher = patch('urllib2.urlopen', return_file())
         self.mock_urlopen = self.patcher.start()
+        settings.SITE = SeoSite.objects.first()
 
     def tearDown(self):
         self.ms_solr.delete(q='*:*')
