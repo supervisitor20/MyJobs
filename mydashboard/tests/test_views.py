@@ -143,13 +143,17 @@ class MyDashboardViewsTests(MyJobsBase):
         self.candidate_user.save()
         update_solr_task(settings.TEST_SOLR_INSTANCE)
 
-        country_str = 'http://testserver/candidates/view?company=1&location={country}'
-        education_str = 'http://testserver/candidates/view?company=1&education={education}'
-        license_str = 'http://testserver/candidates/view?company=1&license={license_name}'
+        base_url = 'http://testserver/candidates/view?company={company}'
+        country_str = base_url + '&location={country}'
+        education_str = base_url + '&education={education}'
+        license_str = base_url + '&license={license_name}'
 
-        country_str = country_str.format(country=adr.country_code)
-        education_str = education_str.format(education=education.education_level_code)
-        license_str = license_str.format(license_name=license.license_name)
+        country_str = country_str.format(
+            company=self.company.pk, country=adr.country_code)
+        education_str = education_str.format(
+            company=self.company.pk, education=education.education_level_code)
+        license_str = license_str.format(
+            company=self.company.pk, license_name=license.license_name)
 
         q = '?company={company}'
         q = q.format(company=str(self.company.id))
@@ -172,25 +176,25 @@ class MyDashboardViewsTests(MyJobsBase):
         self.candidate_user.save()
         update_solr_task(settings.TEST_SOLR_INSTANCE)
 
-        country_str = 'http://testserver/candidates/view?company=1&amp;location={country}'
-        country_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company=1"><span>&#10006;</span> {country_long}</a><br>'
-        region_str = 'http://testserver/candidates/view?company=1&amp;location={country}-{region}'
-        region_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company=1&amp;location={country}"><span>&#10006;</span> {region}, {country}</a>'
-        city_str = 'http://testserver/candidates/view?company=1&amp;location={country}-{region}-{city}'
-        city_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company=1&amp;location={country}-{region}"><span>&#10006;</span> {city}, {region}, {country}</a>'
+        country_str = 'http://testserver/candidates/view?company={company}&amp;location={country}'
+        country_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company={company}"><span>&#10006;</span> {country_long}</a><br>'
+        region_str = 'http://testserver/candidates/view?company={company}&amp;location={country}-{region}'
+        region_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company={company}&amp;location={country}"><span>&#10006;</span> {region}, {country}</a>'
+        city_str = 'http://testserver/candidates/view?company={company}&amp;location={country}-{region}-{city}'
+        city_filter_str = '<a class="applied-filter" href="http://testserver/candidates/view?company={company}&amp;location={country}-{region}"><span>&#10006;</span> {city}, {region}, {country}</a>'
 
-        country_str = country_str.format(country=adr.country_code)
-        country_filter_str = country_filter_str.format(country=adr.country_code,
+        country_str = country_str.format(company=self.company.pk, country=adr.country_code)
+        country_filter_str = country_filter_str.format(company=self.company.pk, country=adr.country_code,
                                                        country_long=country_codes[adr.country_code])
-        region_str = region_str.format(country=adr.country_code,
+        region_str = region_str.format(company=self.company.pk, country=adr.country_code,
                                        region=adr.country_sub_division_code)
-        region_filter_str = region_filter_str.format(region=adr.country_sub_division_code,
+        region_filter_str = region_filter_str.format(company=self.company.pk, region=adr.country_sub_division_code,
                                                      country=adr.country_code,
                                                      country_long=country_codes[adr.country_code])
-        city_str = city_str.format(country=adr.country_code,
+        city_str = city_str.format(company=self.company.pk, country=adr.country_code,
                                    region=adr.country_sub_division_code,
                                    city=adr.city_name)
-        city_filter_str = city_filter_str.format(country=adr.country_code,
+        city_filter_str = city_filter_str.format(company=self.company.pk, country=adr.country_code,
                                                  region=adr.country_sub_division_code,
                                                  city=adr.city_name,
                                                  country_long=country_codes[adr.country_code])
