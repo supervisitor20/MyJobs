@@ -14,6 +14,7 @@
         {% endif %}
         of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ reason }}
     </p>
+    <p>You can <a href="https://secure.my.jobs{% url 'prm' %}">Click here to access PRM</a></p>
 
     {% if invitation.added_permission %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
