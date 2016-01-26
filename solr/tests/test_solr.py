@@ -40,9 +40,17 @@ class SolrTests(MyJobsBase):
         added to and deleted from solr.
 
         """
+        # new users, profile unites, and saved searches count as hits in solr.
+        # Thus, we are expecting an initial count of 22 because:
+        # - the user created in MyJobsBase
+        # - the primary name profile unit created by the factory
+        # - The 5 users created in the for loop
+        # - each of the 3 saved searches created in the for loop for every user
+        # In other words:
+        #   1 initial user + 1 profile unit + 5 new uesrs + (5 * 3) searches
+        # 1 + 1 + 5 + 15 = 22
         Solr().delete()
-        user = UserFactory(email="example@example.com")
-        PrimaryNameFactory(user=user)
+        PrimaryNameFactory(user=self.user)
 
         for i in range(5):
             # Create 5 new users
@@ -66,8 +74,7 @@ class SolrTests(MyJobsBase):
     def test_xml_chars(self):
         Solr().delete()
 
-        user = UserFactory(email="example@example.com")
-        SummaryFactory(user=user, the_summary='&&& \x01test\x02')
+        SummaryFactory(user=self.user, the_summary='&&& \x01test\x02')
 
         update_solr_task(self.test_solr)
         self.assertEqual(Solr().search().hits, 2)
