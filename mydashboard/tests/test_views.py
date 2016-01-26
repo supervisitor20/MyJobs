@@ -31,20 +31,16 @@ SEARCH_OPTS = ['django', 'python', 'programming']
 class MyDashboardViewsTests(MyJobsBase):
     def setUp(self):
         super(MyDashboardViewsTests, self).setUp()
-        self.staff_user = self.user
         group = Group.objects.get(name=CompanyUser.GROUP_NAME)
-        self.staff_user.groups.add(group)
+        self.user.groups.add(group)
 
         self.business_unit = BusinessUnitFactory()
 
         self.company.job_source_ids.add(self.business_unit)
-        self.admin = CompanyUserFactory(user=self.staff_user,
+        self.admin = CompanyUserFactory(user=self.user,
                                         company=self.company)
         self.microsite = SeoSiteFactory()
         self.microsite.business_units.add(self.business_unit)
-
-        self.client = TestClient()
-        self.client.login_user(self.staff_user)
 
         self.candidate_user = UserFactory(email="example@example.com")
         SavedSearchFactory(user=self.candidate_user,
