@@ -1,3 +1,8 @@
+{% comment %}
+Default template for a saved seach list widget. This widget was designed
+as a proof of concept for secure blocks widgets. It includes a list of 5 of
+the user's saved searches if they are logged in.
+{% endcomment %}
 {% if user.is_authenticated and saved_searches.count %}
 <div class="direct_rightColBox direct-action-box">
 <div id="de-myjobs-widget">
