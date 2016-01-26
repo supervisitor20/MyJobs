@@ -1167,7 +1167,8 @@ def api_create_user(request):
                                 content_type="application/json")
 
         # Create User
-        new_user, created = User.objects.create_user(email=user_email)
+        new_user, created = User.objects.create_user(email=user_email,
+                                                     in_reserve=True)
         if created:
             # Assign roles to this user
             new_user.roles.add(*role_ids)
