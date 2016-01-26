@@ -38,7 +38,7 @@ class Role extends React.Component {
     const action = this.props.location.query.action;
 
     if (action === 'Edit') {
-      $.get('/manage-users/api/roles/' + this.props.params.roleId, function getRole(results) {
+      $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
         const roleObject = results[this.props.params.roleId];
 
         const roleName = roleObject.role.name;
