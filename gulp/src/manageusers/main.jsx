@@ -60,6 +60,7 @@ export class App extends React.Component {
         }
       }
 
+      // TODO: Consider refactoring with lodash groupBy()
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
       // First assemble rows needed for each table
