@@ -252,7 +252,7 @@ class RegistrationViewTests(MyJobsBase):
         self.user.send_invite('new@example.com', company)
 
         email = BeautifulSoup(mail.outbox[0].body)
-        href = email.find('a').attrs['href']
+        href = email.select('a[href*="accounts"]')[0].attrs['href']
         response = self.client.get('/' + href.split('/', 3)[-1])
         self.assertContains(
             response, "Your temporary password is ",
