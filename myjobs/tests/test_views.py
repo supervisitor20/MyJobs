@@ -1,127 +1,42 @@
-import base64
-import json
-import time
-import uuid
-from bs4 import BeautifulSoup
 from datetime import timedelta, date
-from importlib import import_module
+import time
+import json
+import uuid
 from urllib import urlencode
 
+import base64
+from bs4 import BeautifulSoup
 from django.conf import settings
-from django.contrib.auth import login
 from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.http import HttpRequest
 from django.template import Context, Template
-from django.test.client import Client, MULTIPART_CONTENT
-from mymessages.models import Message
-from mymessages.tests.factories import MessageInfoFactory
+from jira.client import JIRA
 
-from setup import MyJobsBase
 from myjobs.models import User, EmailLog, FAQ
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
+from myjobs.tests.setup import MyJobsBase, TestClient
+from mymessages.models import Message
+from mymessages.tests.factories import MessageInfoFactory
 from mypartners.tests.factories import PartnerFactory
+from myprofile.models import Name, Education
 from myprofile.tests.factories import SecondaryEmailFactory
 from mysearches.models import PartnerSavedSearch
-from seo.tests.factories import CompanyFactory, CompanyUserFactory
-from myprofile.models import Name, Education
 from mysearches.models import SavedSearch, SavedSearchLog
-from registration.models import ActivationProfile
 from registration import signals as custom_signals
-
+from registration.models import ActivationProfile
 from secrets import options, my_agent_auth
-from jira.client import JIRA
-
+from seo.tests.factories import CompanyFactory, CompanyUserFactory
 from tasks import process_batch_events
-
-
-class TestClient(Client):
-    """
-    Custom test client that decouples testing from the authentication bits, as
-    well as reduces boilerplate when sending requests.
-    """
-
-    def __init__(self, enforce_csrf_checks=False, path=None,
-                 data=None, **defaults):
-        """
-        In addition to Django's test client, this method also takes an optional
-        path and data attribute to be used for get and post requests.
-        """
-        self.path = path
-        self.data = data or {}
-        super(TestClient, self).__init__(enforce_csrf_checks, **defaults)
-
-    def get(self, path=None, data=None, follow=False, secure=False, **extra):
-        """
-        Like the builtin get method, but uses the instances path and data when
-        available.
-        """
-        path = path or self.path
-
-        if not path:
-            raise TypeError("get expects a path. None given. Either "
-                            "instantiate TestClient with a default path or be "
-                            "sure that the first argument to get is a valid "
-                            "path.")
-        data = data or self.data
-
-        return super(TestClient, self).get(
-            path, data=data, follow=follow, secure=secure, **extra)
-
-    def post(self, path=None, data=None, content_type=MULTIPART_CONTENT,
-             secure=False, **extra):
-        path = path or self.path
-        data = data or self.data
-
-        try:
-            return super(TestClient, self).post(
-                path, data=data, content_type=content_type,
-                secure=secure, **extra)
-        except TypeError:
-            raise Exception("Calls to TestClient's methods require that "
-                            "either path be passed explicit, or the "
-                            "path be specified in the constructor")
-
-    def login_user(self, user):
-        if 'django.contrib.sessions' not in settings.INSTALLED_APPS:
-            raise AssertionError("Unable to login without "
-                                 "django.contrib.sessions in INSTALLED_APPS")
-        user.backend = "%s.%s" % ("django.contrib.auth.backends",
-                                  "ModelBackend")
-        engine = import_module(settings.SESSION_ENGINE)
-
-        # Create a fake request to store login details.
-        request = HttpRequest()
-        if self.session:
-            request.session = self.session
-        else:
-            request.session = engine.SessionStore()
-        login(request, user)
-
-        # Set the cookie to represent the session.
-        session_cookie = settings.SESSION_COOKIE_NAME
-        self.cookies[session_cookie] = request.session.session_key
-        cookie_data = {
-            'max-age': None,
-            'path': '/',
-            'domain': settings.SESSION_COOKIE_DOMAIN,
-            'secure': settings.SESSION_COOKIE_SECURE or None,
-            'expires': None,
-        }
-        self.cookies[session_cookie].update(cookie_data)
-
-        # Save the session values.
-        request.session.save()
 
 
 class MyJobsViewsTests(MyJobsBase):
     def setUp(self):
         super(MyJobsViewsTests, self).setUp()
         self.password = '5UuYquA@'
-        self.user = User.objects.create_superuser(
-            password=self.password, email='alice@example.com')
+        self.user.is_superuser = True
+        self.user.save()
         self.client = TestClient()
         self.client.login(email=self.user.email, password=self.password)
         self.events = ['open', 'delivered', 'click']
@@ -1101,15 +1016,10 @@ class MyJobsTopbarViewsTests(MyJobsBase):
     # TODO: When selenium tests are available create company switching tests.
     def setUp(self):
         super(MyJobsTopbarViewsTests, self).setUp()
-        self.user = UserFactory()
-        self.client = TestClient()
-        self.client.login_user(self.user)
-
         self.companies = CompanyFactory.create_batch(size=3)
 
-        self.company_users = [CompanyUserFactory
-                              (user=self.user, company=company)
-                              for company in self.companies]
+        self.roles = RoleFactory.create_batch(size=3)
+        self.user.roles = self.roles
 
     def test_topbar_with_multiple_companies(self):
         """
@@ -1133,7 +1043,8 @@ class MyJobsTopbarViewsTests(MyJobsBase):
 
         # Pull company names from json and self.companies
         jsond_company_names = [company['name'] for company in jsond]
-        actual_company_names = [company.name for company in self.companies]
+        actual_company_names = self.user.roles.values_list(
+            'company__name', flat=True)
 
         # Test if the lists of company names match!
         self.assertItemsEqual(jsond_company_names, actual_company_names)
@@ -1148,21 +1059,16 @@ class MyJobsTopbarViewsTests(MyJobsBase):
                       {% get_company_name user as company_name %}
                       {{ company_name }}"""
 
-        with self.settings(ROLES_ENABLED=False):
-            context = Context({'user': self.user})
-            Template(template).render(context)
-            self.assertItemsEqual(
-                context['company_name'], self.user.company_set.all())
+        roles = [RoleFactory(company=c) for c in self.companies]
 
-        with self.settings(ROLES_ENABLED=True):
-            roles = [RoleFactory(company=c) for c in self.companies]
+        self.user.roles = roles
 
-            self.user.roles = roles
-
-            context = Context({'user': self.user})
-            Template(template).render(context)
-            self.assertItemsEqual(
-                context['company_name'], self.user.company_set.all())
+        context = Context({'user': self.user})
+        Template(template).render(context)
+        context_company_names = [c.name for c in context['company_name']]
+        expected_company_names = [c for c in self.user.roles.values_list(
+            'company__name', flat=True)]
+        self.assertItemsEqual(context_company_names, expected_company_names)
 
     def test_can_template_tag(self):
         """
@@ -1174,53 +1080,28 @@ class MyJobsTopbarViewsTests(MyJobsBase):
                       {% can user company "read partner" as read_partner %}
                       {% can user company "read role" as read_role %}"""
 
-        app_access = AppAccessFactory()
-        self.companies[0].app_access.add(app_access)
-        activities = [
-            ActivityFactory(name="read role", app_access=app_access),
-            ActivityFactory(name="read partner", app_access=app_access)]
+        context = Context({
+            'user': self.user, 'company': self.company})
 
-        role = RoleFactory(company=self.companies[0], activities=activities)
+        self.role.activities = self.activities
+        self.user.roles.add(self.role)
+
+        context = Context({
+            'user': self.user, 'company': self.company})
+
+        Template(template).render(context)
+
+        self.assertTrue(context['read_partner'])
+        self.assertTrue(context['read_role'])
+
+        # disable PRM (by removing PRM-related activities when roles are
+        # enabled
+        self.role.remove_activity('read partner')
+        self.role.remove_activity('read role')
+
+        # recreate the context since the last rendering modified it
         context = Context({
             'user': self.user, 'company': self.companies[0]})
-
-        with self.settings(ROLES_ENABLED=False):
-            Template(template).render(context)
-
-            self.assertTrue(context['read_partner'])
-            self.assertFalse(context['read_role'])
-
-            # disable PRM (by disabling member when roles are disabled)
-            self.companies[0].member = False
-            self.companies[0].save()
-
-            # recreate the context since the last rendering modified it
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-            Template(template).render(context)
-
-            self.assertFalse(context['read_partner'])
-            self.assertFalse(context['read_role'])
-
-        with self.settings(ROLES_ENABLED=True):
-            self.user.roles.add(role)
-
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-
-            Template(template).render(context)
-
-            self.assertTrue(context['read_partner'])
-            self.assertTrue(context['read_role'])
-
-            # disable PRM (by removing PRM-related activities when roles are
-            # enabled
-            role.remove_activity('read partner')
-            role.remove_activity('read role')
-
-            # recreate the context since the last rendering modified it
-            context = Context({
-                'user': self.user, 'company': self.companies[0]})
-            Template(template).render(context)
-            self.assertFalse(context['read_partner'])
-            self.assertFalse(context['read_role'])
+        Template(template).render(context)
+        self.assertFalse(context['read_partner'])
+        self.assertFalse(context['read_role'])

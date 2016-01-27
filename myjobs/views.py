@@ -569,7 +569,7 @@ def topbar(request):
         try:
             user = User.objects.get(user_guid=guid)
         except User.DoesNotExist:
-            pass
+           pass
 
     if not user or user.is_anonymous():
         user = None
@@ -593,7 +593,6 @@ def topbar(request):
 
     html = render_to_response('includes/topbar.html', ctx,
                               RequestContext(request))
-
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 
     return response

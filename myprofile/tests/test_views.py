@@ -14,7 +14,6 @@ from myprofile.models import Name
 class MyProfileViewsTests(MyJobsBase):
     def setUp(self):
         super(MyProfileViewsTests, self).setUp()
-        self.user = UserFactory()
         self.client = TestClient()
         self.client.login_user(self.user)
         self.name = PrimaryNameFactory(user=self.user)

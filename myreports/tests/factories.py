@@ -1,6 +1,5 @@
 from factory.django import DjangoModelFactory
 
-
 class UserTypeFactory(DjangoModelFactory):
     class Meta:
         model = 'myreports.UserType'

@@ -21,7 +21,8 @@ class TaskTests(MyJobsBase):
     def test_required_number_of_bad_events(self):
         now = datetime.datetime.now()
         event = BAD_EMAIL[0]
-        u = UserFactory(is_verified=True, opt_in_myjobs=True)
+        u = UserFactory(email="alice1@example.com",
+                        is_verified=True, opt_in_myjobs=True)
         self.make_email_logs(u.email, event, now, False, 2)
         process_batch_events()
 
@@ -37,7 +38,8 @@ class TaskTests(MyJobsBase):
     def test_bad_events_deactivate_user(self):
         now = datetime.datetime.now()
         for event in STOP_SENDING + BAD_EMAIL:
-            u = UserFactory(is_verified=True, opt_in_myjobs=True)
+            u = UserFactory(email="alice1@example.com",
+                            is_verified=True, opt_in_myjobs=True)
             self.make_email_logs(u.email, event, now, False, 3)
             process_batch_events()
 
