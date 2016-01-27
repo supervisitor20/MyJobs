@@ -414,11 +414,19 @@ def saved_search_invitation_context(saved_search):
 
     """
 
-    return {"message": " in order to begin receiving their available job "
-                       "opportunities on a regular basis.",
+    ctx = {"message": " in order to begin receiving their available job "
+                      "opportunities on a regular basis.",
             "saved_search": saved_search,
             "initial_search_email": saved_search.initial_email(send=False),
             "text_only": saved_search.text_only}
+
+    if hasattr(saved_search, "partner_message"):
+        href = "%ssaved-search/view/feed?id=%s" % (
+            settings.ABSOLUTE_URL, saved_search.pk)
+        text = "Click here to access this saved search"
+        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+
+    return ctx
 
 
 class SavedSearchDigest(models.Model):
