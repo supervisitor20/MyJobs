@@ -9,7 +9,6 @@ from myprofile.tests.factories import PrimaryNameFactory
 class CommonTagsTests(MyJobsBase):
     def setUp(self):
         super(CommonTagsTests, self).setUp()
-        self.user = UserFactory()
         self.context = Context({'user': self.user})
 
     def test_get_name_obj_no_name(self):

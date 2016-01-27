@@ -11,7 +11,6 @@ from mymessages.tests.factories import MessageInfoFactory
 class MessageViewTests(MyJobsBase):
     def setUp(self):
         super(MessageViewTests, self).setUp()
-        self.user = UserFactory()
         self.message = Message.objects.create(subject='subject',
                                               body='body',
                                               message_type='success')

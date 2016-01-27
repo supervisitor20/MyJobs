@@ -15,25 +15,12 @@ class ManageUsersTests(MyJobsBase):
 
     def setUp(self):
         super(ManageUsersTests, self).setUp()
-        settings.ROLES_ENABLED = True
-
-        self.app_access = AppAccessFactory()
-        self.company = CompanyFactory(app_access=[self.app_access])
+        self.role.activities = self.activities
         self.otherCompany = CompanyFactory(app_access=[self.app_access])
-        self.role = RoleFactory(company=self.company, name="Admin")
-        self.otherRole = RoleFactory(company=self.company, name="OtherRole")
-        self.otherRoleAtOtherCompany = RoleFactory(company=self.otherCompany, name="otherRoleAtOtherCompany")
-        self.user = UserFactory(roles=[self.role, self.otherRole, self.otherRoleAtOtherCompany], is_staff=True)
-        self.activities = [
-            ActivityFactory(name=activity, app_access=self.app_access)
-            for activity in [
-                "read role", "create role", "update role", "delete role",
-                "read activity", "read user", "create user", "update user",
-                "delete user", ]]
-        self.role.activities = [activity for activity in self.activities]
-        # login the user so that we don't get redirected to the login page
-        self.client = TestClient()
-        self.client.login_user(self.user)
+        self.otherRole = RoleFactory(company=self.company, name="OtherROle")
+        self.otherRoleAtOtherCompany = RoleFactory(
+            company=self.otherCompany, name="otherRoleAtOtherCompany")
+        self.user.roles.add(self.otherRole, self.otherRoleAtOtherCompany)
 
     def test_activities(self):
         """

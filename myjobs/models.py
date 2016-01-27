@@ -229,7 +229,10 @@ class CustomUserManager(BaseUserManager):
         Outputs:
         :is_member: Boolean representing the user's membership status
         """
-        return user.groups.filter(name=group).count() >= 1
+        if settings.ROLES_ENABLED:
+            return user.roles.exists()
+        else:
+            return user.groups.filter(name=group).count() >= 1
 
 
 # New in Django 1.5. This is now the default auth user table.

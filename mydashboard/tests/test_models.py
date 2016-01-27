@@ -9,8 +9,6 @@ from seo.models import CompanyUser, Group
 class CompanyUserTests(MyJobsBase):
     def setUp(self):
         super(CompanyUserTests, self).setUp()
-        self.user = UserFactory()
-        self.company = CompanyFactory()
         self.data = {'user': self.user,
                      'company': self.company}
 
