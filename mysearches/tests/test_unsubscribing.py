@@ -15,9 +15,6 @@ from seo.tests.factories import CompanyFactory
 class UnsubscribingTests(MyJobsBase):
     def setUp(self):
         super(UnsubscribingTests, self).setUp()
-        self.user = UserFactory(password='secret')
-        self.client.login(username=self.user.email, password='secret')
-        self.company = CompanyFactory()
         self.partner = PartnerFactory(owner=self.company)
         self.contact = ContactFactory(user=self.user, email=self.user.email,
                                       partner=self.partner)

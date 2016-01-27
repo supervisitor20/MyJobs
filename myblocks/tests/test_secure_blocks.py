@@ -7,7 +7,7 @@ from django.conf import settings
 from seo.tests.setup import DirectSEOBase
 from seo.tests.factories import SeoSiteFactory, UserFactory
 from myjobs.tests.test_views import TestClient
-
+from myblocks.models import SavedSearchWidgetBlock
 
 class TestSecureBlocks(DirectSEOBase):
     """
@@ -60,7 +60,6 @@ class TestSecureBlocks(DirectSEOBase):
         TEMP TEST. Ensure that secure blocks does not return anything when non staff
         user attempts to access the API. Remove when secure blocks is released
 
-        :return:
         """
         nonstaff_user = UserFactory(is_staff=False, email="mrT@test.com")
         self.client.login_user(nonstaff_user)
@@ -70,6 +69,24 @@ class TestSecureBlocks(DirectSEOBase):
                          msg="Expected 404 got %s! Non staff user was able to "
                              "access API while secure blocks disabled for"
                              " nonstaff" % resp.status_code)
+
+    def test_saved_search_includes_required_js(self):
+        """
+        Ensure requests for saved search widget includes required js
+
+        """
+        savedsearch = (SavedSearchWidgetBlock
+                       .objects
+                       .get(element_id='test_saved_search'))
+        body = '{"blocks": {"test_saved_search": {}}}'
+        resp = self.make_sb_request(body)
+        self.assertEqual(resp.status_code, 200,
+                         msg="Expected 200, got %s. User was not able to "
+                             "retrieve blocks for test" % resp.status_code)
+        for js in savedsearch.required_js():
+            self.assertContains(resp, js,
+                                msg_prefix="Did not find %s in response,"
+                                           "missing required js" % js)
 
     def make_sb_request(self, body, http_origin='http://jobs.example.com'):
         """Encapsulate details of getting through CSRF protection, etc."""

@@ -7,65 +7,13 @@ that functionality that should be guarded by certain activities are only
 available when those activities are present for a user.
 
 As such, these tests assume that the settings.ENABLE_ROLES is True.
+
 """
-
-
-from django.core.urlresolvers import reverse
-from django.conf import settings
-
-from myjobs.decorators import MissingActivity
-from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
-                                    ActivityFactory)
 from myjobs.tests.setup import MyJobsBase
-from myjobs.tests.test_views import TestClient
-from seo.tests.factories import CompanyFactory
 
 
 class TestViewLevelActivities(MyJobsBase):
     """Test views wrapped with activities."""
-
-    def setUp(self):
-        super(TestViewLevelActivities, self).setUp()
-        settings.ROLES_ENABLED = True
-
-        self.app_access = AppAccessFactory()
-        self.activities = [
-            ActivityFactory(name=activity, app_access=self.app_access)
-            for activity in [
-                "create communication record", "create contact",
-                "create partner saved search", "create partner", "create tag",
-                "delete tag", "delete partner", "read contact",
-                "read communication record", "read partner saved search",
-                "read partner", "read tag", "update communication record",
-                "update contact", "update partner", "update tag"]]
-        self.company = CompanyFactory(app_access=[self.app_access])
-        # this role will be populated by activities on a test-by-test basis
-        self.role = RoleFactory(company=self.company)
-        self.user = UserFactory(roles=[self.role], is_staff=True)
-
-        # login the user so that we don't get redirected to the login page
-        self.client = TestClient()
-        self.client.login_user(self.user)
-
-    def assertRequires(self, view_name, *activities, **kwargs):
-        """
-        Asserst that the given view is only accessible when a user has a role
-        with the given activities.
-        """
-
-        url = reverse(view_name, kwargs=kwargs.get('kwargs'))
-        method = kwargs.get("method", "get").lower()
-
-        response = getattr(self.client, method)(path=url)
-        self.assertEqual(type(response), MissingActivity)
-
-        self.role.activities = [activity for activity in self.activities
-                                if activity.name in activities]
-
-        response = getattr(self.client, method)(path=url)
-        self.assertNotEqual(type(response), MissingActivity)
-
-        self.role.activities.clear()
 
     def test_prm(self):
         """

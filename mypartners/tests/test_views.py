@@ -26,7 +26,7 @@ from tasks import PARTNER_LIBRARY_SOURCES
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from mydashboard.tests.factories import CompanyFactory, CompanyUserFactory
 from mymessages.models import MessageInfo
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
@@ -49,13 +49,10 @@ class MyPartnersTestCase(MyJobsBase):
         self.request_factory = RequestFactory()
 
         # Create a user to login as
-        self.staff_user = UserFactory(is_staff=True)
+        self.staff_user = self.user
+        self.role.activities = self.activities
+        self.role.save()
 
-        # Create a company
-        self.company = CompanyFactory()
-        self.company.save()
-        self.admin = CompanyUserFactory(user=self.staff_user,
-                                        company=self.company)
         mail.outbox = []
 
         # Create a partner
@@ -1274,8 +1271,8 @@ class EmailTests(MyPartnersTestCase):
                                     action_flag=ADDITION)
 
     def test_partner_email_multiple_companies(self):
-        company2 = CompanyFactory(name="Company 2", pk=22222)
-        CompanyUserFactory(user=self.staff_user, company=company2)
+        new_role = RoleFactory()
+        self.staff_user.roles.add(new_role)
 
         mail.outbox = []
 

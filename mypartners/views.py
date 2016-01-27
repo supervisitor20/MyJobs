@@ -664,7 +664,7 @@ def partner_savedsearch_save(request):
     if it is needed.
 
     """
-    company, partner, user = prm_worthy(request)
+    company, partner, _ = prm_worthy(request)
     item_id = request.REQUEST.get('id', None)
 
     if item_id:
@@ -1229,7 +1229,16 @@ def process_email(request):
     admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
     if admin_user is None:
         return HttpResponse(status=200)
-    if admin_user.company_set.count() > 1:
+
+    # determine if the user is associated with more thanone company
+    multiple_companies = False
+    if settings.ROLES_ENABLED:
+        multiple_companies = admin_user.roles.values(
+            "company").distinct().count() > 1
+    else:
+        multiple_companies = admin_user.company_set.count() > 1
+
+    if multiple_companies:
         error = "Your account is setup as the admin for multiple companies. " \
                 "Because of this we cannot match this email with a " \
                 "specific partner on a specific company with 100% certainty. " \
@@ -1239,8 +1248,12 @@ def process_email(request):
                                            error, admin_email)
         return HttpResponse(status=200)
 
-    partners = list(chain(*[company.partner_set.all()
-                            for company in admin_user.company_set.all()]))
+    if settings.ROLES_ENABLED and admin_user.roles.exists():
+        partners = admin_user.roles.first().company.partner_set.all()
+    elif admiN_user.company_set.exists():
+        partners = admin_user.company_set.first().partner_set.all()
+    else:
+        partners = []
 
     possible_contacts, created_contacts, unmatched_contacts = [], [], []
     for contact in contact_emails:

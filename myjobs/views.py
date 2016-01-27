@@ -569,7 +569,7 @@ def topbar(request):
         try:
             user = User.objects.get(user_guid=guid)
         except User.DoesNotExist:
-            pass
+           pass
 
     if not user or user.is_anonymous():
         user = None
@@ -593,7 +593,6 @@ def topbar(request):
 
     html = render_to_response('includes/topbar.html', ctx,
                               RequestContext(request))
-
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 
     return response
@@ -1148,9 +1147,9 @@ def api_create_user(request):
             # Add new roles
             matching_user[0].roles.add(*role_ids)
             # 2) Send user an email
-            request.user.send_invite(user_email,
-                                     company,
-                                     role_name=roles)
+            for role in roles:
+                request.user.send_invite(user_email, company, role)
+
             ctx["success"] = "true"
             ctx["message"] = "User already exists. Role invitation email sent."
             return HttpResponse(json.dumps(ctx),
@@ -1162,9 +1161,8 @@ def api_create_user(request):
         if created:
             # Assign roles to this user
             new_user.roles.add(*role_ids)
-            request.user.send_invite(user_email,
-                                     company,
-                                     role_name=roles)
+            for role in roles:
+                request.user.send_invite(user_email, company, role)
 
             ctx["success"] = "true"
             ctx["message"] = "User created. Invitation email sent."
@@ -1273,9 +1271,8 @@ def api_edit_user(request, user_id=0):
                 user[0].roles.remove(currently_assigned_role.id)
 
         # Notify the user
-        request.user.send_invite(user[0].email,
-                                 company,
-                                 role_name=assigned_roles)
+        for role in assigned_roles:
+            request.user.send_invite(user[0].email, company, role)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")

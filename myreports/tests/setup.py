@@ -1,7 +1,6 @@
-from django.test import TestCase
 from django.conf import settings
 
-from myjobs.tests.test_views import TestClient
+from myjobs.tests.setup import MyJobsBase, TestClient
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
@@ -20,25 +19,15 @@ from myreports.models import (
     ConfigurationColumn)
 
 
-class MyReportsTestCase(TestCase):
+class MyReportsTestCase(MyJobsBase):
     """
     Base class for all MyReports Tests. Identical to `django.test.TestCase`
     except that it provides a MyJobs TestClient instance and a logged in user.
     """
     def setUp(self):
-        settings.ROLES_ENABLED = False
-        self.client = TestClient()
-        self.user = UserFactory(
-            email='testuser@directemployers.org', is_staff=True)
-        self.user.set_password('aa')
-        self.company = CompanyFactory(name='Test Company')
+        super(MyReportsTestCase, self).setUp()
+        self.role.activities = self.activities
         self.partner = PartnerFactory(name='Test Partner', owner=self.company)
-
-        # associate company to user
-        CompanyUserFactory(user=self.user, company=self.company)
-
-        self.client.login_user(self.user)
-
         create_full_fixture()
 
 
@@ -116,7 +105,8 @@ def create_full_fixture():
     rt_partners = ReportTypeFactory(
         id=1,
         report_type="Partners",
-        description="Partners Report")
+        description="Partners Report",
+        datasource="partners")
     rt_con = ReportTypeFactory(
         id=2,
         report_type="Contacts",
@@ -125,7 +115,8 @@ def create_full_fixture():
     rt_comm = ReportTypeFactory(
         id=3,
         report_type="Communication Records",
-        description="Communication Records Report")
+        description="Communication Records Report",
+        datasource="comm_records")
     rt_state = ReportTypeFactory(
         id=4,
         report_type="State",
@@ -188,6 +179,10 @@ def create_full_fixture():
         report_type=rt_con, data_type=dt_maybe_dead, is_active=False)
     rtdt_conn_unagg = ReportTypeDataTypesFactory.create(
         report_type=rt_con, data_type=dt_unagg)
+    rtdt_part_unagg = ReportTypeDataTypesFactory.create(
+        report_type=rt_partners, data_type=dt_unagg)
+    rtdt_comm_unagg = ReportTypeDataTypesFactory.create(
+        report_type=rt_comm, data_type=dt_unagg)
 
     PresentationType.objects.all().delete()
     pre_dead = PresentationTypeFactory.create(
@@ -203,7 +198,11 @@ def create_full_fixture():
     ConfigurationFactory.create(
         id=2, name="Maybe Inactive")
     con_con = ConfigurationFactory.create(
-        id=3, name="Basic Report")
+        id=3, name="Contact Basic Report")
+    con_part = ConfigurationFactory.create(
+        id=4, name="Partner Basic Report")
+    con_comm = ConfigurationFactory.create(
+        id=5, name="Communication Records Basic Report")
 
     ConfigurationColumn.objects.all().delete()
     ConfigurationColumnFactory.create(
@@ -274,10 +273,218 @@ def create_full_fixture():
         id=10,
         column_name="tags",
         order=107,
-        output_format="comma_sep",
+        output_format="tags_list",
         filter_interface_type='tags',
         filter_interface_display='Tags',
         configuration=con_con,
+        multi_value_expansion=False,
+        has_help=True)
+
+    ConfigurationColumnFactory.create(
+        id=30,
+        column_name="data_source",
+        order=103,
+        output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='Data Source',
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=31,
+        column_name="name",
+        order=104,
+        output_format="text",
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=32,
+        column_name="date",
+        order=105,
+        configuration=con_part,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=33,
+        column_name="primary_contact",
+        order=106,
+        output_format="text",
+        configuration=con_part,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=34,
+        column_name="tags",
+        order=107,
+        output_format="tags_list",
+        filter_interface_type='tags',
+        filter_interface_display='Tags',
+        configuration=con_part,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=35,
+        column_name="uri",
+        order=108,
+        output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='URL',
+        configuration=con_part,
+        multi_value_expansion=False)
+
+    ConfigurationColumnFactory.create(
+        id=60,
+        column_name="contact",
+        order=123,
+        output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Contacts',
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=61,
+        column_name="contact_email",
+        order=104,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=62,
+        column_name="contact_phone",
+        order=105,
+        configuration=con_comm,
+        output_format="text",
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=63,
+        column_name="communication_type",
+        order=109,
+        filter_interface_type='search_select',
+        filter_interface_display='Communication Type',
+        configuration=con_comm,
+        output_format="text",
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=64,
+        column_name="created_on",
+        order=107,
+        configuration=con_comm,
+        output_format="us_date",
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=65,
+        column_name="created_by",
+        order=108,
+        configuration=con_comm,
+        output_format="text",
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=66,
+        column_name="date_time",
+        order=106,
+        configuration=con_comm,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=67,
+        column_name="job_applications",
+        order=110,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=68,
+        column_name="job_applications",
+        order=111,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=69,
+        column_name="job_hires",
+        order=112,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=70,
+        column_name="job_id",
+        order=113,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=71,
+        column_name="job_interviews",
+        order=114,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=72,
+        column_name="last_action_time",
+        order=115,
+        output_format="us_date",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=73,
+        column_name="length",
+        order=116,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=74,
+        column_name="location",
+        order=117,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=75,
+        column_name="notes",
+        order=118,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=76,
+        column_name="partner",
+        order=122,
+        output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Partners',
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=77,
+        column_name="subject",
+        order=120,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=78,
+        column_name="tags",
+        order=121,
+        output_format="tags_list",
+        filter_interface_type='tags',
+        filter_interface_display='Tags',
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=79,
+        order=102,
+        filter_interface_type='city_state',
+        filter_interface_display='Contact Location',
+        filter_only=True,
+        configuration=con_comm,
         multi_value_expansion=False,
         has_help=True)
 
@@ -297,3 +504,11 @@ def create_full_fixture():
         id=4, presentation_type=pre_csv, configuration=con_dead,
         display_name="Dead Configuration",
         report_data=rtdt_conn_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=5, presentation_type=pre_csv, configuration=con_part,
+        display_name="Partner CSV",
+        report_data=rtdt_part_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=6, presentation_type=pre_csv, configuration=con_comm,
+        display_name="Communication Record CSV",
+        report_data=rtdt_comm_unagg, is_active=True)
