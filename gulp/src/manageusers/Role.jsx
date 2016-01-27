@@ -41,37 +41,29 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-        const roleObject = results[this.props.params.roleId];
+        console.log(results)
+        const roleName = results.role_name;
 
-        const roleName = roleObject.role.name;
+        const availableUsers = results.available_users;
+        const assignedUsers = results.assigned_users;
 
-        // Create availableUsers
-        const availableUsersParsed = JSON.parse(roleObject.users.available);
+        const activities = results.activities;
 
-        const availableUsers = formatForMultiselect(availableUsersParsed);
-
-        // Create assignedUsers
-        const assignedUsersParsed = JSON.parse(roleObject.users.assigned);
-        const assignedUsers = formatForMultiselect(assignedUsersParsed);
-
-        const availableActivitiesParsed = JSON.parse(roleObject.activities.available);
-        const assignedActivitiesParsed = JSON.parse(roleObject.activities.assigned);
-
-        // Create availablePRMActivities
-        let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
-        availablePRMActivities = formatForMultiselect(availablePRMActivities);
-
-        // Create assignedPRMActivities
-        let assignedPRMActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 1);
-        assignedPRMActivities = formatForMultiselect(assignedPRMActivities);
-
-        // Create availableUserManagementActivities
-        let availableUserManagementActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 2);
-        availableUserManagementActivities = formatForMultiselect(availableUserManagementActivities);
-
-        // Create assignedUserManagementActivities
-        let assignedUserManagementActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 2);
-        assignedUserManagementActivities = formatForMultiselect(assignedUserManagementActivities);
+        // // Create availablePRMActivities
+        // let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
+        // availablePRMActivities = formatForMultiselect(availablePRMActivities);
+        //
+        // // Create assignedPRMActivities
+        // let assignedPRMActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 1);
+        // assignedPRMActivities = formatForMultiselect(assignedPRMActivities);
+        //
+        // // Create availableUserManagementActivities
+        // let availableUserManagementActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 2);
+        // availableUserManagementActivities = formatForMultiselect(availableUserManagementActivities);
+        //
+        // // Create assignedUserManagementActivities
+        // let assignedUserManagementActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 2);
+        // assignedUserManagementActivities = formatForMultiselect(assignedUserManagementActivities);
 
         this.setState({
           apiResponseHelp: '',
@@ -97,8 +89,6 @@ class Role extends React.Component {
             break;
           }
         }
-
-        // TODO do what I did to /roles/ too
 
         // Create availableUsers
         const availableUsersParsed = JSON.parse(roleObject.users.available);
