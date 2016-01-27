@@ -7,7 +7,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 
 from myblocks.models import LoginBlock, RegistrationBlock
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory, ActivityFactory
 from myjobs.tests.setup import MyJobsBase
 from myjobs.models import User
 from myjobs.tests.test_views import TestClient
@@ -18,6 +18,7 @@ from mysearches.models import SavedSearch
 from mysearches.tests.factories import SavedSearchFactory
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
+from seo.tests.factories import CompanyUserFactory
 from seo.tests.setup import DirectSEOBase
 from seo.models import SeoSite
 from universal.helpers import build_url
@@ -46,9 +47,8 @@ class RegistrationViewTests(MyJobsBase):
 
         # Update the only existing site so we're working with
         # my.jobs for historical/aesthetic purposes.
-        site = SeoSite.objects.get()
-        site.domain = 'my.jobs'
-        site.save()
+        settings.SITE.domain = 'my.jobs'
+        settings.SITE.save()
 
     def test_valid_activation(self):
         """
@@ -229,6 +229,30 @@ class RegistrationViewTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertIn("in order to help administer their recruitment and "
                       "outreach tools.", email.body)
+
+    def test_invite_new_user_shows_password(self):
+        """
+        New users who were invited to use My.jobs should receive a
+        temporary password after activating.
+        """
+        if settings.ROLES_ENABLED:
+            role = RoleFactory()
+            activity = ActivityFactory(name='create user')
+            role.activities.add(activity)
+            self.user.roles.add(role)
+            company = role.company
+        else:
+            cu = CompanyUserFactory(user=self.user)
+            company = cu.company
+        mail.outbox = []
+        self.user.send_invite('new@example.com', company)
+
+        email = BeautifulSoup(mail.outbox[0].body)
+        href = email.find('a').attrs['href']
+        response = self.client.get('/' + href.split('/', 3)[-1])
+        self.assertContains(
+            response, "Your temporary password is ",
+            msg_prefix="Temporary password was not found on the page.")
 
     def test_generic_invitation_message(self):
         """

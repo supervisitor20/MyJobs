@@ -166,4 +166,3 @@ class MyJobsBase(TestCase):
         self.assertNotEqual(type(response), MissingActivity)
 
         self.role.activities.clear()
-
