@@ -17,7 +17,6 @@ from myjobs.tests.factories import UserFactory
 class SavedSearchHelperTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchHelperTests, self).setUp()
-        self.user = UserFactory()
         self.valid_url = 'http://www.my.jobs/jobs?location=chicago&q=nurse'
 
     def test_valid_dotjobs_url(self):

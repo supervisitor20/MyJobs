@@ -15,25 +15,12 @@ class ManageUsersTests(MyJobsBase):
 
     def setUp(self):
         super(ManageUsersTests, self).setUp()
-        settings.ROLES_ENABLED = True
-
-        self.app_access = AppAccessFactory()
-        self.company = CompanyFactory(app_access=[self.app_access])
+        self.role.activities = self.activities
         self.otherCompany = CompanyFactory(app_access=[self.app_access])
-        self.role = RoleFactory(company=self.company, name="Admin")
-        self.otherRole = RoleFactory(company=self.company, name="OtherRole")
-        self.otherRoleAtOtherCompany = RoleFactory(company=self.otherCompany, name="otherRoleAtOtherCompany")
-        self.user = UserFactory(roles=[self.role, self.otherRole, self.otherRoleAtOtherCompany], is_staff=True)
-        self.activities = [
-            ActivityFactory(name=activity, app_access=self.app_access)
-            for activity in [
-                "read role", "create role", "update role", "delete role",
-                "read activity", "read user", "create user", "update user",
-                "delete user", ]]
-        self.role.activities = [activity for activity in self.activities]
-        # login the user so that we don't get redirected to the login page
-        self.client = TestClient()
-        self.client.login_user(self.user)
+        self.otherRole = RoleFactory(company=self.company, name="OtherROle")
+        self.otherRoleAtOtherCompany = RoleFactory(
+            company=self.otherCompany, name="otherRoleAtOtherCompany")
+        self.user.roles.add(self.otherRole, self.otherRoleAtOtherCompany)
 
     def test_activities(self):
         """
@@ -45,14 +32,20 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
         first_result = output[0]
 
-        name = first_result['fields']['name']
-        self.assertIsInstance(name, unicode)
+        activity_name = first_result['activity_name']
+        self.assertIsInstance(activity_name, unicode)
 
-        description = first_result['fields']['description']
-        self.assertIsInstance(description, unicode)
+        app_access_name = first_result['app_access_name']
+        self.assertIsInstance(app_access_name, unicode)
 
-        app_access = first_result['fields']['app_access']
-        self.assertIsInstance(app_access, int)
+        activity_description = first_result['activity_description']
+        self.assertIsInstance(activity_description, unicode)
+
+        activity_id = first_result['activity_id']
+        self.assertIsInstance(activity_id, int)
+
+        app_access_id = first_result['app_access_id']
+        self.assertIsInstance(app_access_id, int)
 
     def test_create_role_require_post(self):
         """

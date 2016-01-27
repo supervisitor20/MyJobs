@@ -12,6 +12,7 @@ class FormTests(MyJobsBase):
         creating a user when the user is anonymous.
 
         """
+        self.user.delete()
         anon_user = AnonymousUser()
         data = {"given_name": "Anon", "family_name": "User",
                 "user": anon_user}

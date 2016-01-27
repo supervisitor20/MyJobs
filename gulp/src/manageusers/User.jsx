@@ -32,7 +32,7 @@ class User extends React.Component {
     const action = this.props.location.query.action;
 
     if (action === 'Edit') {
-      $.get('/manage-users/api/users/' + this.props.params.userId, function getUser(results) {
+      $.get('/manage-users/api/users/' + this.props.params.userId + '/', function getUser(results) {
         const userObject = results[this.props.params.userId];
 
         const userEmail = userObject.email;

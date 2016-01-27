@@ -21,7 +21,6 @@ from seo.tests.factories import CompanyFactory, CompanyUserFactory
 class SavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchFormTests, self).setUp()
-        self.user = UserFactory()
         self.data = {'url': 'http://www.my.jobs/jobs',
                      'feed': 'http://www.my.jobs/jobs/feed/rss?',
                      'email': self.user.email,
@@ -73,8 +72,7 @@ class SavedSearchFormTests(MyJobsBase):
 class PartnerSavedSearchFormTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchFormTests, self).setUp()
-        self.user = UserFactory()
-        self.company = CompanyFactory(member=True)
+        self.role.activities = self.activities
         CompanyUserFactory(user=self.user, company=self.company)
         self.partner = PartnerFactory(owner=self.company)
 
@@ -129,11 +127,9 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         message that was inserted into the form.
 
         """
-        client = TestClient()
-        client.login_user(self.user)
-        url = "%s?partner=%s" % (reverse('partner_savedsearch_save'),
-                                 self.partner.pk)
-        response = client.post(url, self.partner_search_data)
+        url = "%s?partner=%s" % (
+            reverse('partner_savedsearch_save'), self.partner.pk)
+        response = self.client.post(url, self.partner_search_data)
 
         email = mail.outbox.pop()
         # inspect email for the custom message

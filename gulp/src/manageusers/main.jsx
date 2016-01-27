@@ -5,6 +5,8 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
+import {formatActivityName} from 'util/formatActivityName';
+
 import Overview from './Overview';
 import Roles from './Roles';
 import Role from './Role';
@@ -71,7 +73,7 @@ export class App extends React.Component {
             if (results[j].app_access_name === appAccessNames[i]) {
               activityRows.push(
                 <tr key={results[j].activity_id}>
-                  <td>{results[j].activity_name}</td>
+                  <td>{formatActivityName(results[j].activity_name)}</td>
                   <td>{results[j].activity_description}</td>
                 </tr>
               );

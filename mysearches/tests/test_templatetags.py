@@ -10,7 +10,6 @@ from registration.models import ActivationProfile
 class SavedSearchTemplateTagTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchTemplateTagTests, self).setUp()
-        self.user = UserFactory(is_active=True)
         self.search = SavedSearchFactory(user=self.user)
 
     def test_confirm_creation_active_user(self):

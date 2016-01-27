@@ -35,7 +35,6 @@ class ImportJobsTestCase(DirectSEOBase):
 
     def test_subsidiary_rename(self):
         company1 = CompanyFactory()
-        company1.save()
         bu1 = self.businessunit
         bu1.title = "Acme corp"
         bu2 = BusinessUnitFactory(title=bu1.title)
@@ -74,9 +73,7 @@ class ImportJobsTestCase(DirectSEOBase):
 
     def test_duplicate_company(self):
         company1 = CompanyFactory()
-        company1.save()
         company2 = CompanyFactory(name="Acme corp")
-        company2.save()
         self.businessunit.company_set.add(company1)
         self.businessunit.title = "Acme corp"
         add_company(self.businessunit)

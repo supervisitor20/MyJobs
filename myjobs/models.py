@@ -229,7 +229,10 @@ class CustomUserManager(BaseUserManager):
         Outputs:
         :is_member: Boolean representing the user's membership status
         """
-        return user.groups.filter(name=group).count() >= 1
+        if settings.ROLES_ENABLED:
+            return user.roles.exists()
+        else:
+            return user.groups.filter(name=group).count() >= 1
 
 
 # New in Django 1.5. This is now the default auth user table.
@@ -973,5 +976,13 @@ class Role(models.Model):
 @invitation_context.register(Role)
 def role_invitation_context(role):
     """Returns a message and the role."""
-    return {"message": " as a(n) %s for %s." % (role.name, role.company),
-            "role": role}
+
+    ctx = {"message": " as a(n) %s for %s." % (role.name, role.company),
+           "role": role}
+
+    if role.activities.filter(name="read partner").exists():
+        href = settings.ABSOLUTE_URL + "prm/view"
+        text = "Click here to access PRM"
+        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+
+    return ctx

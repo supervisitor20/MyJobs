@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 
 from django.core.exceptions import SuspiciousOperation
@@ -80,8 +81,8 @@ class BlockView(View):
 
 
 # The django csrf exemption should stay first in this list.
-@restrict_to_staff()
 @django_csrf_exempt
+@restrict_to_staff()
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
@@ -95,11 +96,13 @@ def secure_blocks(request):
     :return: dictionary containing all matched blocks or Suspicious Operation (400)
 
     """
+    blocks = {}
     try:
         if request.method == 'POST':
-            blocks = json.loads(request.body)[u'blocks']
-        else:
-            blocks = json.loads(request.GET['blocks'])
+            loaded = json.loads(request.body) or {}
+            blocks = loaded.get('blocks', {})
+        elif request.GET.get('blocks', None):
+            blocks = json.loads(request.GET.get('blocks', {}))
     except ValueError:
         message = ('secure block parse error: %r %r' %
                    (request.body,
@@ -113,7 +116,11 @@ def secure_blocks(request):
         if block is None:
             logger.warn("Failed block lookup: %s", element_id)
         else:
-            rendered = block.render_for_ajax(request, blocks[element_id])
-            response[element_id] = rendered
+            try:
+                block = block.cast()
+                rendered = block.render_for_ajax(request, blocks[element_id])
+                response[element_id] = rendered
+            except Exception as ex:
+                logger.warn("Error loading widget: %s" % ex.message)
 
     return response
