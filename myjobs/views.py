@@ -1113,7 +1113,7 @@ def api_create_user(request):
     Returns:
     :success:                   boolean
     """
-    ctx = {}
+    ctx = {'success': 'true'}
 
     if request.method != "POST":
         ctx["success"] = "false"
@@ -1125,62 +1125,29 @@ def api_create_user(request):
         if request.POST.get("user_email", ""):
             user_email = request.POST['user_email']
 
-        role_ids = []
-        if request.POST.getlist("assigned_roles[]", ""):
-            roles = request.POST.getlist("assigned_roles[]", "")
-            # Create list of role_ids from names
-            for i, role in enumerate(roles):
-                role_object = (Role
-                               .objects
-                               .filter(company=company)
-                               .filter(name=role))
-                role_id = role_object[0].id
-                role_ids.append(role_id)
-        # At least one role must be selected
-        if not role_ids:
+        assigned_roles = request.POST.getlist("assigned_roles[]", [])
+        roles = Role.objects.filter(company=company, name__in=assigned_roles)
+        if not roles:
             ctx["success"] = "false"
             ctx["message"] = "Each user must be assigned to at least one role."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
+        matching_user = User.objects.get_email_owner(email=user_email)
         # Does user already exist?
-        # If so, 1) update their roles and 2) send them an email
-        matching_user = User.objects.filter(email=user_email)
-        if matching_user.exists():
-            # 1) Update their roles
-            # Remove all preexisting roles for this user associated with this
-            # company
-            for currently_assigned_role in (matching_user[0]
-                                            .roles
-                                            .filter(company=company)):
-                matching_user[0].roles.remove(currently_assigned_role.id)
-            # Add new roles
-            matching_user[0].roles.add(*role_ids)
-            # 2) Send user an email
-            for role in roles:
-                request.user.send_invite(user_email, company, role)
+        if matching_user:
+            # Update that user's roles.
+            matching_user.roles = roles
 
-            ctx["success"] = "true"
             ctx["message"] = "User already exists. Role invitation email sent."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # Create User
-        new_user, created = User.objects.create_user(email=user_email,
-                                                     in_reserve=True)
-        if created:
-            # Assign roles to this user
-            new_user.roles.add(*role_ids)
-            for role in roles:
-                request.user.send_invite(user_email, company, role)
-
-            ctx["success"] = "true"
+        else:
             ctx["message"] = "User created. Invitation email sent."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
 
-        ctx["success"] = "false"
-        ctx["message"] = "User not created."
+        # Send one invitation per role. This will handle creating the user
+        # if one doesn't exist.
+        for role in roles:
+            request.user.send_invite(user_email, company, role.name)
+
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 

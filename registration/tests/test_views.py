@@ -7,9 +7,9 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 
 from myblocks.models import LoginBlock, RegistrationBlock
-from myjobs.tests.factories import UserFactory, RoleFactory, ActivityFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from myjobs.tests.setup import MyJobsBase
-from myjobs.models import User
+from myjobs.models import User, Activity, AppAccess
 from myjobs.tests.test_views import TestClient
 from mypartners.models import Contact
 from mypartners.tests.factories import PartnerFactory
@@ -235,16 +235,19 @@ class RegistrationViewTests(MyJobsBase):
         New users who were invited to use My.jobs should receive a
         temporary password after activating.
         """
-        if settings.ROLES_ENABLED:
-            role = RoleFactory()
-            activity = ActivityFactory(name='create user')
-            role.activities.add(activity)
-            self.user.roles.add(role)
-            company = role.company
-        else:
-            cu = CompanyUserFactory(user=self.user)
-            company = cu.company
+        # Someone is logged in. In order to accept an invitation and see
+        # a temporary password, no one should be logged in.
+        self.client.logout()
+
+        role = RoleFactory()
+        activity = Activity.objects.get(name='create user')
+        role.activities.add(activity)
+        self.user.roles.add(role)
+        company = role.company
+        company.app_access.add(AppAccess.objects.get())
+
         mail.outbox = []
+
         self.user.send_invite('new@example.com', company)
 
         email = BeautifulSoup(mail.outbox[0].body)
