@@ -239,16 +239,13 @@ class RegistrationViewTests(MyJobsBase):
         # a temporary password, no one should be logged in.
         self.client.logout()
 
-        role = RoleFactory()
-        activity = Activity.objects.get(name='create user')
-        role.activities.add(activity)
-        self.user.roles.add(role)
-        company = role.company
-        company.app_access.add(AppAccess.objects.get())
+        self.role.activities = self.activities
+        self.user.roles.add(self.role)
+        self.company.app_access.add(self.app_access)
 
         mail.outbox = []
 
-        self.user.send_invite('new@example.com', company)
+        self.user.send_invite('new@example.com', self.company)
 
         email = BeautifulSoup(mail.outbox[0].body)
         href = email.find('a').attrs['href']
