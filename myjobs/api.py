@@ -1,6 +1,5 @@
 import datetime
 from urlparse import urlparse
-from urllib import unquote
 
 from django.db import IntegrityError
 
