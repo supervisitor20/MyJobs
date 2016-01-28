@@ -1,6 +1,7 @@
 import json
 
 from myreports.tests.setup import MyReportsTestCase
+from myreports.tests.factories import ConfigurationColumnFactory
 
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
@@ -21,18 +22,16 @@ class TestActiveModels(MyReportsTestCase):
     """
     def test_jobseeker_user_type(self):
         """Jobseeker user type"""
-        user = UserFactory.create()
+        user = UserFactory.create(email='alice1@example.com')
         self.assert_user_type(None, user)
 
     def test_employer_user_type(self):
         """Company user type"""
-        cuser = CompanyUserFactory.create()
-        user = cuser.user
-        self.assert_user_type('EMPLOYER', user)
+        self.assert_user_type('EMPLOYER', self.user)
 
     def test_staff_user_type(self):
         """Staff user type"""
-        user = UserFactory.create()
+        user = UserFactory.create(email='alice1@example.com')
         user.is_staff = True
         self.assert_user_type('STAFF', user)
 
@@ -129,12 +128,20 @@ class TestReportConfiguration(MyReportsTestCase):
                     help=True),
                 ColumnConfiguration(
                     column='tags',
-                    format='comma_sep',
+                    format='tags_list',
                     filter_interface='tags',
                     filter_display='Tags',
                     help=True),
             ])
         config_model = Configuration.objects.get(id=3)
+        # Add a filter_only column.
+        ConfigurationColumnFactory.create(
+            filter_interface_type='city_state',
+            filter_interface_display='Contact Location',
+            filter_only=True,
+            configuration=config_model,
+            multi_value_expansion=False,
+            has_help=True)
         self.maxDiff = 10000
         self.assertEqual(
             expected_config.columns,

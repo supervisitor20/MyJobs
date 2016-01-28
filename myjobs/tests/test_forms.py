@@ -7,7 +7,6 @@ from setup import MyJobsBase
 class AccountFormTests(MyJobsBase):
     def setUp(self):
         super(AccountFormTests, self).setUp()
-        self.user = UserFactory()
         self.name = PrimaryNameFactory(user=self.user)
 
     def test_password_form(self):

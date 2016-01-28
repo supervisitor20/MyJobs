@@ -32,6 +32,11 @@
       "from": "fetch-polyfill@^0.8.1",
       "resolved": "https://registry.npmjs.org/fetch-polyfill/-/fetch-polyfill-0.8.2.tgz"
     },
+    "lodash-compat": {
+      "version": "3.10.1",
+      "from": "lodash-compat@~3.10.1",
+      "resolved": "https://registry.npmjs.org/lodash-compat/-/lodash-compat-3.10.1.tgz"
+    },
     "react-dom": {
       "version": "0.14.3",
       "from": "react-dom@^0.14.0",

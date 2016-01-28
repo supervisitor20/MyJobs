@@ -22,15 +22,12 @@ class DecoratorTests(MyJobsBase):
 
     def setUp(self):
         super(DecoratorTests, self).setUp()
-        settings.ROLES_ENABLED = True
-        self.app_access = AppAccessFactory()
-        self.company = CompanyFactory(app_access=[self.app_access])
+        # admin role gets updated with all activities, which defeats the
+        # purpose of these tests
+        self.role.name = "Test Role"
+        self.role.save()
         self.activity = ActivityFactory(app_access=self.app_access)
-        self.role = RoleFactory(
-            company=self.company, activities=[self.activity])
-        self.user = UserFactory(roles=[self.role])
-        # associate the user with the company
-        CompanyUserFactory(company=self.company, user=self.user)
+        self.role.activities.add(self.activity)
 
         factory = RequestFactory()
         self.request = factory.get("/test")

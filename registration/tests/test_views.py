@@ -36,12 +36,11 @@ class RegistrationViewTests(MyJobsBase):
 
         """
         super(RegistrationViewTests, self).setUp()
-        self.client = TestClient()
         self.old_activation = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', None)
         if self.old_activation is None:
             settings.ACCOUNT_ACTIVATION_DAYS = 7  # pragma: no cover
 
-        self.data = {'email': 'alice@example.com',
+        self.data = {'email': 'alice1@example.com',
                      'password1': 'swordfish',
                      'send_email': True}
         self.user, _ = User.objects.create_user(**self.data)
@@ -107,7 +106,7 @@ class RegistrationViewTests(MyJobsBase):
 
     def test_resend_activation(self):
         x, created = User.objects.create_user(
-            **{'email': 'alice@example.com', 'password1': '5UuYquA@'})
+            **{'email': 'alice1@example.com', 'password1': '5UuYquA@'})
         self.client.login_user(x)
         self.assertEqual(len(mail.outbox), 1)
         resp = self.client.get(reverse('resend_activation'))
@@ -117,7 +116,7 @@ class RegistrationViewTests(MyJobsBase):
 
     def test_resend_activation_with_secondary_emails(self):
         user, _ = User.objects.create_user(
-            email='alice@example.com', password1='5UuYquA@',
+            email='alice1@example.com', password1='5UuYquA@',
             create_user=True)
         self.assertEqual(ActivationProfile.objects.count(), 1)
 
@@ -210,9 +209,7 @@ class RegistrationViewTests(MyJobsBase):
         """
         saved_search = SavedSearchFactory(user=self.user)
         invitation = InvitationFactory(inviting_user=self.user)
-        invitation.added_saved_search = saved_search
-        invitation.save()
-        invitation.send()
+        invitation.send(saved_search)
 
         email = mail.outbox.pop()
         self.assertIn("in order to begin receiving their available job "
@@ -226,9 +223,8 @@ class RegistrationViewTests(MyJobsBase):
         """
         group = Group.objects.create(name="Employers")
         invitation = InvitationFactory(inviting_user=self.user)
-        invitation.added_permission = group
         invitation.save()
-        invitation.send()
+        invitation.send(group)
 
         email = mail.outbox.pop()
         self.assertIn("in order to help administer their recruitment and "
