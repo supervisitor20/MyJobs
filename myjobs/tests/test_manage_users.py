@@ -467,6 +467,24 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.post(reverse('api_create_user'), data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
+        self.assertEqual(output["message"],
+                         "User created. Invitation email sent.")
+
+    def test_add_role_to_existing_user(self):
+        """
+        Tests adding a role to an existing user
+        """
+        user = UserFactory(email='andy@kaufman.com')
+        data_to_post = {
+            'user_email': user.email,
+            'assigned_roles[]': [self.role.name]
+        }
+
+        response = self.client.post(reverse('api_create_user'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
+        self.assertEqual(output["message"],
+                         "User already exists. Role invitation email sent.")
 
     def test_delete_user_require_post(self):
         """
