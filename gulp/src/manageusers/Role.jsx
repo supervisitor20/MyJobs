@@ -83,26 +83,17 @@ class Role extends React.Component {
 
         const activities = roleObject.activities;
 
+        // Loop through all app_access
+        // Make sure there are no assigned_activities
         for (const i in activities) {
-          activities[i].assigned_activities = activities[i].assigned_activities.map( obj => {
-              var activity = {}
-              activity.id = obj.id;
-              activity.name = formatActivityName(obj.name);
-              return activity;
-          });
-          activities[i].available_activities = activities[i].available_activities.map( obj => {
-              var activity = {}
-              activity.id = obj.id;
-              activity.name = formatActivityName(obj.name);
-              return activity;
-          });
+          activities[i].assigned_activities = [];
         }
 
         this.setState({
           apiResponseHelp: '',
-          roleName: roleObject.role_name,
+          roleName: '',
           availableUsers: roleObject.available_users,
-          assignedUsers: roleObject.assigned_users,
+          assignedUsers: [],
           activities: activities,
         });
       }.bind(this));
@@ -178,9 +169,9 @@ class Role extends React.Component {
         // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
         // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
         // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
-        // availableUsers: this.refs.users.state.availableUsers,
-        // assignedUsers: this.refs.users.state.assignedUsers,
-        // activities: this.activities,
+        availableUsers: this.refs.users.state.availableUsers,
+        assignedUsers: this.refs.users.state.assignedUsers,
+        activities: this.activities,
       });
       return;
     }
@@ -189,14 +180,15 @@ class Role extends React.Component {
     this.setState({
       apiResponseHelp: '',
       activitiesMultiselectHelp: '',
-      roleName: this.state.roleName,
-      // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
-      // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+      // roleName: this.state.roleName,
+      // // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
+      // // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+      // // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+      // // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+      // // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
       // availableUsers: this.refs.users.state.availableUsers,
       // assignedUsers: this.refs.users.state.assignedUsers,
+      // // activities: this.activities,
     });
 
     // Format assigned activities
@@ -227,12 +219,6 @@ class Role extends React.Component {
     dataToSend.role_name = roleName;
     dataToSend.assigned_activities = formattedAssignedActivities;
     dataToSend.assigned_users = assignedUsers;
-
-    console.log("dataToSend is");
-    console.log(dataToSend);
-
-    return;
-
 
     // Submit to server
     $.post(url, dataToSend, function submitToServer(response) {
