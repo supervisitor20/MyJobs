@@ -339,8 +339,8 @@ class InvitationModelTests(MyJobsBase):
 
         body = BeautifulSoup(email.body)
 
-        self.assertEqual(body.select('a')[0].attrs['href'],
-                         'https://secure.my.jobs' + reverse('home'))
+        self.assertTrue(
+            body.select('a[href$="%s"]' % reverse('home')))
 
         return body
 
@@ -357,7 +357,7 @@ class InvitationModelTests(MyJobsBase):
 
         body = self.companyuser_invitation(user, company)
 
-        self.assertEqual(len(body.select('a')), 1)
+        self.assertTrue(body.select('a'))
 
     def test_invitation_emails_unverified_user(self):
         """
@@ -374,17 +374,15 @@ class InvitationModelTests(MyJobsBase):
 
         # There should be two anchors present, one of which was tested for in
         # companyuser_invitation...
-        self.assertEqual(len(body.select('a')), 2)
         # ...and the remaining anchor should be an activation link.
         expected_activation_href = 'https://secure.my.jobs%s?verify=%s' % (
             reverse('invitation_activate', args=[ap.activation_key]),
             user.user_guid)
-        activation_href = body.select('a')[1].attrs['href']
-        self.assertEqual(activation_href, expected_activation_href)
+        self.assertTrue(body.select('a[href="%s"]' % expected_activation_href))
 
         self.client.logout()
         # Test the activation link from the email.
-        self.client.get(activation_href)
+        self.client.get(expected_activation_href)
 
         # If it was a valid link, the current user should now be verified.
         user = User.objects.get(pk=user.pk)
@@ -409,11 +407,11 @@ class InvitationModelTests(MyJobsBase):
         ap = ActivationProfile.objects.get(email=user.email)
 
         body = BeautifulSoup(email.body)
-        activation_href = body.select('a')[0].attrs['href']
-        activation_href = activation_href.replace('https://secure.my.jobs', '')
-        self.assertEqual(activation_href.split('?')[0],
-                         reverse('invitation_activate',
-                                 args=[ap.activation_key]))
+        activation_anchor = body.select('a[href*="%s"]' % reverse(
+                'invitation_activate', args=[ap.activation_key]))
+        self.assertTrue(activation_anchor)
+        activation_href = activation_anchor[0].attrs['href'].replace(
+            'https://secure.my.jobs', '')
 
         self.client.logout()
         response = self.client.get(activation_href)
