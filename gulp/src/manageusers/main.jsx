@@ -109,22 +109,20 @@ export class App extends React.Component {
       const rolesTableRows = [];
       for (const key in results) {
         if (results.hasOwnProperty(key)) {
-          results[key].activities = JSON.parse(results[key].activities.assigned);
-          results[key].users.assigned = JSON.parse(results[key].users.assigned);
 
           let editRoleLink;
-          if (results[key].role.name !== 'Admin') {
-            editRoleLink = <Link to={`/role/${results[key].role.id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
+          if (results[key].role_name !== 'Admin') {
+            editRoleLink = <Link to={`/role/${results[key].role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
           }
-
+          
           rolesTableRows.push(
-            <tr key={results[key].role.id}>
-              <td data-title="Role">{results[key].role.name}</td>
+            <tr key={results[key].role_id}>
+              <td data-title="Role">{results[key].role_name}</td>
               <td data-title="Associated Activities">
                 <AssociatedActivitiesList activities={results[key].activities}/>
               </td>
               <td data-title="Associated Users">
-                <AssociatedUsersList users={results[key].users.assigned}/>
+                <AssociatedUsersList users={results[key].assigned_users}/>
               </td>
               <td data-title="Edit">
                 {editRoleLink}

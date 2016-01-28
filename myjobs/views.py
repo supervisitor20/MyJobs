@@ -644,7 +644,6 @@ def api_get_roles(request):
     GET /manage-users/api/roles/
     Retrieves all roles associated with a company
     """
-    # ctx = {}
 
     company = get_company_or_404(request)
 
@@ -774,7 +773,7 @@ def api_get_specific_role(request, role_id=0):
         user_more['id'] = user.id
         user_more['name'] = user.email
         assigned_users.append(user_more)
-
+        
     # Build list of apps this company can access
     # For each app, build list of:
     #   app_access_name
