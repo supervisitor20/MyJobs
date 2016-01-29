@@ -1127,20 +1127,21 @@ def api_create_user(request):
             user_email = request.POST['user_email']
 
         assigned_roles = request.POST.getlist("assigned_roles[]", [])
-        new_roles = set(Role.objects.filter(company=company,
-                                            name__in=assigned_roles))
+        new_roles = Role.objects.filter(company=company,
+                                        name__in=assigned_roles)
         if not new_roles:
             ctx["success"] = "false"
             ctx["message"] = "Each user must be assigned to at least one role."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
-        matching_user = User.objects.get_email_owner(email=user_email)
+        user = User.objects.get_email_owner(email=user_email)
         # Does user already exist?
-        if matching_user:
-            existing_roles = set(matching_user.roles.all())
-            # Update that user's roles.
-            matching_user.roles = new_roles
+        if user:
+            existing_roles = set(user.roles.filter(company=company))
+
+            # Update the user's roles, overwriting those for "company"
+            user.roles = user.roles.exclude(company=company) | new_roles
 
             ctx["message"] = "User already exists. Role invitation email sent."
         else:
@@ -1148,7 +1149,7 @@ def api_create_user(request):
 
         # Send one invitation per new role. This will handle creating the user
         # if one doesn't exist.
-        for role in new_roles.difference(existing_roles):
+        for role in set(new_roles).difference(existing_roles):
             request.user.send_invite(user_email, company, role.name)
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
