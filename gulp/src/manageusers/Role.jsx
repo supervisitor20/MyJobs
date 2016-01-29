@@ -10,9 +10,11 @@ import {getCsrf} from 'util/cookie';
 import {reverseFormatActivityName} from 'util/reverseFormatActivityName';
 import {formatForMultiselect} from 'util/formatForMultiselect';
 import {filterActivitiesForAppAccess} from 'util/filterActivitiesForAppAccess';
+import {formatActivityName} from 'util/formatActivityName';
 
 import HelpText from './HelpText';
-import ActivitiesMultiselect from './ActivitiesMultiselect';
+import ActivitiesAccordion from './ActivitiesAccordion';
+
 import UsersMultiselect from './UsersMultiselect';
 
 class Role extends React.Component {
@@ -23,12 +25,13 @@ class Role extends React.Component {
       activitiesMultiselectHelp: '',
       roleName: '',
       roleNameHelp: '',
-      availablePRMActivities: [],
-      assignedPRMActivities: [],
-      availableUserManagementActivities: [],
-      assignedUserManagementActivities: [],
+      // availablePRMActivities: [],
+      // assignedPRMActivities: [],
+      // availableUserManagementActivities: [],
+      // assignedUserManagementActivities: [],
       availableUsers: [],
       assignedUsers: [],
+      activities: [],
     };
     this.onTextChange = this.onTextChange.bind(this);
     this.handleSaveRoleClick = this.handleSaveRoleClick.bind(this);
@@ -39,50 +42,33 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-        const roleObject = results[this.props.params.roleId];
+        const activities = results.activities;
 
-        const roleName = roleObject.role.name;
-
-        // Create availableUsers
-        const availableUsersParsed = JSON.parse(roleObject.users.available);
-
-        const availableUsers = formatForMultiselect(availableUsersParsed);
-
-        // Create assignedUsers
-        const assignedUsersParsed = JSON.parse(roleObject.users.assigned);
-        const assignedUsers = formatForMultiselect(assignedUsersParsed);
-
-        const availableActivitiesParsed = JSON.parse(roleObject.activities.available);
-        const assignedActivitiesParsed = JSON.parse(roleObject.activities.assigned);
-
-        // Create availablePRMActivities
-        let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
-        availablePRMActivities = formatForMultiselect(availablePRMActivities);
-
-        // Create assignedPRMActivities
-        let assignedPRMActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 1);
-        assignedPRMActivities = formatForMultiselect(assignedPRMActivities);
-
-        // Create availableUserManagementActivities
-        let availableUserManagementActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 2);
-        availableUserManagementActivities = formatForMultiselect(availableUserManagementActivities);
-
-        // Create assignedUserManagementActivities
-        let assignedUserManagementActivities = filterActivitiesForAppAccess(assignedActivitiesParsed, 2);
-        assignedUserManagementActivities = formatForMultiselect(assignedUserManagementActivities);
+        for (const i in activities) {
+          activities[i].assigned_activities = activities[i].assigned_activities.map( obj => {
+              var activity = {}
+              activity.id = obj.id;
+              activity.name = formatActivityName(obj.name);
+              return activity;
+          });
+          activities[i].available_activities = activities[i].available_activities.map( obj => {
+              var activity = {}
+              activity.id = obj.id;
+              activity.name = formatActivityName(obj.name);
+              return activity;
+          });
+        }
 
         this.setState({
           apiResponseHelp: '',
-          roleName: roleName,
-          availablePRMActivities: availablePRMActivities,
-          assignedPRMActivities: assignedPRMActivities,
-          availableUserManagementActivities: availableUserManagementActivities,
-          assignedUserManagementActivities: assignedUserManagementActivities,
-          availableUsers: availableUsers,
-          assignedUsers: assignedUsers,
+          roleName: results.role_name,
+          availableUsers: results.available_users,
+          assignedUsers: results.assigned_users,
+          activities: activities,
         });
       }.bind(this));
     } else {
+      // action === 'Add'
       $.get('/manage-users/api/roles/', function addRole(results) {
         // Objects in results don't have predictable keys
         // It doesn't matter which one we get
@@ -95,26 +81,20 @@ class Role extends React.Component {
           }
         }
 
-        // Create availableUsers
-        const availableUsersParsed = JSON.parse(roleObject.users.available);
-        const availableUsers = formatForMultiselect(availableUsersParsed);
+        const activities = roleObject.activities;
 
-        // Begin creating activities
-        const availableActivitiesParsed = JSON.parse(roleObject.activities.available);
-
-        // Create availablePRMActivities
-        let availablePRMActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 1);
-        availablePRMActivities = formatForMultiselect(availablePRMActivities);
-
-        // Create availableUserManagementActivities
-        let availableUserManagementActivities = filterActivitiesForAppAccess(availableActivitiesParsed, 2);
-        availableUserManagementActivities = formatForMultiselect(availableUserManagementActivities);
+        // Loop through all app_access
+        // Make sure there are no assigned_activities
+        for (const i in activities) {
+          activities[i].assigned_activities = [];
+        }
 
         this.setState({
           apiResponseHelp: '',
-          availablePRMActivities: availablePRMActivities,
-          availableUserManagementActivities: availableUserManagementActivities,
-          availableUsers: availableUsers,
+          roleName: '',
+          availableUsers: roleObject.available_users,
+          assignedUsers: [],
+          activities: activities,
         });
       }.bind(this));
     }
@@ -129,10 +109,10 @@ class Role extends React.Component {
     this.setState({
       apiResponseHelp: '',
       roleName: this.state.roleName,
-      availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+      // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+      // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+      // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+      // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
     });
@@ -151,10 +131,10 @@ class Role extends React.Component {
         apiResponseHelp: '',
         roleNameHelp: 'Role name empty.',
         roleName: this.state.roleName,
-        availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-        assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-        availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-        assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+        // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+        // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+        // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+        // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
       });
@@ -162,9 +142,21 @@ class Role extends React.Component {
     }
 
     // Combine all assigned activites
-    const assignedPRMActivities = this.refs.activitiesPRM.state.assignedActivities;
-    const assignedUserManagementActivities = this.refs.activitiesUserManagement.state.assignedActivities;
-    const assignedActivities = assignedPRMActivities.concat(assignedUserManagementActivities);
+    // This may look complicated, because we're building the accordions of
+    // activities dynamically. That is, we don't know how many of them or by
+    // what ref they go by ahead of time.
+    const assignedActivities = [];
+    // Loop through all apps
+    for (const i in this.state.activities) {
+      // Now for each app, loop through all selected activities in its accordion
+      // tempRef is the app_access_name without spaces (e.g. User Management
+      // becomes UserManagement)
+      let tempRef = this.state.activities[i].app_access_name.replace(/\s/g, '');
+      let assigned_activities = this.refs.activities.refs[tempRef].state.assignedActivities;
+      for (const j in assigned_activities) {
+        assignedActivities.push(assigned_activities[j])
+      }
+    }
 
     // User must select AT LEAST ONE activity
     if (assignedActivities.length < 1) {
@@ -172,12 +164,14 @@ class Role extends React.Component {
         apiResponseHelp: '',
         activitiesMultiselectHelp: 'No activities selected. Each role must have at least one activity.',
         roleName: this.state.roleName,
-        availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-        assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-        availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-        assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+        // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
+        // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+        // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+        // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+        // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
+        activities: this.activities,
       });
       return;
     }
@@ -186,13 +180,15 @@ class Role extends React.Component {
     this.setState({
       apiResponseHelp: '',
       activitiesMultiselectHelp: '',
-      roleName: this.state.roleName,
-      availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
-      availableUsers: this.refs.users.state.availableUsers,
-      assignedUsers: this.refs.users.state.assignedUsers,
+      // roleName: this.state.roleName,
+      // // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
+      // // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+      // // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+      // // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+      // // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+      // availableUsers: this.refs.users.state.availableUsers,
+      // assignedUsers: this.refs.users.state.assignedUsers,
+      // // activities: this.activities,
     });
 
     // Format assigned activities
@@ -240,10 +236,10 @@ class Role extends React.Component {
         this.setState({
           apiResponseHelp: response.message,
           roleName: this.state.roleName,
-          availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-          assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-          availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-          assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
+          // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
+          // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
+          // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
+          // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
           availableUsers: this.refs.users.state.availableUsers,
           assignedUsers: this.refs.users.state.assignedUsers,
         });
@@ -327,16 +323,7 @@ class Role extends React.Component {
 
                   <HelpText message={activitiesMultiselectHelp} />
 
-                  <Accordion>
-                    <Panel header="PRM" eventKey="1">
-                      <ActivitiesMultiselect availableActivities={this.state.availablePRMActivities} assignedActivities={this.state.assignedPRMActivities} ref="activitiesPRM"/>
-                      <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                    </Panel>
-                    <Panel header="User Management" eventKey="2">
-                      <ActivitiesMultiselect availableActivities={this.state.availableUserManagementActivities} assignedActivities={this.state.assignedUserManagementActivities} ref="activitiesUserManagement"/>
-                      <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                    </Panel>
-                  </Accordion>
+                  <ActivitiesAccordion activities={this.state.activities} ref="activities"/>
 
                   <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
 

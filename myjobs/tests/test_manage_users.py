@@ -185,15 +185,14 @@ class ManageUsersTests(MyJobsBase):
         Contains role information
         """
         expected_role_pk = self.role.pk
-
         response = self.client.get(reverse('api_get_roles'))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        first_result = output[0]
 
-        role_id = first_result['role']['id']
+        role_id = first_result['role_id']
         self.assertIsInstance(role_id, int)
 
-        role_name = first_result['role']['name']
+        role_name = first_result['role_name']
         self.assertIsInstance(role_name, unicode)
 
     def test_get_roles_contain_activities(self):
@@ -206,21 +205,25 @@ class ManageUsersTests(MyJobsBase):
 
         response = self.client.get(reverse('api_get_roles'))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        first_result = output[0]
 
         activities = first_result['activities']
+        first_activity = activities[0]
 
-        activities_available = json.loads(activities['available'])
-        activity_available_name = activities_available[0]['fields']['name']
-        self.assertIsInstance(activity_available_name, unicode)
-        activity_available_app_access = activities_available[0]['fields']['app_access']
-        self.assertIsInstance(activity_available_app_access, int)
+        activity_app_access = first_activity['app_access_name']
+        self.assertIsInstance(activity_app_access, unicode)
 
-        activities_assigned = json.loads(activities['assigned'])
-        activity_assigned_name = activities_assigned[0]['fields']['name']
-        self.assertIsInstance(activity_assigned_name, unicode)
-        activity_available_app_access = activities_available[0]['fields']['app_access']
-        self.assertIsInstance(activity_available_app_access, int)
+        available_activities = first_activity['available_activities']
+        available_activity_name = available_activities[0]['name']
+        self.assertIsInstance(available_activity_name, unicode)
+        available_activity_id = available_activities[0]['id']
+        self.assertIsInstance(available_activity_id, int)
+
+        assigned_activities = first_activity['assigned_activities']
+        assigned_activity_name = assigned_activities[0]['name']
+        self.assertIsInstance(assigned_activity_name, unicode)
+        assigned_activity_id = assigned_activities[0]['id']
+        self.assertIsInstance(available_activity_id, int)
 
     def test_get_roles_contain_users(self):
         """
@@ -228,25 +231,26 @@ class ManageUsersTests(MyJobsBase):
         proper form
         Contains users information
         """
+
         expected_role_pk = self.role.pk
 
         response = self.client.get(reverse('api_get_roles'))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        first_result = output[0]
 
-        users = first_result['users']
+        assigned_users = first_result['assigned_users']
+        first_assigned_user = assigned_users[0]
+        first_assigned_user_id = first_assigned_user['id']
+        self.assertIsInstance(first_assigned_user_id, int)
+        first_assigned_user_name = first_assigned_user['name']
+        self.assertIsInstance(first_assigned_user_name, unicode)
 
-        users_available = json.loads(users['available'])
-        users_available_id = users_available[0]['pk']
-        self.assertIsInstance(users_available_id, int)
-        users_available_email = users_available[0]['fields']['email']
-        self.assertIsInstance(users_available_email, unicode)
-
-        users_assigned = json.loads(users['assigned'])
-        users_assigned_id = users_assigned[0]['pk']
-        self.assertIsInstance(users_assigned_id, int)
-        users_assigned_email = users_assigned[0]['fields']['email']
-        self.assertIsInstance(users_assigned_email, unicode)
+        available_users = first_result['available_users']
+        first_available_user = available_users[0]
+        first_available_user_id = first_available_user['id']
+        self.assertIsInstance(first_available_user_id, int)
+        first_available_user_name = first_available_user['name']
+        self.assertIsInstance(first_available_user_name, unicode)
 
     def test_get_specific_role_contains_role(self):
         """
@@ -259,12 +263,11 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.get(reverse('api_get_specific_role',
                                            args=[expected_role_pk]))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
 
-        role_id = first_result['role']['id']
+        role_id = output['role_id']
         self.assertIsInstance(role_id, int)
 
-        role_name = first_result['role']['name']
+        role_name = output['role_name']
         self.assertIsInstance(role_name, unicode)
 
     def test_get_specific_role_contains_activities(self):
@@ -278,17 +281,23 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.get(reverse('api_get_specific_role',
                                            args=[expected_role_pk]))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
+        activities = output['activities']
+        first_activity = activities[0]
 
-        activities = first_result['activities']
+        activity_app_access = first_activity['app_access_name']
+        self.assertIsInstance(activity_app_access, unicode)
 
-        activities_available = json.loads(activities['available'])
-        activity_available_name = activities_available[0]['fields']['name']
-        self.assertIsInstance(activity_available_name, unicode)
+        available_activities = first_activity['available_activities']
+        available_activity_name = available_activities[0]['name']
+        self.assertIsInstance(available_activity_name, unicode)
+        available_activity_id = available_activities[0]['id']
+        self.assertIsInstance(available_activity_id, int)
 
-        activities_assigned = json.loads(activities['assigned'])
-        activity_assigned_name = activities_assigned[0]['fields']['name']
-        self.assertIsInstance(activity_assigned_name, unicode)
+        assigned_activities = first_activity['assigned_activities']
+        assigned_activity_name = assigned_activities[0]['name']
+        self.assertIsInstance(assigned_activity_name, unicode)
+        assigned_activity_id = assigned_activities[0]['id']
+        self.assertIsInstance(available_activity_id, int)
 
     def test_get_specific_role_activities_contain_app_access(self):
         """
@@ -301,17 +310,12 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.get(reverse('api_get_specific_role',
                                            args=[expected_role_pk]))
         output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
 
-        activities = first_result['activities']
+        activities = output['activities']
 
-        activities_available = json.loads(activities['available'])
-        activity_available_app_access = activities_available[0]['fields']['app_access']
-        self.assertIsInstance(activity_available_app_access, int)
-
-        activities_assigned = json.loads(activities['assigned'])
-        activities_assigned_app_access = activities_assigned[0]['fields']['app_access']
-        self.assertIsInstance(activities_assigned_app_access, int)
+        first_activity = activities[0]
+        app_access_name = first_activity['app_access_name']
+        self.assertIsInstance(app_access_name, unicode)
 
     def test_get_specific_role_contains_users(self):
         """
@@ -323,22 +327,22 @@ class ManageUsersTests(MyJobsBase):
 
         response = self.client.get(reverse('api_get_specific_role',
                                            args=[expected_role_pk]))
-        output = json.loads(response.content)
-        first_result = output[str(expected_role_pk)]
 
-        users = first_result['users']
+        result = json.loads(response.content)
 
-        users_available = json.loads(users['available'])
-        users_available_id = users_available[0]['pk']
-        self.assertIsInstance(users_available_id, int)
-        users_available_email = users_available[0]['fields']['email']
-        self.assertIsInstance(users_available_email, unicode)
+        assigned_users = result['assigned_users']
+        first_assigned_user = assigned_users[0]
+        first_assigned_user_id = first_assigned_user['id']
+        self.assertIsInstance(first_assigned_user_id, int)
+        first_assigned_user_name = first_assigned_user['name']
+        self.assertIsInstance(first_assigned_user_name, unicode)
 
-        users_assigned = json.loads(users['assigned'])
-        users_assigned_id = users_assigned[0]['pk']
-        self.assertIsInstance(users_assigned_id, int)
-        users_assigned_email = users_assigned[0]['fields']['email']
-        self.assertIsInstance(users_assigned_email, unicode)
+        available_users = result['available_users']
+        first_available_user = available_users[0]
+        first_available_user_id = first_available_user['id']
+        self.assertIsInstance(first_available_user_id, int)
+        first_available_user_name = first_available_user['name']
+        self.assertIsInstance(first_available_user_name, unicode)
 
     def test_get_specific_user(self):
         """

@@ -7,13 +7,27 @@ class AssociatedActivitiesList extends React.Component {
     super(props);
   }
   render() {
-    const associatedActivitiesShortList = this.props.activities.map( (activity, index) => {
+    const assignedActivities = [];
+    // The API gives activities grouped by app_access
+    // Assemble simple list of all assigned_activities, no matter the app_access
+    const activities_grouped_by_app_access = this.props.activities;
+    for (const i in activities_grouped_by_app_access) {
+      const assigned_activities = activities_grouped_by_app_access[i].assigned_activities;
+      for (const j in assigned_activities) {
+        const formattedActivityName = formatActivityName(assigned_activities[j].name);
+        assignedActivities.push(formattedActivityName);
+      }
+    }
+
+    // TODO actually make this a "short" list, meaning show 3-4 and a "more" button
+    const associatedActivitiesShortList = assignedActivities.map( (activity, index) => {
       return (
         <li key={index}>
-          {formatActivityName(activity.fields.name)}
+          {assignedActivities[index]}
         </li>
       );
     });
+
     return (
       <ul>
         {associatedActivitiesShortList}
