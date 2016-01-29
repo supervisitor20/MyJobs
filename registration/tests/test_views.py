@@ -240,8 +240,6 @@ class RegistrationViewTests(MyJobsBase):
         self.client.logout()
 
         self.role.activities = self.activities
-        #self.user.roles.add(self.role)
-        #self.company.app_access.add(self.app_access)
 
         mail.outbox = []
 
