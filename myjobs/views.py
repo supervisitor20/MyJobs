@@ -619,7 +619,11 @@ def api_get_activities(request):
     GET /manage-users/api/activities/
     Retrieves all activities
     """
-    activities = Activity.objects.all()
+
+    company = get_company_or_404(request)
+
+    activities = Activity.objects.filter(
+        app_access__in=company.app_access.all())
 
     json_res = []
     for activity in activities:
