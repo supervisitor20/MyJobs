@@ -1,35 +1,72 @@
-import React, {PropTypes} from 'react';
-import {Link} from './Link';
+import React, {PropTypes, Component} from 'react';
+import {Loading} from 'common/ui/Loading';
+import {Link} from 'react-router';
 
 
-export function WizardPagePresentationTypes(props) {
-  const data = props.data;
-  const rows = Object.keys(data).map(k =>
-    <div key={k} className="row">
-      <div className="span2" style={{textAlign: 'right'}}>
-      </div>
-      <div className="span4">
-        <Link id={k} label={data[k].name}
-          linkClick={() => props.selected(k)}/>
-      </div>
-    </div>
-  );
+export class WizardPagePresentationTypes extends Component {
+  constructor() {
+    super();
+    this.state = {
+      loading: true,
+    };
+  }
 
-  return (
-    <div>
-      <div className="row">
-        <div className="span2" style={{textAlign: 'right'}}>
+  componentDidMount() {
+    this.loadData();
+  }
+
+  async loadData() {
+    const {reportFinder} = this.props;
+    const {reportType, dataType} = this.props.routeParams;
+    const reportTypes = await reportFinder.getPresentationTypes(
+      reportType, dataType);
+    this.setState({
+      loading: false,
+      data: reportTypes,
+    });
+  }
+
+
+  render() {
+    const {loading, data} = this.state;
+
+    let rows;
+    if (loading) {
+      rows = <Loading/>;
+    } else {
+      rows = Object.keys(data).map(k =>
+        <div key={k} className="row">
+          <div className="span2" style={{textAlign: 'right'}}>
+          </div>
+          <div className="span4">
+            <Link
+              to={`/set-up-report/${k}`}>
+              {data[k].name}
+            </Link>
+          </div>
         </div>
-        <div className="span4">
-          <h4>Presentation Types</h4>
+      );
+    }
+
+    return (
+      <div>
+        <div className="row">
+          <div className="span2" style={{textAlign: 'right'}}>
+          </div>
+          <div className="span4">
+            <h4>Presentation Types</h4>
+          </div>
         </div>
+        {rows}
       </div>
-      {rows}
-    </div>
-  );
+    );
+  }
 }
 
 WizardPagePresentationTypes.propTypes = {
-  data: PropTypes.object.isRequired,
-  selected: PropTypes.func.isRequired,
+  routeParams: PropTypes.shape({
+    reportType: PropTypes.string.isRequired,
+    dataType: PropTypes.string.isRequired,
+  }).isRequired,
+  reportFinder: PropTypes.object.isRequired,
 };

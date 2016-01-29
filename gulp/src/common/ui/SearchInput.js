@@ -41,7 +41,8 @@ export class SearchInput extends Component {
     this.setState({mouseInMenu: value});
   }
 
-  onSelect(index) {
+  onSelect(e, index) {
+    e.preventDefault();
     const {onSelect: selectCb} = this.props;
     const {items} = this.state;
     const selected = items[index];
@@ -172,7 +173,7 @@ export class SearchInput extends Component {
                   })}>
                 <a
                   href="#"
-                  onClick={() => this.onSelect(index)}>
+                  onClick={e => this.onSelect(e, index)}>
                   {item.display}
                 </a>
               </li>

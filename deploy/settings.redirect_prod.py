@@ -6,6 +6,7 @@ from secrets import REDIRECT_PROD, ARCHIVE_PROD
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_mj/files/"
 
 ABSOLUTE_URL = 'https://secure.my.jobs/'
 
