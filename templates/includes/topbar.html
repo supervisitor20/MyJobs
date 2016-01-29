@@ -68,7 +68,7 @@
                             {% if company.posting_access %}
                                 <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
                             {% endif %}
-                            {% if request.user.is_staff and can_read_role %}
+                            {% if can_read_role %}
                               <li><a id="posted-jobs-tab" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
                             {% endif %}
                         </ul>
@@ -145,7 +145,7 @@
                                         {% if company.posting_access %}
                                             <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
                                         {% endif %}
-                                        {% if request.user.is_staff and can_read_role %}
+                                        {% if can_read_role %}
                                           <li><a id="posted-jobs-tab" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
                                         {% endif %}
                                     {% endif %}
