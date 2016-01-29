@@ -650,9 +650,35 @@ def api_get_roles(request):
 
     company = get_company_or_404(request)
 
-    roles_formatted = []
+    # Get all roles for this company
     roles = Role.objects.filter(company=company)
-    # Loop through and ormat all assigned roles_formatted
+
+    # Get all apps this company can access
+    app_access_for_company = company.app_access.all()
+
+    # Retrieve all available_activities for this company
+    available_activities = Activity.objects.filter(app_access__in=app_access_for_company)
+
+    # Retrieve users that can be assigned to these roles. In other words,
+    # users already assigned to roles associated with this company
+    available_users_as_queries = []
+    for role in roles:
+        role_id_temp = role.id
+        users = User.objects.filter(roles__id=role_id_temp).distinct()
+        for user in users:
+            # Make sure available_users is distinct
+            if user not in available_users_as_queries:
+                available_users_as_queries.append(user)
+    # available_users should be distinct list of user queries
+    available_users = []
+    for user in available_users_as_queries:
+        user_more = {}
+        user_more['id'] = user.id
+        user_more['name'] = user.email
+        available_users.append(user_more)
+
+    # Loop through and format all assigned roles_formatted
+    roles_formatted = []
     for role in roles:
         role_id = role.id
         role_name = role.name
@@ -663,14 +689,13 @@ def api_get_roles(request):
         #   available_activities
         #   assigned_activities
         activities = []
-        # Retrieve all available_activities for this company
-        available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
 
-        for app_access in company.app_access.all():
+        for app_access in app_access_for_company:
             activity = {}
             activity['app_access_name'] = app_access.name
 
             activity['available_activities'] = []
+            # Loop through all activities associated with this particular app_access
             for available_activity in available_activities.filter(app_access=app_access.id):
                 available_activity_more = {}
                 available_activity_more['id'] = available_activity.id
@@ -686,27 +711,9 @@ def api_get_roles(request):
 
             activities.append(activity)
 
-        # Retrieve users that can be assigned to this role. In other words,
-        # users already assigned to roles associated with this company
-        available_users_as_queries = []
-        roles = Role.objects.filter(company=company)
-        for role in roles:
-            role_id_temp = role.id
-            users = User.objects.filter(roles__id=role_id_temp).distinct()
-            for user in users:
-                # Make sure available_users is distinct
-                if user not in available_users_as_queries:
-                    available_users_as_queries.append(user)
-        # available_users should be distinct list of user queries
-        available_users = []
-        for user in available_users_as_queries:
-            user_more = {}
-            user_more['id'] = user.id
-            user_more['name'] = user.email
-            available_users.append(user_more)
-
         # Retrieve users already assigned to this particular role
         assigned_users = []
+        # These are users with this role
         users = User.objects.filter(roles__id=role_id).distinct()
         for user in users:
             user_more = {}
