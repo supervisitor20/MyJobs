@@ -622,8 +622,10 @@ def api_get_activities(request):
 
     company = get_company_or_404(request)
 
-    activities = Activity.objects.filter(
-        app_access__in=company.app_access.all())
+    activities = (Activity
+                 .objects
+                 .select_related('app_access')
+                 .filter(app_access__in = company.app_access.all()))
 
     json_res = []
     for activity in activities:
