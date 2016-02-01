@@ -32,7 +32,7 @@ def newrelic_browser_monitoring():
         ;NREUM.info={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",licenseKey:"49b0eca3f4",applicationID:"480149",sa:1,agent:"js-agent.newrelic.com/nr-768.min.js"}
         </script>"""
 
-    # Only use the script tag on 
+    # Only use the script tag on 1% of page loads.
     return script_tag if random.random() < 0.01 else ""
 
 
