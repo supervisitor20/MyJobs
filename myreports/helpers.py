@@ -133,7 +133,7 @@ def determine_user_type(user):
     if user is None:
         return None
 
-    if user.groups.filter(name='Employer').exists():
+    if user.roles.exists():
         return 'EMPLOYER'
 
     if user.is_staff:

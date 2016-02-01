@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now as datetime_now
 from django.utils.translation import ugettext_lazy as _
 
-from universal.helpers import send_email
+from universal.helpers import send_email, invitation_context
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
@@ -186,51 +186,37 @@ class Invitation(models.Model):
 
         super(Invitation, self).save(*args, **kwargs)
 
-    def send(self, reason=""):
+    def send(self, context_object=""):
         """
         Inputs:
-            :reason: A custom reason to be included in the email.
-                                This reason should not include punctuation.
+            :context_object: An object used to determine the invitation
+                             context. A string signifies a custom message
+                             context. Other types can specify a context by
+                             registering with
+                             `universal.helpers.invitation_context`.
 
         Outputs:
             An invitation email is sent to the ```Invitation.invitee``` using
             the ```Invitation.email``` address. Tailored messages are sent if
             ```Invitation.added_saved_search``` or
             ```Invitation.added_permission are set. If neither are set and no
-            ```reason``` is set, a generic email is sent.
+            ```context``` is set, a generic email is sent.
 
         """
-        activiation_profile, _ = ActivationProfile.objects.get_or_create(
+        activation_profile, _ = ActivationProfile.objects.get_or_create(
             user=self.invitee, email=self.invitee.email)
 
-        if not reason:
-            if self.added_saved_search:
-                reason = ("in order to begin receiving their available job "
-                          "opportunities on a regular basis")
-            elif self.added_permission:
-                reason = ("in order to help administer their recruitment and "
-                          "outreach tools")
-
-        reason = (" " if reason else "") + reason + "."
-
-        if activiation_profile.activation_key_expired():
-            activiation_profile.reset_activation()
-            application_profile  = ActivationProfile.objects.get(
-                pk=activiation_profile.pk)
+        if activation_profile.activation_key_expired():
+            activation_profile.reset_activation()
+            activation_profile  = ActivationProfile.objects.get(
+                pk=activation_profile.pk)
 
         context = {'invitation': self,
-                   'activation_key': activiation_profile.activation_key,
-                   'reason': reason}
+                   'activation_key': activation_profile.activation_key}
+        context.update(invitation_context(context_object))
 
-        text_only = False
-        if self.added_saved_search:
-            initial_email = self.added_saved_search.initial_email(send=False)
-            context['initial_search_email'] = initial_email
-            text_only = self.added_saved_search.text_only
-
-        body = render_to_string('registration/invitation_email.html',
-                                context)
-        body = Pynliner().from_string(body).run()
+        body = Pynliner().from_string(render_to_string(
+            'registration/invitation_email.html', context)).run()
 
         if self.inviting_user:
             from_ = self.inviting_user.email
@@ -245,17 +231,16 @@ class Invitation(models.Model):
         try:
             self.invitee.email_user(body, email_type=settings.INVITATION,
                                     inviter=from_, headers=headers,
-                                    text_only=text_only)
+                                    text_only=context.get('text_only', False))
         except Exception as e:
             fail_message = getattr(e, 'smtp_error', e.message)
         else:
-            activiation_profile.sent = datetime_now()
-            activiation_profile.save()
-
-        if self.added_saved_search and hasattr(self.added_saved_search,
-                                               'partnersavedsearch'):
-            self.added_saved_search.partnersavedsearch.create_record(
-                "Automatic sending of initial partner saved search",
-                body=context['initial_search_email'],
-                failure_message=fail_message
-            )
+            activation_profile.sent = datetime_now()
+            activation_profile.save()
+        finally:
+            saved_search = context.get('saved_search')
+            if saved_search and hasattr(saved_search, 'partnersavedsearch'):
+                saved_search.partnersavedsearch.create_record(
+                    "Automatic sending of initial partner saved search",
+                    body=context['initial_search_email'],
+                    failure_message=fail_message)

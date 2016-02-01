@@ -131,4 +131,22 @@
         "row": 1,
         "updated": "2015-03-18T04:00:00Z"
     }
+},
+{
+    "pk": 7,
+    "model": "myblocks.block",
+    "fields": {
+        "template": "<div>This is where the saved search would be</div>",
+        "element_id": "test_saved_search",
+        "span": 0,
+        "name": "Test Saved Search",
+        "content_type": ["myblocks", "savedsearchwidgetblock"],
+        "offset": 0,
+        "updated": "2015-03-18T04:00:00Z"
+    }
+},
+{
+    "pk": 7,
+    "model": "myblocks.savedsearchwidgetblock",
+    "fields": {}
 }]

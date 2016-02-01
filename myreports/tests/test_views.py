@@ -167,11 +167,13 @@ class TestReportView(MyReportsTestCase):
 
         ContactRecordFactory.create_batch(5, partner=self.partner)
         ContactRecordFactory.create_batch(
-            5, contact_type='job', job_applications=1,
+            5, contact_type='job',
+            job_applications="1", job_interviews="0", job_hires="0",
             partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job',
-            job_hires=1, partner=self.partner)
+            job_applications="0", job_interviews="0", job_hires="1",
+            partner=self.partner)
 
     def test_create_report(self):
         """Test that a report model instance is properly created."""
@@ -474,7 +476,7 @@ class TestReportsApi(MyReportsTestCase):
             reverse('help_api'),
             data={
                 'rp_id': 3,
-                'filter': json.dumps({'state': 'IL'}),
+                'filter': json.dumps({'locations': {'state': 'IL'}}),
                 'field': 'city',
                 'partial': 'i',
             })
@@ -488,8 +490,8 @@ class TestReportsApi(MyReportsTestCase):
 
 
 class TestDynamicReports(MyReportsTestCase):
-    def test_dynamic_report(self):
-        """Create some test data, run, list, and download a report."""
+    def test_dynamic_contacts_report(self):
+        """Create some test data, run, list, and download a contacts report."""
         self.client.login_user(self.user)
 
         partner = PartnerFactory(owner=self.company)
@@ -523,6 +525,82 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEquals(11, len(lines))
         first_found_name = lines[1].split(',')[0]
         expected_name = u'name-0 \u2019'.encode('utf-8')
+        self.assertEqual(expected_name, first_found_name)
+
+    def test_dynamic_partners_report(self):
+        """Create some test data, run, list, and download a partners report."""
+        self.client.login_user(self.user)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            PartnerFactory(
+                owner=self.company,
+                name=u"partner-%s \u2019" % i)
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': 5,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {'id': report_id, 'name': 'The Report'},
+            ]},
+            json.loads(resp.content))
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        lines = resp.content.splitlines()
+        self.assertEquals(22, len(lines))
+        first_found_name = lines[-1].split(',')[1]
+        expected_name = u'partner-19 \u2019'.encode('utf-8')
+        self.assertEqual(expected_name, first_found_name)
+
+    def test_dynamic_comm_records_report(self):
+        """Create some test data, run, list, and download a commrec report."""
+        self.client.login_user(self.user)
+
+        partner = PartnerFactory(owner=self.company)
+        contact = ContactFactory.create(name='somename', partner=partner)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            ContactRecordFactory(
+                partner=partner,
+                contact=contact,
+                subject=u"subject-%s \u2019" % i)
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': 6,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {'id': report_id, 'name': 'The Report'},
+            ]},
+            json.loads(resp.content))
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        lines = resp.content.splitlines()
+        self.assertEquals(21, len(lines))
+        first_found_name = lines[-1].split(',')[15]
+        expected_name = u'subject-19 \u2019'.encode('utf-8')
         self.assertEqual(expected_name, first_found_name)
 
     def test_dynamic_report_with_filter(self):

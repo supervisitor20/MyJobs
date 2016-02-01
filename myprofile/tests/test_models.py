@@ -22,10 +22,6 @@ class MyProfileTests(MyJobsBase):
     user_info = {'password1': 'complicated_password',
                  'email': 'alice@example.com'}
 
-    def setUp(self):
-        super(MyProfileTests, self).setUp()
-        self.user = UserFactory()
-
     def test_primary_name_save(self):
         """
         Saving a primary name when one already exists replaces it with
@@ -302,7 +298,6 @@ class ProfileSuggestionTests(MyJobsBase):
         super(ProfileSuggestionTests, self).setUp()
 
         self.maxDiff = None
-        self.user = UserFactory()
 
     def test_suggestion_when_name_blank(self):
         suggestions = Name.get_suggestion(self.user)

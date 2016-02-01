@@ -14,7 +14,7 @@ from mypartners.models import Contact, ContactRecord, Partner, EMAIL
 from mysearches.helpers import (parse_feed, update_url_if_protected,
                                 url_sort_options)
 import mypartners.helpers
-from universal.helpers import send_email
+from universal.helpers import invitation_context, send_email
 
 
 FREQUENCY_CHOICES = (
@@ -403,6 +403,30 @@ class SavedSearch(models.Model):
         headers = {'X-SMTPAPI': category}
         send_email(message, email_type=settings.SAVED_SEARCH_DISABLED,
                    recipients=[self.email], headers=headers)
+
+
+@invitation_context.register(SavedSearch)
+def saved_search_invitation_context(saved_search):
+    """
+    Returns a message, the saved search, the initial search email, and whether
+    or not the invitation email should be sent as text-only. For partner saved
+    seaches, the custom message is also attached if available.
+
+    """
+
+    ctx = {"message": " in order to begin receiving their available job "
+                      "opportunities on a regular basis.",
+            "saved_search": saved_search,
+            "initial_search_email": saved_search.initial_email(send=False),
+            "text_only": saved_search.text_only}
+
+    if hasattr(saved_search, "partner_message"):
+        href = "%ssaved-search/view/feed?id=%s" % (
+            settings.ABSOLUTE_URL, saved_search.pk)
+        text = "Click here to access this saved search"
+        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+
+    return ctx
 
 
 class SavedSearchDigest(models.Model):

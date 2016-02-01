@@ -3,6 +3,7 @@ from django.core import mail
 
 from myemails.tests import factories
 from myjobs.tests.setup import MyJobsBase
+from myjobs.tests.factories import RoleFactory
 from postajob.models import Invoice
 from postajob.tests import factories as posting_factories
 from seo.tests.factories import CompanyUserFactory
@@ -25,7 +26,8 @@ class EventTests(MyJobsBase):
     def setUp(self):
         super(EventTests, self).setUp()
         self.product = posting_factories.ProductFactory()
-        self.company_user = CompanyUserFactory(company=self.product.owner)
+        role = RoleFactory(company=self.product.owner)
+        self.user.roles.add(role)
 
         self.purchased_product = posting_factories.PurchasedProductFactory(
             product=self.product, owner=self.product.owner)

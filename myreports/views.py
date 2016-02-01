@@ -21,9 +21,10 @@ from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
 
-from myreports.datasources import get_datasource_json_driver
-from myreports.report_configuration import (
-    ReportConfiguration, ColumnConfiguration)
+from myreports.datasources import ds_json_drivers
+
+from cStringIO import StringIO
+import unicodecsv
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -489,7 +490,7 @@ def filters_api(request):
 
     report_configuration = (report_pres.configuration.build_configuration())
 
-    driver = get_datasource_json_driver(datasource)
+    driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
 
     return HttpResponse(content_type='application/json',
@@ -509,19 +510,18 @@ def help_api(request):
 
     response: [{'key': data, 'display': data to display}]
     """
+    company = get_company_or_404(request)
     request_data = request.POST
     rp_id = request_data['rp_id']
-    filter = request_data['filter']
+    filter_spec = request_data['filter']
     field = request_data['field']
     partial = request_data['partial']
 
     report_pres = ReportPresentation.objects.get(id=rp_id)
     datasource = report_pres.report_data.report_type.datasource
-    driver = get_datasource_json_driver(datasource)
+    driver = ds_json_drivers[datasource]
 
-    company = request.user.companyuser_set.first().company
-
-    result = driver.help(company, filter, field, partial)
+    result = driver.help(company, filter_spec, field, partial)
 
     return HttpResponse(content_type="application/json",
                         content=json.dumps(result))
@@ -539,12 +539,11 @@ def run_dynamic_report(request):
 
     response: {'id': new dynamic report id}
     """
+    company = get_company_or_404(request)
     rp_id = request.POST['rp_id']
     name = request.POST['name']
     filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
-
-    company = request.user.companyuser_set.first().company
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,
@@ -566,7 +565,7 @@ def run_dynamic_report(request):
 @require_http_methods(['GET'])
 def list_dynamic_reports(request):
     """Get a list of dynamic report runs for this user."""
-    company = request.user.companyuser_set.first().company
+    company = get_company_or_404(request)
 
     reports = (
         DynamicReport.objects
@@ -618,6 +617,11 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = content_disposition % (
         report.name.replace(' ', '_'), report.pk)
 
-    response.write(serialize('csv', records, values=values))
+    output = StringIO()
+    writer = unicodecsv.writer(output, encoding='utf-8')
+    writer.writerow(values)
+    for record in records:
+        writer.writerow([unicode(record[v]) for v in values])
+    response.write(output.getvalue())
 
     return response
