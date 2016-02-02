@@ -675,6 +675,46 @@ class TestDynamicReports(MyReportsTestCase):
         expected_name = u'name-2'
         self.assertEqual(expected_name, found_name)
 
+    def test_dynamic_partners_report_csv(self):
+        """Run a report through the csv presentation type.
+
+        Just make sure the document loads.
+        """
+        self.client.login_user(self.user)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            PartnerFactory(
+                owner=self.company,
+                name=u"partner-%s \u2019" % i)
+
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'csv')
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': report_presentation.pk,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {'id': report_id, 'name': 'The Report'},
+            ]},
+            json.loads(resp.content))
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        self.assertIn('The_Report.csv', resp['content-disposition'])
+        self.assertIn('text/csv', resp['content-type'])
+
     def test_dynamic_partners_report_xlsx(self):
         """Run a report through the xlsx presentation type.
 
@@ -712,3 +752,5 @@ class TestDynamicReports(MyReportsTestCase):
         resp = self.client.get(reverse('download_dynamic_report'),
                                {'id': report_id})
         self.assertEquals(200, resp.status_code)
+        self.assertIn('The_Report.xlsx', resp['content-disposition'])
+        self.assertIn('application/vnd.', resp['content-type'])

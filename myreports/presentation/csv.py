@@ -4,11 +4,9 @@ from myreports.presentation.base import Presentation
 
 class Csv(Presentation):
     """Write csv based presentation formats."""
-    def content_type(self):
-        return 'text/csv'
+    content_type = 'text/csv'
 
-    def filename_extension(self):
-        return 'csv'
+    filename_extension = 'csv'
 
     def write_presentation(self, values, records, output):
         csvwriter = unicodecsv.writer(output, encoding='utf-8')

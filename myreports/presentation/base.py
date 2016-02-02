@@ -1,28 +1,22 @@
-from abc import ABCMeta
-
-
-class Presentation:
+class Presentation(object):
     """Base class for Reporting presentation types.
 
     Implementations are responsible for selecting the content type and
     filename extension which the user's browser will see at download time,
     as well as writing bytes of the document to an output stream.
     """
-    ___metaclass__ = ABCMeta
 
-    def content_type(self):
-        """Content type as seen by the user's browser.
+    """Content type as seen by the user's browser.
 
-        i.e. 'application/json', 'text/csv', etc.
-        """
-        pass
+    i.e. 'application/json', 'text/csv', etc.
+    """
+    content_type = ''
 
-    def filename_extension(self):
-        """Filename extension seen by the user at download time.
+    """Filename extension seen by the user at download time.
 
-        i.e. 'csv', 'xls', etc.
-        """
-        pass
+    i.e. 'csv', 'xls', etc.
+    """
+    filename_extension = ''
 
     def write_presentation(self, values, records, output):
         """Write bytes representing the downloaded artifact.

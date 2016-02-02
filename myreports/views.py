@@ -618,10 +618,10 @@ def download_dynamic_report(request):
     presentation_driver = (
         report.report_presentation.presentation_type.presentation_type)
     presentation = presentation_drivers[presentation_driver]
-    response = HttpResponse(content_type=presentation.content_type())
+    response = HttpResponse(content_type=presentation.content_type)
     disposition = get_content_disposition(
         report.name,
-        presentation.filename_extension())
+        presentation.filename_extension)
     response['Content-Disposition'] = disposition
 
     output = StringIO()

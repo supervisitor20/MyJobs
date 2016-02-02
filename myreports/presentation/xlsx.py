@@ -3,13 +3,11 @@ from myreports.presentation.base import Presentation
 
 
 class Xlsx(Presentation):
-    def content_type(self):
-        return (
-            'application/vnd.openxmlformats-' +
-            'officedocument.spreadsheetml.sheet')
+    content_type = (
+        'application/vnd.openxmlformats-' +
+        'officedocument.spreadsheetml.sheet')
 
-    def filename_extension(self):
-        return 'xlsx'
+    filename_extension = 'xlsx'
 
     def write_presentation(self, values, records, output):
         workbook = Workbook(output, {'constant_memory': True})
