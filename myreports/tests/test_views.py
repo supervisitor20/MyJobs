@@ -167,11 +167,13 @@ class TestReportView(MyReportsTestCase):
 
         ContactRecordFactory.create_batch(5, partner=self.partner)
         ContactRecordFactory.create_batch(
-            5, contact_type='job', job_applications=1,
+            5, contact_type='job',
+            job_applications="1", job_interviews="0", job_hires="0",
             partner=self.partner)
         ContactRecordFactory.create_batch(
             5, contact_type='job',
-            job_hires=1, partner=self.partner)
+            job_applications="0", job_interviews="0", job_hires="1",
+            partner=self.partner)
 
     def test_create_report(self):
         """Test that a report model instance is properly created."""

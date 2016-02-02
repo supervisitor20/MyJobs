@@ -29,10 +29,6 @@ from tasks import send_search_digests, requeue_missed_searches
 
 
 class SavedSearchModelsTests(MyJobsBase):
-    def setUp(self):
-        super(SavedSearchModelsTests, self).setUp()
-        self.user = UserFactory()
-
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
                                  is_active=False)
@@ -414,7 +410,6 @@ class SavedSearchModelsTests(MyJobsBase):
 class PartnerSavedSearchTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchTests, self).setUp()
-        self.user = UserFactory()
         self.digest = SavedSearchDigestFactory(user=self.user)
         self.company = CompanyFactory()
         self.partner = PartnerFactory(owner=self.company)
@@ -608,7 +603,6 @@ class SavedSearchSendingTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchSendingTests, self).setUp()
         self.feed = 'http://rushenterprises-veterans.jobs/alabama/usa/jobs/feed/rss'
-        self.user = UserFactory()
         self.saved_search = SavedSearchFactory(user=self.user, feed=self.feed,
                                                frequency='D')
         self.company = CompanyFactory()
@@ -733,7 +727,6 @@ class SavedSearchDeletionTests(MyJobsBase):
     # fit with any of the others.
     def setUp(self):
         super(SavedSearchDeletionTests, self).setUp()
-        self.user = UserFactory()
         self.creator = UserFactory(email='prm@example.com')
         self.search = SavedSearchFactory(user=self.user)
         self.partner_search = PartnerSavedSearchFactory(user=self.user,

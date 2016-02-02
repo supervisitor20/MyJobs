@@ -15,7 +15,6 @@ from setup import MyJobsBase
 class UserResourceTests(MyJobsBase):
     def setUp(self):
         super(UserResourceTests, self).setUp()
-        self.user = UserFactory()
         create_api_key(User, instance=self.user, created=True)
         self.client = TestClient(
             path='/api/v1/user/',
@@ -59,7 +58,6 @@ class UserResourceTests(MyJobsBase):
 class SavedSearchResourceTests(MyJobsBase):
     def setUp(self):
         super(SavedSearchResourceTests, self).setUp()
-        self.user = UserFactory()
         self.client = TestClient(
             path='/api/v1/savedsearch/',
             data={'email': 'alice@example.com',

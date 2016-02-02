@@ -22,18 +22,16 @@ class TestActiveModels(MyReportsTestCase):
     """
     def test_jobseeker_user_type(self):
         """Jobseeker user type"""
-        user = UserFactory.create()
+        user = UserFactory.create(email='alice1@example.com')
         self.assert_user_type(None, user)
 
     def test_employer_user_type(self):
         """Company user type"""
-        cuser = CompanyUserFactory.create()
-        user = cuser.user
-        self.assert_user_type('EMPLOYER', user)
+        self.assert_user_type('EMPLOYER', self.user)
 
     def test_staff_user_type(self):
         """Staff user type"""
-        user = UserFactory.create()
+        user = UserFactory.create(email='alice1@example.com')
         user.is_staff = True
         self.assert_user_type('STAFF', user)
 

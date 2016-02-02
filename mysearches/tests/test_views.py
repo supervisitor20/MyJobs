@@ -20,9 +20,6 @@ from mysearches.tests.factories import (SavedSearchDigestFactory,
 class MySearchViewTests(MyJobsBase):
     def setUp(self):
         super(MySearchViewTests, self).setUp()
-        self.client = TestClient()
-        self.user = UserFactory()
-        self.client.login_user(self.user)
         self.new_form_data = {
             'url': 'www.my.jobs/jobs',
             'feed': 'http://www.my.jobs/jobsfeed/rss?',

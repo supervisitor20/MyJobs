@@ -511,6 +511,7 @@ def help_api(request):
 
     response: [{'key': data, 'display': data to display}]
     """
+    company = get_company_or_404(request)
     request_data = request.POST
     rp_id = request_data['rp_id']
     filter_spec = request_data['filter']
@@ -520,8 +521,6 @@ def help_api(request):
     report_pres = ReportPresentation.objects.get(id=rp_id)
     datasource = report_pres.report_data.report_type.datasource
     driver = ds_json_drivers[datasource]
-
-    company = request.user.companyuser_set.first().company
 
     result = driver.help(company, filter_spec, field, partial)
 
@@ -541,12 +540,11 @@ def run_dynamic_report(request):
 
     response: {'id': new dynamic report id}
     """
+    company = get_company_or_404(request)
     rp_id = request.POST['rp_id']
     name = request.POST['name']
     filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
-
-    company = request.user.companyuser_set.first().company
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,
@@ -568,7 +566,7 @@ def run_dynamic_report(request):
 @require_http_methods(['GET'])
 def list_dynamic_reports(request):
     """Get a list of dynamic report runs for this user."""
-    company = request.user.companyuser_set.first().company
+    company = get_company_or_404(request)
 
     reports = (
         DynamicReport.objects

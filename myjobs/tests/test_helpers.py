@@ -11,7 +11,6 @@ from myjobs.tests.test_views import TestClient
 class MyJobsHelpersTests(MyJobsBase):
     def setUp(self):
         super(MyJobsHelpersTests, self).setUp()
-        self.user = UserFactory()
         self.client = TestClient()
 
         self.login_params = {'username': 'alice@example.com',
@@ -19,6 +18,9 @@ class MyJobsHelpersTests(MyJobsBase):
                              'action': 'login'}
 
     def test_login_dont_remember_me(self):
+        # MyJobsBase logs in a user, so we're clearing that session first
+        self.client.logout()
+        Session.objects.all().delete()
         self.assertEqual(Session.objects.count(), 0)
         self.client.post(reverse('home'),
                          data=self.login_params)
@@ -40,6 +42,9 @@ class MyJobsHelpersTests(MyJobsBase):
         self.assertTrue(880 <= diff.total_seconds() <= 900)
 
     def test_login_remember_me(self):
+        # MyJobsBase logs in a user, so we're clearing that session first
+        self.client.logout()
+        Session.objects.all().delete()
         self.assertEqual(Session.objects.count(), 0)
         self.login_params['remember_me'] = True
         self.client.post(reverse('home'),
