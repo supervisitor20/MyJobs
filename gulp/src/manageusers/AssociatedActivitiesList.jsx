@@ -7,23 +7,26 @@ class AssociatedActivitiesList extends React.Component {
     super(props);
   }
   render() {
-    const assignedActivities = [];
+    const assignedActivitiesFormatted = [];
     // The API gives activities grouped by app_access
     // Assemble simple list of all assigned_activities, no matter the app_access
-    const activities_grouped_by_app_access = this.props.activities;
-    for (const i in activities_grouped_by_app_access) {
-      const assigned_activities = activities_grouped_by_app_access[i].assigned_activities;
-      for (const j in assigned_activities) {
-        const formattedActivityName = formatActivityName(assigned_activities[j].name);
-        assignedActivities.push(formattedActivityName);
+    const activitiesGroupedByAppAccess = this.props.activities;
+    for (const i in activitiesGroupedByAppAccess) {
+      if (activitiesGroupedByAppAccess.hasOwnProperty(i)) {
+        const assignedActivities = activitiesGroupedByAppAccess[i].assigned_activities;
+        for (const j in assignedActivities) {
+          if (assignedActivities.hasOwnProperty(j)) {
+            const formattedActivityName = formatActivityName(assignedActivities[j].name);
+            assignedActivitiesFormatted.push(formattedActivityName);
+          }
+        }
       }
     }
-
     // TODO actually make this a "short" list, meaning show 3-4 and a "more" button
-    const associatedActivitiesShortList = assignedActivities.map( (activity, index) => {
+    const associatedActivitiesShortList = assignedActivitiesFormatted.map( (activity, index) => {
       return (
         <li key={index}>
-          {assignedActivities[index]}
+          {assignedActivitiesFormatted[index]}
         </li>
       );
     });

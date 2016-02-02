@@ -11,6 +11,8 @@ import {reverseFormatActivityName} from 'util/reverseFormatActivityName';
 import {formatForMultiselect} from 'util/formatForMultiselect';
 import {filterActivitiesForAppAccess} from 'util/filterActivitiesForAppAccess';
 import {formatActivityName} from 'util/formatActivityName';
+import {formatActivityNames} from 'util/formatActivityNames';
+import {buildCurrentActivitiesObject} from 'util/buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
 import ActivitiesAccordion from './ActivitiesAccordion';
@@ -25,10 +27,6 @@ class Role extends React.Component {
       activitiesMultiselectHelp: '',
       roleName: '',
       roleNameHelp: '',
-      // availablePRMActivities: [],
-      // assignedPRMActivities: [],
-      // availableUserManagementActivities: [],
-      // assignedUserManagementActivities: [],
       availableUsers: [],
       assignedUsers: [],
       activities: [],
@@ -42,22 +40,8 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-        const activities = results.activities;
 
-        for (const i in activities) {
-          activities[i].assigned_activities = activities[i].assigned_activities.map( obj => {
-              var activity = {}
-              activity.id = obj.id;
-              activity.name = formatActivityName(obj.name);
-              return activity;
-          });
-          activities[i].available_activities = activities[i].available_activities.map( obj => {
-              var activity = {}
-              activity.id = obj.id;
-              activity.name = formatActivityName(obj.name);
-              return activity;
-          });
-        }
+        const activities = formatActivityNames(results.activities);
 
         this.setState({
           apiResponseHelp: '',
@@ -70,9 +54,8 @@ class Role extends React.Component {
     } else {
       // action === 'Add'
       $.get('/manage-users/api/roles/', function addRole(results) {
-        // Objects in results don't have predictable keys
-        // It doesn't matter which one we get
-        // Therefore get the first one with a loop
+        // Objects in results don't have predictable keys. It doesn't matter
+        // which one we get. Therefore get the first one with a loop
         let roleObject = {};
         for (const key in results) {
           if (results.hasOwnProperty(key)) {
@@ -81,7 +64,7 @@ class Role extends React.Component {
           }
         }
 
-        const activities = roleObject.activities;
+        const activities = formatActivityNames(roleObject.activities);
 
         // Loop through all app_access
         // Make sure there are no assigned_activities
@@ -102,19 +85,16 @@ class Role extends React.Component {
   onTextChange(event) {
     this.state.roleName = event.target.value;
 
-    // This works, but is cumbersome to scale. For next app, or if we grow this one larger, refactor using Flux.
-    // setState overrides some states because they are n-levels deep.
-    // Look into immutability: http://facebook.github.io/react/docs/update.html
+    // If we don't include activities when we setState, activities will reset to default
+    let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
     this.setState({
       apiResponseHelp: '',
+      roleNameHelp: '',
       roleName: this.state.roleName,
-      // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
+      activites: currentActivitiesObject,
     });
   }
   handleSaveRoleClick() {
@@ -127,22 +107,24 @@ class Role extends React.Component {
 
     const roleName = this.state.roleName;
     if (roleName === '') {
+
+      // If we don't include activities when we setState, activities will reset to default
+      let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+
       this.setState({
         apiResponseHelp: '',
         roleNameHelp: 'Role name empty.',
+        activitiesMultiselectHelp: '',
         roleName: this.state.roleName,
-        // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-        // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-        // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-        // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
+        activities: currentActivitiesObject,
       });
       return;
     }
 
     // Combine all assigned activites
-    // This may look complicated, because we're building the accordions of
+    // This may look complicated because we're building the accordions of
     // activities dynamically. That is, we don't know how many of them or by
     // what ref they go by ahead of time.
     const assignedActivities = [];
@@ -160,35 +142,33 @@ class Role extends React.Component {
 
     // User must select AT LEAST ONE activity
     if (assignedActivities.length < 1) {
+
+      // If we don't include activities when we setState, activities will reset to default
+      let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+
       this.setState({
         apiResponseHelp: '',
+        roleNameHelp: '',
         activitiesMultiselectHelp: 'No activities selected. Each role must have at least one activity.',
         roleName: this.state.roleName,
-        // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
-        // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-        // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-        // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-        // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
-        activities: this.activities,
+        activities: currentActivitiesObject,
       });
       return;
     }
+
+    // If we don't include activities when we setState, activities will reset to default
+    let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
     // No errors? Clear help text
     this.setState({
       apiResponseHelp: '',
       activitiesMultiselectHelp: '',
-      // roleName: this.state.roleName,
-      // // TODO Daniel: how to set state when this.state.activities is not 'shallow'?
-      // // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-      // // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-      // // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-      // // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
-      // availableUsers: this.refs.users.state.availableUsers,
-      // assignedUsers: this.refs.users.state.assignedUsers,
-      // // activities: this.activities,
+      roleName: this.state.roleName,
+      availableUsers: this.refs.users.state.availableUsers,
+      assignedUsers: this.refs.users.state.assignedUsers,
+      activities: currentActivitiesObject,
     });
 
     // Format assigned activities
@@ -233,15 +213,17 @@ class Role extends React.Component {
         // Redirect user
         history.pushState(null, '/roles');
       } else if ( response.success === 'false' ) {
+
+        // If we don't include activities when we setState, activities will reset to default
+        let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+
         this.setState({
           apiResponseHelp: response.message,
+          activitiesMultiselectHelp: '',
           roleName: this.state.roleName,
-          // availablePRMActivities: this.refs.activitiesPRM.state.availableActivities,
-          // assignedPRMActivities: this.refs.activitiesPRM.state.assignedActivities,
-          // availableUserManagementActivities: this.refs.activitiesUserManagement.state.availableActivities,
-          // assignedUserManagementActivities: this.refs.activitiesUserManagement.state.assignedActivities,
           availableUsers: this.refs.users.state.availableUsers,
           assignedUsers: this.refs.users.state.assignedUsers,
+          activities: currentActivitiesObject,
         });
       }
     }.bind(this))

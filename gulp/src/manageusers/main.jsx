@@ -110,12 +110,10 @@ export class App extends React.Component {
       const rolesTableRows = [];
       for (const key in results) {
         if (results.hasOwnProperty(key)) {
-
           let editRoleLink;
           if (results[key].role_name !== 'Admin') {
             editRoleLink = <Link to={`/role/${results[key].role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
           }
-          
           rolesTableRows.push(
             <tr key={results[key].role_id}>
               <td data-title="Role">{results[key].role_name}</td>
