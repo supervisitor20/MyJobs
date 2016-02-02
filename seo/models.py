@@ -606,9 +606,6 @@ class Company(models.Model):
         ordering = ['name']
         unique_together = ('name', 'user_created')
 
-    def __init__(self, *args, **kwargs):
-        super(Company, self).__init__(*args, **kwargs)
-        self._first_invitation = self.invites_sent.order_by('-invited').first()
 
     def __unicode__(self):
         return self.name
@@ -773,7 +770,7 @@ class Company(models.Model):
         """
         # to prevent multiple queries, we set this up on instantiation instead
         # of running the query every time the information is asked for
-        return self._first_invitation
+        return self.invites_sent.order_by('-invited').first()
 
 
 class FeaturedCompany(models.Model):
