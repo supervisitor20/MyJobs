@@ -1,8 +1,7 @@
+from django.core import mail
 from django.core.urlresolvers import reverse
-from django.conf import settings
-from myjobs.tests.test_views import TestClient
-from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
-                                    ActivityFactory)
+from myjobs.models import User
+from myjobs.tests.factories import RoleFactory
 from seo.tests.factories import CompanyFactory
 from setup import MyJobsBase
 import json
@@ -17,7 +16,7 @@ class ManageUsersTests(MyJobsBase):
         super(ManageUsersTests, self).setUp()
         self.role.activities = self.activities
         self.otherCompany = CompanyFactory(app_access=[self.app_access])
-        self.otherRole = RoleFactory(company=self.company, name="OtherROle")
+        self.otherRole = RoleFactory(company=self.company, name="OtherRole")
         self.otherRoleAtOtherCompany = RoleFactory(
             company=self.otherCompany, name="otherRoleAtOtherCompany")
         self.user.roles.add(self.otherRole, self.otherRoleAtOtherCompany)
@@ -477,6 +476,46 @@ class ManageUsersTests(MyJobsBase):
         response = self.client.post(reverse('api_create_user'), data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
+        self.assertEqual(output["message"],
+                         "User created. Invitation email sent.")
+
+    def test_add_role_to_existing_user(self):
+        """
+        Tests adding a role to an existing user
+        """
+        data_to_post = {
+            'user_email': self.user.email,
+            'assigned_roles[]': [self.role.name]
+        }
+
+        response = self.client.post(reverse('api_create_user'), data_to_post)
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "true")
+        self.assertEqual(output["message"],
+                         "User already exists. Role invitation email sent.")
+
+    def test_number_of_invitations_sent_on_role_addition(self):
+        """
+        Adding roles to a user should only send invitations for each of
+        the new roles, not roles that were already attached.
+        """
+        new_role = RoleFactory(company=self.company)
+
+        mail.outbox = []
+        to_post = {
+            'user_email': 'andy@kaufman.com',
+            'assigned_roles[]': [self.role.name, new_role.name]
+        }
+        self.client.post(reverse('api_create_user'), to_post)
+        message = "Expected {} invitations, found {}"
+        self.assertEqual(len(mail.outbox), 2,
+                         message.format(2, len(mail.outbox)))
+
+        to_post['assigned_roles[]'].append(
+            RoleFactory(company=self.company).name)
+        self.client.post(reverse('api_create_user'), to_post)
+        self.assertEqual(len(mail.outbox), 3,
+                         message.format(3, len(mail.outbox)))
 
     def test_delete_user_require_post(self):
         """

@@ -12,6 +12,7 @@ from myjobs.decorators import MissingActivity
 from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
                                     ActivityFactory)
 from myjobs.tests.helpers import return_file
+from seo.models import SeoSite
 from seo.tests.factories import CompanyFactory
 from seo_pysolr import Solr
 
