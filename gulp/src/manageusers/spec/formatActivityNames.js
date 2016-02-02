@@ -1,4 +1,4 @@
-import {formatActivityNames} from '../../util/formatActivityNames';
+import {formatActivityNames} from '../formatActivityNames';
 
 const input = [
   {
@@ -74,7 +74,7 @@ const expectedResult = [
 
 describe('FormatActivityNames', () => {
   it('can format many activity names at once', () => {
-    var output = formatActivityNames(input);
+    const output = formatActivityNames(input);
     expect(output[0].available_activities[0].id).toEqual(expectedResult[0].available_activities[0].id);
     expect(output[0].available_activities[0].name).toEqual(expectedResult[0].available_activities[0].name);
     expect(output[0].available_activities[1].id).toEqual(expectedResult[0].available_activities[1].id);

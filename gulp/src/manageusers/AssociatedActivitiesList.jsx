@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {formatActivityName} from 'util/formatActivityName';
+import {formatActivityName} from './formatActivityName';
 
 class AssociatedActivitiesList extends React.Component {
   constructor(props) {

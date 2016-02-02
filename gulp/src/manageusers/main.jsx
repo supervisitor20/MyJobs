@@ -5,7 +5,7 @@ import React from 'react';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
-import {formatActivityName} from 'util/formatActivityName';
+import {formatActivityName} from './formatActivityName';
 
 import Overview from './Overview';
 import Roles from './Roles';
