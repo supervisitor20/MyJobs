@@ -1168,6 +1168,7 @@ class CompanyAdmin(admin.ModelAdmin):
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
                                ('posting_access'), ('enhanced'),
                                ('digital_strategies_customer'),
+                               ('admin_email'),
                                ('app_access')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
