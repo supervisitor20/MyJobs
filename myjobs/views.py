@@ -609,7 +609,8 @@ def manage_users(request):
         "company": company
         }
 
-    return render_to_response('manageusers/index.html', ctx,
+    return render_to_response('manageusers/index.html',
+                              ctx,
                               RequestContext(request))
 
 
@@ -638,7 +639,8 @@ def api_get_activities(request):
         )
         json_res.append(json_obj)
 
-    return HttpResponse(json.dumps(json_res), mimetype='application/json')
+    return HttpResponse(json.dumps(json_res),
+                        mimetype='application/json')
 
 
 @requires("read role")
@@ -657,7 +659,9 @@ def api_get_roles(request):
     app_access_for_company = company.app_access.all()
 
     # Retrieve all available_activities for this company
-    available_activities = Activity.objects.filter(app_access__in=app_access_for_company)
+    available_activities = (Activity
+                            .objects
+                            .filter(app_access__in = app_access_for_company))
 
     # Retrieve users that can be assigned to these roles. In other words,
     # users already assigned to roles associated with this company
@@ -733,7 +737,8 @@ def api_get_roles(request):
         # Add formatted role to growing list
         roles_formatted.append(role_formatted)
 
-    return HttpResponse(json.dumps(roles_formatted), mimetype='application/json')
+    return HttpResponse(json.dumps(roles_formatted),
+                        mimetype='application/json')
 
 
 @requires('read role')
@@ -748,7 +753,8 @@ def api_get_specific_role(request, role_id=0):
     if Role.objects.filter(id=role_id).exists() is False:
         ctx["success"] = "false"
         ctx["message"] = "Role does not exist."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
     company = get_company_or_404(request)
 
@@ -820,7 +826,8 @@ def api_get_specific_role(request, role_id=0):
         activities = activities,
     )
 
-    return HttpResponse(json.dumps(json_obj), mimetype='application/json')
+    return HttpResponse(json.dumps(json_obj),
+                        mimetype='application/json')
 
 
 @requires('create role')
@@ -843,7 +850,8 @@ def api_create_role(request):
     if request.method != "POST":
         ctx["success"] = "false"
         ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
     else:
         company = get_company_or_404(request)
 
@@ -890,7 +898,8 @@ def api_create_role(request):
                 user_object[0].roles.add(new_role.id)
 
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('update role')
@@ -990,7 +999,8 @@ def api_edit_role(request, role_id=0):
         for user in new_users.exclude(pk__in=existing_users.values("pk")):
             user.roles.add(role_id)
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('delete role')
@@ -1095,7 +1105,8 @@ def api_get_users(request):
                 lastInvitation = ''
         ctx[user.id]["lastInvitation"] = lastInvitation
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    return HttpResponse(json.dumps(ctx),
+                        content_type="application/json")
 
 
 @requires('read user')
@@ -1127,7 +1138,8 @@ def api_get_specific_user(request, user_id=0):
             & set(roles_assigned_to_user)) is "False":
         ctx["success"] = "false"
         ctx["message"] = "You do not have permission to view this user"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
     # Return user
     ctx[user[0].id] = {}
@@ -1152,7 +1164,8 @@ def api_get_specific_user(request, user_id=0):
     # Status
     ctx[user[0].id]["status"] = user[0].is_verified
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    return HttpResponse(json.dumps(ctx),
+                        content_type="application/json")
 
 
 @requires('create user')
@@ -1207,7 +1220,8 @@ def api_create_user(request):
         for role in set(new_roles).difference(existing_roles):
             request.user.send_invite(user_email, company, role.name)
 
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('update user')
@@ -1228,7 +1242,8 @@ def api_edit_user(request, user_id=0):
     if request.method != "POST":
         ctx["success"] = "false"
         ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
     else:
         company = get_company_or_404(request)
 
@@ -1311,7 +1326,8 @@ def api_edit_user(request, user_id=0):
             request.user.send_invite(user[0].email, company, role)
         # # RETURN - boolean
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('delete user')
@@ -1350,4 +1366,5 @@ def api_delete_user(request, user_id=0):
 
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
