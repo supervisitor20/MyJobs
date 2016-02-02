@@ -258,11 +258,6 @@ class TestActivities(MyJobsBase):
         # sanity check
         self.assertTrue(self.user.can(self.company, 'create user'))
 
-        user = self.user.send_invite('regular@joe.com', self.company)
-        self.assertFalse(
-            user.can(self.company, 'create user'),
-            "User shouldn't be able to 'create user', but can")
-
         user = self.user.send_invite(
             'regular@joe.com', self.company, role_name=self.role.name)
         self.assertTrue(

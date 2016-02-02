@@ -669,7 +669,8 @@ class CompanyForm(SeoSiteReverseForm):
                                                 my_model=BusinessUnit,
                                                 required=False,
                                                 widget=job_source_ids_widget)
-    admin_email = forms.fields.EmailField(label='Admin Email')
+    admin_email = forms.fields.EmailField(label='Admin Email',
+                                          required=False)
 
     class Meta:
         model = Company
@@ -678,12 +679,16 @@ class CompanyForm(SeoSiteReverseForm):
         super(CompanyForm, self).__init__(*args, **kwargs)
         instance = kwargs.get('instance')
         if instance and instance.first_invitation:
-            label = "Invitation was sent to %s on %s." % (
-                instance.first_invitation.invitee_email,
-                instance.first_invitation.invited)
-            self.fields['admin_email'] = forms.fields.EmailField(
-                initial=label, widget=forms.widgets.EmailInput())
-
+            text = "Invitation sent to %s." % (
+                instance.first_invitation.invitee_email)
+            self.fields['admin_email'].initial = text
+            self.fields['admin_email'].widget = forms.widgets.EmailInput(
+                attrs={"style": "border: 0; "
+                                "background: 'transparent'; "
+                                "width: 300px;",
+                       "readonly": True,
+                       "onfocus": "this.blur()"
+                       })
 
 
 class SpecialCommitmentForm(SeoSiteReverseForm):

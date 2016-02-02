@@ -1178,6 +1178,13 @@ class CompanyAdmin(admin.ModelAdmin):
         ('PRM', {'fields': ['prm_saved_search_sites']}),
     ]
 
+    def save_model(self, request, instance, form, change):
+        invitee_email = form.cleaned_data.get('admin_email')
+        if invitee_email:
+            request.user.send_invite(invitee_email, instance, "Admin")
+
+        super(CompanyAdmin, self).save_model(request, instance, form, change)
+
 
 class SpecialCommitmentAdmin(admin.ModelAdmin):
     form = SpecialCommitmentForm

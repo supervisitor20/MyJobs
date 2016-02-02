@@ -741,12 +741,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         sent.
         """
 
-        can_invite = company.user_has_access(self) and self.can(
-            company, 'create user')
-
-        if not can_invite:
-            return None
-
         user, _ = User.objects.create_user(
             email=email, send_email=False, in_reserve=True)
         Invitation = get_model('registration', 'Invitation')
