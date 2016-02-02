@@ -6,9 +6,10 @@ class DataSourceJsonDriver(object):
     def __init__(self, ds):
         self.ds = ds
 
-    def run(self, company, filter_spec, order_spec):
+    def run(self, data_type, company, filter_spec, order_spec):
         """Run the report.
 
+        data_type: name of query variant, i.e. unaggregated, per_year
         company: company model object for this run.
         filter_spec: string with json object representing the user filter
         order_spec: string with json list of fields in "[+-]field" form
@@ -16,6 +17,7 @@ class DataSourceJsonDriver(object):
         returns: list of relatively flat dictionaries.
         """
         return self.ds.run(
+            data_type,
             company,
             self.build_filter(filter_spec),
             self.build_order(order_spec))

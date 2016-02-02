@@ -35,9 +35,10 @@ class DataSource:
             "Missing filter_type method on this instance.")
 
     @abstractmethod
-    def run(self, company, filter_spec, order_spec):
+    def run(self, data_type, company, filter_spec, order_spec):
         """Run the query with the given company, filter, and ordering.
 
+        data_type: data_type variant to run; i.e. unaggregated, per_year
         company: reference to the company for the logged in user
         filter_spec: an instance of the companion filter type for this class.
         order_spec: a list of fields to order the query.

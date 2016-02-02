@@ -160,17 +160,17 @@ def create_full_fixture():
     DataType.objects.all().delete()
     dt_dead = DataTypeFactory.create(
         id=1,
-        data_type="Dead",
-        description="Dead Data Type",
+        data_type="",
+        description="Dead",
         is_active=False)
     dt_maybe_dead = DataTypeFactory.create(
         id=2,
-        data_type="Maybe Dead",
-        description="Maybe Dead Data Type")
+        data_type="",
+        description="Maybe Dead")
     dt_unagg = DataTypeFactory.create(
         id=3,
-        data_type="Unaggregated",
-        description="Unaggregated Data Type")
+        data_type="unaggregated",
+        description="Unaggregated")
 
     ReportTypeDataTypes.objects.all().delete()
     ReportTypeDataTypesFactory.create(

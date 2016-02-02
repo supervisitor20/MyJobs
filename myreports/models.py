@@ -305,9 +305,11 @@ class DynamicReport(models.Model):
 
     def regenerate(self):
         report_type = self.report_presentation.report_data.report_type
+        data_type = self.report_presentation.report_data.data_type
 
         driver = ds_json_drivers[report_type.datasource]
-        data = driver.run(self.owner, self.filters, "[]")
+        data_type_name = data_type.data_type
+        data = driver.run(data_type_name, self.owner, self.filters, "[]")
 
         contents = json.dumps(data, cls=ReportJsonEncoder)
         results = ContentFile(contents)

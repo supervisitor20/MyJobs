@@ -4,9 +4,9 @@ from operator import __or__
 from mypartners.models import Contact, Partner, Status, Location, Tag
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range, extract_tags)
+    dispatch_help_by_field_name, dispatch_run_by_data_type,
+    filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
-
 
 from universal.helpers import dict_identity
 
@@ -14,7 +14,11 @@ from django.db.models import Q
 
 
 class PartnersDataSource(DataSource):
-    def run(self, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, order):
+        return dispatch_run_by_data_type(
+            self, data_type, company, filter_spec, order)
+
+    def run_unaggregated(self, company, filter_spec, order):
         qs_filtered = self.filtered_query_set(company, filter_spec)
         qs_ordered = qs_filtered.order_by(*order)
         qs_distinct = qs_ordered.distinct()

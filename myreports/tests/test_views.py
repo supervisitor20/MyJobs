@@ -447,8 +447,8 @@ class TestReportsApi(MyReportsTestCase):
                                 data={'report_type_id': '2'})
         data = json.loads(resp.content)['data_type']
         self.assertEquals(1, len(data))
-        self.assertEquals("Unaggregated", data['3']['name'])
-        self.assertEquals("Unaggregated Data Type", data['3']['description'])
+        self.assertEquals("unaggregated", data['3']['name'])
+        self.assertEquals("Unaggregated", data['3']['description'])
 
     def test_presentation_api(self):
         """Test that we get only active presentation types."""

@@ -5,8 +5,8 @@ from datetime import datetime
 from myreports.report_configuration import (
      ReportConfiguration, ColumnConfiguration)
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range,
-    extract_tags)
+    dispatch_help_by_field_name, dispatch_run_by_data_type,
+    filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource
 from myreports.datasources.jsondriver import DataSourceJsonDriver
 from myreports.datasources.partners import PartnersFilter
@@ -96,8 +96,8 @@ class MockDataSource(DataSource):
         self.calls.append(['help', company, filter, field, partial])
         return 'aaa'
 
-    def run(self, company, filter, order):
-        self.calls.append(['run', company, filter, order])
+    def run(self, data_source, company, filter, order):
+        self.calls.append(['run', data_source, company, filter, order])
         return 'aaa'
 
 
@@ -182,10 +182,10 @@ class TestDataSourceJsonDriver(TestCase):
 
     def test_run(self):
         """Test that json run calls are plumbed to datasource correctly."""
-        result = self.driver.run('company', '{}', '["zzz"]')
+        result = self.driver.run('unaggregated', 'company', '{}', '["zzz"]')
         self.assertEqual('aaa', result)
         self.assertEqual([
-            ['run', 'company', PartnersFilter(), ['zzz']]
+            ['run', 'unaggregated', 'company', PartnersFilter(), ['zzz']]
             ], self.ds.calls)
 
     def test_empty_filter(self):
@@ -212,8 +212,12 @@ class SomeDataSource(DataSource):
     def filter_type(self):
         pass
 
-    def run(self, company, filter_spec, order_spec):
-        pass
+    def run(self, data_type, company, filter_spec, order_spec):
+        return dispatch_run_by_data_type(
+                self, data_type, company, filter_spec, order_spec)
+
+    def run_unaggregated(self, company, filter_spec, order_spec):
+        return ['unaggregated']
 
     def help(self, company, filter_spec, field, partial):
         return dispatch_help_by_field_name(
@@ -223,14 +227,25 @@ class SomeDataSource(DataSource):
         return partial + ' zz'
 
 
-class TestHelpDispatch(TestCase):
+class TestDispatch(TestCase):
+    ds = SomeDataSource()
+
     def test_help_dispatch(self):
-        ds = SomeDataSource()
-        self.assertEquals('aa zz', ds.help(None, None, 'name', 'aa'))
+        self.assertEquals('aa zz', self.ds.help(None, None, 'name', 'aa'))
 
     def test_help_dispatch_missing_method(self):
-        ds = SomeDataSource()
         try:
-            ds.help(None, None, 'zz', None)
+            self.ds.help(None, None, 'zz', None)
+        except AttributeError:
+            pass
+
+    def test_run_dispatch(self):
+        self.assertEquals(
+            ['unaggregated'],
+            self.ds.run('unaggregated', None, None, None))
+
+    def test_run_dispatch_missing_method(self):
+        try:
+            self.ds.run('zz', None, None, None)
         except AttributeError:
             pass
