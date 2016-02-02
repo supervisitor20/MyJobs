@@ -3,14 +3,9 @@
 import React from 'react';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
-import Accordion from 'react-bootstrap/lib/Accordion';
-import Panel from 'react-bootstrap/lib/Panel';
 
 import {getCsrf} from 'util/cookie';
 import {reverseFormatActivityName} from 'util/reverseFormatActivityName';
-import {formatForMultiselect} from 'util/formatForMultiselect';
-import {filterActivitiesForAppAccess} from 'util/filterActivitiesForAppAccess';
-import {formatActivityName} from 'util/formatActivityName';
 import {formatActivityNames} from 'util/formatActivityNames';
 import {buildCurrentActivitiesObject} from 'util/buildCurrentActivitiesObject';
 
@@ -40,7 +35,6 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-
         const activities = formatActivityNames(results.activities);
 
         this.setState({
@@ -69,7 +63,9 @@ class Role extends React.Component {
         // Loop through all app_access
         // Make sure there are no assigned_activities
         for (const i in activities) {
-          activities[i].assigned_activities = [];
+          if (activities.hasOwnProperty(i)) {
+            activities[i].assigned_activities = [];
+          }
         }
 
         this.setState({
@@ -86,7 +82,7 @@ class Role extends React.Component {
     this.state.roleName = event.target.value;
 
     // If we don't include activities when we setState, activities will reset to default
-    let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+    const currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
     this.setState({
       apiResponseHelp: '',
@@ -107,9 +103,8 @@ class Role extends React.Component {
 
     const roleName = this.state.roleName;
     if (roleName === '') {
-
       // If we don't include activities when we setState, activities will reset to default
-      let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+      const currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
       this.setState({
         apiResponseHelp: '',
@@ -130,21 +125,24 @@ class Role extends React.Component {
     const assignedActivities = [];
     // Loop through all apps
     for (const i in this.state.activities) {
-      // Now for each app, loop through all selected activities in its accordion
-      // tempRef is the app_access_name without spaces (e.g. User Management
-      // becomes UserManagement)
-      let tempRef = this.state.activities[i].app_access_name.replace(/\s/g, '');
-      let assigned_activities = this.refs.activities.refs[tempRef].state.assignedActivities;
-      for (const j in assigned_activities) {
-        assignedActivities.push(assigned_activities[j])
+      if (this.state.activities.hasOwnProperty(i)) {
+        // Now for each app, loop through all selected activities in its accordion
+        // tempRef is the app_access_name without spaces (e.g. User Management
+        // becomes UserManagement)
+        const tempRef = this.state.activities[i].app_access_name.replace(/\s/g, '');
+        const selected = this.refs.activities.refs[tempRef].state.assignedActivities;
+        for (const j in selected) {
+          if (selected.hasOwnProperty(j)) {
+            assignedActivities.push(selected[j]);
+          }
+        }
       }
     }
 
     // User must select AT LEAST ONE activity
     if (assignedActivities.length < 1) {
-
       // If we don't include activities when we setState, activities will reset to default
-      let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+      const currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
       this.setState({
         apiResponseHelp: '',
@@ -159,7 +157,7 @@ class Role extends React.Component {
     }
 
     // If we don't include activities when we setState, activities will reset to default
-    let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
+    const currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
 
     // No errors? Clear help text
     this.setState({
@@ -213,10 +211,6 @@ class Role extends React.Component {
         // Redirect user
         history.pushState(null, '/roles');
       } else if ( response.success === 'false' ) {
-
-        // If we don't include activities when we setState, activities will reset to default
-        let currentActivitiesObject = buildCurrentActivitiesObject(this.state, this.refs);
-
         this.setState({
           apiResponseHelp: response.message,
           activitiesMultiselectHelp: '',

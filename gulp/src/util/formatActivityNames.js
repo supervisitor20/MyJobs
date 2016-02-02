@@ -1,4 +1,4 @@
-import {formatActivityName} from 'util/formatActivityName';
+import {formatActivityName} from './formatActivityName';
 
 // Wraps formatActivityName util function in order to format multiple activity
 // names at once.
@@ -47,20 +47,19 @@ import {formatActivityName} from 'util/formatActivityName';
 // Same format as above, but activity names like "update role" become "role - update"
 
 export function formatActivityNames(activities) {
-  for (const i in activities) {
-    activities[i].assigned_activities = activities[i].assigned_activities.map( obj => {
-        var activity = {}
-        activity.id = obj.id;
-        activity.name = formatActivityName(obj.name);
-        return activity;
+  activities.map( appAccessGroup => {
+    appAccessGroup.assigned_activities = appAccessGroup.assigned_activities.map( obj => {
+      const activity = {};
+      activity.id = obj.id;
+      activity.name = formatActivityName(obj.name);
+      return activity;
     });
-    activities[i].available_activities = activities[i].available_activities.map( obj => {
-        var activity = {}
-        activity.id = obj.id;
-        activity.name = formatActivityName(obj.name);
-        return activity;
+    appAccessGroup.available_activities = appAccessGroup.available_activities.map( obj => {
+      const activity = {};
+      activity.id = obj.id;
+      activity.name = formatActivityName(obj.name);
+      return activity;
     });
-  }
-
+  });
   return activities;
 }
