@@ -2,6 +2,7 @@
 /* global companyName */
 
 import React from 'react';
+import _ from 'lodash-compat';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
@@ -52,38 +53,30 @@ export class App extends React.Component {
       // Create an array of tables, each a list of activities of a
       // particular app_access
 
-      // Create an array of unique app_access_names
-      const appAccessNames = [];
-      for (const i in results) {
-        if (appAccessNames.indexOf(results[i].app_access_name) === -1) {
-          appAccessNames.push(results[i].app_access_name);
-        }
-      }
+      const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
 
-      // TODO: Consider refactoring with lodash groupBy()
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
       // First assemble rows needed for each table
-      for (const i in appAccessNames) {
-        if (appAccessNames.hasOwnProperty(i)) {
+      for (const appAccessName in activitiesGroupedByAppAccess) {
+        if (activitiesGroupedByAppAccess.hasOwnProperty(appAccessName)) {
           // For each app, build list of rows from results
           const activityRows = [];
           // Loop through all activities...
-          for (const j in results) {
-            // ...and find the ones related to this app
-            if (results[j].app_access_name === appAccessNames[i]) {
+          for (const activity in activitiesGroupedByAppAccess[appAccessName]) {
+            if (activitiesGroupedByAppAccess[appAccessName].hasOwnProperty(activity)) {
               activityRows.push(
-                <tr key={results[j].activity_id}>
-                  <td>{formatActivityName(results[j].activity_name)}</td>
-                  <td>{results[j].activity_description}</td>
+                <tr key={activitiesGroupedByAppAccess[appAccessName][activity].activity_id}>
+                  <td>{formatActivityName(activitiesGroupedByAppAccess[appAccessName][activity].activity_name)}</td>
+                  <td>{activitiesGroupedByAppAccess[appAccessName][activity].activity_description}</td>
                 </tr>
               );
             }
           }
           // Assemble this app's table
           tablesOfActivitiesByApp.push(
-            <span key={i}>
-              <h3>{appAccessNames[i]}</h3>
+            <span key={appAccessName}>
+              <h3>{appAccessName}</h3>
               <table className="table table-striped table-activities">
                 <thead>
                   <tr>
