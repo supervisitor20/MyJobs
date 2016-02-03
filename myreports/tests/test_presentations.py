@@ -28,7 +28,7 @@ class TestCsv(TestCase):
 
     def test_presentation(self):
         """Happy path, puts data in csv columns, etc."""
-        expected = "A,B\r\n1,b\r\n2,bb\r"
+        expected = "A,B\r\n1,b\r\n2,bb\r\n"
         values = ['A', 'B']
         records = [
             {'A': 1, 'B': 'b'},
