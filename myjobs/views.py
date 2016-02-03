@@ -1139,8 +1139,9 @@ def api_create_user(request):
 
         # Send one invitation per new role. This will handle creating the user
         # if one doesn't exist.
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user_email, company, role.name)
+        if request.user.can(company, "create user"):
+            for role in set(new_roles).difference(existing_roles):
+                request.user.send_invite(user_email, company, role.name)
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -1242,8 +1243,9 @@ def api_edit_user(request, user_id=0):
                 user[0].roles.remove(currently_assigned_role.id)
 
         # Notify the user
-        for role in assigned_roles:
-            request.user.send_invite(user[0].email, company, role)
+        if request.user.can(company, "create user"):
+            for role in assigned_roles:
+                request.user.send_invite(user[0].email, company, role)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
