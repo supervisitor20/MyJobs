@@ -682,7 +682,7 @@ class CompanyForm(SeoSiteReverseForm):
             text = "Invitation sent to %s." % (
                 instance.first_invitation.invitee_email)
             self.fields['admin_email'].initial = text
-            self.fields['admin_email'].widget = forms.widgets.EmailInput(
+            self.fields['admin_email'].widget = forms.widgets.TextInput(
                 attrs={"style": "border: 0; "
                                 "background: 'transparent'; "
                                 "width: 300px;",
