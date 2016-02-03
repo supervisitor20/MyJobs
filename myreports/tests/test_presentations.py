@@ -28,10 +28,7 @@ class TestCsv(TestCase):
 
     def test_presentation(self):
         """Happy path, puts data in csv columns, etc."""
-        expected = """A,B\r
-1,b\r
-2,bb\r
-"""
+        expected = "A,B\r\n1,b\r\n2,bb\r"
         values = ['A', 'B']
         records = [
             {'A': 1, 'B': 'b'},
@@ -41,9 +38,7 @@ class TestCsv(TestCase):
 
     def test_presentation_unicode(self):
         """Run a unicode character through the presentation."""
-        expected = """A\r
-aa\xe2\x80\x99zz\r
-"""
+        expected = "A\r\naa\xe2\x80\x99zz\r\n"
         values = ['A']
         records = [{'A': u'aa\u2019zz'}]
         self.assert_content(expected, values, records)
