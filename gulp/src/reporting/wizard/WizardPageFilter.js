@@ -14,6 +14,7 @@ export class WizardPageFilter extends Component {
   constructor() {
     super();
     this.state = {
+      reportName: 'Report Name',
       loading: true,
     };
   }
@@ -92,7 +93,7 @@ export class WizardPageFilter extends Component {
   }
 
   render() {
-    const {loading, reportConfig} = this.state;
+    const {loading, reportConfig, reportName} = this.state;
 
     if (loading) {
       return <Loading/>;
@@ -176,7 +177,7 @@ export class WizardPageFilter extends Component {
         <hr/>
         {this.renderRow('', 'submit',
           <Button
-            onClick={() => reportConfig.run()}>
+            onClick={() => reportConfig.run(reportName)}>
             Run Report
           </Button>)}
 

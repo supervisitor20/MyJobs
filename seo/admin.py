@@ -1168,6 +1168,7 @@ class CompanyAdmin(admin.ModelAdmin):
         ('Basics', {'fields': [('name'), ('company_slug'), ('member'),
                                ('posting_access'), ('enhanced'),
                                ('digital_strategies_customer'),
+                               ('admin_email'),
                                ('app_access')]}),
         ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
                                    ('canonical_microsite'),
@@ -1176,6 +1177,13 @@ class CompanyAdmin(admin.ModelAdmin):
         ('Featured on', {'fields': ['sites']}),
         ('PRM', {'fields': ['prm_saved_search_sites']}),
     ]
+
+    def save_model(self, request, instance, form, change):
+        invitee_email = form.cleaned_data.get('admin_email')
+        if invitee_email:
+            request.user.send_invite(invitee_email, instance, "Admin")
+
+        super(CompanyAdmin, self).save_model(request, instance, form, change)
 
 
 class SpecialCommitmentAdmin(admin.ModelAdmin):

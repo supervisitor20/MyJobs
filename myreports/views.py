@@ -17,6 +17,8 @@ from myjobs.decorators import requires
 from myreports.models import (
     Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
     DataType, ReportTypeDataTypes)
+from myreports.presentation import presentation_drivers
+from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
@@ -24,7 +26,6 @@ from universal.decorators import has_access
 from myreports.datasources import ds_json_drivers
 
 from cStringIO import StringIO
-import unicodecsv
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -612,16 +613,17 @@ def download_dynamic_report(request):
     values = report_configuration.get_header()
     records = [report_configuration.format_record(r) for r in report.python]
 
-    response = HttpResponse(content_type='text/csv')
-    content_disposition = "attachment; filename=%s-%s.csv"
-    response['Content-Disposition'] = content_disposition % (
-        report.name.replace(' ', '_'), report.pk)
+    presentation_driver = (
+        report.report_presentation.presentation_type.presentation_type)
+    presentation = presentation_drivers[presentation_driver]
+    response = HttpResponse(content_type=presentation.content_type)
+    disposition = get_content_disposition(
+        report.name,
+        presentation.filename_extension)
+    response['Content-Disposition'] = disposition
 
     output = StringIO()
-    writer = unicodecsv.writer(output, encoding='utf-8')
-    writer.writerow(values)
-    for record in records:
-        writer.writerow([unicode(record[v]) for v in values])
+    presentation.write_presentation(values, records, output)
     response.write(output.getvalue())
 
     return response
