@@ -52,9 +52,7 @@ export class App extends React.Component {
     $.get('/manage-users/api/activities/', function getActivities(results) {
       // Create an array of tables, each a list of activities of a
       // particular app_access
-
       const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
-
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
       // First assemble rows needed for each table
