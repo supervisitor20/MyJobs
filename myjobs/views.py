@@ -24,9 +24,11 @@ from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
 from myjobs.decorators import user_is_allowed, requires
-from myjobs.forms import ChangePasswordForm, EditCommunicationForm
+from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
+                          AccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
-from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
+from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
+                           AccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -1288,3 +1290,21 @@ def api_delete_user(request, user_id=0):
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
         return HttpResponse(json.dumps(ctx), content_type="application/json")
+
+def request_access(request):
+    ctx = {}
+    if request.method == 'POST':
+        form = AccessRequestForm(request.POST)
+        if form.is_valid():
+            company_name = form.cleaned_data['company_name']
+            _, access_code = AccessRequest.objects.create_request(
+                company_name, request.user)
+            ctx['access_code'] = access_code
+    else:
+        form = AccessRequestForm()
+
+    ctx['form'] = form
+
+    return render_to_response(
+        '../templates/myjobs/request_access.html', ctx,
+        RequestContext(request))

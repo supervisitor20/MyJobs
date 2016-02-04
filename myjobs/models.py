@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
+from django.utils.crypto import get_random_string
 
 import pytz
 
@@ -907,6 +908,62 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
         RoleActivities = Role.activities.through
         RoleActivities.objects.bulk_create([
             RoleActivities(role=role, activity=instance) for role in roles])
+
+
+class AccessRequestManager(models.Manager):
+    def create_request(self, company_name, requested_by):
+        access_request = self.create(
+            company_name=company_name, requested_by=requested_by)
+        access_code = get_random_string(8)
+        access_request.access_code = hashlib.md5(access_code).hexdigest()
+        access_request.save()
+        return access_request, access_code
+
+
+class AccessRequest(models.Model):
+    """
+    This model represents a user requesting access to a company.
+
+    It is used when a company is left without a user assigned to the Admin
+    role, and is a means to grant them access to that company securely.
+
+    """
+    company_name = models.CharField('Company Name', max_length=200)
+    access_code = models.CharField('Access Code', max_length=32)
+    requested_by = models.ForeignKey(
+        'myjobs.User', related_name='requested_by')
+    authorized_by = models.ForeignKey(
+        'myjobs.User', null=True, related_name='authorized_by')
+    requested_on = models.DateTimeField("Requested On", auto_now_add=True)
+    authorized_on = models.DateTimeField(null=True)
+
+    objects = AccessRequestManager()
+
+    def authenticate(self, authorized_by, access_code):
+        """
+        Authenticates an access code.
+
+        Inputs:
+            :authorized_by: The person authorizing the request
+            :acess_code: The alpha-numeric code being authenticated
+
+        Output:
+            True if authentication is successful, False otherwise.
+
+        """
+        preconditions = [authorized_by.is_staff, not self.authorized_on,
+                         self.check_access_code(access_code)]
+        if all(preconditions):
+            self.authorized_by = authorized_by
+            self.authorized_on = datetime.datetime.now()
+            self.save()
+
+            return True
+
+        return False
+
+    def check_access_code(self, access_code):
+        return self.access_code == hashlib.md5(access_code).hexdigest()
 
 
 class Role(models.Model):

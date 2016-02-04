@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="row">
+    <div class="span8">
+      <form action="" method="post">
+        {% include 'includes/form-error-highlight.html' %}
+        {% csrf_token %}
+        <div class="actions">
+          <input type="submit" class="btn primary" value="Request Access">
+        </div>
+      </form>
+    </div>
+  </div>
+  {% if access_code %}
+  <div class="row">
+    <div class="span8">
+      <p>
+        Your request has been submitted. A representative will be in contact 
+        with your company shortly.
+      </p>
+      <p>
+        Please write down the following code. You will need it to verify your
+        request. <strong>This is the only time this code is displayed.</strong>
+      </p>
+      <p>{{ access_code }}</p>
+    </div>
+  </div>
+  {% endif %}
+{% endblock content %}
+
