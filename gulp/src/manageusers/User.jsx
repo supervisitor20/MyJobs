@@ -1,6 +1,7 @@
 /* global $ */
 
 import React from 'react';
+import _ from 'lodash-compat';
 import Button from 'react-bootstrap/lib/Button';
 import {Link} from 'react-router';
 
@@ -66,17 +67,14 @@ class User extends React.Component {
       // action === 'Add'
       $.get('/manage-users/api/roles/', function addUser(results) {
         const availableRoles = [];
-        for (const role in results) {
-          if (results.hasOwnProperty(role)) {
-            availableRoles.push(
-              {
-                'id': results[role].role_id,
-                'name': results[role].role_name,
-              }
-            );
-          }
-        }
-
+        _.forOwn(results, function buildListOfAvailableRoles(role) {
+          availableRoles.push(
+            {
+              'id': role.role_id,
+              'name': role.role_name,
+            }
+          );
+        });
         this.setState({
           userEmail: '',
           userEmailHelp: '',

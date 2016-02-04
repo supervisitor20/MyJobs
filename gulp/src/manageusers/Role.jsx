@@ -1,6 +1,7 @@
 /* global $ */
 
 import React from 'react';
+import _ from 'lodash-compat';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
@@ -48,25 +49,16 @@ class Role extends React.Component {
     } else {
       // action === 'Add'
       $.get('/manage-users/api/roles/', function addRole(results) {
-        // Objects in results don't have predictable keys. It doesn't matter
-        // which one we get. Therefore get the first one with a loop
-        let roleObject = {};
-        for (const key in results) {
-          if (results.hasOwnProperty(key)) {
-            roleObject = results[key];
-            break;
-          }
-        }
+        // It doesn't matter which role we get
+        const roleObject = results[0];
 
         const activities = formatActivityNames(roleObject.activities);
 
-        // Loop through all app_access
+        // Loop through all app_access's
         // Make sure there are no assigned_activities
-        for (const i in activities) {
-          if (activities.hasOwnProperty(i)) {
-            activities[i].assigned_activities = [];
-          }
-        }
+        _.forOwn(activities, function resetAssignedActivities(activity) {
+          activity.assigned_activities = [];
+        });
 
         this.setState({
           apiResponseHelp: '',
@@ -124,21 +116,17 @@ class Role extends React.Component {
     // what ref they go by ahead of time.
     const assignedActivities = [];
     // Loop through all apps
-    for (const i in this.state.activities) {
-      if (this.state.activities.hasOwnProperty(i)) {
-        // Now for each app, loop through all selected activities in its accordion
-        // tempRef is the app_access_name without spaces (e.g. User Management
-        // becomes UserManagement)
-        const tempRef = this.state.activities[i].app_access_name.replace(/\s/g, '');
-        const selected = this.refs.activities.refs[tempRef].state.assignedActivities;
-        for (const j in selected) {
-          if (selected.hasOwnProperty(j)) {
-            assignedActivities.push(selected[j]);
-          }
-        }
-      }
-    }
-
+    const refs = this.refs;
+    _.forOwn(this.state.activities, function loopThroughGroupedActivities(activity) {
+      // Now for each app, loop through all selected activities in its accordion
+      // tempRef is the app_access_name without spaces (e.g. User Management
+      // becomes UserManagement)
+      const tempRef = activity.app_access_name.replace(/\s/g, '');
+      const selected = refs.activities.refs[tempRef].state.assignedActivities;
+      _.forOwn(selected, function loopThroughEachSelectedActivity(item) {
+        assignedActivities.push(item);
+      });
+    });
     // User must select AT LEAST ONE activity
     if (assignedActivities.length < 1) {
       // If we don't include activities when we setState, activities will reset to default

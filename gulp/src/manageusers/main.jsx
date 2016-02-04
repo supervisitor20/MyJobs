@@ -56,40 +56,36 @@ export class App extends React.Component {
       // Build a table for each app present
       const tablesOfActivitiesByApp = [];
       // First assemble rows needed for each table
-      for (const appAccessName in activitiesGroupedByAppAccess) {
-        if (activitiesGroupedByAppAccess.hasOwnProperty(appAccessName)) {
-          // For each app, build list of rows from results
-          const activityRows = [];
-          // Loop through all activities...
-          for (const activity in activitiesGroupedByAppAccess[appAccessName]) {
-            if (activitiesGroupedByAppAccess[appAccessName].hasOwnProperty(activity)) {
-              activityRows.push(
-                <tr key={activitiesGroupedByAppAccess[appAccessName][activity].activity_id}>
-                  <td>{formatActivityName(activitiesGroupedByAppAccess[appAccessName][activity].activity_name)}</td>
-                  <td>{activitiesGroupedByAppAccess[appAccessName][activity].activity_description}</td>
-                </tr>
-              );
-            }
-          }
-          // Assemble this app's table
-          tablesOfActivitiesByApp.push(
-            <span key={appAccessName}>
-              <h3>{appAccessName}</h3>
-              <table className="table table-striped table-activities">
-                <thead>
-                  <tr>
-                    <th>Activity</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activityRows}
-                </tbody>
-              </table>
-            </span>
+      _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
+        // For each app, build list of rows from results
+        const activityRows = [];
+        // Loop through all activities...
+        _.forOwn(activityGroup, function buildListOfRows(activity) {
+          activityRows.push(
+            <tr key={activity.activity_id}>
+              <td>{formatActivityName(activity.activity_name)}</td>
+              <td>{activity.activity_description}</td>
+            </tr>
           );
-        }
-      }
+        });
+        // Assemble this app's table
+        tablesOfActivitiesByApp.push(
+          <span key={key}>
+            <h3>{key}</h3>
+            <table className="table table-striped table-activities">
+              <thead>
+                <tr>
+                  <th>Activity</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activityRows}
+              </tbody>
+            </table>
+          </span>
+        );
+      });
       this.setState({
         tablesOfActivitiesByApp: tablesOfActivitiesByApp,
       });
@@ -99,28 +95,26 @@ export class App extends React.Component {
     // Get roles once, but reload if needed
     $.get('/manage-users/api/roles/', function getRoles(results) {
       const rolesTableRows = [];
-      for (const key in results) {
-        if (results.hasOwnProperty(key)) {
-          let editRoleLink;
-          if (results[key].role_name !== 'Admin') {
-            editRoleLink = <Link to={`/role/${results[key].role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
-          }
-          rolesTableRows.push(
-            <tr key={results[key].role_id}>
-              <td data-title="Role">{results[key].role_name}</td>
-              <td data-title="Associated Activities">
-                <AssociatedActivitiesList activities={results[key].activities}/>
-              </td>
-              <td data-title="Associated Users">
-                <AssociatedUsersList users={results[key].assigned_users}/>
-              </td>
-              <td data-title="Edit">
-                {editRoleLink}
-              </td>
-            </tr>
-          );
+      _.forOwn(results, function buildListOfRows(role) {
+        let editRoleLink;
+        if (role.role_name !== 'Admin') {
+          editRoleLink = <Link to={`/role/${role.role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
         }
-      }
+        rolesTableRows.push(
+          <tr key={role.role_id}>
+            <td data-title="Role">{role.role_name}</td>
+            <td data-title="Associated Activities">
+              <AssociatedActivitiesList activities={role.activities}/>
+            </td>
+            <td data-title="Associated Users">
+              <AssociatedUsersList users={role.assigned_users}/>
+            </td>
+            <td data-title="Edit">
+              {editRoleLink}
+            </td>
+          </tr>
+        );
+      });
       this.setState({
         rolesTableRows: rolesTableRows,
       });
@@ -130,25 +124,23 @@ export class App extends React.Component {
     // Get users once, but reload if needed
     $.get('/manage-users/api/users/', function getUsers(results) {
       const usersTableRows = [];
-      for (const key in results) {
-        if (results.hasOwnProperty(key)) {
-          results[key].roles = JSON.parse(results[key].roles);
-          usersTableRows.push(
-            <tr key={key}>
-              <td data-title="User Email">{results[key].email}</td>
-              <td data-title="Associated Roles">
-                <AssociatedRolesList roles={results[key].roles}/>
-              </td>
-              <td data-title="Status">
-                <Status status={results[key].status} lastInvitation={results[key].lastInvitation}/>
-              </td>
-              <td data-title="Edit">
-                <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
-              </td>
-            </tr>
-          );
-        }
-      }
+      _.forOwn(results, function buildListOfRows(user, key) {
+        user.roles = JSON.parse(user.roles);
+        usersTableRows.push(
+          <tr key={key}>
+            <td data-title="User Email">{user.email}</td>
+            <td data-title="Associated Roles">
+              <AssociatedRolesList roles={user.roles}/>
+            </td>
+            <td data-title="Status">
+              <Status status={user.status} lastInvitation={user.lastInvitation}/>
+            </td>
+            <td data-title="Edit">
+              <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+            </td>
+          </tr>
+        );
+      });
       this.setState({
         usersTableRows: usersTableRows,
       });
