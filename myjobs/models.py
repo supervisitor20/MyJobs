@@ -939,29 +939,6 @@ class AccessRequest(models.Model):
 
     objects = AccessRequestManager()
 
-    def authenticate(self, authorized_by, access_code):
-        """
-        Authenticates an access code.
-
-        Inputs:
-            :authorized_by: The person authorizing the request
-            :acess_code: The alpha-numeric code being authenticated
-
-        Output:
-            True if authentication is successful, False otherwise.
-
-        """
-        preconditions = [authorized_by.is_staff, not self.authorized_on,
-                         self.check_access_code(access_code)]
-        if all(preconditions):
-            self.authorized_by = authorized_by
-            self.authorized_on = datetime.datetime.now()
-            self.save()
-
-            return True
-
-        return False
-
     def check_access_code(self, access_code):
         return self.access_code == hashlib.md5(access_code).hexdigest()
 
