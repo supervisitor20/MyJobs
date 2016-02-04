@@ -1,16 +1,20 @@
-import json
+import json, datetime, urlparse, urllib
 from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import (HttpResponseRedirect, HttpResponse, Http404,
+                         HttpResponseNotAllowed)
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from urllib2 import HTTPError
 
 from myjobs.decorators import user_is_allowed
 from myjobs.models import User
+from myjobs.autoserialize import autoserialize
+from myjobs.cross_site_verify import cross_site_verify
+from myreports.decorators import restrict_to_staff
 from mysearches.models import (SavedSearch, SavedSearchDigest,
                                PartnerSavedSearch)
 from mysearches.forms import (SavedSearchForm, DigestForm,
@@ -398,3 +402,119 @@ def send_saved_search(request):
         return HttpResponseRedirect(redirect_to)
     else:
         raise Http404()
+
+def user_creation_retrieval(auth_user, email):
+    """
+    Retrieve user account for adding saved searches. If the email belongs
+    to a user and that user is not logged in, error is raised.
+    :param auth_user: Currently logged in user
+    :param email: Email attempting to be added
+    :return: New or existing user account tied to provided email
+
+    """
+    if not email and not auth_user.is_authenticated():
+        raise Exception('No email provided. This field is required')
+
+    # retrieve the user account is created, otherwise, create it
+    email_user_account, created = User.create_user(email=email,
+                                                   send_email=True)
+
+    if not created and email_user_account != auth_user:
+        raise Exception('This email has already been taken. Please'
+                        ' log in to add this search')
+                        #TODO: ADD LINK
+
+    return email_user_account
+
+def add_or_activate_saved_search(user, url):
+    """
+    Attempt to add a new saved search to a user, or it is already exists,
+    make sure it is active.
+    :param user: User recieving search
+    :param url: URL for search
+    :return: The new or activated search
+
+    """
+    if not url:
+        raise Exception("No URL provided")
+
+    url = urllib.unquote(url)
+
+    label, feed = validate_dotjobs_url(url, user)
+    if not (label and feed):
+        raise Exception("Invalid .JOBS URL Provided")
+
+    # Create notes field noting that it was created as current date/time
+    now = datetime.datetime.now().strftime('%A, %B %d, %Y %l:%M %p')
+    notes = 'Saved on ' + now
+    if url.find('//') == -1:
+        url = 'http://' + url
+    netloc = urlparse(url).netloc
+    notes += ' from ' + netloc
+
+    search_args = {'url': url,
+                   'label': label,
+                   'feed': feed,
+                   'user': user,
+                   'email': user.email,
+                   'frequency': 'D',
+                   'day_of_week': None,
+                   'day_of_month': None,
+                   'notes': notes}
+
+    try:
+        #if search already exists, activate it
+        saved_search = SavedSearch.objects.get(user=search_args['user'],
+                                email__iexact=search_args['email'],
+                                url=search_args['url'])
+        saved_search.is_active = True
+        saved_search.save()
+    except SavedSearch.DoesNotExist:
+         # if there's no search for that email/user, create it
+        saved_search = SavedSearch(**search_args)
+        saved_search.save()
+        saved_search.initial_email()
+
+    return saved_search
+
+@restrict_to_staff()
+@cross_site_verify
+@autoserialize
+def secure_saved_search(request):
+    """
+    Handling for creation of a saved search via the saved search secure block
+    widget.
+    :param request: inbound request
+    :return: Dictionary, to be converted by autoserialize decorator
+
+    """
+    allowed_methods = ['GET','POST']
+    if request.method not in allowed_methods:
+        raise HttpResponseNotAllowed(allowed_methods)
+
+    auth_user = None
+    if request.user.is_authenticated():
+        auth_user = request.user
+
+    email_in = request.GET.get('email') or request.POST.get('email')
+    response =  {'errors':[], 'user_created': False, 'search_created':False}
+
+    if not email_in and not auth_user:
+        response['errors'] = 'No email provided. This field is required'
+        return response
+
+    new_search_account, user_created = user_creation_retrieval(auth_user,
+                                                               email_in)
+
+    response['user_created': user_created]
+
+    url = request.GET.get('url') or request.POST.get('url')
+    if not url:
+        response['errors'].append('No URL provided.')
+
+    url = urllib.unquote(url)
+    search_active = add_or_activate_saved_search(new_search_account, url)
+
+    response['search_created': search_active]
+
+    return response

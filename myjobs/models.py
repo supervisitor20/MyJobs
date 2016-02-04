@@ -181,7 +181,8 @@ class CustomUserManager(BaseUserManager):
 
     def create_user(self, **kwargs):
         """
-        Creates an already activated user.
+        Creates an already activated user if one does not already exist,
+        otherwise, return the user with that account
 
         """
         return self.create_user_by_type(user_type='normal', **kwargs)
