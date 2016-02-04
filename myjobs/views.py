@@ -1297,9 +1297,23 @@ def request_access(request):
         form = AccessRequestForm(request.POST)
         if form.is_valid():
             company_name = form.cleaned_data['company_name']
-            _, access_code = AccessRequest.objects.create_request(
+            access_request, access_code = AccessRequest.objects.create_request(
                 company_name, request.user)
             ctx['access_code'] = access_code
+
+            # create a jira ticket
+            subject = "Company access requested"
+            body = "%s has requested access to %s at %s." % (
+                access_request.requested_by, access_request.company_name,
+                access_request.requested_on)
+
+            project = "MEMBERSUP"
+            issue_dict = {
+                "assignee": {"name": "automatic"},
+                "reporter": {"name": "automaticagent"},
+            }
+            log_to_jira(
+                subject, body, issue_dict, project=project, issue_type="Task")
     else:
         form = AccessRequestForm()
 

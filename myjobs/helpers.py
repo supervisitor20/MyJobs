@@ -69,7 +69,9 @@ def get_completion(level):
         return "success"
 
 
-def log_to_jira(subject, body, issue_dict, from_email, project="MJA"):
+def log_to_jira(subject, body, issue_dict,
+                from_email="staff@directemployers.org", project="MJA",
+                issue_type="Task"):
     if hasattr(mail, 'outbox'):
         jira = []
     else:
@@ -85,6 +87,7 @@ def log_to_jira(subject, body, issue_dict, from_email, project="MJA"):
         project = jira.project(project)
 
         issue_dict['project'] = {'key': project.key}
+        issue_dict.setdefault("issuetype", {"name": issue_type})
         jira.create_issue(fields=issue_dict)
     return to_jira
 
