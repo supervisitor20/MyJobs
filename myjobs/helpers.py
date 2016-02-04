@@ -69,7 +69,7 @@ def get_completion(level):
         return "success"
 
 
-def log_to_jira(subject, body, issue_dict, from_email):
+def log_to_jira(subject, body, issue_dict, from_email, project="MJA"):
     if hasattr(mail, 'outbox'):
         jira = []
     else:
@@ -82,7 +82,7 @@ def log_to_jira(subject, body, issue_dict, from_email):
         msg = EmailMessage(subject, body, from_email, [EMAIL_TO_ADMIN])
         msg.send()
     else:
-        project = jira.project('MJA')
+        project = jira.project(project)
 
         issue_dict['project'] = {'key': project.key}
         jira.create_issue(fields=issue_dict)
