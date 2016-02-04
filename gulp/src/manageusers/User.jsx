@@ -63,14 +63,15 @@ class User extends React.Component {
         });
       }.bind(this));
     } else {
+      // action === 'Add'
       $.get('/manage-users/api/roles/', function addUser(results) {
         const availableRoles = [];
-        for (const roleId in results) {
-          if (results.hasOwnProperty(roleId)) {
+        for (const role in results) {
+          if (results.hasOwnProperty(role)) {
             availableRoles.push(
               {
-                'id': roleId,
-                'name': results[roleId].role.name,
+                'id': results[role].role_id,
+                'name': results[role].role_name,
               }
             );
           }
