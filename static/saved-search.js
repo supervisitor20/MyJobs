@@ -2,11 +2,6 @@
 // saved search widget. It relies heavily on the cross site JS
 // and will not function without it (secure-block.**-**.js)
 
-var ss_username = "directseo@directemployersfoundation.org";
-var ss_api_key = "6fcd589a4efa72de876edfff7ebf508bedd0ba3e";
-var ss_api_str = "&username=" + ss_username  + "&api_key=" + ss_api_key;
-var base_url = 'https://secure.my.jobs';
-var ss_url = encodeURIComponent(window.location.href);
 // stores the secure blocks container div for reference in the script
 var blocks_widget_div;
 
@@ -60,18 +55,6 @@ function save_search() {
   }
 }
 
-function check_save_success(data) {
-  if(data.error) {
-    handle_error();
-  }
-  else {
-    if (typeof email_input != 'undefined' & existing_user_email != email_input) {
-      $(blocks_widget_div).data("new-user-success", true);
-    }
-    reload_widget(remove_success_flag);
-    }
-}
-
 function remove_success_flag() {
   $(blocks_widget_div).data("new-user-success", false);
 }
@@ -86,34 +69,79 @@ function reload_widget(callback) {
   }
 }
 
+function get_request_data () {
+  return {
+    username: "directseo@directemployersfoundation.org",
+    api_key: "6fcd589a4efa72de876edfff7ebf508bedd0ba3e",
+    url: encodeURIComponent(window.location.href),
+    email: email_input,
+    source: window.location.hostname
+  }
+}
 
 function create_saved_search() {
-  jsonp_ajax_call(base_url + "/api/v1/savedsearch/?callback=check_save_success&email=" + email_input + ss_api_str + "&url=" + ss_url,
-    "check_save_success");
+  var data = get_request_data();
+  cross_site_request('https://secure.my.jobs/api/v1/savedsearch/', data)
+    .fail(function() { handle_error("ohsnaps") })
+    .done(function() {
+      if (typeof email_input != 'undefined' & existing_user_email != email_input) {
+        $(blocks_widget_div).data("new-user-success", true);
+      }
+      reload_widget(remove_success_flag);
+    });
 }
 
 function create_user() {
-  jsonp_ajax_call(base_url + "/api/v1/user/?callback=create_saved_search&email=" + email_input + ss_api_str + "&source=" + window.location.hostname,
-    "create_saved_search");
+  var data = get_request_data();
+  cross_site_request('https://secure.my.jobs/api/v1/user/', data)
+    .fail(function() { handle_error("ohsnaps") })
+    .done(function() {
+      if (typeof email_input != 'undefined' & existing_user_email != email_input) {
+        $(blocks_widget_div).data("new-user-success", true);
+      }
+      reload_widget(remove_success_flag);
+    });
 }
 
-
-function jsonp_ajax_call(ajax_url, callback) {
+function cross_site_request(cross_site_url, ajax_data) {
+  // need to explicitly marshal the result data into this deferred
+  // because we are on old jQuery.
+  var result = $.Deferred();
   $.ajax({
-    url: ajax_url,
-    dataType: "jsonp",
-    type: "GET",
+    type: "OPTIONS",
     crossDomain: true,
-    jsonp: false,
-    processData: false,
+  }).done(function(data, textStatus, xhr) {
+    xhr_request(cross_site_url, ajax_data).
+        done(result.resolve).
+        fail(result.reject);
+  }).fail(function(xhr, textStatus, error) {
+    jsonp_request(cross_site_url, ajax_data).
+        done(result.resolve).
+        fail(result.reject);
+  });
+  return result.promise();
+}
+
+function xhr_request(cross_site_url, ajax_data) {
+  return $.ajax({
+    url: cross_site_url,
+    type: "POST",
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
+    data: JSON.stringify(ajax_data),
+    contentType: "application/json",
+    xhrFields: {
+      withCredentials: true
+    },
+  });
+}
+
+function jsonp_request(cross_site_url, ajax_data) {
+  debugger;
+  return $.ajax({
+    url: cross_site_url,
+    type: "GET",
+    dataType: "jsonp",
+    data: ajax_data,
     timeout: 15000,
-    jsonpCallback: callback,
-    headers: {
-      'Content-Type': "application/json",
-      Accept: 'text/javascript'
-    },
-    error: function(xhr, status, thrown) {
-      handle_error();
-    },
   });
 }
