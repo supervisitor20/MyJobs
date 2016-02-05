@@ -7,9 +7,11 @@
       <form action="" method="post">
         {% include 'includes/form-error-highlight.html' %}
         {% csrf_token %}
-        <div class="actions">
-          <input type="submit" class="btn primary" value="Request Access">
-        </div>
+        {% if not access_code %}
+          <div class="actions">
+            <input type="submit" class="btn primary" value="Request Access">
+          </div>
+        {% endif %}
       </form>
     </div>
   </div>

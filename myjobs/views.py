@@ -1292,6 +1292,8 @@ def api_delete_user(request, user_id=0):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 def request_access(request):
+    if request.user.is_anonymous():
+        return HttpResponseRedirect(reverse('login') + "?next=/request-access")
     ctx = {}
     if request.method == 'POST':
         form = AccessRequestForm(request.POST)
@@ -1309,10 +1311,11 @@ def request_access(request):
 
             project = "MEMBERSUP"
             issue_dict = {
-                "assignee": {"name": "automatic"},
-                "reporter": {"name": "automaticagent"},
+                "summary": subject,
+                "assignee": {"name": "-1"},
+                "reporter": {"name": "automationagent"},
             }
-            log_to_jira(
+            ticket = log_to_jira(
                 subject, body, issue_dict, project=project, issue_type="Task")
     else:
         form = AccessRequestForm()

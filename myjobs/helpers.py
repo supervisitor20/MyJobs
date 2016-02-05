@@ -4,7 +4,7 @@ from django.contrib import auth
 from django.core import mail
 from django.core.mail import EmailMessage
 
-from secrets import options, my_agent_auth, EMAIL_TO_ADMIN
+from secrets import options, housekeeping_auth, EMAIL_TO_ADMIN
 
 
 def instantiate_profile_forms(request, form_classes, settings, post=False):
@@ -76,7 +76,7 @@ def log_to_jira(subject, body, issue_dict,
         jira = []
     else:
         try:
-            jira = JIRA(options=options, basic_auth=my_agent_auth)
+            jira = JIRA(options=options, basic_auth=housekeeping_auth)
         except:
             jira = []
     to_jira = bool(jira)
@@ -90,6 +90,15 @@ def log_to_jira(subject, body, issue_dict,
         issue_dict.setdefault("issuetype", {"name": issue_type})
         jira.create_issue(fields=issue_dict)
     return to_jira
+
+def create_jira_ticket(summary, description, **kwargs):
+    assignee = {'name': kwargs.setdefault('assignee', 'automativ')}
+    reporter = {'name': kwargs.setdefault('reporter', 'automaticagent')}
+    issuetype = {'name': kwargs.setdefault('issuetype', 'Task')}
+    project = {'key': kwargs.setdefault('project', 'ST')}
+
+    if assignee == reporter:
+        raise ValueError("Assignee and reporter must be different.")
 
 
 def make_fake_gravatar(name, size):
