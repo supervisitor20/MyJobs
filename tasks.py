@@ -82,6 +82,7 @@ def create_jira_ticket(summary, description, **kwargs):
     reporter = {'name': kwargs.setdefault('reporter', 'automationagent')}
     issuetype = {'name': kwargs.setdefault('issuetype', 'Task')}
     project = {'key': kwargs.setdefault('project', 'ST')}
+    priority = {'name': kwargs.setdefault('priority', 'Major')}
     components = [{'name': name}
                   for name in kwargs.setdefault('components', [])]
 
@@ -97,6 +98,7 @@ def create_jira_ticket(summary, description, **kwargs):
         'summary': summary,
         'description': description,
         'issuetype': issuetype,
+        'priority': priority,
         'reporter': reporter,
         'assignee': assignee,
         'components': components,
@@ -107,12 +109,12 @@ def create_jira_ticket(summary, description, **kwargs):
     for watcher in watchers:
         jira.add_watcher(issue, watcher)
 
-    return issue
+    return issue.key
 
 
 @task(name='tasks.assign_ticket_to_request')
-def assign_ticket_to_request(ticket, access_request):
-    access_request.ticket = ticket.get()
+def assign_ticket_to_request(key, access_request):
+    access_request.ticket = getattr(key, 'get', lambda: key)()
     access_request.save()
 
     return access_request

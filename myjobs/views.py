@@ -1306,29 +1306,31 @@ def request_access(request):
                 company_name, request.user)
             ctx['access_code'] = access_code
 
-            def assign_ticket(ticket):
-                access_request.ticket = ticket.key
-                access_request.save()
-
             # create a jira ticket
             summary = "Company access requested"
-            description = "%s has requested access to %s at %s." % (
-                access_request.requested_by, access_request.company_name,
-                access_request.requested_on)
+            summary = "company admin request - %s - %s" % (
+                access_request.company_name, access_request.requested_by.email)
+            description = ("{user} has requested admin access for the company "
+                           "{company}. Please contact {company} and obtain the "
+                           "verification code provided to {user}. You may "
+                           "then enter this code in the admin: {admin}")
+            description = description.format(
+                user=access_request.requested_by.email,
+                company=access_request.company_name,
+                admin="https://secure.my.jobs/admin/company/access_request")
 
             # asynchronously create a jira ticket and assign it to the access
             # request so that the user doesn't have to wait on a response
-            ticket = create_jira_ticket.delay(
+            key = create_jira_ticket.delay(
                 summary, description,
                 project="MEMBERSUP",
                 watcher_group="admin-request-watchers",
                 components=["admin request"])
-            assign_ticket_to_request.delay(ticket, access_request)
+            assign_ticket_to_request.delay(key, access_request)
     else:
         form = AccessRequestForm()
 
     ctx['form'] = form
 
     return render_to_response(
-        'myjobs/request_access.html', ctx,
-        RequestContext(request))
+        'myjobs/request_access.html', ctx, RequestContext(request))
