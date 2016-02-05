@@ -1,8 +1,8 @@
 import _ from 'lodash-compat';
 
-// Activites are stored in an array, grouped by app_access
-// Builds object of activities, including currently selected items in a
-// dynamically built accordion
+// Activites are stored in an array and grouped by app_access
+// Builds object of activities, including currently selected items in a format
+// especially for our multiselects.
 // state - current state
 // refs - references to elements on the page
 export function buildCurrentActivitiesObject(state, refs) {
