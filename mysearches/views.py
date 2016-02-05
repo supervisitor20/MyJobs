@@ -8,6 +8,9 @@ from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseNotAllowed)
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
+from django.views.decorators.csrf import (
+    csrf_exempt as django_csrf_exempt)
+
 from urllib2 import HTTPError
 
 from myjobs.decorators import user_is_allowed
@@ -416,15 +419,15 @@ def user_creation_retrieval(auth_user, email):
         raise Exception('No email provided. This field is required')
 
     # retrieve the user account is created, otherwise, create it
-    email_user_account, created = User.create_user(email=email,
-                                                   send_email=True)
+    email_user_account, created = User.objects.create_user(email=email,
+                                                           send_email=True)
 
     if not created and email_user_account != auth_user:
-        raise Exception('This email has already been taken. Please'
-                        ' log in to add this search')
+        raise Exception('This email has already been taken. If this is your'
+                        ' email, please log in to add this search')
                         #TODO: ADD LINK
 
-    return email_user_account
+    return email_user_account, created
 
 def add_or_activate_saved_search(user, url):
     """
@@ -449,7 +452,7 @@ def add_or_activate_saved_search(user, url):
     notes = 'Saved on ' + now
     if url.find('//') == -1:
         url = 'http://' + url
-    netloc = urlparse(url).netloc
+    netloc = urlparse.urlparse(url).netloc
     notes += ' from ' + netloc
 
     search_args = {'url': url,
@@ -477,6 +480,27 @@ def add_or_activate_saved_search(user, url):
 
     return saved_search
 
+def get_value_from_request(request, key):
+    """
+    Checks GET, POST and body for key, returns whatever is found or none
+    :param request: request with get, post, or body
+    :param key: key being searched for
+    :return: value for key or none
+
+    """
+    request_body = {}
+    try:
+        # if request.body exists and is a json object, load it
+        request_body = json.loads(request.body)
+    except ValueError:
+        pass
+
+    value = (request.GET.get(key) or
+             request.POST.get(key) or
+             request_body.get(key))
+    return value
+
+@django_csrf_exempt
 @restrict_to_staff()
 @cross_site_verify
 @autoserialize
@@ -496,25 +520,33 @@ def secure_saved_search(request):
     if request.user.is_authenticated():
         auth_user = request.user
 
-    email_in = request.GET.get('email') or request.POST.get('email')
-    response =  {'errors':[], 'user_created': False, 'search_created':False}
-
+    response =  {'error':'', 'user_created': False, 'search_activated':False}
+    email_in = get_value_from_request(request, 'email')
     if not email_in and not auth_user:
         response['errors'] = 'No email provided. This field is required'
         return response
 
-    new_search_account, user_created = user_creation_retrieval(auth_user,
-                                                               email_in)
+    try:
+        new_search_account, user_created = user_creation_retrieval(auth_user,
+                                                                   email_in)
+    except Exception as ex:
+        response['error'] = ex.message
+        return response
 
-    response['user_created': user_created]
+    response['user_created'] = user_created
 
-    url = request.GET.get('url') or request.POST.get('url')
+    url = get_value_from_request(request, 'url')
     if not url:
-        response['errors'].append('No URL provided.')
+        response['error'] = 'No URL provided.'
 
     url = urllib.unquote(url)
-    search_active = add_or_activate_saved_search(new_search_account, url)
+    try:
+        saved_search = add_or_activate_saved_search(new_search_account, url)
+    except Exception as ex:
+        response['error'] = ex.message
+        return response
 
-    response['search_created': search_active]
+    if saved_search:
+        response['search_activated'] = True
 
     return response

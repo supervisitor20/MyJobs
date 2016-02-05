@@ -46,12 +46,7 @@ function save_search() {
   }
   else {
     $('.saved-search-form').html('<em class="saved-search-widget-loading"> Saving </em>');
-    if (email_input == existing_user_email){
-      create_saved_search()
-    }
-    else {
-      create_user();
-    }
+    create_saved_search()
   }
 }
 
@@ -71,35 +66,26 @@ function reload_widget(callback) {
 
 function get_request_data () {
   return {
-    username: "directseo@directemployersfoundation.org",
-    api_key: "6fcd589a4efa72de876edfff7ebf508bedd0ba3e",
     url: encodeURIComponent(window.location.href),
     email: email_input,
-    source: window.location.hostname
   }
 }
 
 function create_saved_search() {
-  var data = get_request_data();
-  cross_site_request('https://secure.my.jobs/api/v1/savedsearch/', data)
-    .fail(function() { handle_error("ohsnaps") })
-    .done(function() {
-      if (typeof email_input != 'undefined' & existing_user_email != email_input) {
-        $(blocks_widget_div).data("new-user-success", true);
+  debugger;
+  var request_data = get_request_data();
+  cross_site_request(parent_site_url + '/saved-search/api/secure_saved_search',
+                     request_data)
+    .fail(function(return_data) { handle_error() })
+    .done(function(return_data) {
+      debugger;
+      if (return_data['error']) {
+        handle_error(return_data['error'])
       }
-      reload_widget(remove_success_flag);
-    });
-}
-
-function create_user() {
-  var data = get_request_data();
-  cross_site_request('https://secure.my.jobs/api/v1/user/', data)
-    .fail(function() { handle_error("ohsnaps") })
-    .done(function() {
-      if (typeof email_input != 'undefined' & existing_user_email != email_input) {
-        $(blocks_widget_div).data("new-user-success", true);
+      else {
+        $(blocks_widget_div).data("new-user-success", return_data['user_created']);
+        reload_widget(remove_success_flag);
       }
-      reload_widget(remove_success_flag);
     });
 }
 
