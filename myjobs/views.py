@@ -1330,5 +1330,5 @@ def request_access(request):
     ctx['form'] = form
 
     return render_to_response(
-        '../templates/myjobs/request_access.html', ctx,
+        'myjobs/request_access.html', ctx,
         RequestContext(request))
