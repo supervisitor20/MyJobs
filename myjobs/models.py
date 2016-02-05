@@ -977,6 +977,6 @@ def role_invitation_context(role):
     if role.activities.filter(name="read partner").exists():
         href = settings.ABSOLUTE_URL + "prm/view"
         text = "Click here to access PRM"
-        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+        ctx['redirect'] = {'href': href, 'text': text}
 
     return ctx
