@@ -1,26 +1,37 @@
-{% extends "base.html" %}
-{% load compress %}
+{% extends "base-react.html" %}
 {% load i18n %}
 
 {% block meta-extra %}
-  {% compress css %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-  {% endcompress %}
 {% endblock meta-extra %}
 
 {% block content %}
-  <form action="" method="post">
-    {% include 'includes/form-error-highlight.html' %}
-    {% csrf_token %}
-    <div class="row">
-      <div class="col-md-offset-4 col-md-8 text-center">
-        <input type="submit" class="btn primary" value="Request Access">
+  <div class="row">
+    <div class="col-sm-12">
+      <h1>Request Company Access</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-4 col-xs-12 pull-right">
+      <div class="sidebar">
+        <h2 class="top">Tips</h2>
+        Don't forget to write down your access code once it's generated.
       </div>
     </div>
-  </form>
+    <div class="col-sm-8 col-xs-12">
+      <form action="" method="post">
+        {% include 'includes/form-error-highlight.html' %}
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-offset-4 col-md-8 text-center">
+            <input type="submit" class="btn primary" value="Request Access">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
   {% if access_code %}
   <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8">
       <p>
         Your request has been submitted. A representative will be in contact 
         with your company shortly.
