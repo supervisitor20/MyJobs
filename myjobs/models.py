@@ -910,7 +910,7 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
             RoleActivities(role=role, activity=instance) for role in roles])
 
 
-class AccessRequestManager(models.Manager):
+class CompanyAccessRequestManager(models.Manager):
     def create_request(self, company_name, requested_by):
         access_request = self.create(
             company_name=company_name, requested_by=requested_by)
@@ -920,7 +920,7 @@ class AccessRequestManager(models.Manager):
         return access_request, access_code
 
 
-class AccessRequest(models.Model):
+class CompanyAccessRequest(models.Model):
     """
     This model represents a user requesting access to a company.
 
@@ -938,7 +938,7 @@ class AccessRequest(models.Model):
     authorized_on = models.DateTimeField(null=True)
     ticket = models.CharField(max_length=20, null=True)
 
-    objects = AccessRequestManager()
+    objects = CompanyAccessRequestManager()
 
     def check_access_code(self, access_code):
         return self.access_code == hashlib.md5(access_code).hexdigest()

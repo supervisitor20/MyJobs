@@ -26,10 +26,10 @@ from captcha.fields import ReCaptchaField
 from universal.helpers import get_domain
 from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
-                          AccessRequestForm)
+                          CompanyAccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
-                           AccessRequest)
+                           CompanyAccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -1299,10 +1299,10 @@ def request_access(request):
 
     ctx = {}
     if request.method == 'POST':
-        form = AccessRequestForm(request.POST)
+        form = CompanyAccessRequestForm(request.POST)
         if form.is_valid():
             company_name = form.cleaned_data['company_name']
-            access_request, access_code = AccessRequest.objects.create_request(
+            _, access_code = CompanyAccessRequest.objects.create_request(
                 company_name, request.user)
             ctx['access_code'] = access_code
 
@@ -1328,7 +1328,7 @@ def request_access(request):
                 components=["admin request"])
             assign_ticket_to_request.delay(key, access_request)
     else:
-        form = AccessRequestForm()
+        form = CompanyAccessRequestForm()
 
     ctx['form'] = form
 

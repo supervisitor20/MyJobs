@@ -5,7 +5,7 @@ from django.forms import (
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
-from myjobs.models import User, AccessRequest
+from myjobs.models import User, CompanyAccessRequest
 from myprofile.models import SecondaryEmail
 
 
@@ -226,7 +226,7 @@ class UserAdminForm(ModelForm):
                 instance.set_password(self.cleaned_data['new_password'])
         return instance
 
-class AccessRequestForm(ModelForm):
+class CompanyAccessRequestForm(ModelForm):
     class Meta:
-        model = AccessRequest
+        model = CompanyAccessRequest
         fields = ('company_name',)
