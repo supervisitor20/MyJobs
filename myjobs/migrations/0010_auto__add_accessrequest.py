@@ -17,6 +17,7 @@ class Migration(SchemaMigration):
             ('authorized_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='authorized_by', null=True, to=orm['myjobs.User'])),
             ('requested_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('authorized_on', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('ticket', self.gf('django.db.models.fields.CharField')(max_length=20, null=True)),
         ))
         db.send_create_signal(u'myjobs', ['AccessRequest'])
 
@@ -55,7 +56,8 @@ class Migration(SchemaMigration):
             'company_name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'requested_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'requested_by'", 'to': u"orm['myjobs.User']"}),
-            'requested_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
+            'requested_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'ticket': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True'})
         },
         u'myjobs.activity': {
             'Meta': {'object_name': 'Activity'},

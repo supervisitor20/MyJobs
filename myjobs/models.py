@@ -936,6 +936,7 @@ class AccessRequest(models.Model):
         'myjobs.User', null=True, related_name='authorized_by')
     requested_on = models.DateTimeField("Requested On", auto_now_add=True)
     authorized_on = models.DateTimeField(null=True)
+    ticket = models.CharField(max_length=20, null=True)
 
     objects = AccessRequestManager()
 

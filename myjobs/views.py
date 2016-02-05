@@ -2,6 +2,7 @@ import base64
 import datetime
 import json
 import logging
+from multiprocessing import Process
 import urllib2
 from urlparse import urlparse
 import uuid
@@ -35,7 +36,8 @@ from myprofile.forms import (InitialNameForm, InitialEducationForm,
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from registration.models import Invitation
-from tasks import process_sendgrid_event
+from tasks import (process_sendgrid_event, create_jira_ticket,
+                   assign_ticket_to_request)
 from universal.helpers import get_company_or_404
 
 logger = logging.getLogger('__name__')
@@ -1294,6 +1296,7 @@ def api_delete_user(request, user_id=0):
 def request_access(request):
     if request.user.is_anonymous():
         return HttpResponseRedirect(reverse('login') + "?next=/request-access")
+
     ctx = {}
     if request.method == 'POST':
         form = AccessRequestForm(request.POST)
@@ -1303,20 +1306,24 @@ def request_access(request):
                 company_name, request.user)
             ctx['access_code'] = access_code
 
+            def assign_ticket(ticket):
+                access_request.ticket = ticket.key
+                access_request.save()
+
             # create a jira ticket
-            subject = "Company access requested"
-            body = "%s has requested access to %s at %s." % (
+            summary = "Company access requested"
+            description = "%s has requested access to %s at %s." % (
                 access_request.requested_by, access_request.company_name,
                 access_request.requested_on)
 
-            project = "MEMBERSUP"
-            issue_dict = {
-                "summary": subject,
-                "assignee": {"name": "-1"},
-                "reporter": {"name": "automationagent"},
-            }
-            ticket = log_to_jira(
-                subject, body, issue_dict, project=project, issue_type="Task")
+            # asynchronously create a jira ticket and assign it to the access
+            # request so that the user doesn't have to wait on a response
+            ticket = create_jira_ticket.delay(
+                summary, description,
+                project="MEMBERSUP",
+                watcher_group="admin-request-watchers",
+                components=["admin request"])
+            assign_ticket_to_request.delay(ticket, access_request)
     else:
         form = AccessRequestForm()
 

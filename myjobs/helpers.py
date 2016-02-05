@@ -91,15 +91,6 @@ def log_to_jira(subject, body, issue_dict,
         jira.create_issue(fields=issue_dict)
     return to_jira
 
-def create_jira_ticket(summary, description, **kwargs):
-    assignee = {'name': kwargs.setdefault('assignee', 'automativ')}
-    reporter = {'name': kwargs.setdefault('reporter', 'automaticagent')}
-    issuetype = {'name': kwargs.setdefault('issuetype', 'Task')}
-    project = {'key': kwargs.setdefault('project', 'ST')}
-
-    if assignee == reporter:
-        raise ValueError("Assignee and reporter must be different.")
-
 
 def make_fake_gravatar(name, size):
     font_size = int(size)

@@ -16,6 +16,7 @@ from celery import group
 from celery.task import task
 
 from django.conf import settings
+from secrets import options, housekeeping_auth
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sitemaps import ping_google
 from django.core import mail
@@ -25,6 +26,7 @@ from django.db.models import Q
 
 from seo.models import Company, SeoSite, BusinessUnit
 from myjobs.models import EmailLog, User, STOP_SENDING, BAD_EMAIL
+from jira import JIRA
 from myjobs.helpers import log_to_jira
 from mymessages.models import Message
 from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
@@ -71,6 +73,49 @@ PARTNER_LIBRARY_SOURCES = {
         }
     }
 }
+
+@task(name='tasks.create_jira_ticket')
+def create_jira_ticket(summary, description, **kwargs):
+    jira = JIRA(options=options, basic_auth=housekeeping_auth)
+
+    assignee = {'name': kwargs.setdefault('assignee', '-1')}
+    reporter = {'name': kwargs.setdefault('reporter', 'automationagent')}
+    issuetype = {'name': kwargs.setdefault('issuetype', 'Task')}
+    project = {'key': kwargs.setdefault('project', 'ST')}
+    components = [{'name': name}
+                  for name in kwargs.setdefault('components', [])]
+
+    watchers = kwargs.setdefault('watchers', [])
+    if 'watcher_group' in kwargs:
+        watchers += jira.group_members(kwargs['watcher_group']).keys()
+
+    if assignee == reporter:
+        raise ValueError("Assignee and reporter must be different.")
+
+    fields = {
+        'project': project,
+        'summary': summary,
+        'description': description,
+        'issuetype': issuetype,
+        'reporter': reporter,
+        'assignee': assignee,
+        'components': components,
+    }
+
+    issue = jira.create_issue(fields=fields)
+
+    for watcher in watchers:
+        jira.add_watcher(issue, watcher)
+
+    return issue
+
+
+@task(name='tasks.assign_ticket_to_request')
+def assign_ticket_to_request(ticket, access_request):
+    access_request.ticket = ticket.get()
+    access_request.save()
+
+    return access_request
 
 
 @task(name='tasks.send_search_digest', ignore_result=True,
