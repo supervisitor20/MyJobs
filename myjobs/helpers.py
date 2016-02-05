@@ -4,7 +4,7 @@ from django.contrib import auth
 from django.core import mail
 from django.core.mail import EmailMessage
 
-from secrets import options, housekeeping_auth, EMAIL_TO_ADMIN
+from secrets import options, my_agent_auth, EMAIL_TO_ADMIN
 
 
 def instantiate_profile_forms(request, form_classes, settings, post=False):
@@ -69,14 +69,12 @@ def get_completion(level):
         return "success"
 
 
-def log_to_jira(subject, body, issue_dict,
-                from_email="staff@directemployers.org", project="MJA",
-                issue_type="Task"):
+def log_to_jira(subject, body, issue_dict, from_email):
     if hasattr(mail, 'outbox'):
         jira = []
     else:
         try:
-            jira = JIRA(options=options, basic_auth=housekeeping_auth)
+            jira = JIRA(options=options, basic_auth=my_agent_auth)
         except:
             jira = []
     to_jira = bool(jira)
@@ -84,10 +82,9 @@ def log_to_jira(subject, body, issue_dict,
         msg = EmailMessage(subject, body, from_email, [EMAIL_TO_ADMIN])
         msg.send()
     else:
-        project = jira.project(project)
+        project = jira.project('MJA')
 
         issue_dict['project'] = {'key': project.key}
-        issue_dict.setdefault("issuetype", {"name": issue_type})
         jira.create_issue(fields=issue_dict)
     return to_jira
 
