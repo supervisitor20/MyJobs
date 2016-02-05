@@ -28,7 +28,7 @@ register = template.Library()
 @register.inclusion_tag('includes/newrelic_browser_monitoring.html')
 def newrelic_browser_monitoring():
     # Only use the script tag on 1% of page loads.
-    return {'enabed': random.random() < 0.01 }
+    return {'newrelic_monitoring_enabled': random.random() < 0.01 }
 
 
 @register.filter
