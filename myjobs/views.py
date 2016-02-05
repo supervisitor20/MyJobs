@@ -665,17 +665,8 @@ def api_get_roles(request):
 
     # Retrieve users that can be assigned to these roles. In other words,
     # users already assigned to roles associated with this company
-    available_users_as_queries = []
-    for role in roles:
-        role_id_temp = role.id
-        users = User.objects.filter(roles__id=role_id_temp).distinct()
-        for user in users:
-            # Make sure available_users is distinct
-            if user not in available_users_as_queries:
-                available_users_as_queries.append(user)
-    # available_users should be distinct list of user queries
     available_users = []
-    for user in available_users_as_queries:
+    for user in User.objects.filter(roles__in=roles).distinct():
         user_more = {}
         user_more['id'] = user.id
         user_more['name'] = user.email
