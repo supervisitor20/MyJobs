@@ -8,8 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'AccessRequest'
-        db.create_table(u'myjobs_accessrequest', (
+        # Adding model 'CompanyAccessRequest'
+        db.create_table(u'myjobs_companyaccessrequest', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('company_name', self.gf('django.db.models.fields.CharField')(max_length=200)),
             ('access_code', self.gf('django.db.models.fields.CharField')(max_length=32)),
@@ -19,12 +19,12 @@ class Migration(SchemaMigration):
             ('authorized_on', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('ticket', self.gf('django.db.models.fields.CharField')(max_length=20, null=True)),
         ))
-        db.send_create_signal(u'myjobs', ['AccessRequest'])
+        db.send_create_signal(u'myjobs', ['CompanyAccessRequest'])
 
 
     def backwards(self, orm):
-        # Deleting model 'AccessRequest'
-        db.delete_table(u'myjobs_accessrequest')
+        # Deleting model 'CompanyAccessRequest'
+        db.delete_table(u'myjobs_companyaccessrequest')
 
 
     models = {
@@ -48,17 +48,6 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'myjobs.accessrequest': {
-            'Meta': {'object_name': 'AccessRequest'},
-            'access_code': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            'authorized_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'authorized_by'", 'null': 'True', 'to': u"orm['myjobs.User']"}),
-            'authorized_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'company_name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'requested_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'requested_by'", 'to': u"orm['myjobs.User']"}),
-            'requested_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'ticket': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True'})
-        },
         u'myjobs.activity': {
             'Meta': {'object_name': 'Activity'},
             'app_access': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.AppAccess']"}),
@@ -70,6 +59,17 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'AppAccess'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+        },
+        u'myjobs.companyaccessrequest': {
+            'Meta': {'object_name': 'CompanyAccessRequest'},
+            'access_code': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'authorized_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'authorized_by'", 'null': 'True', 'to': u"orm['myjobs.User']"}),
+            'authorized_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'company_name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'requested_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'requested_by'", 'to': u"orm['myjobs.User']"}),
+            'requested_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'ticket': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True'})
         },
         u'myjobs.customhomepage': {
             'Meta': {'ordering': "(u'domain',)", 'object_name': 'CustomHomepage', '_ormbases': [u'sites.Site']},
