@@ -22,5 +22,5 @@ urlpatterns = patterns(
     url(r'^view/unsubscribe/confirm$', 'unsubscribe_confirmation',
         name='unsubscribe_confirmation'),
     url(r'^widget/$', 'saved_search_widget', name='saved_search_widget'),
-    url(r'^api/secure_saved_search$', 'secure_saved_search', name='secure_saved_search'),
+    url(r'^api/secure-saved-search$', 'secure_saved_search', name='secure_saved_search'),
 )

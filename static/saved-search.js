@@ -74,7 +74,7 @@ function get_request_data () {
 function create_saved_search() {
   debugger;
   var request_data = get_request_data();
-  cross_site_request(parent_site_url + '/saved-search/api/secure_saved_search',
+  cross_site_request(parent_site_url + '/saved-search/api/secure-saved-search',
                      request_data)
     .fail(function(return_data) { handle_error() })
     .done(function(return_data) {

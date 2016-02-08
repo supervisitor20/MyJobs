@@ -415,17 +415,20 @@ def user_creation_retrieval(auth_user, email):
     :return: New or existing user account tied to provided email
 
     """
-    if not email and not auth_user.is_authenticated():
-        raise Exception('No email provided. This field is required')
+    if not auth_user:
+        raise ValueError('No user provided. This field is required')
+
+    if not email:
+        raise ValueError('No email provided. This field is required')
 
     # retrieve the user account is created, otherwise, create it
     email_user_account, created = User.objects.create_user(email=email,
                                                            send_email=True)
 
     if not created and email_user_account != auth_user:
-        raise Exception('This email has already been taken. If this is your'
-                        ' email, please log in to add this search')
-                        #TODO: ADD LINK
+        raise ValueError('This email has already been taken. If this is your'
+                         ' email, please log in to add this search')
+                         #TODO: ADD LINK
 
     return email_user_account, created
 
@@ -439,13 +442,13 @@ def add_or_activate_saved_search(user, url):
 
     """
     if not url:
-        raise Exception("No URL provided")
+        raise ValueError("No URL provided")
 
     url = urllib.unquote(url)
 
     label, feed = validate_dotjobs_url(url, user)
     if not (label and feed):
-        raise Exception("Invalid .JOBS URL Provided")
+        raise ValueError("Invalid .JOBS URL Provided")
 
     # Create notes field noting that it was created as current date/time
     now = datetime.datetime.now().strftime('%A, %B %d, %Y %l:%M %p')
@@ -529,7 +532,7 @@ def secure_saved_search(request):
     try:
         new_search_account, user_created = user_creation_retrieval(auth_user,
                                                                    email_in)
-    except Exception as ex:
+    except ValueError as ex:
         response['error'] = ex.message
         return response
 
@@ -542,7 +545,7 @@ def secure_saved_search(request):
     url = urllib.unquote(url)
     try:
         saved_search = add_or_activate_saved_search(new_search_account, url)
-    except Exception as ex:
+    except ValueError as ex:
         response['error'] = ex.message
         return response
 
