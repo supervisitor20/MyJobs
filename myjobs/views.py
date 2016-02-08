@@ -1233,6 +1233,8 @@ def api_edit_user(request, user_id=0):
             role_id = role_object[0].id
             assigned_roles_ids.append(role_id)
 
+        existing_roles = set(user[0].roles.filter(company=company))
+
         # Add new roles to user
         for assigned_role in assigned_roles_ids:
             user[0].roles.add(assigned_role)
@@ -1243,9 +1245,10 @@ def api_edit_user(request, user_id=0):
                 user[0].roles.remove(currently_assigned_role.id)
 
         # Notify the user
-        if request.user.can(company, "create user"):
-            for role in assigned_roles:
-                request.user.send_invite(user[0].email, company, role)
+        new_roles = set(Role.objects.filter(company=company,
+                                            name__in=assigned_roles))
+        for role in set(new_roles).difference(existing_roles):
+            request.user.send_invite(user[0].email, company, role.name)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
