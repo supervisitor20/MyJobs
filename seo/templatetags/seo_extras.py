@@ -1,6 +1,7 @@
 import datetime
 import itertools
 from pysolr import safe_urlencode
+import random
 import re
 from slugify import slugify
 import unicodedata
@@ -22,6 +23,12 @@ from universal.helpers import get_object_or_none, update_url_param
 
 
 register = template.Library()
+
+
+@register.inclusion_tag('includes/newrelic_browser_monitoring.html')
+def newrelic_browser_monitoring():
+    # Only use the script tag on 1% of page loads.
+    return {'newrelic_monitoring_enabled': random.random() < 0.01 }
 
 
 @register.filter
