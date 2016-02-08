@@ -294,6 +294,7 @@ INSTALLED_APPS = (
     'fsm',
     'compressor',
     'corsheaders',
+    'ajax_select',
 )
 
 # Captcha SSL

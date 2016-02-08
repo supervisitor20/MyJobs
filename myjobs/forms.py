@@ -5,8 +5,11 @@ from django.forms import (ModelForm, ModelChoiceField, ChoiceField, Select,
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
+from ajax_select.fields import AutoCompleteSelectField
+
 from myjobs.models import User, CompanyAccessRequest, Role
 from myprofile.models import SecondaryEmail
+import seo.lookups
 from seo.models import Company
 
 
@@ -237,8 +240,7 @@ class CompanyAccessRequestApprovalForm(ModelForm):
         model = CompanyAccessRequest
         fields = ()
 
-    company = ModelChoiceField(
-        label="Company", queryset=Company.objects.all())
+    company = AutoCompleteSelectField('companies')
     verification_code = CharField(label="Verification Code")
 
     def clean_verification_code(self):
