@@ -14,27 +14,11 @@
     <div class="col-md-8">
       <form action="" method="post">
         {% csrf_token %}
-        {% for field in form %}
-          <div class="row">
-            <div class="col-md-4">
-              {{ field.label_tag }}
-            </div>
-            <div class="col-md-8">
-              {{ field }}
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-offset-4 col-md-8">
-              {% if field.errors %}
-                {{ field.errors }}
-              {% else %}
-                {{ field.help_text }}
-              {% endif %}
-            </div>
-          </div>
-        {% endfor %}
+        <div class="col-md-8">
+          {{ form }}
+        </div>
         <div class="row">
-          <div class="col-md-offset-4 col-md-8">
+          <div class="col-md-8 center-text">
             <input type="submit" class="btn primary" value="Request Access">
           </div>
         </div>
