@@ -1293,9 +1293,10 @@ def api_delete_user(request, user_id=0):
         ctx["message"] = "User deleted."
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
-def request_access(request):
+def request_company_access(request):
     if request.user.is_anonymous():
-        return HttpResponseRedirect(reverse('login') + "?next=/request-access")
+        return HttpResponseRedirect(
+            reverse('login') + "?next=/request-company-access")
 
     ctx = {}
     if request.method == 'POST':
@@ -1333,4 +1334,4 @@ def request_access(request):
     ctx['form'] = form
 
     return render_to_response(
-        'myjobs/request_access.html', ctx, RequestContext(request))
+        'myjobs/request_company_access.html', ctx, RequestContext(request))
