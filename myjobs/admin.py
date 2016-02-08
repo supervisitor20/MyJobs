@@ -1,8 +1,16 @@
+import datetime
+
+import pytz
+
 from django.contrib import admin
 from django.contrib.sites.models import Site
 
-from myjobs.models import User, CustomHomepage, EmailLog, FAQ
-from myjobs.forms import UserAdminForm
+from django_extensions.admin import ForeignKeyAutocompleteAdmin
+
+from myjobs.models import (User, CustomHomepage, EmailLog, FAQ,
+                           CompanyAccessRequest)
+from myjobs.forms import (UserAdminForm,
+                          CompanyAccessRequestApprovalForm)
 
 
 class EmailLogAdmin(admin.ModelAdmin):
@@ -57,8 +65,40 @@ class FAQAdmin(admin.ModelAdmin):
     list_display = ['question', 'is_visible']
     search_fields = ['question', ]
 
+
+def company_name(company):
+    if company.admins.count() == 0:
+        return "%s (%s users) **Might be a duplicate**" % (
+            company.name, company.admins.count())
+    else:
+        return "%s (%s users)" % (company.name, company.admins.count())
+
+
+class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
+
+    form = CompanyAccessRequestApprovalForm
+
+    def save_model(self, request, access_request, form, change):
+        company = form.cleaned_data['company']
+
+        access_request.authorized_by = request.user
+        access_request.authorized_on = datetime.datetime.now(tz=pytz.UTC)
+
+        access_request.requested_by.roles.add(
+            company.role_set.get(name="Admin"))
+        access_request.save()
+
+    def queryset(self, request):
+        qs = super(CompanyAccessRequestApprovalAdmin, self).queryset(request)
+        return qs.filter(authorized_on__isnull=True)
+
+    def has_add_permission(self, request):
+        return False
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(CustomHomepage)
 admin.site.register(EmailLog, EmailLogAdmin)
 admin.site.register(FAQ, FAQAdmin)
+admin.site.register(CompanyAccessRequest, CompanyAccessRequestApprovalAdmin)
 admin.site.unregister(Site)

@@ -1,12 +1,13 @@
 import pytz
 
-from django.forms import (
-    ModelForm, ChoiceField, Select, Form, CharField, PasswordInput)
+from django.forms import (ModelForm, ModelChoiceField, ChoiceField, Select,
+                          Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
-from myjobs.models import User, CompanyAccessRequest
+from myjobs.models import User, CompanyAccessRequest, Role
 from myprofile.models import SecondaryEmail
+from seo.models import Company
 
 
 timezones = [('America/New_York', 'America/New_York'),
@@ -230,3 +231,32 @@ class CompanyAccessRequestForm(ModelForm):
     class Meta:
         model = CompanyAccessRequest
         fields = ('company_name',)
+
+class CompanyAccessRequestApprovalForm(ModelForm):
+    class Meta:
+        model = CompanyAccessRequest
+        fields = ()
+
+    company = ModelChoiceField(
+        label="Company", queryset=Company.objects.all())
+    verification_code = CharField(label="Verification Code")
+
+    def clean_verification_code(self):
+        code = self.cleaned_data['verification_code']
+        request = self.instance
+
+        if request.authorized_on:
+            raise ValidationError(
+                "This request was already authorized on %s by %s." % (
+                    request.authorized_on, request.authorized_by))
+
+        if request.expired:
+            raise ValidationError(
+                "This request expired on %s" % request.expired_on)
+
+        if not request.check_access_code(code):
+            raise ValidationError(
+                "The code you entered does not match the one we have on file "
+                "for this request. Please try again.")
+
+        return code
