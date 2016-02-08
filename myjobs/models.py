@@ -943,7 +943,18 @@ class CompanyAccessRequest(models.Model):
     objects = CompanyAccessRequestManager()
 
     def check_access_code(self, access_code):
-        return self.access_code == hashlib.md5(access_code).hexdigest()
+        return self.access_code == hashlib.md5(
+            access_code).hexdigest() and not self.expired
+
+    @property
+    def expires_on(self):
+        """Returns the date when the access code expires."""
+        return self.requested_on + datetime.timedelta(days=1)
+
+    @property
+    def expired(self):
+        """Returns whether or not the access code has expired."""
+        return datetime.datetime.now(tz=pytz.UTC) > self.expires_on
 
 
 class Role(models.Model):
