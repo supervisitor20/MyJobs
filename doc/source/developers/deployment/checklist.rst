@@ -8,7 +8,7 @@ Follow this checklist after every deployment to staging or production. This
 checklist is intended to verify that critical and major functionality is operating
 as intdended.
 
-**IF YOU FIND AN ISSUE**, bring it to the attendtion of the my.jobs team lead
+**IF YOU FIND AN ISSUE**, bring it to the attention of the my.jobs team lead
 immediatly. They will make the determination if a hotfix or rollback is needed.
 
 
