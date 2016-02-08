@@ -823,6 +823,8 @@ def api_create_role(request):
             for i, user in enumerate(users):
                 user_object = User.objects.filter(email=user)
                 user_object[0].roles.add(new_role.id)
+                # Invite user
+                user_object[0].send_invite(user_object[0].email, company, new_role.name)
 
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
