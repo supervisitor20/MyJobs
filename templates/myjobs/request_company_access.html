@@ -13,10 +13,28 @@
   <div class="row">
     <div class="col-md-8">
       <form action="" method="post">
-        {% include 'includes/form-error-highlight.html' %}
         {% csrf_token %}
+        {% for field in form %}
+          <div class="row">
+            <div class="col-md-4">
+              {{ field.label_tag }}
+            </div>
+            <div class="col-md-8">
+              {{ field }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-offset-4 col-md-8">
+              {% if field.errors %}
+                {{ field.errors }}
+              {% else %}
+                {{ field.help_text }}
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
         <div class="row">
-          <div class="col-md-offset-4">
+          <div class="col-md-offset-4 col-md-8">
             <input type="submit" class="btn primary" value="Request Access">
           </div>
         </div>
@@ -30,17 +48,19 @@
     </div>
   </div>
   {% if access_code %}
-  <div class="row">
-    <p>
-      Your request has been submitted. A representative will be in contact 
-      with your company shortly.
-    </p>
-    <p>
-      Please write down the following code. You will need it to verify your
-      request. <strong>This is the only time this code is displayed.</strong>
-    </p>
-    <p>{{ access_code }}</p>
-  </div>
+    <div class="row">
+      <div class="col-md-8">
+        <p class="text-left">
+          Your request has been submitted. A representative will be in contact 
+          with your company shortly.
+        </p>
+        <p>
+          Please write down the following code. You will need it to verify your
+          request. <strong>This is the only time this code is displayed.</strong>
+        </p>
+        <p class="text-center">{{ access_code }}</p>
+      </div>
+    </div>
   {% endif %}
 {% endblock content %}
 
