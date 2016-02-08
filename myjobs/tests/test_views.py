@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse
 from django.template import Context, Template
 from jira.client import JIRA
 
-from myjobs.models import User, EmailLog, FAQ, AccessRequest
+from myjobs.models import User, EmailLog, FAQ, CompanyAccessRequest
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
 from myjobs.tests.setup import MyJobsBase, TestClient
