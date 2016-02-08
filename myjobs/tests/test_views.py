@@ -1016,7 +1016,7 @@ class MyJobsViewsTests(MyJobsBase):
         """
         response = self.client.post(
             path=reverse("request_access"), data={"company_name": "Foo Inc"})
-        last_request = AccessRequest.objects.last()
+        last_request = CompanyAccessRequest.objects.last()
         self.assertTrue(
             last_request.check_access_code(response.context['access_code']))
 
