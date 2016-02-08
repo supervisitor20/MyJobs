@@ -923,7 +923,11 @@ def api_edit_role(request, role_id=0):
         for user in existing_users.exclude(pk__in=new_users.values("pk")):
             user.roles.remove(role_id)
         for user in new_users.exclude(pk__in=existing_users.values("pk")):
+            # Add role to user
             user.roles.add(role_id)
+            # Invite user
+            user.send_invite(user.email, company, role.name)
+
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
