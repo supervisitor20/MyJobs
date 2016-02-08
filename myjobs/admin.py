@@ -22,8 +22,9 @@ class EmailLogAdmin(admin.ModelAdmin):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ['email', 'date_joined', 'last_response', 'is_active',
-                    'is_verified', 'deactivate_type', 'source',]
-    search_fields = ['email', 'source']
+                    'is_verified', 'deactivate_type', 'secondary_emails',
+                    'source']
+    search_fields = ['email', 'source', 'profileunits__secondaryemail__email']
     list_filter = ['is_active', 'is_verified', 'is_disabled', 'is_superuser',
                    'is_staff', 'deactivate_type']
 

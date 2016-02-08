@@ -31,6 +31,7 @@ class RegistrationModelTests(MyJobsBase):
 
     def setUp(self):
         super(RegistrationModelTests, self).setUp()
+        self.user.delete()
         self.old_activation = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', None)
         settings.ACCOUNT_ACTIVATION_DAYS = 7
 
@@ -219,10 +220,8 @@ class RegistrationModelTests(MyJobsBase):
 class InvitationModelTests(MyJobsBase):
     def setUp(self):
         super(InvitationModelTests, self).setUp()
-        self.admin = UserFactory(is_superuser=True, is_staff=True,
-                                 password='pass')
-        self.client.login(username=self.admin.email,
-                          password='pass')
+        self.user.is_superuser = True
+        self.user.save()
 
     def test_invitation_admin_cant_edit(self):
         """
@@ -262,7 +261,7 @@ class InvitationModelTests(MyJobsBase):
             {'invitee_email': 'email@example.com'})
         invitation = Invitation.objects.get()
         invitation.send()
-        self.assertEqual(invitation.inviting_user, self.admin)
+        self.assertEqual(invitation.inviting_user, self.user)
 
     def test_invitation_form_creates_invitee(self):
         """
@@ -270,7 +269,7 @@ class InvitationModelTests(MyJobsBase):
         of the email address used or create a new user if one does not exist
         """
         data = {
-            'inviting_user': self.admin
+            'inviting_user': self.user
         }
         User.objects.create_user(email='email@example.com', send_email=False)
         users = []
@@ -296,10 +295,10 @@ class InvitationModelTests(MyJobsBase):
 
     def test_invitation_model_save_success(self):
         self.assertEqual(User.objects.count(), 1)
-        for args in [{'invitee_email': self.admin.email},
-                     {'invitee': self.admin},
+        for args in [{'invitee_email': self.user.email},
+                     {'invitee': self.user},
                      {'invitee_email': 'new_user@example.com'}]:
-            args.update({'inviting_user': self.admin})
+            args.update({'inviting_user': self.user})
             invitation = Invitation.objects.create(**args)
             invitation.send()
         self.assertEqual(User.objects.count(), 2)
@@ -311,7 +310,7 @@ class InvitationModelTests(MyJobsBase):
         exception
         """
         for args, exception_text in [({'invitee_email': 'new_user@example.com',
-                                       'invitee': self.admin},
+                                       'invitee': self.user},
                                       'Invitee information does not match'),
                                      ({}, 'Invitee not provided')]:
             with self.assertRaises(ValidationError) as e:
@@ -334,7 +333,7 @@ class InvitationModelTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertTrue('invitation' in email.subject)
         self.assertEqual(email.from_email, 'accounts@my.jobs')
-        self.assertTrue(self.admin.email in email.body)
+        self.assertTrue(self.user.email in email.body)
         self.assertTrue(company.name in email.body)
 
         body = BeautifulSoup(email.body)
@@ -392,7 +391,7 @@ class InvitationModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
         invitation = Invitation.objects.create(
             invitee_email='prm_user@company.com',
-            inviting_user=self.admin)
+            inviting_user=self.user)
         invitation.send()
         self.assertEqual(len(mail.outbox), 1)
 
@@ -402,7 +401,7 @@ class InvitationModelTests(MyJobsBase):
         email = mail.outbox.pop()
         self.assertTrue('invitation' in email.subject)
         self.assertEqual(email.from_email, 'accounts@my.jobs')
-        self.assertTrue(self.admin.email in email.body)
+        self.assertTrue(self.user.email in email.body)
 
         ap = ActivationProfile.objects.get(email=user.email)
 
@@ -422,11 +421,11 @@ class InvitationModelTests(MyJobsBase):
         self.assertTrue(user.is_verified)
 
     def test_invitation_email_with_name(self):
-        PrimaryNameFactory(user=self.admin)
+        PrimaryNameFactory(user=self.user)
 
         invitation = Invitation.objects.create(
-            invitee_email='prm_user@company.com', inviting_user=self.admin)
+            invitee_email='prm_user@company.com', inviting_user=self.user)
         invitation.send()
 
         email = mail.outbox.pop()
-        self.assertTrue(self.admin.get_full_name() in email.body)
+        self.assertTrue(self.user.get_full_name() in email.body)

@@ -12,11 +12,16 @@
         {% else %}
             {{ invitation.inviting_user.email }}
         {% endif %}
-        of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ reason }}
-    </p>
-    <p>You can <a href="https://secure.my.jobs{% url 'prm' %}">Click here to access PRM</a></p>
+        of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ message }}
 
-    {% if invitation.added_permission %}
+    </p>
+<<<<<<< HEAD
+    {{ link_text|safe }}
+=======
+    <p>You can <a href="https://secure.my.jobs{% url 'prm' %}">Click here to access PRM</a></p>
+>>>>>>> master
+
+    {% if group or company_user %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
     {% endif %}
     {% if not invitation.invitee.is_verified %}
@@ -33,7 +38,7 @@
         {{ invitation.inviting_user.email }}
     {% endif %}
 
-    {% if invitation.added_saved_search %}
+    {% if saved_search %}
         <hr />
         {{ initial_search_email|safe }}
     {% endif %}

@@ -12,7 +12,7 @@ from django.template import context
 from import_jobs import DATA_DIR
 from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
 from seo.search_backend import DESolrSearchBackend, DESolrEngine
-from seo.tests.factories import BusinessUnitFactory
+from seo.tests.factories import BusinessUnitFactory, CompanyFactory
 from seo.tests.factories import SeoSiteFactory, ConfigurationFactory
 from seo_pysolr import Solr
 import solr_settings
@@ -95,6 +95,13 @@ class DirectSEOBase(TestCase):
         clear_url_caches()
 
         setattr(settings, 'MEMOIZE', False)
+
+        # As we added tests that created more and more companies, we
+        # approached the hardcoded companies in import_jobs_testdata.json.
+        # When we hit those ids, we began to get IntegrityErrors during
+        # testing. Reset the sequence used by CompanyFactory to clear this
+        # build-up.
+        CompanyFactory.reset_sequence()
 
     def tearDown(self):
         from django.conf import settings

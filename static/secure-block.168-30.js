@@ -1,3 +1,4 @@
+var saved_dashboard_url = '';
 
 function read_cookie(cookie) {
     var nameEQ = cookie + "=",
@@ -54,19 +55,40 @@ function jsonp_secure_block(secure_block_url, data) {
   });
 }
 
-function load_secure_blocks(dashboard_url) {
-  var request = {};
-  $("*[data-secure-block-id]").each(function(i, block) {
-    element_id = $(block).data('secure-block-id');
-    request[element_id] = $(block).data();
-  });
+function populate_secure_blocks(request, callback) {
   if (!$.isEmptyObject(request)) {
-    secure_block(dashboard_url, request).fail(function(xhr, text, error) {
+    secure_block(saved_dashboard_url, request).fail(function(xhr, text, error) {
         console.error("dashboard fail: ", xhr, text, error);
     }).done(function(data, text, xhr) {
         $.each(data, function(key, value) {
         $("[data-secure-block-id=" + key + "]").html(value);
         });
+        if (typeof callback === "function") {
+          callback();
+        }
     });
+  }
+}
+
+function load_secure_blocks(dashboard_url) {
+  // load secure blocks for all divs containing the proper data tag
+  saved_dashboard_url = dashboard_url;
+  var request = {};
+  $("*[data-secure-block-id]").each(function(i, block) {
+    var element_id = $(block).data('secure-block-id');
+    request[element_id] = $(block).data();
+  });
+  populate_secure_blocks(request);
+}
+
+function reload_secure_block(block_id, callback) {
+  // reload an individual secure block that may have changed state
+  // callback is an optional argument of a function that should be called
+  // upon completion of the reload
+  var request = {};
+  var block = $("[data-secure-block-id=" + block_id + "]");
+  if (block) {
+    request[block_id] = block.data();
+    populate_secure_blocks(request, callback);
   }
 }

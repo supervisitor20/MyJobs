@@ -1,6 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import Button from 'react-bootstrap/lib/Button';
 import warning from 'warning';
+import {Loading} from 'common/ui/Loading';
 
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
@@ -10,47 +11,68 @@ import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
 
 export class WizardPageFilter extends Component {
+  constructor() {
+    super();
+    this.state = {
+      loading: true,
+    };
+  }
+
   componentDidMount() {
-    this.updateState();
+    this.loadData();
   }
 
   async getHints(filter, partial) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     return await reportConfig.getHints(filter, partial);
   }
 
+  async loadData() {
+    await this.buildReportConfig();
+    this.updateState();
+    this.setState({loading: false});
+  }
+
+  async buildReportConfig() {
+    const {reportFinder} = this.props;
+    const {presentationType} = this.props.routeParams;
+    const reportConfig = await reportFinder.buildReportConfiguration(
+      presentationType);
+    this.setState({reportConfig});
+  }
+
   updateFilter(filter, value) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     reportConfig.setFilter(filter, value);
     this.updateState();
   }
 
   addToMultifilter(filter, value) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     reportConfig.addToMultifilter(filter, value);
     this.updateState();
   }
 
   removeFromMultifilter(filter, value) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     reportConfig.removeFromMultifilter(filter, value);
     this.updateState();
   }
 
   addToAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     reportConfig.addToAndOrFilter(filter, index, value);
     this.updateState();
   }
 
   removeFromAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     reportConfig.removeFromAndOrFilter(filter, index, value);
     this.updateState();
   }
 
   updateState() {
-    const {reportConfig} = this.props;
+    const {reportConfig} = this.state;
     this.setState({
       filter: reportConfig.getFilter(),
     });
@@ -70,7 +92,11 @@ export class WizardPageFilter extends Component {
   }
 
   render() {
-    const {reportConfig} = this.props;
+    const {loading, reportConfig} = this.state;
+
+    if (loading) {
+      return <Loading/>;
+    }
 
     const rows = [];
     reportConfig.filters.forEach(col => {
@@ -160,5 +186,8 @@ export class WizardPageFilter extends Component {
 }
 
 WizardPageFilter.propTypes = {
-  reportConfig: PropTypes.object.isRequired,
+  routeParams: PropTypes.shape({
+    presentationType: PropTypes.string.isRequired,
+  }).isRequired,
+  reportFinder: PropTypes.object.isRequired,
 };

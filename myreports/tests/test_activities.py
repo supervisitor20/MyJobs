@@ -25,17 +25,9 @@ class TestViewLevelActivities(MyReportsTestCase):
 
     def setUp(self):
         super(TestViewLevelActivities, self).setUp()
-        settings.ROLES_ENABLED = True
         self.app_access = AppAccessFactory()
-        self.activities = [
-            ActivityFactory(name=activity, app_access=self.app_access)
-            for activity in [
-                "read partner", "read contact", "read communication record"]]
-
-        self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
-        self.role = RoleFactory(company=self.company)
-        self.user = UserFactory(roles=[self.role], is_staff=True)
+        self.role.activities.clear()
 
         # login the user so that we don't read redirected to the login page
         self.client = TestClient(HTTP_X_REQUESTED_WITH='XMLHttpRequest')

@@ -22,7 +22,7 @@ from mysearches.tests.factories import PartnerSavedSearchFactory
 
 class UserManagerTests(MyJobsBase):
     user_info = {'password1': 'complicated_password',
-                 'email': 'alice@example.com',
+                 'email': 'alice1@example.com',
                  'send_email': True}
 
     def test_user_validation(self):
@@ -30,16 +30,16 @@ class UserManagerTests(MyJobsBase):
                      'email': 'Bad Email'}
         with self.assertRaises(ValidationError):
             User.objects.create_user(**user_info)
-        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(User.objects.count(), 1)
 
     def test_user_creation(self):
         new_user, _ = User.objects.create_user(**self.user_info)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.count(), 2)
         self.assertEqual(new_user.is_active, True)
         self.assertEqual(new_user.is_verified, False)
-        self.assertEqual(new_user.email, 'alice@example.com')
+        self.assertEqual(new_user.email, 'alice1@example.com')
         self.failUnless(new_user.check_password('complicated_password'))
         self.failUnless(new_user.groups.filter(name='Job Seeker').count() == 1)
         self.assertIsNotNone(new_user.user_guid)
@@ -47,11 +47,11 @@ class UserManagerTests(MyJobsBase):
     def test_superuser_creation(self):
         new_user = User.objects.create_superuser(
             **{'password': 'complicated_password',
-               'email': 'alice@example.com'})
-        self.assertEqual(User.objects.count(), 1)
+               'email': 'alice1@example.com'})
+        self.assertEqual(User.objects.count(), 2)
         self.assertEqual(new_user.is_superuser, True)
         self.assertEqual(new_user.is_staff, True)
-        self.assertEqual(new_user.email, 'alice@example.com')
+        self.assertEqual(new_user.email, 'alice1@example.com')
         self.failUnless(new_user.check_password('complicated_password'))
         self.failUnless(new_user.groups.filter(name='Job Seeker').count() == 1)
         self.assertIsNotNone(new_user.user_guid)
@@ -60,7 +60,7 @@ class UserManagerTests(MyJobsBase):
         """
         Test that email is hashed correctly and returns a 200 response
         """
-        user = UserFactory()
+        user = UserFactory(email="alice1@example.com")
         gravatar_url = "http://www.gravatar.com/avatar/c160f8cc69a4f0b" \
                        "f2b0362752353d060?s=20&d=mm"
         no_gravatar_url = ("<div class='gravatar-blank gravatar-danger' "
@@ -80,7 +80,7 @@ class UserManagerTests(MyJobsBase):
         is_active set to False should proceed to their destination.
         """
         client = TestClient()
-        user = UserFactory()
+        user = UserFactory(email="alice1@example.com")
 
         # Anonymous user
         resp = client.get(reverse('view_profile'))
@@ -115,7 +115,7 @@ class UserManagerTests(MyJobsBase):
         to see.
         """
         client = TestClient(path=reverse('saved_search_main'))
-        user = UserFactory()
+        user = UserFactory(email="alice1@example.com")
 
         # Active user
         client.login_user(user)
@@ -130,27 +130,15 @@ class UserManagerTests(MyJobsBase):
 
     def test_group_status(self):
         """
-        Should return True if user.groups contains the group specified and
-        False if it does not.
+        Should return True if user is assigned a role for at least one company.
+        This method will hopefully be deprecated soon.
+
         """
-        user = UserFactory()
+        user = UserFactory(email="alice1@example.com")
+        self.assertFalse(User.objects.is_group_member(user, "dummy"))
+        user.roles.add(self.role)
+        self.assertTrue(User.objects.is_group_member(user, "dummy"))
 
-        user.groups.all().delete()
-
-        for group in Group.objects.all():
-            # Makes a list of all group names, excluding the one that the
-            # user will be a member of
-            names = map(lambda group: group.name,
-                        Group.objects.filter(~Q(name=group.name)))
-
-            user.groups.add(group.pk)
-            user.save()
-
-            for name in names:
-                self.assertFalse(User.objects.is_group_member(user, name))
-            self.assertTrue(User.objects.is_group_member(user, group.name))
-
-            user.groups.all().delete()
 
     def test_user_with_multiple_profileunits(self):
         """
@@ -172,9 +160,9 @@ class UserManagerTests(MyJobsBase):
         searches and reports.
         """
 
-        user = UserFactory(email="test@test.com")
+        user = UserFactory(email="alice1@example.com")
         company = CompanyFactory()
-        pss = PartnerSavedSearchFactory(created_by=user)
+        pss = PartnerSavedSearchFactory(user=self.user, created_by=user)
         report = Report.objects.create(created_by=user, owner=company)
 
         user.delete()
@@ -184,16 +172,6 @@ class UserManagerTests(MyJobsBase):
 
 class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""
-
-    def setUp(self):
-        super(TestActivities, self).setUp()
-
-        self.app_access = AppAccessFactory()
-        self.company = CompanyFactory(app_access=[self.app_access])
-        self.activities = ActivityFactory.create_batch(
-            5, app_access=self.app_access)
-        self.role = RoleFactory(
-            company=self.company, activities=self.activities)
 
     def test_role_unique_to_company(self):
         """Roles should be unique to company by name."""
@@ -226,12 +204,12 @@ class TestActivities(MyJobsBase):
     def test_automatic_role_admin_activities(self):
         """
         New activities should be added to all Admin roles automatically.
+
         """
-
-        # add role to existing company
-        RoleFactory(company=self.company, name="Admin",
-                    activities=self.activities)
-
+        activities = ActivityFactory.create_batch(5)
+        self.role.activities = activities
+        self.role.name = "Test Role"
+        self.role.save()
         # sanity check for initial numbers
         for admin in Role.objects.filter(name="Admin"):
             self.assertEqual(admin.activities.count(), 5)
@@ -252,8 +230,8 @@ class TestActivities(MyJobsBase):
         correct activities and True when they are.
         """
 
-        user = UserFactory(roles=[self.role])
-        CompanyUserFactory(user=user, company=self.company)
+        user = UserFactory(email="alice1@example.com", roles=[self.role])
+        self.role.activities = self.activities
         activities = self.role.activities.values_list('name', flat=True)
 
         # check for a single activity
@@ -261,15 +239,6 @@ class TestActivities(MyJobsBase):
 
         with self.settings(ROLES_ENABLED=True):
             self.assertFalse(user.can(self.company, "eat a burrito"))
-
-        with self.settings(ROLES_ENABLED=False):
-            self.company.member = False
-            self.company.save()
-
-            self.assertFalse(user.can(self.company, activities[0]))
-
-            self.company.member = True
-            self.company.save()
 
         # check for multiple activities
         self.assertTrue(user.can(self.company, *activities))
@@ -284,47 +253,29 @@ class TestActivities(MyJobsBase):
         email, optionally assiging the reserved user to a role if one was
         passed in.
         """
-
-        activity = ActivityFactory(
-            name="create user", app_access=self.app_access)
-        self.role.activities.add(activity)
-        admin_user = UserFactory(email="admin@users.com", roles=[self.role])
-        CompanyUserFactory(user=admin_user, company=self.company)
+        self.role.activities = self.activities
 
         # sanity check
-        self.assertTrue(admin_user.can(self.company, 'create user'))
+        self.assertTrue(self.user.can(self.company, 'create user'))
 
-        with self.settings(ROLES_ENABLED=True):
-            user = admin_user.send_invite('regular@joe.com', self.company)
-            self.assertFalse(
-                user.can(self.company, 'create user'),
-                "User shouldn't be able to 'create user', but can")
+        user = self.user.send_invite('regular@joe.com', self.company)
+        self.assertFalse(
+            user.can(self.company, 'create user'),
+            "User shouldn't be able to 'create user', but can")
 
-            user = admin_user.send_invite(
-                'regular@joe.com', self.company, role_name=self.role.name)
-            self.assertTrue(
-                user.can(self.company, 'create user'),
-                "User should be able to 'create user' but can't.")
-
-        with self.settings(ROLES_ENABLED=False):
-            user = admin_user.send_invite('regular@joe.com', self.company)
-            self.assertFalse(
-                user.can(self.company, 'create user'),
-                "User shouldn't be able to 'create user', but can.")
-
-            user = admin_user.send_invite(
-                'regular@joe.com', self.company, True)
-            self.assertTrue(
-                user.can(self.company, 'create user'),
-                "User should be able to 'create user', but can't")
+        user = self.user.send_invite(
+            'regular@joe.com', self.company, role_name=self.role.name)
+        self.assertTrue(
+            user.can(self.company, 'create user'),
+            "User should be able to 'create user' but can't.")
 
     def test_activities(self):
         """
         `User.activities` should return a list of activities associated with
         this user.
-        """
 
-        user = UserFactory()
+        """
+        user = UserFactory(email="alice1@example.com")
 
         self.assertItemsEqual(user.activities, [])
 
