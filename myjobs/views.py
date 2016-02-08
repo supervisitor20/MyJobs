@@ -1294,6 +1294,16 @@ def api_delete_user(request, user_id=0):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 def request_company_access(request):
+    """
+    User-Facing view for a user to request access to a company.
+
+    Methods:
+        :GET: Shows the request form, which only requires that a company name
+              be entered. That company need not map to an actual company.
+        :POST: Creates a CompanyAccessRequest, spawns a task which creates a
+               JIRA ticket to track the request, and displays the unhashed
+               version of the access code to the user.
+    """
     if request.user.is_anonymous():
         return HttpResponseRedirect(
             reverse('login') + "?next=/request-company-access")
@@ -1303,9 +1313,9 @@ def request_company_access(request):
         form = CompanyAccessRequestForm(request.POST)
         if form.is_valid():
             company_name = form.cleaned_data['company_name']
-            _, access_code = CompanyAccessRequest.objects.create_request(
+            access_request, code = CompanyAccessRequest.objects.create_request(
                 company_name, request.user)
-            ctx['access_code'] = access_code
+            ctx['access_code'] = code
 
             # create a jira ticket
             summary = "Company access requested"
@@ -1327,6 +1337,8 @@ def request_company_access(request):
                 project="MEMBERSUP",
                 watcher_group="admin-request-watchers",
                 components=["admin request"])
+            # asynchronously tie that ckreated ticket back to the access
+            # request
             assign_ticket_to_request.delay(key, access_request)
     else:
         form = CompanyAccessRequestForm()

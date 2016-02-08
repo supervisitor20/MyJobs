@@ -76,6 +76,45 @@ PARTNER_LIBRARY_SOURCES = {
 
 @task(name='tasks.create_jira_ticket')
 def create_jira_ticket(summary, description, **kwargs):
+    """
+    Create a new jira ticket, returning the associated number.
+
+    Examples:
+
+        Synchronously create a jira ticket::
+
+            create_jira_ticket("Test Ticket", "This is a test")
+
+        Asynchronously create a jira ticket::
+
+            create_jira_ticket.delay("Test Ticket", "This is a test")
+
+    Inputs:
+
+    .. note:: watchers and watcher_group are mutually exclusive.
+
+        :summary: The ticket summary
+        :description: The ticket description
+        :assignee: Who the ticket should be assigned to. Defaults to "-1" which
+                   is analogous to selecting "automatic" on the JIRA web form.
+        :reporter: Who created the ticket (or is responsible for QCing it).
+                   Defaults to "automaticagent".
+        :issuetype: The type of issue. Defaults to "Task".
+        :project: The project the ticket should be created in. Defaults to
+                  "ST", which is Product Support.
+        :priority: Ticket Priority. Defaults to "Major".
+        :components: A list of components this ticket belongs to.
+        :watchers: A list of user names to add as watchers of this ticket.
+        :watcher_group: A group to assign as watchesr.
+
+    Output:
+
+    .. note:: The instance isn't returned because we need the ability to pass
+              the results to another asynchronous task without blocking, which
+              requires that all arguments be serializable.
+
+        The ticket key which corresponds to the created JIRA ticket.
+    """
     jira = JIRA(options=options, basic_auth=housekeeping_auth)
 
     assignee = {'name': kwargs.setdefault('assignee', '-1')}
@@ -86,7 +125,7 @@ def create_jira_ticket(summary, description, **kwargs):
     components = [{'name': name}
                   for name in kwargs.setdefault('components', [])]
 
-    watchers = kwargs.setdefault('watchers', [])
+    watchers = kwargs.setdefault('watchers', set())
     if 'watcher_group' in kwargs:
         watchers += jira.group_members(kwargs['watcher_group']).keys()
 
@@ -114,10 +153,34 @@ def create_jira_ticket(summary, description, **kwargs):
 
 @task(name='tasks.assign_ticket_to_request')
 def assign_ticket_to_request(key, access_request):
+    """
+    Assign a ticket to a request.
+
+    Examples:
+        .. note:: The synchronous variety is for easy of debugging. In real
+                  code, you'd probably simply assign the attribute to the
+                  access_request instance directly.
+
+        Synchronously:
+            assign_ticket_to_request(key, access_request)
+        Asynchronously:
+            assign_ticket_to_request.delay(key, access_request)
+
+    Input:
+        :key: Generally an `AsyncResult` containing a string, which would be
+              the JIRA ticket's key.
+        :access_request: The `myjobs.models.CompanyAccessRequest` instance to
+                         asssign the ticket key to.
+
+    Output:
+        The pk of the `myjobs.models.CompanyAccessRequest` instance that the
+        ticket key was assigned to.
+
+    """
     access_request.ticket = getattr(key, 'get', lambda: key)()
     access_request.save()
 
-    return access_request
+    return access_request.pk
 
 
 @task(name='tasks.send_search_digest', ignore_result=True,
