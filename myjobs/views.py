@@ -1047,9 +1047,6 @@ def api_get_specific_user(request, user_id=0):
     """
     ctx = {}
 
-    from django.db import connection
-    print len(connection.queries)
-
     company = get_company_or_404(request)
 
     user = User.objects.filter(id=user_id)
@@ -1095,8 +1092,6 @@ def api_get_specific_user(request, user_id=0):
 
     # Status
     ctx[user_id]["status"] = user[0].is_verified
-
-    print len(connection.queries)
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
