@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse
 from django.template import Context, Template
 from jira.client import JIRA
 
-from myjobs.models import User, EmailLog, FAQ
+from myjobs.models import User, EmailLog, FAQ, CompanyAccessRequest
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
 from myjobs.tests.setup import MyJobsBase, TestClient
@@ -1006,6 +1006,19 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject,
                          'Account Activation for my.jobs')
+
+    def test_request_access(self):
+        """
+        Requesting access for a company should result in a access code being
+        displayed on the screen. Requesting access for a non-existent company
+        is NOT an error condition.
+
+        """
+        response = self.client.post(
+            path=reverse("request_access"), data={"company_name": "Foo Inc"})
+        last_request = CompanyAccessRequest.objects.last()
+        self.assertTrue(
+            last_request.check_access_code(response.context['access_code']))
 
 
 class MyJobsTopbarViewsTests(MyJobsBase):
