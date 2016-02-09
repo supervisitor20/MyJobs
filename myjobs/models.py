@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
+from django.utils.crypto import get_random_string
 
 import pytz
 
@@ -742,12 +743,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         sent.
         """
 
-        can_invite = company.user_has_access(self) and self.can(
-            company, 'create user')
-
-        if not can_invite:
-            return None
-
         user, _ = User.objects.create_user(
             email=email, send_email=False, in_reserve=True)
         Invitation = get_model('registration', 'Invitation')
@@ -916,6 +911,51 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
             RoleActivities(role=role, activity=instance) for role in roles])
 
 
+class CompanyAccessRequestManager(models.Manager):
+    def create_request(self, company_name, requested_by):
+        access_request = self.create(
+            company_name=company_name, requested_by=requested_by)
+        access_code = get_random_string(8)
+        access_request.access_code = hashlib.md5(access_code).hexdigest()
+        access_request.save()
+        return access_request, access_code
+
+
+class CompanyAccessRequest(models.Model):
+    """
+    This model represents a user requesting access to a company.
+
+    It is used when a company is left without a user assigned to the Admin
+    role, and is a means to grant them access to that company securely.
+
+    """
+    company_name = models.CharField('Company Name', max_length=200)
+    access_code = models.CharField('Access Code', max_length=32)
+    requested_by = models.ForeignKey(
+        'myjobs.User', related_name='requested_by')
+    authorized_by = models.ForeignKey(
+        'myjobs.User', null=True, related_name='authorized_by')
+    requested_on = models.DateTimeField("Requested On", auto_now_add=True)
+    authorized_on = models.DateTimeField(null=True)
+    ticket = models.CharField(max_length=20, null=True)
+
+    objects = CompanyAccessRequestManager()
+
+    def check_access_code(self, access_code):
+        return self.access_code == hashlib.md5(
+            access_code).hexdigest() and not self.expired
+
+    @property
+    def expires_on(self):
+        """Returns the date when the access code expires."""
+        return self.requested_on + datetime.timedelta(days=1)
+
+    @property
+    def expired(self):
+        """Returns whether or not the access code has expired."""
+        return datetime.datetime.now(tz=pytz.UTC) > self.expires_on
+
+
 class Role(models.Model):
     """
     A role represents a group of activities which are arbitrarily connected.
@@ -984,6 +1024,6 @@ def role_invitation_context(role):
     if role.activities.filter(name="read partner").exists():
         href = settings.ABSOLUTE_URL + "prm/view"
         text = "Click here to access PRM"
-        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+        ctx['redirect'] = {'href': href, 'text': text}
 
     return ctx

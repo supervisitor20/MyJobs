@@ -7,6 +7,7 @@ from seo.models import Company, CustomFacet, SeoSite, SiteTag
 from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
+from registration.models import Invitation
 
 
 class ModelsTestCase(DirectSEOBase):
@@ -368,4 +369,12 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
 
         self.assertItemsEqual(self.company.enabled_access, ['Test Access'])
 
+    def test_first_invitation(self):
+        """
+        `Company.first_invitation` should return the first invitation created
+        for a company.
 
+        """
+        self.assertEqual(
+            self.company.first_invitation, Invitation.objects.filter(
+                inviting_company=self.company).order_by('-invited').first())

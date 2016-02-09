@@ -600,16 +600,18 @@ class Company(models.Model):
     business units).
 
     """
-    def __unicode__(self):
-        return self.name
-
-    natural_key = __unicode__
-
     class Meta:
         verbose_name = 'Company'
         verbose_name_plural = 'Companies'
         ordering = ['name']
         unique_together = ('name', 'user_created')
+
+
+    def __unicode__(self):
+        return self.name
+
+    natural_key = __unicode__
+
 
     def save(self, *args, **kwargs):
         exists = str(self.pk).isdigit()
@@ -756,6 +758,19 @@ class Company(models.Model):
         """Returns a list of app access names associated with this company."""
 
         return filter(bool, self.app_access.values_list('name', flat=True))
+
+    @property
+    def first_invitation(self):
+        """
+        Returns the first invitation created for this company.
+
+        In most cases (as of 02/02/2016), this should be an invitation for the
+        Admin role of the company.
+
+        """
+        # to prevent multiple queries, we set this up on instantiation instead
+        # of running the query every time the information is asked for
+        return self.invites_sent.order_by('-invited').first()
 
 
 class FeaturedCompany(models.Model):

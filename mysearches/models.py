@@ -424,7 +424,7 @@ def saved_search_invitation_context(saved_search):
         href = "%ssaved-search/view/feed?id=%s" % (
             settings.ABSOLUTE_URL, saved_search.pk)
         text = "Click here to access this saved search"
-        ctx['link_text'] = '<p><a href="%s">%s</a></p>' % (href, text)
+        ctx['redirect'] = {'href': href, 'text': text}
 
     return ctx
 

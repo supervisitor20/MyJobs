@@ -2998,6 +2998,10 @@ em.pendingText {
     z-index: 9999 !important;
 }
 
+.submenu-dropdown > ul {
+    padding: 0;
+}
+
 /*Firefox fix for homepage alignment issues*/
 @-moz-document url-prefix() {
     #title {

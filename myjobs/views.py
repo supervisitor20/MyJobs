@@ -24,9 +24,11 @@ from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
 from myjobs.decorators import user_is_allowed, requires
-from myjobs.forms import ChangePasswordForm, EditCommunicationForm
+from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
+                          CompanyAccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
-from myjobs.models import Ticket, User, FAQ, CustomHomepage, Role, Activity
+from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
+                           CompanyAccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -1139,8 +1141,9 @@ def api_create_user(request):
 
         # Send one invitation per new role. This will handle creating the user
         # if one doesn't exist.
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user_email, company, role.name)
+        if request.user.can(company, "create user"):
+            for role in set(new_roles).difference(existing_roles):
+                request.user.send_invite(user_email, company, role.name)
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
@@ -1242,8 +1245,9 @@ def api_edit_user(request, user_id=0):
                 user[0].roles.remove(currently_assigned_role.id)
 
         # Notify the user
-        for role in assigned_roles:
-            request.user.send_invite(user[0].email, company, role)
+        if request.user.can(company, "create user"):
+            for role in assigned_roles:
+                request.user.send_invite(user[0].email, company, role)
         # # RETURN - boolean
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
@@ -1286,3 +1290,21 @@ def api_delete_user(request, user_id=0):
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
         return HttpResponse(json.dumps(ctx), content_type="application/json")
+
+def request_access(request):
+    ctx = {}
+    if request.method == 'POST':
+        form = CompanyAccessRequestForm(request.POST)
+        if form.is_valid():
+            company_name = form.cleaned_data['company_name']
+            _, access_code = CompanyAccessRequest.objects.create_request(
+                company_name, request.user)
+            ctx['access_code'] = access_code
+    else:
+        form = CompanyAccessRequestForm()
+
+    ctx['form'] = form
+
+    return render_to_response(
+        'myjobs/request_access.html', ctx,
+        RequestContext(request))
