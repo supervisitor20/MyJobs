@@ -1178,10 +1178,9 @@ def api_edit_user(request, user_id=0):
     else:
         company = get_company_or_404(request)
 
-        user = User.objects.filter(id=user_id)
-
-        # Check if user exists
-        if user.exists() is False:
+        try:
+            user = User.objects.select_related('roles').get(pk=user_id)
+        except User.DoesNotExist:
             ctx["success"] = "false"
             ctx["message"] = "User does not exist."
             return HttpResponse(json.dumps(ctx),
@@ -1192,7 +1191,7 @@ def api_edit_user(request, user_id=0):
         # 1. List current company's roles
         company_roles = Role.objects.filter(company=company)
         # 2. List user's roles
-        roles_assigned_to_user = user[0].roles.all()
+        roles_assigned_to_user = user.roles.all()
 
         # 3. Overlap?
         if bool(set(company_roles) & set(roles_assigned_to_user)) == "False":
@@ -1243,25 +1242,26 @@ def api_edit_user(request, user_id=0):
             role_id = role_object[0].id
             assigned_roles_ids.append(role_id)
 
-        existing_roles = set(user[0].roles.filter(company=company))
+        existing_roles = set(user.roles.filter(company=company))
 
         # Add new roles to user
         for assigned_role in assigned_roles_ids:
-            user[0].roles.add(assigned_role)
+            user.roles.add(assigned_role)
 
         # Remove roles from user if not in new list
-        for currently_assigned_role in user[0].roles.filter(company=company):
+        for currently_assigned_role in user.roles.filter(company=company):
             if currently_assigned_role.id not in assigned_roles_ids:
-                user[0].roles.remove(currently_assigned_role.id)
+                user.roles.remove(currently_assigned_role.id)
 
         # Notify the user
         new_roles = set(Role.objects.filter(company=company,
                                             name__in=assigned_roles))
         for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user[0].email, company, role.name)
+            request.user.send_invite(user.email, company, role.name)
 
         # # RETURN - boolean
         ctx["success"] = "true"
+
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
