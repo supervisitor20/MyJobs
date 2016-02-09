@@ -9,6 +9,7 @@ The saved search API allows users and saved searches to be created from a given 
 
   myblocks/index
   mypartners/index
+  mysearches/index
   postajob/index
   seo/index
   docker/index
