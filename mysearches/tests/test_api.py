@@ -1,24 +1,27 @@
 import json
 
 from django.test.client import RequestFactory
+from django.conf import settings
+from django.core.urlresolvers import reverse
 
 from mysearches.models import SavedSearch
 
-from mysearches.views import (secure_saved_search,
-                              get_value_from_request,
+from mysearches.views import (get_value_from_request,
                               add_or_activate_saved_search,
                               user_creation_retrieval)
 
 from mysearches.tests.factories import SavedSearchFactory
 
 
+from myblocks.tests.test_secure_blocks import (make_cors_request,
+                                               make_jsonp_request)
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
 
-class SecureSavedSearchAPITestCase(MyJobsBase):
+class SecureSavedSearchHelpersTestCase(MyJobsBase):
     """
-    Test cases for secure saved search API (currently used by secure blocks
-    saved search widget
+    Test cases for the helper functions of secure saved search API
+    (currently used by secure blocks saved search widget)
 
     """
 
@@ -33,9 +36,9 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         self.assertEqual(count_user_searches, 0,
                          msg="Expected 0 searches for user, got %s! Searches"
                              " existed before test" % count_user_searches)
-        saved_search = add_or_activate_saved_search(self.user,
-                                                    'http://www.my.jobs/')
-        count_user_searches = SavedSearch.objects.filter(user=self.user).count()
+        add_or_activate_saved_search(self.user, 'http://www.my.jobs/')
+        count_user_searches = SavedSearch.objects.filter(
+            user=self.user).count()
         self.assertEqual(count_user_searches, 1,
                          msg="Expected 1 search, got %s! Search may not have"
                              "been created." % count_user_searches)
@@ -55,8 +58,7 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         self.assertEqual(count_user_searches, 1,
                          msg="Expected 1 searches for user, got %s! Factory may"
                              " not have created search" % count_user_searches)
-        saved_search = add_or_activate_saved_search(self.user,
-                                                    new_ss.url)
+        saved_search = add_or_activate_saved_search(self.user, new_ss.url)
         ss_reload = SavedSearch.objects.get()
         self.assertEqual(new_ss, ss_reload,
                          msg="There was a problem reloading saved search from"
@@ -90,13 +92,15 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         proper exception if no url is provided
 
         """
-        count_user_searches = SavedSearch.objects.filter(user=self.user).count()
+        count_user_searches = SavedSearch.objects.filter( user=self.user).count()
         self.assertEqual(count_user_searches, 0,
                          msg="Expected 0 searches for user, got %s! Searches"
                              " existed before test" % count_user_searches)
+
         with self.assertRaises(ValueError, msg="ValueError not raised despite "
                                                "invalid url provided!"):
             saved_search = add_or_activate_saved_search(self.user, '')
+
         count_user_searches = SavedSearch.objects.filter(user=self.user).count()
         self.assertEqual(count_user_searches, 0,
                          msg="Expected 0 searches, got %s! Search may have"
@@ -207,13 +211,27 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         email are provided to user_creation_retrieval
 
         """
-        with self.assertRaises(ValueError):
-            user_creation_retrieval(self.user, "",
-                                    msg="Error not thrown when email empty")
+        with self.assertRaises(ValueError,
+                               msg="Error not thrown when email empty"):
+            user_creation_retrieval(self.user, "")
 
-        with self.assertRaises(ValueError):
-            user_creation_retrieval(None, "test@email.com",
-                                    msg="Error not thrown when user is none")
+        with self.assertRaises(ValueError,
+                               msg="Error not thrown when user is none"):
+            user_creation_retrieval(None, "test@email.com")
+
+
+class SecureSavedSearchAPITestCase(MyJobsBase):
+    """
+    Test cases for the main API functions of the secure saved search API
+    (currently used by secure blocks saved search widget)
+
+    """
+
+    def setUp(self):
+        super(SecureSavedSearchAPITestCase, self).setUp()
+        self.domain = settings.SITE.domain
+        self.child_url = 'http://wwww.my.jobs/'
+        self.secure_ss_url = reverse('secure_saved_search')
 
     def test_api_works_with_authenticated_user(self):
         """
@@ -221,11 +239,17 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         authenticated users when a valid, unclaimed email is provided
 
         """
-        import ipdb; ipdb.set_trace()
         request_data = {'email':self.user.email,
-                        'url':'http://wwww.my.jobs/'}
-        response = self.client.post('/saved-search/api/secure-saved-search',
-                                    data=request_data)
+                        'url': self.child_url}
+        response = make_cors_request(self.client,
+                                     self.secure_ss_url,
+                                     json.dumps(request_data),
+                                     http_origin="http://%s" % self.domain)
+        response_msg = json.loads(response.content)
+        self.assertFalse(response_msg['error'],
+                         msg="Expected empty string, got %s! API returned "
+                             "error" % response_msg['error'])
+        self.assertTrue(response_msg['search_activated'])
 
     def test_api_returns_error_if_email_is_taken(self):
         """
@@ -233,31 +257,106 @@ class SecureSavedSearchAPITestCase(MyJobsBase):
         provided email is taken by another user
 
         """
+        taken_email = 'takenemail@email.com'
+        UserFactory(email=taken_email)
+        request_data = {'email':taken_email,
+                        'url': self.child_url}
+        response = make_cors_request(self.client,
+                                     self.secure_ss_url,
+                                     json.dumps(request_data),
+                                     http_origin="http://%s" % self.domain)
+        response_msg = json.loads(response.content)
+        self.assertTrue(response_msg['error'],
+                         msg="Expected an error but none raised! API returned"
+                             ": %s" % response_msg['error'])
+        self.assertFalse(response_msg['search_activated'])
 
     def test_api_works_with_unauthenticated_user(self):
         """
+        ##
+        TEMPORARY LOGIC
+        ##
+        Invert this when staff_required decorator is removed from API.
+        Currently, this tests that non staff (unauthenticated users) cannot use
+        the API, but in the future, it will verify that they -can- use the API
+        ##
+
         Verifies that the secure saved searched API works properly with
         unauthenticated users when a valid, unclaimed email is provided
 
         """
+        self.client.logout()
+        request_data = {'email':'a_new_email@email.com',
+                        'url': self.child_url}
+        response = make_cors_request(self.client,
+                                     self.secure_ss_url,
+                                     json.dumps(request_data),
+                                     http_origin="http://%s" % self.domain)
+        #DELETE BELOW LINE WHEN DEPLOYED TO PRODUCTION
+        self.assertEqual(response.status_code, 302)
+        # UNCOMMENT BELOW THIS LINE WHEN ACTIVATED IN PRODUCTION
+        #
+        # self.assertEqual(response.status_code, 200)
+        # response_msg = json.loads(response.content)
+        # self.assertTrue(response_msg['user_created'],
+        #                  msg="Expected user to be created, but it was not")
+        # self.assertTrue(response_msg['search_activated'],
+        #                  msg="Expected search to be activated, but it was not")
 
-    def test_api_uses_authenticated_users_email_if_not_provided(self):
-        """
-        Verifies that the secure saved searched API works properly and uses the
-        authenticated user's email address if none is provided to the API
 
-        """
-
-    def test_api_error_if_no_email_provided_and_user_unauthenticated(self):
+    def test_api_error_if_no_email_provided(self):
         """
         Verifies that the secure saved searched API returns an error when
         an unauthenticated user does not provide an email
 
         """
+        request_data = {'email':'',
+                        'url': self.child_url}
+        response = make_cors_request(self.client,
+                                     self.secure_ss_url,
+                                     json.dumps(request_data),
+                                     http_origin="http://%s" % self.domain)
+        response_msg = json.loads(response.content)
+        self.assertTrue(response_msg['error'],
+                         msg="Expected an error, got %s! API returned"
+                             ": " % response_msg['error'])
+        self.assertFalse(response_msg['search_activated'])
 
-    def test_api_requires_a_url_parameter(self):
+    def test_api_error_if_no_url_provided(self):
         """
         Verifies that the secure saved searched API returns an error if a
         url is not provided.
 
         """
+        request_data = {'email':'an_email@example.com',
+                        'url': ''}
+        response = make_cors_request(self.client,
+                                     self.secure_ss_url,
+                                     json.dumps(request_data),
+                                     http_origin="http://%s" % self.domain)
+        response_msg = json.loads(response.content)
+        self.assertTrue(response_msg['error'],
+                         msg="Expected an error, got %s! API returned"
+                             ": " % response_msg['error'])
+        self.assertFalse(response_msg['search_activated'])
+
+    def test_api_works_with_jsonp(self):
+        """
+        All of the other tests use CORS, this test is to verify that JSONP
+        is also supported
+
+        """
+        request_data = {'callback':'callmemaybe',
+                        'email':'an_email@example.com',
+                        'url': self.child_url}
+        response = make_jsonp_request(self.client,
+                                      self.secure_ss_url,
+                                      request_data,
+                                      http_referer="http://%s" % self.domain)
+        # Direct string compare for what will be returned. Return should
+        # always remain the same. Avoiding more complex string parsing.
+        cmpr = ('callmemaybe({"user_created": true, "search_activated": true,'
+                ' "error": ""})')
+        self.assertEqual(response.content, cmpr,
+                         msg="Invalid return from API call! Expected %s,"
+                             "got %s" % (cmpr, response.content))
