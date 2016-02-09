@@ -203,6 +203,10 @@ CELERY_ROUTES = {
         'queue': 'sendgrid',
         'routing_key': 'sendgrid.process_sendgrid_event',
     },
+    'tasks.clean_import_records': {
+        'queue': 'myjobs',
+        'routing_key': 'myjobs.clean_import_records'
+    }
 }
 CELERYBEAT_SCHEDULE = {
     'weekly-partner-library-update': {
@@ -241,6 +245,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'tasks.requeue_failures',
         'schedule': crontab(hour=7, minute=5)
     },
+    'tasks.clean_import_records': {
+        'task': 'tasks.clean_import_records',
+        'schedule': crontab(hour=4, minute=3)
+    }
 }
 
 
