@@ -79,13 +79,11 @@ function get_request_data () {
 }
 
 function create_saved_search() {
-  debugger;
   var request_data = get_request_data();
   cross_site_request(parent_site_url + '/saved-search/api/secure-saved-search',
                      request_data)
     .fail(function(return_data) { handle_error() })
     .done(function(return_data) {
-      debugger;
       if (return_data['error']) {
         handle_error(return_data['error'])
       }
@@ -129,7 +127,6 @@ function xhr_request(cross_site_url, ajax_data) {
 }
 
 function jsonp_request(cross_site_url, ajax_data) {
-  debugger;
   return $.ajax({
     url: cross_site_url,
     type: "GET",
