@@ -34,6 +34,7 @@ from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
 from mypartners.models import PartnerLibrary
 from mypartners.helpers import get_library_partners
 import import_jobs
+from import_jobs.models import ImportRecord
 from postajob.models import Job
 from registration.models import ActivationProfile
 from solr import helpers
@@ -889,8 +890,10 @@ def task_update_solr(jsid, **kwargs):
         import_jobs.update_solr(jsid, **kwargs)
         if kwargs.get('clear_cache', False):
             task_clear_bu_cache.delay(buid=int(jsid), countdown=1500)
+            ImportRecord(buid=int(jsid), success=True).save()
     except Exception as e:
         logging.error(traceback.format_exc(sys.exc_info()))
+        ImportRecord(buid=int(jsid), success=False).save()
         raise task_update_solr.retry(exc=e)
 
 
@@ -899,9 +902,11 @@ def task_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
         BusinessUnit.clear_cache(int(buid))
+        ImportRecord(buid=int(buid), success=True).save()
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
+        ImportRecord(buid=int(buid), success=False).save()
         raise task_etl_to_solr.retry(exc=e)
 
 
@@ -910,9 +915,11 @@ def task_priority_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
         BusinessUnit.clear_cache(int(buid))
+        ImportRecord(buid=int(buid), success=True).save()
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
+        ImportRecord(buid=int(buid), success=False).save()
         raise task_priority_etl_to_solr.retry(exc=e)
 
 
@@ -1119,3 +1126,9 @@ def requeue_failures(hours=8):
         task_etl_to_solr.delay(*ast.literal_eval(task.args))
         print "Requeuing task with args %s" % task.args
 
+
+@task(name='clean_import_records', ignore_result=True)
+def clean_import_records(days=31):
+    days_ago = datetime.now() - timedelta(days=days)
+    ImportRecord.objects.filter(date__lt=days_ago).delete()
+    
