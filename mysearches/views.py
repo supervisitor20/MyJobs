@@ -411,10 +411,10 @@ def user_creation_retrieval(auth_user, email):
     """
     Retrieve user account for adding saved searches. If the email belongs
     to a user and that user is not logged in, error is raised.
+
     :param auth_user: Currently logged in user
     :param email: Email attempting to be added
     :return: New or existing user account tied to provided email
-
     """
     if not auth_user:
         raise ValueError('No user provided. This field is required')
@@ -437,10 +437,10 @@ def add_or_activate_saved_search(user, url):
     """
     Attempt to add a new saved search to a user, or it is already exists,
     make sure it is active.
+
     :param user: User recieving search
     :param url: URL for search
     :return: The new or activated search
-
     """
     if not url:
         raise ValueError("No URL provided")
@@ -487,10 +487,10 @@ def add_or_activate_saved_search(user, url):
 def get_value_from_request(request, key):
     """
     Checks GET, POST and body for key, returns whatever is found or none
+
     :param request: request with get, post, or body
     :param key: key being searched for
     :return: value for key or none
-
     """
     request_body = {}
     try:
@@ -512,9 +512,9 @@ def secure_saved_search(request):
     """
     Handling for creation of a saved search via the saved search secure block
     widget.
+
     :param request: inbound request
     :return: Dictionary, to be converted by autoserialize decorator
-
     """
     allowed_methods = ['GET','POST']
     if request.method not in allowed_methods:
