@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseNotAllowed)
 from django.template import RequestContext
@@ -519,30 +520,23 @@ def secure_saved_search(request):
     if request.method not in allowed_methods:
         raise HttpResponseNotAllowed(allowed_methods)
 
-    auth_user = None
-    if request.user.is_authenticated():
-        auth_user = request.user
-
     response =  {'error':'', 'user_created': False, 'search_activated':False}
     email_in = get_value_from_request(request, 'email')
-    if not email_in and not auth_user:
-        response['errors'] = 'No email provided. This field is required'
-        return response
 
     try:
-        new_search_account, user_created = user_creation_retrieval(auth_user,
+        new_search_account, user_created = user_creation_retrieval(request.user,
                                                                    email_in)
     except ValueError as ex:
         response['error'] = ex.message
+        return response
+    except ValidationError:
+        response['error'] = "Invalid email."
         return response
 
     response['user_created'] = user_created
 
     url = get_value_from_request(request, 'url')
-    if not url:
-        response['error'] = 'No URL provided.'
 
-    url = urllib.unquote(url)
     try:
         saved_search = add_or_activate_saved_search(new_search_account, url)
     except ValueError as ex:

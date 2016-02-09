@@ -8,6 +8,13 @@ var blocks_widget_div;
 //global iables for interacting with secure blocks template assigned values
 var email_input;
 
+$('#saved-search-email').bind('keypress', function(e) {
+	if(e.keyCode==13){
+    e.preventDefault();
+    blocks_widget_div = $(this).closest("[data-secure-block-id]");
+    save_search();
+	}
+});
 
 $('#saved-search-btn').click(function(e) {
   e.preventDefault();
@@ -16,7 +23,7 @@ $('#saved-search-btn').click(function(e) {
 });
 
 //borrowed from gulp/src/util/validateEmail.js
-function validateEmail(email) {
+function validate_email(email) {
   var re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
   return re.test(email);
 }
@@ -41,7 +48,7 @@ function save_search() {
   // Otherwise, uses the currently provided user to create a saved search.
   email_input = $('#saved-search-email').val() || existing_user_email;
   $(blocks_widget_div).data("current-input", email_input);
-  if ($('#saved-search-email') & !validate_email(email_input)) {
+  if ($('#saved-search-email') && !validate_email(email_input)) {
     handle_error("Enter a valid email (user@example.com)");
   }
   else {
