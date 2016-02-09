@@ -1047,6 +1047,9 @@ def api_get_specific_user(request, user_id=0):
     """
     ctx = {}
 
+    from django.db import connection
+    print len(connection.queries)
+
     company = get_company_or_404(request)
 
     user = User.objects.filter(id=user_id)
@@ -1071,27 +1074,29 @@ def api_get_specific_user(request, user_id=0):
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
     # Return user
-    ctx[user[0].id] = {}
+    ctx[user_id] = {}
 
     # Email
-    ctx[user[0].id]["email"] = user[0].email
+    ctx[user_id]["email"] = user[0].email
 
     # Available Roles (constrained by company)
-    ctx[user[0].id]["roles"] = {}
+    ctx[user_id]["roles"] = {}
     available_roles = Role.objects.filter(company=company)
-    ctx[user[0].id]["roles"]["available"] = serializers.serialize(
+    ctx[user_id]["roles"]["available"] = serializers.serialize(
         "json",
         available_roles)
 
     # Assigned Roles
     roles_assigned_to_user = user[0].roles.filter(company=company)
-    ctx[user[0].id]["roles"]["assigned"] = serializers.serialize(
+    ctx[user_id]["roles"]["assigned"] = serializers.serialize(
         "json",
         roles_assigned_to_user,
         fields=('name'))
 
     # Status
-    ctx[user[0].id]["status"] = user[0].is_verified
+    ctx[user_id]["status"] = user[0].is_verified
+
+    print len(connection.queries)
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
