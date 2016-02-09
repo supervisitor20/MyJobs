@@ -18,6 +18,8 @@
     <meta charset="utf-8">
     <meta name="msvalidate.01" content="B9E4E5CC00BB58B097061E7DBFC6FA6B" />
 
+    {% newrelic_browser_monitoring %}
+
     {% block directseo_css %}{% include "css.html" %}{% endblock %}
 
     {# Meta imports must come AFTER the css.html include. Otherwise some vital CSS gets overwritten. #}
