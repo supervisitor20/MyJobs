@@ -810,7 +810,7 @@ def api_create_role(request):
                                 content_type="application/json")
 
         # User objects have roles
-        users = request.POST.getlist("assigned_users[]", [])
+        selected_users = request.POST.getlist("assigned_users[]", [])
 
         # Create Role
         new_role = Role.objects.create(name=role_name, company_id=company.id)
@@ -819,12 +819,13 @@ def api_create_role(request):
         new_role.activities.add(*activity_ids)
 
         # Add role to relevant users
-        if users:
-            for i, user in enumerate(users):
-                user_object = User.objects.filter(email=user)
-                user_object[0].roles.add(new_role.id)
-                # Invite user
-                user_object[0].send_invite(user_object[0].email, company, new_role.name)
+        users = User.objects.filter(email__in=selected_users)
+
+        for user in users:
+            # Add role to user
+            user.roles.add(new_role.id)
+            # Invite user
+            user.send_invite(user.email, company, new_role.name)
 
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx), content_type="application/json")
@@ -1145,9 +1146,8 @@ def api_create_user(request):
 
         # Send one invitation per new role. This will handle creating the user
         # if one doesn't exist.
-        if request.user.can(company, "create user"):
-            for role in set(new_roles).difference(existing_roles):
-                request.user.send_invite(user_email, company, role.name)
+        for role in set(new_roles).difference(existing_roles):
+            request.user.send_invite(user_email, company, role.name)
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
