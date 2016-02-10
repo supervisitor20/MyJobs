@@ -28,3 +28,5 @@ MIDDLEWARE_CLASSES = global_settings.MIDDLEWARE_CLASSES + (
     'redirect.middleware.ExcludedViewSourceMiddleware',
     'redirect.middleware.MyJobsRedirectMiddleware',
 )
+
+SESSION_SAVE_EVERY_REQUEST = False
