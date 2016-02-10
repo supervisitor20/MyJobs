@@ -1444,13 +1444,6 @@ class CompanyUser(models.Model):
         self.save()
 
 
-@invitation_context.register(CompanyUser)
-def company_user_invitation_context(company_user):
-    """Returns a message and the company user."""
-    return {"message": " as a(n) Admin for %s." % (company_user.company),
-            "company_user": company_user}
-
-
 @receiver(post_delete, sender=CompanyUser,
           dispatch_uid='post_delete_companyuser_signal')
 def remove_user_from_group(sender, instance, **kwargs):
