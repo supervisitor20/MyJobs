@@ -11,20 +11,18 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-8 col-xs-12">
       <form action="" method="post">
         {% csrf_token %}
-        <div class="col-md-8">
-          {{ form }}
-        </div>
+        {% include 'includes/form-error-highlight.html' %}
         <div class="row">
-          <div class="col-md-8 center-text">
-            <input type="submit" class="btn primary" value="Request Access">
+          <div class="col-md-offset-4 col-md-8 col-xs-12">
+            <input type="submit" class="button primary" value="Request Access">
           </div>
         </div>
       </form>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 col-xs-12">
       <div class="sidebar">
         <h2 class="top">Tips</h2>
         Don't forget to write down your access code once it's generated.
@@ -33,7 +31,7 @@
   </div>
   {% if access_code %}
     <div class="row">
-      <div class="col-md-8">
+      <div class="col-md-8 col-xs-12 ">
         <p class="text-left">
           Your request has been submitted. A representative will be in contact 
           with your company shortly.
