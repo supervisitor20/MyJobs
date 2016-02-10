@@ -12,6 +12,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
 from jira.client import JIRA
+from mock import Mock
 
 from myjobs.models import User, EmailLog, FAQ, CompanyAccessRequest
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
@@ -28,6 +29,7 @@ from registration import signals as custom_signals
 from registration.models import ActivationProfile
 from secrets import options, my_agent_auth
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
+import tasks
 from tasks import process_batch_events
 
 
@@ -1007,15 +1009,20 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(mail.outbox[0].subject,
                          'Account Activation for my.jobs')
 
-    def test_request_access(self):
+    def test_request_company_access(self):
         """
         Requesting access for a company should result in a access code being
         displayed on the screen. Requesting access for a non-existent company
         is NOT an error condition.
 
         """
+        # the normal task creates a jira ticket, which we don't want to do
+        # while testing
+        tasks.create_jira_ticket.delay = Mock(return_value='PD-99999')
+
         response = self.client.post(
-            path=reverse("request_access"), data={"company_name": "Foo Inc"})
+            path=reverse("request_company_access"),
+            data={"company_name": "Foo Inc"})
         last_request = CompanyAccessRequest.objects.last()
         self.assertTrue(
             last_request.check_access_code(response.context['access_code']))

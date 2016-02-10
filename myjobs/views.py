@@ -2,6 +2,7 @@ import base64
 import datetime
 import json
 import logging
+from multiprocessing import Process
 import urllib2
 from urlparse import urlparse
 import uuid
@@ -35,7 +36,8 @@ from myprofile.forms import (InitialNameForm, InitialEducationForm,
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from registration.models import Invitation
-from tasks import process_sendgrid_event
+from tasks import (process_sendgrid_event, create_jira_ticket,
+                   assign_ticket_to_request)
 from universal.helpers import get_company_or_404
 
 logger = logging.getLogger('__name__')
@@ -1365,20 +1367,57 @@ def api_delete_user(request, user_id=0):
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
-def request_access(request):
+def request_company_access(request):
+    """
+    User-Facing view for a user to request access to a company.
+
+    Methods:
+        :GET: Shows the request form, which only requires that a company name
+              be entered. That company need not map to an actual company.
+        :POST: Creates a CompanyAccessRequest, spawns a task which creates a
+               JIRA ticket to track the request, and displays the unhashed
+               version of the access code to the user.
+    """
+    if request.user.is_anonymous():
+        return HttpResponseRedirect(
+            reverse('login') + "?next=/request-company-access")
+
     ctx = {}
     if request.method == 'POST':
         form = CompanyAccessRequestForm(request.POST)
         if form.is_valid():
             company_name = form.cleaned_data['company_name']
-            _, access_code = CompanyAccessRequest.objects.create_request(
+            access_request, code = CompanyAccessRequest.objects.create_request(
                 company_name, request.user)
-            ctx['access_code'] = access_code
+            ctx['access_code'] = code
+
+            # create a jira ticket
+            summary = "Company access requested"
+            summary = "company admin request - %s - %s" % (
+                access_request.company_name, access_request.requested_by.email)
+            description = ("{user} has requested admin access for the company "
+                           "{company}. Please contact {company} and obtain the "
+                           "verification code provided to {user}. You may "
+                           "then enter this code in the admin: {admin}")
+            description = description.format(
+                user=access_request.requested_by.email,
+                company=access_request.company_name,
+                admin="https://secure.my.jobs/admin/company/access_request")
+
+            # asynchronously create a jira ticket and assign it to the access
+            # request so that the user doesn't have to wait on a response
+            key = create_jira_ticket.delay(
+                summary, description,
+                project="MEMBERSUP",
+                watcher_group="admin-request-watchers",
+                components=["admin request"])
+            # asynchronously tie that ckreated ticket back to the access
+            # request
+            assign_ticket_to_request.delay(key, access_request)
     else:
         form = CompanyAccessRequestForm()
 
     ctx['form'] = form
 
     return render_to_response(
-        'myjobs/request_access.html', ctx,
-        RequestContext(request))
+        'myjobs/request_company_access.html', ctx, RequestContext(request))

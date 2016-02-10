@@ -74,5 +74,6 @@ urlpatterns = patterns(
     url(r'^manage-users/api/activities/$',
         'api_get_activities',
         name='api_get_activities'),
-    url(r'^request-access/$', 'request_access', name='request_access'),
+    url(r'^request-company-access/$',
+        'request_company_access', name='request_company_access'),
 )

@@ -928,7 +928,9 @@ class CompanyAccessRequest(models.Model):
     role, and is a means to grant them access to that company securely.
 
     """
-    company_name = models.CharField('Company Name', max_length=200)
+    company_name = models.CharField('Company Name', max_length=200,
+                                    help_text="Name of the company you'd like "
+                                              "access to.")
     access_code = models.CharField('Access Code', max_length=32)
     requested_by = models.ForeignKey(
         'myjobs.User', related_name='requested_by')

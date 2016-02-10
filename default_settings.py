@@ -203,6 +203,14 @@ CELERY_ROUTES = {
         'queue': 'sendgrid',
         'routing_key': 'sendgrid.process_sendgrid_event',
     },
+    'tasks.create_jira_ticket': {
+        'queue': 'myjobs',
+        'routing_key': 'myjobs.create_jira_ticket',
+    },
+    'tasks.assign_ticket_to_request': {
+        'queue': 'myjobs',
+        'routing_key': 'myjobs.assign_ticket_to_request',
+    },
     'tasks.clean_import_records': {
         'queue': 'myjobs',
         'routing_key': 'myjobs.clean_import_records'
