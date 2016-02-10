@@ -95,7 +95,20 @@ class BaseJobForm(RequestForm):
         if apply_link:
             URLValidator(apply_link)
         return apply_link
+        
+        
+    def clean_post_to(self):
+        """
+        If Site has been chosen as the Post To, make sure a site has been chosen.
 
+        """
+        post_to = self.cleaned_data.get('post_to')
+        site_packages_to = self.cleaned_data.get('site_packages_to')
+        if post_to == 'site':
+            if not site_packages_to:
+                msg = 'You must choose at least one site to post to.'
+                self._errors['post_to'] = self.error_class([msg])
+                raise ValidationError(msg)
 
     def clean(self):
         apply_info = self.cleaned_data.get('apply_info')
