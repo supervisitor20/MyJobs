@@ -127,7 +127,8 @@ def create_jira_ticket(summary, description, **kwargs):
 
     watchers = kwargs.setdefault('watchers', set())
     if 'watcher_group' in kwargs:
-        watchers += jira.group_members(kwargs['watcher_group']).keys()
+        watchers = watchers.union(
+            jira.group_members(kwargs['watcher_group']).keys())
 
     if assignee == reporter:
         raise ValueError("Assignee and reporter must be different.")

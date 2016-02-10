@@ -4,7 +4,7 @@ import json
 import logging
 from multiprocessing import Process
 import urllib2
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 import uuid
 
 from myreports.decorators import restrict_to_staff
@@ -1324,11 +1324,19 @@ def request_company_access(request):
             description = ("{user} has requested admin access for the company "
                            "{company}. Please contact {company} and obtain the "
                            "verification code provided to {user}. You may "
-                           "then enter this code in the admin: {admin}")
+                           "then enter this code in the admin: {url}")
+
+            # base url will already have a trailing slash
+            url = "{base_url}{pk}/".format(
+                base_url=urljoin(
+                    settings.ABSOLUTE_URL,
+                    reverse("admin:myjobs_companyaccessrequest_changelist")),
+                pk=access_request.pk)
+
             description = description.format(
                 user=access_request.requested_by.email,
                 company=access_request.company_name,
-                admin="https://secure.my.jobs/admin/company/access_request")
+                url=url)
 
             # asynchronously create a jira ticket and assign it to the access
             # request so that the user doesn't have to wait on a response
