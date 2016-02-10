@@ -187,7 +187,7 @@ pseudoxml:
 
 ghpages:
 	git checkout gh-pages
-	rm -rf build _sources _static _modules
+	rm -rf build _sources _static _modules _images
 	git checkout quality-control $(GH_PAGES_SOURCES)
 	git reset HEAD
 	cd doc && make html
