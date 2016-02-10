@@ -1,6 +1,7 @@
 /* global $ */
 
 import React from 'react';
+import _ from 'lodash-compat';
 import Button from 'react-bootstrap/lib/Button';
 import {Link} from 'react-router';
 
@@ -63,19 +64,17 @@ class User extends React.Component {
         });
       }.bind(this));
     } else {
+      // action === 'Add'
       $.get('/manage-users/api/roles/', function addUser(results) {
         const availableRoles = [];
-        for (const roleId in results) {
-          if (results.hasOwnProperty(roleId)) {
-            availableRoles.push(
-              {
-                'id': roleId,
-                'name': results[roleId].role.name,
-              }
-            );
-          }
-        }
-
+        _.forOwn(results, function buildListOfAvailableRoles(role) {
+          availableRoles.push(
+            {
+              'id': role.role_id,
+              'name': role.role_name,
+            }
+          );
+        });
         this.setState({
           userEmail: '',
           userEmailHelp: '',

@@ -681,14 +681,15 @@ class CompanyForm(SeoSiteReverseForm):
         if instance and instance.first_invitation:
             text = "Invitation sent to %s." % (
                 instance.first_invitation.invitee_email)
-            self.fields['admin_email'].initial = text
-            self.fields['admin_email'].widget = forms.widgets.EmailInput(
-                attrs={"style": "border: 0; "
-                                "background: 'transparent'; "
-                                "width: 300px;",
-                       "readonly": True,
-                       "onfocus": "this.blur()"
-                       })
+            self.fields['admin_email'] = forms.fields.CharField(
+                initial=text,
+                widget=forms.widgets.TextInput(
+                    attrs={"style": "border: 0; "
+                                    "background: 'transparent'; "
+                                    "width: 300px;",
+                           "readonly": True,
+                           "onfocus": "this.blur()"
+                           }))
 
 
 class SpecialCommitmentForm(SeoSiteReverseForm):

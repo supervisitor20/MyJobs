@@ -63,3 +63,10 @@ class RoleFactory(factory.django.DjangoModelFactory):
 
         activities = extracted or []
         self.activities.add(*activities)
+
+class CompanyAccessRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = 'myjobs.CompanyAccessRequest'
+
+    company_name = factory.Sequence(lambda n: 'Test Company %s' % n)
+    requested_by = factory.SubFactory('myjobs.tests.factories.UserFactory')

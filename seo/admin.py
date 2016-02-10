@@ -1180,7 +1180,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
     def save_model(self, request, instance, form, change):
         invitee_email = form.cleaned_data.get('admin_email')
-        if invitee_email:
+        if not invitee_email.startswith("Invitation sent to"):
             request.user.send_invite(invitee_email, instance, "Admin")
 
         super(CompanyAdmin, self).save_model(request, instance, form, change)
