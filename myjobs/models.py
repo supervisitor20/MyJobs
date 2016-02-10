@@ -914,7 +914,8 @@ class CompanyAccessRequestManager(models.Manager):
     def create_request(self, company_name, requested_by):
         access_request = self.create(
             company_name=company_name, requested_by=requested_by)
-        access_code = get_random_string(8)
+        # generate a hexadecimal access code
+        access_code = get_random_string(8, allowed_chars='ABCDEF1234567890')
         access_request.access_code = hashlib.md5(access_code).hexdigest()
         access_request.save()
         return access_request, access_code
