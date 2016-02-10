@@ -231,13 +231,25 @@ class UserAdminForm(ModelForm):
         return instance
 
 class CompanyAccessRequestForm(ModelForm):
+    """Form used by users to request access to a company."""
+
     class Meta:
         model = CompanyAccessRequest
         fields = ('company_name',)
 
 class CompanyAccessRequestApprovalForm(ModelForm):
+    """
+    Form used by staff members to approve access requests by users.
+
+    Adding custom forms to Django is prohibitively difficult. As such, we
+    instead use a model form, which gives us all of the navigation niceties,
+    but provide our own fields and custom behavior for submission.
+
+    """
+
     class Meta:
         model = CompanyAccessRequest
+        # Hide all model fields
         fields = ()
 
     company = AutoCompleteSelectField('companies')

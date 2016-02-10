@@ -75,27 +75,38 @@ def company_name(company):
 
 
 class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
+    """
+    This admin page is used by staff to authorize access to a company.
+
+    If submitted successfully, the user who submitted the request is assigned
+    the "Admin" role for the company selected by the staff member filling out
+    this form.
+    """
 
     form = CompanyAccessRequestApprovalForm
 
     def save_model(self, request, access_request, form, change):
+        # make "Saved and Continue" act like "Save"
+        request.POST.pop('_continue', None)
+
         company = form.cleaned_data['company']
 
+        # update access request
         access_request.authorized_by = request.user
         access_request.authorized_on = datetime.datetime.now(tz=pytz.UTC)
+        access_request.save()
 
+        # assign Admin role to requesting user
         access_request.requested_by.roles.add(
             company.role_set.get(name="Admin"))
 
-        # make "Saved and Continue" act like "Save"
-        request.POST.pop('_continue', None)
-        access_request.save()
-
     def queryset(self, request):
         qs = super(CompanyAccessRequestApprovalAdmin, self).queryset(request)
+        # only show access requests which haven't already been authorized
         return qs.filter(authorized_on__isnull=True)
 
     def has_add_permission(self, request):
+        """Hide the add button"""
         return False
 
 
