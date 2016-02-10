@@ -17,3 +17,4 @@ The saved search API allows users and saved searches to be created from a given 
   contributing/index
   api/index
   import_jobs/index
+  deployment/checklist
