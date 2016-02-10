@@ -14,5 +14,8 @@ describe('ValidateEmail', () => {
     expect(validateEmail('monkey@monkey.net')).toEqual(true);
     expect(validateEmail('monkey@monkey.biz')).toEqual(true);
     expect(validateEmail('monkey@monkey.abc')).toEqual(true);
+    expect(validateEmail('dog@DOG.com')).toEqual(true);
+    expect(validateEmail('DOG@dog.com')).toEqual(true);
+    expect(validateEmail('dog@dog.COM')).toEqual(true);
   });
 });
