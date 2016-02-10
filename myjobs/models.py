@@ -35,13 +35,6 @@ STOP_SENDING = ['unsubscribe', 'spamreport']
 DEACTIVE_TYPES_AND_NONE = ['none'] + BAD_EMAIL + STOP_SENDING
 
 
-@invitation_context.register(Group)
-def group_invitation_context(group):
-    return {"message": " in order to help administer their recruitment and "
-                       "outreach tools.",
-            "group": group}
-
-
 class CustomUserManager(BaseUserManager):
     # Characters used for passwor generation with ambiguous ones ignored.
     # string.strip() doesn't play nicely with quote characters...
