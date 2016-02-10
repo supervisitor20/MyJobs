@@ -3073,6 +3073,161 @@ div > .help-block{
     font-style: italic;
 }
 
+/* transitional fix to reformat forms with BS3 */
+#posting-nav {
+    border-bottom: 1px solid #999;
+    margin-bottom: 20px;
+}
+
+#posting-nav ul {
+    margin: 20px 0 0;
+}
+
+#posting-nav ul li {
+    border-radius: 3px 3px 0 0;
+    margin: 0 10px;
+    padding: 5px 10px;
+    border: 1px solid #999;
+    border-bottom: none;
+    background: #E7E7E7;
+    display: inline-block;
+}
+
+#posting-nav ul li a {
+    color: #444545;
+}
+
+#posting-nav ul li a:hover {
+    color: #444545;
+}
+
+fieldset:nth-child(n+2) {
+    margin-top: 30px;
+}
+
+.row:nth-child(n+2) {
+    margin-top: 20px;
+}
+
+.row .col-md-4 label {
+    line-height: 33px;
+    color: #676767;
+    font-size: 10pt;
+}
+
+.row .col-md-8 input [type='text'] + .help-block,
+.row .col-md-8 .help-block{
+    width: auto;
+    margin: 5px 0 0;
+    color: #676767;
+    font-size: 10pt;
+    font-style: normal;
+}
+
+.row .col-md-8 input,
+.row .col-md-8 textarea {
+    width: 100%;
+    border-radius: 3px;
+    border: 1px solid #999;
+    height: 33px;
+    line-height: 33px;
+    padding: 0 5px;
+}
+
+.row .col-md-8 input[type='radio'] {
+    width: auto;
+    height: auto;
+    margin-right: 5px;
+}
+
+.row .col-md-8 ul li label {
+    font-weight: normal;
+}
+
+/*This element should be replaced with a stylable 
+js equivalent when converting to React, later.*/
+.row .col-md-4 label {
+    text-align: right;
+    display: block;
+}
+.row .col-md-8 select { 
+height: 33px;
+    line-height: 33px;
+    font-size: 14pt;
+    margin: 0;
+    width: 100%;
+    vertical-align: top;
+    border: 1px solid #999;
+}
+
+.row .col-md-8 .fsm select[multiple] {
+    height: 200px;
+    border-radius: 3px;
+}
+
+.row .col-md-8 .fsm .fsm-filter {
+    border-radius: 3px 3px 0 0;
+    border: 1px solid #999;
+    border-bottom: none;
+}
+
+.row .col-md-8 .fsm .fsm-filter + select[multiple] {
+    /*The height of the filter, subracted*/
+    height: 158px;
+    border-radius: 0 0 3px 3px;
+}
+
+.row .col-md-8 textarea {
+    resize: vertical;
+}
+
+.actions.row .col-md-8 .button {
+    background-color: #E7E7E7;
+    border-radius: 3px;
+    padding: 8px;
+    min-width: 64px;
+    color: #444545;
+    display: inline-block;
+    border: none;
+}
+
+.actions.row .col-md-8 .button:not(:last-child) {
+    margin-right: 10px;
+}
+
+.actions.row .col-md-8 .button:hover {
+    color: #444545;
+}
+
+.actions.row .col-md-8 .button.primary {
+    background-color: #444545;
+    color: #fff;
+}
+
+.actions.row .col-md-8 .button:hover {
+    color: #fff;
+}
+
+.row .col-md-8 .card-wrapper {
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid #999;
+    border-radius: 3px;
+}
+
+.row .col-md-8 #job-location-display .wrapper-header, 
+.row .col-md-8 #job-location-display .wrapper-footer {
+    border: none;
+}
+
+.row .col-md-8 #job-location-display .product-card:nth-child(n+2) {
+    border-top: 1px solid #999;
+    text-align: left;
+    padding: 10px;
+}
+
+/* end transitional fix */
+
 input[type='checkbox'] + .help-block {
     display:inline;
     padding-left: 5px;

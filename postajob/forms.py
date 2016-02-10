@@ -104,7 +104,7 @@ class BaseJobForm(RequestForm):
 
         # Require one set of apply instructions.
         if not any([apply_info, apply_link, apply_email]):
-            msg = 'You must supply some type of appliction information.'
+            msg = 'You must supply some type of application information.'
             self._errors['apply_type'] = self.error_class([msg])
             raise ValidationError(msg)
         # Allow only one set of apply instructions.
