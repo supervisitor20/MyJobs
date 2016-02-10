@@ -4,7 +4,19 @@ from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
 from mypartners.models import (Partner, Contact, CommonEmailDomain,
                                OutreachEmailDomain, OutreachEmailAddress)
-from mydashboard.admin import company_user_name
+
+
+def company_user_name(company):
+    """
+    Returns a string ot be used next to each company that displays how many
+    admins belong to that company, or a warning if there aren't any.
+
+    """
+    template = "{name} ({count} users){warning}"
+    count = company.admins.count()
+    warning = "" if count else " **Might be a dupliate**"
+
+    return template.format(name=company.name, count=count, warning=warning)
 
 
 class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
