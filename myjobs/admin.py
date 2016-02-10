@@ -86,6 +86,9 @@ class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
 
         access_request.requested_by.roles.add(
             company.role_set.get(name="Admin"))
+
+        # make "Saved and Continue" act like "Save"
+        request.POST.pop('_continue', None)
         access_request.save()
 
     def queryset(self, request):
