@@ -611,7 +611,8 @@ def manage_users(request):
         "company": company
         }
 
-    return render_to_response('manageusers/index.html', ctx,
+    return render_to_response('manageusers/index.html',
+                              ctx,
                               RequestContext(request))
 
 
@@ -621,11 +622,27 @@ def api_get_activities(request):
     GET /manage-users/api/activities/
     Retrieves all activities
     """
-    activities = Activity.objects.all()
-    return HttpResponse(serializers.serialize("json", activities,
-                                              fields=('name',
-                                                      'description',
-                                                      'app_access')))
+
+    company = get_company_or_404(request)
+
+    activities = (Activity
+                 .objects
+                 .select_related('app_access')
+                 .filter(app_access__in = company.app_access.all()))
+
+    json_res = []
+    for activity in activities:
+        json_obj = dict(
+            activity_id = activity.id,
+            activity_name = activity.name,
+            activity_description = activity.description,
+            app_access_id = activity.app_access.id,
+            app_access_name = activity.app_access.name,
+        )
+        json_res.append(json_obj)
+
+    return HttpResponse(json.dumps(json_res),
+                        mimetype='application/json')
 
 
 @requires("read role")
@@ -634,62 +651,87 @@ def api_get_roles(request):
     GET /manage-users/api/roles/
     Retrieves all roles associated with a company
     """
-    ctx = {}
 
     company = get_company_or_404(request)
 
+    # Get all roles for this company
     roles = Role.objects.filter(company=company)
+
+    # Get all apps this company can access
+    app_access_for_company = company.app_access.all()
+
+    # Retrieve all available_activities for this company
+    available_activities = (Activity
+                            .objects
+                            .filter(app_access__in = app_access_for_company))
+
+    # Retrieve users that can be assigned to these roles. In other words,
+    # users already assigned to roles associated with this company
+    available_users = []
+    for user in User.objects.filter(roles__in=roles).distinct():
+        user_more = {}
+        user_more['id'] = user.id
+        user_more['name'] = user.email
+        available_users.append(user_more)
+
+    # Loop through and format all assigned roles_formatted
+    roles_formatted = []
     for role in roles:
         role_id = role.id
+        role_name = role.name
 
-        ctx[role_id] = {}
+        # Build list of apps this company can access
+        # For each app, build list of:
+        #   app_access_name
+        #   available_activities
+        #   assigned_activities
+        activities = []
 
-        ctx[role_id]['role'] = {}
-        ctx[role_id]['role']['id'] = role.id
-        ctx[role_id]['role']['name'] = role.name
+        for app_access in app_access_for_company:
+            activity = {}
+            activity['app_access_name'] = app_access.name
 
-        ctx[role_id]['activities'] = {}
-        # This company has access to various apps by means of multiple
-        # app_access_id's
-        # Retrieve all activities with these app_access_id's
-        available_activities = Activity.objects.filter(
-            app_access__in=company.app_access.all())
-        ctx[role_id]['activities']['available'] = serializers.serialize(
-            "json",
-            available_activities,
-            fields=('name', 'description', 'app_access'))
-        # Retrieve all activities assigned to this role
-        assigned_activities = role.activities.all()
-        ctx[role_id]['activities']['assigned'] = serializers.serialize(
-            "json",
-            assigned_activities,
-            fields=('name', 'description', 'app_access'))
+            activity['available_activities'] = []
+            # Loop through all activities associated with this particular app_access
+            for available_activity in available_activities.filter(app_access=app_access.id):
+                available_activity_more = {}
+                available_activity_more['id'] = available_activity.id
+                available_activity_more['name'] = available_activity.name
+                activity['available_activities'].append(available_activity_more)
 
-        # Retrieve users already assigned to this role
-        users_assigned = User.objects.filter(roles__id=role_id)
-        ctx[role_id]['users'] = {}
-        ctx[role_id]['users']['assigned'] = serializers.serialize(
-            "json",
-            users_assigned,
-            fields=('email'))
+            activity['assigned_activities'] = []
+            for assigned_activity in role.activities.filter(app_access=app_access.id):
+                assigned_activity_more = {}
+                assigned_activity_more['id'] = assigned_activity.id
+                assigned_activity_more['name'] = assigned_activity.name
+                activity['assigned_activities'].append(assigned_activity_more)
 
-        # Retrieve users that can be assigned to this role
-        # This is simply a list of all users already assigned to roles
-        # associated with this company
-        users_available = []
-        roles = Role.objects.filter(company=company)
-        for role in roles:
-            role_id_temp = role.id
-            users = User.objects.filter(roles__id=role_id_temp)
-            for user in users:
-                if user not in users_available:
-                    users_available.append(user)
-        ctx[role_id]['users']['available'] = serializers.serialize(
-            "json",
-            users_available,
-            fields=('email'))
+            activities.append(activity)
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+        # Retrieve users already assigned to this particular role
+        assigned_users = []
+        # These are users with this role
+        users = User.objects.filter(roles__id=role_id).distinct()
+        for user in users:
+            user_more = {}
+            user_more['id'] = user.id
+            user_more['name'] = user.email
+            assigned_users.append(user_more)
+
+        # Assemble role object
+        role_formatted = dict(
+            role_id = int(role_id),
+            role_name = role_name,
+            available_users = available_users,
+            assigned_users = assigned_users,
+            activities = activities,
+        )
+
+        # Add formatted role to growing list
+        roles_formatted.append(role_formatted)
+
+    return HttpResponse(json.dumps(roles_formatted),
+                        mimetype='application/json')
 
 
 @requires('read role')
@@ -704,60 +746,81 @@ def api_get_specific_role(request, role_id=0):
     if Role.objects.filter(id=role_id).exists() is False:
         ctx["success"] = "false"
         ctx["message"] = "Role does not exist."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
     company = get_company_or_404(request)
 
-    ctx[role_id] = {}
+    role_edited = Role.objects.get(pk=role_id)
+    role_name = role_edited.name
 
-    role = Role.objects.filter(id=role_id).filter(company=company)
-
-    ctx[role_id]['role'] = {}
-    ctx[role_id]['role']['id'] = role[0].id
-    ctx[role_id]['role']['name'] = role[0].name
-
-    ctx[role_id]['activities'] = {}
-    # This company has access to various apps by means of multiple
-    # app_access_id's
-    # Retrieve all activities with these app_access_id's
-    available_activities = Activity.objects.filter(
-        app_access__in=company.app_access.all())
-    ctx[role_id]['activities']['available'] = serializers.serialize(
-        "json",
-        available_activities,
-        fields=('name', 'description', 'app_access'))
-    # Retrieve all activities assigned to this role
-    assigned_activities = role[0].activities.all()
-    ctx[role_id]['activities']['assigned'] = serializers.serialize(
-        "json",
-        assigned_activities,
-        fields=('name', 'description', 'app_access'))
-
-    # Retrieve users already assigned to this role
-    users_assigned = User.objects.filter(roles__id=role_id)
-    ctx[role_id]['users'] = {}
-    ctx[role_id]['users']['assigned'] = serializers.serialize(
-        "json",
-        users_assigned,
-        fields=('email'))
-
-    # Retrieve users that can be assigned to this role
-    # This is simply a list of all users already assigned to roles associated
-    # with this company
-    users_available = []
+    # Retrieve users that can be assigned to this role. In other words, users
+    # already assigned to roles associated with this company
+    available_users_as_queries = []
     roles = Role.objects.filter(company=company)
     for role in roles:
         role_id_temp = role.id
-        users = User.objects.filter(roles__id=role_id_temp)
+        users = User.objects.filter(roles__id=role_id_temp).distinct()
         for user in users:
-            if user not in users_available:
-                users_available.append(user)
-    ctx[role_id]['users']['available'] = serializers.serialize(
-        "json",
-        users_available,
-        fields=('email'))
+            # Make sure available_users is distinct
+            if user not in available_users_as_queries:
+                available_users_as_queries.append(user)
+    # available_users should be distinct list of user queries
+    available_users = []
+    for user in available_users_as_queries:
+        user_more = {}
+        user_more['id'] = user.id
+        user_more['name'] = user.email
+        available_users.append(user_more)
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    # Retrieve users already assigned to this particular role
+    assigned_users = []
+    users = User.objects.filter(roles__id=role_id).distinct()
+    for user in users:
+        user_more = {}
+        user_more['id'] = user.id
+        user_more['name'] = user.email
+        assigned_users.append(user_more)
+
+    # Build list of apps this company can access
+    # For each app, build list of:
+    #   app_access_name
+    #   available_activities
+    #   assigned_activities
+    activities = []
+    # Retrieve all available_activities for this company
+    available_activities = Activity.objects.filter(app_access__in=company.app_access.all())
+
+    for app_access in company.app_access.all():
+        activity = {}
+        activity['app_access_name'] = app_access.name
+
+        activity['available_activities'] = []
+        for available_activity in available_activities.filter(app_access=app_access.id):
+            available_activity_more = {}
+            available_activity_more['id'] = available_activity.id
+            available_activity_more['name'] = available_activity.name
+            activity['available_activities'].append(available_activity_more)
+
+        activity['assigned_activities'] = []
+        for assigned_activity in role_edited.activities.filter(app_access=app_access.id):
+            assigned_activity_more = {}
+            assigned_activity_more['id'] = assigned_activity.id
+            assigned_activity_more['name'] = assigned_activity.name
+            activity['assigned_activities'].append(assigned_activity_more)
+
+        activities.append(activity)
+
+    json_obj = dict(
+        role_id = int(role_id),
+        role_name = role_name,
+        available_users = available_users,
+        assigned_users = assigned_users,
+        activities = activities,
+    )
+
+    return HttpResponse(json.dumps(json_obj),
+                        mimetype='application/json')
 
 
 @requires('create role')
@@ -780,7 +843,8 @@ def api_create_role(request):
     if request.method != "POST":
         ctx["success"] = "false"
         ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
     else:
         company = get_company_or_404(request)
 
@@ -827,7 +891,8 @@ def api_create_role(request):
                 user_object[0].roles.add(new_role.id)
 
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('update role')
@@ -927,7 +992,8 @@ def api_edit_role(request, role_id=0):
         for user in new_users.exclude(pk__in=existing_users.values("pk")):
             user.roles.add(role_id)
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('delete role')
@@ -1032,7 +1098,8 @@ def api_get_users(request):
                 lastInvitation = ''
         ctx[user.id]["lastInvitation"] = lastInvitation
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    return HttpResponse(json.dumps(ctx),
+                        content_type="application/json")
 
 
 @requires('read user')
@@ -1044,8 +1111,7 @@ def api_get_specific_user(request, user_id=0):
     ctx = {}
 
     company = get_company_or_404(request)
-
-    user = User.objects.filter(id=user_id)
+    user = User.objects.select_related('roles').filter(id=user_id)
 
     # Check if user exists
     if user.exists() is False:
@@ -1064,32 +1130,36 @@ def api_get_specific_user(request, user_id=0):
             & set(roles_assigned_to_user)) is "False":
         ctx["success"] = "false"
         ctx["message"] = "You do not have permission to view this user"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
     # Return user
-    ctx[user[0].id] = {}
+    user_id = user[0].id
+    ctx[user_id] = {}
 
     # Email
-    ctx[user[0].id]["email"] = user[0].email
+    ctx[user_id]["email"] = user[0].email
 
     # Available Roles (constrained by company)
-    ctx[user[0].id]["roles"] = {}
-    available_roles = Role.objects.filter(company=company)
-    ctx[user[0].id]["roles"]["available"] = serializers.serialize(
+    ctx[user_id]["roles"] = {}
+
+    available_roles = current_companys_roles
+    ctx[user_id]["roles"]["available"] = serializers.serialize(
         "json",
         available_roles)
 
     # Assigned Roles
     roles_assigned_to_user = user[0].roles.filter(company=company)
-    ctx[user[0].id]["roles"]["assigned"] = serializers.serialize(
+    ctx[user_id]["roles"]["assigned"] = serializers.serialize(
         "json",
         roles_assigned_to_user,
         fields=('name'))
 
     # Status
-    ctx[user[0].id]["status"] = user[0].is_verified
+    ctx[user_id]["status"] = user[0].is_verified
 
-    return HttpResponse(json.dumps(ctx), content_type="application/json")
+    return HttpResponse(json.dumps(ctx),
+                        content_type="application/json")
 
 
 @requires('create user')
@@ -1145,7 +1215,8 @@ def api_create_user(request):
             for role in set(new_roles).difference(existing_roles):
                 request.user.send_invite(user_email, company, role.name)
 
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('update user')
@@ -1166,7 +1237,8 @@ def api_edit_user(request, user_id=0):
     if request.method != "POST":
         ctx["success"] = "false"
         ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
     else:
         company = get_company_or_404(request)
 
@@ -1250,7 +1322,8 @@ def api_edit_user(request, user_id=0):
                 request.user.send_invite(user[0].email, company, role)
         # # RETURN - boolean
         ctx["success"] = "true"
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+        return HttpResponse(json.dumps(ctx),
+                            content_type="application/json")
 
 
 @requires('delete user')
@@ -1289,6 +1362,7 @@ def api_delete_user(request, user_id=0):
 
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
+
         return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 def request_access(request):

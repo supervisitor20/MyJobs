@@ -1,5 +1,5 @@
-import {formatActivityName} from '../../util/formatActivityName';
-import {reverseFormatActivityName} from '../../util/reverseFormatActivityName';
+import {formatActivityName} from '../formatActivityName';
+import {reverseFormatActivityName} from '../reverseFormatActivityName';
 
 describe('ActivityNameTransformation', () => {
   it('can format an activity name', () => {
