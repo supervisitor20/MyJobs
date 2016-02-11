@@ -636,7 +636,7 @@ def api_get_activities(request):
     for activity in activities:
         json_obj = dict(
             activity_id = activity.id,
-            activity_name = activity.name,
+            activity_name = activity.get_display_name(),
             activity_description = activity.description,
             app_access_id = activity.app_access.id,
             app_access_name = activity.app_access.name,
@@ -696,16 +696,18 @@ def api_get_roles(request):
             activity['available_activities'] = []
             # Loop through all activities associated with this particular app_access
             for available_activity in available_activities.filter(app_access=app_access.id):
+                display_name = available_activity.get_display_name()
                 available_activity_more = {}
                 available_activity_more['id'] = available_activity.id
-                available_activity_more['name'] = available_activity.name
+                available_activity_more['name'] = display_name
                 activity['available_activities'].append(available_activity_more)
 
             activity['assigned_activities'] = []
             for assigned_activity in role.activities.filter(app_access=app_access.id):
+                display_name = assigned_activity.get_display_name()
                 assigned_activity_more = {}
                 assigned_activity_more['id'] = assigned_activity.id
-                assigned_activity_more['name'] = assigned_activity.name
+                assigned_activity_more['name'] = display_name
                 activity['assigned_activities'].append(assigned_activity_more)
 
             activities.append(activity)
@@ -722,11 +724,11 @@ def api_get_roles(request):
 
         # Assemble role object
         role_formatted = dict(
-            role_id = int(role_id),
-            role_name = role_name,
-            available_users = available_users,
-            assigned_users = assigned_users,
-            activities = activities,
+            role_id=int(role_id),
+            role_name=role_name,
+            available_users=available_users,
+            assigned_users=assigned_users,
+            activities=activities
         )
 
         # Add formatted role to growing list
@@ -799,16 +801,18 @@ def api_get_specific_role(request, role_id=0):
 
         activity['available_activities'] = []
         for available_activity in available_activities.filter(app_access=app_access.id):
+            display_name = available_activity.get_display_name()
             available_activity_more = {}
             available_activity_more['id'] = available_activity.id
-            available_activity_more['name'] = available_activity.name
+            available_activity_more['name'] = display_name
             activity['available_activities'].append(available_activity_more)
 
         activity['assigned_activities'] = []
         for assigned_activity in role_edited.activities.filter(app_access=app_access.id):
+            display_name = assigned_activity.get_display_name()
             assigned_activity_more = {}
             assigned_activity_more['id'] = assigned_activity.id
-            assigned_activity_more['name'] = assigned_activity.name
+            assigned_activity_more['name'] = display_name
             activity['assigned_activities'].append(assigned_activity_more)
 
         activities.append(activity)

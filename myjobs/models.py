@@ -3,7 +3,7 @@ import hashlib
 import string
 import urllib
 import uuid
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
@@ -887,13 +887,22 @@ class Activity(models.Model):
     """
     An activity represents an individual task that can be performed by a
     user.
+
     """
+    class Meta:
+        verbose_name_plural = "Activities"
+
     name = models.CharField(max_length=50, unique=True)
+    display_name = models.CharField(max_length=50, blank=True)
     app_access = models.ForeignKey('AppAccess')
     description = models.CharField(max_length=150, blank=False)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.description)
+
+    def get_display_name(self):
+        """Returns display_name or name by default."""
+        return self.display_name or self.name
 
 
 @receiver(post_save, sender=Activity, dispatch_uid='post_save_activity')
