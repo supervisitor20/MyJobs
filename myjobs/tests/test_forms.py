@@ -75,5 +75,5 @@ class CompanyAccessRequestFormTests(MyJobsBase):
         self.client.post(path=admin_url, data=data)
 
         # object is cached so we need to refetch it
-        request = CompanyAccessRequest.objects.get(pk=request.pk)
-        self.assertEqual(request.authorized_by, self.user)
+        access_request = CompanyAccessRequest.objects.get(pk=request.pk)
+        self.assertEqual(access_request.authorized_by, self.user)
