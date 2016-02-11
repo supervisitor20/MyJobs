@@ -950,7 +950,8 @@ class CompanyAccessRequest(models.Model):
         return datetime.datetime.now(tz=pytz.UTC) > self.expires_on
 
     def __unicode__(self):
-        return u"Request to access %s" % self.company_name
+        return u"Request to access %s from %s" % (
+            self.company_name, self.requested_by.email)
 
 
 class Role(models.Model):
