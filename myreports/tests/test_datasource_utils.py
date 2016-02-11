@@ -13,17 +13,31 @@ from myreports.datasources.partners import PartnersFilter
 
 
 class MockQuerySet(object):
-    def __init__(self, filters=[]):
+    def __init__(self, filters=[], data=[]):
         self.filters = filters
+        self.data = data
 
     def filter(self, **kwargs):
         return MockQuerySet(filters=self.filters + [kwargs])
 
+    def all(self):
+        return self.data
+
 
 class MockTag(object):
-    def __init__(self, name, hex_color):
+    def __init__(self, pk, name, hex_color):
+        self.id = pk
         self.name = name
         self.hex_color = hex_color
+
+
+class MockCursor(object):
+    def __init__(self, description, data):
+        self.description = [(name,) for name in description]
+        self.data = data
+
+    def __iter__(self):
+        return iter(self.data)
 
 
 class TestUtils(TestCase):
@@ -72,15 +86,15 @@ class TestUtils(TestCase):
     def test_extract_tag_list(self):
         """Should grab only the names from the list."""
         tag_list = [
-            MockTag('TagA', '#aaaaaa'),
-            MockTag('TagB', '#bbbbbb'),
+            MockTag(1, 'TagA', '#aaaaaa'),
+            MockTag(2, 'TagB', '#bbbbbb'),
         ]
 
-        result = extract_tags(tag_list)
+        result = extract_tags(MockQuerySet(data=tag_list))
 
         expected = [
-            {'name': 'TagA', 'hex_color': '#aaaaaa'},
-            {'name': 'TagB', 'hex_color': '#bbbbbb'},
+            {'id': 1, 'name': 'TagA', 'hex_color': '#aaaaaa'},
+            {'id': 2, 'name': 'TagB', 'hex_color': '#bbbbbb'},
         ]
         self.assertEqual(expected, result)
 

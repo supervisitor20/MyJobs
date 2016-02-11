@@ -66,8 +66,9 @@ def extract_tags(tag_list):
     """Extract name + hex_color + ... from tags."""
     return [
         {
+            'id': t.id,
             'name': t.name,
             'hex_color': t.hex_color,
         }
-        for t in tag_list
+        for t in tag_list.all()
     ]

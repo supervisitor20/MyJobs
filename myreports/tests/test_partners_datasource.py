@@ -9,7 +9,8 @@ from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
 from mydashboard.tests.factories import CompanyFactory
 from mypartners.tests.factories import (
-    PartnerFactory, ContactFactory, LocationFactory, TagFactory)
+    PartnerFactory, ContactFactory, LocationFactory, TagFactory,
+    ContactRecordFactory)
 from mypartners.models import Status
 
 
@@ -103,6 +104,111 @@ class TestPartnersDataSource(MyJobsBase):
         names = set([r['name'] for r in recs])
         expected = {self.partner_a.name, self.partner_b.name}
         self.assertEqual(expected, names)
+        expected_tags = {
+            self.partner_a.pk: {'east'},
+            self.partner_b.pk: {'west'},
+        }
+
+        def tags_by_pk(rec):
+            return (rec['partner_id'], set(t['name'] for t in rec['tags']))
+
+        found_tags = dict(tags_by_pk(r) for r in recs)
+
+        self.assertEqual(expected_tags, found_tags)
+
+    def test_run_count_comm_rec_per_month(self):
+        """Make sure we only get data for this user."""
+        for (subject, itx) in enumerate(['a', 'b', 'c']):
+            for month in [2, 3, 4]:
+                self.sue.contactrecord_set.add(
+                    ContactRecordFactory(
+                        subject=subject,
+                        date_time=datetime(2015, month, 1)))
+
+        ds = PartnersDataSource()
+        recs = ds.run_count_comm_rec_per_month(
+            self.company, PartnersFilter(), ['name', 'year', '-month'])
+        data = [
+            (r['name'], r['year'], r['month'], r['comm_rec_count'])
+            for r in recs
+        ]
+        expected = [
+            (self.partner_a.name, 2015, 12, 0),
+            (self.partner_a.name, 2015, 11, 0),
+            (self.partner_a.name, 2015, 10, 0),
+            (self.partner_a.name, 2015, 9, 0),
+            (self.partner_a.name, 2015, 8, 0),
+            (self.partner_a.name, 2015, 7, 0),
+            (self.partner_a.name, 2015, 6, 0),
+            (self.partner_a.name, 2015, 5, 0),
+            (self.partner_a.name, 2015, 4, 0),
+            (self.partner_a.name, 2015, 3, 0),
+            (self.partner_a.name, 2015, 2, 0),
+            (self.partner_a.name, 2015, 1, 0),
+            (self.partner_b.name, 2015, 12, 0),
+            (self.partner_b.name, 2015, 11, 0),
+            (self.partner_b.name, 2015, 10, 0),
+            (self.partner_b.name, 2015, 9, 0),
+            (self.partner_b.name, 2015, 8, 0),
+            (self.partner_b.name, 2015, 7, 0),
+            (self.partner_b.name, 2015, 6, 0),
+            (self.partner_b.name, 2015, 5, 0),
+            (self.partner_b.name, 2015, 4, 3),
+            (self.partner_b.name, 2015, 3, 3),
+            (self.partner_b.name, 2015, 2, 3),
+            (self.partner_b.name, 2015, 1, 0),
+        ]
+        self.assertEqual(expected, data)
+
+    def test_run_count_comm_rec_per_month_one_partner(self):
+        """Trip over a bug in the mysql client driver."""
+        for (subject, itx) in enumerate(['a', 'b', 'c']):
+            for month in [2, 3, 4]:
+                self.sue.contactrecord_set.add(
+                    ContactRecordFactory(
+                        subject=subject,
+                        date_time=datetime(2015, month, 1)))
+
+        ds = PartnersDataSource()
+        partners_filter = PartnersFilter(tags=[['west']])
+        recs = ds.run_count_comm_rec_per_month(
+            self.company, partners_filter, ['name', 'year', '-month'])
+        data = [
+            (r['name'], r['year'], r['month'], r['comm_rec_count'])
+            for r in recs
+        ]
+        self.assertEqual(12, len(data))
+
+    def test_run_count_comm_rec_per_month_no_partners(self):
+        """Trip over a bug in the mysql client driver."""
+        for (subject, itx) in enumerate(['a', 'b', 'c']):
+            for month in [2, 3, 4]:
+                self.sue.contactrecord_set.add(
+                    ContactRecordFactory(
+                        subject=subject,
+                        date_time=datetime(2015, month, 1)))
+
+        ds = PartnersDataSource()
+        partners_filter = PartnersFilter(tags=[['zzz']])
+        recs = ds.run_count_comm_rec_per_month(
+            self.company, partners_filter, ['name', 'year', '-month'])
+        self.assertEqual(0, len(recs))
+
+    def test_run_count_comm_rec_per_month_empty_partner(self):
+        """One partner, no communication records."""
+        ds = PartnersDataSource()
+        partners_filter = PartnersFilter(tags=[['east']])
+        recs = ds.run_count_comm_rec_per_month(
+            self.company, partners_filter, ['name', 'year', '-month'])
+        data = [
+            (r['name'], r['year'], r['month'], r['comm_rec_count'])
+            for r in recs
+        ]
+        self.assertEqual(12, len(data))
+        default_year = datetime.now().year
+        for item in data:
+            self.assertEqual(default_year, item[1])
+            self.assertEqual(0, item[3])
 
     def test_filter_by_date_range(self):
         """Should show only partner with last_action_time in range."""
