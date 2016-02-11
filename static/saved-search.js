@@ -8,8 +8,9 @@ var blocks_widget_div;
 //global iables for interacting with secure blocks template assigned values
 var email_input;
 
+
 $('#saved-search-email').bind('keypress', function(e) {
-	if(e.keyCode==13){
+	if(e.keyCode==13){ // keycode 13 is "enter". Bind "enter" to submit
     e.preventDefault();
     blocks_widget_div = $(this).closest("[data-secure-block-id]");
     save_search();
