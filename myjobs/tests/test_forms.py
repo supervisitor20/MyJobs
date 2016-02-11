@@ -57,10 +57,10 @@ class CompanyAccessRequestFormTests(MyJobsBase):
 
         # give us a handle to the unhashed access code
         access_code = '1234ABCD'
-        user = UserFactory(email="requestuser@example.com")
+        requesting_user = UserFactory(email="requestuser@example.com")
         request = CompanyAccessRequestFactory(
             access_code=hashlib.md5(access_code).hexdigest(),
-            requested_by=user)
+            requested_by=requesting_user)
 
         # code shouldn't have been authorized yet
         self.assertFalse(request.authorized_by)
