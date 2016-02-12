@@ -3077,7 +3077,7 @@ div > .help-block{
     font-style: italic;
 }
 
-/* transitional fix to reformat forms with BS3 */
+/* Job Posting form styles */
 #posting-nav {
     border-bottom: 1px solid #999;
     margin-bottom: 20px;
@@ -3105,6 +3105,16 @@ div > .help-block{
     color: #444545;
 }
 
+#job-form {
+    margin-bottom: 20px;
+}
+
+#empty-form .row:last-of-type {
+    display: none;
+}
+/* END */
+
+/* transitional fix to reformat forms with BS3 */
 fieldset:nth-child(n+2) {
     margin-top: 30px;
 }
@@ -3114,9 +3124,18 @@ fieldset:nth-child(n+2) {
 }
 
 .row .col-md-4 label {
-    line-height: 33px;
     color: #676767;
     font-size: 10pt;
+    text-align: left;
+    display: block;
+    line-height: normal;
+}
+
+@media screen and (min-width: 768px){
+    .row .col-md-4 label {
+        line-height: 33px;
+        text-align: right;
+    }
 }
 
 .row .col-md-8 input [type='text'] + .help-block,
@@ -3148,12 +3167,6 @@ fieldset:nth-child(n+2) {
     font-weight: normal;
 }
 
-/*This element should be replaced with a stylable 
-js equivalent when converting to React, later.*/
-.row .col-md-4 label {
-    text-align: right;
-    display: block;
-}
 .row .col-md-8 select { 
 height: 33px;
     line-height: 33px;
@@ -3193,6 +3206,7 @@ height: 33px;
     color: #444545;
     display: inline-block;
     border: none;
+    margin-bottom: 20px; 
 }
 
 .actions.row .col-md-8 .button:not(:last-child) {
@@ -3229,7 +3243,6 @@ height: 33px;
     text-align: left;
     padding: 10px;
 }
-
 /* end transitional fix */
 
 input[type='checkbox'] + .help-block {

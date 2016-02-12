@@ -14,7 +14,7 @@
         </div>
 {% else %}
         <div class="row">
-            <div class="col-xs-6 col-md-4 {% if is_boolean %}checkbox-label{% else %}initial{% endif %} {{ field.label|slugify }}-label">
+            <div class="col-xs-12 col-md-4 {% if is_boolean %}checkbox-label{% else %}initial{% endif %} {{ field.label|slugify }}-label">
                 {% add_required_label field %}
             </div>
             <div class="col-xs-12 col-md-8 profile-form-input {{ field.label|slugify }}-field">
