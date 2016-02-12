@@ -12,5 +12,6 @@ class CompaniesLookup(LookupChannel):
         return self.model.objects.filter(name__icontains=q).order_by('name')
 
     def format_match(self, company):
+        """Determines how autocomplete options look in the drop-down."""
         return format_company_name(company)
 

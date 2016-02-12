@@ -66,14 +66,6 @@ class FAQAdmin(admin.ModelAdmin):
     search_fields = ['question', ]
 
 
-def company_name(company):
-    if company.admins.count() == 0:
-        return "%s (%s users) **Might be a duplicate**" % (
-            company.name, company.admins.count())
-    else:
-        return "%s (%s users)" % (company.name, company.admins.count())
-
-
 class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
     """
     This admin page is used by staff to authorize access to a company.
