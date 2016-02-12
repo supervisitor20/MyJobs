@@ -35,13 +35,6 @@ STOP_SENDING = ['unsubscribe', 'spamreport']
 DEACTIVE_TYPES_AND_NONE = ['none'] + BAD_EMAIL + STOP_SENDING
 
 
-@invitation_context.register(Group)
-def group_invitation_context(group):
-    return {"message": " in order to help administer their recruitment and "
-                       "outreach tools.",
-            "group": group}
-
-
 class CustomUserManager(BaseUserManager):
     # Characters used for passwor generation with ambiguous ones ignored.
     # string.strip() doesn't play nicely with quote characters...
@@ -915,7 +908,8 @@ class CompanyAccessRequestManager(models.Manager):
     def create_request(self, company_name, requested_by):
         access_request = self.create(
             company_name=company_name, requested_by=requested_by)
-        access_code = get_random_string(8)
+        # generate a hexadecimal access code
+        access_code = get_random_string(8, allowed_chars='ABCDEF1234567890')
         access_request.access_code = hashlib.md5(access_code).hexdigest()
         access_request.save()
         return access_request, access_code
@@ -944,8 +938,7 @@ class CompanyAccessRequest(models.Model):
     objects = CompanyAccessRequestManager()
 
     def check_access_code(self, access_code):
-        return self.access_code == hashlib.md5(
-            access_code).hexdigest() and not self.expired
+        return self.access_code == hashlib.md5(access_code).hexdigest()
 
     @property
     def expires_on(self):
@@ -956,6 +949,10 @@ class CompanyAccessRequest(models.Model):
     def expired(self):
         """Returns whether or not the access code has expired."""
         return datetime.datetime.now(tz=pytz.UTC) > self.expires_on
+
+    def __unicode__(self):
+        return u"Request to access %s from %s" % (
+            self.company_name, self.requested_by.email)
 
 
 class Role(models.Model):

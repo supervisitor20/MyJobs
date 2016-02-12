@@ -317,18 +317,21 @@ class InvitationModelTests(MyJobsBase):
                 invitation = Invitation.objects.create(**args)
             self.assertEqual(e.exception.messages, [exception_text])
 
-    def companyuser_invitation(self, user, company):
+    def admin_invitation(self, user, company):
         """
-        Creates a company user via the Django admin and ensures that the email
-        generated contains the information that an invitation should contain.
+        Creates an Admin user  and ensures that the email generated contains
+        the information that an invitation should contain.
 
         Returns the body of the email as parsed by BeautifulSoup for further
         review in the calling test.
         """
+        self.role.name = "Admin"
+        self.role.save()
+        self.user.roles.add(self.role)
+        company.role_set.add(self.role)
+
         self.assertEqual(len(mail.outbox), 0)
-        self.client.post(reverse('admin:seo_companyuser_add'),
-                         {'user': user.pk,
-                          'company': company.pk})
+        self.user.send_invite(user.email, company, "Admin")
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox.pop()
         self.assertTrue('invitation' in email.subject)
@@ -338,15 +341,12 @@ class InvitationModelTests(MyJobsBase):
 
         body = BeautifulSoup(email.body)
 
-        self.assertEqual(body.select('a')[0].attrs['href'],
-                         'https://secure.my.jobs' + reverse('home'))
-
         return body
 
     def test_invitation_emails_verified_user(self):
         """
         Invitations to verified users don't contain activation links. It should
-        be sufficient to rely on the assertions that companyuser_invitation
+        be sufficient to rely on the assertions that admin_invitation
         makes and then assert that the only anchor in the email body is a
         login link.
         """
@@ -354,25 +354,25 @@ class InvitationModelTests(MyJobsBase):
         user = UserFactory(email='companyuser@company.com',
                            is_verified=True)
 
-        body = self.companyuser_invitation(user, company)
+        body = self.admin_invitation(user, company)
 
         self.assertEqual(len(body.select('a')), 1)
 
     def test_invitation_emails_unverified_user(self):
         """
         Invitations to unverified users should contain activation links, in
-        addition to the information that companyuser_invitation tests for.
+        addition to the information that admin_invitation tests for.
         """
         company = CompanyFactory()
         user = UserFactory(email='companyuser@company.com',
                            is_verified=False)
 
-        body = self.companyuser_invitation(user, company)
+        body = self.admin_invitation(user, company)
 
         ap = ActivationProfile.objects.get(email=user.email)
 
         # There should be two anchors present, one of which was tested for in
-        # companyuser_invitation...
+        # admin_invitation...
         self.assertEqual(len(body.select('a')), 2)
         # ...and the remaining anchor should be an activation link.
         expected_activation_href = 'https://secure.my.jobs%s?verify=%s' % (

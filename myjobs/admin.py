@@ -1,8 +1,16 @@
+import datetime
+
+import pytz
+
 from django.contrib import admin
 from django.contrib.sites.models import Site
 
-from myjobs.models import User, CustomHomepage, EmailLog, FAQ
-from myjobs.forms import UserAdminForm
+from django_extensions.admin import ForeignKeyAutocompleteAdmin
+
+from myjobs.models import (User, CustomHomepage, EmailLog, FAQ,
+                           CompanyAccessRequest)
+from myjobs.forms import (UserAdminForm,
+                          CompanyAccessRequestApprovalForm)
 
 
 class EmailLogAdmin(admin.ModelAdmin):
@@ -57,8 +65,46 @@ class FAQAdmin(admin.ModelAdmin):
     list_display = ['question', 'is_visible']
     search_fields = ['question', ]
 
+
+class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
+    """
+    This admin page is used by staff to authorize access to a company.
+
+    If submitted successfully, the user who submitted the request is assigned
+    the "Admin" role for the company selected by the staff member filling out
+    this form.
+
+    """
+    form = CompanyAccessRequestApprovalForm
+
+    def save_model(self, request, access_request, form, change):
+        # make "Saved and Continue" act like "Save"
+        request.POST.pop('_continue', None)
+
+        company = form.cleaned_data['company']
+
+        # update access request
+        access_request.authorized_by = request.user
+        access_request.authorized_on = datetime.datetime.now(tz=pytz.UTC)
+        access_request.save()
+
+        # assign Admin role to requesting user
+        access_request.requested_by.roles.add(
+            company.role_set.get(name="Admin"))
+
+    def queryset(self, request):
+        qs = super(CompanyAccessRequestApprovalAdmin, self).queryset(request)
+        # only show access requests which haven't already been authorized
+        return qs.filter(authorized_on__isnull=True)
+
+    def has_add_permission(self, request):
+        """Hide the add button"""
+        return False
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(CustomHomepage)
 admin.site.register(EmailLog, EmailLogAdmin)
 admin.site.register(FAQ, FAQAdmin)
+admin.site.register(CompanyAccessRequest, CompanyAccessRequestApprovalAdmin)
 admin.site.unregister(Site)
