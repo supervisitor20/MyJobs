@@ -1228,7 +1228,7 @@ class MocParameterAdmin(admin.TabularInline):
 
 
 class QueryRedirectAdmin(admin.ModelAdmin):
-    form = make_ajax_form(QueryRedirect, {'site': 'all_sites'})
+    form = make_ajax_form(QueryRedirect, {'site': 'sites'})
 
     inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
     list_display = ('old_path', 'new_path')
