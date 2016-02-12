@@ -1,7 +1,6 @@
 import json
 
 from django.core.urlresolvers import reverse
-from django.conf import settings
 
 
 from seo.tests.setup import DirectSEOBase
@@ -20,11 +19,12 @@ class TestSecureBlocks(DirectSEOBase):
         self.staff_user = UserFactory(is_staff=True)
         self.client = TestClient()
         self.client.login_user(self.staff_user)
+        self.sb_url = reverse('secure_blocks')
         SeoSiteFactory(domain='jobs.example.com')
 
     def test_secure_blocks_empty(self):
         """Browser asks for no blocks."""
-        resp = self.make_sb_request('{"blocks": {}}')
+        resp = make_cors_request(self.client, self.sb_url, '{"blocks": {}}')
         self.assertEqual(200, resp.status_code)
         result = json.loads(resp.content)
         self.assertEqual({}, result,
@@ -33,7 +33,7 @@ class TestSecureBlocks(DirectSEOBase):
 
     def test_secure_blocks_bad_parse(self):
         """Handle unparseable JSON."""
-        resp = self.make_sb_request('@@@@@@@@@')
+        resp = make_cors_request(self.client, self.sb_url, '@@@@@@@@@')
         self.assertEqual(400, resp.status_code,
                          msg="got %s! block request allowed unparseable json, check"
                              " secure block json parser" % resp.status_code)
@@ -41,7 +41,7 @@ class TestSecureBlocks(DirectSEOBase):
     def test_secure_blocks_render(self):
         """Ask for a real block."""
         body = '{"blocks": {"my-jobs-logo-1": {}}}'
-        resp = self.make_sb_request(body)
+        resp = make_cors_request(self.client, self.sb_url, body)
         result = json.loads(resp.content)
         self.assertTrue('my-jobs-logo-1' in result,
                         msg="block request not found in response. check fixture, "
@@ -50,21 +50,23 @@ class TestSecureBlocks(DirectSEOBase):
     def test_secure_blocks_bad_origin(self):
         """Check that secure blocks do not load from invalid origins"""
         body = '{"blocks": {"my-jobs-logo-1": {}}}'
-        resp = self.make_sb_request(body, http_origin='http://notparent.com/')
+        resp = make_cors_request(self.client, self.sb_url, body,
+                               http_origin='http://notparent.com/')
         self.assertEqual(resp.status_code, 404,
                          msg="got %s! secure block call responded despite bad origin."
                              " check cross site verify logic" % resp.status_code)
 
     def test_secure_blocks_hiding_properly(self):
         """
-        TEMP TEST. Ensure that secure blocks does not return anything when non staff
-        user attempts to access the API. Remove when secure blocks is released
+        TEMP TEST. Ensure that secure blocks does not return anything when non
+        staff user attempts to access the API. Remove when secure blocks is
+        released
 
         """
         nonstaff_user = UserFactory(is_staff=False, email="mrT@test.com")
         self.client.login_user(nonstaff_user)
         body = '{"blocks": {"my-jobs-logo-1": {}}}'
-        resp = self.make_sb_request(body)
+        resp = make_cors_request(self.client, self.sb_url, body)
         self.assertEqual(resp.status_code, 404,
                          msg="Expected 404 got %s! Non staff user was able to "
                              "access API while secure blocks disabled for"
@@ -79,7 +81,7 @@ class TestSecureBlocks(DirectSEOBase):
                        .objects
                        .get(element_id='test_saved_search'))
         body = '{"blocks": {"test_saved_search": {}}}'
-        resp = self.make_sb_request(body)
+        resp = make_cors_request(self.client, self.sb_url, body)
         self.assertEqual(resp.status_code, 200,
                          msg="Expected 200, got %s. User was not able to "
                              "retrieve blocks for test" % resp.status_code)
@@ -88,13 +90,32 @@ class TestSecureBlocks(DirectSEOBase):
                                 msg_prefix="Did not find %s in response,"
                                            "missing required js" % js)
 
-    def make_sb_request(self, body, http_origin='http://jobs.example.com'):
-        """Encapsulate details of getting through CSRF protection, etc."""
-        url = reverse('secure_blocks')
-        return self.client.post(
-            url, body,
-            HTTP_HOST='jobs.example.com',
-            HTTP_ORIGIN=http_origin,
-            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
-            content_type="application/json",
-        )
+
+def make_cors_request(client, url, json_data,
+                      http_origin='http://jobs.example.com'):
+    """
+    Encapsulate details of getting through CSRF protection, etc. Make CORS
+    request
+
+    """
+    return client.post(
+        url, json_data,
+        HTTP_HOST='jobs.example.com',
+        HTTP_ORIGIN=http_origin,
+        HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        content_type="application/json",
+    )
+
+def make_jsonp_request(client, url, json_data,
+                       http_referer='http://jobs.example.com'):
+    """
+    Encapsulate details of getting through CSRF protection, etc. Make CORS
+    request
+
+    """
+    return client.get(
+        url, json_data,
+        HTTP_HOST='jobs.example.com',
+        content_type="application/javascript",
+        HTTP_REFERER=http_referer
+    )

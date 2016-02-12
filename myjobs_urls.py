@@ -8,6 +8,7 @@ from tastypie.api import Api
 
 from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
+from ajax_select import urls as ajax_select_urls
 
 admin.autodiscover()
 
@@ -26,6 +27,7 @@ urlpatterns = patterns(
     url(r'^profile/', include('myprofile.urls')),
     url(r'^saved-search/', include('mysearches.urls')),
     url(r'^api/', include(v1_api.urls)),
+    url(r'^ajax_select/', include(ajax_select_urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^authorize/', include('mysignon.urls')),
     url(r'^message/', include('mymessages.urls')),
