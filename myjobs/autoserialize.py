@@ -4,6 +4,13 @@ from functools import wraps
 
 
 def autoserialize(fn):
+    """
+    Wrap API. If the API receives a JSONP call, wrap the response in the
+    given callback function.
+
+    :param fn: wrapped function
+    :return: return wrapped in callback, if jsonp
+    """
     @wraps(fn)
     def handle_autoserialize(request):
         response = fn(request)
