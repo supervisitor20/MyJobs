@@ -12,7 +12,8 @@ class CompaniesLookup(LookupChannel):
     min_length = 3
 
     def get_query(self, q, request):
-        return self.model.objects.filter(name__icontains=q).order_by('name')
+        return self.model.objects.filter(
+            name__icontains=q).order_by('name')[:50]
 
     def format_match(self, company):
         """
@@ -26,8 +27,8 @@ class CompaniesLookup(LookupChannel):
 
         return template.format(name=company.name, count=count, warning=warning)
 
-@register('all_sites')
-class AllSitesLookup(LookupChannel):
+@register('sites')
+class SitesLookup(LookupChannel):
     model = models.SeoSite
     min_length = 3
 
@@ -36,3 +37,10 @@ class AllSitesLookup(LookupChannel):
 
         return self.model.objects.filter(
             Q(domain__icontains=q) | Q(name__icontains=q))
+
+    # See https://github.com/crucialfelix/django-ajax-selects/issues/153 for
+    # why this is necessary. Inherited models don't act correctly, so we help
+    # the framework out by manually returning results.
+    def get_objects(self, ids):
+        return list(self.model.objects.filter(pk__in=ids))
+

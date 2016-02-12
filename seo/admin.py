@@ -881,8 +881,6 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         return UnorderedChangeList
 
-def parent_site_string(parent_site):
-    return "%s (%s)" % (parent_site.name, parent_site.domain)
 
 class SeoSiteAdmin(admin.ModelAdmin):
     form = SeoSiteForm

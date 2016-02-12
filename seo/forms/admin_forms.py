@@ -238,7 +238,7 @@ class SeoSiteForm(RowPermissionsForm):
     domain = forms.CharField(max_length=255, label='Domain name',
                              validators=[])
     parent_site = helpers.make_ajax_field(
-        SeoSite, 'parent_site', 'all_sites',
+        SeoSite, 'parent_site', 'sites',
         help_text="Find a parent site by domain or name.")
 
     def __init__(self, data=None, user=None, *args, **kwargs):
