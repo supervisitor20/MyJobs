@@ -890,9 +890,7 @@ def api_create_role(request):
         users = User.objects.filter(email__in=selected_users)
 
         for user in users:
-            # Add role to user
             user.roles.add(new_role.id)
-            # Invite user
             user.send_invite(user.email, company, new_role.name)
 
         ctx["success"] = "true"
@@ -995,9 +993,7 @@ def api_edit_role(request, role_id=0):
         for user in existing_users.exclude(pk__in=new_users.values("pk")):
             user.roles.remove(role_id)
         for user in new_users.exclude(pk__in=existing_users.values("pk")):
-            # Add role to user
             user.roles.add(role_id)
-            # Invite user
             user.send_invite(user.email, company, role.name)
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx),
@@ -1265,9 +1261,8 @@ def api_edit_user(request, user_id=0):
         company_roles = Role.objects.filter(company=company)
         # 2. List user's roles
         roles_assigned_to_user = user.roles.all()
-
         # 3. Overlap?
-        if bool(set(company_roles) & set(roles_assigned_to_user)) == "False":
+        if set(company_roles).isdisjoint(roles_assigned_to_user):
             ctx["success"] = "false"
             ctx["message"] = "You do not have permission to edit this user"
             return HttpResponse(json.dumps(ctx),
