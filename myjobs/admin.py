@@ -81,8 +81,8 @@ class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
     If submitted successfully, the user who submitted the request is assigned
     the "Admin" role for the company selected by the staff member filling out
     this form.
-    """
 
+    """
     form = CompanyAccessRequestApprovalForm
 
     def save_model(self, request, access_request, form, change):

@@ -660,11 +660,9 @@ class Company(models.Model):
         Counts how many users are mapped to this company. This is useful for
         determining which user to map a company to when two company instances
         have very similar names.
+
         """
-        if settings.ROLES_ENABLED:
-            return self.role_set.values('user').distinct().count()
-        else:
-            return self.companyuser_set.count()
+        return self.role_set.values('user').distinct().count()
 
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)

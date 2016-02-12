@@ -6,15 +6,15 @@ from mypartners.models import (Partner, Contact, CommonEmailDomain,
                                OutreachEmailDomain, OutreachEmailAddress)
 
 
-def company_user_name(company):
+def format_company_name(company):
     """
     Returns a string ot be used next to each company that displays how many
     admins belong to that company, or a warning if there aren't any.
 
     """
     template = "{name} ({count} users){warning}"
-    count = company.admins.count()
-    warning = "" if count else " **Might be a dupliate**"
+    count = company.company_user_count
+    warning = "" if count else " **Might be a duplicate**"
 
     return template.format(name=company.name, count=count, warning=warning)
 
@@ -25,7 +25,7 @@ class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
     }
 
     related_string_functions = {
-        'company': company_user_name
+        'company': format_company_name
     }
 
     search_fields = ['company__name', 'domain']
