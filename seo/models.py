@@ -561,6 +561,9 @@ class SeoSite(Site):
         site_buids = self.business_units.all()
         return Company.objects.filter(job_source_ids__in=site_buids).distinct()
 
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.domain)
+
 class SeoSiteFacet(models.Model):
     """This model defines the default Custom Facet(s) for a given site."""
     STANDARD = 'STD'

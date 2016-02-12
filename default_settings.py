@@ -295,7 +295,6 @@ INSTALLED_APPS = (
     'captcha',
     'endless_pagination',
     'storages',
-    'django_extensions',
     'haystack',
     'saved_search',
     'taggit',
