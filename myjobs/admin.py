@@ -5,6 +5,8 @@ import pytz
 from django.contrib import admin
 from django.contrib.sites.models import Site
 
+from django_extensions.admin import ForeignKeyAutocompleteAdmin
+
 from myjobs.models import (User, CustomHomepage, EmailLog, FAQ,
                            CompanyAccessRequest)
 from myjobs.forms import (UserAdminForm,
@@ -64,7 +66,7 @@ class FAQAdmin(admin.ModelAdmin):
     search_fields = ['question', ]
 
 
-class CompanyAccessRequestApprovalAdmin(admin.ModelAdmin):
+class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
     """
     This admin page is used by staff to authorize access to a company.
 
