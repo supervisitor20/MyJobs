@@ -878,7 +878,7 @@ def api_create_role(request):
                                 content_type="application/json")
 
         # User objects have roles
-        users = request.POST.getlist("assigned_users[]", [])
+        selected_users = request.POST.getlist("assigned_users[]", [])
 
         # Create Role
         new_role = Role.objects.create(name=role_name, company_id=company.id)
@@ -887,10 +887,11 @@ def api_create_role(request):
         new_role.activities.add(*activity_ids)
 
         # Add role to relevant users
-        if users:
-            for i, user in enumerate(users):
-                user_object = User.objects.filter(email=user)
-                user_object[0].roles.add(new_role.id)
+        users = User.objects.filter(email__in=selected_users)
+
+        for user in users:
+            user.roles.add(new_role.id)
+            user.send_invite(user.email, company, new_role.name)
 
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx),
@@ -993,6 +994,7 @@ def api_edit_role(request, role_id=0):
             user.roles.remove(role_id)
         for user in new_users.exclude(pk__in=existing_users.values("pk")):
             user.roles.add(role_id)
+            user.send_invite(user.email, company, role.name)
         ctx["success"] = "true"
         return HttpResponse(json.dumps(ctx),
                             content_type="application/json")
@@ -1137,6 +1139,7 @@ def api_get_specific_user(request, user_id=0):
 
     # Return user
     user_id = user[0].id
+
     ctx[user_id] = {}
 
     # Email
@@ -1146,6 +1149,7 @@ def api_get_specific_user(request, user_id=0):
     ctx[user_id]["roles"] = {}
 
     available_roles = current_companys_roles
+
     ctx[user_id]["roles"]["available"] = serializers.serialize(
         "json",
         available_roles)
@@ -1213,9 +1217,8 @@ def api_create_user(request):
 
         # Send one invitation per new role. This will handle creating the user
         # if one doesn't exist.
-        if request.user.can(company, "create user"):
-            for role in set(new_roles).difference(existing_roles):
-                request.user.send_invite(user_email, company, role.name)
+        for role in set(new_roles).difference(existing_roles):
+            request.user.send_invite(user_email, company, role.name)
 
         return HttpResponse(json.dumps(ctx),
                             content_type="application/json")
@@ -1244,10 +1247,9 @@ def api_edit_user(request, user_id=0):
     else:
         company = get_company_or_404(request)
 
-        user = User.objects.filter(id=user_id)
-
-        # Check if user exists
-        if user.exists() is False:
+        try:
+            user = User.objects.select_related('roles').get(pk=user_id)
+        except User.DoesNotExist:
             ctx["success"] = "false"
             ctx["message"] = "User does not exist."
             return HttpResponse(json.dumps(ctx),
@@ -1258,10 +1260,9 @@ def api_edit_user(request, user_id=0):
         # 1. List current company's roles
         company_roles = Role.objects.filter(company=company)
         # 2. List user's roles
-        roles_assigned_to_user = user[0].roles.all()
-
+        roles_assigned_to_user = user.roles.all()
         # 3. Overlap?
-        if bool(set(company_roles) & set(roles_assigned_to_user)) == "False":
+        if set(company_roles).isdisjoint(roles_assigned_to_user):
             ctx["success"] = "false"
             ctx["message"] = "You do not have permission to edit this user"
             return HttpResponse(json.dumps(ctx),
@@ -1309,21 +1310,26 @@ def api_edit_user(request, user_id=0):
             role_id = role_object[0].id
             assigned_roles_ids.append(role_id)
 
+        existing_roles = set(user.roles.filter(company=company))
+
         # Add new roles to user
         for assigned_role in assigned_roles_ids:
-            user[0].roles.add(assigned_role)
+            user.roles.add(assigned_role)
 
         # Remove roles from user if not in new list
-        for currently_assigned_role in user[0].roles.filter(company=company):
+        for currently_assigned_role in user.roles.filter(company=company):
             if currently_assigned_role.id not in assigned_roles_ids:
-                user[0].roles.remove(currently_assigned_role.id)
+                user.roles.remove(currently_assigned_role.id)
 
         # Notify the user
-        if request.user.can(company, "create user"):
-            for role in assigned_roles:
-                request.user.send_invite(user[0].email, company, role)
+        new_roles = set(Role.objects.filter(company=company,
+                                            name__in=assigned_roles))
+        for role in set(new_roles).difference(existing_roles):
+            request.user.send_invite(user.email, company, role.name)
+
         # # RETURN - boolean
         ctx["success"] = "true"
+
         return HttpResponse(json.dumps(ctx),
                             content_type="application/json")
 
