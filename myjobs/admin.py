@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site
 from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
 from myjobs.models import (User, CustomHomepage, EmailLog, FAQ,
-                           CompanyAccessRequest)
+                           Activity, CompanyAccessRequest)
 from myjobs.forms import (UserAdminForm,
                           CompanyAccessRequestApprovalForm)
 
