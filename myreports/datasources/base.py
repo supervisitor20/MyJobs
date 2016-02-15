@@ -108,21 +108,3 @@ class DataSourceFilter:
     it should do extra parsing on the json data for that field.
     """
     __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def filter_query_set(self, query_set):
-        """Filter the given query_set.
-
-        Use this object's instance variables to perform a meaningful filter
-        of the data provided in query_set.
-
-        The exact meaning of that filtering is an agreement between this
-        class and it's companion DataSource.
-
-        For Django models this usually means that this method receives a
-        partially filtered query set (live company filter already applied)
-        and this method is responsible for returning a new query_set with
-        further refinement. (i.e. given city, date range, etc.)
-        """
-        raise NotImplementedError(
-            "Missing filter_query_set method on this instance.")

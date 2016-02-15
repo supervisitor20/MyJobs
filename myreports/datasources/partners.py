@@ -238,10 +238,6 @@ class PartnersFilter(DataSourceFilter):
             new_root['locations'] = new_locations
         return PartnersFilter(**new_root)
 
-    def filter_query_set(self, qs):
-        # XXX: delete me
-        pass
-
     def filter_partners(self, company):
         qs = Partner.objects.filter(owner=company)
         qs = (
