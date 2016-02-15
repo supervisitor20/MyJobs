@@ -660,11 +660,9 @@ class Company(models.Model):
         Counts how many users are mapped to this company. This is useful for
         determining which user to map a company to when two company instances
         have very similar names.
+
         """
-        if settings.ROLES_ENABLED:
-            return self.role_set.values('user').distinct().count()
-        else:
-            return self.companyuser_set.count()
+        return self.role_set.values('user').distinct().count()
 
     admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
@@ -1444,11 +1442,11 @@ class CompanyUser(models.Model):
         self.save()
 
 
+# TODO: This shouldn't be necessary. Find out how to get rid of it
 @invitation_context.register(CompanyUser)
 def company_user_invitation_context(company_user):
     """Returns a message and the company user."""
-    return {"message": " as a(n) Admin for %s." % (company_user.company),
-            "company_user": company_user}
+    return {"message": " as a(n) Admin for %s." % (company_user.company)}
 
 
 @receiver(post_delete, sender=CompanyUser,

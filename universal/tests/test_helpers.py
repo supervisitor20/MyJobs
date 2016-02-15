@@ -24,19 +24,6 @@ class InvitationContextTests(MyJobsBase):
             "initial_search_email": saved_search.initial_email(send=False),
             "text_only": saved_search.text_only})
 
-    def test_group_invitation_context(self):
-        """
-        Test that creating an invitation context from a group instance
-        produces a context with a message and the group itself.
-
-        """
-        group = Group(name="Test")
-        context = invitation_context(group)
-        self.assertEqual(context, {
-            "message": " in order to help administer their recruitment and "
-                       "outreach tools.",
-            "group": group})
-
     def test_str_invitation_context(self):
         """
         Test that creating an invitation context from a string

@@ -1,12 +1,16 @@
 import pytz
 
-from django.forms import (
-    ModelForm, ChoiceField, Select, Form, CharField, PasswordInput)
+from django.forms import (ModelForm, ModelChoiceField, ChoiceField, Select,
+                          Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
-from myjobs.models import User, CompanyAccessRequest
+from ajax_select.fields import AutoCompleteSelectField
+
+from myjobs.models import User, CompanyAccessRequest, Role
 from myprofile.models import SecondaryEmail
+import seo.lookups
+from seo.models import Company
 
 
 timezones = [('America/New_York', 'America/New_York'),
@@ -227,6 +231,46 @@ class UserAdminForm(ModelForm):
         return instance
 
 class CompanyAccessRequestForm(ModelForm):
+    """Form used by users to request access to a company."""
+
     class Meta:
         model = CompanyAccessRequest
         fields = ('company_name',)
+
+class CompanyAccessRequestApprovalForm(ModelForm):
+    """
+    Form used by staff members to approve access requests by users.
+
+    Adding custom forms to Django is prohibitively difficult. As such, we
+    instead use a model form, which gives us all of the navigation niceties,
+    but provide our own fields and custom behavior for submission.
+
+    """
+
+    class Meta:
+        model = CompanyAccessRequest
+        # Hide all model fields
+        fields = ()
+
+    company = AutoCompleteSelectField('companies')
+    verification_code = CharField(label="Verification Code")
+
+    def clean_verification_code(self):
+        code = self.cleaned_data['verification_code']
+        request = self.instance
+
+        if request.authorized_on:
+            raise ValidationError(
+                "This request was already authorized on %s by %s." % (
+                    request.authorized_on, request.authorized_by))
+
+        if request.expired:
+            raise ValidationError(
+                "This request expired on %s" % request.expired_on)
+
+        if not request.check_access_code(code):
+            raise ValidationError(
+                "The code you entered does not match the one we have on file "
+                "for this request. Please try again.")
+
+        return code
