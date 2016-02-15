@@ -77,7 +77,7 @@ class TestActiveModels(MyReportsTestCase):
         rps = (ReportPresentation.objects
                .active_for_report_type_data_type(rtdt))
         names = set([rp.display_name for rp in rps])
-        expected_names = set(['Contact CSV'])
+        expected_names = set(['Contact CSV', 'Contact Excel Spreadsheet'])
         self.assertEqual(expected_names, names)
 
     def test_active_columns(self):

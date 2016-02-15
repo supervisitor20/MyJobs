@@ -1,3 +1,4 @@
+import datetime
 import urllib
 from django.contrib.auth.models import Group
 from django.core import mail
@@ -7,11 +8,14 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.utils.http import urlquote
 
+import pytz
+
 from setup import MyJobsBase
 from myjobs.models import User, Role
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
-                                    ActivityFactory, RoleFactory)
+                                    ActivityFactory, RoleFactory,
+                                    CompanyAccessRequestFactory)
 from seo.tests.factories import CompanyUserFactory
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
@@ -258,11 +262,6 @@ class TestActivities(MyJobsBase):
         # sanity check
         self.assertTrue(self.user.can(self.company, 'create user'))
 
-        user = self.user.send_invite('regular@joe.com', self.company)
-        self.assertFalse(
-            user.can(self.company, 'create user'),
-            "User shouldn't be able to 'create user', but can")
-
         user = self.user.send_invite(
             'regular@joe.com', self.company, role_name=self.role.name)
         self.assertTrue(
@@ -283,3 +282,20 @@ class TestActivities(MyJobsBase):
         activities = self.role.activities.values_list('name', flat=True)
 
         self.assertItemsEqual(user.activities, activities)
+
+    def test_access_code_expiration(self):
+        """Any access code older than 1 day should be considered expired."""
+
+        now = datetime.datetime.now(tz=pytz.UTC)
+        yesterday = now - datetime.timedelta(days=1)
+
+        access_request = CompanyAccessRequestFactory(
+            requested_by=self.user, requested_on=now)
+
+        self.assertFalse(access_request.expired)
+
+        access_request.requested_on = yesterday
+        access_request.save()
+
+        self.assertTrue(access_request.expired)
+

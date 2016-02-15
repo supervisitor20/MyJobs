@@ -206,21 +206,6 @@ class RegistrationViewTests(MyJobsBase):
         self.assertIn("in order to begin receiving their available job "
                       "opportunities on a regular basis", email.body)
 
-    def test_permission_invitation_message(self):
-        """
-        Tests that invitation emails where permissions are changed are
-        formatted correctly.
-
-        """
-        group = Group.objects.create(name="Employers")
-        invitation = InvitationFactory(inviting_user=self.user)
-        invitation.save()
-        invitation.send(group)
-
-        email = mail.outbox.pop()
-        self.assertIn("in order to help administer their recruitment and "
-                      "outreach tools.", email.body)
-
     def test_invite_new_user_shows_password(self):
         """
         New users who were invited to use My.jobs should receive a

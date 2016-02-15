@@ -1,4 +1,4 @@
-import {filterActivitiesForAppAccess} from '../../util/filterActivitiesForAppAccess';
+import {filterActivitiesForAppAccess} from '../filterActivitiesForAppAccess';
 
 const input = [
   {

@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load tz %}
 {% load common_tags %}
+{% load compress %}
 {% gz as gz %}
 
 {% localtime on %}
@@ -36,7 +37,9 @@
   https://github.com/scottjehl/Respond/tree/master/cross-domain
   http://lipstickonthepig.com/wordpress/using-respond-js-when-your-site-css-is-on-a-cdn-or-subdomain/
   -->
+  {% compress css %}
   <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  {% endcompress %}
 
 
   <!-- Latest compiled and minified JavaScript -->
@@ -45,7 +48,9 @@
   <!-- The old def.ui.XXX.css file contained custom CSS, Bootstrap 2.3.2, a jQuery theme roller,
   and media queries to make the site responsive. The new custom.css only has the custom CSS. -->
   <!-- <link href="{{ STATIC_URL }}def.ui.152-21.css{{ gz }}" rel="stylesheet" type="text/css"> -->
+  {% compress css %}
   <link rel="stylesheet" href="{{ STATIC_URL }}custom.css" rel="stylesheet" type="text/css">
+  {% endcompress %}
 
 
 

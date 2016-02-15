@@ -16,6 +16,7 @@ from celery import group
 from celery.task import task
 
 from django.conf import settings
+from secrets import options, housekeeping_auth
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sitemaps import ping_google
 from django.core import mail
@@ -25,6 +26,7 @@ from django.db.models import Q
 
 from seo.models import Company, SeoSite, BusinessUnit
 from myjobs.models import EmailLog, User, STOP_SENDING, BAD_EMAIL
+from jira import JIRA
 from myjobs.helpers import log_to_jira
 from mymessages.models import Message
 from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
@@ -32,6 +34,7 @@ from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
 from mypartners.models import PartnerLibrary
 from mypartners.helpers import get_library_partners
 import import_jobs
+from import_jobs.models import ImportRecord
 from postajob.models import Job
 from registration.models import ActivationProfile
 from solr import helpers
@@ -71,6 +74,115 @@ PARTNER_LIBRARY_SOURCES = {
         }
     }
 }
+
+@task(name='tasks.create_jira_ticket')
+def create_jira_ticket(summary, description, **kwargs):
+    """
+    Create a new jira ticket, returning the associated number.
+
+    Examples:
+
+        Synchronously create a jira ticket::
+
+            create_jira_ticket("Test Ticket", "This is a test")
+
+        Asynchronously create a jira ticket::
+
+            create_jira_ticket.delay("Test Ticket", "This is a test")
+
+    Inputs:
+
+    .. note:: watchers and watcher_group are mutually exclusive.
+
+        :summary: The ticket summary
+        :description: The ticket description
+        :assignee: Who the ticket should be assigned to. Defaults to "-1" which
+                   is analogous to selecting "automatic" on the JIRA web form.
+        :reporter: Who created the ticket (or is responsible for QCing it).
+                   Defaults to "automaticagent".
+        :issuetype: The type of issue. Defaults to "Task".
+        :project: The project the ticket should be created in. Defaults to
+                  "ST", which is Product Support.
+        :priority: Ticket Priority. Defaults to "Major".
+        :components: A list of components this ticket belongs to.
+        :watchers: A list of user names to add as watchers of this ticket.
+        :watcher_group: A group to assign as watchesr.
+
+    Output:
+
+    .. note:: The instance isn't returned because we need the ability to pass
+              the results to another asynchronous task without blocking, which
+              requires that all arguments be serializable.
+
+        The ticket key which corresponds to the created JIRA ticket.
+    """
+    jira = JIRA(options=options, basic_auth=housekeeping_auth)
+
+    assignee = {'name': kwargs.setdefault('assignee', '-1')}
+    reporter = {'name': kwargs.setdefault('reporter', 'automationagent')}
+    issuetype = {'name': kwargs.setdefault('issuetype', 'Task')}
+    project = {'key': kwargs.setdefault('project', 'ST')}
+    priority = {'name': kwargs.setdefault('priority', 'Major')}
+    components = [{'name': name}
+                  for name in kwargs.setdefault('components', [])]
+
+    watchers = kwargs.setdefault('watchers', set())
+    if 'watcher_group' in kwargs:
+        watchers = watchers.union(
+            jira.group_members(kwargs['watcher_group']).keys())
+
+    if assignee == reporter:
+        raise ValueError("Assignee and reporter must be different.")
+
+    fields = {
+        'project': project,
+        'summary': summary,
+        'description': description,
+        'issuetype': issuetype,
+        'priority': priority,
+        'reporter': reporter,
+        'assignee': assignee,
+        'components': components,
+    }
+
+    issue = jira.create_issue(fields=fields)
+
+    for watcher in watchers:
+        jira.add_watcher(issue, watcher)
+
+    return issue.key
+
+
+@task(name='tasks.assign_ticket_to_request')
+def assign_ticket_to_request(key, access_request):
+    """
+    Assign a ticket to a request.
+
+    Examples:
+        .. note:: The synchronous variety is for easy of debugging. In real
+                  code, you'd probably simply assign the attribute to the
+                  access_request instance directly.
+
+        Synchronously:
+            assign_ticket_to_request(key, access_request)
+        Asynchronously:
+            assign_ticket_to_request.delay(key, access_request)
+
+    Input:
+        :key: Generally an `AsyncResult` containing a string, which would be
+              the JIRA ticket's key.
+        :access_request: The `myjobs.models.CompanyAccessRequest` instance to
+                         asssign the ticket key to.
+
+    Output:
+        The pk of the `myjobs.models.CompanyAccessRequest` instance that the
+        ticket key was assigned to.
+
+    """
+    access_request.ticket = getattr(key, 'get', lambda: key)()
+    access_request.save()
+
+    return access_request.pk
 
 
 @task(name='tasks.send_search_digest', ignore_result=True,
@@ -779,8 +891,10 @@ def task_update_solr(jsid, **kwargs):
         import_jobs.update_solr(jsid, **kwargs)
         if kwargs.get('clear_cache', False):
             task_clear_bu_cache.delay(buid=int(jsid), countdown=1500)
+            ImportRecord(buid=int(jsid), success=True).save()
     except Exception as e:
         logging.error(traceback.format_exc(sys.exc_info()))
+        ImportRecord(buid=int(jsid), success=False).save()
         raise task_update_solr.retry(exc=e)
 
 
@@ -789,9 +903,11 @@ def task_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
         BusinessUnit.clear_cache(int(buid))
+        ImportRecord(buid=int(buid), success=True).save()
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
+        ImportRecord(buid=int(buid), success=False).save()
         raise task_etl_to_solr.retry(exc=e)
 
 
@@ -800,9 +916,11 @@ def task_priority_etl_to_solr(guid, buid, name):
     try:
         import_jobs.update_job_source(guid, buid, name)
         BusinessUnit.clear_cache(int(buid))
+        ImportRecord(buid=int(buid), success=True).save()
     except Exception as e:
         logging.error("Error loading jobs for jobsource: %s", guid)
         logging.exception(e)
+        ImportRecord(buid=int(buid), success=False).save()
         raise task_priority_etl_to_solr.retry(exc=e)
 
 
@@ -1009,3 +1127,9 @@ def requeue_failures(hours=8):
         task_etl_to_solr.delay(*ast.literal_eval(task.args))
         print "Requeuing task with args %s" % task.args
 
+
+@task(name='clean_import_records', ignore_result=True)
+def clean_import_records(days=31):
+    days_ago = datetime.now() - timedelta(days=days)
+    ImportRecord.objects.filter(date__lt=days_ago).delete()
+    
