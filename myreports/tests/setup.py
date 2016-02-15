@@ -563,13 +563,6 @@ def create_full_fixture():
         configuration=con_comm_count,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
-        id=107,
-        column_name="year",
-        order=109,
-        output_format="text",
-        configuration=con_comm_count,
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
         id=108,
         column_name="month",
         order=110,
@@ -633,7 +626,7 @@ def create_full_fixture():
         display_name="Communication Record JSON Passthrough",
         report_data=rtdt_comm_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=13, presentation_type=pre_csv, configuration=con_part,
+        id=13, presentation_type=pre_csv, configuration=con_comm_count,
         display_name="Communication Record Count CSV",
         report_data=rtdt_comm_count_pmpp, is_active=True)
     ReportPresentationFactory.create(
