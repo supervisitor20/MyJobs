@@ -38,7 +38,7 @@
     <script src="{{ STATIC_URL }}secure-block.168-30.js" type="text/javascript"></script>
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
-      var parent_site_url = "{% if testing_host_prefix %}http://{{ testing_host_prefix }}.{% else %}https://{% endif %}{{ secure_blocks_domain }}";
+      var parent_site_url = "{% if testing_host_prefix %}http://{{ testing_host_prefix }}.{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
       $(document).on("ready", function() {
         load_secure_blocks(parent_site_url + '/secure-blocks/');
       });
