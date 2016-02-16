@@ -14,7 +14,7 @@
 
                 <fieldset>
                     <legend>Job Details</legend>
-                    {% include 'includes/fieldset-error-highlight.html' with fieldset=form.get_field_sets.0 %}
+                    {% include 'includes/fieldset-error-highlight-bs3.html' with fieldset=form.get_field_sets.0 %}
                 </fieldset>
                 <fieldset>
                     <legend>Job Locations</legend>
@@ -35,7 +35,7 @@
                         <div id="hidden-options"></div>
                     </div>
                     <div id="empty-form">
-                        {% include 'includes/form-error-highlight.html' with form=formset.empty_form %}
+                        {% include 'includes/form-error-highlight-bs3.html' with form=formset.empty_form %}
                     </div>
                     {{ formset.management_form }}
                     <div class="actions row">
@@ -56,22 +56,22 @@
                 </fieldset>
                 <fieldset>
                     <legend>Application Instructions</legend>
-                    {% include 'includes/fieldset-error-highlight.html' with fieldset=form.get_field_sets.1 %}
+                    {% include 'includes/fieldset-error-highlight-bs3.html' with fieldset=form.get_field_sets.1 %}
                 </fieldset>
                 <fieldset>
                     <legend>Job Expiration</legend>
                     {% if item %}
-                    {% include 'includes/fieldset-error-highlight.html' with fieldset=form.get_field_sets.2 %}
+                    {% include 'includes/fieldset-error-highlight-bs3.html' with fieldset=form.get_field_sets.2 %}
                     {% else %}
                     {% comment %}Remove the is_expired box if we are creating a new job{% endcomment %}
-                    {% include 'includes/fieldset-error-highlight.html' with fieldset=form.get_field_sets.2|slice:":-1" %}
+                    {% include 'includes/fieldset-error-highlight-bs3.html' with fieldset=form.get_field_sets.2|slice:":-1" %}
                     {% endif %}
                 </fieldset>
                 <fieldset>
                     <legend>Posting Location</legend>
                     {% if form.get_field_sets.3 %}
                         <fieldset>
-                            {% include 'includes/fieldset-error-highlight.html' with fieldset=form.get_field_sets.3 %}
+                            {% include 'includes/fieldset-error-highlight-bs3.html' with fieldset=form.get_field_sets.3 %}
                         </fieldset>
                     {% else %}
                         <div class="col-xs-12 col-md-4">

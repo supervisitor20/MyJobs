@@ -3077,6 +3077,19 @@ div > .help-block{
     font-style: italic;
 }
 
+/* Microsites BS3 basic adjustments from BS2.0 to 3.x */
+
+#direct_dotjobsHeader {
+    height: 110px;
+}
+
+#direct_dotjobsHeader h1 a {
+    vertical-align: bottom;
+    font-weight: normal;
+}
+
+/* End Microsites basic adjustments */
+
 /* Job Posting form styles */
 #posting-nav {
     border-bottom: 1px solid #999;
@@ -3161,6 +3174,7 @@ fieldset:nth-child(n+2) {
     width: auto;
     height: auto;
     margin-right: 5px;
+    display: inline-block;
 }
 
 .row .col-md-8 ul li label {
@@ -3206,7 +3220,8 @@ height: 33px;
     color: #444545;
     display: inline-block;
     border: none;
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
+    vertical-align: baseline; 
 }
 
 .actions.row .col-md-8 .button:not(:last-child) {
