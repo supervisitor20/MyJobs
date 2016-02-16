@@ -93,7 +93,6 @@ if(window.addEventListener) {
 
 
 function hide_field(field_name) {
-    // $('.' + field_name + '-label').hide();
     $('.' + field_name + '-field').closest('.row').hide();
 }
 
@@ -104,7 +103,6 @@ function hide_admin_field(field_name) {
 
 
 function show_field(field_name) {
-    // $('.' + field_name + '-label').closest('.row').show();
     $('.' + field_name + '-field').closest('.row').show();
 }
 
