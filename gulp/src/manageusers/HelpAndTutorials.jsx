@@ -11,8 +11,8 @@ class HelpAndTutorials extends React.Component {
           <div className="product-card-full no-highlight">
             <h3>PDF Tutorials</h3>
 
-            <p><a href={this.props.staticURL + 'PRM Admin - Quickly add a User.pdf'}>Quickly add a user</a></p>
-            <p><a href={this.props.staticURL + 'My.jobsUserGuide-UserManagement.pdf'}>General overview</a></p>
+            <p><a href='https://d2e48ltfsb5exy.cloudfront.net/content_mj/files/PRM+Admin+-+Quickly+add+a+User.pdf'>Quickly add a user</a></p>
+            <p><a href='https://d2e48ltfsb5exy.cloudfront.net/content_mj/files/My.jobsUserGuide-UserManagement.pdf'}>General overview</a></p>
 
             <h3>Video Overview</h3>
 
@@ -25,9 +25,5 @@ class HelpAndTutorials extends React.Component {
     );
   }
 }
-
-HelpAndTutorials.propTypes = {
-  staticURL: React.PropTypes.string.isRequired,
-};
 
 export default HelpAndTutorials;

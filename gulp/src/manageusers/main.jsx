@@ -1,6 +1,5 @@
 /* global $ */
 /* global companyName */
-/* global staticURL */
 
 import React from 'react';
 import _ from 'lodash-compat';
@@ -32,7 +31,6 @@ export class App extends React.Component {
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
       company: companyName,
-      staticURL: staticURL,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
@@ -190,7 +188,6 @@ export class App extends React.Component {
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,
                   callUsersAPI: this.callUsersAPI,
-                  staticURL: this.state.staticURL,
                 })
               }
             </div>
