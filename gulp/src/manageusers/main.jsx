@@ -6,8 +6,6 @@ import _ from 'lodash-compat';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute, Link} from 'react-router';
 
-import {formatActivityName} from './formatActivityName';
-
 import Overview from './Overview';
 import Roles from './Roles';
 import Role from './Role';
@@ -63,7 +61,7 @@ export class App extends React.Component {
         _.forOwn(activityGroup, function buildListOfRows(activity) {
           activityRows.push(
             <tr key={activity.activity_id}>
-              <td>{formatActivityName(activity.activity_name)}</td>
+              <td>{activity.activity_name}</td>
               <td>{activity.activity_description}</td>
             </tr>
           );
