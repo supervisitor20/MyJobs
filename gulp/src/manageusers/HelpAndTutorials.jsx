@@ -16,8 +16,8 @@ class HelpAndTutorials extends React.Component {
 
             <h3>Video Overview</h3>
 
-            <div className='video-embed-container'>
-              <iframe src='https://player.vimeo.com/video/155433118' frameBorder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+            <div className="video-embed-container">
+              <iframe src="https://player.vimeo.com/video/155433118" frameBorder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
             </div>
           </div>
         </div>
@@ -25,5 +25,9 @@ class HelpAndTutorials extends React.Component {
     );
   }
 }
+
+HelpAndTutorials.propTypes = {
+  staticURL: React.PropTypes.string.isRequired,
+};
 
 export default HelpAndTutorials;
