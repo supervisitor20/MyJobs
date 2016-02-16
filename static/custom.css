@@ -4225,6 +4225,24 @@ a.btn.pull-right {
   margin-top: 5px;
 }
 
+.video-embed-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  max-width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.video-embed-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 @media only screen and (max-width:767px){
 
   /* Force table to not be like tables anymore */
