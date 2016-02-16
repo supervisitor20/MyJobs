@@ -51,7 +51,7 @@ class PartnersDataSource(DataSource):
     def run_count_comm_rec_per_month(self, company, filter_spec, order):
         # Get a list of valid partners (according to our filter).
         qs_filtered = filter_spec.filter_partners(company)
-        partner_ids = [r['id'] for r in qs_filtered.values('id').all()]
+        partner_ids = list(qs_filtered.values_list('id', flat=True))
 
         # If there are no partners, we're done.
         if not partner_ids:
@@ -75,7 +75,7 @@ class PartnersDataSource(DataSource):
 
             if year < min_year or min_year is None:
                 min_year = year
-            if year < max_year or max_year is None:
+            if year > max_year or max_year is None:
                 max_year = year
 
             key = (partner_id, year, month)

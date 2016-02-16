@@ -163,11 +163,12 @@ class TestPartnersDataSource(MyJobsBase):
     def test_run_count_comm_rec_per_month_one_partner(self):
         """Trip over a bug in the mysql client driver."""
         for (subject, itx) in enumerate(['a', 'b', 'c']):
-            for month in [2, 3, 4]:
-                self.sue.contactrecord_set.add(
-                    ContactRecordFactory(
-                        subject=subject,
-                        date_time=datetime(2015, month, 1)))
+            for year in [2013, 2015, 2014]:
+                for month in [2, 3, 4]:
+                    self.sue.contactrecord_set.add(
+                        ContactRecordFactory(
+                            subject=subject,
+                            date_time=datetime(year, month, 1)))
 
         ds = PartnersDataSource()
         partners_filter = PartnersFilter(tags=[['west']])
@@ -177,7 +178,7 @@ class TestPartnersDataSource(MyJobsBase):
             (r['name'], r['year'], r['month'], r['comm_rec_count'])
             for r in recs
         ]
-        self.assertEqual(12, len(data))
+        self.assertEqual(36, len(data))
 
     def test_run_count_comm_rec_per_month_no_partners(self):
         """Trip over a bug in the mysql client driver."""
