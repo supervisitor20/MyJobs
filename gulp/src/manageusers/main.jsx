@@ -12,6 +12,7 @@ import Role from './Role';
 import Activities from './Activities';
 import Users from './Users';
 import User from './User';
+import HelpAndTutorials from './HelpAndTutorials';
 import NoMatch from './NoMatch';
 import AssociatedRolesList from './AssociatedRolesList';
 import AssociatedUsersList from './AssociatedUsersList';
@@ -172,6 +173,7 @@ export class App extends React.Component {
               <Link to="users" className="btn">Users</Link>
               <Link to="roles" className="btn">Roles</Link>
               <Link to="activities" className="btn">Activities</Link>
+              <Link to="help-and-tutorials" className="btn">Help & Tutorials</Link>
             </div>
           </div>
 
@@ -210,6 +212,7 @@ render((
       <Route path="users" component={Users} />
       <Route path="/user/add" component={User} />
       <Route path="/user/:userId" component={User} />
+      <Route path="help-and-tutorials" component={HelpAndTutorials} />
       <Route path="*" component={NoMatch}/>
     </Route>
   </Router>
