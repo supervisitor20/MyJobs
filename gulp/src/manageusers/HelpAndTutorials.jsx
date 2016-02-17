@@ -14,7 +14,7 @@ class HelpAndTutorials extends React.Component {
             <p><i className="fa fa-file-pdf-o fa-2x pull-left"></i> <a href="https://d2e48ltfsb5exy.cloudfront.net/content_mj/files/PRM+Admin+-+Quickly+add+a+User.pdf">Quickly Add a User</a><br/>
             This single page document covers the basics of adding a user to your company.</p>
 
-          <p><i className="fa fa-file-pdf-o fa-2x pull-left"></i> <a href="https://d2e48ltfsb5exy.cloudfront.net/content_mj/files/My.jobsUserGuide-UserManagement.pdf">General Overview</a><br/>
+            <p><i className="fa fa-file-pdf-o fa-2x pull-left"></i> <a href="https://d2e48ltfsb5exy.cloudfront.net/content_mj/files/My.jobsUserGuide-UserManagement.pdf">General Overview</a><br/>
             This comprehensive document will guide you through all the features of user management.</p>
 
             <h3>Video Overview</h3>
