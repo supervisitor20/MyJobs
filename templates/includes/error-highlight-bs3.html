@@ -29,7 +29,13 @@
                     {% endfor %}
                     </select>
                 {% else %}
-                    {{ field }}
+                    {% if field.errors %}
+                        <span class="required">
+                            {{ field }}
+                        </span>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
                 {% endif %}
                 {% if field.errors %}
                     <div class="error-box">

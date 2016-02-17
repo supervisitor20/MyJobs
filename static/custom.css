@@ -3160,6 +3160,11 @@ fieldset:nth-child(n+2) {
     font-style: normal;
 }
 
+.row .col-md-8 .required input,
+.row .col-md-8 .required textarea {
+    border: 1px solid #f00;
+}
+
 .row .col-md-8 input,
 .row .col-md-8 textarea {
     width: 100%;
@@ -3168,6 +3173,7 @@ fieldset:nth-child(n+2) {
     height: 33px;
     line-height: 33px;
     padding: 0 5px;
+    margin: 0;
 }
 
 .row .col-md-8 input[type='radio'] {
@@ -3206,6 +3212,10 @@ height: 33px;
     /*The height of the filter, subracted*/
     height: 158px;
     border-radius: 0 0 3px 3px;
+}
+
+.row .col-md-8 .fsm .fsm-filter input[type='text'] {
+    width: 90%;
 }
 
 .row .col-md-8 textarea {

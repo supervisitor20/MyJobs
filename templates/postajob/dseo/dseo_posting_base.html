@@ -1,14 +1,10 @@
 {% extends "seo_base.html" %}
-{% load compress %}
 
 {% block directseo_title %}{% endblock %}
 
 {% block directseo_css %}
 {{ block.super }}
-{% compress css %}
-<link rel="stylesheet" href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="{{ STATIC_URL }}custom.css" rel="stylesheet" type="text/css">
-{% endcompress %}
+<link rel="stylesheet" type="text/css" href="/style/posting-style.css?version={{site_config.id}}-{{site_config.revision}}">
 {% endblock directseo_css %}
 
 {% block directseo_searchbox %}{% endblock %}

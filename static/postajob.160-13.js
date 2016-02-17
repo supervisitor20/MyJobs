@@ -259,11 +259,11 @@ function copy_forms(from, to) {
         if (from_value) {
             to.find(element).val(from_value);
             if (from_input.parents('.required').length > 0) {
-                from_input.parent().unwrap();
+                from_input.unwrap();
             }
         } else {
             if (from_input.parents('.required').length == 0) {
-                from_input.parent('.profile-form-input').wrap('<div class="required">');
+                from_input.wrap('<span class="required">');
             }
             valid = false;
         }
@@ -289,11 +289,11 @@ function copy_forms(from, to) {
             if (from_value) {
                 to.find(element).val(from_value);
                 if (from_input.parents('.required').length > 0) {
-                    from_input.parent().unwrap();
+                    from_input.unwrap();
                 }
             } else {
                 if (from_input.parents('.required').length == 0) {
-                    from_input.parent('.profile-form-input').wrap('<div class="required">');
+                    from_input.wrap('<span class="required">');
                 }
                 valid = false;
             }
@@ -311,7 +311,7 @@ function copy_forms(from, to) {
                 }
             } else {
                 if (from_input.parents('.required').length == 0) {
-                    from_input.parent('.profile-form-input').wrap('<div class="required">');
+                    from_input.wrap('<span class="required">');
                 }
                 valid = false;
             }
