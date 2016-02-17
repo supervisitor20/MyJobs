@@ -3088,6 +3088,11 @@ div > .help-block{
     font-weight: normal;
 }
 
+#direct_dotjobsHeader h1 img {
+    position: relative;
+    top: 14px;
+}
+
 /* End Microsites basic adjustments */
 
 /* Job Posting form styles */
@@ -3096,11 +3101,11 @@ div > .help-block{
     margin-bottom: 20px;
 }
 
-#posting-nav ul {
+#posting-nav ul#ul-posting-nav {
     margin: 20px 0 0;
 }
 
-#posting-nav ul li {
+#posting-nav ul#ul-posting-nav li {
     border-radius: 3px 3px 0 0;
     margin: 0 10px;
     padding: 5px 10px;
@@ -3108,13 +3113,15 @@ div > .help-block{
     border-bottom: none;
     background: #E7E7E7;
     display: inline-block;
+    width: initial;
 }
 
-#posting-nav ul li a {
+#posting-nav ul#ul-posting-nav li a {
     color: #444545;
+    padding: 0;
 }
 
-#posting-nav ul li a:hover {
+#posting-nav ul#ul-posting-nav li a:hover {
     color: #444545;
 }
 
