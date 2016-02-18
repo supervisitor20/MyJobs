@@ -186,6 +186,11 @@
     width: initial;
 }
 
+#posting-nav ul#ul-posting-nav li.active {
+    position: relative;
+    top: 1px;
+}
+
 #posting-nav ul#ul-posting-nav li a {
     color: #444545;
     padding: 0;
