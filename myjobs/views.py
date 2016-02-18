@@ -871,7 +871,7 @@ def api_create_role(request):
             activities = request.POST.getlist("assigned_activities[]", "")
             # Create list of activity_ids from names
             for activity in enumerate(activities):
-                activity_object = Activity.objects.get(name=activity[1])
+                activity_object = Activity.objects.get(display_name=activity[1])
                 activity_id = activity_object.id
                 activity_ids.append(activity_id)
         # At least one activity must be selected
@@ -966,7 +966,7 @@ def api_edit_role(request, role_id=0):
         # Create list of activity_ids from names
         activity_ids = []
         for i, activity in enumerate(activities):
-            activity_object = Activity.objects.filter(name=activity)
+            activity_object = Activity.objects.filter(display_name=activity)
             activity_id = activity_object[0].id
             activity_ids.append(activity_id)
         # INPUT - assigned_users

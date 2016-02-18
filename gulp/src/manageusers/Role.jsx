@@ -122,7 +122,7 @@ class Role extends React.Component {
       const tempRef = activity.app_access_name.replace(/\s/g, '');
       const selected = refs.activities.refs[tempRef].state.assignedActivities;
       _.forOwn(selected, function loopThroughEachSelectedActivity(item) {
-        assignedActivities.push(item);
+        assignedActivities.push(item.name);
       });
     });
     // User must select AT LEAST ONE activity
