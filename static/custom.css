@@ -3096,35 +3096,6 @@ div > .help-block{
 /* End Microsites basic adjustments */
 
 /* Job Posting form styles */
-#posting-nav {
-    border-bottom: 1px solid #999;
-    margin-bottom: 20px;
-}
-
-#posting-nav ul#ul-posting-nav {
-    margin: 20px 0 0;
-}
-
-#posting-nav ul#ul-posting-nav li {
-    border-radius: 3px 3px 0 0;
-    margin: 0 10px;
-    padding: 5px 10px;
-    border: 1px solid #999;
-    border-bottom: none;
-    background: #E7E7E7;
-    display: inline-block;
-    width: initial;
-}
-
-#posting-nav ul#ul-posting-nav li a {
-    color: #444545;
-    padding: 0;
-}
-
-#posting-nav ul#ul-posting-nav li a:hover {
-    color: #444545;
-}
-
 #job-form {
     margin-bottom: 20px;
 }
