@@ -866,14 +866,8 @@ def api_create_role(request):
                                 content_type="application/json")
 
         activity_ids = []
-
         if request.POST.getlist("assigned_activities[]", ""):
-            activities = request.POST.getlist("assigned_activities[]", "")
-            # Create list of activity_ids from names
-            for activity in enumerate(activities):
-                activity_object = Activity.objects.get(display_name=activity[1])
-                activity_id = activity_object.id
-                activity_ids.append(activity_id)
+            activity_ids = request.POST.getlist("assigned_activities[]", "")
         # At least one activity must be selected
         if not activity_ids:
             ctx["success"] = "false"
