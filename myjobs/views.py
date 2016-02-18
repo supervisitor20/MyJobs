@@ -911,7 +911,7 @@ def api_edit_role(request, role_id=0):
     Inputs:
     :role_id:                   unique id of role
     :role_name:                 name of role
-    :assigned_activites:        activities assigned to this role
+    :assigned_activites:        PKs of activities assigned to this role
     :assigned_users:            users assigned to this role
 
     Returns:
@@ -955,20 +955,14 @@ def api_edit_role(request, role_id=0):
                                 content_type="application/json")
 
         # INPUT - assigned_activites
-        activities = request.POST.getlist("assigned_activities[]", "")
+        activity_ids = request.POST.getlist("assigned_activities[]", "")
 
         # At least one activity must be selected
-        if activities == "" or activities[0] == "":
+        if activity_ids == "" or activity_ids[0] == "":
             ctx["success"] = "false"
             ctx["message"] = "At least one activity must be assigned."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
-        # Create list of activity_ids from names
-        activity_ids = []
-        for i, activity in enumerate(activities):
-            activity_object = Activity.objects.filter(display_name=activity)
-            activity_id = activity_object[0].id
-            activity_ids.append(activity_id)
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
 
