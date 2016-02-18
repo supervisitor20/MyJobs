@@ -1,5 +1,3 @@
-import {formatActivityName} from './formatActivityName';
-
 // Input:
 // String
 //
@@ -14,7 +12,7 @@ export function formatForMultiselect(items) {
     // Activities have a field "name"
     // Users have a field "email"
     if (typeof obj.fields.name !== 'undefined') {
-      item.name = formatActivityName(obj.fields.name);
+      item.name = obj.fields.name;
     } else if (typeof obj.fields.email !== 'undefined') {
       item.name = obj.fields.email;
     }
