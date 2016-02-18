@@ -1,5 +1,11 @@
+import moment from 'moment';
+
 // This is the business logic of the myreports client.
 
+
+export function defaultReportName(date) {
+  return moment(date).format('YYYY-MM-DD hh:mm:ss.SSS');
+}
 
 // Root of the client.
 //
@@ -75,7 +81,8 @@ export class ReportFinder {
 // Future: consider restructuring this class so that it's methods which mutate
 // state operate on and return a new react state object.
 export class ReportConfiguration {
-  constructor(rpId, filters, api, newReportNote) {
+  constructor(name, rpId, filters, api, newReportNote) {
+    this.name = name;
     this.rpId = rpId;
     this.filters = filters;
     this.simpleFilter = {};
@@ -161,8 +168,19 @@ export class ReportConfiguration {
     return this.andOrFilter[key];
   }
 
-  async run(name) {
-    const reportId = await this.api.runReport(this.rpId, name, this.getFilter());
+  changeReportName(name) {
+    this.name = name;
+  }
+
+  getReportName() {
+    return this.name;
+  }
+
+  async run() {
+    const reportId = await this.api.runReport(
+        this.rpId,
+        this.name,
+        this.getFilter());
     this.newReportNote(reportId);
     return reportId;
   }
@@ -177,6 +195,7 @@ export class ReportConfigurationBuilder {
   }
 
   async build(rpId, filters, cb) {
-    return new ReportConfiguration(rpId, filters, this.api, cb);
+    const name = defaultReportName(new Date());
+    return new ReportConfiguration(name, rpId, filters, this.api, cb);
   }
 }

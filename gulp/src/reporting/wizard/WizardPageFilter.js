@@ -14,7 +14,7 @@ export class WizardPageFilter extends Component {
   constructor() {
     super();
     this.state = {
-      reportName: 'Report Name',
+      reportName: '',
       loading: true,
     };
   }
@@ -72,10 +72,17 @@ export class WizardPageFilter extends Component {
     this.updateState();
   }
 
+  changeReportName(name) {
+    const {reportConfig} = this.state;
+    reportConfig.changeReportName(name);
+    this.updateState();
+  }
+
   updateState() {
     const {reportConfig} = this.state;
     this.setState({
       filter: reportConfig.getFilter(),
+      reportName: reportConfig.getReportName(),
     });
   }
 
@@ -100,6 +107,12 @@ export class WizardPageFilter extends Component {
     }
 
     const rows = [];
+    rows.push(this.renderRow('Report Name', 'reportName',
+      <input
+        type="text"
+        value={reportName}
+        onChange={(e) => this.changeReportName(e.target.value)}/>
+    ));
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
       case 'date_range':

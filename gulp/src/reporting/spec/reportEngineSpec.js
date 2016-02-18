@@ -1,4 +1,8 @@
-import {ReportFinder, ReportConfiguration} from '../reportEngine';
+import {
+  ReportFinder,
+  ReportConfiguration,
+  defaultReportName,
+} from '../reportEngine';
 
 import {promiseTest} from '../../util/spec';
 
@@ -62,7 +66,7 @@ describe('ReportConfiguration', () => {
   beforeEach(() => {
     fakeComponent = new FakeComponent();
     config = new ReportConfiguration(
-      2, {}, fakeApi,
+      'defaultName', 2, {}, fakeApi,
       id => fakeComponent.newReportNote(id));
   });
 
@@ -158,8 +162,26 @@ describe('ReportConfiguration', () => {
 
     const result = await config.run();
 
-    expect(fakeApi.runReport).toHaveBeenCalled();
+    expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'defaultName', {});
     expect(result).toEqual(7);
     expect(fakeComponent.newReportNote).toHaveBeenCalled();
   }));
+
+  it('can change the name of the report', promiseTest(async() => {
+    spyOn(fakeApi, 'runReport').and.callThrough();
+    spyOn(fakeComponent, 'newReportNote').and.callThrough();
+
+    config.changeReportName('bbb');
+    const result = await config.run();
+
+    expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'bbb', {});
+    expect(result).toEqual(7);
+  }));
+});
+
+describe('defaultReportName', () => {
+  it('can come up with a name from a date', () => {
+    const name = defaultReportName(new Date(2015, 0, 2, 10, 9, 8, 7));
+    expect(name).toEqual('2015-01-02 10:09:08.007');
+  });
 });

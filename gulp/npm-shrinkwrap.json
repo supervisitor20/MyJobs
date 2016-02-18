@@ -37,6 +37,11 @@
       "from": "lodash-compat@~3.10.1",
       "resolved": "https://registry.npmjs.org/lodash-compat/-/lodash-compat-3.10.1.tgz"
     },
+    "moment": {
+      "version": "2.11.2",
+      "from": "moment@",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.11.2.tgz"
+    },
     "react-dom": {
       "version": "0.14.3",
       "from": "react-dom@^0.14.0",
