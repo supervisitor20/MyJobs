@@ -866,14 +866,8 @@ def api_create_role(request):
                                 content_type="application/json")
 
         activity_ids = []
-
-        if request.POST.getlist("assigned_activities[]", ""):
-            activities = request.POST.getlist("assigned_activities[]", "")
-            # Create list of activity_ids from names
-            for activity in enumerate(activities):
-                activity_object = Activity.objects.get(name=activity[1])
-                activity_id = activity_object.id
-                activity_ids.append(activity_id)
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
         # At least one activity must be selected
         if not activity_ids:
             ctx["success"] = "false"
@@ -911,7 +905,7 @@ def api_edit_role(request, role_id=0):
     Inputs:
     :role_id:                   unique id of role
     :role_name:                 name of role
-    :assigned_activites:        activities assigned to this role
+    :assigned_activites:        PKs of activities assigned to this role
     :assigned_users:            users assigned to this role
 
     Returns:
@@ -954,21 +948,16 @@ def api_edit_role(request, role_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
-        # INPUT - assigned_activites
-        activities = request.POST.getlist("assigned_activities[]", "")
+        activity_ids = []
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
 
         # At least one activity must be selected
-        if activities == "" or activities[0] == "":
+        if not activity_ids:
             ctx["success"] = "false"
             ctx["message"] = "At least one activity must be assigned."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
-        # Create list of activity_ids from names
-        activity_ids = []
-        for i, activity in enumerate(activities):
-            activity_object = Activity.objects.filter(name=activity)
-            activity_id = activity_object[0].id
-            activity_ids.append(activity_id)
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
 
