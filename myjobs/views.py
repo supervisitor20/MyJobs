@@ -948,9 +948,10 @@ def api_edit_role(request, role_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
-        # INPUT - assigned_activites
-        activity_ids = request.POST.getlist("assigned_activities[]")
-        
+        activity_ids = []
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
+
         # At least one activity must be selected
         if not activity_ids:
             ctx["success"] = "false"
