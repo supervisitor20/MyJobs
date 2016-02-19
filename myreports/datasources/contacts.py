@@ -2,7 +2,8 @@
 from operator import __or__
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range, extract_tags)
+    dispatch_help_by_field_name, dispatch_run_by_data_type,
+    filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
@@ -13,7 +14,11 @@ from django.db.models import Q
 
 
 class ContactsDataSource(DataSource):
-    def run(self, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, order):
+        return dispatch_run_by_data_type(
+            self, data_type, company, filter_spec, order)
+
+    def run_unaggregated(self, company, filter_spec, order):
         """Run the query with the given company, filter, and ordering.
 
         returns: list of relatively flat dictionaries.

@@ -18,6 +18,23 @@ def dispatch_help_by_field_name(ds, company, filter_spec, field, partial):
     return method(company, filter_spec, partial)
 
 
+def dispatch_run_by_data_type(ds, data_type, company, filter_spec, order_spec):
+    """Invoke ds.run_[date_type] method.
+
+    example:
+        given data_type='partner_per_month':
+        return ds.run_partner_per_month(company, filter_spec, order_spec)
+
+    Breaks up large run methods into smaller run methods separated by
+    data_type.
+
+    signatures of run_[data_type] should match the signature of
+    DataSource.run without the data_type parameter.
+    """
+    method = getattr(ds, 'run_' + data_type)
+    return method(company, filter_spec, order_spec)
+
+
 def filter_arg(field, op, data):
     return {
         field + '__' + op: data
@@ -49,8 +66,9 @@ def extract_tags(tag_list):
     """Extract name + hex_color + ... from tags."""
     return [
         {
+            'id': t.id,
             'name': t.name,
             'hex_color': t.hex_color,
         }
-        for t in tag_list
+        for t in tag_list.all()
     ]
