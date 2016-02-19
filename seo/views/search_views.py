@@ -624,7 +624,7 @@ def stylesheet(request, cid=None, css_file="stylesheet.css"):
 
 
 @custom_cache_page
-def posting_stylesheet(request, cid=None, css_file="posting-stylesheet.css"):
+def posting_stylesheet(request, cid=None, css_file="posting-stylesheet.173-18.css"):
     """
     TODO: Make stylesheet dynamic and not hard code.
     Quick C&P due to due date.
