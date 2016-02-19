@@ -182,7 +182,10 @@ CELERY_ROUTES = {
         'queue': 'myjobs',
         'routing_key': 'myjobs.process_batch_events'
     },
-    'tasks.expire_jobs': {},
+    'tasks.expire_jobs': {
+        'queue': 'solr',
+        'routing_key': 'solr.expire_jobs'
+    },
     'tasks.update_solr_from_model': {
         'queue': 'myjobs',
         'routing_key': 'myjobs.expire_jobs'
