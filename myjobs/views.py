@@ -866,8 +866,8 @@ def api_create_role(request):
                                 content_type="application/json")
 
         activity_ids = []
-        if request.POST.getlist("assigned_activities[]", ""):
-            activity_ids = request.POST.getlist("assigned_activities[]", "")
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
         # At least one activity must be selected
         if not activity_ids:
             ctx["success"] = "false"
@@ -949,10 +949,10 @@ def api_edit_role(request, role_id=0):
                                 content_type="application/json")
 
         # INPUT - assigned_activites
-        activity_ids = request.POST.getlist("assigned_activities[]", "")
-
+        activity_ids = request.POST.getlist("assigned_activities[]")
+        
         # At least one activity must be selected
-        if activity_ids == "" or activity_ids[0] == "":
+        if not activity_ids:
             ctx["success"] = "false"
             ctx["message"] = "At least one activity must be assigned."
             return HttpResponse(json.dumps(ctx),
