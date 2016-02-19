@@ -59,6 +59,9 @@ class RegistrationBlockAdmin(BlockAdmin):
     form = forms.RegistrationBlockForm
 
 
+class ToolsWidgetBlockAdmin(BlockAdmin):
+    form = forms.ToolsWidgetBlockForm
+
 class SavedSearchWidgetBlockAdmin(BlockAdmin):
     form = forms.SavedSearchWidgetBlockForm
 

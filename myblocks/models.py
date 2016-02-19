@@ -422,14 +422,77 @@ class SecureBlock(Block):
         required_js = [static_string % js for js in self.required_js()]
         return '%s %s' % (rendered_template, ''.join(required_js))
 
+    def get_cookies(self, request):
+        """
+        Retrieve information for setting cookies for block, if exists. To be
+        overwritten by child class
+
+        """
+        return {}
+
     class Meta:
         abstract = True
 
+class ToolsWidgetBlock(SecureBlock):
+    """
+    This widget is used to display account and navigation related links via
+    the secure blocks API. It is based on the topbar functionality, but will
+    represent a more flexible and customizable approach.
 
+    """
+    # temporarily use the current topbar template
+    base_template = 'includes/topbar.html'
+
+    def context(self, request, **kwargs):
+        """
+        Add additional context variables to those passed in from the ajax call.
+
+        """
+        context = super(ToolsWidgetBlock, self).context(request, **kwargs)
+        user = request.user if request.user.is_authenticated() else None
+
+        if not user:
+            # Ensure that old myguid cookies can be handled correctly
+            guid = request.COOKIES.get('myguid', '').replace('-', '')
+            try:
+                user = User.objects.get(user_guid=guid)
+            except User.DoesNotExist:
+               pass
+
+        context['user'] = user
+
+        return context
+
+    def get_cookies(self, request):
+        """
+        Set cookies for last microsite and lastmicrositename
+
+        """
+        cookies = []
+        caller = request.REQUEST.get('site', '')
+        if caller:
+            max_age = 30 * 24 * 60 * 60
+            last_name = request.REQUEST.get('site_name', caller)
+            cookies.append({'key':'lastmicrosite',
+                            'value':caller,
+                            'max_age':max_age,
+                            'domain':'.my.jobs'})
+            cookies.append({'key':'lastmicrositename',
+                            'value':last_name,
+                            'max_age':max_age,
+                            'domain':'.my.jobs'})
+        return cookies
+
+    def required_js(self):
+        """
+        Return a list of all required javascript in URL format
+
+        """
+        return ['%ssaved-search.js' % settings.STATIC_URL]
 
 class SavedSearchWidgetBlock(SecureBlock):
     """
-    Secure Block. What is rendered is based heavily on whether or not the
+    What is rendered is based heavily on whether or not the
     user is signed in to an account. Block renders as a customizable saved
     search module.
 

@@ -109,7 +109,7 @@ def secure_blocks(request):
                     request.GET))
         raise SuspiciousOperation(message)
 
-    response = {}
+    response = {'cookies':[]}
 
     for element_id in blocks:
         block = Block.objects.filter(element_id=element_id).first()
@@ -120,6 +120,7 @@ def secure_blocks(request):
                 block = block.cast()
                 rendered = block.render_for_ajax(request, blocks[element_id])
                 response[element_id] = rendered
+                response['cookies'].extend(block.get_cookies(request))
             except Exception as ex:
                 logger.warn("Error loading widget: %s" % ex.message)
 
