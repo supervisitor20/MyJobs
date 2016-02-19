@@ -177,6 +177,11 @@ describe('ReportConfiguration', () => {
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'bbb', {});
     expect(result).toEqual(7);
   }));
+
+  it('warns about invalid report names', promiseTest(async() => {
+    config.changeReportName('');
+    expect(config.getReportNameError()).toContain('empty');
+  }));
 });
 
 describe('defaultReportName', () => {

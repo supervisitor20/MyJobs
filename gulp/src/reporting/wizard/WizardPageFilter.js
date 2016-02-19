@@ -9,6 +9,7 @@ import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
+import {ValidatedInput} from 'common/ui/ValidatedInput';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -83,6 +84,7 @@ export class WizardPageFilter extends Component {
     this.setState({
       filter: reportConfig.getFilter(),
       reportName: reportConfig.getReportName(),
+      reportNameError: reportConfig.getReportNameError(),
     });
   }
 
@@ -100,18 +102,20 @@ export class WizardPageFilter extends Component {
   }
 
   render() {
-    const {loading, reportConfig, reportName} = this.state;
+    const {loading, reportConfig, reportName, reportNameError} = this.state;
 
     if (loading) {
       return <Loading/>;
     }
 
     const rows = [];
+    const errorTexts = reportNameError ? [reportNameError] : null;
     rows.push(this.renderRow('Report Name', 'reportName',
-      <input
-        type="text"
+      <ValidatedInput
         value={reportName}
-        onChange={(e) => this.changeReportName(e.target.value)}/>
+        helpText="Name will appear in downloaded filenames."
+        errorTexts={errorTexts}
+        onValueChange={v => this.changeReportName(v)}/>
     ));
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {

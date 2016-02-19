@@ -176,6 +176,13 @@ export class ReportConfiguration {
     return this.name;
   }
 
+  getReportNameError() {
+    if (!this.name) {
+      return 'Report name cannot be empty.';
+    }
+    return null;
+  }
+
   async run() {
     const reportId = await this.api.runReport(
         this.rpId,
