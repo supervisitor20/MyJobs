@@ -1,7 +1,7 @@
 BROKER_HOST = '204.236.236.123'
 BROKER_PORT = 5672
 BROKER_USER = 'celery'
-BROKER_VHOST = 'dseo-vhost'
+BROKER_VHOST = "DoesNotExist" # If not overriden, use a vhost that doesn't exist
 
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
