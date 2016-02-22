@@ -3161,6 +3161,10 @@ fieldset:nth-child(n+2) {
     display: inline-block;
 }
 
+.row .col-md-8 ul {
+    margin: 0;
+}
+
 .row .col-md-8 ul li label {
     font-weight: normal;
 }
@@ -3209,7 +3213,8 @@ height: 33px;
     display: inline-block;
     border: none;
     margin-bottom: 20px;
-    vertical-align: baseline; 
+    font-weight: bold;
+    vertical-align: top;
 }
 
 .actions.row .col-md-8 .button:not(:last-child) {
