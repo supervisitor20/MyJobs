@@ -10,6 +10,8 @@ from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
 
+import seo.lookups
+
 admin.autodiscover()
 
 # API Resources

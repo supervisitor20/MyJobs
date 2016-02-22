@@ -28,6 +28,10 @@ class CompaniesLookup(LookupChannel):
 class SitesLookup(LookupChannel):
     model = models.SeoSite
     min_length = 3
+    plugin_options = {
+        'autoFocus': True,
+        'delay': 0
+    }
 
     def get_query(self, q, request):
         """Match on name or domain."""

@@ -9,6 +9,8 @@ from seo.views.settings_views import secure_redirect
 from registration import views as registration_views
 from ajax_select import urls as ajax_select_urls
 
+import seo.lookups
+
 # This is a bit of code pulled from a Django TRAC ticket describing a problem
 # I was seeing when working with the inline model forms:
 # https://code.djangoproject.com/ticket/10405#comment:11
