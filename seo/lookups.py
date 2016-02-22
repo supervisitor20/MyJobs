@@ -9,7 +9,7 @@ class CompaniesLookup(LookupChannel):
 
     def get_query(self, q, request):
         return self.model.objects.filter(
-            name__startswith=q).order_by('name')[:10]
+            name__istartswith=q).order_by('name')[:10]
 
     def format_match(self, company):
         """
@@ -33,7 +33,7 @@ class SitesLookup(LookupChannel):
         """Match on name or domain."""
 
         return self.model.objects.filter(
-            Q(domain__startswith=q) | Q(name__startswith=q))[:10]
+            Q(domain__istartswith=q) | Q(name__istartswith=q))[:10]
 
     # See https://github.com/crucialfelix/django-ajax-selects/issues/153 for
     # why this is necessary. Inherited models don't act correctly, so we help
