@@ -1,4 +1,4 @@
-import {formatForMultiselect} from '../../util/formatForMultiselect';
+import {formatForMultiselect} from '../formatForMultiselect';
 
 const availableUsersParsed = [
   {

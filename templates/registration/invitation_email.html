@@ -15,9 +15,12 @@
         of {{ invitation.inviting_company.name }} has invited you to join My.jobs{{ message }}
 
     </p>
+    {% if redirect %}
+      <p><a href="{{ redirect.href }}">{{ redirect.text }}</a></p>
+    {% endif %}
     {{ link_text|safe }}
 
-    {% if group or company_user %}
+    {% if invitation.invitee.roles.exists %}
         <p>You can <a href="https://secure.my.jobs{% url 'home' %}">log in here.</a></p>
     {% endif %}
     {% if not invitation.invitee.is_verified %}

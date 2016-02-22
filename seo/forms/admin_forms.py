@@ -34,9 +34,9 @@ class MyModelMultipleChoiceField(forms.ModelMultipleChoiceField):
                  widget=None, label=None, initial=None,
                  help_text=None, *args, **kwargs):
         self.my_model = kwargs.pop('my_model', None)
-        super(forms.ModelMultipleChoiceField, self)\
-            .__init__(queryset, None, cache_choices, required, widget, label,
-                      initial, help_text, *args, **kwargs)
+        super(forms.ModelMultipleChoiceField, self).__init__(
+            queryset, None, cache_choices, required, widget, label, initial,
+            help_text, *args, **kwargs)
 
     def clean(self, value):
         if self.required and not value:
@@ -669,8 +669,27 @@ class CompanyForm(SeoSiteReverseForm):
                                                 my_model=BusinessUnit,
                                                 required=False,
                                                 widget=job_source_ids_widget)
+    admin_email = forms.fields.EmailField(label='Admin Email',
+                                          required=False)
+
     class Meta:
         model = Company
+
+    def __init__(self, *args, **kwargs):
+        super(CompanyForm, self).__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+        if instance and instance.first_invitation:
+            text = "Invitation sent to %s." % (
+                instance.first_invitation.invitee_email)
+            self.fields['admin_email'] = forms.fields.CharField(
+                initial=text,
+                widget=forms.widgets.TextInput(
+                    attrs={"style": "border: 0; "
+                                    "background: 'transparent'; "
+                                    "width: 300px;",
+                           "readonly": True,
+                           "onfocus": "this.blur()"
+                           }))
 
 
 class SpecialCommitmentForm(SeoSiteReverseForm):

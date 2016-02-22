@@ -7,6 +7,7 @@ from seo.views.search_views import (BusinessUnitAdminFilter, SeoSiteAdminFilter,
                                     Dseo404)
 from seo.views.settings_views import secure_redirect
 from registration import views as registration_views
+from ajax_select import urls as ajax_select_urls
 
 # This is a bit of code pulled from a Django TRAC ticket describing a problem
 # I was seeing when working with the inline model forms:
@@ -63,6 +64,7 @@ urlpatterns += patterns('seo.views.search_views',
 )
 
 urlpatterns += patterns('',
+    url(r'^ajax_select/', include(ajax_select_urls)),
     url(r'^admin/', include(admin.site.urls)),
     url('', include('seo.urls.search_urls', app_name='seo')),
     url('settings/', include('seo.urls.settings_urls')),

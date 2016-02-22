@@ -1,3 +1,5 @@
+.. _secure-blocks-reference:
+
 ===============
 Secure Blocks
 ===============
@@ -21,6 +23,8 @@ is from a valid child site. If the microsite does not have a parent site and
 is a secure site, it makes the call to and returns from itself.
 
 .. autofunction:: myjobs.cross_site_verify.cross_site_verify
+
+.. autofunction:: myjobs.autoserialize.autoserialize
 
 Secure Blocks Widgets
 =====================
@@ -115,6 +119,7 @@ blocks template.
 
         :callback: Function to be called after ajax call completes successfully
 
+.. _saved-search-widget:
 
 Saved Search Widget
 ===================

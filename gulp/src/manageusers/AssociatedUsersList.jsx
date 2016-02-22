@@ -5,7 +5,7 @@ class AssociatedUsersList extends React.Component {
     const associatedUsersList = this.props.users.map( (user, index) => {
       return (
         <li key={index}>
-          {user.fields.email}
+          {user.name}
         </li>
       );
     });

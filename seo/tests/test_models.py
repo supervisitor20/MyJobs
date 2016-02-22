@@ -7,6 +7,7 @@ from seo.models import Company, CustomFacet, SeoSite, SiteTag
 from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
+from registration.models import Invitation
 
 
 class ModelsTestCase(DirectSEOBase):
@@ -199,29 +200,18 @@ class TestRoles(DirectSEOBase):
         users = [factories.UserFactory(email="alice%s@gmail.com" % i)
                  for i in range(10)]
 
-        with self.settings(ROLES_ENABLED=False):
-            # When activities are disabled, company user count is determined by
-            # the number of appropriate entries in the company user table.
-            self.assertEqual(self.company.company_user_count, 0)
+        # When activities are enabled, company user count is determined by
+        # the number distinct users assigned a role within that company
+        self.assertEqual(self.company.company_user_count, 0)
+        role = RoleFactory(company=self.company)
 
-            for user in users:
-                factories.CompanyUserFactory(user=user, company=self.company)
+        # delete company users to prevent the possibility of a false
+        # positive
+        self.company.companyuser_set.all().delete()
 
-            self.assertEqual(self.company.company_user_count, 10)
-
-        with self.settings(ROLES_ENABLED=True):
-            # When activities are enabled, company user count is determined by
-            # the number distinct users assigned a role within that company
-            self.assertEqual(self.company.company_user_count, 0)
-            role = RoleFactory(company=self.company)
-
-            # delete company users to prevent the possibility of a false
-            # positive
-            self.company.companyuser_set.all().delete()
-
-            for user in users:
-                user.roles = [role]
-            self.assertEqual(self.company.company_user_count, 10)
+        for user in users:
+            user.roles = [role]
+        self.assertEqual(self.company.company_user_count, 10)
 
 
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
@@ -368,4 +358,12 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
 
         self.assertItemsEqual(self.company.enabled_access, ['Test Access'])
 
+    def test_first_invitation(self):
+        """
+        `Company.first_invitation` should return the first invitation created
+        for a company.
 
+        """
+        self.assertEqual(
+            self.company.first_invitation, Invitation.objects.filter(
+                inviting_company=self.company).order_by('-invited').first())
