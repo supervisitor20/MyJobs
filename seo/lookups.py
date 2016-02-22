@@ -1,13 +1,15 @@
+from django.db.models import Q
 from ajax_select import register, LookupChannel
 from seo import models
 
 @register('companies')
 class CompaniesLookup(LookupChannel):
-    model = Company
+    model = models.Company
     min_length = 3
 
     def get_query(self, q, request):
-        return self.model.objects.filter(name__icontains=q).order_by('name')
+        return self.model.objects.filter(
+            name__startswith=q).order_by('name')[:10]
 
     def format_match(self, company):
         """
@@ -20,6 +22,7 @@ class CompaniesLookup(LookupChannel):
         warning = "" if count else " **Might be a duplicate**"
 
         return template.format(name=company.name, count=count, warning=warning)
+
 
 @register('sites')
 class SitesLookup(LookupChannel):
