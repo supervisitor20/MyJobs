@@ -22,26 +22,3 @@ class CompaniesLookup(LookupChannel):
         warning = "" if count else " **Might be a duplicate**"
 
         return template.format(name=company.name, count=count, warning=warning)
-
-
-@register('sites')
-class SitesLookup(LookupChannel):
-    model = models.SeoSite
-    min_length = 3
-    plugin_options = {
-        'autoFocus': True,
-        'delay': 0
-    }
-
-    def get_query(self, q, request):
-        """Match on name or domain."""
-
-        return self.model.objects.filter(
-            Q(domain__istartswith=q) | Q(name__istartswith=q))[:10]
-
-    # See https://github.com/crucialfelix/django-ajax-selects/issues/153 for
-    # why this is necessary. Inherited models don't act correctly, so we help
-    # the framework out by manually returning results.
-    def get_objects(self, ids):
-        return list(self.model.objects.filter(pk__in=ids))
-
