@@ -100,7 +100,7 @@ $(document).on("click", "button#register", function(e) {
                 $("label[for=id_name-primary]").hide()
                 $("#titleRow").hide( 'slide',{direction: 'left'},250 );
                 $("#topbar-login").fadeOut(250);
-                setTimeout(function(){                            
+                setTimeout(function(){
                     $("#account-page-2").show('slide',{direction: 'right'},250);
                 }, 250);
                 $("#gravatar").append(gravatar_url);
@@ -110,18 +110,27 @@ $(document).on("click", "button#register", function(e) {
                 // Remove all required field changes, if any
                 removeRequiredChanges();
 
-                // If they're already registered, cancel other errors, and display the appropriate warning.
+                // '__all__' refers to validation errors raised in the general
+                // Django forms clean() method. Specific methods, like
+                // clean_password1(), would place their error messages in
+                // 'password1', for instance.
                 var search = '__all__';
-                var exitLoop=false;
+
+                // Does this form contain generic clean() errors?
+                var formErrors = false;
+
                 $.each(json.errors, function(index, value){
-                    $.each(value, function(key, cell){
-                        if (search.indexOf(cell) !== -1) {
-                            form.prepend("<div class='form-error'>"+json.errors[index][1]+"</div>");
-                            exitLoop=true;
+                    $.each(value[1], function(key, cell){
+                        if (search === value[0]) {
+                            var error = json.errors[index][1];
+                            if (error[0] !== "") {
+                                form.prepend("<div class='form-error'>"+error+"</div>");
+                                formErrors = true;
+                            }
                         }
                     });
                 });
-                if (!exitLoop) {
+                if (!formErrors) {
                     // For every error passed by json, run jsonError function
                     for (var index in json.errors) {
                         jsonErrors(index, json.errors);
@@ -160,7 +169,7 @@ $(document).on("click", "button#login", function(e) {
                     window.location = profile_url;
                 }else{
                     window.location = json.url;
-                }           
+                }
             }
         }
     });
