@@ -1156,7 +1156,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
         try:
             request.user.send_invite(invitee_email, instance, "Admin")
-        except ValidationError:
+        except (ValueError, ValidationError):
             """
             We already sent an invitation. Actual email validation fails
             sooner.
