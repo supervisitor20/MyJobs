@@ -3204,12 +3204,15 @@ height: 33px;
     background-color: #E7E7E7;
     border-radius: 3px;
     padding: 8px;
+    width: auto;
     min-width: 64px;
     color: #444545;
     display: inline-block;
     border: none;
     margin-bottom: 20px;
-    vertical-align: baseline; 
+    vertical-align: baseline;
+    line-height: inherit;
+    height: inherit;
 }
 
 .actions.row .col-md-8 .button:not(:last-child) {
