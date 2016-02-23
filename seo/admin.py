@@ -7,7 +7,7 @@ from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.cache import cache
 from django.db import models, transaction
 from django.forms.formsets import all_valid
@@ -1153,8 +1153,14 @@ class CompanyAdmin(admin.ModelAdmin):
 
     def save_model(self, request, instance, form, change):
         invitee_email = form.cleaned_data.get('admin_email')
-        if not invitee_email.startswith("Invitation sent to"):
+
+        try:
             request.user.send_invite(invitee_email, instance, "Admin")
+        except ValidationError:
+            """
+            We already sent an invitation. Actual email validation fails
+            sooner.
+            """
 
         super(CompanyAdmin, self).save_model(request, instance, form, change)
 
