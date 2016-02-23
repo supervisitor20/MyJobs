@@ -19,8 +19,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from django_extensions.admin import ForeignKeyAutocompleteAdmin
-from django_extensions.admin.widgets import ForeignKeySearchInput
+from ajax_select.helpers import make_ajax_form
 
 import djcelery.admin
 from celery import current_app
@@ -882,16 +881,7 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         return UnorderedChangeList
 
-def parent_site_string(parent_site):
-    return "%s (%s)" % (parent_site.name, parent_site.domain)
-
-class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
-    related_search_fields = {
-        'parent_site': ('domain','name' ),
-    }
-    related_string_functions = {
-        'seosite': parent_site_string,
-    }
+class SeoSiteAdmin(admin.ModelAdmin):
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
@@ -911,9 +901,6 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
         ('Settings', {'fields': [('site_tags', 'special_commitments',
                                   'view_sources', )]}),
     ]
-
-    class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
 
     # Disable bulk delete on this model to prevent accidental catastrophe
     def get_actions(self, request):
@@ -986,13 +973,6 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 formset = FormSet(instance=self.model(), prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-        # overwrite for the "parent_site" form information...
-        # django-extensions does not allow for addition of the widget
-        # in the form declaration
-        form.fields['parent_site'].widget = ForeignKeySearchInput(
-            opts.get_field('parent_site').rel,['name','domain'])
-        form.fields['parent_site'].help_text=('Use the left field to do'
-            ' parent site lookups via domains or names')
         adminForm = helpers.AdminForm(form, list(self.get_fieldsets(request)),
             self.prepopulated_fields, self.get_readonly_fields(request),
             model_admin=self)
@@ -1093,13 +1073,6 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
-        # overwrite for the "parent_site" form information...
-        # django-extensions does not allow for addition of the widget
-        # in the form declaration
-        form.fields['parent_site'].widget = ForeignKeySearchInput(
-            opts.get_field('parent_site').rel,['name','domain'])
-        form.fields['parent_site'].help_text=('Use the left field to do'
-            ' parent site lookups via domains or names')
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
             model_admin=self)
@@ -1231,7 +1204,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
     list_display = ('name', 'sites')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
-        ('Basics', {'fields': ['name','value','group','ats_name']}),
+        ('Basics', {'fields': ['name', 'value', 'group', 'ats_name']}),
         ('Sites', {'fields': ['sites']}),
     ]
 
@@ -1239,7 +1212,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
 class ViewSourceAdmin(admin.ModelAdmin):
     form = ViewSourceForm
     save_on_top = True
-    list_display = ('name', 'view_source' , 'sites')
+    list_display = ('name', 'view_source', 'sites')
     search_fields = ['name', 'view_source', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name', 'view_source')]}),
@@ -1259,17 +1232,12 @@ class MocParameterAdmin(admin.TabularInline):
     model = MocParameter
 
 
-class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
+class QueryRedirectAdmin(admin.ModelAdmin):
+    form = make_ajax_form(QueryRedirect, {'site': 'sites'})
     inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
     list_display = ('old_path', 'new_path')
     list_filter = ('site__domain',)
-    related_search_fields = {
-        'site': ('domain', )
-    }
     search_fields = ('old_path', 'new_path')
-
-    class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
 
 
 admin.site.register(CustomFacet, CustomFacetAdmin)

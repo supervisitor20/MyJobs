@@ -1,34 +1,29 @@
 import React from 'react';
 import _ from 'lodash-compat';
 
-import {formatActivityName} from './formatActivityName';
-
 class AssociatedActivitiesList extends React.Component {
   constructor(props) {
     super(props);
   }
   render() {
-    const assignedActivitiesFormatted = [];
+    const assignedActivitesList = [];
     // The API gives activities grouped by app_access
     // Assemble simple list of all assigned_activities, no matter the app_access
     const activitiesGroupedByAppAccess = this.props.activities;
     _.forOwn(activitiesGroupedByAppAccess, function loopThroughGroupedActivities(activityGroup) {
       const assignedActivities = activityGroup.assigned_activities;
       _.forOwn(assignedActivities, function loopThroughAssignedActivities(activity) {
-        const formattedActivityName = formatActivityName(activity.name);
-        assignedActivitiesFormatted.push(formattedActivityName);
+        assignedActivitesList.push(activity.name);
       });
     });
-
     // TODO actually make this a "short" list, meaning show 3-4 and a "more" button
-    const associatedActivitiesShortList = assignedActivitiesFormatted.map( (activity, index) => {
+    const associatedActivitiesShortList = assignedActivitesList.map( (activity, index) => {
       return (
         <li key={index}>
-          {assignedActivitiesFormatted[index]}
+          {assignedActivitesList[index]}
         </li>
       );
     });
-
     return (
       <ul>
         {associatedActivitiesShortList}

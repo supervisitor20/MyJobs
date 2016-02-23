@@ -160,17 +160,21 @@ def create_full_fixture():
     DataType.objects.all().delete()
     dt_dead = DataTypeFactory.create(
         id=1,
-        data_type="Dead",
-        description="Dead Data Type",
+        data_type="",
+        description="Dead",
         is_active=False)
     dt_maybe_dead = DataTypeFactory.create(
         id=2,
-        data_type="Maybe Dead",
-        description="Maybe Dead Data Type")
+        data_type="",
+        description="Maybe Dead")
     dt_unagg = DataTypeFactory.create(
         id=3,
-        data_type="Unaggregated",
-        description="Unaggregated Data Type")
+        data_type="unaggregated",
+        description="Unaggregated")
+    dt_count_comm_per_month_per_partner = DataTypeFactory.create(
+        id=4,
+        data_type="count_comm_rec_per_month",
+        description="Number of Communication Records per Month per Partner")
 
     ReportTypeDataTypes.objects.all().delete()
     ReportTypeDataTypesFactory.create(
@@ -183,6 +187,9 @@ def create_full_fixture():
         report_type=rt_partners, data_type=dt_unagg)
     rtdt_comm_unagg = ReportTypeDataTypesFactory.create(
         report_type=rt_comm, data_type=dt_unagg)
+    rtdt_comm_count_pmpp = ReportTypeDataTypesFactory.create(
+        report_type=rt_partners,
+        data_type=dt_count_comm_per_month_per_partner)
 
     PresentationType.objects.all().delete()
     pre_dead = PresentationTypeFactory.create(
@@ -210,6 +217,8 @@ def create_full_fixture():
         id=4, name="Partner Basic Report")
     con_comm = ConfigurationFactory.create(
         id=5, name="Communication Records Basic Report")
+    con_comm_count = ConfigurationFactory.create(
+        id=6, name="Partners Comm Record Count Per Month Report")
 
     ConfigurationColumn.objects.all().delete()
     ConfigurationColumnFactory.create(
@@ -495,6 +504,79 @@ def create_full_fixture():
         multi_value_expansion=False,
         has_help=True)
 
+    ConfigurationColumnFactory.create(
+        id=100,
+        column_name="data_source",
+        order=103,
+        output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='Data Source',
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=101,
+        column_name="name",
+        order=104,
+        output_format="text",
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=102,
+        column_name="date",
+        order=105,
+        configuration=con_comm_count,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=103,
+        column_name="primary_contact",
+        order=106,
+        output_format="text",
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=104,
+        column_name="tags",
+        order=107,
+        output_format="tags_list",
+        filter_interface_type='tags',
+        filter_interface_display='Tags',
+        configuration=con_comm_count,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        id=105,
+        column_name="uri",
+        order=108,
+        output_format="text",
+        filter_interface_type='search_select',
+        filter_interface_display='URL',
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=106,
+        column_name="year",
+        order=109,
+        output_format="text",
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=108,
+        column_name="month",
+        order=110,
+        output_format="text",
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        id=109,
+        column_name="comm_rec_count",
+        order=111,
+        output_format="text",
+        configuration=con_comm_count,
+        multi_value_expansion=False)
+
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(
         id=1, presentation_type=pre_maybe_dead, configuration=con_con,
@@ -543,3 +625,11 @@ def create_full_fixture():
         id=12, presentation_type=pre_json, configuration=con_comm,
         display_name="Communication Record JSON Passthrough",
         report_data=rtdt_comm_unagg, is_active=True)
+    ReportPresentationFactory.create(
+        id=13, presentation_type=pre_csv, configuration=con_comm_count,
+        display_name="Communication Record Count CSV",
+        report_data=rtdt_comm_count_pmpp, is_active=True)
+    ReportPresentationFactory.create(
+        id=14, presentation_type=pre_json, configuration=con_comm_count,
+        display_name="Communication Record Count JSON Passthrough",
+        report_data=rtdt_comm_count_pmpp, is_active=True)

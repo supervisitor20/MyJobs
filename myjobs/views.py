@@ -636,7 +636,7 @@ def api_get_activities(request):
     for activity in activities:
         json_obj = dict(
             activity_id = activity.id,
-            activity_name = activity.name,
+            activity_name = activity.get_display_name(),
             activity_description = activity.description,
             app_access_id = activity.app_access.id,
             app_access_name = activity.app_access.name,
@@ -696,16 +696,18 @@ def api_get_roles(request):
             activity['available_activities'] = []
             # Loop through all activities associated with this particular app_access
             for available_activity in available_activities.filter(app_access=app_access.id):
+                display_name = available_activity.get_display_name()
                 available_activity_more = {}
                 available_activity_more['id'] = available_activity.id
-                available_activity_more['name'] = available_activity.name
+                available_activity_more['name'] = display_name
                 activity['available_activities'].append(available_activity_more)
 
             activity['assigned_activities'] = []
             for assigned_activity in role.activities.filter(app_access=app_access.id):
+                display_name = assigned_activity.get_display_name()
                 assigned_activity_more = {}
                 assigned_activity_more['id'] = assigned_activity.id
-                assigned_activity_more['name'] = assigned_activity.name
+                assigned_activity_more['name'] = display_name
                 activity['assigned_activities'].append(assigned_activity_more)
 
             activities.append(activity)
@@ -722,11 +724,11 @@ def api_get_roles(request):
 
         # Assemble role object
         role_formatted = dict(
-            role_id = int(role_id),
-            role_name = role_name,
-            available_users = available_users,
-            assigned_users = assigned_users,
-            activities = activities,
+            role_id=int(role_id),
+            role_name=role_name,
+            available_users=available_users,
+            assigned_users=assigned_users,
+            activities=activities
         )
 
         # Add formatted role to growing list
@@ -799,16 +801,18 @@ def api_get_specific_role(request, role_id=0):
 
         activity['available_activities'] = []
         for available_activity in available_activities.filter(app_access=app_access.id):
+            display_name = available_activity.get_display_name()
             available_activity_more = {}
             available_activity_more['id'] = available_activity.id
-            available_activity_more['name'] = available_activity.name
+            available_activity_more['name'] = display_name
             activity['available_activities'].append(available_activity_more)
 
         activity['assigned_activities'] = []
         for assigned_activity in role_edited.activities.filter(app_access=app_access.id):
+            display_name = assigned_activity.get_display_name()
             assigned_activity_more = {}
             assigned_activity_more['id'] = assigned_activity.id
-            assigned_activity_more['name'] = assigned_activity.name
+            assigned_activity_more['name'] = display_name
             activity['assigned_activities'].append(assigned_activity_more)
 
         activities.append(activity)
@@ -862,14 +866,8 @@ def api_create_role(request):
                                 content_type="application/json")
 
         activity_ids = []
-
-        if request.POST.getlist("assigned_activities[]", ""):
-            activities = request.POST.getlist("assigned_activities[]", "")
-            # Create list of activity_ids from names
-            for activity in enumerate(activities):
-                activity_object = Activity.objects.get(name=activity[1])
-                activity_id = activity_object.id
-                activity_ids.append(activity_id)
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
         # At least one activity must be selected
         if not activity_ids:
             ctx["success"] = "false"
@@ -907,7 +905,7 @@ def api_edit_role(request, role_id=0):
     Inputs:
     :role_id:                   unique id of role
     :role_name:                 name of role
-    :assigned_activites:        activities assigned to this role
+    :assigned_activites:        PKs of activities assigned to this role
     :assigned_users:            users assigned to this role
 
     Returns:
@@ -950,21 +948,16 @@ def api_edit_role(request, role_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
-        # INPUT - assigned_activites
-        activities = request.POST.getlist("assigned_activities[]", "")
+        activity_ids = []
+        if request.POST.getlist("assigned_activities[]"):
+            activity_ids = request.POST.getlist("assigned_activities[]")
 
         # At least one activity must be selected
-        if activities == "" or activities[0] == "":
+        if not activity_ids:
             ctx["success"] = "false"
             ctx["message"] = "At least one activity must be assigned."
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
-        # Create list of activity_ids from names
-        activity_ids = []
-        for i, activity in enumerate(activities):
-            activity_object = Activity.objects.filter(name=activity)
-            activity_id = activity_object[0].id
-            activity_ids.append(activity_id)
         # INPUT - assigned_users
         assigned_users_emails = request.POST.getlist("assigned_users[]", "")
 

@@ -5,10 +5,8 @@ import pytz
 from django.contrib import admin
 from django.contrib.sites.models import Site
 
-from django_extensions.admin import ForeignKeyAutocompleteAdmin
-
 from myjobs.models import (User, CustomHomepage, EmailLog, FAQ,
-                           CompanyAccessRequest)
+                           Activity, CompanyAccessRequest)
 from myjobs.forms import (UserAdminForm,
                           CompanyAccessRequestApprovalForm)
 
@@ -26,6 +24,18 @@ class EmailLogAdmin(admin.ModelAdmin):
         else:
             return ('email', 'event', 'received', 'processed', 'category',
                     'send_log', 'reason')
+
+
+class ActivityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'display_name', 'description')
+    fields = ('display_name', 'name', 'description')
+    readonly_fields = ('name', 'description')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -66,7 +76,7 @@ class FAQAdmin(admin.ModelAdmin):
     search_fields = ['question', ]
 
 
-class CompanyAccessRequestApprovalAdmin(ForeignKeyAutocompleteAdmin):
+class CompanyAccessRequestApprovalAdmin(admin.ModelAdmin):
     """
     This admin page is used by staff to authorize access to a company.
 
@@ -108,3 +118,4 @@ admin.site.register(EmailLog, EmailLogAdmin)
 admin.site.register(FAQ, FAQAdmin)
 admin.site.register(CompanyAccessRequest, CompanyAccessRequestApprovalAdmin)
 admin.site.unregister(Site)
+admin.site.register(Activity, ActivityAdmin)

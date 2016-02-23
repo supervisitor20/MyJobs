@@ -120,7 +120,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_run_unfiltered(self):
         """Make sure we only get data for this user."""
         ds = CommRecordsDataSource()
-        recs = ds.run(self.company, CommRecordsFilter(), [])
+        recs = ds.run_unaggregated(self.company, CommRecordsFilter(), [])
         subjects = set([r['subject'] for r in recs])
         expected = {
             self.record_1.subject,
@@ -132,7 +132,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_range(self):
         """Should show only commrec with last_action_time in range."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 date_time=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
@@ -144,7 +144,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_before(self):
         """Should show only commrec with last_action_time before date."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 date_time=[None, datetime(2015, 9, 30)]),
@@ -156,7 +156,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_after(self):
         """Should show only commrec with last_action_time after date."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 date_time=[datetime(2015, 10, 1), None]),
@@ -168,7 +168,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_state(self):
         """Should show only commrecs with correct state."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 locations={
@@ -182,7 +182,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_city(self):
         """Should show only commrecs with correct city."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 locations={
@@ -196,7 +196,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_tags(self):
         """Show only commrec with correct tags."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(tags=[['EaSt']]),
             [])
@@ -207,7 +207,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_tags_or(self):
         """Show only commrec with correct tags in 'or' configuration."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(tags=[['EaSt', 'wEsT']]),
             [])
@@ -222,7 +222,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_tags_and(self):
         """Show only commrec with correct tags in 'and' configuration."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
@@ -233,7 +233,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         # Now try adding another tag.
         self.record_1.tags.add(self.west_tag)
         self.record_1.save()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
@@ -244,7 +244,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_empty_things(self):
         """Empty filters should not filter, just like missing filters."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
                 locations={'city': '', 'state': ''}),
@@ -260,7 +260,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_communication_type(self):
         """Check communication_type filter works at all."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(communication_type='Email'),
             [])
@@ -271,7 +271,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_partner(self):
         """Check partner filter works at all."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(partner=[self.partner_a.pk]),
             [])
@@ -282,7 +282,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_contact(self):
         """Check partner filter works at all."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(contact=[self.sue.pk]),
             [])
@@ -350,7 +350,7 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_order(self):
         """Check ordering results works at all."""
         ds = CommRecordsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(),
             ["-subject"])
