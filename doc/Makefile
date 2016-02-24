@@ -178,7 +178,7 @@ pseudoxml:
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
-ghpages:
+ghpages: html
 	git checkout quality-control; \
 	cd .. && \
 	touch doc/build/html/.nojekyll && \
