@@ -26,7 +26,13 @@ def autoserialize(fn):
     @wraps(fn)
     def handle_autoserialize(request):
         response = fn(request)
-        cookies = response.pop('cookies')
+
+        # see if response has cookies to be saved
+        try:
+            cookies = response.pop('cookies')
+        except KeyError:
+            cookies = []
+
         payload = json.dumps(response)
         if "callback" in request.GET:
             callback = request.GET['callback']

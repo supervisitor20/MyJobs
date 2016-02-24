@@ -3,7 +3,12 @@
 {% load seo_extras %}
 {% load cache %}
 {% cache 600 joblisting %}
-
+{% block directseo_wide_header %}
+<div id="direct_wideHeader">
+    <div data-secure_block_id="toolbar-test" data-site_name="{{ site_name }}" data-widget_type="toolswidget"></div>
+    {% include "wide_header.html" %}
+</div>
+{% endblock %}
 {% block direct_extraHeaderContent %}
 <link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
 {% endblock direct_extraHeaderContent %}
@@ -49,9 +54,9 @@
 </div>
 <a href="#top" class="direct_mobileJumpLink">{% blocktrans %}Return to top{% endblocktrans %}</a>
 {% if "network" in site_tags or site_config.show_saved_search_widget %}
-    <div data-secure-block-id="saved-search"></div>
+    <div data-secure_block_id="saved-search"></div>
 {% endif %}
-<div data-secure-block-id="saved-search-list"></div>
+<div data-secure_block_id="saved-search-list"></div>
 <div id="direct_disambiguationDiv" class="direct_rightColBox">
 {% for widget in widgets %}
 {% if widget.render %}

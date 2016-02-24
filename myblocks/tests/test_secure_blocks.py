@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from seo.tests.setup import DirectSEOBase
 from seo.tests.factories import SeoSiteFactory, UserFactory
 from myjobs.tests.test_views import TestClient
-from myblocks.models import SavedSearchWidgetBlock
+from myblocks.models import SavedSearchWidgetBlock, ToolsWidgetBlock
 
 class TestSecureBlocks(DirectSEOBase):
     """
@@ -90,6 +90,14 @@ class TestSecureBlocks(DirectSEOBase):
                                 msg_prefix="Did not find %s in response,"
                                            "missing required js" % js)
 
+    def test_topbar_includes_cookies(self):
+        body = '{"blocks": {"test_tools_widget": {}}}'
+        resp = make_cors_request(self.client, self.sb_url, body)
+        self.assertEqual(resp.status_code, 200,
+                         msg="Expected 200, got %s. User was not able to "
+                             "retrieve blocks for test" % resp.status_code)
+        self.assertEqual(resp.cookies['lastmicrosite'].value,
+                         'http://jobs.example.com')
 
 def make_cors_request(client, url, json_data,
                       http_origin='http://jobs.example.com'):

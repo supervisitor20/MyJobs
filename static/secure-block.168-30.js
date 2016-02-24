@@ -61,7 +61,7 @@ function populate_secure_blocks(request, callback) {
         console.error("dashboard fail: ", xhr, text, error);
     }).done(function(data, text, xhr) {
         $.each(data, function(key, value) {
-        $("[data-secure-block-id=" + key + "]").html(value);
+        $("[data-secure_block_id=" + key + "]").html(value);
         });
         if (typeof callback === "function") {
           callback();
@@ -74,8 +74,8 @@ function load_secure_blocks(dashboard_url) {
   // load secure blocks for all divs containing the proper data tag
   saved_dashboard_url = dashboard_url;
   var request = {};
-  $("*[data-secure-block-id]").each(function(i, block) {
-    var element_id = $(block).data('secure-block-id');
+  $("*[data-secure_block_id]").each(function(i, block) {
+    var element_id = $(block).data('secure_block_id');
     request[element_id] = $(block).data();
   });
   populate_secure_blocks(request);
@@ -86,7 +86,7 @@ function reload_secure_block(block_id, callback) {
   // callback is an optional argument of a function that should be called
   // upon completion of the reload
   var request = {};
-  var block = $("[data-secure-block-id=" + block_id + "]");
+  var block = $("[data-secure_block_id=" + block_id + "]");
   if (block) {
     request[block_id] = block.data();
     populate_secure_blocks(request, callback);

@@ -120,7 +120,8 @@ def secure_blocks(request):
                 block = block.cast()
                 rendered = block.render_for_ajax(request, blocks[element_id])
                 response[element_id] = rendered
-                response['cookies'].extend(block.get_cookies(request))
+                response['cookies'].extend(
+                    block.get_cookies(request, **blocks[element_id]))
             except Exception as ex:
                 logger.warn("Error loading widget: %s" % ex.message)
 

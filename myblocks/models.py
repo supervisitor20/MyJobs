@@ -1,6 +1,7 @@
 import hashlib
 import logging
 from slugify import slugify
+from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -154,6 +155,14 @@ class Block(models.Model):
 
         """
         return []
+
+    def get_cookies(self, request, **kwargs):
+        """
+        Retrieve information for setting cookies for block, if exists. To be
+        overwritten by child class
+
+        """
+        return {}
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -422,14 +431,6 @@ class SecureBlock(Block):
         required_js = [static_string % js for js in self.required_js()]
         return '%s %s' % (rendered_template, ''.join(required_js))
 
-    def get_cookies(self, request):
-        """
-        Retrieve information for setting cookies for block, if exists. To be
-        overwritten by child class
-
-        """
-        return {}
-
     class Meta:
         abstract = True
 
@@ -463,16 +464,23 @@ class ToolsWidgetBlock(SecureBlock):
 
         return context
 
-    def get_cookies(self, request):
+    def get_cookies(self, request, **kwargs):
         """
         Set cookies for last microsite and lastmicrositename
 
         """
         cookies = []
-        caller = request.REQUEST.get('site', '')
+        caller = None
+        # import ipdb; ipdb.set_trace()
+        if request.META.get('HTTP_ORIGIN'):
+            caller = request.META.get('HTTP_ORIGIN')
+        elif request.META.get('HTTP_REFERER'):
+            parsed_url =  urlparse(request.META.get('HTTP_REFERER'))
+            caller = "%s://%s" % (parsed_url.scheme, parsed_url.netloc)
+
         if caller:
             max_age = 30 * 24 * 60 * 60
-            last_name = request.REQUEST.get('site_name', caller)
+            last_name = kwargs.get('site_name', caller)
             cookies.append({'key':'lastmicrosite',
                             'value':caller,
                             'max_age':max_age,
@@ -481,6 +489,7 @@ class ToolsWidgetBlock(SecureBlock):
                             'value':last_name,
                             'max_age':max_age,
                             'domain':'.my.jobs'})
+
         return cookies
 
     def required_js(self):

@@ -142,16 +142,6 @@ def cross_site_verify(fn):
 
         host_site = settings.SITE
 
-        if remove_test_prefix(host_site.domain) != host_site.domain:
-            """
-            If the host site has a testing prefix, try to remove it.
-            This is to prevent data refreshed from production from breaking
-            the cross-site verify logic.
-            """
-            trimmed_domain = remove_test_prefix(host_site.domain)
-            non_test_site = SeoSite.objects.filter(domain=trimmed_domain).first()
-            host_site = (non_test_site or host_site)
-
         try:
             verify_cross_site_request(get_site, method, host_site, origin,
                                       referer, xrw)
