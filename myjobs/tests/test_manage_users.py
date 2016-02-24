@@ -87,9 +87,11 @@ class ManageUsersTests(MyJobsBase):
         """
         Tests creating a role
         """
+        an_activity_id = self.role.activities.first().id
+
         data_to_post = {}
         data_to_post['role_name'] = "TEST ROLE"
-        data_to_post['assigned_activities[]'] = ['read role']
+        data_to_post['assigned_activities[]'] = [an_activity_id]
         response = self.client.post(reverse('api_create_role'), data_to_post)
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
@@ -132,10 +134,11 @@ class ManageUsersTests(MyJobsBase):
         Tests editing a role
         """
         expected_role_pk = self.role.pk
+        an_activity_id = self.role.activities.first().id
 
         data_to_post = {}
         data_to_post['role_name'] = "NEW ROLE NAME"
-        data_to_post['assigned_activities[]'] = ['read role']
+        data_to_post['assigned_activities[]'] = [an_activity_id]
         response = self.client.post(reverse('api_edit_role',
                                             args=[expected_role_pk]),
                                     data_to_post)

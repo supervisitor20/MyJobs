@@ -187,7 +187,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_run_unfiltered(self):
         """Make sure we only get data for this user."""
         ds = ContactsDataSource()
-        recs = ds.run(self.company, ContactsFilter(), [])
+        recs = ds.run_unaggregated(self.company, ContactsFilter(), [])
         names = set([r['name'] for r in recs])
         expected = {self.sue.name, self.john.name}
         self.assertEqual(expected, names)
@@ -195,7 +195,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_date_range(self):
         """Should show only contact with last_action_time in range."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
@@ -207,7 +207,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_date_before(self):
         """Should show only contact with last_action_time before date."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 date=[None, datetime(2015, 9, 30)]),
@@ -219,7 +219,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_date_after(self):
         """Should show only contact with last_action_time after date."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 date=[datetime(2015, 10, 1), None]),
@@ -231,7 +231,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_tags(self):
         """Should show only contact with correct tags."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(tags=[['EaSt']]),
             [])
@@ -242,7 +242,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_tags_or(self):
         """Show only contact with correct tags in 'or' configuration."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(tags=[['EaSt', 'wEsT']]),
             [])
@@ -253,7 +253,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_tags_and(self):
         """Show only contact with correct tags in 'and' configuration."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
@@ -263,7 +263,7 @@ class TestContactsDataSource(MyJobsBase):
 
         # Now try adding another tag.
         self.john.tags.add(self.west_tag)
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
@@ -274,7 +274,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_empty_things(self):
         """Empty filters should not filter, just like missing filters."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 partner=[],
@@ -288,7 +288,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_state(self):
         """Should show only contacts with correct state."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 locations={
@@ -302,7 +302,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_city(self):
         """Should show only contacts with correct city."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 locations={
@@ -316,7 +316,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_filter_by_partners(self):
         """Should filter by partners."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(partner=[self.partner_a.pk]),
             [])
@@ -368,7 +368,7 @@ class TestContactsDataSource(MyJobsBase):
     def test_order(self):
         """Check ordering results works at all."""
         ds = ContactsDataSource()
-        recs = ds.run(
+        recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(),
             ["-name"])

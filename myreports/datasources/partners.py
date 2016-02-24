@@ -1,41 +1,129 @@
 """Partners DataSource"""
 from operator import __or__
+from datetime import datetime
 
 from mypartners.models import Contact, Partner, Status, Location, Tag
 
 from myreports.datasources.util import (
-    dispatch_help_by_field_name, filter_date_range, extract_tags)
+    dispatch_help_by_field_name, dispatch_run_by_data_type,
+    filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
-
+from myreports.datasources.sql import (
+    count_comm_rec_per_month_per_partner_sql)
+from myreports.datasources.rowstream import (
+    DjangoField, from_django, DjangoRowBuilder,
+    from_cursor, sort_stream, from_list)
 
 from universal.helpers import dict_identity
 
 from django.db.models import Q
+from django.db import connection
 
 
 class PartnersDataSource(DataSource):
-    def run(self, company, filter_spec, order):
-        qs_filtered = self.filtered_query_set(company, filter_spec)
+    partner_row_builder = DjangoRowBuilder([
+        DjangoField('id', rename='partner_id'),
+        DjangoField('data_source'),
+        DjangoField('last_action_time', rename='date'),
+        DjangoField('name'),
+        DjangoField('primary_contact.name', rename='primary_contact'),
+        DjangoField('tags', transform=extract_tags),
+        DjangoField('uri')])
+
+    def run(self, data_type, company, filter_spec, order):
+        return dispatch_run_by_data_type(
+            self, data_type, company, filter_spec, order)
+
+    def filtered_partners(self, company, filter_spec):
+        qs_filtered = filter_spec.filter_partners(company)
+        qs_distinct = qs_filtered.distinct()
+        return qs_distinct
+
+    def run_unaggregated(self, company, filter_spec, order):
+        qs_filtered = filter_spec.filter_partners(company)
         qs_ordered = qs_filtered.order_by(*order)
-        qs_distinct = qs_ordered.distinct()
-        return [self.extract_record(r) for r in qs_distinct]
+        qs_optimized = qs_ordered.prefetch_related(
+            'tags', 'primary_contact')
 
-    def extract_record(self, record):
-        return {
-            'data_source': record.data_source,
-            'date': record.last_action_time,
-            'name': record.name,
-            'primary_contact':
-                self.extract_primary_contact(record.primary_contact),
-            'tags': extract_tags(record.tags.all()),
-            'uri': record.uri,
-        }
+        partners = from_django(self.partner_row_builder, qs_optimized)
+        return list(partners)
 
-    def extract_primary_contact(self, contact):
-        if contact is None:
-            return None
-        else:
-            return contact.name
+    def run_count_comm_rec_per_month(self, company, filter_spec, order):
+        # Get a list of valid partners (according to our filter).
+        qs_filtered = filter_spec.filter_partners(company)
+        partner_ids = list(qs_filtered.values_list('id', flat=True))
+
+        # If there are no partners, we're done.
+        if not partner_ids:
+            return []
+
+        sql = count_comm_rec_per_month_per_partner_sql
+        cursor = connection.cursor()
+        cursor.execute(sql, {'partner_list': partner_ids})
+        count_stream = from_cursor(cursor)
+
+        # Iterate over counts results.
+        # Find year range and organize counts for later.
+        min_year = None
+        max_year = None
+        db_counts = {}
+        for record in count_stream:
+            partner_id = record['partner_id']
+            year = record['year']
+            month = record['month']
+            comm_rec_count = record['comm_rec_count']
+
+            if year < min_year or min_year is None:
+                min_year = year
+            if year > max_year or max_year is None:
+                max_year = year
+
+            key = (partner_id, year, month)
+            db_counts[key] = comm_rec_count
+
+        # If there are no communication records, assume current year.
+        if not db_counts:
+            min_year = datetime.now().year
+            max_year = min_year
+
+        # Create full range of time slots with counts.
+        # DB won't fill in zero's without a complex query.
+        # Do this instead.
+        full_counts = {}
+        for partner_id in partner_ids:
+            count_list = []
+            full_counts[partner_id] = count_list
+            for year in xrange(min_year, max_year + 1):
+                for month in xrange(1, 12 + 1):
+                    key = (partner_id, year, month)
+                    if key in db_counts:
+                        count = db_counts[key]
+                        count_list.append((year, month, count))
+                    else:
+                        count_list.append((year, month, 0))
+
+        qs_optimized = qs_filtered.prefetch_related('tags', 'primary_contact')
+        partners = from_django(self.partner_row_builder, qs_optimized)
+
+        # Join the two streams
+        joined_fields = partners.fields + ['year', 'month', 'comm_rec_count']
+        joined_data = []
+        for partner_record in partners:
+            count_list = full_counts.get(partner_record['partner_id'], [])
+            for count_tuple in count_list:
+                year, month, count = count_tuple
+                joined_record = dict(partner_record)
+                joined_record.update({
+                    'year': year,
+                    'month': month,
+                    'comm_rec_count': count,
+                    })
+                joined_data.append(joined_record)
+        joined = from_list(joined_fields, joined_data)
+
+        sorted_stream = sort_stream(order, joined)
+
+        return list(sorted_stream)
 
     def filter_type(self):
         return PartnersFilter
@@ -47,7 +135,7 @@ class PartnersDataSource(DataSource):
     def help_city(self, company, filter_spec, partial):
         """Get help for the city field."""
         modified_filter_spec = filter_spec.clone_without_city()
-        partners_qs = self.filtered_query_set(company, modified_filter_spec)
+        partners_qs = modified_filter_spec.filter_partners(company)
         locations_qs = (
             Location.objects
             .filter(contacts__partner__in=partners_qs)
@@ -58,7 +146,7 @@ class PartnersDataSource(DataSource):
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
         modified_filter_spec = filter_spec.clone_without_state()
-        partners_qs = self.filtered_query_set(company, modified_filter_spec)
+        partners_qs = modified_filter_spec.filter_partners(company)
         locations_qs = (
             Location.objects
             .filter(contacts__partner__in=partners_qs)
@@ -68,7 +156,7 @@ class PartnersDataSource(DataSource):
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        partners_qs = self.filtered_query_set(company, filter_spec)
+        partners_qs = filter_spec.filter_partners(company)
 
         tags_qs = (
             Tag.objects
@@ -84,7 +172,7 @@ class PartnersDataSource(DataSource):
 
     def help_uri(self, company, filter_spec, partial):
         """Get help for the uri field."""
-        partners_qs = self.filtered_query_set(company, filter_spec)
+        partners_qs = filter_spec.filter_partners(company)
 
         uris_qs = (
             partners_qs
@@ -94,7 +182,7 @@ class PartnersDataSource(DataSource):
 
     def help_data_source(self, company, filter_spec, partial):
         """Get help for the data_source field."""
-        partners_qs = self.filtered_query_set(company, filter_spec)
+        partners_qs = filter_spec.filter_partners(company)
 
         data_sources_qs = (
             partners_qs
@@ -104,17 +192,6 @@ class PartnersDataSource(DataSource):
             {'key': c['data_source'], 'display': c['data_source']}
             for c in data_sources_qs
         ]
-
-    def filtered_query_set(self, company, filter_spec):
-        """Create a query set with security, safety, and user filters applied.
-        """
-        qs_company = Partner.objects.filter(owner=company)
-        qs_live = (
-            qs_company
-            .filter(approval_status__code__iexact=Status.APPROVED)
-            .filter(archived_on__isnull=True))
-        qs_filtered = filter_spec.filter_query_set(qs_live)
-        return qs_filtered
 
 
 @dict_identity
@@ -161,7 +238,13 @@ class PartnersFilter(DataSourceFilter):
             new_root['locations'] = new_locations
         return PartnersFilter(**new_root)
 
-    def filter_query_set(self, qs):
+    def filter_partners(self, company):
+        qs = Partner.objects.filter(owner=company)
+        qs = (
+            qs
+            .filter(approval_status__code__iexact=Status.APPROVED)
+            .filter(archived_on__isnull=True))
+
         qs = filter_date_range(self.date, 'last_action_time', qs)
 
         if self.data_source:

@@ -6,8 +6,6 @@ import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
 import {getCsrf} from 'util/cookie';
-import {reverseFormatActivityName} from './reverseFormatActivityName';
-import {formatActivityNames} from './formatActivityNames';
 import {buildCurrentActivitiesObject} from './buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
@@ -36,7 +34,7 @@ class Role extends React.Component {
 
     if (action === 'Edit') {
       $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-        const activities = formatActivityNames(results.activities);
+        const activities = results.activities;
 
         this.setState({
           apiResponseHelp: '',
@@ -52,7 +50,7 @@ class Role extends React.Component {
         // It doesn't matter which role we get
         const roleObject = results[0];
 
-        const activities = formatActivityNames(roleObject.activities);
+        const activities = roleObject.activities;
 
         // Loop through all app_access's
         // Make sure there are no assigned_activities
@@ -124,7 +122,7 @@ class Role extends React.Component {
       const tempRef = activity.app_access_name.replace(/\s/g, '');
       const selected = refs.activities.refs[tempRef].state.assignedActivities;
       _.forOwn(selected, function loopThroughEachSelectedActivity(item) {
-        assignedActivities.push(item);
+        assignedActivities.push(item.id);
       });
     });
     // User must select AT LEAST ONE activity
@@ -157,14 +155,6 @@ class Role extends React.Component {
       activities: currentActivitiesObject,
     });
 
-    // Format assigned activities
-    let formattedAssignedActivities = [];
-    if (assignedActivities) {
-      formattedAssignedActivities = assignedActivities.map( obj => {
-        return reverseFormatActivityName(obj.name);
-      });
-    }
-
     assignedUsers = assignedUsers.map( obj => {
       return obj.name;
     });
@@ -183,7 +173,7 @@ class Role extends React.Component {
     const dataToSend = {};
     dataToSend.csrfmiddlewaretoken = getCsrf();
     dataToSend.role_name = roleName;
-    dataToSend.assigned_activities = formattedAssignedActivities;
+    dataToSend.assigned_activities = assignedActivities;
     dataToSend.assigned_users = assignedUsers;
 
     // Submit to server

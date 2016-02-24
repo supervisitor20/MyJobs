@@ -1,14 +1,14 @@
 <div id="posting-nav">
     <ul id="ul-posting-nav">
-        <li id="product-listing"><a href="{% url 'product_listing' %}">Product Listing</a></li>
+        <li id="product-listing" class="{% if request.resolver_match.url_name == 'product_listing' %}active{% endif %}"><a href="{% url 'product_listing' %}">Product Listing</a></li>
         {% if company.posting_access %}
-        <li id="our-postings"><a href="{% url 'jobs_overview' %}">Posted Jobs</a></li>
+        <li id="our-postings" class="{% if request.resolver_match.url_name == 'jobs_overview' %}active{% endif %}"><a href="{% url 'jobs_overview' %}">Posted Jobs</a></li>
         {% endif %}
         {% if company.purchasedproduct_set.exists %}
-        <li id="purchased-products"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
+        <li id="purchased-products" class="{% if request.resolver_match.url_name == 'purchasedproducts_overview' %}active{% endif %}"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
         {% endif %}
         {% if company.product_access %}
-        <li id="posting-admin"><a href="{% url 'purchasedmicrosite_admin_overview' %}">Partner Microsite</a></li>
+        <li id="posting-admin" class="{% if request.resolver_match.url_name == 'purchasedmicrosite_admin_overview' %}active{% endif %}"><a href="{% url 'purchasedmicrosite_admin_overview' %}">Partner Microsite</a></li>
         {% endif %}
     </ul>
     <div class="clearfix"></div>
