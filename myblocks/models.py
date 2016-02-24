@@ -434,6 +434,7 @@ class SecureBlock(Block):
     class Meta:
         abstract = True
 
+
 class ToolsWidgetBlock(SecureBlock):
     """
     This widget is used to display account and navigation related links via
@@ -492,12 +493,6 @@ class ToolsWidgetBlock(SecureBlock):
 
         return cookies
 
-    def required_js(self):
-        """
-        Return a list of all required javascript in URL format
-
-        """
-        return ['%ssaved-search.js' % settings.STATIC_URL]
 
 class SavedSearchWidgetBlock(SecureBlock):
     """
