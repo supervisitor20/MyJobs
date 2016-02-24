@@ -1,8 +1,8 @@
 import 'babel/polyfill';
-import {installPolyfills} from '../util/polyfills.js';
+import {installPolyfills} from '../common/polyfills.js';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
-import {getCsrf} from '../util/cookie';
+import {getCsrf} from '../common/cookie';
 import {WizardRouter} from './WizardRouter';
 
 import React from 'react';

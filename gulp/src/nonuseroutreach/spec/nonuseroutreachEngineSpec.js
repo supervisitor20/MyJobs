@@ -1,6 +1,6 @@
 import {InboxManagement} from '../nonuseroutreachEngine';
 
-import {promiseTest} from '../../util/spec';
+import {promiseTest} from '../../common/spec';
 
 const fakeApi = {
   getExistingInboxes: () => ([{pk: 1, fields: {email: 'thistest'}}]),

@@ -1,6 +1,6 @@
 import {ReportFinder, ReportConfiguration} from '../reportEngine';
 
-import {promiseTest} from '../../util/spec';
+import {promiseTest} from '../../common/spec';
 
 
 class FakeBuilder {

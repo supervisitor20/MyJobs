@@ -5,7 +5,7 @@ import _ from 'lodash-compat';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
-import {getCsrf} from 'util/cookie';
+import {getCsrf} from 'common/cookie';
 import {buildCurrentActivitiesObject} from './buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
