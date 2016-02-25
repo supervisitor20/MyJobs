@@ -1,6 +1,6 @@
 var saved_dashboard_url = '';
 
-function read_cookie(cookie) {
+function readCookie(cookie) {
     var nameEQ = cookie + "=",
         ca = document.cookie.split(';');
     for (var i=0; i< ca.length; i++) {
