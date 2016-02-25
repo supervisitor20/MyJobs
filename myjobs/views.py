@@ -142,6 +142,7 @@ def home(request):
                 response = HttpResponse(json.dumps(data))
                 response.set_cookie('myguid', new_user.user_guid,
                                     expires=365*24*60*60, domain='.my.jobs')
+                response.set_cookie('loggedout', False)
                 return response
             else:
                 return HttpResponse(json.dumps(
@@ -168,6 +169,7 @@ def home(request):
                 response = HttpResponse(json.dumps(response_data))
                 response.set_cookie('myguid', login_form.get_user().user_guid,
                                     expires=365*24*60*60, domain='.my.jobs')
+                response.set_cookie('loggedout', False)
                 return response
             else:
                 return HttpResponse(json.dumps({'errors':
