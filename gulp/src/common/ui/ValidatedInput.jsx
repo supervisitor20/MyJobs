@@ -51,8 +51,25 @@ export class ValidatedInput extends Component {
 }
 
 ValidatedInput.propTypes = {
+  /**
+   * This contains a controlled input. Value in the box goes here.
+   */
   value: PropTypes.string.isRequired,
+
+  /**
+   * Function to call with input change values.
+   */
   onValueChange: PropTypes.func.isRequired,
-  helpText: PropTypes.string.isRequired,
+
+  /**
+   * Help text to show alongside the input control.
+   */
+  helpText: PropTypes.string,
+
+  /**
+   * Array of strings to show as errors alongside the input control.
+   *
+   * If this prop is missing or empty the control will display as valid.
+   */
   errorTexts: PropTypes.array,
 };
