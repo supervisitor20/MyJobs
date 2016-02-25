@@ -47,6 +47,28 @@ class RegistrationViewTests(MyJobsBase):
         self.profile = ActivationProfile.objects.create(user=self.user,
                                                         email=self.user.email)
 
+    def test_logout_cookie(self):
+        """
+        Test that a cookie that tracks if you are logged in is properly set.
+
+        """
+        password = "password"
+        self.user.set_password(password)
+
+        response = self.client.get(reverse("auth_logout"))
+        self.assertTrue(
+            response.cookies.get("loggedout"),
+            "Expected the loggedout cookie to be set, but it's not")
+
+        response = self.client.post(
+            reverse("home"), {"email": self.user.email, "password": password})
+        self.assertFalse(
+            response.cookies.get("loggedout"),
+            "Expected the loggedout cookie to not be set, but it was")
+
+
+
+
     def test_valid_activation(self):
         """
         Test that the ``activate`` view properly handles a valid
@@ -502,3 +524,4 @@ class DseoLoginTests(DirectSEOBase):
 
         user = User.objects.get(email=user_email)
         self.assertEqual(user.source, site.domain)
+
