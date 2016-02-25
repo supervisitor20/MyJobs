@@ -74,6 +74,7 @@ doc/build
 
 # Deployment
 static/admin/
+static/django_extensions
 static/endless_pagination
 static/fsm
 collected_static/
