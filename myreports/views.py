@@ -22,6 +22,7 @@ from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.decorators import has_access
+from universal.api_validation import ApiValidator
 
 from myreports.datasources import ds_json_drivers
 
@@ -540,11 +541,17 @@ def run_dynamic_report(request):
 
     response: {'id': new dynamic report id}
     """
+    validator = ApiValidator()
     company = get_company_or_404(request)
     rp_id = request.POST['rp_id']
-    name = request.POST['name']
+    name = request.POST.get('name', '')
+    if not name:
+        validator.note_field_error("name", "Report name must not be empty.")
     filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
+
+    if validator.has_errors():
+        return validator.build_error_response()
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,

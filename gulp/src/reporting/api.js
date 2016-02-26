@@ -48,8 +48,22 @@ class Api {
       throw error;
     }
 
-    parseJSON(response) {
-      return response.json();
+    async checkStatusForClientErrors(response) {
+      if (response.status === 200) {
+        return {'ok': await this.parseJSON(response)};
+      }
+
+      if (response.status === 400) {
+        return {'clienterrors': await this.parseJSON(response)};
+      }
+
+      const error = new Error(response.statusText);
+      error.response = response;
+      throw error;
+    }
+
+    async parseJSON(response) {
+      return await response.json();
     }
 
     objectToFormData(obj) {
@@ -67,7 +81,7 @@ class Api {
         method: 'GET',
         credentials: 'include',
       });
-      return this.parseJSON(this.checkStatus(response));
+      return await this.parseJSON(this.checkStatus(response));
     }
 
     async postToReportingApi(url, data) {
@@ -81,7 +95,21 @@ class Api {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      return this.parseJSON(this.checkStatus(response));
+      return await this.parseJSON(this.checkStatus(response));
+    }
+
+    async postToReportingApiWithErrors(url, data) {
+      const formData = this.objectToFormData(this.withCsrf(data));
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+            // No good way around this.
+        headers: hasFormData ? undefined : {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      return await this.checkStatusForClientErrors(response);
     }
 
     async listReports() {
@@ -149,7 +177,9 @@ class Api {
         filter: JSON.stringify(filter),
         rp_id: reportPresentationId,
       };
-      return await this.postToReportingApi('/reports/api/run_report', formData);
+      return await this.postToReportingApiWithErrors(
+          '/reports/api/run_report',
+          formData);
     }
 }
 

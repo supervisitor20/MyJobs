@@ -1,4 +1,5 @@
 import moment from 'moment';
+import {map, partition, pluck} from 'lodash-compat/collection';
 
 // This is the business logic of the myreports client.
 
@@ -89,6 +90,8 @@ export class ReportConfiguration {
     this.multiFilter = {};
     this.andOrFilter = {};
     this.api = api;
+    this.nameErrors = null;
+    this.overallErrors = null;
     this.newReportNote = newReportNote;
   }
 
@@ -176,20 +179,29 @@ export class ReportConfiguration {
     return this.name;
   }
 
-  getReportNameError() {
-    if (!this.name) {
-      return 'Report name cannot be empty.';
-    }
-    return null;
+  getReportNameErrors() {
+    return this.nameErrors;
+  }
+
+  getOverallErrors() {
+    return this.overallErrors;
   }
 
   async run() {
-    const reportId = await this.api.runReport(
-        this.rpId,
-        this.name,
-        this.getFilter());
-    this.newReportNote(reportId);
-    return reportId;
+    const response = await this.api.runReport(
+      this.rpId,
+      this.name,
+      this.getFilter());
+    const {ok: reportId, clienterrors} = response;
+    if (reportId) {
+      this.overallErrors = null;
+      this.nameErrors = null;
+      this.newReportNote(reportId);
+    } else {
+      const partitioned = partition(clienterrors, e => e.field === 'name');
+      const messagesOnly = map(partitioned, o => pluck(o, 'message'));
+      [this.nameErrors, this.overallErrors] = messagesOnly;
+    }
   }
 }
 

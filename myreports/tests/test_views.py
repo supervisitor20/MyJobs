@@ -756,3 +756,17 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEquals(200, resp.status_code)
         self.assertIn('The_Report.xlsx', resp['content-disposition'])
         self.assertIn('application/vnd.', resp['content-type'])
+
+    def test_missing_report_name(self):
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'json_pass')
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': report_presentation.pk,
+            })
+        self.assertEqual(400, resp.status_code)
+        error_body = json.loads(resp.content)
+        self.assertIn('name', [e['field'] for e in error_body])

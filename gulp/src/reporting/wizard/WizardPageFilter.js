@@ -79,12 +79,18 @@ export class WizardPageFilter extends Component {
     this.updateState();
   }
 
+  async runReport() {
+    const {reportConfig} = this.state;
+    await reportConfig.run();
+    this.updateState();
+  }
+
   updateState() {
     const {reportConfig} = this.state;
     this.setState({
       filter: reportConfig.getFilter(),
       reportName: reportConfig.getReportName(),
-      reportNameError: reportConfig.getReportNameError(),
+      reportNameError: reportConfig.getReportNameErrors(),
     });
   }
 
@@ -194,7 +200,7 @@ export class WizardPageFilter extends Component {
         <hr/>
         {this.renderRow('', 'submit',
           <Button
-            onClick={() => reportConfig.run(reportName)}>
+            onClick={() => this.runReport()}>
             Run Report
           </Button>)}
 

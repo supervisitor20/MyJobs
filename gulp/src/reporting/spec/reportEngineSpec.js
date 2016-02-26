@@ -21,7 +21,7 @@ const fakeApi = {
   getFilters: () => ({filters: {6: 6}}),
   getHelp: () =>
     [{'city': 'Indianapolis'}, {'city': 'Chicago'}],
-  runReport: () => 7,
+  runReport: () => ({'ok': 7}),
 };
 
 describe('ReportFinder', () => {
@@ -160,10 +160,9 @@ describe('ReportConfiguration', () => {
     spyOn(fakeApi, 'runReport').and.callThrough();
     spyOn(fakeComponent, 'newReportNote').and.callThrough();
 
-    const result = await config.run();
+    await config.run();
 
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'defaultName', {});
-    expect(result).toEqual(7);
     expect(fakeComponent.newReportNote).toHaveBeenCalled();
   }));
 
@@ -172,15 +171,34 @@ describe('ReportConfiguration', () => {
     spyOn(fakeComponent, 'newReportNote').and.callThrough();
 
     config.changeReportName('bbb');
-    const result = await config.run();
+    await config.run();
 
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'bbb', {});
-    expect(result).toEqual(7);
   }));
 
-  it('warns about invalid report names', promiseTest(async() => {
-    config.changeReportName('');
-    expect(config.getReportNameError()).toContain('empty');
+  it('notes name errors from api', promiseTest(async() => {
+    fakeApi.runReport = () => ({'clienterrors': [
+      {
+        'field': 'name',
+        'message': 'zzz',
+      }]});
+    fakeApi.runApi = () => ({
+      message: 'yyy',
+      field: 'name',
+    });
+    await config.run();
+
+    expect(config.getReportNameErrors()).toContain('zzz');
+  }));
+
+  it('notes generic errors from api', promiseTest(async() => {
+    fakeApi.runApi = () => ({
+      message: 'yyy',
+      field: 'name',
+    });
+    await config.run();
+
+    expect(config.getReportNameErrors()).toContain('zzz');
   }));
 });
 
