@@ -12,14 +12,14 @@ var email_input;
 $('#saved-search-email').bind('keypress', function(e) {
 	if(e.keyCode==13){ // keycode 13 is "enter". Bind "enter" to submit
     e.preventDefault();
-    blocks_widget_div = $(this).closest("[data-secure-block-id]");
+    blocks_widget_div = $(this).closest("[data-secure_block_id]");
     save_search();
 	}
 });
 
 $('#saved-search-btn').click(function(e) {
   e.preventDefault();
-  blocks_widget_div = $(this).closest("[data-secure-block-id]");
+  blocks_widget_div = $(this).closest("[data-secure_block_id]");
   save_search();
 });
 
@@ -67,7 +67,7 @@ function reload_widget(callback) {
   // as the secure block script is what imports this js, this shouldn't
   // be a problem
   if (typeof reload_secure_block !== "undefined"){
-    var element_id = $(blocks_widget_div).data('secure-block-id')
+    var element_id = $(blocks_widget_div).data('secure_block_id')
     reload_secure_block(element_id, callback);
   }
 }

@@ -539,7 +539,6 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             'moc_term': request.GET.get('moc', '\*'),
             'location_term': the_job.location
         }
-
         # Render the response, but don't return it yet--we need to add an
         # additional canonical url header to the response.
         the_response = render_to_response('job_detail.html', data_dict,
