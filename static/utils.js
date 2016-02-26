@@ -10,10 +10,10 @@ var utils = {
    * cookie: The name of the cookie to retreive.
    **/
   readCookie: function(cookie) {
-    const nameEQ = cookie + '=';
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
+    var nameEQ = cookie + '=';
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
       while (c.charAt(0) === ' ') {
         c = c.substring(1, c.length);
       }
@@ -36,7 +36,7 @@ var utils = {
         if (this.readCookie('loggedout') && window.location.pathname !== url) {
           window.location.assign(url);
         }
-      }, 1000);
+      }, 500);
     } else {
       window.clearInterval(timer);
     }
