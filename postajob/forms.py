@@ -450,7 +450,7 @@ class ProductForm(RequestForm):
     job_limit_choices = [('unlimited', "Unlimited"),
                          ('specific', 'A Specific Number'), ]
     job_limit = CharField(
-        label='Job Limit', widget=RadioSelect(choices=job_limit_choices),
+        label='Job Limit', widget=Select(choices=job_limit_choices),
         help_text=Product.help_text['num_jobs_allowed'], initial='unlimited'
     )
 

@@ -59,10 +59,7 @@ var load_event = function(){
     });
 
     // Product Form
-    $(document).on("change", '#id_job_limit_0', function() {
-        update_job_limit_fields();
-    });
-    $(document).on("change", '#id_job_limit_1', function() {
+    $(document).on("change", '#id_job_limit', function() {
         update_job_limit_fields();
     });
 
@@ -179,7 +176,7 @@ function update_site_fields() {
 
 
 function update_job_limit_fields() {
-    if($('#id_job_limit_0').is(':checked')) {
+    if($('#id_job_limit').val() == 'unlimited') {
         hide_field('number-of-jobs');
         hide_admin_field('num_jobs_allowed');
     }
