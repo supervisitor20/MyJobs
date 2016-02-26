@@ -60,6 +60,10 @@ class RegistrationBlockFactory(BlockFactory):
         model = 'myblocks.RegistrationBlock'
 
 
+class ToolsWidgetBlockFactory(BlockFactory):
+    class Meta:
+        model = 'myblocks.ToolsWidgetBlock'
+
 class SavedSearchWidgetBlockFactory(BlockFactory):
     class Meta:
         model = 'myblocks.SavedSearchWidgetBlock'

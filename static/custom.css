@@ -3161,6 +3161,10 @@ fieldset:nth-child(n+2) {
     display: inline-block;
 }
 
+.row .col-md-8 ul {
+    margin: 0;
+}
+
 .row .col-md-8 ul li label {
     font-weight: normal;
 }

@@ -72,6 +72,9 @@ class RegistrationBlockForm(BlockForm):
     class Meta:
         model = models.RegistrationBlock
 
+class ToolsWidgetBlockForm(BlockForm):
+    class Meta:
+        model = models.ToolsWidgetBlock
 
 class SavedSearchWidgetBlockForm(BlockForm):
     class Meta:
