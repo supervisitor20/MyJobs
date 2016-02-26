@@ -19,19 +19,7 @@ def extract_hostname(url):
     if url is None:
         return None
     else:
-        return remove_test_prefix(urlparse(url).hostname)
-
-
-def remove_test_prefix(url):
-    """
-    Removes test prefix (qc, staging) from incoming requests, if it exists.
-    :param url:
-    :return: url without qc, staging prefixes
-    """
-    if not url:
-        return url
-    url_split = url.split('.', 1)
-    return url_split[1] if url_split[0] in settings.ENV_URL_PREFIXES else url
+        return urlparse(url).hostname
 
 
 def parse_request_meta(meta):
