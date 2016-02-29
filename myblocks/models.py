@@ -1,6 +1,7 @@
 import hashlib
 import logging
 from slugify import slugify
+from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -154,6 +155,14 @@ class Block(models.Model):
 
         """
         return []
+
+    def get_cookies(self, request, **kwargs):
+        """
+        Retrieve information for setting cookies for block, if exists. To be
+        overwritten by child class
+
+        """
+        return {}
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -426,10 +435,68 @@ class SecureBlock(Block):
         abstract = True
 
 
+class ToolsWidgetBlock(SecureBlock):
+    """
+    This widget is used to display account and navigation related links via
+    the secure blocks API. It is based on the topbar functionality, but will
+    represent a more flexible and customizable approach.
+
+    """
+    # temporarily use the current topbar template
+    base_template = 'includes/topbar.html'
+
+    def context(self, request, **kwargs):
+        """
+        Add additional context variables to those passed in from the ajax call.
+
+        """
+        context = super(ToolsWidgetBlock, self).context(request, **kwargs)
+        user = request.user if request.user.is_authenticated() else None
+
+        if not user:
+            # Ensure that old myguid cookies can be handled correctly
+            guid = request.COOKIES.get('myguid', '').replace('-', '')
+            try:
+                user = User.objects.get(user_guid=guid)
+            except User.DoesNotExist:
+               pass
+
+        context['user'] = user
+
+        return context
+
+    def get_cookies(self, request, **kwargs):
+        """
+        Set cookies for last microsite and lastmicrositename
+
+        """
+        cookies = []
+        caller = None
+        # import ipdb; ipdb.set_trace()
+        if request.META.get('HTTP_ORIGIN'):
+            caller = request.META.get('HTTP_ORIGIN')
+        elif request.META.get('HTTP_REFERER'):
+            parsed_url =  urlparse(request.META.get('HTTP_REFERER'))
+            caller = "%s://%s" % (parsed_url.scheme, parsed_url.netloc)
+
+        if caller:
+            max_age = 30 * 24 * 60 * 60
+            last_name = kwargs.get('site_name', caller)
+            cookies.append({'key':'lastmicrosite',
+                            'value':caller,
+                            'max_age':max_age,
+                            'domain':'.my.jobs'})
+            cookies.append({'key':'lastmicrositename',
+                            'value':last_name,
+                            'max_age':max_age,
+                            'domain':'.my.jobs'})
+
+        return cookies
+
 
 class SavedSearchWidgetBlock(SecureBlock):
     """
-    Secure Block. What is rendered is based heavily on whether or not the
+    What is rendered is based heavily on whether or not the
     user is signed in to an account. Block renders as a customizable saved
     search module.
 

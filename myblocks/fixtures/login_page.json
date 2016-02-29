@@ -149,4 +149,22 @@
     "pk": 7,
     "model": "myblocks.savedsearchwidgetblock",
     "fields": {}
+},
+{
+    "pk": 8,
+    "model": "myblocks.block",
+    "fields": {
+        "template": "<div>This is where the tools widget would be</div>",
+        "element_id": "test_tools_widget",
+        "span": 0,
+        "name": "Test Tools Widget",
+        "content_type": ["myblocks", "toolswidgetblock"],
+        "offset": 0,
+        "updated": "2015-03-18T04:00:00Z"
+    }
+},
+{
+    "pk": 8,
+    "model": "myblocks.toolswidgetblock",
+    "fields": {}
 }]

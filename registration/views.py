@@ -161,6 +161,8 @@ def merge_accounts(request, activation_key):
 def logout(request):
     log_out(request)
     response = redirect('home')
+    # this cookie forces other tabs to logout immediately
+    response.set_cookie('loggedout', True)
     if 'myguid' in request.COOKIES:
         response.delete_cookie(key='myguid', domain='.my.jobs')
     return response

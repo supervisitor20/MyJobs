@@ -1,18 +1,5 @@
 var saved_dashboard_url = '';
 
-function read_cookie(cookie) {
-    var nameEQ = cookie + "=",
-        ca = document.cookie.split(';');
-    for (var i=0; i< ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ')
-            c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0)
-            return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-
 function secure_block(secure_block_url, request) {
   // need to explicitly marshal the result data into this deferred
   // because we are on old jQuery.
@@ -61,7 +48,7 @@ function populate_secure_blocks(request, callback) {
         console.error("dashboard fail: ", xhr, text, error);
     }).done(function(data, text, xhr) {
         $.each(data, function(key, value) {
-        $("[data-secure-block-id=" + key + "]").html(value);
+        $("[data-secure_block_id=" + key + "]").html(value);
         });
         if (typeof callback === "function") {
           callback();
@@ -74,8 +61,8 @@ function load_secure_blocks(dashboard_url) {
   // load secure blocks for all divs containing the proper data tag
   saved_dashboard_url = dashboard_url;
   var request = {};
-  $("*[data-secure-block-id]").each(function(i, block) {
-    var element_id = $(block).data('secure-block-id');
+  $("*[data-secure_block_id]").each(function(i, block) {
+    var element_id = $(block).data('secure_block_id');
     request[element_id] = $(block).data();
   });
   populate_secure_blocks(request);
@@ -86,7 +73,7 @@ function reload_secure_block(block_id, callback) {
   // callback is an optional argument of a function that should be called
   // upon completion of the reload
   var request = {};
-  var block = $("[data-secure-block-id=" + block_id + "]");
+  var block = $("[data-secure_block_id=" + block_id + "]");
   if (block) {
     request[block_id] = block.data();
     populate_secure_blocks(request, callback);
