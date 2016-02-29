@@ -86,7 +86,9 @@ def profile_unit_api(request, module=None, pk="0"):
             fields['user'] = fields['user'].email
             ctx = json.dumps(fields, cls=DjangoJSONEncoder)
         elif model:
-            ctx = json.dumps(model.get_field_types())
+            ctx = json.dumps([
+                {"name": k, "type": v}
+                for k, v in model.get_field_types().items()])
         else:
             ctx = {}
 
