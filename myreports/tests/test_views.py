@@ -1,13 +1,15 @@
 """Tests associated with myreports views."""
 import json
 import os
+from datetime import datetime
 
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.test_views import TestClient
 from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
-                                        PartnerFactory, LocationFactory)
+                                        PartnerFactory, LocationFactory,
+                                        TagFactory)
 from myreports.models import Report, ReportPresentation, PresentationType
 from myreports.tests.setup import MyReportsTestCase
 
@@ -447,8 +449,8 @@ class TestReportsApi(MyReportsTestCase):
                                 data={'report_type_id': '2'})
         data = json.loads(resp.content)['data_type']
         self.assertEquals(1, len(data))
-        self.assertEquals("Unaggregated", data['3']['name'])
-        self.assertEquals("Unaggregated Data Type", data['3']['description'])
+        self.assertEquals("unaggregated", data['3']['name'])
+        self.assertEquals("Unaggregated", data['3']['description'])
 
     def test_presentation_api(self):
         """Test that we get only active presentation types."""
@@ -499,12 +501,14 @@ class TestDynamicReports(MyReportsTestCase):
         self.json_pass.is_active = True
         self.json_pass.save()
 
-    def find_report_presentation(self, datasource, presentation_type):
+    def find_report_presentation(
+            self, datasource, presentation_type, data_type='unaggregated'):
         return ReportPresentation.objects.get(
             is_active=True,
             configuration__is_active=True,
             presentation_type__is_active=True,
             report_data__report_type__datasource=datasource,
+            report_data__data_type__data_type=data_type,
             presentation_type__presentation_type=presentation_type)
 
     def test_dynamic_contacts_report(self):
@@ -756,3 +760,56 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEquals(200, resp.status_code)
         self.assertIn('The_Report.xlsx', resp['content-disposition'])
         self.assertIn('application/vnd.', resp['content-type'])
+
+    def test_dynamic_partners_report_comm_per_month(self):
+        """Run the comm_rec per month per partner report."""
+        self.client.login_user(self.user)
+
+        partner = PartnerFactory(owner=self.company)
+        partner.tags.add(TagFactory.create(name="this"))
+        contact = ContactFactory.create(name='somename', partner=partner)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            ContactRecordFactory(
+                partner=partner,
+                contact=contact,
+                date_time=datetime(2015, 2, 4),
+                subject=u"subject-%s \u2019" % i)
+
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'json_pass',
+            data_type="count_comm_rec_per_month")
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': report_presentation.pk,
+                'name': 'The Report',
+                'filter': json.dumps({
+                    'tags': [['this']],
+                }),
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {'id': report_id, 'name': 'The Report'},
+            ]},
+            json.loads(resp.content))
+
+        resp = self.client.get(reverse('download_dynamic_report'),
+                               {'id': report_id})
+        self.assertEquals(200, resp.status_code)
+        response_data = json.loads(resp.content)
+        self.assertEquals(12, len(response_data['records']))
+        january = response_data['records'][0]
+        self.assertEqual('1', january['month'])
+        self.assertEqual('0', january['comm_rec_count'])
+        february = response_data['records'][1]
+        self.assertEqual('2', february['month'])
+        self.assertEqual('20', february['comm_rec_count'])

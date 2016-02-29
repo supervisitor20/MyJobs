@@ -2,6 +2,7 @@
 {% load tz %}
 {% load common_tags %}
 {% load compress %}
+{% load staticfiles %}
 {% gz as gz %}
 
 {% localtime on %}
@@ -70,6 +71,9 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 
+  {% compress js %}
+  <script type="text/javascript" src="{% static "utils.js" %}"></script>
+  {% endcompress %}
 
 
 </head>
@@ -169,7 +173,6 @@
           <div class="clearfix"></div>
       </footer>
       <script>
-          var static_url = "{{ STATIC_URL }}";
           var companyName = "{{ company.name }}";
       </script>
       <!--[if IE]>
@@ -185,6 +188,10 @@
       <script type="text/javascript" src="{{ STATIC_URL }}my.jobs.160-30.js{{ gz }}"></script>
       -->
 
+      <script type="text/javascript">
+        // check for logout cookie every second
+        utils.logoutTimer("{% url 'home' %}");
+      </script>
 
       {% block extra-js %}
 

@@ -882,16 +882,11 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         return UnorderedChangeList
 
-def parent_site_string(parent_site):
-    return "%s (%s)" % (parent_site.name, parent_site.domain)
-
 class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
     related_search_fields = {
-        'parent_site': ('domain','name' ),
+        'parent_site': ('domain', 'name'),
     }
-    related_string_functions = {
-        'seosite': parent_site_string,
-    }
+
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
@@ -913,7 +908,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
     ]
 
     class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
+        js = ('django_extensions/js/jquery-1.7.2.min.js',)
 
     # Disable bulk delete on this model to prevent accidental catastrophe
     def get_actions(self, request):
@@ -1231,7 +1226,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
     list_display = ('name', 'sites')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
-        ('Basics', {'fields': ['name','value','group','ats_name']}),
+        ('Basics', {'fields': ['name', 'value', 'group', 'ats_name']}),
         ('Sites', {'fields': ['sites']}),
     ]
 
@@ -1239,7 +1234,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
 class ViewSourceAdmin(admin.ModelAdmin):
     form = ViewSourceForm
     save_on_top = True
-    list_display = ('name', 'view_source' , 'sites')
+    list_display = ('name', 'view_source', 'sites')
     search_fields = ['name', 'view_source', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name', 'view_source')]}),
@@ -1263,13 +1258,13 @@ class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
     inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
     list_display = ('old_path', 'new_path')
     list_filter = ('site__domain',)
+    search_fields = ('old_path', 'new_path')
     related_search_fields = {
         'site': ('domain', )
     }
-    search_fields = ('old_path', 'new_path')
 
     class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
+        js = ('django_extensions/js/jquery-1.7.2.min.js',)
 
 
 admin.site.register(CustomFacet, CustomFacetAdmin)

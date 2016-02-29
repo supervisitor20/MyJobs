@@ -61,18 +61,15 @@ Documentation
     This documentation is hosted directly on GitHub using their ``gh-pages``
     feature
 
-  How do I edit this documentation?
-    How you edit this now and how it should be edited in the future are
-    slightly different.
-
-  How do I edit this document *now*?
-    Make changes under the ``doc`` directory on the ``sphinx`` branch like you
-    would any other Sphinx project, then run ``make ghpages`` from the ``doc``
-    directory. 
-
   How will I edit this document in the future?
-    We would add a post_commit hook that triggered ``make ghpages`` once
-    something was merged into the ``quality-control`` branch.
+    There is a Jenkins tasks which builds documentation any time new commits
+    are made to quality-control. If for some reason, you need to do this
+    manually, you can do the following::
+
+      cd doc
+      make html
+      git commit -am "Updated documentation."
+      make ghpages
 
   Why is it so ugly?
     It's completely themeable, so the current look is arbitrary.
