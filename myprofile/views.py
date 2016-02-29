@@ -2,7 +2,10 @@ import json
 import re
 
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.loading import get_model
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
@@ -56,6 +59,38 @@ def edit_profile(request):
 
     return render_to_response('myprofile/edit_profile.html', data_dict,
                               RequestContext(request))
+
+
+@user_passes_test(User.objects.not_disabled)
+def profile_unit_api(request, module=None, pk="0"):
+    module = module or ''
+    model = get_model('myprofile', module)
+
+    if request.method == "POST":
+        form = getattr(forms, module.title() + 'Form')(
+            user=request.user, auto_id=False, data=request.POST)
+
+        if form.is_valid():
+            profile_unit, _ = model.objects.get_or_create(
+                user=request.user, **form.cleaned_data)
+
+            fields = profile_unit.fields
+            fields['user'] = fields['user'].email
+            ctx = json.dumps(fields, cls=DjangoJSONEncoder)
+    else:
+        pk = int(pk)
+        profile_unit = request.user.profileunits_set.filter(pk=pk).first()
+
+        if profile_unit:
+            fields = profile_unit.fields
+            fields['user'] = fields['user'].email
+            ctx = json.dumps(fields, cls=DjangoJSONEncoder)
+        elif model:
+            ctx = json.dumps(model.get_field_types())
+        else:
+            ctx = {}
+
+    return HttpResponse(ctx, content_type='application/json; charset=utf-8')
 
 
 @user_passes_test(User.objects.not_disabled)
@@ -161,22 +196,3 @@ def delete_item(request):
     except ProfileUnits.DoesNotExist:
         pass
     return HttpResponseRedirect(reverse('view_profile'))
-
-
-@user_passes_test(User.objects.not_disabled)
-def get_details(request):
-    module_config = {}
-    item_id = request.GET.get('id')
-    module = request.GET.get('module')
-    module = module.replace(" ", "")
-    item = get_object_or_404(request.user.profileunits_set,
-                             pk=item_id)
-    item = getattr(item, module.lower())
-    model = item.__class__
-    module_config['verbose'] = model._meta.verbose_name.title()
-    module_config['name'] = module
-    module_config['item'] = item
-    data_dict = {'module': module_config}
-    data_dict['view_name'] = 'My Profile'
-    return render_to_response('myprofile/profile_details.html',
-                              data_dict, RequestContext(request))

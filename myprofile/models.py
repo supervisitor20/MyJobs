@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import datetime
 
 from django.core.validators import ValidationError
@@ -49,6 +50,31 @@ class ProfileUnits(models.Model):
                                    self.__getattribute__(field.name),
                                    field.get_internal_type()])
         return field_list
+
+    @classmethod
+    def get_field_types(cls):
+        """
+        Returns all of a profile unit's fields with their associated types.
+
+        """
+        return OrderedDict(
+            (field, cls._meta.get_field(field).get_internal_type())
+            for field in cls._meta.get_all_field_names()
+            if field not in ["profileunits_ptr", "content_type"])
+
+    @property
+    def fields(self):
+        """Returns all of a profile unit's fields with their values."""
+
+        if hasattr(self, self.content_type.model):
+            profile_unit = getattr(self, self.content_type.model)
+        else:
+            profile_unit = self
+
+        return OrderedDict(
+            (field, getattr(profile_unit, field))
+            for field in profile_unit._meta.get_all_field_names()
+            if field not in ["profileunits_ptr", "content_type"])
 
     def __unicode__(self):
         return self.content_type.name
