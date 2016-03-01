@@ -14,7 +14,6 @@ from myjobs.models import User
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.setup import MyJobsBase
 from myprofile.tests.factories import PrimaryNameFactory
-from registration.forms import InvitationForm
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
 from seo.tests.factories import CompanyFactory
@@ -262,36 +261,6 @@ class InvitationModelTests(MyJobsBase):
         invitation = Invitation.objects.get()
         invitation.send()
         self.assertEqual(invitation.inviting_user, self.user)
-
-    def test_invitation_form_creates_invitee(self):
-        """
-        When an invitation is created, set the invitee to the current owner
-        of the email address used or create a new user if one does not exist
-        """
-        data = {
-            'inviting_user': self.user
-        }
-        User.objects.create_user(email='email@example.com', send_email=False)
-        users = []
-        for email in ['email@example.com', 'email2@example.com']:
-            data['invitee_email'] = email
-            form = InvitationForm(data)
-            self.assertTrue(form.is_valid())
-            invitation = form.save()
-            user = User.objects.get_email_owner(email)
-            users.append(user)
-
-            self.assertIsNotNone(invitation.invitee)
-            self.assertEqual(invitation.invitee_email, email)
-
-            # Users created with invitations should receive an invitation
-            # but not a normal user creation email
-            self.assertEqual(len(mail.outbox), 1)
-            email = mail.outbox.pop()
-            self.assertIn("invited you to join My.jobs.", email.body)
-
-        self.assertEqual(len(users), 2)
-        self.assertItemsEqual(users, set(users))
 
     def test_invitation_model_save_success(self):
         self.assertEqual(User.objects.count(), 1)
