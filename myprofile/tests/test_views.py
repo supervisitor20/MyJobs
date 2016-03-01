@@ -131,11 +131,9 @@ class MyProfileViewsTests(MyJobsBase):
                                data={'module': 'Name'})
         self.assertEquals(200, resp.status_code)
         self.assertIn('application/json', resp['content-type'])
-        from pprint import pprint; pprint(resp)
-        from pprint import pprint; pprint(resp.content)
         data = json.loads(resp.content)
-        from pprint import pprint; pprint(data)
-        self.fail('ok')
+        self.assertEquals(3, len(data['fields']))
+        self.assertEquals(3, len(data['ordered_fields']))
 
     def test_handle_form_redirect_summary(self):
         """
