@@ -1,12 +1,6 @@
-import moment from 'moment';
 import {map, partition, pluck} from 'lodash-compat/collection';
 
 // This is the business logic of the myreports client.
-
-
-export function defaultReportName(date) {
-  return moment(date).format('YYYY-MM-DD hh:mm:ss.SSS');
-}
 
 // Root of the client.
 //
@@ -38,8 +32,9 @@ export class ReportFinder {
 
   async buildReportConfiguration(rpId) {
     const filters = await this.api.getFilters(rpId);
+    const name = await this.api.getDefaultReportName();
     return await this.configBuilder.build(
-      rpId, filters.filters, reportId => this.noteNewReport(reportId));
+      name.name, rpId, filters.filters, reportId => this.noteNewReport(reportId));
   }
 
   async getReportList() {
@@ -213,8 +208,7 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  async build(rpId, filters, cb) {
-    const name = defaultReportName(new Date());
+  async build(name, rpId, filters, cb) {
     return new ReportConfiguration(name, rpId, filters, this.api, cb);
   }
 }

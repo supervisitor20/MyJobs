@@ -1,15 +1,14 @@
 import {
   ReportFinder,
   ReportConfiguration,
-  defaultReportName,
 } from '../reportEngine';
 
 import {promiseTest} from '../../util/spec';
 
 
 class FakeBuilder {
-  build(rpId, filters) {
-    return {rpId: rpId, filters: filters};
+  build(name, rpId, filters) {
+    return {name: name, rpId: rpId, filters: filters};
   }
 }
 
@@ -21,6 +20,7 @@ const fakeApi = {
   getFilters: () => ({filters: {6: 6}}),
   getHelp: () =>
     [{'city': 'Indianapolis'}, {'city': 'Chicago'}],
+  getDefaultReportName: () => ({'name': 'zzz'}),
   runReport: () => ({'ok': 7}),
 };
 
@@ -33,9 +33,10 @@ describe('ReportFinder', () => {
     expect(await finder.getReportingTypes()).toEqual([1]);
   }));
 
+
   it('can build a ReportConfiguration', promiseTest(async () => {
     expect(await finder.buildReportConfiguration(2)).toEqual(
-      {rpId: 2, filters: {6: 6}});
+      {rpId: 2, filters: {6: 6}, name: 'zzz'});
   }));
 
   describe('subscriptions', () => {
@@ -200,11 +201,4 @@ describe('ReportConfiguration', () => {
 
     expect(config.getReportNameErrors()).toContain('zzz');
   }));
-});
-
-describe('defaultReportName', () => {
-  it('can come up with a name from a date', () => {
-    const name = defaultReportName(new Date(2015, 0, 2, 10, 9, 8, 7));
-    expect(name).toEqual('2015-01-02 10:09:08.007');
-  });
 });

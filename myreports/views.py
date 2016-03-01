@@ -634,3 +634,25 @@ def download_dynamic_report(request):
     response.write(output.getvalue())
 
     return response
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@has_access('prm')
+@require_http_methods(['POST'])
+def get_default_report_name(request):
+    validator = ApiValidator()
+    get_company_or_404(request)
+    # We don't actually need this but it seems like it will be important
+    # if we ever start picking meaningful names.
+    rp_id = request.POST.get('report_presentation_id', None)
+    if not rp_id:
+        validator.note_field_error(
+            "report_presentation_id",
+            "Report presentation id must not be empty.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    data = {'name': str(datetime.now())}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))

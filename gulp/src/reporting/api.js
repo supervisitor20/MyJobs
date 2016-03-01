@@ -148,6 +148,15 @@ class Api {
       return (await promise).report_presentation;
     }
 
+    async getDefaultReportName(reportPresentationId) {
+      const formData = {
+        report_presentation_id: reportPresentationId,
+      };
+      return await this.postToReportingApi(
+            '/reports/api/default_report_name',
+            formData);
+    }
+
     async getFilters(reportPresentationId) {
       const formData = {
         rp_id: reportPresentationId,

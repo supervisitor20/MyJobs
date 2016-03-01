@@ -1,6 +1,7 @@
 """Tests associated with myreports views."""
 import json
 import os
+from datetime import datetime
 
 from django.core.urlresolvers import reverse
 
@@ -758,6 +759,7 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertIn('application/vnd.', resp['content-type'])
 
     def test_missing_report_name(self):
+        """Returns an error if the report name is missing."""
         report_presentation = self.find_report_presentation(
             'partners',
             'json_pass')
@@ -770,3 +772,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(400, resp.status_code)
         error_body = json.loads(resp.content)
         self.assertIn('name', [e['field'] for e in error_body])
+
+    def test_default_report_name(self):
+        """Returns a nice timestampy default report name."""
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'xlsx')
+        post_data = {'report_presentation_id': report_presentation.pk}
+        resp = self.client.post(reverse('get_default_report_name'), post_data)
+        self.assertEqual(200, resp.status_code)
+        doc = json.loads(resp.content)
+        self.assertIn('name', doc)
+        self.assertRegexpMatches(doc['name'], '^\d{4}-')
+
+    def test_default_report_name_error(self):
+        """Returns a 400 on missing parameter."""
+        resp = self.client.post(reverse('get_default_report_name'), {})
+        self.assertEqual(400, resp.status_code)
+        doc = json.loads(resp.content)
+        field_keys = {r['field'] for r in doc}
+        self.assertIn('report_presentation_id', field_keys)
