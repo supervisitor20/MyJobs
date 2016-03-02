@@ -1043,7 +1043,8 @@ class ViewTests(PostajobTestBase):
     def test_view_request_posted_by_unrelated_company(self):
         company = CompanyFactory(id=2, name='new company')
         user = UserFactory(email='new_company_user@email.com')
-        CompanyUserFactory(user=user, company=company)
+        role = RoleFactory(company=company, name='Admin')
+        user.roles.add(role)
         product = PurchasedProductFactory(
             product=self.product, owner=company)
         PurchasedJobFactory(owner=company, created_by=user,
