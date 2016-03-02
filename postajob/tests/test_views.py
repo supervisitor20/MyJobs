@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
-from unittest import skip
 
 
 from django.conf import settings
@@ -850,18 +849,6 @@ class ViewTests(PostajobTestBase):
         offline_purchase = OfflinePurchase.objects.get()
         self.assertIn(offline_purchase.redemption_uid,
                       response.content.decode('utf-8'))
-
-    @skip('Feature disabled for now.')
-    def test_offlinepurchase_add_with_company(self):
-        self.offlinepurchase_form_data['purchasing_company'] = str(self.company.pk)
-        response = self.client.post(reverse('offlinepurchase_add'),
-                                    data=self.offlinepurchase_form_data,
-                                    follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(OfflinePurchase.objects.all().count(), 1)
-        offline_purchase = OfflinePurchase.objects.get()
-        self.assertNotIn(offline_purchase.redemption_uid, response.content)
-        self.assertIsNotNone(offline_purchase.redeemed_on)
 
     def test_offlinepurchase_update(self):
         offline_purchase = OfflinePurchaseFactory(
