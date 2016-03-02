@@ -1,5 +1,6 @@
 import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills.js';
+import {MyJobsApi} from '../common/myjobs-api.js';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from '../common/cookie';
@@ -10,10 +11,11 @@ import ReactDOM from 'react-dom';
 
 installPolyfills();
 
-const api = new Api(getCsrf());
+const myJobsApi = new MyJobsApi(getCsrf());
+const reportingApi = new Api(myJobsApi);
 
-const configBuilder = new ReportConfigurationBuilder(api);
-const reportFinder = new ReportFinder(api, configBuilder);
+const configBuilder = new ReportConfigurationBuilder(reportingApi);
+const reportFinder = new ReportFinder(reportingApi, configBuilder);
 
 ReactDOM.render(
   <WizardRouter reportFinder={reportFinder}/>,
