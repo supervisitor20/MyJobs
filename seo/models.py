@@ -1430,12 +1430,6 @@ class CompanyUser(models.Model):
         unique_together = ('user', 'company')
         db_table = 'mydashboard_companyuser'
 
-    def make_purchased_microsite_admin(self):
-        group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        self.group.add(group)
-        self.save()
-
-
 # TODO: This shouldn't be necessary. Find out how to get rid of it
 @invitation_context.register(CompanyUser)
 def company_user_invitation_context(company_user):

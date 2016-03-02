@@ -871,11 +871,10 @@ class Request(BaseModel):
                                   pk=self.object_id)
 
     def send_email(self):
-        from seo.models import CompanyUser
-
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        admins = CompanyUser.objects.filter(group=group, company=self.owner)
-        admin_emails = admins.values_list('user__email', flat=True)
+        admin_emails = self.owner.role_set.filter(
+            name='Admin', user__groups=group).values_list(
+                'user__email', flat=True)
 
         # Confirm that the request object was fully created and still exists
         # before sending the email.
@@ -1053,17 +1052,14 @@ class Invoice(BaseModel):
         optional recipients.
 
         Inputs:
-        :send_to_admins:    If True will send the invoice to all CompanyUsers
-                            of the Company that owns the product.
-                            [Defaults to True]
+        :send_to_admins:    If True will send the invoice to all admin users of
+                            the Company that owns the product.[Default: True]
 
         :other_recipients:  A list object that contains the other recipient(s)
                             email so we can send them the invoice
 
         """
-        from seo.models import CompanyUser
-
-        other_recipients = [] if not other_recipients else other_recipients
+        other_recipients = other_recipients or []
 
         data = {
             'invoice': self,
@@ -1075,13 +1071,11 @@ class Invoice(BaseModel):
 
         owner = self.owner
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        owner_admins = []
-        if send_to_admins:
-            owner_admins = CompanyUser.objects.filter(company=owner,
-                                                      group=group)
-            owner_admins = owner_admins.values_list('user__email', flat=True)
+        owner_admins = owner.role_set.filter(
+            name='Admin', user__groups=group).values_list(
+                'user__email', flat=True) if send_to_admins else []
 
-        recipients = set(other_recipients + list(owner_admins))
+        recipients = set(other_recipients).union(owner_admins)
         if recipients:
             body = render_to_string('postajob/invoice_email.html', data)
             site = getattr(settings, 'SITE', None)

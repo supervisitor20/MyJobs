@@ -577,8 +577,8 @@ def make_company_from_form(form_instance):
     company_name = cleaned_data.get('company_name')
     form_instance.company = Company.objects.create(name=company_name,
                                                    user_created=True)
-    cu = CompanyUser.objects.create(user=form_instance.request.user,
-                                    company=form_instance.company)
+    form_instance.request.user.roles.add(
+        form_instance.company.role_set.get(name='Admin'))
     form_instance.request.user.roles.add(form_instance.company.role_set.get(
         name='Admin'))
 
@@ -592,7 +592,6 @@ def make_company_from_form(form_instance):
         zipcode=cleaned_data.get('zipcode'),
     )
     profile.save()
-    cu.make_purchased_microsite_admin()
     form_instance.request.user.make_purchased_microsite_admin()
 
 
