@@ -222,46 +222,6 @@ class InvitationModelTests(MyJobsBase):
         self.user.is_superuser = True
         self.user.save()
 
-    def test_invitation_admin_cant_edit(self):
-        """
-        Ensures that there is no way to edit an invitation once it is sent
-        """
-        invitation = InvitationFactory()
-        invitation.send()
-        resp = self.client.get(reverse(
-            'admin:registration_invitation_changelist'))
-        contents = BeautifulSoup(resp.content)
-
-        # We can't edit items via action dropdown.
-        bulk_options = contents.select('select[name=action]')[0]
-        for action in bulk_options.select('option'):
-            self.assertNotEqual('edit_selected', action.attrs['value'])
-
-        # We can't click on the first data cell of a table row to edit.
-        # td 0 is a checkbox. td 1 would normally contain the first field
-        # to be shown as well as an edit link.
-        edit_link = contents.select('td')[1]
-        self.assertEqual(edit_link.text, invitation.invitee_email)
-        self.assertEqual(edit_link.select('a'), [])
-
-        resp = self.client.get(reverse(
-            'admin:registration_invitation_change', args=[invitation.pk]))
-        # We can't guess edit links.
-        self.assertTrue(resp['Location'].endswith(
-            reverse('admin:registration_invitation_changelist')))
-
-    def test_invitation_admin_default_inviting_user(self):
-        """
-        When creating an invitation via the admin, the inviting user should
-        default to the administrative user currently logged in
-        """
-        self.client.post(reverse(
-            'admin:registration_invitation_add'),
-            {'invitee_email': 'email@example.com'})
-        invitation = Invitation.objects.get()
-        invitation.send()
-        self.assertEqual(invitation.inviting_user, self.user)
-
     def test_invitation_model_save_success(self):
         self.assertEqual(User.objects.count(), 1)
         for args in [{'invitee_email': self.user.email},
