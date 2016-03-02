@@ -14,7 +14,7 @@ from myjobs.models import User
 from postajob.location_data import state_list
 
 from universal.decorators import company_has_access
-from seo.models import CompanyUser, SeoSite
+from seo.models import SeoSite
 from myjobs.decorators import user_is_allowed
 from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
                             OfflinePurchaseRedemptionForm, ProductForm,

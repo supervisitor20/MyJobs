@@ -3,7 +3,7 @@ import random
 
 import factory
 
-from seo.tests.factories import UserFactory, CompanyFactory, CompanyUserFactory
+from seo.tests.factories import UserFactory, CompanyFactory
 from myjobs.tests.factories import UserFactory
 
 
