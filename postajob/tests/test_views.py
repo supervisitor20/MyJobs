@@ -759,9 +759,12 @@ class ViewTests(PostajobTestBase):
         self.assertIsNotNone(offline_purchase.redeemed_on)
         self.assertIsNotNone(offline_purchase.redeemed_by)
 
-        new_company = offline_purchase.redeemed_by.company
-        self.assertEqual(new_company.name, data['company_name'])
-        self.assertTrue(new_company, 'companyprofile')
+        new_company = Company.objects.get(name=data['company_name'])
+        self.assertTrue(
+            offline_purchase.redeemed_by.roles.filter(
+                company=new_company).exists(),
+            "Was expecting %s to be associated with %s, but they weren't." %(
+                offline_purchase.redeemed_by, new_company))
 
     def test_offlinepurchase_redeem_duplicate_company_name(self):
         offline_purchase = OfflinePurchaseFactory(
@@ -826,7 +829,7 @@ class ViewTests(PostajobTestBase):
     def test_offlinepurchase_redeem_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
             owner=self.company, created_by=self.user,
-            redeemed_on=date.today(), redeemed_by=self.company_user)
+            redeemed_on=date.today(), redeemed_by=self.user)
         OfflineProductFactory(
             product=self.product,
             offline_purchase=offline_purchase,
@@ -877,7 +880,7 @@ class ViewTests(PostajobTestBase):
     def test_offlinepurchase_delete_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
             owner=self.company, created_by=self.user,
-            redeemed_on=date.today(), redeemed_by=self.company_user)
+            redeemed_on=date.today(), redeemed_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_delete',
