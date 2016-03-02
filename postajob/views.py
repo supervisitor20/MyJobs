@@ -313,6 +313,7 @@ def process_admin_request(request, pk, approve=True,
 
     Adds the requesting user (if one exists) to the company's block list
     if the block parameter is True.
+
     """
     company = get_company(request)
     request_made = get_object_or_404(Request, pk=pk, owner=company)

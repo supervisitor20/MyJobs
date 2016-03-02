@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
-                                         CompanyUserFactory, SeoSiteFactory)
+                                         SeoSiteFactory)
 from myjobs.tests.factories import UserFactory, RoleFactory
 from postajob.tests.factories import (ProductFactory,
                                       OfflinePurchaseFactory,
@@ -41,8 +41,6 @@ class PostajobTestBase(DirectSEOBase):
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
         self.company.job_source_ids.add(self.bu)
-        self.company_user = CompanyUserFactory(user=self.user,
-                                               company=self.company)
 
         SitePackageFactory(owner=self.company)
         self.package = Package.objects.get()
@@ -1062,8 +1060,8 @@ class ViewTests(PostajobTestBase):
         Trying to access the admin pages for a site that is a part of a package
         which isn't own by a company to which you belong should raise a 404.
         """
-        self.company_user.company = CompanyFactory(pk=41, name="Wrong Company")
-        self.company_user.save()
+        self.role.company = CompanyFactory(pk=41, name="Wrong Company")
+        self.role.save()
 
         for page in ['view_job', 'view_invoice',
                      'purchasedmicrosite_admin_overview', 'admin_products',
