@@ -251,7 +251,8 @@ class ModelTests(MyJobsBase):
     def test_invoice_sent_to_admins(self):
         """
         When a company has postajob admins, invoices should be sent to each of
-        them, unless the behavior is disabled by passing `admins=False`.
+        them, unless the behavior is disabled by passing
+        `send_to_admins=False`.
 
         """
 
