@@ -12,7 +12,7 @@ from django.forms import (CharField, CheckboxSelectMultiple,
                           RadioSelect, Select, TextInput, ChoiceField)
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
-from seo.models import Company, CompanyUser, SeoSite
+from seo.models import Company, SeoSite
 from postajob.fields import NoValidationChoiceField, SelectWithOptionClasses
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              OfflineProduct, Package, Product, ProductGrouping,
@@ -570,7 +570,7 @@ class ProductGroupingForm(RequestForm):
 
 def make_company_from_form(form_instance):
     """
-    Makes a Company, CompanyUser, and CompanyProfile from a form instance.
+    Makes a Company and CompanyProfile from a form instance.
     Form instance must have a new company_name in form_instance.cleaned_data.
     """
     cleaned_data = form_instance.cleaned_data

@@ -6,7 +6,6 @@ from django.core import mail
 
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
-from seo.tests.factories import CompanyUserFactory
 from myjobs.models import User
 from postajob.models import (CompanyProfile, Invoice, Job, JobLocation,
                              OfflineProduct, OfflinePurchase, Package,
