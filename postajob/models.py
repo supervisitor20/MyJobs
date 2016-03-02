@@ -921,7 +921,7 @@ class OfflinePurchase(BaseModel):
                                    related_name='created')
     created_on = models.DateField(auto_now_add=True)
 
-    redeemed_by = models.ForeignKey('seo.CompanyUser', null=True,
+    redeemed_by = models.ForeignKey('myjobs.User', null=True,
                                     blank=True, related_name='redeemed')
     redeemed_on = models.DateField(null=True, blank=True)
 

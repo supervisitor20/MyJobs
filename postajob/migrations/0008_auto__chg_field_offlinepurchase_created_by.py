@@ -9,10 +9,16 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
+        # Changing field 'OfflinePurchase.redeemed_by'
+        db.alter_column(u'postajob_offlinepurchase', 'redeemed_by_id', self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['myjobs.User']))
+
         # Changing field 'OfflinePurchase.created_by'
         db.alter_column(u'postajob_offlinepurchase', 'created_by_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['myjobs.User']))
 
     def backwards(self, orm):
+
+        # Changing field 'OfflinePurchase.redeemed_by'
+        db.alter_column(u'postajob_offlinepurchase', 'redeemed_by_id', self.gf('django.db.models.fields.related.ForeignKey')(null=True, to=orm['seo.CompanyUser']))
 
         # Changing field 'OfflinePurchase.created_by'
         db.alter_column(u'postajob_offlinepurchase', 'created_by_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.CompanyUser']))
@@ -178,7 +184,7 @@ class Migration(SchemaMigration):
             'invoice': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['postajob.Invoice']", 'null': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
             'products': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['postajob.Product']", 'through': u"orm['postajob.OfflineProduct']", 'symmetrical': 'False'}),
-            'redeemed_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'redeemed'", 'null': 'True', 'to': u"orm['seo.CompanyUser']"}),
+            'redeemed_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'redeemed'", 'null': 'True', 'to': u"orm['myjobs.User']"}),
             'redeemed_on': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'redemption_uid': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },

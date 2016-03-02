@@ -933,8 +933,7 @@ class OfflinePurchaseRedemptionForm(RequestForm):
         invoice = Invoice.objects.create(**invoice_kwargs)
 
         self.instance.invoice = invoice
-        self.instance.redeemed_by = CompanyUser.objects.get(
-            user=self.request.user, company=self.company)
+        self.instance.redeemed_by = self.request.user
         self.instance.redeemed_on = date.today()
         instance = super(OfflinePurchaseRedemptionForm, self).save(commit)
         instance.create_purchased_products(self.company)
