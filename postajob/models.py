@@ -56,8 +56,9 @@ class BaseModel(models.Model):
         """
         In order for a user to have access they must be a company user
         for the Company that owns the object.
+
         """
-        return user in self.owner.admins.all()
+        return self.owner.role_set.filter(name='Admin', user=user).exists()
 
 
 class JobLocation(models.Model):
@@ -348,7 +349,8 @@ class PurchasedJob(Job):
         an admin for either the posting company or the company being posted to.
         """
         is_posting_admin = super(PurchasedJob, self).user_has_access(user)
-        is_owner_admin = user in self.purchased_product.product.owner.admins.all()
+        is_owner_admin = self.purchased_product.product.owner.role_set.filter(
+            user=user, name='Admin').exists()
         return is_posting_admin or is_owner_admin
 
 
