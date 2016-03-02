@@ -229,7 +229,12 @@ class ModelTests(MyJobsBase):
                              expected_num_jobs)
         self.assertFalse(self.purchased_product.can_post_more())
 
-    def test_invoice_send_invoice_email(self):
+    def test_invoice_sent_to_specific_email(self):
+        """
+        When `other_recipients` is specified, `send_invoice_email` should
+        send invoices to those email addresses.
+
+        """
         self.create_purchased_job()
         group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
 
@@ -238,14 +243,25 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
         # Only recipient is specified recipient.
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(other_recipients=['this@isa.test']))
-        self.assertItemsEqual(mail.outbox[0].to,
-                              ['this@isa.test'])
+        other_recipients = ['this@isa.test', 'that@isa.test']
+        self.purchased_product.invoice.send_invoice_email(
+            other_recipients=other_recipients)
 
-        mail.outbox = []
+        self.assertItemsEqual(mail.outbox[0].to, other_recipients)
+
+    def test_invoice_sent_to_admins(self):
+        """
+        When a company has postajob admins, invoices should be sent to each of
+        them, unless the behavior is disabled by passing `admins=False`.
+
+        """
+
+        self.create_purchased_job()
+        group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
+
+        # No one to receive the email.
+        self.purchased_product.invoice.send_invoice_email()
+        self.assertEqual(len(mail.outbox), 0)
 
         # Only recipients are admins.
         user = CompanyUserFactory(user=self.user, company=self.company)
@@ -257,32 +273,41 @@ class ModelTests(MyJobsBase):
         self.assertItemsEqual(mail.outbox[0].from_email,
                               'invoice@my.jobs')
 
-        mail.outbox = []
+        self.purchased_product.invoice.send_invoice_email(
+            send_to_admins=False, other_recipients=['this@isa.test'])
+
+        # Only one in .to should be this@isa.test
+        self.assertEquals(len(mail.outbox[1].to), 1)
+        self.assertItemsEqual(mail.outbox[1].to, ['this@isa.test'])
+
+    def test_invoice_sent_to_admins_and_others(self):
+        """
+        If a company has postajob admins and `other_recipients` is specified,
+        emails should be sent to both groups.
+
+        """
+        self.create_purchased_job()
+        group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
+
+        # No one to receive the email.
+        self.purchased_product.invoice.send_invoice_email()
+        self.assertEqual(len(mail.outbox), 0)
+
+        user = CompanyUserFactory(user=self.user, company=self.company)
+        user.group.add(group)
+        user.save()
 
         self.site.email_domain = 'test.domain'
         self.site.save()
 
         # Recipients are admins + specified recipients.
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(other_recipients=['this@isa.test']))
+        self.purchased_product.invoice.send_invoice_email(
+            other_recipients=['this@isa.test'])
         self.assertItemsEqual(mail.outbox[0].to,
                               ['this@isa.test', u'user@test.email'])
         self.assertEqual(mail.outbox[0].from_email,
                          'invoice@test.domain')
 
-        mail.outbox = []
-
-        # Only recipient is this@isa.test (no admins)
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(send_to_admins=False,
-                             other_recipients=['this@isa.test']))
-        # Only one in .to should be this@isa.test
-        self.assertEquals(len(mail.outbox[0].to), 1)
-        self.assertItemsEqual(mail.outbox[0].to, ['this@isa.test'])
 
     def test_invoice_unchanged_after_purchased_product_deletion(self):
         self.create_purchased_job()
