@@ -264,9 +264,9 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
         # Only recipients are admins.
-        user = CompanyUserFactory(user=self.user, company=self.company)
-        user.group.add(group)
-        user.save()
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
+        self.user.groups.add(group)
         self.purchased_product.invoice.send_invoice_email()
         self.assertItemsEqual(mail.outbox[0].to,
                               [u'user@test.email'])
@@ -293,9 +293,9 @@ class ModelTests(MyJobsBase):
         self.purchased_product.invoice.send_invoice_email()
         self.assertEqual(len(mail.outbox), 0)
 
-        user = CompanyUserFactory(user=self.user, company=self.company)
-        user.group.add(group)
-        user.save()
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
+        self.user.groups.add(group)
 
         self.site.email_domain = 'test.domain'
         self.site.save()
@@ -354,8 +354,9 @@ class ModelTests(MyJobsBase):
         self.assertEqual(ProductOrder.objects.all().count(), 0)
 
     def test_request_generation(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
-        cu.make_purchased_microsite_admin()
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
+        self.user.make_purchased_microsite_admin()
 
         self.create_purchased_job()
         self.assertEqual(PurchasedJob.objects.all().count(), 1)
