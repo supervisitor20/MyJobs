@@ -232,6 +232,8 @@ class CustomUserManager(BaseUserManager):
 
 # New in Django 1.5. This is now the default auth user table.
 class User(AbstractBaseUser, PermissionsMixin):
+    ADMIN_GROUP_NAME = 'Partner Microsite Admin'
+
     email = models.EmailField(verbose_name=_("email address"),
                               max_length=255, unique=True, db_index=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
@@ -765,6 +767,11 @@ class User(AbstractBaseUser, PermissionsMixin):
                 'secondaryemail__email', flat=True)) or "None"
     secondary_emails.short_description = "secondary emails"
     secondary_emails.allow_tags = True
+
+    def make_purchased_microsite_admin(self):
+        group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
+        self.groups.add(group)
+
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')

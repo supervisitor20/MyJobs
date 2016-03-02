@@ -252,7 +252,7 @@ class Job(BaseModel):
         [location.delete() for location in locations]
 
     def remove_from_solr(self):
-        
+
         guids = [location.guid for location in self.locations.all()]
         delete_by_guid(guids)
 
@@ -917,7 +917,7 @@ class OfflinePurchase(BaseModel):
 
     redemption_uid = models.CharField(max_length=255)
 
-    created_by = models.ForeignKey('seo.CompanyUser',
+    created_by = models.ForeignKey('myjobs.User',
                                    related_name='created')
     created_on = models.DateField(auto_now_add=True)
 
@@ -970,7 +970,8 @@ class OfflinePurchase(BaseModel):
 
     def user_has_access(self, user):
         is_posting_admin = super(OfflinePurchase, self).user_has_access(user)
-        is_owner_admin = user in self.created_by.company.admins.all()
+        is_owner_admin = self.owner.role_set.filter(
+            name='Admin', user=user).exists()
         return is_posting_admin or is_owner_admin
 
 

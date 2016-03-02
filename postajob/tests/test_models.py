@@ -23,6 +23,7 @@ from postajob.tests.factories import (JobFactory,
                                       PurchasedProductFactory,
                                       SitePackageFactory)
 from myjobs.tests.setup import MyJobsBase
+from myjobs.tests.factories import RoleFactory
 
 
 class ModelTests(MyJobsBase):
@@ -349,9 +350,10 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_offlinepurchase_create_purchased_products(self):
-        user = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=user)
+            owner=self.company, created_by=self.user)
         package = SitePackageFactory(owner=self.company)
         product = ProductFactory(package=package, owner=self.company)
 
@@ -379,7 +381,8 @@ class ModelTests(MyJobsBase):
             self.assertEqual(PurchasedProduct.objects.all().count(), x*2)
 
     def test_offlinepurchase_filter_by_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
             site = SeoSiteFactory(id=x, domain=domain, name=domain)
@@ -388,7 +391,7 @@ class ModelTests(MyJobsBase):
             product = ProductFactory(package=site_package, owner=self.company)
             for y in range(1, 5):
                 purchase = OfflinePurchaseFactory(owner=self.company,
-                                                  created_by=cu)
+                                                  created_by=self.user)
                 OfflineProduct.objects.create(product=product,
                                               offline_purchase=purchase)
             count = OfflinePurchase.objects.filter_by_sites([site]).count()
@@ -397,7 +400,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(OfflinePurchase.objects.all().count(), 60)
 
     def test_invoice_filter_by_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
             site = SeoSiteFactory(id=x, domain=domain, name=domain)
@@ -407,7 +411,7 @@ class ModelTests(MyJobsBase):
             for y in range(1, 5):
                 # OfflinePurchaseFactory() automatically creates the invoice.
                 purchase = OfflinePurchaseFactory(owner=self.company,
-                                                  created_by=cu)
+                                                  created_by=self.user)
                 OfflineProduct.objects.create(product=product,
                                               offline_purchase=purchase)
             # Confirm it correctly picks up Invoices associated with
@@ -771,7 +775,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_offlinepurchase_filter_by_site_multiple_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 
         single_site_package = SitePackageFactory(owner=self.company)
@@ -785,14 +790,14 @@ class ModelTests(MyJobsBase):
         single_site_product = ProductFactory(package=single_site_package,
                                              owner=self.company)
         single_site_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                      created_by=cu)
+                                                      created_by=self.user)
         OfflineProduct.objects.create(product=single_site_product,
                                       offline_purchase=single_site_purchase)
 
         both_sites_product = ProductFactory(package=both_sites_package,
                                             owner=self.company)
         both_sites_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                     created_by=cu)
+                                                     created_by=self.user)
         OfflineProduct.objects.create(product=both_sites_product,
                                       offline_purchase=both_sites_purchase)
 
@@ -813,7 +818,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_invoice_from_offlinepurchase_filter_by_site_multiple_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 
         single_site_package = SitePackageFactory(owner=self.company)
@@ -827,14 +833,14 @@ class ModelTests(MyJobsBase):
         single_site_product = ProductFactory(package=single_site_package,
                                              owner=self.company)
         single_site_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                      created_by=cu)
+                                                      created_by=self.user)
         OfflineProduct.objects.create(product=single_site_product,
                                       offline_purchase=single_site_purchase)
 
         both_sites_product = ProductFactory(package=both_sites_package,
                                             owner=self.company)
         both_sites_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                     created_by=cu)
+                                                     created_by=self.user)
         OfflineProduct.objects.create(product=both_sites_product,
                                       offline_purchase=both_sites_purchase)
 
