@@ -539,23 +539,14 @@ class SeoSite(Site):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be assigned a role in the
-        Company that owns the SeoSite.*
+        In order for a user to have access they must be assigned the Admin role
+        in the Company that owns the SeoSite.
 
-        * Until activities are activated in production, what determines if a
-        user has access is that they are a company user for one of the
-        companies assigned to the SeoSite's business units (job_source_ids).
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        if settings.ROLES_ENABLED:
-            return user.pk in companies.values_list('role__user', flat=True)
-        else:
-            user_companies = user.company_set.all()
-            for company in companies:
-                if company not in user_companies:
-                    return False
-            return True
+
+        return companies.filter(role__user=user, role__name='Admin').exists()
 
     def get_companies(self):
         site_buids = self.business_units.all()

@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          CompanyUserFactory, SeoSiteFactory)
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, RoleFactory
 from postajob.tests.factories import (ProductFactory,
                                       OfflinePurchaseFactory,
                                       OfflineProductFactory,
@@ -34,6 +34,8 @@ class PostajobTestBase(DirectSEOBase):
         super(PostajobTestBase, self).setUp()
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(product_access=True, posting_access=True)
+        self.role = RoleFactory(company=self.company, name='Admin')
+        self.user.roles.add(self.role)
 
         self.site = SeoSiteFactory(canonical_company=self.company)
         self.bu = BusinessUnitFactory()
@@ -193,7 +195,7 @@ class ViewTests(PostajobTestBase):
             "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
 
     def test_job_access_not_company_user(self):
-        self.company_user.delete()
+        self.user.roles.clear()
 
         response = self.client.post(reverse('jobs_overview'))
         self.assertEqual(response.status_code, 404)
@@ -676,7 +678,7 @@ class ViewTests(PostajobTestBase):
         response = self.client.post(reverse('purchasedproducts_overview'),
                                     HTTP_HOST='test.jobs')
         self.assertEqual(response.status_code, 200)
-        self.company_user.delete()
+        self.user.roles.clear()
 
         response = self.client.post(reverse('purchasedproducts_overview'),
                                             HTTP_HOST='test.jobs')
@@ -727,7 +729,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem_new_company(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -763,7 +765,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem_duplicate_company_name(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -792,7 +794,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -823,7 +825,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user,
+            owner=self.company, created_by=self.user,
             redeemed_on=date.today(), redeemed_by=self.company_user)
         OfflineProductFactory(
             product=self.product,
@@ -852,7 +854,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_update(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_update',
@@ -862,7 +864,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_delete(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_delete',
@@ -874,7 +876,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_delete_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user,
+            owner=self.company, created_by=self.user,
             redeemed_on=date.today(), redeemed_by=self.company_user)
         kwargs = {'pk': offline_purchase.pk}
 

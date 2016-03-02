@@ -450,7 +450,7 @@ class PostajobModelFormMixin(object):
     template_name = 'postajob/%s/form.html' % settings.PROJECT
 
     def get_queryset(self, request):
-        kwargs = {'owner__in': request.user.company_set.all()}
+        kwargs = {'owner__in': request.user.roles.values('company')}
         self.queryset = self.model.objects.filter(**kwargs)
         return self.queryset
 

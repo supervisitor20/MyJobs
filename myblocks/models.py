@@ -472,7 +472,6 @@ class ToolsWidgetBlock(SecureBlock):
         """
         cookies = []
         caller = None
-        # import ipdb; ipdb.set_trace()
         if request.META.get('HTTP_ORIGIN'):
             caller = request.META.get('HTTP_ORIGIN')
         elif request.META.get('HTTP_REFERER'):

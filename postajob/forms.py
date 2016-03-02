@@ -573,13 +573,15 @@ def make_company_from_form(form_instance):
     Makes a Company, CompanyUser, and CompanyProfile from a form instance.
     Form instance must have a new company_name in form_instance.cleaned_data.
     """
-
     cleaned_data = form_instance.cleaned_data
     company_name = cleaned_data.get('company_name')
     form_instance.company = Company.objects.create(name=company_name,
                                                    user_created=True)
     cu = CompanyUser.objects.create(user=form_instance.request.user,
                                     company=form_instance.company)
+    form_instance.request.user.roles.add(form_instance.company.role_set.get(
+        name='Admin'))
+
     profile = CompanyProfile.objects.create(
         company=form_instance.company,
         address_line_one=cleaned_data.get('address_line_one'),
@@ -591,6 +593,7 @@ def make_company_from_form(form_instance):
     )
     profile.save()
     cu.make_purchased_microsite_admin()
+    form_instance.request.user.make_purchased_microsite_admin()
 
 
 class PurchasedProductNoPurchaseForm(RequestForm):
@@ -838,8 +841,7 @@ class OfflinePurchaseForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.owner = self.company
-        self.instance.created_by = CompanyUser.objects.get(
-            company=self.company, user=self.request.user)
+        self.instance.created_by = self.request.user
 
         instance = super(OfflinePurchaseForm, self).save(commit)
 
