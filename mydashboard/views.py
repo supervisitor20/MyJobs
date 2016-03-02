@@ -75,13 +75,9 @@ def dashboard(request, template="mydashboard/mydashboard.html",
 
     authorized_microsites, buids = get_company_microsites(company)
 
-    # roles are only enabled during development
-    if settings.ROLES_ENABLED:
-        admins = User.objects.filter(roles__company=company)
-    else:
-        admins = User.objects.filter(company=company)
+    admins = User.objects.filter(roles__company=company).exclude(
+        pk=request.user.pk)
 
-    admins = admins.exclude(pk=request.user.pk)
     requested_microsite = request.REQUEST.get('microsite', '')
     requested_date_button = request.REQUEST.get('date_button', False)
     candidates_page = request.REQUEST.get('page', 1)

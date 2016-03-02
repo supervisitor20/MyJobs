@@ -1231,12 +1231,8 @@ def process_email(request):
         return HttpResponse(status=200)
 
     # determine if the user is associated with more thanone company
-    multiple_companies = False
-    if settings.ROLES_ENABLED:
-        multiple_companies = admin_user.roles.values(
-            "company").distinct().count() > 1
-    else:
-        multiple_companies = admin_user.company_set.count() > 1
+    multiple_companies = admin_user.roles.values(
+        "company").distinct().count() > 1
 
     if multiple_companies:
         error = "Your account is setup as the admin for multiple companies. " \
@@ -1248,10 +1244,8 @@ def process_email(request):
                                            error, admin_email)
         return HttpResponse(status=200)
 
-    if settings.ROLES_ENABLED and admin_user.roles.exists():
+    if admin_user.roles.exists():
         partners = admin_user.roles.first().company.partner_set.all()
-    elif admiN_user.company_set.exists():
-        partners = admin_user.company_set.first().partner_set.all()
     else:
         partners = []
 

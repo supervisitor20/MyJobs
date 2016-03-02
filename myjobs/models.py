@@ -224,10 +224,7 @@ class CustomUserManager(BaseUserManager):
         Outputs:
         :is_member: Boolean representing the user's membership status
         """
-        if settings.ROLES_ENABLED:
-            return user.roles.exists()
-        else:
-            return user.groups.filter(name=group).count() >= 1
+        return user.roles.exists()
 
 
 # New in Django 1.5. This is now the default auth user table.
@@ -693,30 +690,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not company:
             return False
 
-        if settings.ROLES_ENABLED:
-            required_access = filter(bool, AppAccess.objects.filter(
-                activity__name__in=activity_names).values_list(
-                    'name', flat=True).distinct())
+        required_access = filter(bool, AppAccess.objects.filter(
+            activity__name__in=activity_names).values_list(
+                'name', flat=True).distinct())
 
-            # Company must have correct access and user must have correct
-            # activities
-            return all([
-                bool(company.enabled_access),
-                set(required_access).issubset(company.enabled_access),
-                bool(self.activities),
-                set(activity_names).issubset(self.activities)])
-
-        else:
-            # TODO: Delete after we deploy the roles system
-            is_company_user = company in self.company_set.all()
-            activities = ''.join(activity_names)
-
-            if 'partner' in activities:
-                return is_company_user and company.prm_access
-            elif 'role' in activities:
-                return False
-            else:
-                return is_company_user and company.member
+        # Company must have correct access and user must have correct
+        # activities
+        return all([
+            bool(company.enabled_access),
+            set(required_access).issubset(company.enabled_access),
+            bool(self.activities),
+            set(activity_names).issubset(self.activities)])
 
     def send_invite(self, email, company, role_name=None):
         """
