@@ -36,11 +36,14 @@ def company_has_access(perm_field):
 
             if not company or (perm_field and not getattr(company, perm_field,
                                                           False)):
-                raise Http404
+                raise Http404("universal.decorators.company_has_access: "
+                              "company doesn't exist or doesn't have "
+                              "{perm} permissions".format(perm=perm_field))
 
             return view_func(request, *args, **kwargs)
         return wraps(view_func)(wrap)
     return decorator
+
 
 def company_in_sitepackages(view_func):
     """
@@ -56,7 +59,9 @@ def company_in_sitepackages(view_func):
     def wrap(request, *args, **kwargs):
         if not request.user.is_anonymous() and not request.user.can_access_site(
                 settings.SITE):
-            raise Http404
+            raise Http404("universal.decorators.company_in_sitepackages: "
+                          "User is anonymous or user.can_access_site returned "
+                          "False")
 
         return view_func(request, *args, **kwargs)
     return wrap

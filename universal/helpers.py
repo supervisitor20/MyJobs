@@ -137,8 +137,8 @@ def get_company_or_404(request):
     company = get_company(request)
 
     if not company:
-        raise Http404("Either the company does not exist or the current user "
-                      "doesn't have access to it.")
+        raise Http404("universal.helpers.get_company_or_404: get_company "
+                      "returned None")
 
     else:
         return company
