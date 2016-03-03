@@ -539,14 +539,14 @@ class SeoSite(Site):
 
     def user_has_access(self, user):
         """
-        In order for a user to have access they must be assigned the Admin role
-        in the Company that owns the SeoSite.
+        In order for a user to have access they must be assigned a role in the
+        Company that owns the SeoSite.
 
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
 
-        return companies.filter(role__user=user, role__name='Admin').exists()
+        return companies.filter(role__user=user).exists()
 
     def get_companies(self):
         site_buids = self.business_units.all()

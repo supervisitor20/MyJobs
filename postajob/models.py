@@ -58,7 +58,7 @@ class BaseModel(models.Model):
         for the Company that owns the object.
 
         """
-        return self.owner.role_set.filter(name='Admin', user=user).exists()
+        return self.owner.role_set.filter(user=user).exists()
 
 
 class JobLocation(models.Model):
@@ -350,7 +350,7 @@ class PurchasedJob(Job):
         """
         is_posting_admin = super(PurchasedJob, self).user_has_access(user)
         is_owner_admin = self.purchased_product.product.owner.role_set.filter(
-            user=user, name='Admin').exists()
+            user=user).exists()
         return is_posting_admin or is_owner_admin
 
 
@@ -875,8 +875,7 @@ class Request(BaseModel):
     def send_email(self):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         admin_emails = self.owner.role_set.filter(
-            name='Admin', user__groups=group).values_list(
-                'user__email', flat=True)
+            user__groups=group).values_list('user__email', flat=True)
 
         # Confirm that the request object was fully created and still exists
         # before sending the email.
@@ -971,8 +970,7 @@ class OfflinePurchase(BaseModel):
 
     def user_has_access(self, user):
         is_posting_admin = super(OfflinePurchase, self).user_has_access(user)
-        is_owner_admin = self.owner.role_set.filter(
-            name='Admin', user=user).exists()
+        is_owner_admin = self.owner.role_set.filter(user=user).exists()
         return is_posting_admin or is_owner_admin
 
 
@@ -1073,9 +1071,8 @@ class Invoice(BaseModel):
 
         owner = self.owner
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        owner_admins = owner.role_set.filter(
-            name='Admin', user__groups=group).values_list(
-                'user__email', flat=True) if send_to_admins else []
+        owner_admins = owner.role_set.filter(user__groups=group).values_list(
+            'user__email', flat=True) if send_to_admins else []
 
         recipients = set(other_recipients).union(owner_admins)
         if recipients:

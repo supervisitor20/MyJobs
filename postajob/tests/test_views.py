@@ -34,7 +34,7 @@ class PostajobTestBase(DirectSEOBase):
         super(PostajobTestBase, self).setUp()
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(product_access=True, posting_access=True)
-        self.role = RoleFactory(company=self.company, name='Admin')
+        self.role = RoleFactory(company=self.company)
         self.user.roles.add(self.role)
 
         self.site = SeoSiteFactory(canonical_company=self.company)
@@ -1041,7 +1041,7 @@ class ViewTests(PostajobTestBase):
     def test_view_request_posted_by_unrelated_company(self):
         company = CompanyFactory(id=2, name='new company')
         user = UserFactory(email='new_company_user@email.com')
-        role = RoleFactory(company=company, name='Admin')
+        role = RoleFactory(company=company)
         user.roles.add(role)
         product = PurchasedProductFactory(
             product=self.product, owner=company)

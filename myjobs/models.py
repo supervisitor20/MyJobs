@@ -648,7 +648,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         packages = site.sitepackage_set
 
         return not packages.exists() or packages.filter(
-            owner__role__name='Admin', owner__role__user=self).exists()
+            owner__role__user=self).exists()
 
     def can(self, company, *activity_names):
         """
