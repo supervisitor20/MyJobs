@@ -131,3 +131,14 @@ def warn_when(condition, feature, message, link=None, link_text=None,
 not_found_when = partial(
     warn_when,
     exception=Http404)
+
+# TODO: refactor these so that warn_when/not_found_when can be passed in,
+# rather than having a separate function for each one.
+warn_when_inactive = partial(
+    warn_when,
+    condition=lambda req:
+        not req.user.is_anonymous() and
+        (not req.user.is_verified or not req.user.is_active),
+    message='You have yet to activate your account.',
+    link='/accounts/register/resend',
+    link_text='Resend Activation')

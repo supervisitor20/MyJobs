@@ -190,7 +190,7 @@ class ViewTests(PostajobTestBase):
             follow=True)
         self.assertRedirects(
             response,
-            "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
+            "http://" + self.site.domain + "/login?next=/posting/admin/")
 
     def test_job_access_not_company_user(self):
         self.user.roles.clear()
@@ -215,10 +215,7 @@ class ViewTests(PostajobTestBase):
         for url in ['request', 'offlinepurchase_add', 'product_add',
                     'productgrouping_add']:
             response = self.client.get(reverse(url), HTTP_HOST='test.jobs')
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("Please contact your member representative to "
-                          "activate this feature.",
-                          response.content)
+            self.assertEqual(response.status_code, 404)
 
     def test_job_access_not_for_company(self):
         new_company = CompanyFactory(name='Another Company', pk=1000)
