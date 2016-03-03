@@ -17,7 +17,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from myjobs.models import User
 from postajob.models import SitePackage, Job, Product, ProductGrouping, \
     ProductOrder, PurchasedJob
-from seo.models import Company, CompanyUser, SeoSite, Configuration
+from seo.models import Company, SeoSite, Configuration
 from seo.tests.setup import patch_settings
 
 
@@ -116,12 +116,14 @@ class JobPostingTests(TestCase):
         cls.CREATION_ORDER.append(cls.admin_company_2)
 
         # Company Users:
-        cls.admin_company_user = CompanyUser.objects.create(
-            company=cls.admin_company, user=cls.admin)
-        cls.CREATION_ORDER.append(cls.admin_company_user)
-        cls.admin_company_user_2 = CompanyUser.objects.create(
-            company=cls.admin_company_2, user=cls.admin_2)
-        cls.CREATION_ORDER.append(cls.admin_company_user_2)
+        cls.admin_role = Role.objects.create(
+            company=cls.admin_company)
+        cls.admin.roles.add(cls.admin_role)
+        cls.CREATION_ORDER.append(cls.admin)
+        cls.admin_role_2 = Role.objects.create(
+            company=cls.admin_company_2)
+        cls.admin_2.roles.add(cls.admin_role_2)
+        cls.CREATION_ORDER.append(cls.admin_2)
 
         # Seo Sites:
         cls.seo_site = SeoSite.objects.create(
