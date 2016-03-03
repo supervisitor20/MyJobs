@@ -183,12 +183,14 @@ def edit_item(request):
         URL, they are presented with "Add Contact" form. If a valid `item_id`
         is passed, we preload the form with that contact's information.
     """
+    http404_view = 'mypartners.views.edit_item'
     try:
         partner_id = int(request.REQUEST.get("partner") or 0)
         item_id = int(request.REQUEST.get('id') or 0)
         content_id = int(request.REQUEST.get('ct') or 0)
     except ValueError:
-        raise Http404
+        raise Http404("{view}: partner, item, or content type "
+                      "id is bad".format(view=http404_view))
 
     company = get_company_or_404(request)
     partners = []
@@ -215,7 +217,8 @@ def edit_item(request):
             item = None
             form = NewPartnerForm()
     else:
-        raise Http404
+        raise Http404("{view}: path incorrect and/or no "
+                      "partner id provided".format(view=http404_view))
 
     ctx = {
         'form': form,
@@ -254,6 +257,7 @@ def save_item(request):
     Generic save for Partner and Contact Forms.
 
     """
+    http404_view = 'mypartners.views.save_item'
     company = get_company_or_404(request)
     content_id = int(request.REQUEST.get('ct') or 0)
 
@@ -262,7 +266,8 @@ def save_item(request):
         try:
             partner_id = int(request.REQUEST.get('partner') or 0)
         except TypeError:
-            raise Http404
+            raise Http404("{view}: Partner id is not an int".format(
+                view=http404_view))
 
         partner = get_object_or_404(company.partner_set.all(), id=partner_id)
 
@@ -270,7 +275,8 @@ def save_item(request):
             try:
                 item = Contact.objects.get(partner=partner, pk=item_id)
             except Contact.DoesNotExist:
-                raise Http404
+                raise Http404("{view}: Contact id is not an int".format(
+                    view=http404_view))
             else:
                 form = ContactForm(instance=item, auto_id=False,
                                    data=request.POST)
@@ -290,7 +296,8 @@ def save_item(request):
         try:
             partner_id = int(request.REQUEST.get('partner'))
         except TypeError:
-            raise Http404
+            raise Http404("{view}: Partner id is not an int".format(
+                view=http404_view))
 
         partner = get_object_or_404(company.partner_set.all(), id=partner_id)
         form = PartnerForm(instance=partner, auto_id=False, data=request.POST)
@@ -299,7 +306,8 @@ def save_item(request):
             return HttpResponse(status=200)
         else:
             return HttpResponse(json.dumps(form.errors))
-    raise Http404('Problem saving form. Please reload and try again')
+    raise Http404("{view}: Item is not a Partner or Contact".format(
+        view=http404_view))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
@@ -580,7 +588,8 @@ def prm_edit_saved_search(request):
             values = PartnerSavedSearch.objects.filter(pk=copy_id).values()[0]
         except IndexError:
             # saved search to be copied doesn't exist since values is empty
-            raise Http404
+            raise Http404("mypartners.views.prm_edit_saved_search: "
+                          "PartnerSavedSearch with provided id doesn't exist")
         else:
             values['label'] = "Copy of %s" % values['label']
             values.pop('email', None)
@@ -622,7 +631,8 @@ def verify_contact(request):
 
     """
     if request.REQUEST.get('action') != 'validate':
-        raise Http404
+        raise Http404("mypartners.views.verify_contact: "
+                      "'action' is not 'validate'")
 
     email = request.REQUEST.get('email')
     if email == 'None':
@@ -917,7 +927,8 @@ def get_contact_information(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404("This view is only reachable by an AJAX POST request.")
+        raise Http404("mypartners.views.get_contact_information: "
+                      "request is not an AJAX POST")
 
 
 @requires("read communication record")
@@ -1065,7 +1076,8 @@ def partner_get_records(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404
+        raise Http404("mypartners.views.partner_get_records: "
+                      "request method is not GET")
 
 
 @requires('read communication record')
@@ -1100,7 +1112,8 @@ def partner_get_referrals(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404
+        raise Http404("mypartners.views.partner_get_referrals: "
+                      "request method is not GET")
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')

@@ -224,7 +224,7 @@ class CustomUserManager(BaseUserManager):
         Outputs:
         :is_member: Boolean representing the user's membership status
         """
-        return user.roles.exists()
+        return not user.is_anonymous() and user.roles.exists()
 
 
 # New in Django 1.5. This is now the default auth user table.

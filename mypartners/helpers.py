@@ -35,7 +35,7 @@ def prm_worthy(request):
     """
     company = get_company(request)
     if company is None:
-        raise Http404
+        raise Http404("mypartners.helpers.prm_worthy: no company")
 
     partner_id = get_int_or_none(request.REQUEST.get('partner'))
     partner = get_object_or_404(company.partner_set, id=partner_id)
@@ -544,7 +544,8 @@ def new_partner_from_library(request):
     try:
         library_id = int(request.REQUEST.get('library_id') or 0)
     except ValueError:
-        raise Http404
+        raise Http404("mypartners.helpers.new_partner_from_library: "
+                      "id isn't an int")
     library = get_object_or_404(PartnerLibrary, pk=library_id)
 
     tags = []

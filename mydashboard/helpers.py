@@ -39,7 +39,8 @@ def get_company_microsites(company):
 
 def analytics(employer, company, candidate):
     if employer not in company.admins.all():
-        raise Http404
+        raise Http404("mydashboard.helpers.analytics: employer is not an "
+                      "admin for this company")
 
     if hasattr(mail, 'outbox'):
         solr = settings.TEST_SOLR_INSTANCE
@@ -67,7 +68,8 @@ def saved_searches(employer, company, candidate):
                 A list of candidate urls.
     """
     if employer not in company.admins.all():
-        raise Http404
+        raise Http404("mydashboard.helpers.saved_searches: employer is not an "
+                      "admin for this company")
 
     employer_microsites = get_company_microsites(company)[0]
     candidate_searches = candidate.savedsearch_set.values_list('feed', flat=True)

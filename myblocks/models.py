@@ -991,7 +991,8 @@ class Page(models.Model):
                 do_redirect = redirect_if_new(**{search_type: job_id})
                 if do_redirect:
                     return do_redirect
-            raise Http404
+            raise Http404("myblocks.models.Page.handle_job_detail_redirect: "
+                          "job does not exist")
 
         if settings.SITE_BUIDS and job.buid not in settings.SITE_BUIDS:
             on_this_site = set(settings.SITE_PACKAGES) & set(job.on_sites)

@@ -66,6 +66,7 @@ def handle_form(request):
     The form expects a 'module' GET parameter and an optional 'item_id'.  It
     then uses these to update the existing item or create a new instance
     """
+    http404_view = 'myprofile.views.handle_form'
     item_id = request.REQUEST.get('id', 'new')
     module = request.REQUEST.get('module')
     module = module.replace(" ", "")
@@ -78,7 +79,8 @@ def handle_form(request):
         except ProfileUnits.DoesNotExist:
             # User is trying to access a nonexistent PU
             # or a PU that belongs to someone else
-            raise Http404
+            raise Http404("{view}: ProfileUnit does not exist".format(
+                view=http404_view))
 
     item_class = item.__class__
 
@@ -86,7 +88,8 @@ def handle_form(request):
         form = getattr(forms, module + 'Form')
     except KeyError:
         # Someone must have manipulated request data?
-        raise Http404
+        raise Http404("{view}: No form for module {module}".format(
+            view=http404_view, module=module))
 
     data_dict = {'view_name': 'My Profile',
                  'item_id': item_id,
