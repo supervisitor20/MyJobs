@@ -11,7 +11,7 @@ from django.core import mail
 from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 
 
 from universal.helpers import (get_company, get_domain, get_int_or_none,
@@ -21,7 +21,7 @@ from mydashboard.helpers import (saved_searches, filter_by_microsite,
                                  parse_facets, remove_param_from_url,
                                  get_company_microsites, analytics,
                                  get_analytics_counts, filter_by_domain)
-from seo.models import Company, CompanyUser
+from seo.models import Company
 from myjobs.models import User
 from myprofile.models import PrimaryNameProfileUnitManager, ProfileUnits
 from mysearches.models import SavedSearch
@@ -56,7 +56,7 @@ def dashboard(request, template="mydashboard/mydashboard.html",
 
     company = get_company(request)
     if not company:
-        raise Http404
+        raise Http404('mydashboard.views.dashboard: get_company returned None')
 
     user_solr = Solr(solr['current'])
     facet_solr = Solr(solr['current'])
@@ -231,27 +231,31 @@ def candidate_information(request):
     see helpers.py.
 
     """
+    http404_view = 'mydashboard.views.candidate_information'
     user_id = get_int_or_none(request.REQUEST.get('user'))
     company = get_company(request)
 
     if not user_id or not company:
-        raise Http404
+        raise Http404("{view}: user id or company is None".format(
+            view=http404_view))
 
     # user gets pulled out from id
     try:
         candidate = User.objects.get(id=user_id)
     except User.DoesNotExist:
-        raise Http404
+        raise Http404("{view}: User does not exist for user id")
 
     if not candidate.opt_in_employers:
-        raise Http404
+        raise Http404("{view}: user is not opted into employer "
+                      "communication".format(view=http404_view))
 
     urls = saved_searches(request.user, company, candidate)
     actions = analytics(request.user, company, candidate)
     actions = get_analytics_counts(actions)
 
     if not urls and not actions:
-        raise Http404
+        raise Http404("{view}: user has no saved searches or microsite "
+                      "views".format(view=http404_view))
 
     manager = PrimaryNameProfileUnitManager(order=['employmenthistory',
                                                    'education',
@@ -299,7 +303,8 @@ def export_candidates(request):
             candidates = filter_candidates(request)
             response = export_hr(request, candidates, export_type)
     except Exception, e:
-        raise Http404
+        raise Http404("mydashboard.views.export_candidates: "
+                      "something happened during candidate export")
     return response
 
 
@@ -310,10 +315,7 @@ def filter_candidates(request):
     """
     candidates = []
     company_id = request.REQUEST.get('company')
-    try:
-        company = Company.objects.get(id=company_id)
-    except Company.DoesNotExist:
-        raise Http404
+    company = get_object_or_404(Company, id=company_id)
 
     authorized_microsites, buids = get_company_microsites(company)
 
@@ -378,10 +380,7 @@ def export_csv(request, candidates, models_excluded=[], fields_excluded=[]):
     response = HttpResponse(content_type='text/csv')
     time = datetime.now().strftime('%m%d%Y')
     company_id = request.REQUEST.get('company')
-    try:
-        company = Company.objects.get(id=company_id)
-    except Company.DoesNotExist:
-        raise Http404
+    company = get_object_or_404(Company, id=company_id)
     response['Content-Disposition'] = ('attachment; filename=' +
                                        company.name+"_DE_"+time+'.csv')
     writer = csv.writer(response)
@@ -490,10 +489,7 @@ def export_hr(request, candidates, export_type, models_excluded=[]):
     """
     time = datetime.now().strftime('%m%d%Y')
     company_id = request.REQUEST.get('company')
-    try:
-        company = Company.objects.get(id=company_id)
-    except Company.DoesNotExist:
-        raise Http404
+    company = get_object_or_404(Company, id=company_id)
 
     models = [model for model in
               ProfileUnits.__subclasses__() if model._meta.module_name

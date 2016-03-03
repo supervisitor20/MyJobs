@@ -365,7 +365,7 @@ def edit_account(request):
                 return render_to_response(template, ctx,
                                           RequestContext(request))
         else:
-            raise Http404("This view may only be reach via POST request.")
+            raise Http404("myjobs.views.edit_account: request is not POST")
 
     return render_to_response('%s/edit-account.html' % settings.PROJECT, ctx,
                               RequestContext(request))

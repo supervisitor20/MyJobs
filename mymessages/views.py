@@ -22,7 +22,7 @@ def read(request):
         for info in MessageInfo.objects.filter(user=user, message__id=message):
             info.mark_read()
         return HttpResponse('')
-    raise Http404
+    raise Http404('mymessages.views.read: request is not AJAX')
 
 
 def get_message_page(request):
@@ -84,7 +84,7 @@ def delete(request):
                                     {'messages': messages},
                                     RequestContext(request))
         return HttpResponse(json.dumps(response))
-    raise Http404
+    raise Http404('mymessages.views.delete: request is not AJAX')
 
 
 @user_is_allowed()

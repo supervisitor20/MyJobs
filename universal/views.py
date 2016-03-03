@@ -43,7 +43,8 @@ class FormViewBase(FormView, ModelFormMixin, SingleObjectMixin):
             queryset = self.get_queryset(request)
             self.object = self.get_object(queryset=queryset)
             if not self.object.user_has_access(request.user):
-                raise Http404
+                raise Http404("universal.views.FormViewBase: user does not "
+                              "have access to this object")
         else:
             self.object = None
 
