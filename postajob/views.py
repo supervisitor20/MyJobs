@@ -24,6 +24,7 @@ from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              Product, ProductGrouping, PurchasedJob,
                              PurchasedProduct, Request, JobLocation)
+from postajob.decorators import error_when_site_misconfigured
 from universal.helpers import (get_company, get_object_or_none,
                                get_company_or_404)
 from universal.views import RequestFormViewBase
@@ -49,6 +50,7 @@ def jobs_overview(request):
 
 @user_is_allowed()
 @company_has_access(None)
+@error_when_site_misconfigured(feature='Purchased Job Management')
 def view_job(request, purchased_product, pk, admin):
     company = get_company_or_404(request)
     purchased_product = PurchasedProduct.objects.get(pk=purchased_product)
@@ -66,6 +68,7 @@ def view_job(request, purchased_product, pk, admin):
                               data, RequestContext(request))
 
 @company_has_access(None)
+@error_when_site_misconfigured(feature='Purchased Products are')
 def view_invoice(request, purchased_product):
     company = get_company_or_404(request)
     kwargs = {
@@ -96,6 +99,7 @@ def view_invoice(request, purchased_product):
 
 @user_is_allowed()
 @company_has_access(None)
+@error_when_site_misconfigured(feature='Purchased Job Management')
 def purchasedproducts_overview(request):
     company = get_company(request)
     if settings.SITE:
@@ -117,6 +121,7 @@ def purchasedproducts_overview(request):
                               data, RequestContext(request))
 
 
+@error_when_site_misconfigured(feature='Purchased Job Management')
 def purchasedjobs_overview(request, purchased_product, admin):
     """
     Normally we would need to filter by settings.SITE for objects in postajob
@@ -144,6 +149,7 @@ def purchasedjobs_overview(request, purchased_product, admin):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Microsite Admin is')
 def purchasedmicrosite_admin_overview(request):
     company = get_company(request)
     if settings.SITE:
@@ -176,6 +182,7 @@ def purchasedmicrosite_admin_overview(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Product Management is')
 def admin_products(request):
     company = get_company(request)
     if settings.SITE:
@@ -194,6 +201,7 @@ def admin_products(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Product Groupings are')
 def admin_groupings(request):
     company = get_company(request)
     if settings.SITE:
@@ -212,6 +220,7 @@ def admin_groupings(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature="OFfline Purchases are")
 def admin_offlinepurchase(request):
     company = get_company(request)
     if settings.SITE:
@@ -230,6 +239,7 @@ def admin_offlinepurchase(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Requests are')
 def admin_request(request):
     company = get_company(request)
     if settings.SITE:
@@ -250,6 +260,7 @@ def admin_request(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Purchased Products are')
 def admin_purchasedproduct(request):
     company = get_company(request)
     if settings.SITE:
@@ -270,6 +281,7 @@ def admin_purchasedproduct(request):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Requests are')
 def view_request(request, pk, model=None):
     template = 'postajob/{project}/request/{model}.html'
     company = get_company(request)
@@ -305,6 +317,7 @@ def view_request(request, pk, model=None):
 
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Requests are')
 def process_admin_request(request, pk, approve=True,
                           block=False):
     """
@@ -357,6 +370,7 @@ def process_admin_request(request, pk, approve=True,
     return redirect('request')
 
 
+@error_when_site_misconfigured(feature='Job Listing', redirect=False)
 def product_listing(request):
     site = settings.SITE
     company = get_company(request)
@@ -429,6 +443,7 @@ def order_postajob(request):
 @csrf_exempt
 @user_is_allowed()
 @company_has_access('product_access')
+@error_when_site_misconfigured(feature='Invoices are')
 def resend_invoice(request, pk):
     company = get_company(request)
 
@@ -621,6 +636,8 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
 
     @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
+    @method_decorator(error_when_site_misconfigured(
+        feature='Product Management is'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -642,6 +659,8 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
 
     @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
+    @method_decorator(error_when_site_misconfigured(
+        feature='Product Groupings are'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -754,6 +773,8 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
 
     @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
+    @method_decorator(error_when_site_misconfigured(
+        feature="Offline Purchases are"))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -801,6 +822,8 @@ class OfflinePurchaseRedemptionFormView(PostajobModelFormMixin,
     delete_name = None
 
     @method_decorator(user_is_allowed())
+    @method_decorator(error_when_site_misconfigured(
+        feature='Purchase Redemption'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that

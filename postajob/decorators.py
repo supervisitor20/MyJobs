@@ -8,12 +8,6 @@ def site_misconfigured(request):
     except AttributeError:
         return True
 
-message_when_site_misconfigured = partial(
-    warn_when,
-    condition=site_misconfigured,
-    message='Please contact your member representative to activate this '
-            'feature.')
-
 error_when_site_misconfigured = partial(
     not_found_when,
     condition=site_misconfigured,
