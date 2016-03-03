@@ -678,7 +678,8 @@ def get_redirect_or_404(*args, **kwargs):
     try:
         return Redirect.objects.get_any(*args, **kwargs)
     except(ObjectDoesNotExist, MultipleObjectsReturned):
-        raise Http404
+        raise Http404("redirect.helpers.get_redirect_or_404: Redirect doesn't "
+                      "exist or is in both tables")
 
 
 def redirect_if_new(**kwargs):
