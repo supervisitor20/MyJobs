@@ -9,6 +9,7 @@ import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
+import {Test} from 'common/ui/Test';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -80,6 +81,7 @@ export class WizardPageFilter extends Component {
   }
 
   renderRow(displayName, key, content) {
+    console.log(displayName + ':' + key + ':' + content);
     return (
       <div key={key} className="row">
         <div className="span2" style={{textAlign: 'right'}}>
@@ -174,6 +176,7 @@ export class WizardPageFilter extends Component {
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         <hr/>
         {rows}
+        <Test />
         <hr/>
         {this.renderRow('', 'submit',
           <Button
