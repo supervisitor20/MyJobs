@@ -264,7 +264,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
         # Only recipients are admins.
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         self.user.groups.add(group)
         self.purchased_product.invoice.send_invoice_email()
@@ -293,7 +293,7 @@ class ModelTests(MyJobsBase):
         self.purchased_product.invoice.send_invoice_email()
         self.assertEqual(len(mail.outbox), 0)
 
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         self.user.groups.add(group)
 
@@ -354,7 +354,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(ProductOrder.objects.all().count(), 0)
 
     def test_request_generation(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         self.user.make_purchased_microsite_admin()
 
@@ -376,7 +376,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_offlinepurchase_create_purchased_products(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         offline_purchase = OfflinePurchaseFactory(
             owner=self.company, created_by=self.user)
@@ -407,7 +407,7 @@ class ModelTests(MyJobsBase):
             self.assertEqual(PurchasedProduct.objects.all().count(), x*2)
 
     def test_offlinepurchase_filter_by_sites(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
@@ -426,7 +426,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(OfflinePurchase.objects.all().count(), 60)
 
     def test_invoice_filter_by_sites(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
@@ -801,7 +801,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_offlinepurchase_filter_by_site_multiple_sites(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 
@@ -844,7 +844,7 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_invoice_from_offlinepurchase_filter_by_site_multiple_sites(self):
-        role = RoleFactory(company=self.company, name='Admin')
+        role = RoleFactory(company=self.company)
         self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 

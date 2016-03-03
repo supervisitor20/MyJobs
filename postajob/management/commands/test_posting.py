@@ -117,11 +117,11 @@ class JobPostingTests(TestCase):
 
         # Company Users:
         cls.admin_role = Role.objects.create(
-            company=cls.admin_company, name='Admin')
+            company=cls.admin_company)
         cls.admin.roles.add(cls.admin_role)
         cls.CREATION_ORDER.append(cls.admin)
         cls.admin_role_2 = Role.objects.create(
-            company=cls.admin_company_2, name='Admin')
+            company=cls.admin_company_2)
         cls.admin_2.roles.add(cls.admin_role_2)
         cls.CREATION_ORDER.append(cls.admin_2)
 

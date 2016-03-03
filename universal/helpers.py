@@ -125,7 +125,7 @@ def get_company(request):
         # This is ugly and is in place only because we didn't update
         # postajob to use roles before the go-live.
         return get_model('seo', 'Company').objects.filter(
-            role__user=request.user, role__name='Admin').first()
+            role__user=request.user).first()
 
     return company
 

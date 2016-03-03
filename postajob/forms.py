@@ -578,9 +578,9 @@ def make_company_from_form(form_instance):
     form_instance.company = Company.objects.create(name=company_name,
                                                    user_created=True)
     form_instance.request.user.roles.add(
-        form_instance.company.role_set.get(name='Admin'))
-    form_instance.request.user.roles.add(form_instance.company.role_set.get(
-        name='Admin'))
+        form_instance.company.role_set.first())
+    form_instance.request.user.roles.add(
+        form_instance.company.role_set.first())
 
     profile = CompanyProfile.objects.create(
         company=form_instance.company,
