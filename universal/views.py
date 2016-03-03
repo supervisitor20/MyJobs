@@ -53,7 +53,7 @@ class FormViewBase(FormView, ModelFormMixin, SingleObjectMixin):
         if self.object:
             pk = {'pk': self.object.pk}
             if request.path == reverse(self.delete_name, kwargs=pk):
-                    return self.delete()
+                return self.delete()
         return super(FormViewBase, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

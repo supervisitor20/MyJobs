@@ -14,7 +14,7 @@ from myjobs.models import User
 from postajob.location_data import state_list
 
 from universal.decorators import company_has_access
-from seo.models import CompanyUser, SeoSite
+from seo.models import SeoSite
 from myjobs.decorators import user_is_allowed
 from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
                             OfflinePurchaseRedemptionForm, ProductForm,
@@ -317,6 +317,7 @@ def process_admin_request(request, pk, approve=True,
 
     Adds the requesting user (if one exists) to the company's block list
     if the block parameter is True.
+
     """
     company = get_company(request)
     request_made = get_object_or_404(Request, pk=pk, owner=company)
@@ -455,7 +456,7 @@ class PostajobModelFormMixin(object):
     template_name = 'postajob/%s/form.html' % settings.PROJECT
 
     def get_queryset(self, request):
-        kwargs = {'owner__in': request.user.company_set.all()}
+        kwargs = {'owner__in': request.user.roles.values('company')}
         self.queryset = self.model.objects.filter(**kwargs)
         return self.queryset
 

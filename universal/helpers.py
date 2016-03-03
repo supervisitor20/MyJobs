@@ -124,12 +124,8 @@ def get_company(request):
 
         # This is ugly and is in place only because we didn't update
         # postajob to use roles before the go-live.
-        if (settings.ROLES_ENABLED and
-                not request.get_full_path().startswith('/posting')):
-            return get_model('seo', 'Company').objects.filter(
-                role__user=request.user).first()
-        else:
-            return request.user.company_set.first()
+        return get_model('seo', 'Company').objects.filter(
+            role__user=request.user).first()
 
     return company
 

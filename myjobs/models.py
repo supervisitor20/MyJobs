@@ -232,6 +232,8 @@ class CustomUserManager(BaseUserManager):
 
 # New in Django 1.5. This is now the default auth user table.
 class User(AbstractBaseUser, PermissionsMixin):
+    ADMIN_GROUP_NAME = 'Partner Microsite Admin'
+
     email = models.EmailField(verbose_name=_("email address"),
                               max_length=255, unique=True, db_index=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
@@ -646,7 +648,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         packages = site.sitepackage_set
 
         return not packages.exists() or packages.filter(
-            owner__in=self.company_set.all()).exists()
+            owner__role__user=self).exists()
 
     def can(self, company, *activity_names):
         """
@@ -744,17 +746,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         context_object = ""
         if role_name:
-            if settings.ROLES_ENABLED:
-                assigned_role = Role.objects.get(
-                    company=company, name=role_name)
-                user.roles.add(assigned_role)
-                context_object = assigned_role
-            else:
-                CompanyUser = get_model('seo', 'CompanyUser')
-                company_user, _ = CompanyUser.objects.get_or_create(
-                    user=user, company=company)
-                context_object = company_user
-
+            assigned_role = Role.objects.get(
+                company=company, name=role_name)
+            user.roles.add(assigned_role)
+            context_object = assigned_role
         invitation.send(context_object)
 
         return user
@@ -765,6 +760,11 @@ class User(AbstractBaseUser, PermissionsMixin):
                 'secondaryemail__email', flat=True)) or "None"
     secondary_emails.short_description = "secondary emails"
     secondary_emails.allow_tags = True
+
+    def make_purchased_microsite_admin(self):
+        group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
+        self.groups.add(group)
+
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
