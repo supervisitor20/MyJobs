@@ -876,9 +876,6 @@ class Activity(models.Model):
     description = models.CharField(max_length=150, blank=False)
 
     def __unicode__(self):
-        return u"%s" % self.display_name
-
-    def get_display_name(self):
         """Returns display_name or name by default."""
         return self.display_name or self.name
 
