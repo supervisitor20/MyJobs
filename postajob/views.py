@@ -53,12 +53,15 @@ def jobs_overview(request):
 @company_in_sitepackages
 @error_when_site_misconfigured(feature='Purchased Job Management')
 def view_job(request, purchased_product, pk, admin):
+    http404_view = 'postajob.views.view_job'
     company = get_company_or_404(request)
     purchased_product = PurchasedProduct.objects.get(pk=purchased_product)
     if admin and purchased_product.product.owner != company:
-        raise Http404
+        raise Http404("{view}: Current company and product owner do not "
+                      "match".format(view=http404_view))
     elif not admin and purchased_product.owner != company:
-        raise Http404
+        raise Http404("{view}: Current company and purchased product owner do "
+                      "not match".format(view=http404_view))
     data = {
         'admin': admin,
         'company': company,
@@ -318,7 +321,8 @@ def view_request(request, pk, model=None):
     }
 
     if not data['object'].user_has_access(request.user):
-        raise Http404
+        raise Http404("postajob.views.view_request: user does not have access "
+                      "to this object")
 
     return render_to_response(template.format(project=settings.PROJECT,
                                               model=content_type.model),
@@ -428,7 +432,8 @@ def order_postajob(request):
     try:
         model = models[obj_type]
     except KeyError:
-        raise Http404
+        raise Http404("postajob.views.order_postajob: object type "
+                      "not supported")
 
     a = model.objects.get(pk=request.GET.get('a'))
     b = model.objects.get(pk=request.GET.get('b'))
@@ -500,7 +505,7 @@ class BaseJobFormView(PostajobModelFormMixin, RequestFormViewBase):
     prevent_delete = True
 
     def delete(self):
-        raise Http404
+        raise Http404("postajob.views.BaseJobFormView: delete not allowed")
 
     def get_context_data(self, **kwargs):
         context = super(BaseJobFormView, self).get_context_data(**kwargs)
@@ -586,10 +591,12 @@ class PurchasedJobFormView(BaseJobFormView):
 
     def set_object(self, *args, **kwargs):
         if resolve(self.request.path).url_name == self.add_name:
+            http404_view = "postajob.views.PurchasedJobFormView"
             if not self.product.can_post_more():
                 # If more jobs can't be posted to the project, don't allow
                 # the user to access the add view.
-                raise Http404
+                raise Http404("{view}: all available jobs for this posting "
+                              "have been used".format(view=http404_view))
             else:
                 company = get_company(self.request)
                 if company and hasattr(company, 'companyprofile'):
@@ -597,7 +604,9 @@ class PurchasedJobFormView(BaseJobFormView):
                         # If the current user has been blocked by the company
                         # that we are trying to post a job to, don't allow
                         # the user to access the add view.
-                        raise Http404
+                        raise Http404("{view}: user is blocked from posting "
+                                      "to this company".format(
+                                          view=http404_view))
 
         return super(PurchasedJobFormView, self).set_object(*args, **kwargs)
 
@@ -644,7 +653,7 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     delete_name = 'product_delete'
 
     def delete(self):
-        raise Http404
+        raise Http404("postajob.views.ProductFormView: delete not allowed")
 
     @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
@@ -759,7 +768,8 @@ class PurchasedProductFormView(PostajobModelFormMixin, RequestFormViewBase):
         """
         self.object = None
         if not resolve(request.path).url_name.endswith('_add'):
-            raise Http404
+            raise Http404("postajob.views.PurchasedProductFormView: "
+                          "PurchasedProducts can't be edited or deleted")
 
     def get_context_data(self, **kwargs):
         context = super(PurchasedProductFormView, self).get_context_data(**kwargs)
@@ -782,7 +792,8 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
 
     def delete(self):
         if self.object.redeemed_on:
-            raise Http404
+            raise Http404("postajob.views.OfflinePurchaseFormView: "
+                          "can't delete redeemed OfflinePurchases")
         return super(OfflinePurchaseFormView, self).delete()
 
     @method_decorator(user_is_allowed())
@@ -815,7 +826,8 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
         """
         acceptable_names = [self.add_name, self.delete_name]
         if resolve(request.path).url_name not in acceptable_names:
-            raise Http404
+            raise Http404("postajob.views.OfflinePurchaseFormView: "
+                          "OfflinePurchases can only be added or deleted")
         return super(OfflinePurchaseFormView, self).set_object(request)
 
     def get_context_data(self, **kwargs):
@@ -855,7 +867,9 @@ class OfflinePurchaseRedemptionFormView(PostajobModelFormMixin,
         """
         self.object = None
         if not resolve(request.path).url_name == self.add_name:
-            raise Http404
+            raise Http404("postajob.views.OfflinePurchaseRedemptionFormView: "
+                          "OfflinePurchases can only be redeemed, not edited "
+                          "or deleted, by third-party users")
 
 
 class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
@@ -890,7 +904,8 @@ class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
         return self.object
 
     def delete(self):
-        raise Http404
+        raise Http404("postajob.views.CompanyProfileFormView: "
+                      "delete not allowed")
 
     def get_context_data(self, **kwargs):
         context = super(CompanyProfileFormView, self).get_context_data(
@@ -923,9 +938,7 @@ def blocked_user_management(request):
     Displays blocked users (if any) for the current company as well as
     an unblock link.
     """
-    company = get_company(request)
-    if not company:
-        raise Http404
+    company = get_company_or_404(request)
     profile = CompanyProfile.objects.get_or_create(company=company)[0]
     blocked_users = profile.blocked_users.all()
     data = {
@@ -935,6 +948,7 @@ def blocked_user_management(request):
     return render_to_response('postajob/%s/blocked_user_management.html'
                               % settings.PROJECT, data,
                               RequestContext(request))
+
 
 @user_is_allowed()
 @company_has_access('product_access')
@@ -946,9 +960,7 @@ def unblock_user(request, pk):
     Inputs:
     :pk: ID of user that has been blocked
     """
-    company = get_company(request)
-    if not company:
-        raise Http404
+    company = get_company_or_404(request)
     profile = company.companyprofile
     if profile:
         try:
