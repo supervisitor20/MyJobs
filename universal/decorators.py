@@ -108,9 +108,7 @@ def warn_when(condition, feature, message, link=None, link_text=None,
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            # this decorator factory only works if called with enabled=True or
-            # settings.ROLES_ENABLED is False
-            if not enabled and settings.ROLES_ENABLED:
+            if not enabled:
                 return view_func(request, *args, **kwargs)
 
             if request.user.is_anonymous() and redirect:

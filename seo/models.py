@@ -724,10 +724,8 @@ class Company(models.Model):
         Read-only property that returns whether or not a company has access
         to PRM features.
         """
-        if settings.ROLES_ENABLED:
-            return "PRM" in self.app_access.values_list("name", flat=True)
-        else:
-            return self.member
+
+        return "PRM" in self.app_access.values_list("name", flat=True)
 
 
     def user_has_access(self, user):
@@ -735,10 +733,7 @@ class Company(models.Model):
         Returns whether or not the given user can be tied back to the company.
         """
 
-        if settings.ROLES_ENABLED:
-            return user.pk in self.role_set.values_list('user', flat=True)
-        else:
-            return user in self.admins.all()
+        return user.pk in self.role_set.values_list('user', flat=True)
 
     @property
     def has_packages(self):
