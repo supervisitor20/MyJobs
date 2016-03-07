@@ -15,7 +15,7 @@ from postajob.location_data import state_list
 
 from universal.decorators import company_has_access, company_in_sitepackages
 from seo.models import SeoSite
-from myjobs.decorators import user_is_allowed
+from myjobs.decorators import user_is_allowed, MissingActivity
 from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
                             OfflinePurchaseRedemptionForm, ProductForm,
                             ProductGroupingForm, PurchasedJobForm,
@@ -563,8 +563,22 @@ class JobFormView(BaseJobFormView):
         """
         return super(JobFormView, self).dispatch(*args, **kwargs)
 
-    @method_decorator(requires('create job'))
+    @method_decorator(requires('read job'))
+    def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if 'pk' in kwargs and not self.request.user.can(company, 'update job'):
+            return MissingActivity()
+        elif not self.request.user.can(company, 'create job'):
+            return MissingActivity()
+        return super(JobFormView, self).get(*args, **kwargs)
+
     def post(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if 'pk' in kwargs and not self.request.user.can(company, 'update job'):
+            return MissingActivity()
+        elif not self.request.user.can(company, 'create job'):
+            return MissingActivity()
+
         return super(JobFormView, self).post(*args, **kwargs)
 
     def get_queryset(self, request):

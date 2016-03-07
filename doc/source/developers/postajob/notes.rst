@@ -28,7 +28,13 @@ site after approval.
 Views
 '''''
 
-``/posting/all - jobs_overview``
+=================== ============= ===================
+URL Path            View Name     Required Activities
+=================== ============= ===================
+/posting/all/       jobs_overview read job
+/posting/job/add/   JobFormView   create job
+/posting/job/update JobFormView   update job
+=================== ============= ===================
 
 Logging In
 ''''''''''
