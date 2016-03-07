@@ -1,6 +1,8 @@
 {% load i18n %}
 {% load tz %}
 {% load common_tags %}
+{% load compress %}
+{% load staticfiles %}
 {% gz as gz %}
 
 {% localtime on %}
@@ -25,6 +27,10 @@
     <link href="{{ STATIC_URL }}my.jobs.ie.163-29.css{{ gz }}" rel="stylesheet" type="text/css">
     <![endif]-->
     <link href="{{ STATIC_URL }}bootstrap/bootstrap-modal.css{{ gz }}" rel="stylesheet" type="text/css">
+
+    {% compress js %}
+      <script type="text/javascript" src="{% static "utils.js" %}"></script>
+    {% endcompress %}
 </head>
 
 <body>
@@ -123,6 +129,10 @@
     <![endif]-->
     <script type="text/javascript" src="{{ STATIC_URL }}custom.166-06.js{{ gz }}"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}my.jobs.160-30.js{{ gz }}"></script>
+    <script type="text/javascript">
+      // check for logout cookie every second
+      utils.logoutTimer("{% url 'home' %}");
+    </script>
 
     {% block extra-js %}
 
