@@ -192,8 +192,8 @@ def requires(*activities, **callbacks):
     In this case, the user will see the appropriate message in bold, with a
     status code of 200. A similar strategy can be used for customizing the
     response used when app access is missing by passing `access_callback`.
-    """
 
+    """
     invalid_callbacks = set(callbacks.keys()).difference({
         "access_callback", "activity_callback"})
 

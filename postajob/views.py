@@ -555,7 +555,6 @@ class JobFormView(BaseJobFormView):
     delete_name = 'job_delete'
 
     @method_decorator(user_is_allowed())
-    @method_decorator(requires('create job'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -563,6 +562,10 @@ class JobFormView(BaseJobFormView):
 
         """
         return super(JobFormView, self).dispatch(*args, **kwargs)
+
+    @method_decorator(requires('create job'))
+    def post(self, *args, **kwargs):
+        return super(JobFormView, self).post(*args, **kwargs)
 
     def get_queryset(self, request):
         super(JobFormView, self).get_queryset(request)
