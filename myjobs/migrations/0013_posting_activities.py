@@ -10,7 +10,9 @@ class Migration(DataMigration):
     def forwards(self, orm):
         app = AppAccess.objects.get(name='Posting')
         args = [
-            ("read job", "View Existing jobs."),
+            ("create job", "Add new jobs."),
+            ("read job", "View existing jobs."),
+            ("update job", "Edit existing jobs."),
             ("create product", "Add new products"),
             ("read product", "View existing products."),
             ("delete product", "Remove existing products"),
