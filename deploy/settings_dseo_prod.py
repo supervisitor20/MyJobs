@@ -31,10 +31,6 @@ DATABASES = {
     }, **ARCHIVE_PROD)
 }
 
-TEMPLATE_DIRS = (
-    '/home/web/MyJobs/MyJobs/templates/',
-)
-
 SESSION_CACHE_ALIAS = 'sessions'
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
