@@ -9,7 +9,12 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         app = AppAccess.objects.get(name='Posting')
-        args = [("read job", "View Existing jobs.")]
+        args = [
+            ("read job", "View Existing jobs."),
+            ("create product", "Add new products"),
+            ("read product", "View existing products."),
+            ("delete product", "Remove existing products"),
+        ]
         # We use a for loop and directly access the models so that signals fire
         for arg in args:
             Activity.objects.create(

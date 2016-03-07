@@ -189,7 +189,7 @@ def purchasedmicrosite_admin_overview(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read product')
 @company_in_sitepackages
 @error_when_site_misconfigured(feature='Product Management is')
 def admin_products(request):
