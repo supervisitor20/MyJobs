@@ -1197,11 +1197,15 @@ class Configuration(models.Model):
         validators=[MaxValueValidator(decimal.Decimal('1.00'))],
         verbose_name="Featured Jobs Maximum Percentage")
 
+    # widget related items
     show_saved_search_widget = models.BooleanField(default=False,
                                                    help_text='Show saved '
                                                              'search widget '
                                                              'on job listing '
                                                              'page.')
+    use_secure_blocks = models.BooleanField(default=False,
+                                            help_text='Use secure blocks for '
+                                                      'displaying widgets.')
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)

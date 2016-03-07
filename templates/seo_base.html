@@ -41,6 +41,7 @@
     <script type="text/javascript" src="{% static "utils.js" %}"></script>
     <script type="text/javascript" src="{% static "secure-block.js" %}"></script>
     {% endcompress %}
+    {% if site_config.use_secure_blocks %}
     <script type="text/javascript">
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       var parent_site_url = "{% if testing_host_prefix %}http://{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
@@ -48,6 +49,7 @@
         load_secure_blocks(parent_site_url + '/secure-blocks/');
       });
     </script>
+    {% endif %}
 
     <script type="text/javascript" src="{{ STATIC_URL }}pager.164-21.js"></script>
 

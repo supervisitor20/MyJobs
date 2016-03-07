@@ -2582,7 +2582,11 @@ class SeoViewsTestCase(DirectSEOTestCase):
         self.assertEqual(resp.content.count(ga.web_property_id), 1)
 
     def test_saved_search_render(self):
-        """Test that network sites get the saved search form on job listings."""
+        """
+        Test that network sites get the saved search form on job listings.
+        Works as long as secure blocks are not enabled for the site
+
+        """
         site = factories.SeoSiteFactory.build()
         site.save()
         site_tag = SiteTag(site_tag='network')
@@ -2595,9 +2599,10 @@ class SeoViewsTestCase(DirectSEOTestCase):
                             '<div id="de-myjobs-widget"',
                             count=None,
                             status_code=200,
-                            msg_prefix='')
+                            msg_prefix='Saved search widget not displayed'
+                                       ' on network site')
 
-    def test_saved_search_non_render(self):
+    def test_saved_search_non_render_company_sites(self):
         """
         Test company sites don't have a saved search form on job listings.
         """
@@ -2612,6 +2617,72 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 follow=True)
         self.assertNotContains(resp,'<div id="direct_savedsearch"',
                                status_code=200, msg_prefix='')
+
+    def test_saved_search_non_render_secure_blocks(self):
+        """
+        Test that network sites do not display the saved search widget if
+        secure blocks are enabled
+
+        """
+        site = factories.SeoSiteFactory.build()
+        site.use_secure_blocks = True
+        site.save()
+        site_tag = SiteTag(site_tag='network')
+        site_tag.save()
+        site.site_tags.add(site_tag)
+        resp = self.client.get('/indianapolis/indiana/usa/jobs/',
+                               HTTP_HOST='buckconsultants.jobs',
+                               follow=True)
+        self.assertNotContains(resp,
+                            '<div id="de-myjobs-widget"',
+                            count=None,
+                            status_code=200,
+                            msg_prefix='Saved Search widget found when it'
+                                       ' should have been hidden by site'
+                                       ' setting.')
+
+    def test_secure_blocks_populate_when_enabled(self):
+        """
+        Test that secure blocks appear when secure blocks are enabled
+
+        """
+        site = factories.SeoSiteFactory.build()
+        site.use_secure_blocks = True
+        site.save()
+        site_tag = SiteTag(site_tag='network')
+        site_tag.save()
+        site.site_tags.add(site_tag)
+        resp = self.client.get('/indianapolis/indiana/usa/jobs/',
+                               HTTP_HOST='buckconsultants.jobs',
+                               follow=True)
+        self.assertContains(resp,
+                    'data-secure_block_id',
+                    count=None,
+                    status_code=200,
+                    msg_prefix='Secure blocks saved search widget'
+                               ' not found on page despite activation')
+
+    def test_secure_blocks_populate_when_enabled(self):
+        """
+        Test that secure blocks appear when secure blocks are enabled
+
+        """
+        site = factories.SeoSiteFactory.build()
+        site.use_secure_blocks = True
+        site.save()
+        site_tag = SiteTag(site_tag='network')
+        site_tag.save()
+        site.site_tags.add(site_tag)
+        resp = self.client.get('/indianapolis/indiana/usa/jobs/',
+                               HTTP_HOST='buckconsultants.jobs',
+                               follow=True)
+        import ipdb; ipdb.set_trace()
+        self.assertContains(resp,
+                    'data-secure_block_id',
+                    count=None,
+                    status_code=200,
+                    msg_prefix='Secure blocks saved search widget'
+                               ' not found on page despite activation')
 
     def test_secure_redirect(self):
         site = SeoSite.objects.get()
