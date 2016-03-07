@@ -2596,7 +2596,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                HTTP_HOST='buckconsultants.jobs',
                                follow=True)
         self.assertContains(resp,
-                            '<div id="de-myjobs-widget"',
+                            'direct-saved-search-box',
                             count=None,
                             status_code=200,
                             msg_prefix='Saved search widget not displayed'
@@ -2615,7 +2615,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 '/indianapolis/indiana/usa/jobs/',
                 HTTP_HOST='buckconsultants.jobs',
                 follow=True)
-        self.assertNotContains(resp,'<div id="direct_savedsearch"',
+        self.assertNotContains(resp,'direct-saved-search-box',
                                status_code=200, msg_prefix='')
 
     def test_saved_search_non_render_secure_blocks(self):
@@ -2625,21 +2625,21 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         """
         site = factories.SeoSiteFactory.build()
-        site.use_secure_blocks = True
         site.save()
+        config = factories.ConfigurationFactory(status=2,
+                                                use_secure_blocks=True)
+        site.configurations.add(config)
         site_tag = SiteTag(site_tag='network')
         site_tag.save()
         site.site_tags.add(site_tag)
         resp = self.client.get('/indianapolis/indiana/usa/jobs/',
-                               HTTP_HOST='buckconsultants.jobs',
+                               HTTP_HOST=site.domain,
                                follow=True)
         self.assertNotContains(resp,
-                            '<div id="de-myjobs-widget"',
-                            count=None,
-                            status_code=200,
-                            msg_prefix='Saved Search widget found when it'
-                                       ' should have been hidden by site'
-                                       ' setting.')
+                            'direct-saved-search-box',
+                             msg_prefix='Saved Search widget found when it'
+                                        ' should have been hidden by site'
+                                        ' setting.')
 
     def test_secure_blocks_populate_when_enabled(self):
         """
@@ -2647,13 +2647,15 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         """
         site = factories.SeoSiteFactory.build()
-        site.use_secure_blocks = True
         site.save()
+        config = factories.ConfigurationFactory(status=2,
+                                                use_secure_blocks=True)
+        site.configurations.add(config)
         site_tag = SiteTag(site_tag='network')
         site_tag.save()
         site.site_tags.add(site_tag)
         resp = self.client.get('/indianapolis/indiana/usa/jobs/',
-                               HTTP_HOST='buckconsultants.jobs',
+                               HTTP_HOST=site.domain,
                                follow=True)
         self.assertContains(resp,
                     'data-secure_block_id',
@@ -2662,27 +2664,26 @@ class SeoViewsTestCase(DirectSEOTestCase):
                     msg_prefix='Secure blocks saved search widget'
                                ' not found on page despite activation')
 
-    def test_secure_blocks_populate_when_enabled(self):
+    def test_secure_blocks_dont_populated_when_disabled(self):
         """
-        Test that secure blocks appear when secure blocks are enabled
+        Test that secure blocks do not appear when secure blocks are disabled
 
         """
         site = factories.SeoSiteFactory.build()
-        site.use_secure_blocks = True
         site.save()
+        config = factories.ConfigurationFactory(status=2,
+                                                use_secure_blocks=False)
+        site.configurations.add(config)
         site_tag = SiteTag(site_tag='network')
         site_tag.save()
         site.site_tags.add(site_tag)
         resp = self.client.get('/indianapolis/indiana/usa/jobs/',
-                               HTTP_HOST='buckconsultants.jobs',
+                               HTTP_HOST=site.domain,
                                follow=True)
-        import ipdb; ipdb.set_trace()
-        self.assertContains(resp,
+        self.assertNotContains(resp,
                     'data-secure_block_id',
-                    count=None,
-                    status_code=200,
                     msg_prefix='Secure blocks saved search widget'
-                               ' not found on page despite activation')
+                               ' found on page despite deactivation')
 
     def test_secure_redirect(self):
         site = SeoSite.objects.get()

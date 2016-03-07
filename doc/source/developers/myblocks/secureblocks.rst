@@ -57,6 +57,12 @@ To test a secure block widget, do the following:
 
  * Save
 
+* Navigate to the site configuration for the child site
+
+ * Check the box labled 'Use secure blocks'
+
+ * Save
+
 * Locate the correct model under MyBlocks (ex. SavedSearchWidgetBlock)
 
 * Add new block
@@ -65,22 +71,26 @@ To test a secure block widget, do the following:
    automatically populated with a default template. This can be edited
    if needed.
 
-* If the element is not currently on any pages, add it with a
-  `<div data-secure-block-id="--YOUR ELEMENT ID--"></div>`
+ * The two widget element IDs included in microsites templates are..
 
- * This will only work on templates loaded from seo_base.html
+  * saved_search for saved search widget
 
- * Currently, all testing is done on templates/CS_TEST_homepage_listing.html
-   If you would like to edit and use this page for testing, ensure the
-   configuration for your child site is set with the above as it's
-   homepage
+  * sb_tools for toolbar/topbar
 
-* Widget will populate on child site if the relationship was set up properly
+  * If an element ID other than these two is used, it must also be included
+    in a template for display using the following format
 
-secure-block-xx-xx.js
----------------------
+   * `<div data-secure_block_id="--YOUR ELEMENT ID--"></div>`
 
-Secure Blocks relies on the file secure-block-xx-xx.js file located in the
+* This will only work on templates loaded from seo_base.html
+
+* Currently, all secure blocks widgets are wrapped in if/else statements
+  to ensure that they are only displayed if they are enabled for that site.
+
+secure-block.js
+---------------
+
+Secure Blocks relies on the file secure-block.js file located in the
 static directory. This file handles creating the ajax call based on the secure
 block ids as well as populating the respective divs with the response.
 
