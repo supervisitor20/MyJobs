@@ -555,7 +555,7 @@ class JobFormView(BaseJobFormView):
     delete_name = 'job_delete'
 
     @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access('posting_access'))
+    @method_decorator(requires('create job'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that

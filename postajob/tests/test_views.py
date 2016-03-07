@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
-from myjobs.tests.factories import UserFactory, RoleFactory
+from myjobs.tests.factories import UserFactory, RoleFactory, AppAccessFactory
 from postajob.tests.factories import (ProductFactory,
                                       OfflinePurchaseFactory,
                                       OfflineProductFactory,
@@ -32,8 +32,11 @@ from universal.helpers import build_url
 class PostajobTestBase(DirectSEOBase):
     def setUp(self):
         super(PostajobTestBase, self).setUp()
+        self.app_access = AppAccessFactory(name='Posting')
         self.user = UserFactory(password='5UuYquA@')
-        self.company = CompanyFactory(product_access=True, posting_access=True)
+        self.company = CompanyFactory(
+            app_access=[self.app_access],
+            product_access=True, posting_access=True)
         self.role = RoleFactory(company=self.company)
         self.user.roles.add(self.role)
 
