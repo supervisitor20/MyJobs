@@ -71,8 +71,6 @@ urlpatterns = patterns(
     url(r'^admin/product/$',  views.admin_products, name='product'),
     url(r'^admin/product/add/', views.ProductFormView.as_view(),
         name='product_add'),
-    url(r'^admin/product/delete/(?P<pk>\d+)/', views.ProductFormView.as_view(),
-        name='product_delete'),
     url(r'^admin/product/update/(?P<pk>\d+)/', views.ProductFormView.as_view(),
         name='product_update'),
 
