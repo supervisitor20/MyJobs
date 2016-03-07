@@ -41,7 +41,7 @@ class PostajobTestBase(DirectSEOBase):
         self.posting_activities = [
             ActivityFactory(name=activity, app_access=self.posting_access)
             for activity in [
-                "create job", "read job", "update job"
+                "create job", "read job", "update job", "read product"
             ]
         ]
         self.admin_role = RoleFactory(
