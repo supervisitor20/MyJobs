@@ -11,6 +11,9 @@ COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
 STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
 
+TEMPLATE_DIRS = (
+    '/home/web/MyJobs/MyJobs/templates/',
+)
 
 DATABASES = {
     'default': dict({
