@@ -778,10 +778,10 @@ class Page(models.Model):
 
     add_blank = lambda choices: (('', 'Inherit from Configuration'),) + choices
 
-    doc_type = models.CharField(max_length=255, blank=False,
+    doc_type = models.CharField(max_length=255, blank=True,
                                 choices=add_blank(DOCTYPE_CHOICES),
                                 default='')
-    language_code = models.CharField(max_length=16, blank=False,
+    language_code = models.CharField(max_length=16, blank=True,
                                      choices=add_blank(LANGUAGE_CODES_CHOICES),
                                      default='')
 

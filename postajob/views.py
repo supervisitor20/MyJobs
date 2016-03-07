@@ -28,10 +28,11 @@ from postajob.decorators import error_when_site_misconfigured
 from universal.helpers import (get_company, get_object_or_none,
                                get_company_or_404)
 from universal.views import RequestFormViewBase
+from myjobs.decorators import requires
 
 
 @user_is_allowed()
-@company_has_access('posting_access')
+@requires('read job')
 def jobs_overview(request):
     if settings.SITE:
         sites = settings.SITE.postajob_site_list()
