@@ -9,7 +9,6 @@ from ajax_select.fields import AutoCompleteSelectField
 
 from myjobs.models import User, CompanyAccessRequest, Role
 from myprofile.models import SecondaryEmail
-import seo.lookups
 from seo.models import Company
 
 

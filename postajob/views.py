@@ -871,13 +871,8 @@ class SitePackageFilter(FSMView):
         return super(SitePackageFilter, self).get(request)
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            # If this is on the admin site or the user is a superuser,
-            # get all sites for the current company.
-            sites = SeoSite.objects.all()
-        else:
-            company = get_company_or_404(self.request)
-            sites = company.get_seo_sites()
+        company = get_company_or_404(self.request)
+        sites = company.get_seo_sites()
         return sites
 
 

@@ -218,7 +218,7 @@ Report.prototype = {
     });
 
     $("body").on("click.submit", "#gen-report:not('disabled')", function () {
-      var csrf = read_cookie("csrftoken"),
+      var csrf = readCookie("csrftoken"),
           data = {"csrfmiddlewaretoken": csrf},
           url = location.protocol + "//" + location.host + "/reports/view/mypartners/" + report.type,
           newList = [];
@@ -738,7 +738,7 @@ TagField.prototype = $.extend(Object.create(TextField.prototype), {
             },
             values: ["name"],
             order_by: "name",
-            csrfmiddlewaretoken: read_cookie("csrftoken"),
+            csrfmiddlewaretoken: readCookie("csrftoken"),
           };
 
         tagData.filters[tagField.report.type] = {
@@ -917,7 +917,7 @@ FilteredList.prototype = $.extend(Object.create(Field.prototype), {
           filters:{},
           values: filteredList.values,
           order_by: filteredList.order_by,
-          csrfmiddlewaretoken: read_cookie("csrftoken")
+          csrfmiddlewaretoken: readCookie("csrftoken")
         };
 
     for (id in dependencies) {
@@ -1138,7 +1138,7 @@ $(document).ready(function() {
     var data = {
           filters: JSON.stringify({'pk': $(this).parents("tr, .report-row").data("report")}),
           values: ['name', 'model', 'app', 'filters'],
-          csrfmiddlewaretoken: read_cookie("csrftoken")
+          csrfmiddlewaretoken: readCookie("csrftoken")
         },
         url = location.protocol + "//" + location.host, // https://secure.my.jobs
         cloneReport = function() {

@@ -93,24 +93,22 @@ if(window.addEventListener) {
 
 
 function hide_field(field_name) {
-    $('.' + field_name + '-label').hide();
-    $('.' + field_name + '-field').hide();
+    $('.' + field_name + '-field').closest('.row').hide();
 }
 
 
 function hide_admin_field(field_name) {
-    $('.field-' + field_name).hide();
+    $('.field-' + field_name).closest('.row').hide();
 }
 
 
 function show_field(field_name) {
-    $('.' + field_name + '-label').show();
-    $('.' + field_name + '-field').show();
+    $('.' + field_name + '-field').closest('.row').show();
 }
 
 
 function show_admin_field(field_name) {
-    $('.field-' + field_name).show();
+    $('.field-' + field_name).closest('.row').show();
 }
 
 
@@ -261,11 +259,11 @@ function copy_forms(from, to) {
         if (from_value) {
             to.find(element).val(from_value);
             if (from_input.parents('.required').length > 0) {
-                from_input.parent().unwrap();
+                from_input.unwrap();
             }
         } else {
             if (from_input.parents('.required').length == 0) {
-                from_input.parent('.profile-form-input').wrap('<div class="required">');
+                from_input.wrap('<span class="required">');
             }
             valid = false;
         }
@@ -291,11 +289,11 @@ function copy_forms(from, to) {
             if (from_value) {
                 to.find(element).val(from_value);
                 if (from_input.parents('.required').length > 0) {
-                    from_input.parent().unwrap();
+                    from_input.unwrap();
                 }
             } else {
                 if (from_input.parents('.required').length == 0) {
-                    from_input.parent('.profile-form-input').wrap('<div class="required">');
+                    from_input.wrap('<span class="required">');
                 }
                 valid = false;
             }
@@ -313,7 +311,7 @@ function copy_forms(from, to) {
                 }
             } else {
                 if (from_input.parents('.required').length == 0) {
-                    from_input.parent('.profile-form-input').wrap('<div class="required">');
+                    from_input.wrap('<span class="required">');
                 }
                 valid = false;
             }
@@ -417,11 +415,8 @@ function update_state_selection(country) {
     var region = $('#' + prefix + 'region'),
         state = $('#' + prefix + 'state');
     if (country == 'United States' || country == 'Canada') {
-        region.hide();
-        $('label[for="' + prefix + 'region"]').hide();
-
-        state.show();
-        $('label[for="' + prefix + 'state"]').show();
+        region.closest('.row').hide();
+        state.closest('.row').show();
 
         country = country.replace(' ', '.');
         var hidden = $('#hidden-options'),
@@ -435,10 +430,7 @@ function update_state_selection(country) {
         }
     }
     else {
-        region.show();
-        $('label[for="' + prefix + 'region"]').show();
-
-        state.hide();
-        $('label[for="' + prefix + 'state"]').hide();
+        region.closest('.row').show();
+        state.closest('.row').hide();
     }
 }

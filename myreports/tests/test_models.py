@@ -66,7 +66,7 @@ class TestActiveModels(MyReportsTestCase):
         data_types = (DataType.objects
                       .active_for_report_type(report_type))
         names = set(d.data_type for d in data_types)
-        expected_names = set(['Unaggregated'])
+        expected_names = set(['unaggregated'])
         self.assertEqual(expected_names, names)
 
     def test_active_report_presentations(self):

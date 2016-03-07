@@ -539,7 +539,6 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             'moc_term': request.GET.get('moc', '\*'),
             'location_term': the_job.location
         }
-
         # Render the response, but don't return it yet--we need to add an
         # additional canonical url header to the response.
         the_response = render_to_response('job_detail.html', data_dict,
@@ -624,7 +623,7 @@ def stylesheet(request, cid=None, css_file="stylesheet.css"):
 
 
 @custom_cache_page
-def posting_stylesheet(request, cid=None, css_file="posting-stylesheet.css"):
+def posting_stylesheet(request, cid=None, css_file="posting-stylesheet.173-18.css"):
     """
     TODO: Make stylesheet dynamic and not hard code.
     Quick C&P due to due date.
