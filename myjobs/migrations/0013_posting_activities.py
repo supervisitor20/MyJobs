@@ -8,24 +8,34 @@ from myjobs.models import Activity, AppAccess
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        app = AppAccess.objects.get(name='Posting')
-        args = [
+        posting = AppAccess.objects.get(name='Posting')
+        marketplace = AppAccess.objects.get(name='MarketPlace')
+
+        posting_activities = [
             ("create job", "Add new jobs."),
             ("read job", "View existing jobs."),
             ("update job", "Edit existing jobs."),
+        ]
+
+        marketplace_activities = [
             ("create product", "Add new products"),
             ("read product", "View existing products."),
             ("delete product", "Remove existing products"),
         ]
         # We use a for loop and directly access the models so that signals fire
-        for arg in args:
+        for name, desc in posting_activities:
             Activity.objects.create(
-                app_access=app, name=arg[0], description=arg[1])
+                app_access=posting, name=name, description=desc)
+
+        for name, desc in marketplace_activities:
+            Activity.objects.create(
+                app_access=marketplace, name=name, description=desc)
+
 
     def backwards(self, orm):
-        "Write your backwards methods here."
-        app_access = orm.AppAccess.objects.get(name="Posting")
-        orm.Activity.objects.filter(app_access=app_access).delete()
+        apps = orm.AppAccess.objects.filter(
+            name__in=['Posting', 'MarketPlace'])
+        orm.Activity.objects.filter(app_access=apps).delete()
 
     models = {
         u'auth.group': {
