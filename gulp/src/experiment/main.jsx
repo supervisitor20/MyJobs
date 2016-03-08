@@ -8,24 +8,20 @@ import {Router, Route, IndexRoute, Link} from 'react-router';
 
 import {getCsrf} from 'common/cookie';
 
-
-import DjangoCSRFToken from '../common/DjangoCSRFToken';
-
 import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetimeLocal from '../common/ui/BasicDatetimeLocal';
+import BasicMultiselect from '../common/ui/BasicMultiselect';
 
 export class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const csrfmiddlewaretoken = getCsrf();
-    const field_id = 'csrfmiddlewaretoken';
     let form_contents = {};
-    form_contents[field_id] = csrfmiddlewaretoken;
-    form_contents['id'] = 279710,
-    form_contents['module'] = 'Summary',
+    form_contents.csrfmiddlewaretoken = getCsrf();
+    form_contents.id = 279702,
+    form_contents.module = 'Name',
 
     this.state = {
       api_response: "",
@@ -41,13 +37,20 @@ export class App extends React.Component {
     $.ajax({
       type: "get",
       url: "/profile/api",
-      data: {id: 279710, module: "Summary"},
+      data: {id: this.state.form_contents.id,
+             module: this.state.form_contents.module},
       beforeSend: function (xhr){
         xhr.setRequestHeader('Accept', 'application/json');
       },
       success: (api_response) => {
+        // Add form fields to state object
+        const form_contents = this.state.form_contents;
+        for (let field in api_response.data) {
+          form_contents[field] = api_response.data[field];
+        };
         this.setState({
           api_response: api_response,
+          form_contents: form_contents,
         });
       }
     });
@@ -56,23 +59,30 @@ export class App extends React.Component {
     const field_id = event.target.name;
     const form_contents = this.state.form_contents;
 
-    form_contents[field_id] = event.target.value;
+    let value;
+    if (event.target.type == "checkbox") {
+      value = event.target.checked;
+    }
+    else if (event.target.type == "select-one") {
+      value = event.target.value;
+    }
+    else {
+      value = event.target.value;
+    }
+
+    form_contents[field_id] = value;
 
     this.setState({
       form_contents: form_contents,
     });
-    console.log(this);
   }
   handleDelete(event) {
     console.log(event);
   }
   handleSave(event) {
-    console.log(event);
+
+    console.log("About to save this:");
     console.log(this.state.form_contents);
-
-
-
-
 
     $.ajax({
       type: "post",
@@ -82,20 +92,16 @@ export class App extends React.Component {
         xhr.setRequestHeader('Accept', 'application/json');
       },
       success: (api_response) => {
+        console.log("Field saved");
         console.log(api_response);
       }
     });
-
-
-
-
   }
   processForm(api_response) {
     if(api_response) {
       let profileUnits = [];
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
-
       profileUnits = api_response.ordered_fields.map( (profileUnitName, index) => {
         let profileUnit = api_response.fields[profileUnitName];
         switch (profileUnit.widget.input_type) {
@@ -107,6 +113,10 @@ export class App extends React.Component {
           break;
         case "date":
           return <BasicDatetimeLocal {...profileUnit} name={profileUnitName} onChange={this.onChange.bind(this)} key={index}/>;
+          break;
+        // TODO might need to update this case statement with real value
+        case "multiselect":
+          return <BasicMultiselect {...profileUnit} name={profileUnitName} onChange={this.onChange.bind(this)} key={index}/>;
           break;
         case "checkbox":
           return <BasicCheckBox {...profileUnit} name={profileUnitName} onChange={this.onChange.bind(this)} key={index}/>;
@@ -120,7 +130,6 @@ export class App extends React.Component {
 
   render() {
     let form_components = this.processForm(this.state.api_response);
-
     return (
       <div>
         <div className="row">

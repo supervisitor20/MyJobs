@@ -80,6 +80,7 @@ def handle_form(request):
     ctx = {}
     ctx["success"] = True
 
+
     item = None
     if item_id != 'new':
         try:
@@ -114,7 +115,7 @@ def handle_form(request):
                                  auto_id=False)
         else:
             form_instance = form(user=request.user, instance=item,
-                                 auto_id=False, data=dict(request.POST))
+                                 auto_id=False, data=request.POST)
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()
