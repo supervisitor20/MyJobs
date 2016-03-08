@@ -110,7 +110,8 @@ blocks template.
 .. note:: jQuery converts hyphens to camelCase when sending data attributes.
     The data attribute email-address would resolve in the secure block template
     as emailAddress. This does not affect underscores (email_address
-    is email_address)
+    is email_address) and it is currently encouraged to use underscores when
+    defining data attributes.
 
 **Main Functions**
 
