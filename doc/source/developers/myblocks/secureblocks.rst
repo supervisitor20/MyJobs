@@ -51,13 +51,13 @@ To test a secure block widget, do the following:
 
 * If parent site relationship is not set up, do the following:
 
- * Navigate to Company, edit desired child company (currently my.jobs)
+ * Navigate to SeoSite, edit desired child site (currently my.jobs)
 
  * Under "parent_site" drop down, select desired parent site (secure.my.jobs)
 
  * Save
 
-* Navigate to the site configuration for the child site
+* Navigate to the active site configuration for the child site
 
  * Check the box labled 'Use secure blocks'
 
@@ -67,11 +67,14 @@ To test a secure block widget, do the following:
 
 * Add new block
 
- * The only required fields are element_id and template. Template will be
+ * The only important fields are element_id and template. Template will be
    automatically populated with a default template. This can be edited
-   if needed.
+   if needed. Offset and Span are required, but currently have to effect on
+   the widget. These can be set to 0
 
- * The two widget element IDs included in microsites templates are..
+ * Widget IDs are currently hardcoded on templates. Therefore, the element IDs
+   for secure block widgets are predetermined. The two widget element IDs
+   included in microsites templates are..
 
   * saved_search for saved search widget
 
@@ -84,8 +87,9 @@ To test a secure block widget, do the following:
 
 * This will only work on templates loaded from seo_base.html
 
-* Currently, all secure blocks widgets are wrapped in if/else statements
-  to ensure that they are only displayed if they are enabled for that site.
+* All secure blocks widgets that replace existing functionality (saved search,
+  tools) will REPLACE their counterparts if secure-blocks is enabled for that
+  site.
 
 secure-block.js
 ---------------
