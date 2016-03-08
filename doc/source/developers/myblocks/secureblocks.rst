@@ -151,3 +151,19 @@ can be in.
 As of this writing, the only javascript file used in the widget is
 static/saved-search.js . This file contains the logic for calling the Saved
 Search API and refreshing the
+
+The current anchor for saved search is as such:
+
+`<div data-secure_block_id="saved-search"></div>`
+
+Tools Widget
+============
+
+The tools widget represents the same functionality as the legacy topbar widget.
+This is the first widget to rely on an additional data element, data-widget_type
+to prevent the legacy topbar from being loaded in addition to the tools secure
+block.
+
+The current anchor for the tools widget is as such:
+
+`<div data-secure_block_id="sb_toolbar" data-widget_type="toolswidget"></div>`
