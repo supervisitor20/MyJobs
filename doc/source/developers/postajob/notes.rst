@@ -15,15 +15,9 @@ Posting
 These use cases accommodate companies who want to post jobs to their own
 microsite.
 
-Use Case 1: External party buying a job
+Use Case 2: External party buying a job
 ---------------------------------------
-A small business owner (SBO) finds Paul's website. They decide to post a job,
-so they create an account. This account is with paul's site, powered by
-My.jobs. After creating an account, the SBO goes to the product listing and
-purchases a product, 5 posting for 30 days, for $100. Paul receives an invoice
-email that he can forward to the SBO. After purchasing the product, the SBO
-goes to the purchased products page and posts a job. The job appears on the
-site after approval.
+Rebecca has a job that can't be indexed, as it is on an internal ATS that can't be reached by DE's agents. She logs into post-a-job and posts the site to her .JOBS Company Sites. The jobs appears. Later, she can come back and edit it or delete it once it filled.
 
 Views
 '''''
@@ -119,6 +113,26 @@ From the Django Admin and User Management Tool
    At the moment, this must be done on https://secure.my.jobs as that is the
    only domain for which User Management is available. Be sure to change to
    the correct company in the topbar.
+
+
+Use Case 3: Site owner creating a product for sale
+--------------------------------------------------
+Paul logs into the posting admin. He creates a product for 5 job postings in 30 days. He then creates a group and assigns his new product to that group. The group appears in the products for sale page that SBO sees when visiting Paul's site. Later, he can edit or delete the posting as needed, but any purchased instances of the product are unaffected.
+
+Views
+'''''
+============================= =============== ===================
+URL Path                      View Name       Required Activities
+============================= =============== ===================
+/posting/admin/products       admin_products  read product
+/posting/admin/product/add    ProductFormView create product
+/posting/admin/product/update ProductFormView update product
+============================= =============== ===================
+
+Setup
+'''''
+See Use Case 2
+
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
 .. _create a new row: http://directemployers.jobs/admin/myblocks/row/add/

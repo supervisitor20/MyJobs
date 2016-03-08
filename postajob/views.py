@@ -192,7 +192,7 @@ def purchasedmicrosite_admin_overview(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read product')
 @error_when_company_missing_from_sitepackages(feature='Product Management is')
 @error_when_site_misconfigured(feature='Product Management is')
 def admin_products(request):
@@ -669,11 +669,20 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'product_update'
     delete_name = 'product_delete'
 
-    def delete(self):
-        raise Http404("postajob.views.ProductFormView: delete not allowed")
+    @method_decorator(requires('read product'))
+    def get(self, *args, **kwargs):
+        return super(ProductFormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        can = self.request.user.can
+        if 'pk' in kwargs and not can(company, 'update product'):
+            return MissingActivity()
+        elif not can(company, 'create product'):
+            return MissingActivity()
+        return super(ProductFormView, self).post(*args, **kwargs)
 
     @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access('product_access'))
     @method_decorator(error_when_company_missing_from_sitepackages(
         feature='Porduct Management is'))
     @method_decorator(error_when_site_misconfigured(

@@ -13,6 +13,9 @@ class Migration(DataMigration):
             ("create job", "Add new jobs."),
             ("read job", "View existing jobs."),
             ("update job", "Edit existing jobs."),
+            ("create product", "Add new products"),
+            ("read product", "View existing products."),
+            ("delete product", "Remove existing products"),
         ]
         # We use a for loop and directly access the models so that signals fire
         for arg in args:
