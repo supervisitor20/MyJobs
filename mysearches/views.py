@@ -504,6 +504,11 @@ def get_value_from_request(request, key):
              request_body.get(key))
     return value
 
+def remove_anchor_from_url(url):
+    if url.find('#') != -1:
+        return url[:url.index('#')]
+    return url
+
 @django_csrf_exempt
 @restrict_to_staff()
 @cross_site_verify
@@ -535,7 +540,7 @@ def secure_saved_search(request):
 
     response['user_created'] = user_created
 
-    url = get_value_from_request(request, 'url')
+    url = remove_anchor_from_url(get_value_from_request(request, 'url'))
 
     try:
         saved_search = add_or_activate_saved_search(new_search_account, url)
