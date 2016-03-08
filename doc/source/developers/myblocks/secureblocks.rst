@@ -68,8 +68,8 @@ To test a secure block widget, do the following:
 * Add new block
 
  * The only important fields are element_id and template. Template will be
-   automatically populated with a default template. This can be edited
-   if needed. Offset and Span are required, but currently have to effect on
+   automatically populated with a default template.
+   Offset and Span are required, but currently have no effect on
    the widget. These can be set to 0
 
  * Widget IDs are currently hardcoded on templates. Therefore, the element IDs
