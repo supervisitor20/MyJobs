@@ -210,6 +210,18 @@ Add other microsites as needed.
 Go to http://secure.my.jobs. You should have to click through a security
 warning.
 
+Run Gulp
+=====================
+
+Gulp processes our JavaScript applications.
+
+From the root:
+
+``dkgg build``
+
+To run continuously and build on any save:
+
+``dkgg watch-tasks watch``
 
 Set Up Docker with VM of Windows
 ================================
