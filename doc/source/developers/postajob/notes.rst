@@ -17,7 +17,10 @@ microsite.
 
 Use Case 2: External party buying a job
 ---------------------------------------
-Rebecca has a job that can't be indexed, as it is on an internal ATS that can't be reached by DE's agents. She logs into post-a-job and posts the site to her .JOBS Company Sites. The jobs appears. Later, she can come back and edit it or delete it once it filled.
+Rebecca has a job that can't be indexed, as it is on an internal ATS that can't
+be reached by DE's agents. She logs into post-a-job and posts the site to her
+.JOBS Company Sites. The jobs appears. Later, she can come back and edit it or
+delete it once it filled.
 
 Views
 '''''
@@ -117,10 +120,15 @@ From the Django Admin and User Management Tool
 
 Use Case 3: Site owner creating a product for sale
 --------------------------------------------------
-Paul logs into the posting admin. He creates a product for 5 job postings in 30 days. He then creates a group and assigns his new product to that group. The group appears in the products for sale page that SBO sees when visiting Paul's site. Later, he can edit or delete the posting as needed, but any purchased instances of the product are unaffected.
+Paul logs into the posting admin. He creates a product for 5 job postings in 30
+days. He then creates a group and assigns his new product to that group. The
+group appears in the products for sale page that SBO sees when visiting Paul's
+site. Later, he can edit or delete the posting as needed, but any purchased
+instances of the product are unaffected.
 
 Views
 '''''
+
 =================================== ======================= ===================
 URL Path                            View Name               Required Activities
 =================================== ======================= ===================

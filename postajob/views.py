@@ -569,6 +569,12 @@ class JobFormView(BaseJobFormView):
 
     @method_decorator(requires('read job'))
     def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if 'pk' in kwargs and not self.request.user.can(company, 'update job'):
+            return MissingActivity()
+        elif not self.request.user.can(company, 'create job'):
+            return MissingActivity()
+
         return super(JobFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
