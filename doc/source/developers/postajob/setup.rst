@@ -43,9 +43,8 @@ Logging In
 ----------
 
 In order to access the above page, you must be able to log in, which implies
-that the site being accessed should be associated with a login page.
-
-Creating a login page can be done as follows:
+that the site being accessed should be associated with a login page. Creating a
+login page can be done as follows:
 
 From the Django shell
 '''''''''''''''''''''
@@ -142,10 +141,11 @@ From the Django Admin and User Management Tool
 #. `enable posting access` for the company chosen above by adding "Posting" to
    the "Chosen App-Level Access" box in teh "App-Level Access" section.
 #. `assign your user a role` which has permission to post.
+
    .. note:: 
-   At the moment, this must be done on https://secure.my.jobs as that is the
-   only domain for which User Management is available. Be sure to change to
-   the correct company in the topbar.
+     At the moment, this must be done on https://secure.my.jobs as that is the
+     only domain for which User Management is available. Be sure to change to
+     the correct company in the topbar.
 
 
 Use Case 3: Site owner creating a product for sale
