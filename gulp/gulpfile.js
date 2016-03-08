@@ -1,5 +1,6 @@
 require('babel/register');
 require('babel/polyfill');
+var process = require('process');
 
 var fs = require('fs');
 var path = require('path');
@@ -10,6 +11,9 @@ var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
 var eslint = require('gulp-eslint');
 
+process.on('SIGINT', function() {
+  process.exit(1);
+});
 
 // This build produces several javascript bundles.
 // * vendor.js - Contains all the libraries we use, bundled and minified.
@@ -60,10 +64,6 @@ function webpackConfig() {
       root: path.resolve('src'),
       // you can now require('file') instead of require('file.coffee')
       extensions: ['', '.js', '.jsx'],
-      // Thank you internet man! http://stackoverflow.com/a/32444088
-      alias: {
-        'react': path.join(__dirname, 'node_modules', 'react'),
-      },
     },
     output: {
       path: '../static/bundle',
