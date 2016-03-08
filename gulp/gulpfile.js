@@ -54,6 +54,7 @@ function webpackConfig() {
       reporting: './src/reporting/main',
       manageusers: './src/manageusers/main',
       nonuseroutreach: './src/nonuseroutreach/main',
+      experiment: './src/experiment/main',
       vendor: vendorLibs,
     },
     resolve: {

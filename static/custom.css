@@ -3154,6 +3154,10 @@ fieldset:nth-child(n+2) {
     margin: 0;
 }
 
+.row .col-md-8 input[type='checkbox'] {
+  width: initial;
+}
+
 .row .col-md-8 input[type='radio'] {
     width: auto;
     height: auto;
@@ -3169,7 +3173,7 @@ fieldset:nth-child(n+2) {
     font-weight: normal;
 }
 
-.row .col-md-8 select { 
+.row .col-md-8 select {
 height: 33px;
     line-height: 33px;
     font-size: 14pt;
@@ -3243,7 +3247,7 @@ height: 33px;
     border-radius: 3px;
 }
 
-.row .col-md-8 #job-location-display .wrapper-header, 
+.row .col-md-8 #job-location-display .wrapper-header,
 .row .col-md-8 #job-location-display .wrapper-footer {
     border: none;
 }

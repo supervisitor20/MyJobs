@@ -17,6 +17,12 @@ from django_remote_forms.forms import RemoteForm
 
 @user_is_allowed()
 @user_passes_test(User.objects.not_disabled)
+def edit_summary(request):
+    return render_to_response('myprofile/experiment.html',
+                              RequestContext(request))
+
+@user_is_allowed()
+@user_passes_test(User.objects.not_disabled)
 def edit_profile(request):
     """
     Main profile view that the user first sees. Ultimately generates the
@@ -71,6 +77,9 @@ def handle_form(request):
     module = request.REQUEST.get('module')
     module = module.replace(" ", "")
 
+    ctx = {}
+    ctx["success"] = True
+
     item = None
     if item_id != 'new':
         try:
@@ -105,7 +114,7 @@ def handle_form(request):
                                  auto_id=False)
         else:
             form_instance = form(user=request.user, instance=item,
-                                 auto_id=False, data=request.POST)
+                                 auto_id=False, data=dict(request.POST))
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()
@@ -114,9 +123,11 @@ def handle_form(request):
         if form_instance.is_valid():
             instance = form_instance.save()
             if request.META.get('HTTP_ACCEPT') == 'application/json':
-                remote_form = RemoteForm(form_instance)
                 return HttpResponse(content_type='application/json',
-                                    content=json.dumps(remote_form.as_dict()))
+                                    content=json.dumps(ctx))
+                # remote_form = RemoteForm(form_instance)
+                # return HttpResponse(content_type='application/json',
+                #                     content=json.dumps(remote_form.as_dict()))
             elif request.is_ajax():
                 suggestions = ProfileUnits.suggestions(request.user)
                 return render_to_response('myprofile/suggestions.html',
