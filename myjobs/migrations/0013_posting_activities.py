@@ -20,7 +20,11 @@ class Migration(DataMigration):
         marketplace_activities = [
             ("create product", "Add new products"),
             ("read product", "View existing products."),
-            ("delete product", "Remove existing products"),
+            ("update product", "Edit existing products."),
+            ("create grouping", "Add new product groupings."),
+            ("read grouping", "View existing product groupings."),
+            ("update grouping", "Edit existing product groupings."),
+            ("delete grouping", "Delete existing product groupings."),
         ]
         # We use a for loop and directly access the models so that signals fire
         for name, desc in posting_activities:

@@ -212,7 +212,7 @@ def admin_products(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read grouping')
 @error_when_company_missing_from_sitepackages(feature='Product Groupings are')
 @error_when_site_misconfigured(feature='Product Groupings are')
 def admin_groupings(request):
@@ -705,6 +705,25 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
     add_name = 'productgrouping_add'
     update_name = 'productgrouping_update'
     delete_name = 'productgrouping_delete'
+
+    @method_decorator(requires('read grouping'))
+    def get(self, *args, **kwargs):
+        return super(ProductGroupingFormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        can = self.request.user.can
+        if 'pk' in kwargs and not can(company, 'update grouping'):
+            return MissingActivity()
+        elif not can(company, 'create grouping'):
+            return MissingActivity()
+        return super(ProductGroupingFormView, self).post(*args, **kwargs)
+
+    def delete(self):
+        company = get_company_or_404(self.request)
+        if self.request.user.can(company, 'delete grouping'):
+            return super(ProductGroupingFormView, self).delete()
+        return MissingActivity()
 
     @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
