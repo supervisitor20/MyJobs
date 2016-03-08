@@ -6,7 +6,6 @@ from postajob import models, views
 
 def raise_404(*args, **kwargs):
     # TODO: Fix FormViewBase so I don't have to do this
-    # You can't "raise" anything in a lambda because raise is a statement
     raise Http404("postajob.urls: Can't delete products")
 
 

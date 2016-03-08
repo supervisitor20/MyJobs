@@ -34,21 +34,28 @@ class PostajobTestBase(DirectSEOBase):
     def setUp(self):
         super(PostajobTestBase, self).setUp()
         self.posting_access = AppAccessFactory(name='Posting')
+        self.marketplace_access = AppAccessFactory(name='MarketPlace')
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(
-            app_access=[self.posting_access],
+            app_access=[self.posting_access, self.marketplace_access],
             product_access=True, posting_access=True)
         self.posting_activities = [
             ActivityFactory(name=activity, app_access=self.posting_access)
             for activity in [
-                "create job", "read job", "update job", "create product",
-                "read product", "update product", "create grouping",
-                "read grouping", "update grouping", "delete grouping",
+                "create job", "read job", "update job",
+            ]
+        ]
+        self.marketplace_activities = [
+            ActivityFactory(name=activity, app_access=self.marketplace_access)
+            for activity in [
+                "create product", "read product", "update product",
+                "create grouping", "read grouping", "update grouping",
+                "delete grouping",
             ]
         ]
         self.admin_role = RoleFactory(
             company=self.company, name='Admin',
-            activities=self.posting_activities)
+            activities=self.posting_activities + self.marketplace_activities)
         self.user.roles.add(self.admin_role)
 
         self.site = SeoSiteFactory(canonical_company=self.company)
