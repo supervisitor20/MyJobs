@@ -524,7 +524,7 @@
       "version": "1.0.7"
     },
     "fbjs": {
-      "version": "0.6.1"
+      "version": "0.3.2"
     },
     "fetch-polyfill": {
       "version": "0.8.2"
@@ -1331,7 +1331,7 @@
       }
     },
     "react": {
-      "version": "0.14.6"
+      "version": "0.14.3"
     },
     "react-autosuggest": {
       "version": "2.2.5"
@@ -1340,7 +1340,7 @@
       "version": "0.28.2"
     },
     "react-dom": {
-      "version": "0.14.6"
+      "version": "0.14.3"
     },
     "react-filtered-multiselect": {
       "version": "0.4.2"
