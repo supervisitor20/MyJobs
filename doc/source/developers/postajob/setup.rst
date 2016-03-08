@@ -1,40 +1,46 @@
-=====================
-Job Posting Use Cases
-=====================
+.. TODO: 
+  - createa general requirements sections for posting and marketplace?
+  - fix the section levels for each of the sections
 
-.. note:: 
-  - for simplicity, we use http://directemployers.jobs as our microsite.
-  - for the same reason, we always use the `Admin` role, though any role with
-    the correct activities should suffice
+====================
+Postajob Setup Guide
+====================
+
+This guide describes how to configure a microsite to use the ``postajob``
+application in a variety of use cases. We discuss first the common requirements
+among each use case, then describe the specific use cases in detail.
 
 For your own purposes, you should change this URL to the one used by your
 microsite.
 
-Posting
-=======
-These use cases accommodate companies who want to post jobs to their own
-microsite.
+Conventions used in this guide
+==============================
+To make the various use cases more concrete, this guide has adopted a number of
+conventions to assist you in your understanding of various concepts:
 
-Use Case 2: External party buying a job
----------------------------------------
-Rebecca has a job that can't be indexed, as it is on an internal ATS that can't
-be reached by DE's agents. She logs into post-a-job and posts the site to her
-.JOBS Company Sites. The jobs appears. Later, she can come back and edit it or
-delete it once it filled.
+- When we talk about a site, we will always use http://directemployers.jobs.
+  This ensures that there is always a live example for you to compare to the
+  site you are attempting to configure.
 
-Views
-'''''
+- In production, it is more likely that custom-tailored roles will be created
+  for each of the personas that might be assumed when performing various tasks
+  on a microsite with postajob enabled. However, for simplicity, we always
+  assign our user the ``Admin`` role, which automatically includes every
+  activity available in the system.
 
-=================== ============= ===================
-URL Path            View Name     Required Activities
-=================== ============= ===================
-/posting/all/       jobs_overview read job
-/posting/job/add/   JobFormView   create job
-/posting/job/update JobFormView   update job
-=================== ============= ===================
+- The above might make it difficult to ascertain whether a page is working as
+  expected. Thus, with each use case description, this guide provides a table
+  which annotates which activities are required for each of the views relevant
+  to the use case being examined.
+
+General Requirements
+====================
+This section describes the steps necessary to use postajob in any capacity. You
+should make sure that these requirements are met before attempting to follow
+any of the eight following use cases.
 
 Logging In
-''''''''''
+----------
 
 In order to access the above page, you must be able to log in, which implies
 that the site being accessed should be associated with a login page.
@@ -42,7 +48,8 @@ that the site being accessed should be associated with a login page.
 Creating a login page can be done as follows:
 
 From the Django shell
-"""""""""""""""""""""
+'''''''''''''''''''''
+
 ::
 
 >>> from seo.models import *
@@ -56,7 +63,7 @@ From the Django shell
 >>> block_order = BlockOrder.objects.create(block=login_block, row=row, order=0)
 
 From the Django admin
-"""""""""""""""""""""
+'''''''''''''''''''''
 
 .. note:: Setting offset to 0 and span to 12 would have the effect of creating
           a content block which fills the width of its parent.
@@ -68,8 +75,31 @@ From the Django admin
 #. `create a new page`_ tied to the `SeoSite` you are working with, using
    'Login Page' as the page type. As with row, be sure to add an order.
 
+Use Cases
+=========
+Here, we describe the purpose of and setup requirements of each of the eight
+postajob use cases.
+
+Use Case 2: External party buying a job
+=======================================
+Rebecca has a job that can't be indexed, as it is on an internal ATS that can't
+be reached by DE's agents. She logs into post-a-job and posts the site to her
+.JOBS Company Sites. The jobs appears. Later, she can come back and edit it or
+delete it once it filled.
+
+Views
+-----
+
+=================== ============= ===================
+URL Path            View Name     Required Activities
+=================== ============= ===================
+/posting/all/       jobs_overview read job
+/posting/job/add/   JobFormView   create job
+/posting/job/update JobFormView   update job
+=================== ============= ===================
+
 Enabling Job Posting
-''''''''''''''''''''
+--------------------
 
 You should now be able to visit the `login page`_ for your microsite, but there
 are still a few remaining step to be able to access the above page without
@@ -82,7 +112,7 @@ page. You need to:
     permissions.
 
 From the Django shell
-"""""""""""""""""""""
+'''''''''''''''''''''
 
 Associate the company to the seo site::
 
@@ -105,7 +135,7 @@ Associate the user to the company::
 >>> user.roles.add(role)
 
 From the Django Admin and User Management Tool
-""""""""""""""""""""""""""""""""""""""""""""""
+''''''''''''''''''''''''''''''''''''''''''''''
 
 #. select the appropriate company as the ``canonical_company`` for 
    `your seo site`_.
@@ -119,7 +149,7 @@ From the Django Admin and User Management Tool
 
 
 Use Case 3: Site owner creating a product for sale
---------------------------------------------------
+==================================================
 Paul logs into the posting admin. He creates a product for 5 job postings in 30
 days. He then creates a group and assigns his new product to that group. The
 group appears in the products for sale page that SBO sees when visiting Paul's
@@ -127,7 +157,7 @@ site. Later, he can edit or delete the posting as needed, but any purchased
 instances of the product are unaffected.
 
 Views
-'''''
+-----
 
 =================================== ======================= ===================
 URL Path                            View Name               Required Activities
@@ -141,18 +171,20 @@ URL Path                            View Name               Required Activities
 /posting/admin/product/group/delete ProductGroupingFormView delete grouping
 =================================== ======================= ===================
 
-Setup
-'''''
-See Use Case 2, with the following addition.
+Enabling Product Access
+-----------------------
+.. TODO:: motivate this section
 
 From the Django Shell
-"""""""""""""""""""""
+'''''''''''''''''''''
 
 Enable MarketPlace access for the company::
 
 >>> from myjobs.models import *
 >>> marketplace_access = AppAccess.objects.get(name="MarketPlace")
 >>> company.app_access.add(marketplace_access)
+
+.. TODO:: add django admin instructions
 
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
