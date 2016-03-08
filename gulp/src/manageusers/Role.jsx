@@ -208,7 +208,6 @@ class Role extends React.Component {
   }
   async handleDeleteRoleClick() {
     const {api, history} = this.props;
-    // Temporary until I replace $.ajax jQuery with vanilla JS ES6 arrow function
 
     if (confirm('Are you sure you want to delete this role?') === false) {
       return;
