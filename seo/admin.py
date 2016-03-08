@@ -887,6 +887,10 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
         'parent_site': ('domain', 'name'),
     }
 
+    related_string_functions = {
+        'seosite': lambda site: "%s (%s)" % (site.name, site.domain)
+    }
+
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
