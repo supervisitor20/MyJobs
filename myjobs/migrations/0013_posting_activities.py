@@ -13,9 +13,13 @@ class Migration(DataMigration):
             ("create job", "Add new jobs."),
             ("read job", "View existing jobs."),
             ("update job", "Edit existing jobs."),
-            ("create product", "Add new products"),
+            ("create product", "Add new products."),
             ("read product", "View existing products."),
-            ("delete product", "Remove existing products"),
+            ("delete product", "Remove existing products."),
+            ("create grouping", "Add new product groupings."),
+            ("read grouping", "View existing product groupings."),
+            ("update grouping", "Edit existing product groupings."),
+            ("delete grouping", "Delete existing product groupings."),
         ]
         # We use a for loop and directly access the models so that signals fire
         for arg in args:
