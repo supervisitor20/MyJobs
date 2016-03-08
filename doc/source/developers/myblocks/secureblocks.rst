@@ -78,7 +78,7 @@ To test a secure block widget, do the following:
 
   * saved_search for saved search widget
 
-  * sb_tools for toolbar/topbar
+  * sb_toolbar for toolbar/topbar
 
   * If an element ID other than these two is used, it must also be included
     in a template for display using the following format
