@@ -121,17 +121,30 @@ Paul logs into the posting admin. He creates a product for 5 job postings in 30 
 
 Views
 '''''
-============================= =============== ===================
-URL Path                      View Name       Required Activities
-============================= =============== ===================
-/posting/admin/products       admin_products  read product
-/posting/admin/product/add    ProductFormView create product
-/posting/admin/product/update ProductFormView update product
-============================= =============== ===================
+=================================== ======================= ===================
+URL Path                            View Name               Required Activities
+=================================== ======================= ===================
+/posting/admin/products             admin_products          read product
+/posting/admin/product/add          ProductFormView         create product
+/posting/admin/product/update       ProductFormView         update product
+/posting/admin/product/group        admin_groupings         read grouping
+/posting/admin/product/group/add    ProductGroupingFormView create grouping
+/posting/admin/product/group/update ProductGroupingFormView update grouping
+/posting/admin/product/group/delete ProductGroupingFormView delete grouping
+=================================== ======================= ===================
 
 Setup
 '''''
-See Use Case 2
+See Use Case 2, with the following addition.
+
+From the Django Shell
+"""""""""""""""""""""
+
+Enable MarketPlace access for the company::
+
+>>> from myjobs.models import *
+>>> marketplace_access = AppAccess.objects.get(name="MarketPlace")
+>>> company.app_access.add(marketplace_access)
 
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
