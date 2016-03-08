@@ -2620,8 +2620,8 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
     def test_saved_search_non_render_secure_blocks(self):
         """
-        Test that network sites do not display the saved search widget if
-        secure blocks are enabled
+        Test that network sites do not display the original saved search widget
+        if secure blocks are enabled
 
         """
         site = factories.SeoSiteFactory.build()
