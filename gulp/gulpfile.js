@@ -32,25 +32,8 @@ process.on('SIGINT', function() {
 //
 // For development run the default target, then leave the watch target running.
 
-// These go in vendor.js and are left out of app specific bundles.
-var vendorLibs = [
-  'react',
-  'react-dom',
-  // Importing all of react-bootstrap _really_ bloats the bundle.
-  // Just pull what we use.
-  'react-bootstrap/lib/Button.js',
-  'react-bootstrap/lib/Accordion.js',
-  'react-bootstrap/lib/Panel.js',
-  'react-bootstrap/lib/Glyphicon.js',
-  'react-autosuggest',
-  'fetch-polyfill',
-  'es6-promise',
-  'warning',
-];
-
 var dest = '../static/bundle';
-
-var strip_debug = true;
+var produceWebpackProfile = false;
 
 function webpackConfig() {
   return {
@@ -58,7 +41,6 @@ function webpackConfig() {
       reporting: './src/reporting/main',
       manageusers: './src/manageusers/main',
       nonuseroutreach: './src/nonuseroutreach/main',
-      vendor: vendorLibs,
     },
     resolve: {
       root: path.resolve('src'),
@@ -107,6 +89,7 @@ gulp.task('bundle', function(callback) {
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       filename: 'vendor.js',
+      minChunks: 2,
     }),
     // No idea if Dedupe and OccurenceOrder are actually doing anything.
     new webpack.optimize.DedupePlugin(),
@@ -129,7 +112,9 @@ gulp.task('bundle', function(callback) {
       callback('webpack error');
       return;
     }
-    fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
+    if (produceWebpackProfile) {
+      fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
+    }
     callback();
   });
 });
@@ -189,26 +174,6 @@ function lintOptions() {
     },
   };
 }
-
-/**
- * lint-fix: run eslint with fix mode on.
- *
- * This can be helpful in limited circumstances. Be careful.
- *
- * It is not part of watch or the default build. Let's keep it
- * that way.
- */
-gulp.task('lint-fix', function() {
-  function isFixed(file) {
-    return file.eslint != null && file.eslint.fixed;
-  };
-  var lintOpts = lintOptions();
-  lintOpts.fix = true;
-  return gulp.src(['./src/somedir/**/*js'])
-    .pipe(eslint(lintOpts))
-    .pipe(eslint.format())
-    .pipe(gulpif(isFixed, gulp.dest("./src")));
-});
 
 gulp.task('lint', function() {
   return gulp.src(['./src/**/*.js', './src/**/*.jsx'])
