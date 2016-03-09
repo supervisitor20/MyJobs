@@ -552,8 +552,6 @@ class SeoSite(Site):
         site_buids = self.business_units.all()
         return Company.objects.filter(job_source_ids__in=site_buids).distinct()
 
-    def __unicode__(self):
-        return u"{0} ({1})".format(self.name, self.domain)
 
 class SeoSiteFacet(models.Model):
     """This model defines the default Custom Facet(s) for a given site."""
@@ -1183,11 +1181,15 @@ class Configuration(models.Model):
         validators=[MaxValueValidator(decimal.Decimal('1.00'))],
         verbose_name="Featured Jobs Maximum Percentage")
 
+    # widget related items
     show_saved_search_widget = models.BooleanField(default=False,
                                                    help_text='Show saved '
                                                              'search widget '
                                                              'on job listing '
                                                              'page.')
+    use_secure_blocks = models.BooleanField(default=False,
+                                            help_text='Use secure blocks for '
+                                                      'displaying widgets.')
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)

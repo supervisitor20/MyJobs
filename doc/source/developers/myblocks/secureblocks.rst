@@ -51,9 +51,15 @@ To test a secure block widget, do the following:
 
 * If parent site relationship is not set up, do the following:
 
- * Navigate to Company, edit desired child company (currently my.jobs)
+ * Navigate to SeoSite, edit desired child site (currently my.jobs)
 
  * Under "parent_site" drop down, select desired parent site (secure.my.jobs)
+
+ * Save
+
+* Navigate to the active site configuration for the child site
+
+ * Check the box labled 'Use secure blocks'
 
  * Save
 
@@ -61,26 +67,34 @@ To test a secure block widget, do the following:
 
 * Add new block
 
- * The only required fields are element_id and template. Template will be
-   automatically populated with a default template. This can be edited
-   if needed.
+ * The only important fields are element_id and template. Template will be
+   automatically populated with a default template.
+   Offset and Span are required, but currently have no effect on
+   the widget. These can be set to 0
 
-* If the element is not currently on any pages, add it with a
-  `<div data-secure-block-id="--YOUR ELEMENT ID--"></div>`
+ * Widget IDs are currently hardcoded on templates. Therefore, the element IDs
+   for secure block widgets are predetermined. The two widget element IDs
+   included in microsites templates are..
 
- * This will only work on templates loaded from seo_base.html
+  * saved_search for saved search widget
 
- * Currently, all testing is done on templates/CS_TEST_homepage_listing.html
-   If you would like to edit and use this page for testing, ensure the
-   configuration for your child site is set with the above as it's
-   homepage
+  * sb_toolbar for toolbar/topbar
 
-* Widget will populate on child site if the relationship was set up properly
+  * If an element ID other than these two is used, it must also be included
+    in a template for display using the following format
 
-secure-block-xx-xx.js
----------------------
+   * `<div data-secure_block_id="--YOUR ELEMENT ID--"></div>`
 
-Secure Blocks relies on the file secure-block-xx-xx.js file located in the
+* This will only work on templates loaded from seo_base.html
+
+* All secure blocks widgets that replace existing functionality (saved search,
+  tools) will REPLACE their counterparts if secure-blocks is enabled for that
+  site.
+
+secure-block.js
+---------------
+
+Secure Blocks relies on the file secure-block.js file located in the
 static directory. This file handles creating the ajax call based on the secure
 block ids as well as populating the respective divs with the response.
 
@@ -137,3 +151,19 @@ can be in.
 As of this writing, the only javascript file used in the widget is
 static/saved-search.js . This file contains the logic for calling the Saved
 Search API and refreshing the
+
+The current anchor for saved search is as such:
+
+`<div data-secure_block_id="saved-search"></div>`
+
+Tools Widget
+============
+
+The tools widget represents the same functionality as the legacy topbar widget.
+This is the first widget to rely on an additional data element, data-widget_type
+to prevent the legacy topbar from being loaded in addition to the tools secure
+block.
+
+The current anchor for the tools widget is as such:
+
+`<div data-secure_block_id="sb_toolbar" data-widget_type="toolswidget"></div>`
