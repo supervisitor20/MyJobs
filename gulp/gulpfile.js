@@ -186,6 +186,7 @@ function lintOptions() {
     rules: {
       "babel/object-curly-spacing": 1,
       "babel/no-await-in-loop": 2,
+      "no-console":0
     },
   };
 }

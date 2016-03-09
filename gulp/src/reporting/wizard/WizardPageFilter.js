@@ -9,8 +9,7 @@ import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
-
-import {Daniel} from 'common/ui/Daniel';
+import {SelectElementController} from 'common/ui/SelectElementController';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -102,10 +101,6 @@ export class WizardPageFilter extends Component {
       return <Loading/>;
     }
 
-
-
-
-
     const rows = [];
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
@@ -181,8 +176,8 @@ export class WizardPageFilter extends Component {
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         <hr/>
         {rows}
-        <h1>DANIEL</h1>
-        <Daniel/>
+        {this.renderRow('partners1', '',
+            <SelectElementController/>)}
         <hr/>
         {this.renderRow('', 'submit',
           <Button
