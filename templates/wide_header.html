@@ -7,6 +7,9 @@
     {{site_config.wide_header|safe}} 
 {% elif 'network' in site_tags %}
 {% load seo_extras %}
+{% if site_config.use_secure_blocks %}
+<div data-secure_block_id="sb_toolbar" data-site_name="{{ site_name }}" data-widget_type="toolswidget"></div>
+{% endif %}
 <div class="direct_dotjobsWideHeader">
     <div id="direct_dotjobsHeader" role="banner">
         {% if site_config.home_page_template == "home_page/home_page_my_jobs.html" %}

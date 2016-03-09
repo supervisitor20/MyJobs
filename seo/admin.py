@@ -157,7 +157,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
                              ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
-                              'show_saved_search_widget'),
+                              'show_saved_search_widget', 'use_secure_blocks'),
                              'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
@@ -165,7 +165,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                  'percent_featured'),
                 ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
-                 'show_saved_search_widget', ),
+                 'show_saved_search_widget', 'use_secure_blocks'),
                 'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
