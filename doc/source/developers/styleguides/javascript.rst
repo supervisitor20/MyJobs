@@ -125,6 +125,15 @@ Library Policy
   * Are we bringing in a large library only to use a very small part of it?
     (using a tank where a stick would do)
 
+* Avoid editing ``package.json`` by hand. Use ``npm install --save`` and
+  other npm commands as much as possible. These automatically keep the
+  shrinkwrap file up to date.
+
+* NPM likes to put a lot of unstable information in the shrinkwrap file.
+  If you find a lot extraneous lines in the diff of `npm-shrinkwrap.json`,
+  run `npm run clean-shrinkwrap`. The diff should be much cleaner and give
+  some insight into the consequenes of the library change.
+
 Practices
 =========
 
