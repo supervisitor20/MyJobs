@@ -443,7 +443,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'includes/topbar.html'
+    base_template = 'myblocks/blocks/toolswidget.html'
 
     def context(self, request, **kwargs):
         """
@@ -493,6 +493,13 @@ class ToolsWidgetBlock(SecureBlock):
 
         return cookies
 
+    def required_js(self):
+        """
+        Return a list of all required javascript in URL format
+
+        """
+        return ['%ssecure-blocks/sb-tools.js' % settings.STATIC_URL]
+
 
 class SavedSearchWidgetBlock(SecureBlock):
     """
@@ -531,7 +538,7 @@ class SavedSearchWidgetBlock(SecureBlock):
         Return a list of all required javascript in URL format
 
         """
-        return ['%ssaved-search.js' % settings.STATIC_URL]
+        return ['%ssecure-blocks/saved-search.js' % settings.STATIC_URL]
 
 
 class SavedSearchesListWidgetBlock(SecureBlock):

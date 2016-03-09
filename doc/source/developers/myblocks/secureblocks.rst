@@ -146,5 +146,5 @@ model. There are template tags representing the various states that the widget
 can be in.
 
 As of this writing, the only javascript file used in the widget is
-static/saved-search.js . This file contains the logic for calling the Saved
+static/sb-saved-search.js . This file contains the logic for calling the Saved
 Search API and refreshing the
