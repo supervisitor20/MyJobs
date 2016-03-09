@@ -158,7 +158,6 @@ def purchasedjobs_overview(request, purchased_product, admin):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
 @error_when_company_missing_from_sitepackages(feature='Microsite Admin is')
 @error_when_site_misconfigured(feature='Microsite Admin is')
 def purchasedmicrosite_admin_overview(request):
