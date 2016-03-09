@@ -2596,7 +2596,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                HTTP_HOST='buckconsultants.jobs',
                                follow=True)
         self.assertContains(resp,
-                            'direct-saved-search-box',
+                            'de-myjobs-widget',
                             count=None,
                             status_code=200,
                             msg_prefix='Saved search widget not displayed'
@@ -2615,7 +2615,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
                 '/indianapolis/indiana/usa/jobs/',
                 HTTP_HOST='buckconsultants.jobs',
                 follow=True)
-        self.assertNotContains(resp,'direct-saved-search-box',
+        self.assertNotContains(resp,'de-myjobs-widget',
                                status_code=200, msg_prefix='')
 
     def test_saved_search_non_render_secure_blocks(self):
@@ -2636,7 +2636,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
                                HTTP_HOST=site.domain,
                                follow=True)
         self.assertNotContains(resp,
-                            'direct-saved-search-box',
+                            'de-myjobs-widget',
                              msg_prefix='Saved Search widget found when it'
                                         ' should have been hidden by site'
                                         ' setting.')

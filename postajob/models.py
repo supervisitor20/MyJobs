@@ -56,8 +56,9 @@ class BaseModel(models.Model):
         """
         In order for a user to have access they must be a company user
         for the Company that owns the object.
+
         """
-        return user in self.owner.admins.all()
+        return self.owner.role_set.filter(user=user).exists()
 
 
 class JobLocation(models.Model):
@@ -252,7 +253,7 @@ class Job(BaseModel):
         [location.delete() for location in locations]
 
     def remove_from_solr(self):
-        
+
         guids = [location.guid for location in self.locations.all()]
         delete_by_guid(guids)
 
@@ -348,7 +349,8 @@ class PurchasedJob(Job):
         an admin for either the posting company or the company being posted to.
         """
         is_posting_admin = super(PurchasedJob, self).user_has_access(user)
-        is_owner_admin = user in self.purchased_product.product.owner.admins.all()
+        is_owner_admin = self.purchased_product.product.owner.role_set.filter(
+            user=user).exists()
         return is_posting_admin or is_owner_admin
 
 
@@ -871,11 +873,9 @@ class Request(BaseModel):
                                   pk=self.object_id)
 
     def send_email(self):
-        from seo.models import CompanyUser
-
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        admins = CompanyUser.objects.filter(group=group, company=self.owner)
-        admin_emails = admins.values_list('user__email', flat=True)
+        admin_emails = self.owner.role_set.filter(
+            user__groups=group).values_list('user__email', flat=True)
 
         # Confirm that the request object was fully created and still exists
         # before sending the email.
@@ -917,11 +917,11 @@ class OfflinePurchase(BaseModel):
 
     redemption_uid = models.CharField(max_length=255)
 
-    created_by = models.ForeignKey('seo.CompanyUser',
+    created_by = models.ForeignKey('myjobs.User',
                                    related_name='created')
     created_on = models.DateField(auto_now_add=True)
 
-    redeemed_by = models.ForeignKey('seo.CompanyUser', null=True,
+    redeemed_by = models.ForeignKey('myjobs.User', null=True,
                                     blank=True, related_name='redeemed')
     redeemed_on = models.DateField(null=True, blank=True)
 
@@ -970,7 +970,7 @@ class OfflinePurchase(BaseModel):
 
     def user_has_access(self, user):
         is_posting_admin = super(OfflinePurchase, self).user_has_access(user)
-        is_owner_admin = user in self.created_by.company.admins.all()
+        is_owner_admin = self.owner.role_set.filter(user=user).exists()
         return is_posting_admin or is_owner_admin
 
 
@@ -1052,17 +1052,14 @@ class Invoice(BaseModel):
         optional recipients.
 
         Inputs:
-        :send_to_admins:    If True will send the invoice to all CompanyUsers
-                            of the Company that owns the product.
-                            [Defaults to True]
+        :send_to_admins:    If True will send the invoice to all admin users of
+                            the Company that owns the product.[Default: True]
 
         :other_recipients:  A list object that contains the other recipient(s)
                             email so we can send them the invoice
 
         """
-        from seo.models import CompanyUser
-
-        other_recipients = [] if not other_recipients else other_recipients
+        other_recipients = other_recipients or []
 
         data = {
             'invoice': self,
@@ -1074,13 +1071,10 @@ class Invoice(BaseModel):
 
         owner = self.owner
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        owner_admins = []
-        if send_to_admins:
-            owner_admins = CompanyUser.objects.filter(company=owner,
-                                                      group=group)
-            owner_admins = owner_admins.values_list('user__email', flat=True)
+        owner_admins = owner.role_set.filter(user__groups=group).values_list(
+            'user__email', flat=True) if send_to_admins else []
 
-        recipients = set(other_recipients + list(owner_admins))
+        recipients = set(other_recipients).union(owner_admins)
         if recipients:
             body = render_to_string('postajob/invoice_email.html', data)
             site = getattr(settings, 'SITE', None)

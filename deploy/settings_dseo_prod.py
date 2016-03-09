@@ -4,6 +4,9 @@ from S3 import CallingFormat
 from default_settings import *
 from secrets import SOLR_AUTH, REDIRECT_PROD, ARCHIVE_PROD, REDIRECT_QC
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
 
 ALLOWED_HOSTS = ['*', ]
 
@@ -27,10 +30,6 @@ DATABASES = {
         'PORT': '3306',
     }, **ARCHIVE_PROD)
 }
-
-TEMPLATE_DIRS = (
-    '/home/web/MyJobs/MyJobs/templates/',
-)
 
 SESSION_CACHE_ALIAS = 'sessions'
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -114,7 +113,6 @@ ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 PROJECT = "dseo"
 
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
 
 BROKER_HOST = '204.236.236.123'
 BROKER_PORT = 5672

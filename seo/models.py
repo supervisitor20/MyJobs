@@ -540,29 +540,18 @@ class SeoSite(Site):
     def user_has_access(self, user):
         """
         In order for a user to have access they must be assigned a role in the
-        Company that owns the SeoSite.*
+        Company that owns the SeoSite.
 
-        * Until activities are activated in production, what determines if a
-        user has access is that they are a company user for one of the
-        companies assigned to the SeoSite's business units (job_source_ids).
         """
         site_buids = self.business_units.all()
         companies = Company.objects.filter(job_source_ids__in=site_buids)
-        if settings.ROLES_ENABLED:
-            return user.pk in companies.values_list('role__user', flat=True)
-        else:
-            user_companies = user.company_set.all()
-            for company in companies:
-                if company not in user_companies:
-                    return False
-            return True
+
+        return companies.filter(role__user=user).exists()
 
     def get_companies(self):
         site_buids = self.business_units.all()
         return Company.objects.filter(job_source_ids__in=site_buids).distinct()
 
-    def __unicode__(self):
-        return u"{0} ({1})".format(self.name, self.domain)
 
 class SeoSiteFacet(models.Model):
     """This model defines the default Custom Facet(s) for a given site."""
@@ -733,10 +722,8 @@ class Company(models.Model):
         Read-only property that returns whether or not a company has access
         to PRM features.
         """
-        if settings.ROLES_ENABLED:
-            return "PRM" in self.app_access.values_list("name", flat=True)
-        else:
-            return self.member
+
+        return "PRM" in self.app_access.values_list("name", flat=True)
 
 
     def user_has_access(self, user):
@@ -744,10 +731,7 @@ class Company(models.Model):
         Returns whether or not the given user can be tied back to the company.
         """
 
-        if settings.ROLES_ENABLED:
-            return user.pk in self.role_set.values_list('user', flat=True)
-        else:
-            return user in self.admins.all()
+        return user.pk in self.role_set.values_list('user', flat=True)
 
     @property
     def has_packages(self):
@@ -1442,12 +1426,6 @@ class CompanyUser(models.Model):
     class Meta:
         unique_together = ('user', 'company')
         db_table = 'mydashboard_companyuser'
-
-    def make_purchased_microsite_admin(self):
-        group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
-        self.group.add(group)
-        self.save()
-
 
 # TODO: This shouldn't be necessary. Find out how to get rid of it
 @invitation_context.register(CompanyUser)

@@ -124,12 +124,8 @@ def get_company(request):
 
         # This is ugly and is in place only because we didn't update
         # postajob to use roles before the go-live.
-        if (settings.ROLES_ENABLED and
-                not request.get_full_path().startswith('/posting')):
-            return get_model('seo', 'Company').objects.filter(
-                role__user=request.user).first()
-        else:
-            return request.user.company_set.first()
+        return get_model('seo', 'Company').objects.filter(
+            role__user=request.user).first()
 
     return company
 
@@ -141,8 +137,8 @@ def get_company_or_404(request):
     company = get_company(request)
 
     if not company:
-        raise Http404("Either the company does not exist or the current user "
-                      "doesn't have access to it.")
+        raise Http404("universal.helpers.get_company_or_404: get_company "
+                      "returned None")
 
     else:
         return company

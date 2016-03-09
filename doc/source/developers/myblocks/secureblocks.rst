@@ -57,12 +57,6 @@ To test a secure block widget, do the following:
 
  * Save
 
-* Navigate to the site configuration for the child site
-
- * Check the box labled 'Use secure blocks'
-
- * Save
-
 * Locate the correct model under MyBlocks (ex. SavedSearchWidgetBlock)
 
 * Add new block
@@ -71,26 +65,22 @@ To test a secure block widget, do the following:
    automatically populated with a default template. This can be edited
    if needed.
 
- * The two widget element IDs included in microsites templates are..
+* If the element is not currently on any pages, add it with a
+  `<div data-secure-block-id="--YOUR ELEMENT ID--"></div>`
 
-  * saved_search for saved search widget
+ * This will only work on templates loaded from seo_base.html
 
-  * sb_tools for toolbar/topbar
+ * Currently, all testing is done on templates/CS_TEST_homepage_listing.html
+   If you would like to edit and use this page for testing, ensure the
+   configuration for your child site is set with the above as it's
+   homepage
 
-  * If an element ID other than these two is used, it must also be included
-    in a template for display using the following format
+* Widget will populate on child site if the relationship was set up properly
 
-   * `<div data-secure_block_id="--YOUR ELEMENT ID--"></div>`
+secure-block-xx-xx.js
+---------------------
 
-* This will only work on templates loaded from seo_base.html
-
-* Currently, all secure blocks widgets are wrapped in if/else statements
-  to ensure that they are only displayed if they are enabled for that site.
-
-secure-block.js
----------------
-
-Secure Blocks relies on the file secure-block.js file located in the
+Secure Blocks relies on the file secure-block-xx-xx.js file located in the
 static directory. This file handles creating the ajax call based on the secure
 block ids as well as populating the respective divs with the response.
 
@@ -110,8 +100,7 @@ blocks template.
 .. note:: jQuery converts hyphens to camelCase when sending data attributes.
     The data attribute email-address would resolve in the secure block template
     as emailAddress. This does not affect underscores (email_address
-    is email_address) and it is currently encouraged to use underscores when
-    defining data attributes.
+    is email_address)
 
 **Main Functions**
 
@@ -146,5 +135,5 @@ model. There are template tags representing the various states that the widget
 can be in.
 
 As of this writing, the only javascript file used in the widget is
-static/sb-saved-search.js . This file contains the logic for calling the Saved
+static/saved-search.js . This file contains the logic for calling the Saved
 Search API and refreshing the
