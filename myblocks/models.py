@@ -538,7 +538,7 @@ class SavedSearchWidgetBlock(SecureBlock):
         Return a list of all required javascript in URL format
 
         """
-        return ['%ssecure-blocks/saved-search.js' % settings.STATIC_URL]
+        return ['%ssecure-blocks/sb-saved-search.js' % settings.STATIC_URL]
 
 
 class SavedSearchesListWidgetBlock(SecureBlock):

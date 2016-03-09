@@ -505,8 +505,12 @@ def get_value_from_request(request, key):
     return value
 
 def remove_anchor_from_url(url):
-    if url.find('#') != -1:
-        return url[:url.index('#')]
+    """
+    Remove anchor tags from the provided URL. %23 is '#' url encoded.
+
+    """
+    if url.find('%23') != -1:
+        return url[:url.index('%23')]
     return url
 
 @django_csrf_exempt

@@ -1,37 +1,10 @@
 var readCookie = utils.readCookie;
 
-function addEvents(func) {
-    /*
-    window.onload is being used here because this code uses jQuery which
-    is at the bottom of the page on My.jobs and not loaded yet when
-    this topbar runs.
-
-    Looks to see if there is an window.onload already set.  If not then
-    use window.onload.  Otherwise execute the current window.onload function
-    then execute :func:.
-
-    Inputs:
-    :func:      Additional logic to add to window.onload.
-
-     */
-    var current_onload = window.onload;
-    if(typeof(window.onload) != 'function') {
-        window.onload = func;
-    } else {
-        window.onload = function() {
-            if(current_onload)
-                current_onload();
-            func();
-        }
-    }
-}
-
-addEvents(function() {
+$(window).ready(function() {
     /*
     Explicit control of main menu, primarily for mobile but also provides
     non hover and cover option if that becomes an issue.
     */
-    debugger;
     $(".main-nav").click(function(e){
         e.preventDefault();
         if($(window).width() < 994){
