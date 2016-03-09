@@ -30,7 +30,7 @@ from urllib2 import HTTPError
 from email_parser import build_email_dicts, get_datetime_from_str
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
-from universal.decorators import has_access, warn_when_inactive
+from universal.decorators import warn_when_inactive
 from myjobs.models import User
 
 from myjobs.decorators import requires
@@ -57,7 +57,6 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read partner')
-@has_access('prm')
 def prm(request):
     """
     Partner Relationship Manager
@@ -95,7 +94,6 @@ def prm(request):
 
 @warn_when_inactive(feature='Partner Library is')
 @requires('read partner')
-@has_access('prm')
 def partner_library(request):
     company = get_company_or_404(request)
 
@@ -126,7 +124,6 @@ def partner_library(request):
 
 
 @requires('create partner')
-@has_access('prm')
 def create_partner_from_library(request):
     """ Creates a partner and contact from a library_id. """
     partner = new_partner_from_library(request)
@@ -144,7 +141,6 @@ def create_partner_from_library(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('update partner')
-@has_access('prm')
 def partner_details(request):
     company, partner, user = prm_worthy(request)
 
@@ -171,7 +167,6 @@ def partner_details(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('create partner')
-@has_access('prm')
 def edit_item(request):
     """ Contact/Partner Form.
 
@@ -183,12 +178,14 @@ def edit_item(request):
         URL, they are presented with "Add Contact" form. If a valid `item_id`
         is passed, we preload the form with that contact's information.
     """
+    http404_view = 'mypartners.views.edit_item'
     try:
         partner_id = int(request.REQUEST.get("partner") or 0)
         item_id = int(request.REQUEST.get('id') or 0)
         content_id = int(request.REQUEST.get('ct') or 0)
     except ValueError:
-        raise Http404
+        raise Http404("{view}: partner, item, or content type "
+                      "id is bad".format(view=http404_view))
 
     company = get_company_or_404(request)
     partners = []
@@ -215,7 +212,8 @@ def edit_item(request):
             item = None
             form = NewPartnerForm()
     else:
-        raise Http404
+        raise Http404("{view}: path incorrect and/or no "
+                      "partner id provided".format(view=http404_view))
 
     ctx = {
         'form': form,
@@ -236,7 +234,6 @@ def edit_item(request):
 
 
 @requires('create partner')
-@has_access('prm')
 def save_init_partner_form(request):
     form = NewPartnerForm(user=request.user, data=request.POST)
 
@@ -248,12 +245,12 @@ def save_init_partner_form(request):
 
 
 @requires('update partner')
-@has_access('prm')
 def save_item(request):
     """
     Generic save for Partner and Contact Forms.
 
     """
+    http404_view = 'mypartners.views.save_item'
     company = get_company_or_404(request)
     content_id = int(request.REQUEST.get('ct') or 0)
 
@@ -262,7 +259,8 @@ def save_item(request):
         try:
             partner_id = int(request.REQUEST.get('partner') or 0)
         except TypeError:
-            raise Http404
+            raise Http404("{view}: Partner id is not an int".format(
+                view=http404_view))
 
         partner = get_object_or_404(company.partner_set.all(), id=partner_id)
 
@@ -270,7 +268,8 @@ def save_item(request):
             try:
                 item = Contact.objects.get(partner=partner, pk=item_id)
             except Contact.DoesNotExist:
-                raise Http404
+                raise Http404("{view}: Contact id is not an int".format(
+                    view=http404_view))
             else:
                 form = ContactForm(instance=item, auto_id=False,
                                    data=request.POST)
@@ -290,7 +289,8 @@ def save_item(request):
         try:
             partner_id = int(request.REQUEST.get('partner'))
         except TypeError:
-            raise Http404
+            raise Http404("{view}: Partner id is not an int".format(
+                view=http404_view))
 
         partner = get_object_or_404(company.partner_set.all(), id=partner_id)
         form = PartnerForm(instance=partner, auto_id=False, data=request.POST)
@@ -299,12 +299,12 @@ def save_item(request):
             return HttpResponse(status=200)
         else:
             return HttpResponse(json.dumps(form.errors))
-    raise Http404('Problem saving form. Please reload and try again')
+    raise Http404("{view}: Item is not a Partner or Contact".format(
+        view=http404_view))
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('delete partner')
-@has_access('prm')
 def delete_prm_item(request):
     """
     Deletes Partners and Contacts
@@ -369,7 +369,6 @@ def delete_prm_item(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read partner')
-@has_access('prm')
 def prm_overview(request):
     """
     View that is the "Overview" of one's Partner Activity.
@@ -404,7 +403,6 @@ def prm_overview(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read tag')
-@has_access('prm')
 def partner_tagging(request):
     company = get_company_or_404(request)
 
@@ -420,7 +418,6 @@ def partner_tagging(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('update tag')
-@has_access('prm')
 def edit_partner_tag(request):
     company = get_company_or_404(request)
 
@@ -457,7 +454,6 @@ def edit_partner_tag(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('update contact')
-@has_access('prm')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
     contact = get_object_or_none(Contact, id=request.REQUEST.get('id'))
@@ -500,7 +496,6 @@ def edit_location(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('update contact')
-@has_access('prm')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
     contact = get_object_or_404(Contact, pk=request.REQUEST.get('id', 0))
@@ -518,7 +513,6 @@ def delete_location(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('delete tag')
-@has_access('prm')
 def delete_partner_tag(request):
     company = get_company_or_404(request)
 
@@ -533,7 +527,6 @@ def delete_partner_tag(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read partner saved search')
-@has_access('prm')
 def prm_saved_searches(request):
     """
     View that lists the Partner's Saved Searches
@@ -565,7 +558,6 @@ def prm_saved_searches(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('create partner saved search')
-@has_access('prm')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
     item_id = request.REQUEST.get('id')
@@ -580,7 +572,8 @@ def prm_edit_saved_search(request):
             values = PartnerSavedSearch.objects.filter(pk=copy_id).values()[0]
         except IndexError:
             # saved search to be copied doesn't exist since values is empty
-            raise Http404
+            raise Http404("mypartners.views.prm_edit_saved_search: "
+                          "PartnerSavedSearch with provided id doesn't exist")
         else:
             values['label'] = "Copy of %s" % values['label']
             values.pop('email', None)
@@ -614,7 +607,6 @@ def prm_edit_saved_search(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read contact')
-@has_access('prm')
 def verify_contact(request):
     """
     Checks to see if a contact has a My.jobs account. Checks to see if they are
@@ -622,7 +614,8 @@ def verify_contact(request):
 
     """
     if request.REQUEST.get('action') != 'validate':
-        raise Http404
+        raise Http404("mypartners.views.verify_contact: "
+                      "'action' is not 'validate'")
 
     email = request.REQUEST.get('email')
     if email == 'None':
@@ -657,7 +650,6 @@ def verify_contact(request):
 
 
 @requires('create partner saved search')
-@has_access('prm')
 def partner_savedsearch_save(request):
     """
     Handles saving the PartnerSavedSearchForm and creating the inactive user
@@ -700,7 +692,6 @@ def partner_savedsearch_save(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read partner saved search')
-@has_access('prm')
 def partner_view_full_feed(request):
     """
     PartnerSavedSearch feed.
@@ -744,7 +735,6 @@ def partner_view_full_feed(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read communication record')
-@has_access('prm')
 def prm_records(request):
     """
     ContactRecord overview and ContactRecord overview from PRM reports.
@@ -785,7 +775,6 @@ def prm_records(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('create communication record', 'update communication record')
-@has_access('prm')
 def prm_edit_records(request):
     company, partner, user = prm_worthy(request)
     record_id = request.GET.get('id', None)
@@ -828,7 +817,6 @@ def prm_edit_records(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read communication record')
-@has_access('prm')
 def prm_view_records(request):
     """
     View an individual ContactRecord.
@@ -882,7 +870,6 @@ def prm_view_records(request):
                               RequestContext(request))
 
 @requires('read contact')
-@has_access('prm')
 def get_contact_information(request):
     """
     Returns a json object containing a contact's email address and
@@ -917,11 +904,11 @@ def get_contact_information(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404("This view is only reachable by an AJAX POST request.")
+        raise Http404("mypartners.views.get_contact_information: "
+                      "request is not an AJAX POST")
 
 
 @requires("read communication record")
-@has_access('prm')
 def get_records(request):
     """
     Returns a json object containing the records matching the search
@@ -969,7 +956,6 @@ def get_records(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires("read communication record")
-@has_access('prm')
 def get_uploaded_file(request):
     """
     Determines the location of a PRMAttachment (either in S3 or in local
@@ -1003,7 +989,6 @@ def get_uploaded_file(request):
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
 @requires('read communication record')
-@has_access('prm')
 def partner_main_reports(request):
     company, partner, user = prm_worthy(request)
     dt_range, date_str, records = get_records_from_request(request)
@@ -1027,7 +1012,6 @@ def partner_main_reports(request):
 
 
 @requires('read communication record')
-@has_access('prm')
 def partner_get_records(request):
     if request.method == 'GET':
         prm_worthy(request)
@@ -1065,11 +1049,11 @@ def partner_get_records(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404
+        raise Http404("mypartners.views.partner_get_records: "
+                      "request method is not GET")
 
 
 @requires('read communication record')
-@has_access('prm')
 def partner_get_referrals(request):
     if request.method == 'GET':
         prm_worthy(request)
@@ -1100,7 +1084,8 @@ def partner_get_referrals(request):
 
         return HttpResponse(json.dumps(data))
     else:
-        raise Http404
+        raise Http404("mypartners.views.partner_get_referrals: "
+                      "request method is not GET")
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
@@ -1231,12 +1216,8 @@ def process_email(request):
         return HttpResponse(status=200)
 
     # determine if the user is associated with more thanone company
-    multiple_companies = False
-    if settings.ROLES_ENABLED:
-        multiple_companies = admin_user.roles.values(
-            "company").distinct().count() > 1
-    else:
-        multiple_companies = admin_user.company_set.count() > 1
+    multiple_companies = admin_user.roles.values(
+        "company").distinct().count() > 1
 
     if multiple_companies:
         error = "Your account is setup as the admin for multiple companies. " \
@@ -1248,10 +1229,8 @@ def process_email(request):
                                            error, admin_email)
         return HttpResponse(status=200)
 
-    if settings.ROLES_ENABLED and admin_user.roles.exists():
+    if admin_user.roles.exists():
         partners = admin_user.roles.first().company.partner_set.all()
-    elif admiN_user.company_set.exists():
-        partners = admin_user.company_set.first().partner_set.all()
     else:
         partners = []
 
@@ -1340,7 +1319,6 @@ def process_email(request):
 
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
-@has_access('prm')
 def nuo_main(request):
     """
     View for non user outreach module
@@ -1359,7 +1337,6 @@ def nuo_main(request):
 # TODO: Add proper activities for the APIs
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
-@has_access('prm')
 def api_get_nuo_inbox_list(request):
     """
     Retrieves all non user outreach inboxes for a company. Returns json object with id, email of each
@@ -1373,7 +1350,6 @@ def api_get_nuo_inbox_list(request):
 
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
-@has_access('prm')
 def api_save_nuo_inbox(request):
     """
     stub for save api
@@ -1383,7 +1359,6 @@ def api_save_nuo_inbox(request):
 
 @restrict_to_staff()
 @requires("create partner", "create contact", "create communication record")
-@has_access('prm')
 def api_delete_nuo_inbox(request):
     """
     stub for delete api
@@ -1392,7 +1367,6 @@ def api_delete_nuo_inbox(request):
 
 
 @requires('read tag')
-@has_access('prm')
 def tag_names(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
@@ -1406,7 +1380,6 @@ def tag_names(request):
 
 
 @requires('read tag')
-@has_access('prm')
 def tag_color(request):
     if request.method == 'GET':
         company = get_company_or_404(request)
@@ -1417,7 +1390,6 @@ def tag_color(request):
 
 
 @requires('create tag')
-@has_access('prm')
 def add_tags(request):
     company = get_company_or_404(request)
     data = request.GET.get('data', '').split(',')

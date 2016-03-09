@@ -1,5 +1,4 @@
 import json
-import re
 import logging
 
 from django.core.exceptions import SuspiciousOperation
@@ -76,7 +75,8 @@ class BlockView(View):
                                            status=Page.PRODUCTION,
                                            page_type=self.page_type)[0]
             except IndexError:
-                raise Http404
+                raise Http404("myblocks.views.BlockView: Page object does not "
+                              "exist")
         setattr(self, 'page', page)
 
 

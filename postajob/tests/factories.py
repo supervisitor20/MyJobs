@@ -3,7 +3,8 @@ import random
 
 import factory
 
-from seo.tests.factories import UserFactory, CompanyFactory, CompanyUserFactory
+from seo.tests.factories import UserFactory, CompanyFactory
+from myjobs.tests.factories import UserFactory
 
 
 class JobLocationFactory(factory.django.DjangoModelFactory):
@@ -126,7 +127,7 @@ class OfflinePurchaseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = 'postajob.OfflinePurchase'
 
-    created_by = factory.SubFactory(CompanyUserFactory)
+    created_by = factory.SubFactory(UserFactory)
     invoice = factory.SubFactory(InvoiceFactory)
     owner = factory.SubFactory(CompanyFactory)
     redeemed_on = None

@@ -64,4 +64,5 @@ def secure_redirect(request, page):
         return RedirectView.as_view(
             url='https://secure.my.jobs/%s' % page)(request)
     else:
-        raise Http404
+        raise Http404("seo.views.settings_views.secure_redirect: not a "
+                      "network site")

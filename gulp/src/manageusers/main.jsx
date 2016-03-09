@@ -1,6 +1,8 @@
-/* global $ */
 /* global companyName */
 
+import 'babel/polyfill';
+import {installPolyfills} from '../common/polyfills.js';
+import {getCsrf} from '../common/cookie';
 import React from 'react';
 import _ from 'lodash-compat';
 import {render} from 'react-dom';
@@ -18,6 +20,11 @@ import AssociatedRolesList from './AssociatedRolesList';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Status from './Status';
+import {MyJobsApi} from 'common/myjobs-api';
+
+installPolyfills();
+
+const api = new MyJobsApi(getCsrf());
 
 export class App extends React.Component {
   constructor(props) {
@@ -46,104 +53,101 @@ export class App extends React.Component {
       this.callUsersAPI();
     }
   }
-  callActivitiesAPI() {
+  async callActivitiesAPI() {
     // Get activities once, and only once
-    $.get('/manage-users/api/activities/', function getActivities(results) {
-      // Create an array of tables, each a list of activities of a
-      // particular app_access
-      const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
-      // Build a table for each app present
-      const tablesOfActivitiesByApp = [];
-      // First assemble rows needed for each table
-      _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
-        // For each app, build list of rows from results
-        const activityRows = [];
-        // Loop through all activities...
-        _.forOwn(activityGroup, function buildListOfRows(activity) {
-          activityRows.push(
-            <tr key={activity.activity_id}>
-              <td>{activity.activity_name}</td>
-              <td>{activity.activity_description}</td>
-            </tr>
-          );
-        });
-        // Assemble this app's table
-        tablesOfActivitiesByApp.push(
-          <span key={key}>
-            <h3>{key}</h3>
-            <table className="table table-striped table-activities">
-              <thead>
-                <tr>
-                  <th>Activity</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activityRows}
-              </tbody>
-            </table>
-          </span>
+    const results = await api.get('/manage-users/api/activities/');
+    // Create an array of tables, each a list of activities of a
+    // particular app_access
+    const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
+    // Build a table for each app present
+    const tablesOfActivitiesByApp = [];
+    // First assemble rows needed for each table
+    _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
+      // For each app, build list of rows from results
+      const activityRows = [];
+      // Loop through all activities...
+      _.forOwn(activityGroup, function buildListOfRows(activity) {
+        activityRows.push(
+          <tr key={activity.activity_id}>
+            <td>{activity.activity_name}</td>
+            <td>{activity.activity_description}</td>
+          </tr>
         );
       });
-      this.setState({
-        tablesOfActivitiesByApp: tablesOfActivitiesByApp,
-      });
-    }.bind(this));
+      // Assemble this app's table
+      tablesOfActivitiesByApp.push(
+        <span key={key}>
+          <h3>{key}</h3>
+          <table className="table table-striped table-activities">
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activityRows}
+            </tbody>
+          </table>
+        </span>
+      );
+    });
+    this.setState({
+      tablesOfActivitiesByApp: tablesOfActivitiesByApp,
+    });
   }
-  callRolesAPI() {
+  async callRolesAPI() {
     // Get roles once, but reload if needed
-    $.get('/manage-users/api/roles/', function getRoles(results) {
-      const rolesTableRows = [];
-      _.forOwn(results, function buildListOfRows(role) {
-        let editRoleLink;
-        if (role.role_name !== 'Admin') {
-          editRoleLink = <Link to={`/role/${role.role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
-        }
-        rolesTableRows.push(
-          <tr key={role.role_id}>
-            <td data-title="Role">{role.role_name}</td>
-            <td data-title="Associated Activities">
-              <AssociatedActivitiesList activities={role.activities}/>
-            </td>
-            <td data-title="Associated Users">
-              <AssociatedUsersList users={role.assigned_users}/>
-            </td>
-            <td data-title="Edit">
-              {editRoleLink}
-            </td>
-          </tr>
-        );
-      });
-      this.setState({
-        rolesTableRows: rolesTableRows,
-      });
-    }.bind(this));
+    const results = await api.get('/manage-users/api/roles/');
+    const rolesTableRows = [];
+    _.forOwn(results, function buildListOfRows(role) {
+      let editRoleLink;
+      if (role.role_name !== 'Admin') {
+        editRoleLink = <Link to={`/role/${role.role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
+      }
+      rolesTableRows.push(
+        <tr key={role.role_id}>
+          <td data-title="Role">{role.role_name}</td>
+          <td data-title="Associated Activities">
+            <AssociatedActivitiesList activities={role.activities}/>
+          </td>
+          <td data-title="Associated Users">
+            <AssociatedUsersList users={role.assigned_users}/>
+          </td>
+          <td data-title="Edit">
+            {editRoleLink}
+          </td>
+        </tr>
+      );
+    });
+    this.setState({
+      rolesTableRows: rolesTableRows,
+    });
   }
-  callUsersAPI() {
+  async callUsersAPI() {
     // Get users once, but reload if needed
-    $.get('/manage-users/api/users/', function getUsers(results) {
-      const usersTableRows = [];
-      _.forOwn(results, function buildListOfRows(user, key) {
-        user.roles = JSON.parse(user.roles);
-        usersTableRows.push(
-          <tr key={key}>
-            <td data-title="User Email">{user.email}</td>
-            <td data-title="Associated Roles">
-              <AssociatedRolesList roles={user.roles}/>
-            </td>
-            <td data-title="Status">
-              <Status status={user.status} lastInvitation={user.lastInvitation}/>
-            </td>
-            <td data-title="Edit">
-              <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
-            </td>
-          </tr>
-        );
-      });
-      this.setState({
-        usersTableRows: usersTableRows,
-      });
-    }.bind(this));
+    const results = await api.get('/manage-users/api/users/');
+    const usersTableRows = [];
+    _.forOwn(results, function buildListOfRows(user, key) {
+      user.roles = JSON.parse(user.roles);
+      usersTableRows.push(
+        <tr key={key}>
+          <td data-title="User Email">{user.email}</td>
+          <td data-title="Associated Roles">
+            <AssociatedRolesList roles={user.roles}/>
+          </td>
+          <td data-title="Status">
+            <Status status={user.status} lastInvitation={user.lastInvitation}/>
+          </td>
+          <td data-title="Edit">
+            <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+          </td>
+        </tr>
+      );
+    });
+    this.setState({
+      usersTableRows: usersTableRows,
+    });
   }
   render() {
     const {company} = this.state;
@@ -186,6 +190,7 @@ export class App extends React.Component {
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,
                   callUsersAPI: this.callUsersAPI,
+                  api: api,
                 })
               }
             </div>

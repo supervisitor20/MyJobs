@@ -7,6 +7,10 @@ from secrets import REDIRECT_STAGING, ARCHIVE_STAGING, REDIRECT_QC
 
 ALLOWED_HOSTS = ['*', ]
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
+
 
 DATABASES = {
     'default': dict({
@@ -78,4 +82,4 @@ ABSOLUTE_URL = 'http://staging.secure.my.jobs/'
 
 PROJECT = "dseo"
 
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
+

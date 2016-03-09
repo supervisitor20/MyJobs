@@ -1,12 +1,9 @@
-/* global $ */
-
 import React from 'react';
 import _ from 'lodash-compat';
 import Button from 'react-bootstrap/lib/Button';
 import {Link} from 'react-router';
 
 import {validateEmail} from 'common/validateEmail';
-import {getCsrf} from 'common/cookie';
 
 import RolesMultiselect from './RolesMultiselect';
 import HelpText from './HelpText';
@@ -30,61 +27,7 @@ class User extends React.Component {
     this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
   }
   componentDidMount() {
-    const action = this.props.location.query.action;
-
-    if (action === 'Edit') {
-      $.get('/manage-users/api/users/' + this.props.params.userId + '/', function getUser(results) {
-        const userObject = results[this.props.params.userId];
-
-        const userEmail = userObject.email;
-
-        const availableRolesUnformatted = JSON.parse(userObject.roles.available);
-        const availableRoles = availableRolesUnformatted.map( obj => {
-          const role = {};
-          role.id = obj.pk;
-          role.name = obj.fields.name;
-          return role;
-        });
-
-        const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
-        const assignedRoles = assignedRolesUnformatted.map( obj => {
-          const role = {};
-          role.id = obj.pk;
-          role.name = obj.fields.name;
-          return role;
-        });
-
-        this.setState({
-          userEmail: userEmail,
-          userEmailHelp: '',
-          roleMultiselectHelp: '',
-          apiResponseHelp: '',
-          availableRoles: availableRoles,
-          assignedRoles: assignedRoles,
-        });
-      }.bind(this));
-    } else {
-      // action === 'Add'
-      $.get('/manage-users/api/roles/', function addUser(results) {
-        const availableRoles = [];
-        _.forOwn(results, function buildListOfAvailableRoles(role) {
-          availableRoles.push(
-            {
-              'id': role.role_id,
-              'name': role.role_name,
-            }
-          );
-        });
-        this.setState({
-          userEmail: '',
-          userEmailHelp: '',
-          roleMultiselectHelp: '',
-          apiResponseHelp: '',
-          availableRoles: availableRoles,
-          assignedRoles: [],
-        });
-      }.bind(this));
-    }
+    this.initialApiLoad();
   }
   onTextChange(event) {
     this.state.userEmail = event.target.value;
@@ -108,9 +51,66 @@ class User extends React.Component {
       });
     }
   }
-  handleSaveUserClick() {
+  async initialApiLoad() {
+    const {api} = this.props;
+    const {action} = this.props.location.query;
+
+    if (action === 'Edit') {
+      const results = await api.get('/manage-users/api/users/' + this.props.params.userId + '/');
+      const userObject = results[this.props.params.userId];
+
+      const userEmail = userObject.email;
+
+      const availableRolesUnformatted = JSON.parse(userObject.roles.available);
+      const availableRoles = availableRolesUnformatted.map( obj => {
+        const role = {};
+        role.id = obj.pk;
+        role.name = obj.fields.name;
+        return role;
+      });
+
+      const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
+      const assignedRoles = assignedRolesUnformatted.map( obj => {
+        const role = {};
+        role.id = obj.pk;
+        role.name = obj.fields.name;
+        return role;
+      });
+
+      this.setState({
+        userEmail: userEmail,
+        userEmailHelp: '',
+        roleMultiselectHelp: '',
+        apiResponseHelp: '',
+        availableRoles: availableRoles,
+        assignedRoles: assignedRoles,
+      });
+    } else {
+      // action === 'Add'
+      const results = await api.get('/manage-users/api/roles/');
+      const availableRoles = [];
+      _.forOwn(results, function buildListOfAvailableRoles(role) {
+        availableRoles.push(
+          {
+            'id': role.role_id,
+            'name': role.role_name,
+          }
+        );
+      });
+      this.setState({
+        userEmail: '',
+        userEmailHelp: '',
+        roleMultiselectHelp: '',
+        apiResponseHelp: '',
+        availableRoles: availableRoles,
+        assignedRoles: [],
+      });
+    }
+  }
+  async handleSaveUserClick() {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
+    const {api} = this.props;
     const userId = this.props.params.userId;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
@@ -160,12 +160,12 @@ class User extends React.Component {
 
     // Build data to send
     const dataToSend = {};
-    dataToSend.csrfmiddlewaretoken = getCsrf();
     dataToSend.assigned_roles = assignedRoles;
     dataToSend.user_email = userEmail;
 
     // Submit to server
-    $.post(url, dataToSend, function submitToServer(response) {
+    try {
+      const response = await api.post(url, dataToSend);
       if ( response.success === 'true' ) {
         // Reload API
         this.props.callUsersAPI();
@@ -179,19 +179,16 @@ class User extends React.Component {
           assignedRoles: this.refs.roles.state.assignedRoles,
         });
       }
-    }.bind(this))
-    .fail( function failGracefully(xhr) {
-      if (xhr.status === 403) {
+    } catch (e) {
+      if (e.response && e.response.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save user. Insufficient privileges.',
         });
       }
-    }.bind(this));
+    }
   }
-  handleDeleteUserClick() {
-    const history = this.props.history;
-    // Temporary until I replace $.ajax jQuery with vanilla JS ES6 arrow function
-    const self = this;
+  async handleDeleteUserClick() {
+    const {history, api} = this.props;
 
     if (confirm('Are you sure you want to delete this user?') === false) {
       return;
@@ -199,27 +196,18 @@ class User extends React.Component {
 
     const userId = this.props.params.userId;
 
-    const csrf = getCsrf();
-
     // Submit to server
-    $.ajax( '/manage-users/api/users/delete/' + userId + '/', {
-      type: 'DELETE',
-      beforeSend: function beforeSend(xhr) {
-        xhr.setRequestHeader('X-CSRFToken', csrf);
-      },
-      success: function success() {
-        // Reload API
-        self.props.callUsersAPI();
-        // Redirect user
-        history.pushState(null, '/users');
-      }})
-      .fail( function failGracefully(xhr) {
-        if (xhr.status === 403) {
-          this.setState({
-            apiResponseHelp: 'User not deleted. Insufficient privileges.',
-          });
-        }
-      }.bind(this));
+    try {
+      await api.delete('/manage-users/api/users/delete/' + userId + '/');
+      await this.props.callUsersAPI();
+      history.pushState(null, '/users');
+    } catch (e) {
+      if (e.response && e.response.status === 403) {
+        this.setState({
+          apiResponseHelp: 'User not deleted. Insufficient privileges.',
+        });
+      }
+    }
   }
   render() {
     let deleteUserButton = '';
@@ -288,6 +276,7 @@ User.propTypes = {
   params: React.PropTypes.object.isRequired,
   callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
+  api: React.PropTypes.object,
 };
 
 export default User;

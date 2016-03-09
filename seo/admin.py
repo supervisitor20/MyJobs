@@ -479,7 +479,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -749,7 +749,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -1031,7 +1031,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
