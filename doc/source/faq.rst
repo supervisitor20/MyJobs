@@ -34,11 +34,9 @@ User Management
     ``User Management`` option found under ``Employer`` in the topbar.
 
   Why don't I see "User Management" in the topbar?
-    First, roles should be enabled by adding ``ROLES_ENABLED = True`` in your
-    Django settings file. Second, the company for which you'd like to manage
-    users should have "User Management" app-level access. Finally, the user
-    attempting to manage users should be assigned a role which has the "read
-    role" activity.
+    First, the company for which you'd like to manage users should have "User
+    Management" app-level access. Then, the user attempting to manage users
+    should be assigned a role which has the "read role" activity.
 
   How do I add app-level access?
     If you navigate to "Companies" in the Django admin (under "Common Tasks")

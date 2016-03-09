@@ -365,7 +365,7 @@ def edit_account(request):
                 return render_to_response(template, ctx,
                                           RequestContext(request))
         else:
-            raise Http404("This view may only be reach via POST request.")
+            raise Http404("myjobs.views.edit_account: request is not POST")
 
     return render_to_response('%s/edit-account.html' % settings.PROJECT, ctx,
                               RequestContext(request))
@@ -638,7 +638,7 @@ def api_get_activities(request):
     for activity in activities:
         json_obj = dict(
             activity_id = activity.id,
-            activity_name = activity.get_display_name(),
+            activity_name = unicode(activity),
             activity_description = activity.description,
             app_access_id = activity.app_access.id,
             app_access_name = activity.app_access.name,
@@ -698,7 +698,7 @@ def api_get_roles(request):
             activity['available_activities'] = []
             # Loop through all activities associated with this particular app_access
             for available_activity in available_activities.filter(app_access=app_access.id):
-                display_name = available_activity.get_display_name()
+                display_name = unicode(available_activity)
                 available_activity_more = {}
                 available_activity_more['id'] = available_activity.id
                 available_activity_more['name'] = display_name
@@ -706,7 +706,7 @@ def api_get_roles(request):
 
             activity['assigned_activities'] = []
             for assigned_activity in role.activities.filter(app_access=app_access.id):
-                display_name = assigned_activity.get_display_name()
+                display_name = unicode(assigned_activity)
                 assigned_activity_more = {}
                 assigned_activity_more['id'] = assigned_activity.id
                 assigned_activity_more['name'] = display_name
@@ -803,7 +803,7 @@ def api_get_specific_role(request, role_id=0):
 
         activity['available_activities'] = []
         for available_activity in available_activities.filter(app_access=app_access.id):
-            display_name = available_activity.get_display_name()
+            display_name = unicode(available_activity)
             available_activity_more = {}
             available_activity_more['id'] = available_activity.id
             available_activity_more['name'] = display_name
@@ -811,7 +811,7 @@ def api_get_specific_role(request, role_id=0):
 
         activity['assigned_activities'] = []
         for assigned_activity in role_edited.activities.filter(app_access=app_access.id):
-            display_name = assigned_activity.get_display_name()
+            display_name = unicode(assigned_activity)
             assigned_activity_more = {}
             assigned_activity_more['id'] = assigned_activity.id
             assigned_activity_more['name'] = display_name

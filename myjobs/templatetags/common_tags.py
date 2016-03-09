@@ -76,14 +76,7 @@ def is_a_group_member(company, user, group):
     requested group
     """
 
-    if settings.ROLES_ENABLED:
-        # deleted users don't have a PK
-        return user.pk and user.roles.exists()
-    else:
-        try:
-            return User.objects.is_group_member(user, group)
-        except ValueError:
-            return False
+    return user.pk and user.roles.exists()
 
 
 @register.assignment_tag
@@ -99,13 +92,7 @@ def get_company_name(user):
     """
 
     # Only return companies for which the user is a company user
-    if settings.ROLES_ENABLED:
-        return Company.objects.filter(role__user=user).distinct()
-    else:
-        try:
-            return user.company_set.all()
-        except ValueError:
-            return Company.objects.none()
+    return Company.objects.filter(role__user=user).distinct()
 
 
 @register.simple_tag(takes_context=True)
