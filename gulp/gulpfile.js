@@ -160,24 +160,9 @@ gulp.task('test', function() {
     }));
 });
 
-function lintOptions() {
-  return {
-    extends: 'airbnb',
-    env: {
-      jasmine: true,
-    },
-    parser: 'babel-eslint',
-    plugins: ['babel'],
-    rules: {
-      "babel/object-curly-spacing": 1,
-      "babel/no-await-in-loop": 2,
-    },
-  };
-}
-
 gulp.task('lint', function() {
   return gulp.src(['./src/**/*.js', './src/**/*.jsx'])
-    .pipe(eslint(lintOptions()))
+    .pipe(eslint())
     .pipe(eslint.format());
 });
 
