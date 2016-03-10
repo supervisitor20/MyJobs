@@ -36,10 +36,10 @@ export class DynamicReportApp extends Component {
     return (
       <div className="container">
         <div className="row">
-          <div className="span8 panel">
+          <div className="col-xs-12 col-md-8">
             {this.props.children}
           </div>
-          <div className="span4">
+          <div className="col-xs-6 col-md-4">
             <ReportList reports={reportList}/>
           </div>
         </div>
