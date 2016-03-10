@@ -34,7 +34,7 @@ export class DynamicReportApp extends Component {
     const {reportList} = this.state;
 
     return (
-      <div className="container">
+      <div className="container-fluid">
         <div className="row">
           <div className="col-xs-12 col-md-8">
             {this.props.children}
