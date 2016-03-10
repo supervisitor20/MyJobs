@@ -17,7 +17,7 @@ What to Expect
   deal) and node_modules (occasionally annoying).
 
 Preparation
-=============
+===========
 
 * Clone MyJobs repo.
 * Add these to the root of the repo (get from another developer):
@@ -211,17 +211,17 @@ Go to http://secure.my.jobs. You should have to click through a security
 warning.
 
 Run Gulp
-=====================
+========
 
 Gulp processes our JavaScript applications.
 
-From the root:
+From the root::
 
-``dkgg build``
+dkgg build
 
-To run continuously and build on any save:
+To run continuously and build on any save::
 
-``dkgg watch-tasks watch``
+dkgg watch-tasks watch
 
 Set Up Docker with VM of Windows
 ================================
