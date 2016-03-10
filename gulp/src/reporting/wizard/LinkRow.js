@@ -6,10 +6,10 @@ export function LinkRow(props) {
   const {text, label, to} = props;
   return (
     <div className="row">
-      <div className="span2" style={{textAlign: 'right'}}>
+      <div className="col-xs-2" style={{textAlign: 'right'}}>
         <Link to={to}>{label}</Link>
       </div>
-      <div className="span4">{text}</div>
+      <div className="col-xs-2 .col-xs-offset-8">{text}</div>
     </div>
   );
 }
