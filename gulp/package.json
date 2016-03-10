@@ -28,7 +28,6 @@
     "fetch-polyfill": "^0.8.1",
     "gulp": "^3.9.0",
     "gulp-eslint": "^1.1.1",
-    "gulp-if": "^2.0.0",
     "gulp-jasmine": "^2.2.1",
     "gulp-util": "^3.0.7",
     "history": "^1.17.0",

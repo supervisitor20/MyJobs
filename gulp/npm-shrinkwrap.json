@@ -424,14 +424,6 @@
         }
       }
     },
-    "duplexify": {
-      "version": "3.4.2",
-      "dependencies": {
-        "end-of-stream": {
-          "version": "1.0.0"
-        }
-      }
-    },
     "ecc-jsbn": {
       "version": "0.1.1"
     },
@@ -657,9 +649,6 @@
     "forever-agent": {
       "version": "0.6.1"
     },
-    "fork-stream": {
-      "version": "0.0.4"
-    },
     "form-data": {
       "version": "1.0.0-rc3"
     },
@@ -767,19 +756,8 @@
         }
       }
     },
-    "gulp-if": {
-      "version": "2.0.0"
-    },
     "gulp-jasmine": {
       "version": "2.2.1"
-    },
-    "gulp-match": {
-      "version": "1.0.0",
-      "dependencies": {
-        "minimatch": {
-          "version": "3.0.0"
-        }
-      }
     },
     "gulp-util": {
       "version": "3.0.7"
@@ -1230,15 +1208,6 @@
           "version": "4.0.1"
         }
       }
-    },
-    "merge-stream": {
-      "version": "1.0.0"
-    },
-    "merge-descriptors": {
-      "version": "1.0.1"
-    },
-    "methods": {
-      "version": "1.1.2"
     },
     "micromatch": {
       "version": "2.3.7",
@@ -1749,9 +1718,6 @@
     },
     "tapable": {
       "version": "0.1.10"
-    },
-    "ternary-stream": {
-      "version": "2.0.0"
     },
     "text-table": {
       "version": "0.2.0"

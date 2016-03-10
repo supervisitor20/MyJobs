@@ -3,11 +3,9 @@ require('babel/polyfill');
 var process = require('process');
 
 var fs = require('fs');
-var path = require('path');
 var gulp = require('gulp');
 var webpack = require('webpack');
 var util = require('gulp-util');
-var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
 var eslint = require('gulp-eslint');
 
