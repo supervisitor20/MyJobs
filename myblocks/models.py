@@ -443,7 +443,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'myblocks/blocks/toolswidget.html'
+    base_template = 'myblocks/blocks/secure_blocks/tools.html'
 
     def context(self, request, **kwargs):
         """
@@ -507,7 +507,7 @@ class SavedSearchWidgetBlock(SecureBlock):
     search module.
 
     """
-    base_template = 'myblocks/blocks/savedsearchwidget.html'
+    base_template = 'myblocks/blocks/secure_blocks/savedsearch.html'
 
     def context(self, request, **kwargs):
         """
@@ -546,7 +546,7 @@ class SavedSearchesListWidgetBlock(SecureBlock):
     more than five, a link back to the saved search page is provided.
 
     """
-    base_template = 'myblocks/blocks/savedsearcheslistwidget.html'
+    base_template = 'myblocks/blocks/secure_blocks/savedsearchlist.html'
 
     def context(self, request, **kwargs):
         saved_searches_url = request.build_absolute_uri(reverse('saved_search_main'))
