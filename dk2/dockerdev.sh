@@ -150,6 +150,7 @@ doruncd() {
         $dockerenvarg \
         -w /MyJobs/"$dir" \
         -e PATH="$dev_path" \
+        -e npm_config_unsafe_perm=1 \
         -i -t \
         darrint/dev "$@"
 }
