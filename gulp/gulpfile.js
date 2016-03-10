@@ -28,7 +28,8 @@ process.on('SIGINT', function() {
 //
 // For production builds use the default target.
 //
-// For development run the default target, then leave the watch target running.
+// For development tests:
+//   run gulp watch-tasks watch
 
 var dest = '../static/bundle';
 var produceWebpackProfile = false;
@@ -52,10 +53,9 @@ gulp.task('bundle', function(callback) {
 });
 
 gulp.task('test', function() {
+  var testConfig = require('./jasmine.json');
   return gulp.src(['./src/**/spec/*.js'])
-    .pipe(jasmine({
-      includeStackTrace: false,
-    }));
+    .pipe(jasmine(testConfig));
 });
 
 gulp.task('lint', function() {
