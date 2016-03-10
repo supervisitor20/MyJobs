@@ -1,11 +1,8 @@
-/* global $ */
-
 import React from 'react';
 import _ from 'lodash-compat';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
-import {getCsrf} from 'common/cookie';
 import {buildCurrentActivitiesObject} from './buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
@@ -30,43 +27,7 @@ class Role extends React.Component {
     this.handleDeleteRoleClick = this.handleDeleteRoleClick.bind(this);
   }
   componentDidMount() {
-    const action = this.props.location.query.action;
-
-    if (action === 'Edit') {
-      $.get('/manage-users/api/roles/' + this.props.params.roleId + '/', function getRole(results) {
-        const activities = results.activities;
-
-        this.setState({
-          apiResponseHelp: '',
-          roleName: results.role_name,
-          availableUsers: results.available_users,
-          assignedUsers: results.assigned_users,
-          activities: activities,
-        });
-      }.bind(this));
-    } else {
-      // action === 'Add'
-      $.get('/manage-users/api/roles/', function addRole(results) {
-        // It doesn't matter which role we get
-        const roleObject = results[0];
-
-        const activities = roleObject.activities;
-
-        // Loop through all app_access's
-        // Make sure there are no assigned_activities
-        _.forOwn(activities, function resetAssignedActivities(activity) {
-          activity.assigned_activities = [];
-        });
-
-        this.setState({
-          apiResponseHelp: '',
-          roleName: '',
-          availableUsers: roleObject.available_users,
-          assignedUsers: [],
-          activities: activities,
-        });
-      }.bind(this));
-    }
+    this.initialApiLoad();
   }
   onTextChange(event) {
     this.state.roleName = event.target.value;
@@ -83,10 +44,49 @@ class Role extends React.Component {
       activites: currentActivitiesObject,
     });
   }
-  handleSaveRoleClick() {
+  async initialApiLoad() {
+    const {api} = this.props;
+    const action = this.props.location.query.action;
+
+    if (action === 'Edit') {
+      const results = await api.get('/manage-users/api/roles/' + this.props.params.roleId + '/');
+      const activities = results.activities;
+
+      this.setState({
+        apiResponseHelp: '',
+        roleName: results.role_name,
+        availableUsers: results.available_users,
+        assignedUsers: results.assigned_users,
+        activities: activities,
+      });
+    } else {
+      // action === 'Add'
+      const results = await api.get('/manage-users/api/roles/');
+      // It doesn't matter which role we get
+      const roleObject = results[0];
+
+      const activities = roleObject.activities;
+
+      // Loop through all app_access's
+      // Make sure there are no assigned_activities
+      _.forOwn(activities, function resetAssignedActivities(activity) {
+        activity.assigned_activities = [];
+      });
+
+      this.setState({
+        apiResponseHelp: '',
+        roleName: '',
+        availableUsers: roleObject.available_users,
+        assignedUsers: [],
+        activities: activities,
+      });
+    }
+  }
+  async handleSaveRoleClick() {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
 
+    const {api} = this.props;
     const roleId = this.props.params.roleId;
 
     let assignedUsers = this.refs.users.state.assignedUsers;
@@ -171,13 +171,13 @@ class Role extends React.Component {
 
     // Build data to send
     const dataToSend = {};
-    dataToSend.csrfmiddlewaretoken = getCsrf();
     dataToSend.role_name = roleName;
     dataToSend.assigned_activities = assignedActivities;
     dataToSend.assigned_users = assignedUsers;
 
     // Submit to server
-    $.post(url, dataToSend, function submitToServer(response) {
+    try {
+      const response = await api.post(url, dataToSend);
       const history = this.props.history;
 
       // TODO: Render a nice disappearing alert with the disappear_text prop. Use the React CSSTransitionGroup addon.
@@ -198,19 +198,16 @@ class Role extends React.Component {
           activities: currentActivitiesObject,
         });
       }
-    }.bind(this))
-    .fail( function failGracefully(xhr) {
-      if (xhr.status === 403) {
+    } catch (e) {
+      if (e.response && e.response.status === 403) {
         this.setState({
           apiResponseHelp: 'Unable to save role. Insufficient privileges.',
         });
       }
-    }.bind(this));
+    }
   }
-  handleDeleteRoleClick() {
-    const history = this.props.history;
-    // Temporary until I replace $.ajax jQuery with vanilla JS ES6 arrow function
-    const self = this;
+  async handleDeleteRoleClick() {
+    const {api, history} = this.props;
 
     if (confirm('Are you sure you want to delete this role?') === false) {
       return;
@@ -218,27 +215,18 @@ class Role extends React.Component {
 
     const roleId = this.props.params.roleId;
 
-    const csrf = getCsrf();
-
     // Submit to server
-    $.ajax( '/manage-users/api/roles/delete/' + roleId + '/', {
-      type: 'DELETE',
-      beforeSend: function beforeSend(xhr) {
-        xhr.setRequestHeader('X-CSRFToken', csrf);
-      },
-      success: function success() {
-        // Reload API
-        self.props.callRolesAPI();
-        // Redirect the user
-        history.pushState(null, '/roles');
-      }})
-      .fail( function failGracefully(xhr) {
-        if (xhr.status === 403) {
-          this.setState({
-            apiResponseHelp: 'Role not deleted. Insufficient privileges.',
-          });
-        }
-      }.bind(this));
+    try {
+      await api.delete( '/manage-users/api/roles/delete/' + roleId + '/');
+      await this.props.callRolesAPI();
+      history.pushState(null, '/roles');
+    } catch (e) {
+      if (e.response && e.response.status === 403) {
+        this.setState({
+          apiResponseHelp: 'Role not deleted. Insufficient privileges.',
+        });
+      }
+    }
   }
   render() {
     let action = this.props.location.query.action;
@@ -311,6 +299,7 @@ Role.propTypes = {
   params: React.PropTypes.object.isRequired,
   callRolesAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
+  api: React.PropTypes.object,
 };
 
 export default Role;

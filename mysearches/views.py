@@ -222,7 +222,8 @@ def edit_search(request):
             saved_search = get_object_or_404(SavedSearch, id=search_id,
                                              user=request.user)
             if hasattr(saved_search, 'partnersavedsearch'):
-                raise Http404
+                raise Http404("mysearches.views.edit_search: trying to edit a "
+                              "PartnerSavedSearch as a SavedSearch")
         else:
             saved_search = None
 
@@ -240,7 +241,7 @@ def edit_search(request):
                     auto_id=False,
                     request=request)
         else:
-            raise Http404
+            raise Http404("mysearches.views.edit_search: no id provided")
 
     return render_to_response('mysearches/saved_search_edit.html',
                               {'form': form,
@@ -342,7 +343,7 @@ def unsubscribe(request, user=None):
         cache = list(saved_searches)
         saved_searches.update(is_active=False)
     except TypeError:
-        raise Http404
+        raise Http404("mysearches.views.unsubscribe: no id provided")
 
     return render_to_response('mysearches/saved_search_disable.html',
                               {'search_id': search_id,
@@ -405,7 +406,9 @@ def send_saved_search(request):
                 search_id=search_id)
         return HttpResponseRedirect(redirect_to)
     else:
-        raise Http404()
+        raise Http404("mysearches.views.send_saved_search: "
+                      "feature not available outside of QC")
+
 
 def user_creation_retrieval(auth_user, email):
     """
@@ -429,9 +432,10 @@ def user_creation_retrieval(auth_user, email):
     if not created and email_user_account != auth_user:
         raise ValueError('This email has already been taken. If this is your'
                          ' email, please log in to add this search')
-                         #TODO: ADD LINK
+        # TODO: ADD LINK
 
     return email_user_account, created
+
 
 def add_or_activate_saved_search(user, url):
     """
@@ -470,19 +474,20 @@ def add_or_activate_saved_search(user, url):
                    'notes': notes}
 
     try:
-        #if search already exists, activate it
+        # if search already exists, activate it
         saved_search = SavedSearch.objects.get(user=search_args['user'],
                                 email__iexact=search_args['email'],
                                 url=search_args['url'])
         saved_search.is_active = True
         saved_search.save()
     except SavedSearch.DoesNotExist:
-         # if there's no search for that email/user, create it
+        # if there's no search for that email/user, create it
         saved_search = SavedSearch(**search_args)
         saved_search.save()
         saved_search.initial_email()
 
     return saved_search
+
 
 def get_value_from_request(request, key):
     """
@@ -503,6 +508,15 @@ def get_value_from_request(request, key):
              request.POST.get(key) or
              request_body.get(key))
     return value
+
+def remove_anchor_from_url(url):
+    """
+    Remove anchor tags from the provided URL. %23 is '#' url encoded.
+
+    """
+    if url.find('%23') != -1:
+        return url[:url.index('%23')]
+    return url
 
 @django_csrf_exempt
 @restrict_to_staff()
@@ -535,7 +549,7 @@ def secure_saved_search(request):
 
     response['user_created'] = user_created
 
-    url = get_value_from_request(request, 'url')
+    url = remove_anchor_from_url(get_value_from_request(request, 'url'))
 
     try:
         saved_search = add_or_activate_saved_search(new_search_account, url)

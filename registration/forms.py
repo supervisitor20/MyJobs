@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import (AuthenticationForm, PasswordResetForm,
                                        SetPasswordForm)
 from django.contrib.auth.tokens import default_token_generator
-from django.core.validators import validate_email
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -13,7 +12,6 @@ from django.utils.translation import ugettext_lazy as _
 from passwords.fields import PasswordField
 
 from myjobs.models import User
-from registration.models import Invitation
 from registration.templatetags.password_reset_tags import get_current_seosite
 from universal.helpers import send_email
 
@@ -226,41 +224,3 @@ class RegistrationForm(forms.Form):
                 del self.cleaned_data["password2"]
 
         return self.cleaned_data
-
-
-class InvitationForm(forms.ModelForm):
-    class Meta:
-        model = Invitation
-
-    def clean_invitee_email(self):
-        invitee_email = self.cleaned_data['invitee_email']
-        # validate_email raises a ValidationError if validation fails
-        validate_email(invitee_email)
-        invitee = User.objects.get_email_owner(invitee_email)
-        if invitee is None:
-            invitee = User.objects.create_user(email=invitee_email,
-                                               send_email=False)[0]
-        setattr(self, 'invitee', invitee)
-        return invitee_email
-
-    def clean_inviting_user(self):
-        inviting_user = self.data.get('inviting_user')
-        if inviting_user is None:
-            inviting_user = getattr(self, 'admin_user', None)
-        return inviting_user
-
-    def clean(self):
-        cleaned_data = super(InvitationForm, self).clean()
-        inviting_user = self.clean_inviting_user()
-        cleaned_data['inviting_user'] = inviting_user
-        return cleaned_data
-
-    def save(self, commit=True):
-        instance = super(InvitationForm, self).save(commit=False)
-        instance.invitee = getattr(self, 'invitee')
-        for field, value in self.cleaned_data.items():
-            if value is not None:
-                setattr(instance, field, value)
-        instance.save()
-        instance.send(instance.added_saved_search or "")
-        return instance

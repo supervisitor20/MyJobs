@@ -192,7 +192,8 @@ class DseoLogin(BlockView):
                                        status=Page.PRODUCTION,
                                        page_type=self.page_type)[0]
         except IndexError:
-            raise Http404
+            raise Http404("registration.views.DseoLogin: Page object "
+                          "not found")
         setattr(self, 'page', page)
         return page
 

@@ -241,15 +241,13 @@ class TestActivities(MyJobsBase):
         # check for a single activity
         self.assertTrue(user.can(self.company, activities[0]))
 
-        with self.settings(ROLES_ENABLED=True):
-            self.assertFalse(user.can(self.company, "eat a burrito"))
+        self.assertFalse(user.can(self.company, "eat a burrito"))
 
         # check for multiple activities
         self.assertTrue(user.can(self.company, *activities))
 
-        with self.settings(ROLES_ENABLED=True):
-            self.assertFalse(user.can(
-                self.company, activities[0], "eat a burrito"))
+        self.assertFalse(user.can(
+            self.company, activities[0], "eat a burrito"))
 
     def test_send_invite_method(self):
         """

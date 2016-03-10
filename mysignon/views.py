@@ -33,9 +33,9 @@ def sso_authorize(request):
         if not auth_callback.netloc:
             # If the base url of the callback is not truthy, the url
             # must be malformed somehow
-            raise Http404
+            raise Http404("mysignon.views.sso_authorize: bad callback")
     else:
-        raise Http404
+        raise Http404("mysignon.views.sso_authorize: no callback")
 
     if request.method == 'GET':
         # Initial view after being redirected from an external site
