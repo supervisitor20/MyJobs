@@ -218,9 +218,6 @@
         }
       }
     },
-    "bufferstreams": {
-      "version": "1.1.0"
-    },
     "builtin-modules": {
       "version": "1.1.1"
     },
@@ -503,6 +500,14 @@
     "eslint-config-airbnb": {
       "version": "1.0.2"
     },
+    "eslint-loader": {
+      "version": "1.2.1",
+      "dependencies": {
+        "object-assign": {
+          "version": "4.0.1"
+        }
+      }
+    },
     "eslint-plugin-babel": {
       "version": "3.0.0"
     },
@@ -747,14 +752,6 @@
     },
     "gulp": {
       "version": "3.9.0"
-    },
-    "gulp-eslint": {
-      "version": "1.1.1",
-      "dependencies": {
-        "object-assign": {
-          "version": "4.0.1"
-        }
-      }
     },
     "gulp-jasmine": {
       "version": "2.2.1"
@@ -1208,6 +1205,12 @@
           "version": "4.0.1"
         }
       }
+    },
+    "merge-descriptors": {
+      "version": "1.0.1"
+    },
+    "methods": {
+      "version": "1.1.2"
     },
     "micromatch": {
       "version": "2.3.7",

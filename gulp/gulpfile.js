@@ -7,7 +7,6 @@ var gulp = require('gulp');
 var webpack = require('webpack');
 var util = require('gulp-util');
 var jasmine = require('gulp-jasmine');
-var eslint = require('gulp-eslint');
 
 process.on('SIGINT', function() {
   process.exit(1);
@@ -58,16 +57,10 @@ gulp.task('test', function() {
     .pipe(jasmine(testConfig));
 });
 
-gulp.task('lint', function() {
-  return gulp.src(['./src/**/*.js', './src/**/*.jsx'])
-    .pipe(eslint())
-    .pipe(eslint.format());
-});
-
 // Build everything. Good way to start after a git checkout.
-gulp.task('build', ['bundle', 'lint', 'test']);
+gulp.task('build', ['bundle', 'test']);
 
-gulp.task('watch-tasks', ['test', 'lint']);
+gulp.task('watch-tasks', ['test']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {

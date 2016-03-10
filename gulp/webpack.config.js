@@ -25,6 +25,11 @@ module.exports = {
           cacheDirectory: true,
         },
       },
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        loader: 'eslint-loader',
+      },
     ],
   },
   plugins: [
