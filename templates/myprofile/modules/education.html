@@ -24,6 +24,6 @@
         Minored in {{ item.degree_minor }}
     </div>
     {% endif %}
-    <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
+    <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>
 {% endfor %}

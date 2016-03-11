@@ -1,20 +1,32 @@
 import React from 'react';
 
-class BasicCheckBox extends React.Component {
+class BasicMultiselect extends React.Component {
   render() {
     let requiredIndicator = "";
     if (this.props.required) {
       requiredIndicator = " *";
     }
 
-    let helpOrErrorText
-    // Check if this field appears in the list of error messages passed down
-    if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
-      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>
+    let helpOrErrorText = ""
+    if (this.props.error_messages.invalid) {
+      helpOrErrorText = <span className="error-text">{this.props.error_messages.invalid}</span>
     }
     else if ((this.props.help_text)) {
       helpOrErrorText = <span className="help-block">{this.props.help_text}</span>
     }
+
+
+    let options = [];
+
+    // TODO will be swapped out with real JSON from API
+    let fake_options_data = {}
+    fake_options_data.value1 = "value 1"
+    fake_options_data.value2 = "value 2"
+    fake_options_data.value3 = "value 3"
+
+    for (let option in fake_options_data) {
+      options.push(<option value={option} key={option}>{fake_options_data[option]}</option>)
+    };
 
     return (
       <div className="row">
@@ -22,15 +34,15 @@ class BasicCheckBox extends React.Component {
           <lable>{this.props.label}</lable>
         </div>
         <div className="col-xs-12 col-md-8">
-          <input
-            type="checkbox"
-            defaultChecked={this.props.initial}
+          <select
+            defaultValue={this.props.initial}
             id={this.props.name}
-            name={this.props.name}
             required={this.props.required}
             hidden={this.props.widget.is_hidden}
-            onChange={this.props.onChange}
-            />
+            name={this.props.name}
+            onChange={this.props.onChange}>
+            {options}
+          </select>
           {helpOrErrorText}
         </div>
       </div>
@@ -38,7 +50,8 @@ class BasicCheckBox extends React.Component {
   }
 }
 
-BasicCheckBox.propTypes = {
+BasicMultiselect.propTypes = {
+  initial: React.PropTypes.string.isRequired,
   placeholder: React.PropTypes.string.isRequired,
   widget: React.PropTypes.object.isRequired,
   label_suffix: React.PropTypes.string.isRequired,
@@ -47,7 +60,7 @@ BasicCheckBox.propTypes = {
   onChange: React.PropTypes.func,
 };
 
-BasicCheckBox.defaultProps = {
+BasicMultiselect.defaultProps = {
   initial: '',
   placeholder: '',
   widget: {},
@@ -56,4 +69,4 @@ BasicCheckBox.defaultProps = {
   required: false,
 };
 
-export default BasicCheckBox;
+export default BasicMultiselect;

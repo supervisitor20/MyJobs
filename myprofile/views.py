@@ -18,7 +18,7 @@ from django_remote_forms.forms import RemoteForm
 @user_is_allowed()
 @user_passes_test(User.objects.not_disabled)
 def edit_summary(request):
-    return render_to_response('myprofile/experiment.html',
+    return render_to_response('myprofile/react_edit.html',
                               RequestContext(request))
 
 @user_is_allowed()
@@ -111,11 +111,11 @@ def handle_form(request):
             return HttpResponse('success')
 
         if item_id == 'new':
-            form_instance = form(user=request.user, data=request.POST,
+            form_instance = form(user=request.user, data=request.POST.dict(),
                                  auto_id=False)
         else:
             form_instance = form(user=request.user, instance=item,
-                                 auto_id=False, data=request.POST)
+                                 auto_id=False, data=request.POST.dict())
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()

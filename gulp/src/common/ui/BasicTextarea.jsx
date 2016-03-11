@@ -7,9 +7,10 @@ class BasicTextarea extends React.Component {
       requiredIndicator = " *";
     }
 
-    let helpOrErrorText = ""
-    if (this.props.error_messages.invalid) {
-      helpOrErrorText = <span className="error-text">{this.props.error_messages.invalid}</span>
+    let helpOrErrorText
+    // Check if this field appears in the list of error messages passed down
+    if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
+      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>
     }
     else if ((this.props.help_text)) {
       helpOrErrorText = <span className="help-block">{this.props.help_text}</span>
@@ -28,6 +29,8 @@ class BasicTextarea extends React.Component {
             required={this.props.required}
             hidden={this.props.widget.is_hidden}
             placeholder={this.props.widget.attrs.placeholder}
+            rows={this.props.widget.attrs.rows}
+            cols={this.props.widget.attrs.cols}
             onChange={this.props.onChange}
             />
           {helpOrErrorText}
@@ -38,7 +41,6 @@ class BasicTextarea extends React.Component {
 }
 
 BasicTextarea.propTypes = {
-  initial: React.PropTypes.string.isRequired,
   placeholder: React.PropTypes.string.isRequired,
   widget: React.PropTypes.object.isRequired,
   label_suffix: React.PropTypes.string.isRequired,

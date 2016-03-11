@@ -3,15 +3,17 @@ import React from 'react';
 class BasicTextField extends React.Component {
   render() {
     let requiredIndicator = "";
+
     if (this.props.required) {
       requiredIndicator = " *";
     }
 
-    let helpOrErrorText = ""
-    if (this.props.error_messages.invalid) {
-      helpOrErrorText = <span className="error-text">{this.props.error_messages.invalid}</span>
+    let helpOrErrorText
+    // Check if this field appears in the list of error messages passed down
+    if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
+      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>
     }
-    else if ((this.props.help_text)) {
+    else if (this.props.help_text) {
       helpOrErrorText = <span className="help-block">{this.props.help_text}</span>
     }
 
@@ -28,7 +30,6 @@ class BasicTextField extends React.Component {
             className=""
             maxLength={this.props.widget.attrs.maxlength}
             required={this.props.required}
-
             hidden={this.props.widget.is_hidden}
             defaultValue={this.props.initial}
             size="35"
@@ -47,6 +48,7 @@ BasicTextField.propTypes = {
   widget: React.PropTypes.object.isRequired,
   label_suffix: React.PropTypes.string.isRequired,
   label: React.PropTypes.string.isRequired,
+  required: React.PropTypes.bool.isRequired,
   onChange: React.PropTypes.func,
 };
 
@@ -56,6 +58,7 @@ BasicTextField.defaultProps = {
   widget: {},
   label_suffix: '',
   label: '',
+  required: false,
 };
 
 export default BasicTextField;
