@@ -101,18 +101,11 @@ class Module extends React.Component {
   }
   processForm(api_response) {
     if(api_response) {
-
-      console.log("api_response is:");
-      console.log(api_response);
-      
       let profileUnits = [];
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
       profileUnits = api_response.ordered_fields.map( (profileUnitName, index) => {
         let profileUnit = api_response.fields[profileUnitName];
-
-        console.log(profileUnit);
-
         switch (profileUnit.widget.input_type) {
         case "text":
           return <BasicTextField {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;

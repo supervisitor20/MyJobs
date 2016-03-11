@@ -80,7 +80,6 @@ def handle_form(request):
     ctx = {}
     ctx["success"] = True
 
-
     item = None
     if item_id != 'new':
         try:
@@ -126,9 +125,6 @@ def handle_form(request):
             if request.META.get('HTTP_ACCEPT') == 'application/json':
                 return HttpResponse(content_type='application/json',
                                     content=json.dumps(ctx))
-                # remote_form = RemoteForm(form_instance)
-                # return HttpResponse(content_type='application/json',
-                #                     content=json.dumps(remote_form.as_dict()))
             elif request.is_ajax():
                 suggestions = ProfileUnits.suggestions(request.user)
                 return render_to_response('myprofile/suggestions.html',

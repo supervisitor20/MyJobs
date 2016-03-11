@@ -19,7 +19,7 @@ class BasicCheckBox extends React.Component {
     return (
       <div className="row">
         <div className="col-xs-12 col-md-4">
-          <lable>{this.props.label}</lable>
+          <lable>{this.props.label}{requiredIndicator}</lable>
         </div>
         <div className="col-xs-12 col-md-8">
           <input
