@@ -14,7 +14,7 @@ import {Router, Route, IndexRoute, Link} from 'react-router';
 import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
-import BasicDatetimeLocal from '../common/ui/BasicDatetimeLocal';
+import BasicDatetime from '../common/ui/BasicDatetime';
 import BasicMultiselect from '../common/ui/BasicMultiselect';
 
 class Module extends React.Component {
@@ -114,7 +114,7 @@ class Module extends React.Component {
           return <BasicTextarea {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
           break;
         case "date":
-          return <BasicDatetimeLocal {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return <BasicDatetime {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
           break;
         // TODO might need to update this case statement with real value
         case "multiselect":
