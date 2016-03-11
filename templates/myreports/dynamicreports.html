@@ -9,8 +9,8 @@
 
 {% block meta-extra %}
 {% compress css %}
-<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
-<link rel="stylesheet" href="{{STATIC_URL}}andor.css">
+<link rel="stylesheet" href={% static "font-awesome.css" %}>
+<link rel="stylesheet" href={% static "andor.css" %}>
 {% endcompress %}
 {% endblock %}
 
