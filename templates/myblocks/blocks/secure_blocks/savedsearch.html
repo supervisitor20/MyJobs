@@ -24,16 +24,16 @@ ss-btn-link
 <div id="direct-saved-search">
     <div class="saved-search-form">
     <em class="warning">{{ error }}</em>
-    {% if newUserSuccess %}
+    {% if new_user_success %}
     {# The block below is shown when anonymous user successfully adds an email or user adds alternate email #}
-        <em class="success">Success</em><p>Your search was successfully saved. Results will be sent to {{ currentInput }}.</p>
+        <em class="success">Success</em><p>Your search was successfully saved. Results will be sent to {{ current_input }}.</p>
 
     {% elif not search %}
     {# The block below is for the widget given that the saved search is not saved #}
         <div id="cta-saved-search-form">Get new jobs sent directly to your inbox!</div>
         <input placeholder="Your email address" type="text"
                id="saved-search-email" name="saved-search-email"
-               {% if currentInput %}value="{{  currentInput }}"
+               {% if current_input %}value="{{  current_input }}"
                {% elif user.email %}value="{{  user.email }}"{% endif %}>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
         <div class="direct-action-btn" id="saved-search-btn">
@@ -49,12 +49,12 @@ ss-btn-link
 
     {% elif search.is_active %}
     {# The block below is for the widget given that the saved search exists and is active #}
-        <p><b>This search is being sent to {{ search.email }}.</b></p>
+        <p class="confirmation-text"><b>This search is being sent to {{ search.email }}.</b></p>
         <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
 
     {% else %}
     {# Custom code below is for the widget given that the saved search exists but is not active #}
-        <p><b>You have saved this search, but email sending has been deactivated</b></p>
+        <p class="confirmation-text"><b>You have saved this search, but email sending has been deactivated</b></p>
         {# saved-search-btn is linked to "submit" logic. ss-btn-link text is replaced based on content (saving, etc) #}
         <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if search.is_partner_saved_search %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
     {% endif %}
