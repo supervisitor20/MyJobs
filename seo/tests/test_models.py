@@ -178,7 +178,9 @@ class TestRoles(DirectSEOBase):
         """
         SeoSite.admins.count() should return the number of users who can be
         tied back to that company as an admin.
+
         """
+
 
         # can't use create_batch since emails need to be unique and
         # updating the User model disrupts other tests
@@ -187,8 +189,8 @@ class TestRoles(DirectSEOBase):
 
         # When activities are enabled, company user count is determined by
         # the number distinct users assigned a role within that company
-        self.assertEqual(self.company.admins.count(), 0)
         role = RoleFactory(company=self.company, name='Admin')
+        self.assertEqual(self.company.admins.count(), 0)
 
         for user in users:
             user.roles = [role]
