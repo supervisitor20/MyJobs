@@ -3,13 +3,15 @@
 {% load common_tags %}
 {% load postajob_tags %}
 {% load compress %}
+{% load staticfiles %}
 
 {% block directseo_css %}
 {{ block.super }}
 {% compress css %}
-<link rel="stylesheet" href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="{{ STATIC_URL }}custom.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="{{STATIC_URL}}bootstrap/bootstrap-modal.css" type="text/css">
+  <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="{% static "custom.css" %}" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="{% static "bootstrap/bootstrap-modal.css" %}" type="text/css">
+  {{ form.media.css }}
 {% endcompress %}
 {% endblock directseo_css %}
 
@@ -61,7 +63,9 @@
 {% endblock %}
 
 {% block extra-js %}
-<script type="text/javascript" src="{{STATIC_URL}}/bootstrap/bootstrap-modalmanager.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}/bootstrap/bootstrap-modal.js"></script>
-{{ form.media }}
+{% compress js %}
+  <script type="text/javascript" src="{% static "/bootstrap/bootstrap-modalmanager.js" %}"></script>
+  <script type="text/javascript" src="{% static "/bootstrap/bootstrap-modal.js" %}"></script>
+  {{ form.media.js }}
+{% endcompress %}
 {% endblock extra-js %}

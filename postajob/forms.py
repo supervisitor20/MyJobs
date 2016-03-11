@@ -34,7 +34,7 @@ class BaseJobForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = ('postajob.173-18.js', )
 
@@ -443,7 +443,7 @@ class ProductForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = ('postajob.173-18.js', )
 
@@ -533,7 +533,7 @@ class ProductGroupingForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
 
     products_widget = CheckboxSelectMultiple()
@@ -603,7 +603,7 @@ class PurchasedProductNoPurchaseForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = (
             'postajob.173-18.js',
@@ -687,7 +687,7 @@ class PurchasedProductForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = (
             'postajob.173-18.js',
@@ -823,7 +823,7 @@ class OfflinePurchaseForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = ('postajob.173-18.js', )
 
@@ -954,7 +954,7 @@ class CompanyProfileForm(RequestForm):
 
     class Media:
         css = {
-            'all': ('postajob.159-9.css', )
+            'all': ('postajob.css', )
         }
         js = ('postajob.173-18.js', )
 

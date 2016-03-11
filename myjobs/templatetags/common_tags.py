@@ -88,10 +88,9 @@ def get_company_name(user):
     :user: User instance
 
     Outputs:
-    A `QuerySet` of companies for which the user is a `CompanyUser`.
-    """
+    A `QuerySet` of companies for which the user is assigned the "Admin" role.
 
-    # Only return companies for which the user is a company user
+    """
     return Company.objects.filter(role__user=user).distinct()
 
 

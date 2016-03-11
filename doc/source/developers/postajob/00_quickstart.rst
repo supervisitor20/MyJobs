@@ -59,8 +59,8 @@ complicated, and is a four-step process:
   #. Create a site package for the company, which will determine on which
      domains the sold jobs appear.
 
-  #. Create an ``seo.CompanyUser`` for each user who needs to be able to manage
-     these postings.
+  #. Assign each user who needs to be able to manage these postings the
+       company's "Admin" role.
 
   #. Verify access by visiting the posting admin page::
 
