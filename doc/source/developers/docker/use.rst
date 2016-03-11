@@ -32,20 +32,16 @@ Preparation
 
   * Temporarily:
 
-    * Dump of development MySQL database (named dbbackup.sql). For example:
+    * Dump of development MySQL database (named dbbackup.sql). For example::
 
-      ```
-      mysqldump -u root -p db > dbbackup.sql;
-      ```
+          mysqldump -u root -p db > dbbackup.sql;
 
       If you make a dump from a newer version of MySQL than what is in production
       you're going to have a bad time.
 
-    * An archive of a working Solr configuration. For example:
+    * An archive of a working Solr configuration. For example::
 
-      ```
-      cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
-      ```
+          cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
 
       If you make a dump from a newer version of Solr than what is in production
       you're going to have a bad time.
@@ -201,9 +197,9 @@ Start a new terminal
 Access Local Containers with a Browser
 ======================================
 
-Add to ``/etc/hosts``:
+Add to ``/etc/hosts``::
 
-``$myip secure.my.jobs www.my.jobs``
+    $myip secure.my.jobs www.my.jobs
 
 Add other microsites as needed.
 
@@ -217,11 +213,11 @@ Gulp processes our JavaScript applications.
 
 From the root::
 
-dkgg build
+    dkgg build
 
 To run continuously and build on any save::
 
-dkgg watch-tasks watch
+    dkgg watch-tasks watch
 
 Set Up Docker with VM of Windows
 ================================
