@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{% static "custom.css" %}" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{% static "bootstrap/bootstrap-modal.css" %}" type="text/css">
-  {{ form.media.css }}
+  <link rel="stylesheet" href="{% static "postajob.css" %}" rel="stylesheet" type="text/css">
 {% endcompress %}
 {% endblock directseo_css %}
 
@@ -66,6 +66,6 @@
 {% compress js %}
   <script type="text/javascript" src="{% static "/bootstrap/bootstrap-modalmanager.js" %}"></script>
   <script type="text/javascript" src="{% static "/bootstrap/bootstrap-modal.js" %}"></script>
-  {{ form.media.js }}
 {% endcompress %}
+{{ form.media.js }}
 {% endblock extra-js %}
