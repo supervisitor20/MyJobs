@@ -30,7 +30,6 @@ process.on('SIGINT', function() {
 // For development tests:
 //   run gulp watch-tasks watch
 
-var dest = '../static/bundle';
 var produceWebpackProfile = false;
 
 gulp.task('bundle', function(callback) {
