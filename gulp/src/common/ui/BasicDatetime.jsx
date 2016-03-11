@@ -63,4 +63,4 @@ BasicDatetime.defaultProps = {
   required: false,
 };
 
-export default BasicDatetimeLocal;
+export default BasicDatetime;
