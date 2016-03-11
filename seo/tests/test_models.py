@@ -174,10 +174,10 @@ class TestRoles(DirectSEOBase):
         self.user.roles.add(role)
         self.assertTrue(self.company.user_has_access(self.user))
 
-    def test_company_user_count(self):
+    def test_admin_count(self):
         """
-        SeoSite.company_user_count should return the number of users who can be
-        tied back to that company.
+        SeoSite.admins.count() should return the number of users who can be
+        tied back to that company as an admin.
         """
 
         # can't use create_batch since emails need to be unique and
@@ -187,16 +187,12 @@ class TestRoles(DirectSEOBase):
 
         # When activities are enabled, company user count is determined by
         # the number distinct users assigned a role within that company
-        self.assertEqual(self.company.company_user_count, 0)
-        role = RoleFactory(company=self.company)
-
-        # delete company users to prevent the possibility of a false
-        # positive
-        self.company.companyuser_set.all().delete()
+        self.assertEqual(self.company.admins.count(), 0)
+        role = RoleFactory(company=self.company, name='Admin')
 
         for user in users:
             user.roles = [role]
-        self.assertEqual(self.company.company_user_count, 10)
+        self.assertEqual(self.company.admins.count(), 10)
 
 
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
