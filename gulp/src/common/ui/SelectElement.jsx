@@ -4,7 +4,7 @@ export class SelectElement extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      options: [],
+      selectDropped: false,
     };
     this.handleClick = this.handleClick.bind(this);
   }
@@ -12,28 +12,36 @@ export class SelectElement extends Component {
     // get your data from AJAX or wherever and put it in the select
   }
   handleClick() {
-    console.log(this);
-  }
-  successHandler(data) {
-    // assuming data is an array of {name: "foo", value: "bar"}
-    let i;
-    let option;
-    for (i = 0; i < data.length; i++) {
-      option = data[i];
-      this.state.options.push(
-          <option key={i} value={option.value}>{option.name}</option>
-      );
-    }
-    this.forceUpdate();
+    // Pop the popup
+    this.setState({selectDropped: !this.state.selectDropped});
   }
   render() {
+    const {items} = this.props;
+    let dropdown;
+    if (selectDropped) {
+      for (item in items) {
+        <li key={item.name}>item.name</li>;
+      }
+      dropdown = <div className="select-element-menu-container">
+          <ul>
+            {items}
+          </ul>
+        </div> 
+    } else {
+      dropdown = "";
+    }
     return (
-        <div onClick={this.handleClick} className="select-element-outer">
-          <span className="select-element-chosen">Chosen Selection</span>
-          <span className="select-element-arrow">
-            <b role="presentation"></b>
-          </span>
+      <div className="select-element-outer">
+        <div className="select-element-input">
+          <div className="select-element-chosen-container" onClick={this.handleClick}>
+            <span className="select-element-chosen">Chosen Selection</span>
+            <span className="select-element-arrow">
+              <b role="presentation"></b>
+            </span>
+          </div>
         </div>
+        {dropdown}
+      </div>
     );
   }
 }
@@ -43,5 +51,9 @@ SelectElement.propTypes = {
 };
 
 SelectElement.defaultProps = {
-
+  items: {
+    rootOpen: 'open',
+    suggestions: 'dropdown-menu',
+    itemActive: 'active',
+  },
 };

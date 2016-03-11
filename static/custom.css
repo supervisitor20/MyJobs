@@ -3257,27 +3257,33 @@ height: 33px;
 
 /* Select Element React Component Styles */
 .select-element-outer {
+  position: relative;
+}
+.select-element-input {
     background-color: #fff;
-    border: 1px solid #ccc;
     display: inline-block;
-    height: 20px;
-    margin-bottom: 10px;
     font-size: 14px;
-    line-height: 20px;
     color: #555;
     vertical-align: middle;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    width: 100%;
+    border: 1px solid #999;
+    height: 33px;
+    line-height: 33px;
+    margin: 0;
 }
 .select-element-chosen {
   padding: 4px 20px 4px 4px;
+  display: block;
+  line-height: 24px;
 }
 .select-element-arrow {
-  height: 26px;
+  height: 33px;
   position: absolute;
   top: 1px;
-  right: 1px;
+  right: 0;
   width: 20px;
 }
 .select-element-arrow b {
@@ -3291,6 +3297,35 @@ height: 33px;
   position: absolute;
   top: 50%;
   width: 0;
+}
+.select-element-menu-container {
+  background-color: #fff;
+  display: block;
+  font-size: 14px;
+  color: #555;
+  border: 1px solid #999;
+  -webkit-border-radius: 0 0 3px 3px;
+  -moz-border-radius: 0 0 3px 3px;
+  border-radius: 0 0 3px 3px;
+  width: 100%;
+  line-height: 16px;
+  position: absolute;
+  /* position the top at the height of the input, minus the border radius.  33-3=30 */
+  top: 30px;
+  left: 0;
+  z-index: 1;
+}
+.select-element-menu-container ul {
+  list-style-type: none;
+  padding: 0;
+  margin:0;
+}
+.select-element-menu-container ul li {
+  cursor: pointer;
+  padding: 6px;
+}
+.select-element-menu-container ul li:hover {
+  background-color: deeppink;
 }
 /* End Select Element React Component Styles */
 
