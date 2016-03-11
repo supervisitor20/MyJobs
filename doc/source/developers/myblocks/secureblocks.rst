@@ -166,4 +166,4 @@ block.
 
 The current anchor for the tools widget is as such:
 
-`<div data-secure_block_id="sb_toolbar" data-widget_type="toolswidget"></div>`
+`<div data-secure_block_id="sb_toolbar" data-widget_type="tools"></div>`
