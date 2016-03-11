@@ -1,6 +1,6 @@
 $(document).ready(function() {
     //Ensure the page is not using secure blocks for topbar
-    if (!$("*[data-widget_type=toolswidget]").length) {
+    if (!$("*[data-widget_type=tools]").length) {
             get_toolbar();
         }
 });

@@ -443,7 +443,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'includes/topbar.html'
+    base_template = 'myblocks/blocks/secure_blocks/tools.html'
 
     def context(self, request, **kwargs):
         """
@@ -472,7 +472,6 @@ class ToolsWidgetBlock(SecureBlock):
         """
         cookies = []
         caller = None
-        # import ipdb; ipdb.set_trace()
         if request.META.get('HTTP_ORIGIN'):
             caller = request.META.get('HTTP_ORIGIN')
         elif request.META.get('HTTP_REFERER'):
@@ -493,6 +492,13 @@ class ToolsWidgetBlock(SecureBlock):
 
         return cookies
 
+    def required_js(self):
+        """
+        Return a list of all required javascript in URL format
+
+        """
+        return ['%ssecure-blocks/sb-tools.js' % settings.STATIC_URL]
+
 
 class SavedSearchWidgetBlock(SecureBlock):
     """
@@ -501,7 +507,7 @@ class SavedSearchWidgetBlock(SecureBlock):
     search module.
 
     """
-    base_template = 'myblocks/blocks/savedsearchwidget.html'
+    base_template = 'myblocks/blocks/secure_blocks/savedsearch.html'
 
     def context(self, request, **kwargs):
         """
@@ -531,7 +537,7 @@ class SavedSearchWidgetBlock(SecureBlock):
         Return a list of all required javascript in URL format
 
         """
-        return ['%ssaved-search.js' % settings.STATIC_URL]
+        return ['%ssecure-blocks/sb-saved-search.js' % settings.STATIC_URL]
 
 
 class SavedSearchesListWidgetBlock(SecureBlock):
@@ -540,7 +546,7 @@ class SavedSearchesListWidgetBlock(SecureBlock):
     more than five, a link back to the saved search page is provided.
 
     """
-    base_template = 'myblocks/blocks/savedsearcheslistwidget.html'
+    base_template = 'myblocks/blocks/secure_blocks/savedsearchlist.html'
 
     def context(self, request, **kwargs):
         saved_searches_url = request.build_absolute_uri(reverse('saved_search_main'))
@@ -992,7 +998,8 @@ class Page(models.Model):
                 do_redirect = redirect_if_new(**{search_type: job_id})
                 if do_redirect:
                     return do_redirect
-            raise Http404
+            raise Http404("myblocks.models.Page.handle_job_detail_redirect: "
+                          "job does not exist")
 
         if settings.SITE_BUIDS and job.buid not in settings.SITE_BUIDS:
             on_this_site = set(settings.SITE_PACKAGES) & set(job.on_sites)

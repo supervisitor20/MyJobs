@@ -48,8 +48,8 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def test_user_requires_prm_access(self):
         """
-            Verify that the has_access("prm") decorator works properly with this module when
-            ROLES_ENABLED is set to false
+        Verify that the has_access("prm") decorator works properly.
+
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
         self.assertEqual(response.status_code, 200, msg="assert view loaded properly for prm access user")
