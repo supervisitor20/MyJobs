@@ -1475,21 +1475,6 @@ class PartnerLibraryTestCase(MyPartnersTestCase):
 
 class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
-    def test_errd_reachable(self):
-        # Employment Referral Resource Directory
-        url, params = PARTNER_LIBRARY_SOURCES.values()[0].values()
-
-        response = requests.post(url, params)
-        self.assertEqual(response.status_code, 200)
-
-    def test_dvcrd_reachable(self):
-
-        # Disability and Veterans Community Resources Directory
-        url, params = PARTNER_LIBRARY_SOURCES.values()[1].values()
-
-        response = requests.post(url, params)
-        self.assertEqual(response.status_code, 200)
-
     def test_can_create_partner_from_library(self):
         """
         Given a library id, it should be possible to create a valid partner and
