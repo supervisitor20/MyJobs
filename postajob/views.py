@@ -569,9 +569,10 @@ class JobFormView(BaseJobFormView):
     @method_decorator(requires('read job'))
     def get(self, *args, **kwargs):
         company = get_company_or_404(self.request)
-        if 'pk' in kwargs and not self.request.user.can(company, 'update job'):
+        can = self.request.user.can
+        if 'pk' in kwargs and not can(company, 'update job'):
             return MissingActivity()
-        elif not self.request.user.can(company, 'create job'):
+        elif not can(company, 'create job'):
             return MissingActivity()
 
         return super(JobFormView, self).get(*args, **kwargs)
@@ -674,8 +675,13 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'product_update'
     delete_name = 'product_delete'
 
-    @method_decorator(requires('read product'))
     def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        can = self.request.user.can
+        if 'pk' in kwargs and not can(company, 'update product'):
+            return MissingActivity()
+        elif not can(company, 'create product'):
+            return MissingActivity()
         return super(ProductFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):

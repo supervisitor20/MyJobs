@@ -223,8 +223,8 @@ def requires(*activities, **callbacks):
 
             # the user should have at least the activities required by the view
             has_activities = all([
-                bool(request.user.activities),
-                set(activities).issubset(request.user.activities)])
+                bool(request.user.activities(company)),
+                set(activities).issubset(request.user.activities(company))])
 
             if not has_access:
                 return access_callback(request)

@@ -129,7 +129,7 @@ From the Django Admin and User Management Tool
 #. select the appropriate company as the ``canonical_company`` for 
    `your seo site`_.
 #. `enable posting access` for the company chosen above by adding "Posting" to
-   the "Chosen App-Level Access" box in teh "App-Level Access" section.
+   the "Chosen App-Level Access" box in the "App-Level Access" section.
 #. `assign your user a role` which has permission to post.
 
    .. note:: 
@@ -225,7 +225,7 @@ From the Django Admin and User Management Tool
 #. select the appropriate company as the ``canonical_company`` for 
    `your seo site`_.
 #. `enable marketplace access` for the company chosen above by adding "Posting" to
-   the "Chosen App-Level Access" box in teh "App-Level Access" section.
+   the "Chosen App-Level Access" box in the "App-Level Access" section.
 #. `assign your user a role` which has permission to post.
 
 .. _use-cases:
@@ -281,7 +281,7 @@ Views
 =================================== ======================= ===================
 URL Path                            View Name               Required Activities
 =================================== ======================= ===================
-/posting/admin/products             admin_products          read product
+/posting/admin/product              admin_products          read product
 /posting/admin/product/add          ProductFormView         create product
 /posting/admin/product/update       ProductFormView         update product
 /posting/admin/product/group        admin_groupings         read grouping
