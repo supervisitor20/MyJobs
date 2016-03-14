@@ -519,7 +519,6 @@ def remove_anchor_from_url(url):
     return url
 
 @django_csrf_exempt
-@restrict_to_staff()
 @cross_site_verify
 @autoserialize
 def secure_saved_search(request):
