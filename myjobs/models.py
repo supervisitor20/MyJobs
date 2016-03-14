@@ -353,7 +353,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
-    def activities(self, company):
+    def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
 
         return filter(bool, self.roles.filter(company=company).values_list(
@@ -698,8 +698,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return all([
             bool(company.enabled_access),
             set(required_access).issubset(company.enabled_access),
-            bool(self.activities(company)),
-            set(activity_names).issubset(self.activities(company))])
+            bool(self.get_activities(company)),
+            set(activity_names).issubset(self.get_activities(company))])
 
     def send_invite(self, email, company, role_name=None):
         """
