@@ -646,7 +646,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return not packages.exists() or packages.filter(
             owner__role__user=self).exists()
 
-    def can(self, company, *activity_names):
+    def can(self, company, *activity_names, **kwargs):
         """
         Checks if a user may perform certain activities for a company.
 
@@ -654,7 +654,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             :company: The company who's role activities to check.
             :activity_names: Positional arguments are the names of the
                              activities the user wants to perform.
-             belonging to the given company
+            :function: A binary function which takes two iterables and returns
+                       a boolean. It is used to determine whether, based on the
+                       provided activities, this method should return True or
+                       False. By default, this is a set's issubset method,
+                       which means that this method returns true only if a user
+                       can perform *all* activities for the provided company.
 
         Output:
             A boolean signifying whether the provided actions may be performed.
@@ -684,10 +689,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
             # results
             user.can(company, "create example") == False
-        """
 
+        """
         if not company:
             return False
+
+        function = kwargs.get('function', lambda x, y: set(x).issubset(y))
 
         required_access = filter(bool, AppAccess.objects.filter(
             activity__name__in=activity_names).values_list(
@@ -699,7 +706,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             bool(company.enabled_access),
             set(required_access).issubset(company.enabled_access),
             bool(self.get_activities(company)),
-            set(activity_names).issubset(self.get_activities(company))])
+            function(activity_names, self.get_activities(company))])
 
     def send_invite(self, email, company, role_name=None):
         """

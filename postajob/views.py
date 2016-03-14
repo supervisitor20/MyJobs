@@ -162,12 +162,10 @@ def purchasedjobs_overview(request, purchased_product, admin):
 @error_when_site_misconfigured(feature='Microsite Admin is')
 def purchasedmicrosite_admin_overview(request):
     company = get_company(request)
-    can = lambda *activities: request.user.can(company, *activities)
-
-    if not any([can('read product'),
-                can('read request'),
-                can('read offline purchase'),
-                can('read purchased product'), can('read grouping')]):
+    if not request.user.can(company,
+               'read product', 'read request', 'read offline purchase',
+               'read purchased product', 'read grouping',
+               function=lambda x, y: bool(set(x).intersection(y))):
         return MissingActivity()
 
     if settings.SITE:
