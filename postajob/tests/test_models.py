@@ -6,7 +6,6 @@ from django.core import mail
 
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
-from seo.tests.factories import CompanyUserFactory
 from myjobs.models import User
 from postajob.models import (CompanyProfile, Invoice, Job, JobLocation,
                              OfflineProduct, OfflinePurchase, Package,
@@ -23,6 +22,7 @@ from postajob.tests.factories import (JobFactory,
                                       PurchasedProductFactory,
                                       SitePackageFactory)
 from myjobs.tests.setup import MyJobsBase
+from myjobs.tests.factories import RoleFactory
 
 
 class ModelTests(MyJobsBase):
@@ -228,7 +228,12 @@ class ModelTests(MyJobsBase):
                              expected_num_jobs)
         self.assertFalse(self.purchased_product.can_post_more())
 
-    def test_invoice_send_invoice_email(self):
+    def test_invoice_sent_to_specific_email(self):
+        """
+        When `other_recipients` is specified, `send_invoice_email` should
+        send invoices to those email addresses.
+
+        """
         self.create_purchased_job()
         group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
 
@@ -237,51 +242,72 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
         # Only recipient is specified recipient.
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(other_recipients=['this@isa.test']))
-        self.assertItemsEqual(mail.outbox[0].to,
-                              ['this@isa.test'])
+        other_recipients = ['this@isa.test', 'that@isa.test']
+        self.purchased_product.invoice.send_invoice_email(
+            other_recipients=other_recipients)
 
-        mail.outbox = []
+        self.assertItemsEqual(mail.outbox[0].to, other_recipients)
+
+    def test_invoice_sent_to_admins(self):
+        """
+        When a company has postajob admins, invoices should be sent to each of
+        them, unless the behavior is disabled by passing
+        `send_to_admins=False`.
+
+        """
+
+        self.create_purchased_job()
+        group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
+
+        # No one to receive the email.
+        self.purchased_product.invoice.send_invoice_email()
+        self.assertEqual(len(mail.outbox), 0)
 
         # Only recipients are admins.
-        user = CompanyUserFactory(user=self.user, company=self.company)
-        user.group.add(group)
-        user.save()
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
+        self.user.groups.add(group)
         self.purchased_product.invoice.send_invoice_email()
         self.assertItemsEqual(mail.outbox[0].to,
                               [u'user@test.email'])
         self.assertItemsEqual(mail.outbox[0].from_email,
                               'invoice@my.jobs')
 
-        mail.outbox = []
+        self.purchased_product.invoice.send_invoice_email(
+            send_to_admins=False, other_recipients=['this@isa.test'])
+
+        # Only one in .to should be this@isa.test
+        self.assertEquals(len(mail.outbox[1].to), 1)
+        self.assertItemsEqual(mail.outbox[1].to, ['this@isa.test'])
+
+    def test_invoice_sent_to_admins_and_others(self):
+        """
+        If a company has postajob admins and `other_recipients` is specified,
+        emails should be sent to both groups.
+
+        """
+        self.create_purchased_job()
+        group, _ = Group.objects.get_or_create(name=Product.ADMIN_GROUP_NAME)
+
+        # No one to receive the email.
+        self.purchased_product.invoice.send_invoice_email()
+        self.assertEqual(len(mail.outbox), 0)
+
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
+        self.user.groups.add(group)
 
         self.site.email_domain = 'test.domain'
         self.site.save()
 
         # Recipients are admins + specified recipients.
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(other_recipients=['this@isa.test']))
+        self.purchased_product.invoice.send_invoice_email(
+            other_recipients=['this@isa.test'])
         self.assertItemsEqual(mail.outbox[0].to,
                               ['this@isa.test', u'user@test.email'])
         self.assertEqual(mail.outbox[0].from_email,
                          'invoice@test.domain')
 
-        mail.outbox = []
-
-        # Only recipient is this@isa.test (no admins)
-        (self
-         .purchased_product
-         .invoice
-         .send_invoice_email(send_to_admins=False,
-                             other_recipients=['this@isa.test']))
-        # Only one in .to should be this@isa.test
-        self.assertEquals(len(mail.outbox[0].to), 1)
-        self.assertItemsEqual(mail.outbox[0].to, ['this@isa.test'])
 
     def test_invoice_unchanged_after_purchased_product_deletion(self):
         self.create_purchased_job()
@@ -328,8 +354,9 @@ class ModelTests(MyJobsBase):
         self.assertEqual(ProductOrder.objects.all().count(), 0)
 
     def test_request_generation(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
-        cu.make_purchased_microsite_admin()
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
+        self.user.make_purchased_microsite_admin()
 
         self.create_purchased_job()
         self.assertEqual(PurchasedJob.objects.all().count(), 1)
@@ -349,9 +376,10 @@ class ModelTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_offlinepurchase_create_purchased_products(self):
-        user = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=user)
+            owner=self.company, created_by=self.user)
         package = SitePackageFactory(owner=self.company)
         product = ProductFactory(package=package, owner=self.company)
 
@@ -379,7 +407,8 @@ class ModelTests(MyJobsBase):
             self.assertEqual(PurchasedProduct.objects.all().count(), x*2)
 
     def test_offlinepurchase_filter_by_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
             site = SeoSiteFactory(id=x, domain=domain, name=domain)
@@ -388,7 +417,7 @@ class ModelTests(MyJobsBase):
             product = ProductFactory(package=site_package, owner=self.company)
             for y in range(1, 5):
                 purchase = OfflinePurchaseFactory(owner=self.company,
-                                                  created_by=cu)
+                                                  created_by=self.user)
                 OfflineProduct.objects.create(product=product,
                                               offline_purchase=purchase)
             count = OfflinePurchase.objects.filter_by_sites([site]).count()
@@ -397,7 +426,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(OfflinePurchase.objects.all().count(), 60)
 
     def test_invoice_filter_by_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
         for x in range(8800, 8815):
             domain = 'testsite-%s.jobs' % x
             site = SeoSiteFactory(id=x, domain=domain, name=domain)
@@ -407,7 +437,7 @@ class ModelTests(MyJobsBase):
             for y in range(1, 5):
                 # OfflinePurchaseFactory() automatically creates the invoice.
                 purchase = OfflinePurchaseFactory(owner=self.company,
-                                                  created_by=cu)
+                                                  created_by=self.user)
                 OfflineProduct.objects.create(product=product,
                                               offline_purchase=purchase)
             # Confirm it correctly picks up Invoices associated with
@@ -771,7 +801,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_offlinepurchase_filter_by_site_multiple_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 
         single_site_package = SitePackageFactory(owner=self.company)
@@ -785,14 +816,14 @@ class ModelTests(MyJobsBase):
         single_site_product = ProductFactory(package=single_site_package,
                                              owner=self.company)
         single_site_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                      created_by=cu)
+                                                      created_by=self.user)
         OfflineProduct.objects.create(product=single_site_product,
                                       offline_purchase=single_site_purchase)
 
         both_sites_product = ProductFactory(package=both_sites_package,
                                             owner=self.company)
         both_sites_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                     created_by=cu)
+                                                     created_by=self.user)
         OfflineProduct.objects.create(product=both_sites_product,
                                       offline_purchase=both_sites_purchase)
 
@@ -813,7 +844,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(count, 2)
 
     def test_invoice_from_offlinepurchase_filter_by_site_multiple_sites(self):
-        cu = CompanyUserFactory(user=self.user, company=self.company)
+        role = RoleFactory(company=self.company)
+        self.user.roles.add(role)
         site_in_both_packages = SeoSiteFactory(domain='secondsite.jobs', id=7)
 
         single_site_package = SitePackageFactory(owner=self.company)
@@ -827,14 +859,14 @@ class ModelTests(MyJobsBase):
         single_site_product = ProductFactory(package=single_site_package,
                                              owner=self.company)
         single_site_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                      created_by=cu)
+                                                      created_by=self.user)
         OfflineProduct.objects.create(product=single_site_product,
                                       offline_purchase=single_site_purchase)
 
         both_sites_product = ProductFactory(package=both_sites_package,
                                             owner=self.company)
         both_sites_purchase = OfflinePurchaseFactory(owner=self.company,
-                                                     created_by=cu)
+                                                     created_by=self.user)
         OfflineProduct.objects.create(product=both_sites_product,
                                       offline_purchase=both_sites_purchase)
 

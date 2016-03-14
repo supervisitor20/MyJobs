@@ -44,9 +44,7 @@ export class WizardPageDataTypes extends Component {
     return (
       <div>
         <div className="row">
-          <div className="span2" style={{textAlign: 'right'}}>
-          </div>
-          <div className="span4">
+          <div className="col-xs-12">
             <h4>Data Types</h4>
           </div>
         </div>

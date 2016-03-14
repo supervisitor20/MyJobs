@@ -1,8 +1,8 @@
 import React, {PropTypes, Component} from 'react';
-import Button from 'react-bootstrap/lib/Button';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 
+import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
@@ -79,13 +79,19 @@ export class WizardPageFilter extends Component {
     });
   }
 
-  renderRow(displayName, key, content) {
+  renderRow(displayName, key, content, buttonRow, textCenter) {
     return (
-      <div key={key} className="row">
-        <div className="span2" style={{textAlign: 'right'}}>
-          {displayName}
+      <div key={key} className={
+        classnames(
+        {'row': true},
+        {'actions': buttonRow},
+        {'text-center': textCenter})}>
+        <div className="col-xs-12 col-md-4">
+          <label>
+            {displayName}
+          </label>
         </div>
-        <div className="span5">
+        <div className="col-xs-12 col-md-8">
           {content}
         </div>
       </div>
@@ -176,11 +182,11 @@ export class WizardPageFilter extends Component {
         {rows}
         <hr/>
         {this.renderRow('', 'submit',
-          <Button
+          <button
+            className="button"
             onClick={() => reportConfig.run(reportName)}>
             Run Report
-          </Button>)}
-
+          </button>, true, true)}
       </form>
     );
   }

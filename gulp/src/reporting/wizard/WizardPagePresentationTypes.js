@@ -36,9 +36,7 @@ export class WizardPagePresentationTypes extends Component {
     } else {
       rows = Object.keys(data).map(k =>
         <div key={k} className="row">
-          <div className="span2" style={{textAlign: 'right'}}>
-          </div>
-          <div className="span4">
+          <div className="col-xs-12">
             <Link
               to={`/set-up-report/${k}`}>
               {data[k].name}
@@ -51,9 +49,7 @@ export class WizardPagePresentationTypes extends Component {
     return (
       <div>
         <div className="row">
-          <div className="span2" style={{textAlign: 'right'}}>
-          </div>
-          <div className="span4">
+          <div className="col-xs-12">
             <h4>Presentation Types</h4>
           </div>
         </div>
