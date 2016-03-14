@@ -149,13 +149,21 @@ def requires(*activities, **callbacks):
                    check against.
     :callbacks: callbacks['activity_callback'] is a callable to be used as a
                 view response when the use isn't associated with the correct
-                subset of activities. callbacks['access_callback'] is a
-                callable to be used as a view response when the users's company
-                doesn't have the appropriate app access (as determined by the
-                passed in activities).
+                subset of activities.
+
+                callbacks['access_callback'] is a callable to be used as a view
+                response when the users's company doesn't have the appropriate
+                app access (as determined by the passed in activities).
 
                 Both callbacks take a `request` parameter which can be used to
                 do further processing before returning an alternate result.
+
+                callbacks['compare'] is the callable used to compare the
+                requested activities with those a user has access to. By
+                default, we check if a user can perform all activities.
+
+                This callback takes two iterables and returns a boolean
+                signifying whether or not the comparison was successful.
 
     Examples:
     Let's assume that the activities "create user", "read user", "update user",
@@ -163,7 +171,7 @@ def requires(*activities, **callbacks):
     further assume that a `modify_user` view exists. Finally, lets assume that
     the current user belongs to a company, `TestCompany`.
 
-    We might want to decorate that view as follows:
+    We might want to decorate that view as follows::
 
         @requires("read user", "update user")
         def modify_user(request):
@@ -179,7 +187,7 @@ def requires(*activities, **callbacks):
 
     If a `MissingActivity` response is insufficient (because you want to give
     the user some useful information) you may additionally pass an
-    `activity_callback`, which will return the appropriate response:
+    `activity_callback`, which will return the appropriate response::
 
         def callback(request):
             return HttpResponse("<strong>Insufficient permissions. "
@@ -193,9 +201,19 @@ def requires(*activities, **callbacks):
     status code of 200. A similar strategy can be used for customizing the
     response used when app access is missing by passing `access_callback`.
 
+    An example of when the compare callback is useful is when we only care if a
+    user has at least one of the specified activities, such as might be the
+    case on an admin overview page. Thus, we might decorate our view as
+    follows::
+
+        @requires("read product", "read grouping",
+                  compare=lambda x, y: bool(set(x).intersection(y))
+        def admin_overview(request):
+            ...
+
     """
     invalid_callbacks = set(callbacks.keys()).difference({
-        "access_callback", "activity_callback"})
+        "access_callback", "activity_callback", "compare"})
 
     if invalid_callbacks:
         raise TypeError(CALLBACK_ERROR_TEMPLATE.format(callbacks="\n".join(
@@ -204,7 +222,9 @@ def requires(*activities, **callbacks):
     activity_callback = callbacks.get(
         'activity_callback', lambda request: MissingActivity())
     access_callback = callbacks.get(
-            'access_callback', lambda request: MissingAppAccess())
+        'access_callback', lambda request: MissingAppAccess())
+
+    compare = callbacks.get('compare', lambda x, y: set(x).issubset(y))
 
     def decorator(view_func):
         @wraps(view_func)
@@ -224,8 +244,7 @@ def requires(*activities, **callbacks):
             # the user should have at least the activities required by the view
             has_activities = all([
                 bool(request.user.get_activities(company)),
-                set(activities).issubset(
-                    request.user.get_activities(company))])
+                compare(activities, request.user.get_activities(company))])
 
             if not has_access:
                 return access_callback(request)

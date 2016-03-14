@@ -160,14 +160,11 @@ def purchasedjobs_overview(request, purchased_product, admin):
 @user_is_allowed()
 @error_when_company_missing_from_sitepackages(feature='Microsite Admin is')
 @error_when_site_misconfigured(feature='Microsite Admin is')
+@requires('read product', 'read request', 'read offline purchase',
+          'read purchased product', 'read grouping',
+          compare=lambda x, y: bool(set(x).intersection(y)))
 def purchasedmicrosite_admin_overview(request):
     company = get_company(request)
-    if not request.user.can(company,
-               'read product', 'read request', 'read offline purchase',
-               'read purchased product', 'read grouping',
-               function=lambda x, y: bool(set(x).intersection(y))):
-        return MissingActivity()
-
     if settings.SITE:
         sites = settings.SITE.postajob_site_list()
         products = Product.objects.filter_by_sites(sites)
