@@ -1,15 +1,16 @@
 require('babel/register');
 require('babel/polyfill');
+var process = require('process');
 
 var fs = require('fs');
-var path = require('path');
 var gulp = require('gulp');
 var webpack = require('webpack');
 var util = require('gulp-util');
-var gulpif = require('gulp-if');
 var jasmine = require('gulp-jasmine');
-var eslint = require('gulp-eslint');
 
+process.on('SIGINT', function() {
+  process.exit(1);
+});
 
 // This build produces several javascript bundles.
 // * vendor.js - Contains all the libraries we use, bundled and minified.
@@ -26,100 +27,13 @@ var eslint = require('gulp-eslint');
 //
 // For production builds use the default target.
 //
-// For development run the default target, then leave the watch target running.
+// For development tests:
+//   run gulp watch-tasks watch
 
-// These go in vendor.js and are left out of app specific bundles.
-var vendorLibs = [
-  'react',
-  'react-dom',
-  // Importing all of react-bootstrap _really_ bloats the bundle.
-  // Just pull what we use.
-  'react-bootstrap/lib/Button.js',
-  'react-bootstrap/lib/Accordion.js',
-  'react-bootstrap/lib/Panel.js',
-  'react-bootstrap/lib/Glyphicon.js',
-  'react-autosuggest',
-  'fetch-polyfill',
-  'es6-promise',
-  'warning',
-];
-
-var dest = '../static/bundle';
-
-var strip_debug = true;
-
-function webpackConfig() {
-  return {
-    entry: {
-      reporting: './src/reporting/main',
-      manageusers: './src/manageusers/main',
-      nonuseroutreach: './src/nonuseroutreach/main',
-      vendor: vendorLibs,
-    },
-    resolve: {
-      root: path.resolve('src'),
-      // you can now require('file') instead of require('file.coffee')
-      extensions: ['', '.js', '.jsx'],
-      // Thank you internet man! http://stackoverflow.com/a/32444088
-      alias: {
-        'react': path.join(__dirname, 'node_modules', 'react'),
-      },
-    },
-    output: {
-      path: '../static/bundle',
-      filename: '[name].js',
-    },
-    module: {
-      loaders: [
-        {
-          test: /\.js$/,
-          exclude: /node_modules/,
-          loader: "babel-loader",
-          query: {
-            cacheDirectory: true,
-          },
-        },
-        {
-          test: /\.jsx$/,
-          exclude: /node_modules/,
-          loader: "babel-loader",
-          query: {
-            cacheDirectory: true,
-          },
-        },
-      ],
-    },
-    plugins: [],
-  };
-}
+var produceWebpackProfile = false;
 
 gulp.task('bundle', function(callback) {
-  var config = webpackConfig();
-  config.plugins.push(
-    // React is smaller, faster, and silent in this mode.
-    // The warning module is also silent in this mode.
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': '"production"',
-    }),
-    // Factor common code in to vendor.js.
-    // This also establishes the parent relationship between the vendor
-    // and app chunks.
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-    }),
-    // No idea if Dedupe and OccurenceOrder are actually doing anything.
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(),
-    // Minify.
-    // Warnings are off as the output isn't useful in a log.
-    // In development it can be useful to see this output to verify that
-    // dead code removal is doing something sane.
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-      },
-    }));
+  var config = require('./webpack.config.js');
   webpack(config, function(err, stats) {
     if(err) {
       throw new util.PluginError("webpack", err);
@@ -129,98 +43,23 @@ gulp.task('bundle', function(callback) {
       callback('webpack error');
       return;
     }
-    fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
-    callback();
-  });
-});
-
-// Object to use for webpack's in memory cache. This seems to be the only
-// way to have an incremental build with webpack.
-var webpackCache = {};
-
-gulp.task('dev-bundle', function(callback) {
-  // This bundle is tuned for build speed and development convenience.
-  var config = webpackConfig();
-  config.debug = true;
-  config.devtool = 'eval-cheap-module-source-map';
-  config.cache = webpackCache;
-  config.resolve.unsafeCache = true;
-  config.profile = true;
-  config.plugins.push(
-    // Still generate a vendor.js but don't bother factoring any common
-    // app code into it.
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-      minChunks: Infinity,
-    }))
-  webpack(config, function(err, stats) {
-    if(err) {
-      throw new util.PluginError("webpack", err);
+    if (produceWebpackProfile) {
+      fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     }
-    util.log(stats.toString('minimal'));
-    if (stats.hasErrors()) {
-      callback('webpack error');
-      return;
-    }
-    fs.writeFile('profile.json', JSON.stringify(stats.toJson(), null, 4));
     callback();
   });
 });
 
 gulp.task('test', function() {
+  var testConfig = require('./jasmine.json');
   return gulp.src(['./src/**/spec/*.js'])
-    .pipe(jasmine({
-      includeStackTrace: false,
-    }));
-});
-
-function lintOptions() {
-  return {
-    extends: 'airbnb',
-    env: {
-      jasmine: true,
-    },
-    parser: 'babel-eslint',
-    plugins: ['babel'],
-    rules: {
-      "babel/object-curly-spacing": 1,
-      "babel/no-await-in-loop": 2,
-      "no-console":0
-    },
-  };
-}
-
-/**
- * lint-fix: run eslint with fix mode on.
- *
- * This can be helpful in limited circumstances. Be careful.
- *
- * It is not part of watch or the default build. Let's keep it
- * that way.
- */
-gulp.task('lint-fix', function() {
-  function isFixed(file) {
-    return file.eslint != null && file.eslint.fixed;
-  };
-  var lintOpts = lintOptions();
-  lintOpts.fix = true;
-  return gulp.src(['./src/somedir/**/*js'])
-    .pipe(eslint(lintOpts))
-    .pipe(eslint.format())
-    .pipe(gulpif(isFixed, gulp.dest("./src")));
-});
-
-gulp.task('lint', function() {
-  return gulp.src(['./src/**/*.js', './src/**/*.jsx'])
-    .pipe(eslint(lintOptions()))
-    .pipe(eslint.format());
+    .pipe(jasmine(testConfig));
 });
 
 // Build everything. Good way to start after a git checkout.
-gulp.task('build', ['bundle', 'lint', 'test']);
+gulp.task('build', ['bundle', 'test']);
 
-gulp.task('watch-tasks', ['dev-bundle', 'test', 'lint']);
+gulp.task('watch-tasks', ['test']);
 
 // Leave this running in development for a pleasant experience.
 gulp.task('watch', function() {

@@ -1,4 +1,5 @@
 {% extends "base-react.html" %}
+{% load common_tags %}
 {% load compress %}
 {% load staticfiles %}
 
@@ -8,8 +9,10 @@
 {% endblock %}
 
 {% block meta-extra %}
-<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
-<link rel="stylesheet" href="{{STATIC_URL}}andor.174-10.css">
+{% compress css %}
+<link rel="stylesheet" href={% static "font-awesome.css" %}>
+<link rel="stylesheet" href={% static "andor.css" %}>
+{% endcompress %}
 {% endblock %}
 
 {% block content %}
@@ -31,8 +34,5 @@
 <script>
 spinnerImg = "{% static "images/ajax-loader.gif" %}";
 </script>
-{% compress js %}
-<script src="{% static "bundle/vendor.js" %}"></script>
-<script src="{% static "bundle/reporting.js" %}"></script>
-{% endcompress %}
+{% js_bundle "reporting" %}
 {% endblock %}

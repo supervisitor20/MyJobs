@@ -9,7 +9,7 @@ export function LinkRow(props) {
       <div className="col-xs-2" style={{textAlign: 'right'}}>
         <Link to={to}>{label}</Link>
       </div>
-      <div className="col-xs-2 .col-xs-offset-8">{text}</div>
+      <div className="col-xs-2 col-xs-offset-8">{text}</div>
     </div>
   );
 }

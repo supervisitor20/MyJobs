@@ -48,7 +48,7 @@ function save_search() {
   // provided, attempts to get a user from the input and create a new user.
   // Otherwise, uses the currently provided user to create a saved search.
   email_input = $('#saved-search-email').val() || existing_user_email;
-  $(blocks_widget_div).data("current-input", email_input);
+  $(blocks_widget_div).data("current_input", email_input);
   if ($('#saved-search-email') && !validate_email(email_input)) {
     handle_error("Enter a valid email (user@example.com)");
   }
@@ -59,7 +59,7 @@ function save_search() {
 }
 
 function remove_success_flag() {
-  $(blocks_widget_div).data("new-user-success", false);
+  $(blocks_widget_div).data("new_user_success", false);
 }
 
 function reload_widget(callback) {
@@ -89,7 +89,7 @@ function create_saved_search() {
         handle_error(return_data['error'])
       }
       else {
-        $(blocks_widget_div).data("new-user-success", return_data['user_created']);
+        $(blocks_widget_div).data("new_user_success", return_data['user_created']);
         reload_widget(remove_success_flag);
       }
     });

@@ -2,7 +2,7 @@ $(document).ready(function(){
     // Ensure site_name is defined and page isn't using secure blocks for
     // topbar
     if(typeof site_name != 'undefined' &&
-    !$("*[data-widget_type=toolswidget]").length) {
+    !$("*[data-widget_type=tools]").length) {
         get_toolbar(site_name);
     }
 
