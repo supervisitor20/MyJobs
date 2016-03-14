@@ -18,17 +18,24 @@ export class SelectElement extends Component {
   render() {
     const {items} = this.props;
     let dropdown;
-    if (selectDropped) {
-      for (item in items) {
-        <li key={item.name}>item.name</li>;
+    const dropdownItems = [];
+    let item;
+    if (this.state.selectDropped) {
+      for (item of items) {
+        if (item) {
+          console.log(item);
+          dropdownItems.push(<li key={item.key}>{item.name}</li>);
+        }
       }
-      dropdown = <div className="select-element-menu-container">
-          <ul>
-            {items}
-          </ul>
-        </div> 
+      dropdown = (
+      <div className="select-element-menu-container">
+        <ul>
+          {dropdownItems}
+        </ul>
+      </div>
+      );
     } else {
-      dropdown = "";
+      dropdown = '';
     }
     return (
       <div className="select-element-outer">
@@ -47,13 +54,13 @@ export class SelectElement extends Component {
 }
 
 SelectElement.propTypes = {
-
+  items: React.PropTypes.array.isRequired,
 };
 
 SelectElement.defaultProps = {
-  items: {
-    rootOpen: 'open',
-    suggestions: 'dropdown-menu',
-    itemActive: 'active',
-  },
+  items: [
+    {name: 'number 1', key: 1},
+    {name: 'number 2', key: 2},
+    {name: 'number 3', key: 3},
+  ],
 };
