@@ -12,8 +12,7 @@
         {% if company.purchasedproduct_set.exists %}
         <li id="purchased-products" class="{% if request.resolver_match.url_name == 'purchasedproducts_overview' %}active{% endif %}"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
         {% endif %}
-        {% can user company "create product" as can_create_product %}
-        {% if can_create_product %}
+        {% if can_read_product %}
         <li id="posting-admin" class="{% if request.resolver_match.url_name == 'purchasedmicrosite_admin_overview' %}active{% endif %}"><a href="{% url 'purchasedmicrosite_admin_overview' %}">Partner Microsite</a></li>
         {% endif %}
     </ul>
