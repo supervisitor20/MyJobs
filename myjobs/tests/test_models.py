@@ -279,7 +279,7 @@ class TestActivities(MyJobsBase):
         user.roles.add(self.role)
         activities = self.role.activities.values_list('name', flat=True)
 
-        self.assertItemsEqual(user.get_activities(self.company, activities)
+        self.assertItemsEqual(user.get_activities(self.company), activities)
 
     def test_access_code_expiration(self):
         """Any access code older than 1 day should be considered expired."""
