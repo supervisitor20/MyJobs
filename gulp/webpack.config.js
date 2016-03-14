@@ -46,8 +46,10 @@ module.exports = {
       filename: 'vendor.js',
       minChunks: 2,
     }),
-    // No idea if Dedupe and OccurenceOrder are actually doing anything.
+    // Dedupe slightly decreases output size.
     new webpack.optimize.DedupePlugin(),
+    // Webpack docs recommend using this plugin.
+    // It slightly decreasese output size.
     new webpack.optimize.OccurenceOrderPlugin(),
     // Minify.
     // Warnings are off as the output isn't useful in a log.
