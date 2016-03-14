@@ -130,8 +130,8 @@ Library Policy
   shrinkwrap file up to date.
 
 * NPM likes to put a lot of unstable information in the shrinkwrap file.
-  If you find a lot extraneous lines in the diff of `npm-shrinkwrap.json`,
-  run `npm run clean-shrinkwrap`. The diff should be much cleaner and give
+  If you find a lot of extraneous lines in the diff of ``npm-shrinkwrap.json``,
+  run ``npm run clean-shrinkwrap``. The diff should be much cleaner and give
   some insight into the consequenes of the library change.
 
 Practices

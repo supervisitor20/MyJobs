@@ -43,9 +43,7 @@ export class WizardPageReportTypes extends Component {
     return (
       <div>
         <div className="row">
-          <div className="span2" style={{textAlign: 'right'}}>
-          </div>
-          <div className="span4">
+          <div className="col-xs-12">
             <h4>Report Types</h4>
           </div>
         </div>
