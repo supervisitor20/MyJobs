@@ -2,19 +2,17 @@ import React from 'react';
 
 class BasicDatetime extends React.Component {
   render() {
-    let requiredIndicator = "";
-
+    let requiredIndicator = '';
     if (this.props.required) {
-      requiredIndicator = " *";
+      requiredIndicator = ' *';
     }
 
-    let helpOrErrorText
+    let helpOrErrorText;
     // Check if this field appears in the list of error messages passed down
     if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
-      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>
-    }
-    else if ((this.props.help_text)) {
-      helpOrErrorText = <span className="help-block">{this.props.help_text}</span>
+      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>;
+    } else if ((this.props.help_text)) {
+      helpOrErrorText = <span className="help-block">{this.props.help_text}</span>;
     }
     // TODO Was using datetime-local, but didn't find how to detect user's change to the field, to update state
     // Kick this can down the road until we have a wider solution on our date picking field
@@ -47,11 +45,15 @@ class BasicDatetime extends React.Component {
 
 BasicDatetime.propTypes = {
   placeholder: React.PropTypes.string.isRequired,
+  initial: React.PropTypes.string.isRequired,
   widget: React.PropTypes.object.isRequired,
   label_suffix: React.PropTypes.string.isRequired,
   label: React.PropTypes.string.isRequired,
   required: React.PropTypes.bool.isRequired,
   onChange: React.PropTypes.func,
+  name: React.PropTypes.string.isRequired,
+  help_text: React.PropTypes.string.isRequired,
+  errorMessages: React.PropTypes.array.isRequired,
 };
 
 BasicDatetime.defaultProps = {
@@ -61,6 +63,8 @@ BasicDatetime.defaultProps = {
   label_suffix: '',
   label: '',
   required: false,
+  name: '',
+  help_text: '',
 };
 
 export default BasicDatetime;

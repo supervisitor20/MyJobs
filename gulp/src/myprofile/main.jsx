@@ -3,12 +3,11 @@
 /* global module */
 
 import React from 'react';
-import _ from 'lodash-compat';
 import {getCsrf} from 'common/cookie';
 
 
 import {render} from 'react-dom';
-import {Router, Route, IndexRoute, Link} from 'react-router';
+import {Router, Route, IndexRoute} from 'react-router';
 
 
 import BasicTextField from '../common/ui/BasicTextField';
@@ -21,22 +20,21 @@ class Module extends React.Component {
   constructor(props) {
     super(props);
 
-    let form_contents = {};
-    form_contents.csrfmiddlewaretoken = getCsrf();
-    form_contents.module = this.props.location.query.module;
+    const formContents = {};
+    formContents.csrfmiddlewaretoken = getCsrf();
+    formContents.module = this.props.location.query.module;
 
     // Editing existing module
-    if(this.props.params.moduleId){
-      form_contents.id = this.props.params.moduleId
-    }
-    // Creating new module
-    else {
-      form_contents.id = 'new'
+    if (this.props.params.moduleId) {
+      formContents.id = this.props.params.moduleId;
+    } else {
+      // Creating new module
+      formContents.id = 'new';
     }
 
     this.state = {
-      api_response: "",
-      form_contents: form_contents,
+      apiResponse: '',
+      formContents: formContents,
     };
     this.callAPI = this.callAPI.bind(this);
   }
@@ -44,85 +42,75 @@ class Module extends React.Component {
     this.callAPI();
   }
   onChange(event) {
-    const field_id = event.target.name;
-    const form_contents = this.state.form_contents;
+    const fieldID = event.target.name;
+    const formContents = this.state.formContents;
 
     let value;
-    if (event.target.type == "checkbox") {
+    if (event.target.type === 'checkbox') {
       value = event.target.checked;
-    }
-    else if (event.target.type == "select-one") {
+    } else if (event.target.type === 'select-one') {
       value = event.target.value;
-    }
-    else {
+    } else {
       value = event.target.value;
     }
 
-    form_contents[field_id] = value;
+    formContents[fieldID] = value;
 
     this.setState({
-      form_contents: form_contents,
+      formContents: formContents,
     });
   }
-  handleDelete(event) {
+  handleDelete() {
     $.ajax({
-      type: "get",
-      url: "/profile/view/delete?item=" + this.state.form_contents.id,
-      beforeSend: function (xhr){
+      type: 'get',
+      url: '/profile/view/delete?item=' + this.state.formContents.id,
+      beforeSend: function prepSendDelete(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
-      success: (api_response) => {
-        window.location.assign("/profile/view/");
-      }
+      success: () => {
+        window.location.assign('/profile/view/');
+      },
     });
   }
-  handleCancel(event) {
-    window.location.assign("/profile/view/");
+  handleCancel() {
+    window.location.assign('/profile/view/');
   }
-  handleSave(event) {
+  handleSave() {
     $.ajax({
-      type: "post",
-      url: "/profile/api",
-      data: this.state.form_contents,
-      beforeSend: function (xhr){
+      type: 'post',
+      url: '/profile/api',
+      data: this.state.formContents,
+      beforeSend: function prepSendSave(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
-      success: (api_response) => {
-        if(api_response.errors){
+      success: (apiResponse) => {
+        if (apiResponse.errors) {
           this.setState({
-            api_response: api_response,
+            apiResponse: apiResponse,
           });
+        } else {
+          window.location.assign('/profile/view/');
         }
-        else {
-          window.location.assign("/profile/view/");
-        }
-      }
+      },
     });
   }
-  processForm(api_response) {
-    if(api_response) {
-      let profileUnits = [];
+  processForm(apiResponse) {
+    if (apiResponse) {
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
-      profileUnits = api_response.ordered_fields.map( (profileUnitName, index) => {
-        let profileUnit = api_response.fields[profileUnitName];
+      const profileUnits = apiResponse.ordered_fields.map( (profileUnitName, index) => {
+        const profileUnit = apiResponse.fields[profileUnitName];
         switch (profileUnit.widget.input_type) {
-        case "text":
-          return <BasicTextField {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          break;
-        case "textarea":
-          return <BasicTextarea {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          break;
-        case "date":
-          return <BasicDatetime {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          break;
-        // TODO might need to update this case statement with real value
-        case "multiselect":
-          return <BasicMultiselect {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          break;
-        case "checkbox":
-          return <BasicCheckBox {...profileUnit} name={profileUnitName} errorMessages={api_response.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          break;
+        case 'text':
+          return <BasicTextField {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+        case 'textarea':
+          return <BasicTextarea {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+        case 'date':
+          return <BasicDatetime {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+        case 'select':
+          return <BasicMultiselect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+        case 'checkbox':
+          return <BasicCheckBox {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
         default:
         }
       });
@@ -131,34 +119,35 @@ class Module extends React.Component {
   }
   callAPI() {
     $.ajax({
-      type: "get",
-      url: "/profile/api",
-      data: {id: this.state.form_contents.id,
-             module: this.state.form_contents.module},
-      beforeSend: function (xhr){
+      type: 'get',
+      url: '/profile/api',
+      data: {id: this.state.formContents.id,
+             module: this.state.formContents.module},
+      beforeSend: function prepSendCallAPI(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
-      success: (api_response) => {
+      success: (apiResponse) => {
         // Add form fields to state object
-        const form_contents = this.state.form_contents;
-        for (let field in api_response.data) {
-          form_contents[field] = api_response.data[field];
-          // Replace null values with empty strings
-          if(!form_contents[field]){
-            form_contents[field] = "";
+        const formContents = this.state.formContents;
+        for (const field in apiResponse.data) {
+          if (apiResponse.data.hasOwnProperty(field)) {
+            formContents[field] = apiResponse.data[field];
+            // Replace null values with empty strings
+            if (!formContents[field]) {
+              formContents[field] = '';
+            }
           }
-        };
+        }
         this.setState({
-          api_response: api_response,
-          form_contents: form_contents,
+          apiResponse: apiResponse,
+          formContents: formContents,
         });
-      }
+      },
     });
   }
   render() {
-    let form_components = this.processForm(this.state.api_response);
-    let moduleName = this.state.form_contents.module;
-    let id = this.state.form_contents.id;
+    const formComponents = this.processForm(this.state.apiResponse);
+    const moduleName = this.state.formContents.module;
     return (
       <div>
         <div className="row">
@@ -166,13 +155,13 @@ class Module extends React.Component {
             <h1>Edit <small>{moduleName}</small></h1>
           </div>
         </div>
-        <form action='' method='post' id='profile-unit-form' _lpchecked='1'>
-          {form_components}
+        <form action="" method="post" id="profile-unit-form" _lpchecked="1">
+          {formComponents}
           <div className="actions row">
             <div className="col-xs-12 col-md-offset-4 col-md-8 text-center">
-              <a className='button' id='delete' onClick={this.handleDelete.bind(this)}>Delete</a>
-              <a href='/profile/view/' className='button' onClick={this.handleCancel.bind(this)}>Cancel</a>
-              <a className='button primary' id='profile-save' onClick={this.handleSave.bind(this)}>Save</a>
+              <a className="button" id="delete" onClick={this.handleDelete.bind(this)}>Delete</a>
+              <a href="/profile/view/" className="button" onClick={this.handleCancel.bind(this)}>Cancel</a>
+              <a className="button primary" id="profile-save" onClick={this.handleSave.bind(this)}>Save</a>
             </div>
           </div>
         </form>
@@ -181,6 +170,16 @@ class Module extends React.Component {
     );
   }
 }
+
+Module.propTypes = {
+  location: React.PropTypes.object.isRequired,
+  params: React.PropTypes.object.isRequired,
+};
+
+Module.defaultProps = {
+  location: {},
+  params: {},
+};
 
 render((
   <Router>

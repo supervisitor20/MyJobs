@@ -1,6 +1,7 @@
 {% extends "base-react.html" %}
 {% load compress %}
 {% load staticfiles %}
+{% load common_tags %}
 
 {% block site-title %}
     <title>My.jobs - My Profile</title>
@@ -27,11 +28,6 @@
 <script src="{{ STATIC_URL }}es5-sham.min.js"></script>
 <![endif]-->
 
-{% compress js %}
-
-
-<script src="{% static "bundle/vendor.js" %}"></script>
-<script src="{% static "bundle/myprofile.js" %}"></script>
-{% endcompress %}
+{% js_bundle "myprofile" %}
 
 {% endblock %}

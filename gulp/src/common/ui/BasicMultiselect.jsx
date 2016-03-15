@@ -2,32 +2,26 @@ import React from 'react';
 
 class BasicMultiselect extends React.Component {
   render() {
-    let requiredIndicator = "";
+    let requiredIndicator = '';
     if (this.props.required) {
-      requiredIndicator = " *";
+      requiredIndicator = ' *';
     }
 
-    let helpOrErrorText
+    let helpOrErrorText;
     // Check if this field appears in the list of error messages passed down
     if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
-      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>
+      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>;
+    } else if ((this.props.help_text)) {
+      helpOrErrorText = <span className="help-block">{this.props.help_text}</span>;
     }
-    else if ((this.props.help_text)) {
-      helpOrErrorText = <span className="help-block">{this.props.help_text}</span>
+
+    const options = [];
+
+    for (const option in this.props.choices) {
+      if (this.props.choices.hasOwnProperty(option)) {
+        options.push(<option value={this.props.choices[option].value} key={option}>{this.props.choices[option].display}</option>);
+      }
     }
-
-
-    let options = [];
-
-    // TODO will be swapped out with real JSON from API
-    let fake_options_data = {}
-    fake_options_data.value1 = "value 1"
-    fake_options_data.value2 = "value 2"
-    fake_options_data.value3 = "value 3"
-
-    for (let option in fake_options_data) {
-      options.push(<option value={option} key={option}>{fake_options_data[option]}</option>)
-    };
 
     return (
       <div className="row">
@@ -53,11 +47,17 @@ class BasicMultiselect extends React.Component {
 
 BasicMultiselect.propTypes = {
   placeholder: React.PropTypes.string.isRequired,
+  initial: React.PropTypes.string.isRequired,
   widget: React.PropTypes.object.isRequired,
   label_suffix: React.PropTypes.string.isRequired,
   label: React.PropTypes.string.isRequired,
   required: React.PropTypes.bool.isRequired,
   onChange: React.PropTypes.func,
+
+  name: React.PropTypes.string.isRequired,
+  help_text: React.PropTypes.string.isRequired,
+  errorMessages: React.PropTypes.object.isRequired,
+  choices: React.PropTypes.array.isRequired,
 };
 
 BasicMultiselect.defaultProps = {
@@ -67,6 +67,8 @@ BasicMultiselect.defaultProps = {
   label_suffix: '',
   label: '',
   required: false,
+  name: '',
+  help_text: '',
 };
 
 export default BasicMultiselect;
