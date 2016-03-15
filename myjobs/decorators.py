@@ -138,7 +138,7 @@ def at_least_one(x, y):
     Output: A boolean
     
     """
-    return bool(set(x).intersection(y))
+    return not set(x).isdisjoint(y)
 
 
 def requires(*activities, **callbacks):
@@ -220,8 +220,7 @@ def requires(*activities, **callbacks):
     case on an admin overview page. Thus, we might decorate our view as
     follows::
 
-        @requires("read product", "read grouping",
-                  compare=lambda x, y: bool(set(x).intersection(y))
+        @requires("read product", "read grouping", compare=at_least_one)
         def admin_overview(request):
             ...
 
