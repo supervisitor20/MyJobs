@@ -3278,6 +3278,7 @@ height: 33px;
   padding: 4px 20px 4px 4px;
   display: block;
   line-height: 24px;
+  cursor: pointer;
 }
 .select-element-arrow {
   height: 33px;
@@ -3325,7 +3326,7 @@ height: 33px;
   padding: 6px;
 }
 .select-element-menu-container ul li:hover {
-  background-color: deeppink;
+  background-color: #C6D6EA;
 }
 /* End Select Element React Component Styles */
 

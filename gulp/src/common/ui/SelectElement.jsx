@@ -6,25 +6,28 @@ export class SelectElement extends Component {
     this.state = {
       selectDropped: false,
     };
-    this.handleClick = this.handleClick.bind(this);
+    this.popSelectMenu = this.popSelectMenu.bind(this);
   }
   componentDidMount() {
-    // get your data from AJAX or wherever and put it in the select
+    // get your data from props
   }
-  handleClick() {
-    // Pop the popup
+  popSelectMenu() {
     this.setState({selectDropped: !this.state.selectDropped});
   }
+  selectFromMenu(itemKey) {
+    const {onChange} = this.props;
+    onChange(itemKey);
+    this.popSelectMenu();
+  }
   render() {
-    const {items} = this.props;
+    const {items, childSelectName} = this.props;
+    let item;
     let dropdown;
     const dropdownItems = [];
-    let item;
     if (this.state.selectDropped) {
       for (item of items) {
         if (item) {
-          console.log(item);
-          dropdownItems.push(<li key={item.key}>{item.name}</li>);
+          dropdownItems.push(<li key={item.key} onClick={this.selectFromMenu.bind(this, item)}>{item.name}</li>);
         }
       }
       dropdown = (
@@ -40,8 +43,8 @@ export class SelectElement extends Component {
     return (
       <div className="select-element-outer">
         <div className="select-element-input">
-          <div className="select-element-chosen-container" onClick={this.handleClick}>
-            <span className="select-element-chosen">Chosen Selection</span>
+          <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
+            <span className="select-element-chosen">{childSelectName}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>
@@ -55,12 +58,15 @@ export class SelectElement extends Component {
 
 SelectElement.propTypes = {
   items: React.PropTypes.array.isRequired,
+  childSelectName: React.PropTypes.string,
+  onChange: React.PropTypes.func.isRequired,
 };
 
 SelectElement.defaultProps = {
   items: [
     {name: 'number 1', key: 1},
     {name: 'number 2', key: 2},
-    {name: 'number 3', key: 3},
+    {name: 'number #', key: 3},
   ],
+  childSelectName: 'this is a test',
 };

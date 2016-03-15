@@ -5,20 +5,24 @@ export class SelectElementController extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      childSelectName: undefined,
       childSelectValue: undefined,
     };
   }
-  changeHandler(e) {
+  changeHandler(value) {
     this.setState({
-      childSelectValue: e.target.value,
+      childSelectName: value.name,
+      childSelectValue: value.key,
     });
+    console.log(value);
   }
   render() {
+    const {childSelectValue, childSelectName} = this.state;
     return (
       <SelectElement
-        url="http://foo.bar"
-        value={this.state.childSelectValue}
-        onChange={this.changeHandler}
+        onChange={v => this.changeHandler(v)}
+        childSelectValue={childSelectValue}
+        childSelectName={childSelectName}
       />
     );
   }
