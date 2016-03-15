@@ -225,7 +225,7 @@ class User extends React.Component {
 
     const userEmailHelp = this.state.userEmailHelp;
     const roleMultiselectHelp = this.state.roleMultiselectHelp;
-    const apiResponseHelp = this.state.apiResponseHelp;
+    const apiResponseHelp = this.state.apiResponseHelp; 
 
     return (
       <div>
