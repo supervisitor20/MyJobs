@@ -5,10 +5,8 @@
 import React from 'react';
 import {getCsrf} from 'common/cookie';
 
-
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
-
 
 import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
