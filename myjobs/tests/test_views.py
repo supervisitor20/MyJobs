@@ -1089,39 +1089,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         expected_company_names = [c for c in self.user.roles.values_list(
             'company__name', flat=True)]
         self.assertItemsEqual(context_company_names, expected_company_names)
-
-    def test_can_template_tag(self):
-        """
-        The {% can company user activity %} template tag should return False
-        when roles are disabled if passed an activity that includes "role"
-        """
-
-        template = """{% load common_tags %}
-                      {% can user company "read partner" as read_partner %}
-                      {% can user company "read role" as read_role %}"""
-
-        context = Context({
-            'user': self.user, 'company': self.company})
-
-        self.role.activities = self.activities
-        self.user.roles.add(self.role)
-
-        context = Context({
-            'user': self.user, 'company': self.company})
-
-        Template(template).render(context)
-
-        self.assertTrue(context['read_partner'])
-        self.assertTrue(context['read_role'])
-
-        # disable PRM (by removing PRM-related activities when roles are
-        # enabled
-        self.role.remove_activity('read partner')
-        self.role.remove_activity('read role')
-
-        # recreate the context since the last rendering modified it
-        context = Context({
-            'user': self.user, 'company': self.companies[0]})
-        Template(template).render(context)
-        self.assertFalse(context['read_partner'])
-        self.assertFalse(context['read_role'])
