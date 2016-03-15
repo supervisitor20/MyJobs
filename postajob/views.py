@@ -29,7 +29,7 @@ from postajob.decorators import (error_when_site_misconfigured,
 from universal.helpers import (get_company, get_object_or_none,
                                get_company_or_404)
 from universal.views import RequestFormViewBase
-from myjobs.decorators import requires
+from myjobs.decorators import requires, at_least_one
 
 
 @user_is_allowed()
@@ -148,9 +148,9 @@ def purchasedjobs_overview(request, purchased_product, admin):
         'expired_jobs': jobs.filter(is_expired=True)
     }
     if admin:
-        return render_to_response('postajob/%s/purchasedjobs_admin_overview.html'
-                                  % settings.PROJECT,
-                                  data, RequestContext(request))
+        return render_to_response(
+            'postajob/%s/purchasedjobs_admin_overview.html' % settings.PROJECT,
+            data, RequestContext(request))
     else:
         return render_to_response('postajob/%s/purchasedjobs_overview.html'
                                   % settings.PROJECT,
@@ -161,8 +161,7 @@ def purchasedjobs_overview(request, purchased_product, admin):
 @error_when_company_missing_from_sitepackages(feature='Microsite Admin is')
 @error_when_site_misconfigured(feature='Microsite Admin is')
 @requires('read product', 'read request', 'read offline purchase',
-          'read purchased product', 'read grouping',
-          compare=lambda x, y: bool(set(x).intersection(y)))
+          'read purchased product', 'read grouping', compare=at_least_one)
 def purchasedmicrosite_admin_overview(request):
     company = get_company(request)
     if settings.SITE:

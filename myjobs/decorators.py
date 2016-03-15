@@ -127,6 +127,20 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
+def at_least_one(x, y):
+    """
+    Returns ``True`` if any items in x are in y.
+
+    Inputs:
+    :x: An iterable of hashable elements
+    :y: An iterable with the same type of elements as y
+
+    Output: A boolean
+    
+    """
+    return bool(set(x).intersection(y))
+
+
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
