@@ -271,6 +271,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'myjobs.context_processors.current_site_info',
     'myjobs.context_processors.absolute_url',
+    'myjobs.context_processors.webpack_dev_setting',
 )
 
 INTERNAL_IPS = ('127.0.0.1', '216.136.63.6',)

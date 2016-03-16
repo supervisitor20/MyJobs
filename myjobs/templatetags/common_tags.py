@@ -5,7 +5,6 @@ from django import template
 from django.conf import settings
 
 from myjobs import version
-from myjobs.models import User
 from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
@@ -13,38 +12,6 @@ from universal.helpers import get_company
 from django.db.models.loading import get_model
 
 register = template.Library()
-
-
-@register.inclusion_tag("includes/js_bundle.html")
-def js_bundle(app):
-    """Import bundled JS.
-
-    In production: take care of compression and vendoring.
-
-    In development: connect to a local webpack-dev-server for bundles and
-    other dev support infrastructure.
-
-    Development mode is triggered by the setting WEBPACK_DEV_SERVER_BASE_URL.
-    It should be a url to a local webpack-dev-server instance. Don't append
-    a trailing slash.
-
-    Don't set the variable in default_settings.py as it should remain off in
-    production.
-
-    i.e. Docker machine users probably want this:
-    WEBPACK_DEV_SERVER_BASE_URL = 'http://192.168.99.100:8080'
-
-    Linux users probably want something like this:
-    WEBPACK_DEV_SERVER_BASE_URL = 'http://10.10.12.999:8080'
-
-    Linux users need an IP reachable by Modern IE VMs etc.
-    """
-    app_bundle = "bundle/%s.js" % app
-    return {
-        'wp_base_url': settings.WEBPACK_DEV_SERVER_BASE_URL,
-        'app': app,
-        'app_bundle': app_bundle,
-    }
 
 
 @register.simple_tag
