@@ -1,4 +1,5 @@
 {% extends "base-react.html" %}
+{% load common_tags %}
 {% load compress %}
 {% load staticfiles %}
 
@@ -33,8 +34,5 @@
 <script>
 spinnerImg = "{% static "images/ajax-loader.gif" %}";
 </script>
-{% compress js %}
-<script src="{% static "bundle/vendor.js" %}"></script>
-<script src="{% static "bundle/reporting.js" %}"></script>
-{% endcompress %}
+{% js_bundle "reporting" %}
 {% endblock %}
