@@ -1,4 +1,5 @@
 {% extends "base-react.html" %}
+{% load common_tags %}
 {% load compress %}
 {% load staticfiles %}
 
@@ -57,9 +58,6 @@
 SteelToe: https://github.com/jclem/steeltoe -->
 <!-- <script src="{{ STATIC_URL }}steeltoe.js"></script> -->
 
-{% compress js %}
-<script src="{% static "bundle/vendor.js" %}"></script>
-<script src="{% static "bundle/nonuseroutreach.js" %}"></script>
-{% endcompress %}
+{% js_bundle "nonuseroutreach" %}
 
 {% endblock %}
