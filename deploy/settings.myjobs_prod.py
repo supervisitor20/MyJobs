@@ -113,7 +113,6 @@ HAYSTACK_CONNECTIONS = {
 
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
-    'myjobs.context_processors.webpack_dev_setting',
 )
 
 BROKER_HOST = '204.236.236.123'
