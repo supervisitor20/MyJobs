@@ -102,6 +102,7 @@ HAYSTACK_CONNECTIONS = {
 
 TEMPLATE_CONTEXT_PROCESSORS += (
     'mymessages.context_processors.message_lists',
+    'myjobs.context_processors.webpack_dev_setting',
 )
 
 EMAIL_HOST_USER = STAGING_EMAIL_HOST_USER
