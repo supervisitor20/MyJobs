@@ -42,15 +42,15 @@ class BasicTextField extends React.Component {
 }
 
 BasicTextField.propTypes = {
-  placeholder: React.PropTypes.string.isRequired,
-  initial: React.PropTypes.string,
-  widget: React.PropTypes.object.isRequired,
+  onChange: React.PropTypes.func.isRequired,
   label: React.PropTypes.string.isRequired,
-  required: React.PropTypes.bool.isRequired,
-  onChange: React.PropTypes.func,
   name: React.PropTypes.string.isRequired,
-  help_text: React.PropTypes.string.isRequired,
-  errorMessages: React.PropTypes.object.isRequired,
+  placeholder: React.PropTypes.string,
+  initial: React.PropTypes.string,
+  widget: React.PropTypes.object,
+  required: React.PropTypes.bool,
+  help_text: React.PropTypes.string,
+  errorMessages: React.PropTypes.object,
 };
 
 BasicTextField.defaultProps = {
