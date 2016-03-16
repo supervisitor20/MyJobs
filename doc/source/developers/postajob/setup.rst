@@ -152,7 +152,6 @@ The microsites on which a job will be posted to is determined by the site
 package (not to be confused with site familiess) associated with the compnay
 who owns the job. Creating a site package is straight forward.
 
-
 From the Django Shell
 '''''''''''''''''''''
 

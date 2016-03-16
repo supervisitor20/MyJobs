@@ -719,8 +719,13 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'productgrouping_update'
     delete_name = 'productgrouping_delete'
 
-    @method_decorator(requires('read grouping'))
     def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        can = self.request.user.can
+        if 'pk' in kwargs and not can(company, 'update grouping'):
+            return MissingActivity()
+        elif not can(company, 'create grouping'):
+            return MissingActivity()
         return super(ProductGroupingFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
@@ -739,7 +744,6 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
         return MissingActivity()
 
     @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access('product_access'))
     @method_decorator(error_when_company_missing_from_sitepackages(
         feature='Product Groupingsare'))
     @method_decorator(error_when_site_misconfigured(
