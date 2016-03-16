@@ -1,6 +1,6 @@
 import React from 'react';
 
-class BasicMultiselect extends React.Component {
+class BasicSelect extends React.Component {
   render() {
     let requiredIndicator = '';
     if (this.props.required) {
@@ -26,7 +26,7 @@ class BasicMultiselect extends React.Component {
     return (
       <div className="row">
         <div className="col-xs-12 col-md-4">
-          <lable>{this.props.label}{requiredIndicator}</lable>
+          <lable>{this.props.label}{requiredIndicator}:</lable>
         </div>
         <div className="col-xs-12 col-md-8">
           <select
@@ -45,30 +45,28 @@ class BasicMultiselect extends React.Component {
   }
 }
 
-BasicMultiselect.propTypes = {
+BasicSelect.propTypes = {
   placeholder: React.PropTypes.string.isRequired,
-  initial: React.PropTypes.string.isRequired,
+  initial: React.PropTypes.number.isRequired,
   widget: React.PropTypes.object.isRequired,
-  label_suffix: React.PropTypes.string.isRequired,
   label: React.PropTypes.string.isRequired,
   required: React.PropTypes.bool.isRequired,
   onChange: React.PropTypes.func,
-
   name: React.PropTypes.string.isRequired,
   help_text: React.PropTypes.string.isRequired,
   errorMessages: React.PropTypes.object.isRequired,
   choices: React.PropTypes.array.isRequired,
 };
 
-BasicMultiselect.defaultProps = {
+BasicSelect.defaultProps = {
   initial: '',
   placeholder: '',
   widget: {},
-  label_suffix: '',
   label: '',
   required: false,
   name: '',
   help_text: '',
+  errorMessages: {},
 };
 
-export default BasicMultiselect;
+export default BasicSelect;

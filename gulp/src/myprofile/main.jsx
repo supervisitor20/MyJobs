@@ -12,7 +12,7 @@ import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetime from '../common/ui/BasicDatetime';
-import BasicMultiselect from '../common/ui/BasicMultiselect';
+import BasicSelect from '../common/ui/BasicSelect';
 
 class Module extends React.Component {
   constructor(props) {
@@ -106,7 +106,7 @@ class Module extends React.Component {
         case 'date':
           return <BasicDatetime {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
         case 'select':
-          return <BasicMultiselect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return <BasicSelect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
         case 'checkbox':
           return <BasicCheckBox {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
         default:

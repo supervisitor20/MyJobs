@@ -18,7 +18,7 @@ class BasicTextarea extends React.Component {
     return (
       <div className="row">
         <div className="col-xs-12 col-md-4">
-          <lable>{this.props.label}{requiredIndicator}</lable>
+          <lable>{this.props.label}{requiredIndicator}:</lable>
         </div>
         <div className="col-xs-12 col-md-8">
           <textarea
@@ -43,24 +43,23 @@ BasicTextarea.propTypes = {
   placeholder: React.PropTypes.string.isRequired,
   initial: React.PropTypes.string.isRequired,
   widget: React.PropTypes.object.isRequired,
-  label_suffix: React.PropTypes.string.isRequired,
   label: React.PropTypes.string.isRequired,
   required: React.PropTypes.bool.isRequired,
   onChange: React.PropTypes.func,
   name: React.PropTypes.string.isRequired,
   help_text: React.PropTypes.string.isRequired,
-  errorMessages: React.PropTypes.array.isRequired,
+  errorMessages: React.PropTypes.object.isRequired,
 };
 
 BasicTextarea.defaultProps = {
   initial: '',
   placeholder: '',
   widget: {},
-  label_suffix: '',
   label: '',
   required: false,
   name: '',
   help_text: '',
+  errorMessages: {},
 };
 
 export default BasicTextarea;
