@@ -27,9 +27,9 @@ from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
 from postajob.decorators import (error_when_site_misconfigured,
                                  error_when_company_missing_from_sitepackages)
 from universal.helpers import (get_company, get_object_or_none,
-                               get_company_or_404)
+                               get_company_or_404, at_least_one)
 from universal.views import RequestFormViewBase
-from myjobs.decorators import requires, at_least_one
+from myjobs.decorators import requires
 
 
 @user_is_allowed()

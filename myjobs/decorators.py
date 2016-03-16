@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User, AppAccess
-from universal.helpers import get_company_or_404
+from universal.helpers import get_company_or_404, every
 
 
 def user_is_allowed(model=None, pk_name=None, pass_user=False):
@@ -136,7 +136,7 @@ def at_least_one(x, y):
     :y: An iterable with the same type of elements as y
 
     Output: A boolean
-    
+
     """
     return not set(x).isdisjoint(y)
 
@@ -173,11 +173,13 @@ def requires(*activities, **callbacks):
                 do further processing before returning an alternate result.
 
                 callbacks['compare'] is the callable used to compare the
-                requested activities with those a user has access to. By
-                default, we check if a user can perform all activities.
+                requested activities with those a user has access to. Uses
+                `universal.helpers.every` by default, which returns True if the
+                two iterables are identical.
 
                 This callback takes two iterables and returns a boolean
-                signifying whether or not the comparison was successful.
+                signifying whether or not the comparison was successful. See
+                universal.decorators for more built-in compare functions.
 
     Examples:
     Let's assume that the activities "create user", "read user", "update user",
@@ -237,7 +239,7 @@ def requires(*activities, **callbacks):
     access_callback = callbacks.get(
         'access_callback', lambda request: MissingAppAccess())
 
-    compare = callbacks.get('compare', lambda x, y: set(x).issubset(y))
+    compare = callbacks.get('compare', every)
 
     def decorator(view_func):
         @wraps(view_func)
