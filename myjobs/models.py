@@ -28,7 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
 from registration import signals as custom_signals
 from mymessages.models import Message, MessageInfo
-from universal.helpers import get_domain, send_email, invitation_context
+from universal.helpers import (get_domain, send_email, invitation_context,
+                               every)
 
 BAD_EMAIL = ['dropped', 'bounce']
 STOP_SENDING = ['unsubscribe', 'spamreport']
@@ -657,9 +658,9 @@ class User(AbstractBaseUser, PermissionsMixin):
             :compare: A binary function which takes two iterables and returns a
                       boolean. It is used to determine whether, based on the
                       provided activities, this method should return True or
-                      False. By default, this is a set's issubset method, which
-                      means that this method returns true only if a user can
-                      perform *all* activities for the provided company.
+                      False. By default, `universal.helpers.every` is used,
+                      which only returns two if the two iterables contain the
+                      same elements.
 
         Output:
             A boolean signifying whether the provided actions may be performed.
@@ -694,7 +695,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not company:
             return False
 
-        compare = kwargs.get('function', lambda x, y: set(x).issubset(y))
+        compare = kwargs.get('function', every)
 
         required_access = filter(bool, AppAccess.objects.filter(
             activity__name__in=activity_names).values_list(
