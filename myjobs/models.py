@@ -723,10 +723,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Output:
             The invited user if sucessful, otherwise None.
 
-        When roles are disabled, it is sufficient to pass `True` to
-        `role_name`, which will signify that the invited user should be invited
-        as a `CompanyUser`. If `role_name` is unspecified, only the invite is
-        sent.
+        If `role_name` is unspecified, only the invite is sent.
         """
 
         user, _ = User.objects.create_user(

@@ -33,9 +33,6 @@ class BaseJobForm(RequestForm):
         exclude = ('is_syndicated', 'created_by', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     apply_choices = [('link', "Link"), ('email', 'Email'),
@@ -442,9 +439,6 @@ class ProductForm(RequestForm):
                   'is_displayed', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     job_limit_choices = [('unlimited', "Unlimited"),
@@ -531,11 +525,6 @@ class ProductGroupingForm(RequestForm):
         fields = ('products', 'display_title', 'explanation',
                   'name', 'owner', 'is_displayed', )
 
-    class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
-
     products_widget = CheckboxSelectMultiple()
     products = ModelMultipleChoiceField(Product.objects.all(),
                                         widget=products_widget)
@@ -602,9 +591,6 @@ class PurchasedProductNoPurchaseForm(RequestForm):
                   'region', 'country', 'zipcode')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = (
             'postajob.173-18.js',
         )
@@ -686,9 +672,6 @@ class PurchasedProductForm(RequestForm):
                   'region', 'country', 'zipcode')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = (
             'postajob.173-18.js',
         )
@@ -822,9 +805,6 @@ class OfflinePurchaseForm(RequestForm):
                    'redemption_uid', 'products', 'invoice', 'owner', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):
@@ -953,9 +933,6 @@ class CompanyProfileForm(RequestForm):
         exclude = ('company', 'blocked_users', 'customer_of')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):
