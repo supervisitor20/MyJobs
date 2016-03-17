@@ -46,25 +46,23 @@ class BasicSelect extends React.Component {
 }
 
 BasicSelect.propTypes = {
-  placeholder: React.PropTypes.string.isRequired,
-  initial: React.PropTypes.number.isRequired,
-  widget: React.PropTypes.object.isRequired,
+  onChange: React.PropTypes.func.isRequired,
   label: React.PropTypes.string.isRequired,
-  required: React.PropTypes.bool.isRequired,
-  onChange: React.PropTypes.func,
   name: React.PropTypes.string.isRequired,
-  help_text: React.PropTypes.string.isRequired,
-  errorMessages: React.PropTypes.object.isRequired,
+  initial: React.PropTypes.number,
+  widget: React.PropTypes.object,
+  required: React.PropTypes.bool,
+  help_text: React.PropTypes.string,
+  errorMessages: React.PropTypes.object,
   choices: React.PropTypes.array.isRequired,
 };
 
 BasicSelect.defaultProps = {
-  initial: '',
-  placeholder: '',
-  widget: {},
   label: '',
-  required: false,
   name: '',
+  initial: '',
+  widget: {},
+  required: false,
   help_text: '',
   errorMessages: {},
 };

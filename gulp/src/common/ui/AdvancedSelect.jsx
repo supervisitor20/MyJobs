@@ -1,10 +1,17 @@
 import React from 'react';
 
-class SelectElement extends React.Component {
+class AdvancedSelect extends React.Component {
   constructor(props) {
     super(props);
+
+
+    // TODO this.props.initial comes to us as a number, but we want to set currentValue as human readable
+
+
+
     this.state = {
       selectDropped: false,
+      currentValue: this.props.initial,
     };
     this.popSelectMenu = this.popSelectMenu.bind(this);
   }
@@ -14,13 +21,34 @@ class SelectElement extends React.Component {
   popSelectMenu() {
     this.setState({selectDropped: !this.state.selectDropped});
   }
-  selectFromMenu(itemKey) {
-    const {onChange} = this.props;
-    onChange(itemKey);
+
+  test() {
+    console.log('asdf');
+  }
+
+  selectFromMenu(itemKey, name) {
+    // With a basic select we can use an onChange handler and we get a nice event
+    // object. Here we'll fake it
+    const fakeEvent = {};
+    fakeEvent.target = {};
+    fakeEvent.target.name = name;
+    fakeEvent.target.type = 'advanced-select';
+    fakeEvent.target.value = itemKey.value;
+
+    this.props.onChange(fakeEvent);
+    this.setState({currentValue: itemKey.display});
+
     this.popSelectMenu();
   }
   render() {
-    const {choices, childSelectName} = this.props;
+    const {choices, widget} = this.props;
+
+    let rowClasses;
+    if (widget.hidden === true) {
+      rowClasses = 'row hidden';
+    } else {
+      rowClasses = 'row';
+    }
 
     let requiredIndicator = '';
     if (this.props.required) {
@@ -40,11 +68,8 @@ class SelectElement extends React.Component {
     const dropdownItems = [];
     if (this.state.selectDropped) {
       for (item of choices) {
-
-        console.log(item);
-
         if (item) {
-          dropdownItems.push(<li key={item.value} onClick={this.selectFromMenu.bind(this, item)}>{item.display}</li>);
+          dropdownItems.push(<li key={item.display} onClick={this.selectFromMenu.bind(this, item, this.props.name)}>{item.display}</li>);
         }
       }
       dropdown = (
@@ -58,7 +83,7 @@ class SelectElement extends React.Component {
       dropdown = '';
     }
     return (
-      <div className="row">
+      <div className={rowClasses}>
         <div className="col-xs-12 col-md-4">
           <lable>{this.props.label}{requiredIndicator}:</lable>
         </div>
@@ -66,7 +91,7 @@ class SelectElement extends React.Component {
           <div className="select-element-outer">
             <div className="select-element-input">
               <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
-                <span className="select-element-chosen">{childSelectName}</span>
+                <span className="select-element-chosen">{this.state.currentValue}</span>
                 <span className="select-element-arrow">
                   <b role="presentation"></b>
                 </span>
@@ -81,22 +106,26 @@ class SelectElement extends React.Component {
   }
 }
 
-SelectElement.propTypes = {
-  placeholder: React.PropTypes.string.isRequired,
-  widget: React.PropTypes.object.isRequired,
+AdvancedSelect.propTypes = {
+  onChange: React.PropTypes.func.isRequired,
   label: React.PropTypes.string.isRequired,
-  required: React.PropTypes.bool.isRequired,
-  onChange: React.PropTypes.func,
   name: React.PropTypes.string.isRequired,
-  help_text: React.PropTypes.string.isRequired,
-  errorMessages: React.PropTypes.object.isRequired,
+  initial: React.PropTypes.string,
+  widget: React.PropTypes.object,
+  required: React.PropTypes.bool,
+  help_text: React.PropTypes.string,
+  errorMessages: React.PropTypes.object,
   choices: React.PropTypes.array.isRequired,
-  childSelectName: React.PropTypes.string.isRequired,
 };
 
-SelectElement.defaultProps = {
-  childSelectName: '----s',
+AdvancedSelect.defaultProps = {
+  label: '',
+  name: '',
+  initial: '',
+  widget: {},
   required: false,
+  help_text: '',
+  errorMessages: {},
 };
 
-export default SelectElement;
+export default AdvancedSelect;

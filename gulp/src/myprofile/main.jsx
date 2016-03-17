@@ -13,6 +13,8 @@ import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetime from '../common/ui/BasicDatetime';
 import BasicSelect from '../common/ui/BasicSelect';
+// import AdvancedSelect from '../common/ui/AdvancedSelect';
+import FieldWrapper from '../common/ui/FieldWrapper';
 
 class Module extends React.Component {
   constructor(props) {
@@ -93,22 +95,83 @@ class Module extends React.Component {
     });
   }
   processForm(apiResponse) {
+    // const fakeWidget = {'hidden': true};
+
     if (apiResponse) {
+
+      console.log(apiResponse);
+
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
       const profileUnits = apiResponse.ordered_fields.map( (profileUnitName, index) => {
         const profileUnit = apiResponse.fields[profileUnitName];
+
+        function wrap(child) {
+          return (
+            <FieldWrapper
+              label={profileUnit.label}
+              helpText={profileUnit.help_text}
+              errors={apiResponse.errors[profileUnitName]}
+              required={profileUnit.required}
+              key={index}>
+
+              {child}
+
+            </FieldWrapper>
+          );
+        }
         switch (profileUnit.widget.input_type) {
         case 'text':
-          return <BasicTextField {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return wrap(
+            <BasicTextField
+              name={profileUnitName}
+              onChange={this.onChange.bind(this)}
+              required={profileUnit.required}
+              initial={profileUnit.initial}
+              maxLength={profileUnit.widget.maxlength}
+              isHidden={profileUnit.widget.is_hidden}
+              placeholder={profileUnit.widget.attrs.placeholder}
+              />
+          );
         case 'textarea':
-          return <BasicTextarea {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return wrap(
+            <BasicTextarea
+              name={profileUnitName}
+              onChange={this.onChange.bind(this)}
+              required={profileUnit.required}
+              initial={profileUnit.initial}
+              maxLength={profileUnit.widget.maxlength}
+              isHidden={profileUnit.widget.is_hidden}
+              placeholder={profileUnit.widget.attrs.placeholder}
+              />
+          );
         case 'date':
-          return <BasicDatetime {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return wrap(
+            <BasicDatetime
+              name={profileUnitName}
+              onChange={this.onChange.bind(this)}
+              required={profileUnit.required}
+              initial={profileUnit.initial}
+              maxLength={profileUnit.widget.maxlength}
+              isHidden={profileUnit.widget.is_hidden}
+              placeholder={profileUnit.widget.attrs.placeholder}
+              />
+          );
         case 'select':
+          // return <AdvancedSelect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
           return <BasicSelect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
         case 'checkbox':
-          return <BasicCheckBox {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          return wrap(
+            <BasicCheckBox
+              name={profileUnitName}
+              onChange={this.onChange.bind(this)}
+              required={profileUnit.required}
+              initial={profileUnit.initial}
+              maxLength={profileUnit.widget.maxlength}
+              isHidden={profileUnit.widget.is_hidden}
+              placeholder={profileUnit.widget.attrs.placeholder}
+              />
+          );
         default:
         }
       });
