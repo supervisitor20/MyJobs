@@ -5,7 +5,6 @@ from django import template
 from django.conf import settings
 
 from myjobs import version
-from myjobs.models import User
 from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
