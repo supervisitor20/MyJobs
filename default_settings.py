@@ -9,8 +9,6 @@ from os.path import abspath, dirname, basename, join
 
 from secrets import *
 
-ROLES_ENABLED = True
-
 djcelery.setup_loader()
 
 _PATH = PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -182,7 +180,10 @@ CELERY_ROUTES = {
         'queue': 'myjobs',
         'routing_key': 'myjobs.process_batch_events'
     },
-    'tasks.expire_jobs': {},
+    'tasks.expire_jobs': {
+        'queue': 'solr',
+        'routing_key': 'solr.expire_jobs'
+    },
     'tasks.update_solr_from_model': {
         'queue': 'myjobs',
         'routing_key': 'myjobs.expire_jobs'
@@ -664,3 +665,6 @@ EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
 CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'
 
 ENV_URL_PREFIXES = ['qc', 'staging']
+
+# See template tag js_bundle for details.
+WEBPACK_DEV_SERVER_BASE_URL = None

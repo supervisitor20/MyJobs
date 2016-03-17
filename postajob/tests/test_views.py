@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
-from unittest import skip
 
 
 from django.conf import settings
@@ -9,8 +8,9 @@ from django.core.urlresolvers import reverse
 
 from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
-                                         CompanyUserFactory, SeoSiteFactory)
-from myjobs.tests.factories import UserFactory
+                                         SeoSiteFactory)
+from myjobs.tests.factories import (UserFactory, RoleFactory, AppAccessFactory,
+                                    ActivityFactory)
 from postajob.tests.factories import (ProductFactory,
                                       OfflinePurchaseFactory,
                                       OfflineProductFactory,
@@ -33,15 +33,35 @@ from universal.helpers import build_url
 class PostajobTestBase(DirectSEOBase):
     def setUp(self):
         super(PostajobTestBase, self).setUp()
+        self.posting_access = AppAccessFactory(name='Posting')
+        self.marketplace_access = AppAccessFactory(name='MarketPlace')
         self.user = UserFactory(password='5UuYquA@')
-        self.company = CompanyFactory(product_access=True, posting_access=True)
+        self.company = CompanyFactory(
+            app_access=[self.posting_access, self.marketplace_access],
+            product_access=True, posting_access=True)
+        self.posting_activities = [
+            ActivityFactory(name=activity, app_access=self.posting_access)
+            for activity in [
+                "create job", "read job", "update job",
+            ]
+        ]
+        self.marketplace_activities = [
+            ActivityFactory(name=activity, app_access=self.marketplace_access)
+            for activity in [
+                "create product", "read product", "update product",
+                "create grouping", "read grouping", "update grouping",
+                "delete grouping",
+            ]
+        ]
+        self.admin_role = RoleFactory(
+            company=self.company, name='Admin',
+            activities=self.posting_activities + self.marketplace_activities)
+        self.user.roles.add(self.admin_role)
 
         self.site = SeoSiteFactory(canonical_company=self.company)
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
         self.company.job_source_ids.add(self.bu)
-        self.company_user = CompanyUserFactory(user=self.user,
-                                               company=self.company)
 
         SitePackageFactory(owner=self.company)
         self.package = Package.objects.get()
@@ -191,10 +211,10 @@ class ViewTests(PostajobTestBase):
             follow=True)
         self.assertRedirects(
             response,
-            "http://" + self.site.domain + "/login?next=%2Fposting%2Fadmin%2F")
+            "http://" + self.site.domain + "/login?next=/posting/admin/")
 
     def test_job_access_not_company_user(self):
-        self.company_user.delete()
+        self.user.roles.clear()
 
         response = self.client.post(reverse('jobs_overview'))
         self.assertEqual(response.status_code, 404)
@@ -216,10 +236,7 @@ class ViewTests(PostajobTestBase):
         for url in ['request', 'offlinepurchase_add', 'product_add',
                     'productgrouping_add']:
             response = self.client.get(reverse(url), HTTP_HOST='test.jobs')
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("Please contact your member representative to "
-                          "activate this feature.",
-                          response.content)
+            self.assertEqual(response.status_code, 404)
 
     def test_job_access_not_for_company(self):
         new_company = CompanyFactory(name='Another Company', pk=1000)
@@ -677,7 +694,7 @@ class ViewTests(PostajobTestBase):
         response = self.client.post(reverse('purchasedproducts_overview'),
                                     HTTP_HOST='test.jobs')
         self.assertEqual(response.status_code, 200)
-        self.company_user.delete()
+        self.user.roles.clear()
 
         response = self.client.post(reverse('purchasedproducts_overview'),
                                             HTTP_HOST='test.jobs')
@@ -728,7 +745,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem_new_company(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -758,13 +775,16 @@ class ViewTests(PostajobTestBase):
         self.assertIsNotNone(offline_purchase.redeemed_on)
         self.assertIsNotNone(offline_purchase.redeemed_by)
 
-        new_company = offline_purchase.redeemed_by.company
-        self.assertEqual(new_company.name, data['company_name'])
-        self.assertTrue(new_company, 'companyprofile')
+        new_company = Company.objects.get(name=data['company_name'])
+        self.assertTrue(
+            offline_purchase.redeemed_by.roles.filter(
+                company=new_company).exists(),
+            "Was expecting %s to be associated with %s, but they weren't." %(
+                offline_purchase.redeemed_by, new_company))
 
     def test_offlinepurchase_redeem_duplicate_company_name(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -793,7 +813,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         OfflineProductFactory(
             product=self.product, offline_purchase=offline_purchase,
             product_quantity=3)
@@ -824,8 +844,8 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_redeem_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user,
-            redeemed_on=date.today(), redeemed_by=self.company_user)
+            owner=self.company, created_by=self.user,
+            redeemed_on=date.today(), redeemed_by=self.user)
         OfflineProductFactory(
             product=self.product,
             offline_purchase=offline_purchase,
@@ -851,21 +871,9 @@ class ViewTests(PostajobTestBase):
         self.assertIn(offline_purchase.redemption_uid,
                       response.content.decode('utf-8'))
 
-    @skip('Feature disabled for now.')
-    def test_offlinepurchase_add_with_company(self):
-        self.offlinepurchase_form_data['purchasing_company'] = str(self.company.pk)
-        response = self.client.post(reverse('offlinepurchase_add'),
-                                    data=self.offlinepurchase_form_data,
-                                    follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(OfflinePurchase.objects.all().count(), 1)
-        offline_purchase = OfflinePurchase.objects.get()
-        self.assertNotIn(offline_purchase.redemption_uid, response.content)
-        self.assertIsNotNone(offline_purchase.redeemed_on)
-
     def test_offlinepurchase_update(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_update',
@@ -875,7 +883,7 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_delete(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user)
+            owner=self.company, created_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_delete',
@@ -887,8 +895,8 @@ class ViewTests(PostajobTestBase):
 
     def test_offlinepurchase_delete_already_redeemed(self):
         offline_purchase = OfflinePurchaseFactory(
-            owner=self.company, created_by=self.company_user,
-            redeemed_on=date.today(), redeemed_by=self.company_user)
+            owner=self.company, created_by=self.user,
+            redeemed_on=date.today(), redeemed_by=self.user)
         kwargs = {'pk': offline_purchase.pk}
 
         response = self.client.post(reverse('offlinepurchase_delete',
@@ -1051,7 +1059,8 @@ class ViewTests(PostajobTestBase):
     def test_view_request_posted_by_unrelated_company(self):
         company = CompanyFactory(id=2, name='new company')
         user = UserFactory(email='new_company_user@email.com')
-        CompanyUserFactory(user=user, company=company)
+        role = RoleFactory(company=company)
+        user.roles.add(role)
         product = PurchasedProductFactory(
             product=self.product, owner=company)
         PurchasedJobFactory(owner=company, created_by=user,
@@ -1069,8 +1078,8 @@ class ViewTests(PostajobTestBase):
         Trying to access the admin pages for a site that is a part of a package
         which isn't own by a company to which you belong should raise a 404.
         """
-        self.company_user.company = CompanyFactory(pk=41, name="Wrong Company")
-        self.company_user.save()
+        self.admin_role.company = CompanyFactory(pk=41, name="Wrong Company")
+        self.admin_role.save()
 
         for page in ['view_job', 'view_invoice',
                      'purchasedmicrosite_admin_overview', 'admin_products',

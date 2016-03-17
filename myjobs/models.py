@@ -224,14 +224,13 @@ class CustomUserManager(BaseUserManager):
         Outputs:
         :is_member: Boolean representing the user's membership status
         """
-        if settings.ROLES_ENABLED:
-            return user.roles.exists()
-        else:
-            return user.groups.filter(name=group).count() >= 1
+        return not user.is_anonymous() and user.roles.exists()
 
 
 # New in Django 1.5. This is now the default auth user table.
 class User(AbstractBaseUser, PermissionsMixin):
+    ADMIN_GROUP_NAME = 'Partner Microsite Admin'
+
     email = models.EmailField(verbose_name=_("email address"),
                               max_length=255, unique=True, db_index=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
@@ -354,11 +353,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
-    @property
-    def activities(self):
+    def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
 
-        return filter(bool, self.roles.values_list(
+        return filter(bool, self.roles.filter(company=company).values_list(
             'activities__name', flat=True))
 
     def email_user(self, message, email_type=settings.GENERIC, **kwargs):
@@ -646,7 +644,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         packages = site.sitepackage_set
 
         return not packages.exists() or packages.filter(
-            owner__in=self.company_set.all()).exists()
+            owner__role__user=self).exists()
 
     def can(self, company, *activity_names):
         """
@@ -691,30 +689,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not company:
             return False
 
-        if settings.ROLES_ENABLED:
-            required_access = filter(bool, AppAccess.objects.filter(
-                activity__name__in=activity_names).values_list(
-                    'name', flat=True).distinct())
+        required_access = filter(bool, AppAccess.objects.filter(
+            activity__name__in=activity_names).values_list(
+                'name', flat=True).distinct())
 
-            # Company must have correct access and user must have correct
-            # activities
-            return all([
-                bool(company.enabled_access),
-                set(required_access).issubset(company.enabled_access),
-                bool(self.activities),
-                set(activity_names).issubset(self.activities)])
-
-        else:
-            # TODO: Delete after we deploy the roles system
-            is_company_user = company in self.company_set.all()
-            activities = ''.join(activity_names)
-
-            if 'partner' in activities:
-                return is_company_user and company.prm_access
-            elif 'role' in activities:
-                return False
-            else:
-                return is_company_user and company.member
+        # Company must have correct access and user must have correct
+        # activities
+        return all([
+            bool(company.enabled_access),
+            set(required_access).issubset(company.enabled_access),
+            bool(self.get_activities(company)),
+            set(activity_names).issubset(self.get_activities(company))])
 
     def send_invite(self, email, company, role_name=None):
         """
@@ -744,17 +729,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         context_object = ""
         if role_name:
-            if settings.ROLES_ENABLED:
-                assigned_role = Role.objects.get(
-                    company=company, name=role_name)
-                user.roles.add(assigned_role)
-                context_object = assigned_role
-            else:
-                CompanyUser = get_model('seo', 'CompanyUser')
-                company_user, _ = CompanyUser.objects.get_or_create(
-                    user=user, company=company)
-                context_object = company_user
-
+            assigned_role = Role.objects.get(
+                company=company, name=role_name)
+            user.roles.add(assigned_role)
+            context_object = assigned_role
         invitation.send(context_object)
 
         return user
@@ -765,6 +743,11 @@ class User(AbstractBaseUser, PermissionsMixin):
                 'secondaryemail__email', flat=True)) or "None"
     secondary_emails.short_description = "secondary emails"
     secondary_emails.allow_tags = True
+
+    def make_purchased_microsite_admin(self):
+        group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
+        self.groups.add(group)
+
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
@@ -892,9 +875,6 @@ class Activity(models.Model):
     description = models.CharField(max_length=150, blank=False)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.description)
-
-    def get_display_name(self):
         """Returns display_name or name by default."""
         return self.display_name or self.name
 
@@ -904,8 +884,8 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
     """
     When a new activity is created, that activity should immediately be
     associated with the Admin role.
-    """
 
+    """
     if created:
         roles = Role.objects.filter(name="Admin")
         RoleActivities = Role.activities.through

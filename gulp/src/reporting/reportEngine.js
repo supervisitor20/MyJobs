@@ -32,7 +32,7 @@ export class ReportFinder {
 
   async buildReportConfiguration(rpId) {
     const filters = await this.api.getFilters(rpId);
-    const name = await this.api.getDefaultReportName();
+    const name = await this.api.getDefaultReportName(rpId);
     return await this.configBuilder.build(
       name.name, rpId, filters.filters, reportId => this.noteNewReport(reportId));
   }

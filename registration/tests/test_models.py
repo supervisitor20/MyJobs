@@ -14,7 +14,6 @@ from myjobs.models import User
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.setup import MyJobsBase
 from myprofile.tests.factories import PrimaryNameFactory
-from registration.forms import InvitationForm
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
 from seo.tests.factories import CompanyFactory
@@ -222,76 +221,6 @@ class InvitationModelTests(MyJobsBase):
         super(InvitationModelTests, self).setUp()
         self.user.is_superuser = True
         self.user.save()
-
-    def test_invitation_admin_cant_edit(self):
-        """
-        Ensures that there is no way to edit an invitation once it is sent
-        """
-        invitation = InvitationFactory()
-        invitation.send()
-        resp = self.client.get(reverse(
-            'admin:registration_invitation_changelist'))
-        contents = BeautifulSoup(resp.content)
-
-        # We can't edit items via action dropdown.
-        bulk_options = contents.select('select[name=action]')[0]
-        for action in bulk_options.select('option'):
-            self.assertNotEqual('edit_selected', action.attrs['value'])
-
-        # We can't click on the first data cell of a table row to edit.
-        # td 0 is a checkbox. td 1 would normally contain the first field
-        # to be shown as well as an edit link.
-        edit_link = contents.select('td')[1]
-        self.assertEqual(edit_link.text, invitation.invitee_email)
-        self.assertEqual(edit_link.select('a'), [])
-
-        resp = self.client.get(reverse(
-            'admin:registration_invitation_change', args=[invitation.pk]))
-        # We can't guess edit links.
-        self.assertTrue(resp['Location'].endswith(
-            reverse('admin:registration_invitation_changelist')))
-
-    def test_invitation_admin_default_inviting_user(self):
-        """
-        When creating an invitation via the admin, the inviting user should
-        default to the administrative user currently logged in
-        """
-        self.client.post(reverse(
-            'admin:registration_invitation_add'),
-            {'invitee_email': 'email@example.com'})
-        invitation = Invitation.objects.get()
-        invitation.send()
-        self.assertEqual(invitation.inviting_user, self.user)
-
-    def test_invitation_form_creates_invitee(self):
-        """
-        When an invitation is created, set the invitee to the current owner
-        of the email address used or create a new user if one does not exist
-        """
-        data = {
-            'inviting_user': self.user
-        }
-        User.objects.create_user(email='email@example.com', send_email=False)
-        users = []
-        for email in ['email@example.com', 'email2@example.com']:
-            data['invitee_email'] = email
-            form = InvitationForm(data)
-            self.assertTrue(form.is_valid())
-            invitation = form.save()
-            user = User.objects.get_email_owner(email)
-            users.append(user)
-
-            self.assertIsNotNone(invitation.invitee)
-            self.assertEqual(invitation.invitee_email, email)
-
-            # Users created with invitations should receive an invitation
-            # but not a normal user creation email
-            self.assertEqual(len(mail.outbox), 1)
-            email = mail.outbox.pop()
-            self.assertIn("invited you to join My.jobs.", email.body)
-
-        self.assertEqual(len(users), 2)
-        self.assertItemsEqual(users, set(users))
 
     def test_invitation_model_save_success(self):
         self.assertEqual(User.objects.count(), 1)

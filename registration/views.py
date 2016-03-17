@@ -161,6 +161,8 @@ def merge_accounts(request, activation_key):
 def logout(request):
     log_out(request)
     response = redirect('home')
+    # this cookie forces other tabs to logout immediately
+    response.set_cookie('loggedout', True)
     if 'myguid' in request.COOKIES:
         response.delete_cookie(key='myguid', domain='.my.jobs')
     return response
@@ -190,7 +192,8 @@ class DseoLogin(BlockView):
                                        status=Page.PRODUCTION,
                                        page_type=self.page_type)[0]
         except IndexError:
-            raise Http404
+            raise Http404("registration.views.DseoLogin: Page object "
+                          "not found")
         setattr(self, 'page', page)
         return page
 

@@ -25,7 +25,7 @@ export class WizardFilterDateRange extends Component {
               onChange={e =>
                 this.updateField('begin', e.target.value)} />
           </div>
-          <div>
+          <div style={{margin: '20px 0 0'}}>
             <input
               type="text"
               placeholder="end date"

@@ -241,15 +241,13 @@ class TestActivities(MyJobsBase):
         # check for a single activity
         self.assertTrue(user.can(self.company, activities[0]))
 
-        with self.settings(ROLES_ENABLED=True):
-            self.assertFalse(user.can(self.company, "eat a burrito"))
+        self.assertFalse(user.can(self.company, "eat a burrito"))
 
         # check for multiple activities
         self.assertTrue(user.can(self.company, *activities))
 
-        with self.settings(ROLES_ENABLED=True):
-            self.assertFalse(user.can(
-                self.company, activities[0], "eat a burrito"))
+        self.assertFalse(user.can(
+            self.company, activities[0], "eat a burrito"))
 
     def test_send_invite_method(self):
         """
@@ -270,18 +268,18 @@ class TestActivities(MyJobsBase):
 
     def test_activities(self):
         """
-        `User.activities` should return a list of activities associated with
-        this user.
+        `User.get_activities(company)` should return a list of activities
+        associated with this user and company.
 
         """
         user = UserFactory(email="alice1@example.com")
 
-        self.assertItemsEqual(user.activities, [])
+        self.assertItemsEqual(user.get_activities(self.company), [])
 
         user.roles.add(self.role)
         activities = self.role.activities.values_list('name', flat=True)
 
-        self.assertItemsEqual(user.activities, activities)
+        self.assertItemsEqual(user.get_activities(self.company), activities)
 
     def test_access_code_expiration(self):
         """Any access code older than 1 day should be considered expired."""

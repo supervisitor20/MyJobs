@@ -36,31 +36,13 @@ def company_has_access(perm_field):
 
             if not company or (perm_field and not getattr(company, perm_field,
                                                           False)):
-                raise Http404
+                raise Http404("universal.decorators.company_has_access: "
+                              "company doesn't exist or doesn't have "
+                              "{perm} permissions".format(perm=perm_field))
 
             return view_func(request, *args, **kwargs)
         return wraps(view_func)(wrap)
     return decorator
-
-def company_in_sitepackages(view_func):
-    """
-    Raises an Http404 exception if the wrapped view is accessed by a user who
-    isn't a member of a company who owns a site package which includes the
-    current seo site.
-
-    That is, if John is visiting testing.jobs, which is in a site package owned
-    by DirectEmployers, but John isn't a company user for DirectEmployers, he
-    will see a 404 page.
-    """
-    @wraps(view_func)
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_anonymous() and not request.user.can_access_site(
-                settings.SITE):
-            raise Http404
-
-        return view_func(request, *args, **kwargs)
-    return wrap
-
 
 def activate_user(view_func):
     """
@@ -103,9 +85,7 @@ def warn_when(condition, feature, message, link=None, link_text=None,
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            # this decorator factory only works if called with enabled=True or
-            # settings.ROLES_ENABLED is False
-            if not enabled and settings.ROLES_ENABLED:
+            if not enabled:
                 return view_func(request, *args, **kwargs)
 
             if request.user.is_anonymous() and redirect:
@@ -130,9 +110,7 @@ def warn_when(condition, feature, message, link=None, link_text=None,
         return wrap
     return decorator
 
-not_found_when = partial(
-    warn_when,
-    exception=Http404)
+not_found_when = partial(warn_when, exception=Http404)
 
 # TODO: refactor these so that warn_when/not_found_when can be passed in,
 # rather than having a separate function for each one.
@@ -144,33 +122,3 @@ warn_when_inactive = partial(
     message='You have yet to activate your account.',
     link='/accounts/register/resend',
     link_text='Resend Activation')
-
-
-# TODO: Remove this decorator when Roles are deployed, as the internal check
-# in `requires` takes care of this already
-def has_access(feature):
-    """
-    Decorator that signifies which feature permissions are required in order to
-    access the view.
-
-    Inputs:
-        :feature: Name of feature to check permissiosn for.
-
-    Returns:
-        A decorator that raises a 404 if the supplied feature's permission
-        requirements are not met. If no permissions are specified for the given
-        feature, it is assumed that the feature should never be available.
-    """
-
-    # mapping from feature name to a list of conditions to be met.
-    conditions = {
-        'prm': [
-            # not a member company
-            lambda req: not getattr(get_company(req), 'prm_access', False)
-        ]
-    }
-
-    return not_found_when(
-        condition=lambda req: all(c(req) for c in conditions.get(feature, [])),
-        message="Must have %s access to proceed." % feature,
-        feature=feature, enabled=False)

@@ -7,7 +7,7 @@ from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.cache import cache
 from django.db import models, transaction
 from django.forms.formsets import all_valid
@@ -157,7 +157,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
                              ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
-                              'show_saved_search_widget'),
+                              'show_saved_search_widget', 'use_secure_blocks'),
                              'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
@@ -165,7 +165,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                  'percent_featured'),
                 ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
-                 'show_saved_search_widget', ),
+                 'show_saved_search_widget', 'use_secure_blocks'),
                 'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
@@ -479,7 +479,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -749,7 +749,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -882,16 +882,15 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
         """
         return UnorderedChangeList
 
-def parent_site_string(parent_site):
-    return "%s (%s)" % (parent_site.name, parent_site.domain)
-
 class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
     related_search_fields = {
-        'parent_site': ('domain','name' ),
+        'parent_site': ('domain', 'name'),
     }
+
     related_string_functions = {
-        'seosite': parent_site_string,
+        'seosite': lambda site: "%s (%s)" % (site.name, site.domain)
     }
+
     form = SeoSiteForm
     save_on_top = True
     filter_horizontal = ('configurations', 'google_analytics',
@@ -913,7 +912,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
     ]
 
     class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
+        js = ('django_extensions/js/jquery-1.7.2.min.js',)
 
     # Disable bulk delete on this model to prevent accidental catastrophe
     def get_actions(self, request):
@@ -1036,7 +1035,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -1180,8 +1179,14 @@ class CompanyAdmin(admin.ModelAdmin):
 
     def save_model(self, request, instance, form, change):
         invitee_email = form.cleaned_data.get('admin_email')
-        if not invitee_email.startswith("Invitation sent to"):
+
+        try:
             request.user.send_invite(invitee_email, instance, "Admin")
+        except (ValueError, ValidationError):
+            """
+            We already sent an invitation. Actual email validation fails
+            sooner.
+            """
 
         super(CompanyAdmin, self).save_model(request, instance, form, change)
 
@@ -1225,7 +1230,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
     list_display = ('name', 'sites')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
-        ('Basics', {'fields': ['name','value','group','ats_name']}),
+        ('Basics', {'fields': ['name', 'value', 'group', 'ats_name']}),
         ('Sites', {'fields': ['sites']}),
     ]
 
@@ -1233,7 +1238,7 @@ class ATSSourceCodeAdmin(admin.ModelAdmin):
 class ViewSourceAdmin(admin.ModelAdmin):
     form = ViewSourceForm
     save_on_top = True
-    list_display = ('name', 'view_source' , 'sites')
+    list_display = ('name', 'view_source', 'sites')
     search_fields = ['name', 'view_source', 'seosite__name', 'seosite__domain']
     fieldsets = [
         ('Basics', {'fields': [('name', 'view_source')]}),
@@ -1257,13 +1262,13 @@ class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
     inlines = [QParameterAdmin, LocationParameterAdmin, MocParameterAdmin]
     list_display = ('old_path', 'new_path')
     list_filter = ('site__domain',)
+    search_fields = ('old_path', 'new_path')
     related_search_fields = {
         'site': ('domain', )
     }
-    search_fields = ('old_path', 'new_path')
 
     class Media:
-        js = ('django_extensions/js/jquery-1.7.2.min.js', )
+        js = ('django_extensions/js/jquery-1.7.2.min.js',)
 
 
 admin.site.register(CustomFacet, CustomFacetAdmin)

@@ -34,11 +34,9 @@ User Management
     ``User Management`` option found under ``Employer`` in the topbar.
 
   Why don't I see "User Management" in the topbar?
-    First, roles should be enabled by adding ``ROLES_ENABLED = True`` in your
-    Django settings file. Second, the company for which you'd like to manage
-    users should have "User Management" app-level access. Finally, the user
-    attempting to manage users should be assigned a role which has the "read
-    role" activity.
+    First, the company for which you'd like to manage users should have "User
+    Management" app-level access. Then, the user attempting to manage users
+    should be assigned a role which has the "read role" activity.
 
   How do I add app-level access?
     If you navigate to "Companies" in the Django admin (under "Common Tasks")
@@ -61,18 +59,15 @@ Documentation
     This documentation is hosted directly on GitHub using their ``gh-pages``
     feature
 
-  How do I edit this documentation?
-    How you edit this now and how it should be edited in the future are
-    slightly different.
-
-  How do I edit this document *now*?
-    Make changes under the ``doc`` directory on the ``sphinx`` branch like you
-    would any other Sphinx project, then run ``make ghpages`` from the ``doc``
-    directory. 
-
   How will I edit this document in the future?
-    We would add a post_commit hook that triggered ``make ghpages`` once
-    something was merged into the ``quality-control`` branch.
+    There is a Jenkins tasks which builds documentation any time new commits
+    are made to quality-control. If for some reason, you need to do this
+    manually, you can do the following::
+
+      cd doc
+      make html
+      git commit -am "Updated documentation."
+      make ghpages
 
   Why is it so ugly?
     It's completely themeable, so the current look is arbitrary.

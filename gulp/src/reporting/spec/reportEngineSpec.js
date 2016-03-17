@@ -3,7 +3,7 @@ import {
   ReportConfiguration,
 } from '../reportEngine';
 
-import {promiseTest} from '../../util/spec';
+import {promiseTest} from '../../common/spec';
 
 
 class FakeBuilder {
@@ -49,6 +49,7 @@ describe('ReportFinder', () => {
     });
 
     it('can unsubscribe', () => {
+      finder.noteNewReport(22);
       finder.unsubscribeToReportList(ref);
       finder.noteNewReport(33);
       expect(newId).toEqual(22);

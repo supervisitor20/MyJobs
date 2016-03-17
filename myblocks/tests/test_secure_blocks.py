@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from seo.tests.setup import DirectSEOBase
 from seo.tests.factories import SeoSiteFactory, UserFactory
 from myjobs.tests.test_views import TestClient
-from myblocks.models import SavedSearchWidgetBlock
+from myblocks.models import SavedSearchWidgetBlock, ToolsWidgetBlock
 
 class TestSecureBlocks(DirectSEOBase):
     """
@@ -56,22 +56,6 @@ class TestSecureBlocks(DirectSEOBase):
                          msg="got %s! secure block call responded despite bad origin."
                              " check cross site verify logic" % resp.status_code)
 
-    def test_secure_blocks_hiding_properly(self):
-        """
-        TEMP TEST. Ensure that secure blocks does not return anything when non
-        staff user attempts to access the API. Remove when secure blocks is
-        released
-
-        """
-        nonstaff_user = UserFactory(is_staff=False, email="mrT@test.com")
-        self.client.login_user(nonstaff_user)
-        body = '{"blocks": {"my-jobs-logo-1": {}}}'
-        resp = make_cors_request(self.client, self.sb_url, body)
-        self.assertEqual(resp.status_code, 404,
-                         msg="Expected 404 got %s! Non staff user was able to "
-                             "access API while secure blocks disabled for"
-                             " nonstaff" % resp.status_code)
-
     def test_saved_search_includes_required_js(self):
         """
         Ensure requests for saved search widget includes required js
@@ -90,6 +74,14 @@ class TestSecureBlocks(DirectSEOBase):
                                 msg_prefix="Did not find %s in response,"
                                            "missing required js" % js)
 
+    def test_topbar_includes_cookies(self):
+        body = '{"blocks": {"test_tools_widget": {}}}'
+        resp = make_cors_request(self.client, self.sb_url, body)
+        self.assertEqual(resp.status_code, 200,
+                         msg="Expected 200, got %s. User was not able to "
+                             "retrieve blocks for test" % resp.status_code)
+        self.assertEqual(resp.cookies['lastmicrosite'].value,
+                         'http://jobs.example.com')
 
 def make_cors_request(client, url, json_data,
                       http_origin='http://jobs.example.com'):

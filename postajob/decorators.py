@@ -8,13 +8,17 @@ def site_misconfigured(request):
     except AttributeError:
         return True
 
-message_when_site_misconfigured = partial(
-    warn_when,
-    condition=site_misconfigured,
-    message='Please contact your member representative to activate this '
-            'feature.')
-
 error_when_site_misconfigured = partial(
     not_found_when,
     condition=site_misconfigured,
     message='Accessed company owns no site packages.')
+
+error_when_company_missing_from_sitepackages = partial(
+    not_found_when,
+    condition=lambda req:
+    not req.user.is_anonymous()
+    and not req.user.can_access_site(settings.SITE),
+    message="This site is not part of a site package owned by a company user "
+            "has access to.")
+
+

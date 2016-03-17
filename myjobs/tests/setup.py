@@ -99,7 +99,6 @@ class TestClient(Client):
 class MyJobsBase(TestCase):
     def setUp(self):
         settings.ROOT_URLCONF = "myjobs_urls"
-        settings.ROLES_ENABLED = True
         settings.PROJECT = "myjobs"
 
         self.app_access = AppAccessFactory()

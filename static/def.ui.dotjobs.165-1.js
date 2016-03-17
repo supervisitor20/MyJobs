@@ -1,7 +1,11 @@
 $(document).ready(function(){
-    if(typeof site_name != 'undefined') {
+    // Ensure site_name is defined and page isn't using secure blocks for
+    // topbar
+    if(typeof site_name != 'undefined' &&
+    !$("*[data-widget_type=tools]").length) {
         get_toolbar(site_name);
     }
+
 
     $(".imageControl").click(function(){
         node = $(this).attr("data-node"); 

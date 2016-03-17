@@ -12,7 +12,7 @@ from django.forms import (CharField, CheckboxSelectMultiple,
                           RadioSelect, Select, TextInput, ChoiceField)
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
-from seo.models import Company, CompanyUser, SeoSite
+from seo.models import Company, SeoSite
 from postajob.fields import NoValidationChoiceField, SelectWithOptionClasses
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              OfflineProduct, Package, Product, ProductGrouping,
@@ -36,7 +36,7 @@ class BaseJobForm(RequestForm):
         css = {
             'all': ('postajob.159-9.css', )
         }
-        js = ('postajob.160-13.js', )
+        js = ('postajob.173-18.js', )
 
     apply_choices = [('link', "Link"), ('email', 'Email'),
                      ('instructions', 'Instructions')]
@@ -96,7 +96,6 @@ class BaseJobForm(RequestForm):
             URLValidator(apply_link)
         return apply_link
 
-
     def clean(self):
         apply_info = self.cleaned_data.get('apply_info')
         apply_link = self.cleaned_data.get('apply_link')
@@ -104,7 +103,7 @@ class BaseJobForm(RequestForm):
 
         # Require one set of apply instructions.
         if not any([apply_info, apply_link, apply_email]):
-            msg = 'You must supply some type of appliction information.'
+            msg = 'You must supply some type of application information.'
             self._errors['apply_type'] = self.error_class([msg])
             raise ValidationError(msg)
         # Allow only one set of apply instructions.
@@ -446,12 +445,12 @@ class ProductForm(RequestForm):
         css = {
             'all': ('postajob.159-9.css', )
         }
-        js = ('postajob.160-13.js', )
+        js = ('postajob.173-18.js', )
 
     job_limit_choices = [('unlimited', "Unlimited"),
                          ('specific', 'A Specific Number'), ]
     job_limit = CharField(
-        label='Job Limit', widget=RadioSelect(choices=job_limit_choices),
+        label='Job Limit', widget=Select(choices=job_limit_choices),
         help_text=Product.help_text['num_jobs_allowed'], initial='unlimited'
     )
 
@@ -571,16 +570,18 @@ class ProductGroupingForm(RequestForm):
 
 def make_company_from_form(form_instance):
     """
-    Makes a Company, CompanyUser, and CompanyProfile from a form instance.
+    Makes a Company and CompanyProfile from a form instance.
     Form instance must have a new company_name in form_instance.cleaned_data.
     """
-
     cleaned_data = form_instance.cleaned_data
     company_name = cleaned_data.get('company_name')
     form_instance.company = Company.objects.create(name=company_name,
                                                    user_created=True)
-    cu = CompanyUser.objects.create(user=form_instance.request.user,
-                                    company=form_instance.company)
+    form_instance.request.user.roles.add(
+        form_instance.company.role_set.first())
+    form_instance.request.user.roles.add(
+        form_instance.company.role_set.first())
+
     profile = CompanyProfile.objects.create(
         company=form_instance.company,
         address_line_one=cleaned_data.get('address_line_one'),
@@ -591,7 +592,7 @@ def make_company_from_form(form_instance):
         zipcode=cleaned_data.get('zipcode'),
     )
     profile.save()
-    cu.make_purchased_microsite_admin()
+    form_instance.request.user.make_purchased_microsite_admin()
 
 
 class PurchasedProductNoPurchaseForm(RequestForm):
@@ -605,7 +606,7 @@ class PurchasedProductNoPurchaseForm(RequestForm):
             'all': ('postajob.159-9.css', )
         }
         js = (
-            'postajob.160-13.js',
+            'postajob.173-18.js',
         )
 
     address_line_one = CharField(label='Address Line One')
@@ -689,7 +690,7 @@ class PurchasedProductForm(RequestForm):
             'all': ('postajob.159-9.css', )
         }
         js = (
-            'postajob.160-13.js',
+            'postajob.173-18.js',
         )
 
     card_number = CharField(label='Credit Card Number')
@@ -824,7 +825,7 @@ class OfflinePurchaseForm(RequestForm):
         css = {
             'all': ('postajob.159-9.css', )
         }
-        js = ('postajob.160-13.js', )
+        js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):
         super(OfflinePurchaseForm, self).__init__(*args, **kwargs)
@@ -839,8 +840,7 @@ class OfflinePurchaseForm(RequestForm):
 
     def save(self, commit=True):
         self.instance.owner = self.company
-        self.instance.created_by = CompanyUser.objects.get(
-            company=self.company, user=self.request.user)
+        self.instance.created_by = self.request.user
 
         instance = super(OfflinePurchaseForm, self).save(commit)
 
@@ -932,8 +932,7 @@ class OfflinePurchaseRedemptionForm(RequestForm):
         invoice = Invoice.objects.create(**invoice_kwargs)
 
         self.instance.invoice = invoice
-        self.instance.redeemed_by = CompanyUser.objects.get(
-            user=self.request.user, company=self.company)
+        self.instance.redeemed_by = self.request.user
         self.instance.redeemed_on = date.today()
         instance = super(OfflinePurchaseRedemptionForm, self).save(commit)
         instance.create_purchased_products(self.company)
@@ -957,7 +956,7 @@ class CompanyProfileForm(RequestForm):
         css = {
             'all': ('postajob.159-9.css', )
         }
-        js = ('postajob.160-13.js', )
+        js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):
         super(CompanyProfileForm, self).__init__(*args, **kwargs)

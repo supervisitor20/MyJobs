@@ -15,6 +15,38 @@ from django.db.models.loading import get_model
 register = template.Library()
 
 
+@register.inclusion_tag("includes/js_bundle.html")
+def js_bundle(app):
+    """Import bundled JS.
+
+    In production: take care of compression and vendoring.
+
+    In development: connect to a local webpack-dev-server for bundles and
+    other dev support infrastructure.
+
+    Development mode is triggered by the setting WEBPACK_DEV_SERVER_BASE_URL.
+    It should be a url to a local webpack-dev-server instance. Don't append
+    a trailing slash.
+
+    Don't set the variable in default_settings.py as it should remain off in
+    production.
+
+    i.e. Docker machine users probably want this:
+    WEBPACK_DEV_SERVER_BASE_URL = 'http://192.168.99.100:8080'
+
+    Linux users probably want something like this:
+    WEBPACK_DEV_SERVER_BASE_URL = 'http://10.10.12.999:8080'
+
+    Linux users need an IP reachable by Modern IE VMs etc.
+    """
+    app_bundle = "bundle/%s.js" % app
+    return {
+        'wp_base_url': settings.WEBPACK_DEV_SERVER_BASE_URL,
+        'app': app,
+        'app_bundle': app_bundle,
+    }
+
+
 @register.simple_tag
 def cache_buster():
     cache_buster = "?v=%s" % version.cache_buster
@@ -35,11 +67,12 @@ def completion_level(level):
 
     return get_completion(level)
 
+
 @register.assignment_tag
 def can(user, company, *activity_names):
     """Template tag analog to `myjobs.User.can()` method."""
 
-    return user.can(company, *activity_names)
+    return not user.is_anonymous() and user.can(company, *activity_names)
 
 
 @register.simple_tag
@@ -76,14 +109,7 @@ def is_a_group_member(company, user, group):
     requested group
     """
 
-    if settings.ROLES_ENABLED:
-        # deleted users don't have a PK
-        return user.pk and user.roles.exists()
-    else:
-        try:
-            return User.objects.is_group_member(user, group)
-        except ValueError:
-            return False
+    return user.pk and user.roles.exists()
 
 
 @register.assignment_tag
@@ -99,13 +125,7 @@ def get_company_name(user):
     """
 
     # Only return companies for which the user is a company user
-    if settings.ROLES_ENABLED:
-        return Company.objects.filter(role__user=user).distinct()
-    else:
-        try:
-            return user.company_set.all()
-        except ValueError:
-            return Company.objects.none()
+    return Company.objects.filter(role__user=user).distinct()
 
 
 @register.simple_tag(takes_context=True)

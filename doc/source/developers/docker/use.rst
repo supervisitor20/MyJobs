@@ -17,7 +17,7 @@ What to Expect
   deal) and node_modules (occasionally annoying).
 
 Preparation
-=============
+===========
 
 * Clone MyJobs repo.
 * Add these to the root of the repo (get from another developer):
@@ -32,20 +32,16 @@ Preparation
 
   * Temporarily:
 
-    * Dump of development MySQL database (named dbbackup.sql). For example:
+    * Dump of development MySQL database (named dbbackup.sql). For example::
 
-      ```
-      mysqldump -u root -p db > dbbackup.sql;
-      ```
+          mysqldump -u root -p db > dbbackup.sql;
 
       If you make a dump from a newer version of MySQL than what is in production
       you're going to have a bad time.
 
-    * An archive of a working Solr configuration. For example:
+    * An archive of a working Solr configuration. For example::
 
-      ```
-      cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
-      ```
+          cp -r /usr/local/Cellar/solr/5.3.1/server/solr ~/projects/MyJobs
 
       If you make a dump from a newer version of Solr than what is in production
       you're going to have a bad time.
@@ -201,15 +197,39 @@ Start a new terminal
 Access Local Containers with a Browser
 ======================================
 
-Add to ``/etc/hosts``:
+Add to ``/etc/hosts``::
 
-``$myip secure.my.jobs www.my.jobs``
+    $myip secure.my.jobs www.my.jobs
 
 Add other microsites as needed.
 
 Go to http://secure.my.jobs. You should have to click through a security
 warning.
 
+Run Webpack Dev Server
+======================
+
+Add to dev_settings.py::
+
+    WEBPACK_DEV_SERVER_BASE_URL = "https://secure.my.jobs:8080"
+
+Run::
+
+    dkg npm run devserver
+
+Visit the webpack base url above in a browser. Accept the certificate.
+
+Visit a url using one of our JS bundles with a browser.
+
+Change a ``.jsx`` file displayed in the browser. It should auto-reload.
+
+
+Run Tests in the Background
+===========================
+
+From the root::
+
+    dkgg watch-tasks watch
 
 Set Up Docker with VM of Windows
 ================================

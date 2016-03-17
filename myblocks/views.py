@@ -1,5 +1,4 @@
 import json
-import re
 import logging
 
 from django.core.exceptions import SuspiciousOperation
@@ -76,13 +75,13 @@ class BlockView(View):
                                            status=Page.PRODUCTION,
                                            page_type=self.page_type)[0]
             except IndexError:
-                raise Http404
+                raise Http404("myblocks.views.BlockView: Page object does not "
+                              "exist")
         setattr(self, 'page', page)
 
 
 # The django csrf exemption should stay first in this list.
 @django_csrf_exempt
-@restrict_to_staff()
 @cross_site_verify
 @autoserialize
 def secure_blocks(request):
@@ -109,7 +108,7 @@ def secure_blocks(request):
                     request.GET))
         raise SuspiciousOperation(message)
 
-    response = {}
+    response = {'cookies':[]}
 
     for element_id in blocks:
         block = Block.objects.filter(element_id=element_id).first()
@@ -120,6 +119,8 @@ def secure_blocks(request):
                 block = block.cast()
                 rendered = block.render_for_ajax(request, blocks[element_id])
                 response[element_id] = rendered
+                response['cookies'].extend(
+                    block.get_cookies(request, **blocks[element_id]))
             except Exception as ex:
                 logger.warn("Error loading widget: %s" % ex.message)
 
