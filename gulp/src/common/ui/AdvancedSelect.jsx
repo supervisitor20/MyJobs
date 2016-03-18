@@ -3,29 +3,67 @@ import React from 'react';
 class AdvancedSelect extends React.Component {
   constructor(props) {
     super(props);
-
-
-    // TODO this.props.initial comes to us as a number, but we want to set currentValue as human readable
-
-
-
     this.state = {
       selectDropped: false,
-      currentValue: this.props.initial,
+      currentValue: this.props.initial.display,
+      keySelectedIndex: null,
     };
-    this.popSelectMenu = this.popSelectMenu.bind(this);
+    this.openSelectMenu = this.openSelectMenu.bind(this);
+    this.closeSelectMenu = this.closeSelectMenu.bind(this);
   }
   componentDidMount() {
     // get your data from props
   }
-  popSelectMenu() {
-    this.setState({selectDropped: !this.state.selectDropped});
+  onInputKeyDown(event) {
+    const {choices, name} = this.props;
+    const {keySelectedIndex, selectDropped} = this.state;
+    let killEvent = false;
+    let newIndex = keySelectedIndex;
+    if (selectDropped) {
+      const lastIndex = choices.length - 1;
+      if (event.key === 'ArrowDown') {
+        killEvent = true;
+        if (keySelectedIndex < 0 || keySelectedIndex >= lastIndex) {
+          newIndex = 0;
+        } else {
+          newIndex += 1;
+        }
+      } else if (event.key === 'ArrowUp') {
+        killEvent = true;
+        if (keySelectedIndex <= 0 || keySelectedIndex > lastIndex) {
+          newIndex = lastIndex;
+        } else {
+          newIndex -= 1;
+        }
+      } else if (event.key === 'Enter') {
+        killEvent = true;
+        if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
+          this.selectFromMenu(choices[keySelectedIndex], name);
+          return;
+        }
+      } else if (event.key === 'Escape') {
+        this.closeSelectMenu();
+        killEvent = true;
+      }
+    } else if (event.key === 'ArrowDown') {
+      newIndex = 0;
+      this.openSelectMenu();
+    }
+    if (killEvent) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.setState({keySelectedIndex: newIndex});
   }
-
-  test() {
-    console.log('asdf');
+  onMenuItemEnter(index) {
+    this.setState({keySelectedIndex: index});
   }
-
+  openSelectMenu() {
+    this.setState({selectDropped: true});
+  }
+  closeSelectMenu() {
+    this.setState({selectDropped: false});
+  }
   selectFromMenu(itemKey, name) {
     // With a basic select we can use an onChange handler and we get a nice event
     // object. Here we'll fake it
@@ -38,40 +76,31 @@ class AdvancedSelect extends React.Component {
     this.props.onChange(fakeEvent);
     this.setState({currentValue: itemKey.display});
 
-    this.popSelectMenu();
+    this.closeSelectMenu();
   }
   render() {
-    const {choices, widget} = this.props;
+    const {choices} = this.props;
+    const {keySelectedIndex} = this.state;
 
-    let rowClasses;
-    if (widget.hidden === true) {
-      rowClasses = 'row hidden';
-    } else {
-      rowClasses = 'row';
-    }
-
-    let requiredIndicator = '';
-    if (this.props.required) {
-      requiredIndicator = ' *';
-    }
-
-    let helpOrErrorText;
-    // Check if this field appears in the list of error messages passed down
-    if (this.props.errorMessages.hasOwnProperty(this.props.name)) {
-      helpOrErrorText = <span className="error-text">{this.props.errorMessages[this.props.name]}</span>;
-    } else if ((this.props.help_text)) {
-      helpOrErrorText = <span className="help-block">{this.props.help_text}</span>;
-    }
-
-    let item;
     let dropdown;
-    const dropdownItems = [];
+    let dropdownItems = [];
     if (this.state.selectDropped) {
-      for (item of choices) {
-        if (item) {
-          dropdownItems.push(<li key={item.display} onClick={this.selectFromMenu.bind(this, item, this.props.name)}>{item.display}</li>);
+      dropdownItems = choices.map((item, index)=> {
+        let active = '';
+        if (index === keySelectedIndex) {
+          active = 'active';
         }
-      }
+        return (
+          <li
+            key={index}
+            className={active}
+            onMouseEnter={() => this.onMenuItemEnter(index)}
+            onClick={this.selectFromMenu.bind(this, item, this.props.name)}>
+              {item.display}
+            </li>
+          );
+      });
+
       dropdown = (
       <div className="select-element-menu-container">
         <ul>
@@ -83,24 +112,16 @@ class AdvancedSelect extends React.Component {
       dropdown = '';
     }
     return (
-      <div className={rowClasses}>
-        <div className="col-xs-12 col-md-4">
-          <lable>{this.props.label}{requiredIndicator}:</lable>
-        </div>
-        <div className="col-xs-12 col-md-8">
-          <div className="select-element-outer">
-            <div className="select-element-input">
-              <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
-                <span className="select-element-chosen">{this.state.currentValue}</span>
-                <span className="select-element-arrow">
-                  <b role="presentation"></b>
-                </span>
-              </div>
-            </div>
-            {dropdown}
+      <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
+        <div className="select-element-input">
+          <div className="select-element-chosen-container" onClick={this.openSelectMenu}>
+            <span className="select-element-chosen">{this.state.currentValue}</span>
+            <span className="select-element-arrow">
+              <b role="presentation"></b>
+            </span>
           </div>
-          {helpOrErrorText}
         </div>
+        {dropdown}
       </div>
     );
   }
@@ -108,24 +129,22 @@ class AdvancedSelect extends React.Component {
 
 AdvancedSelect.propTypes = {
   onChange: React.PropTypes.func.isRequired,
-  label: React.PropTypes.string.isRequired,
   name: React.PropTypes.string.isRequired,
-  initial: React.PropTypes.string,
-  widget: React.PropTypes.object,
-  required: React.PropTypes.bool,
-  help_text: React.PropTypes.string,
-  errorMessages: React.PropTypes.object,
-  choices: React.PropTypes.array.isRequired,
+  initial: React.PropTypes.shape({
+    value: React.PropTypes.any.isRequired,
+    display: React.PropTypes.string.isRequired,
+  }),
+  choices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  errors: React.PropTypes.arrayOf(React.PropTypes.string),
 };
 
 AdvancedSelect.defaultProps = {
-  label: '',
-  name: '',
   initial: '',
-  widget: {},
-  required: false,
-  help_text: '',
-  errorMessages: {},
 };
 
 export default AdvancedSelect;

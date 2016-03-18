@@ -3332,7 +3332,8 @@ height: 33px;
   cursor: pointer;
   padding: 6px;
 }
-.select-element-menu-container ul li:hover {
+
+.select-element-menu-container ul li.active {
   background-color: #C6D6EA;
 }
 /* End Select Element React Component Styles */

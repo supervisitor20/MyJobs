@@ -8,12 +8,14 @@ import {getCsrf} from 'common/cookie';
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
 
+import {find} from 'lodash-compat/collection';
+
 import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetime from '../common/ui/BasicDatetime';
-import BasicSelect from '../common/ui/BasicSelect';
-// import AdvancedSelect from '../common/ui/AdvancedSelect';
+// import BasicSelect from '../common/ui/BasicSelect';
+import AdvancedSelect from '../common/ui/AdvancedSelect';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
 class Module extends React.Component {
@@ -96,16 +98,11 @@ class Module extends React.Component {
   }
   processForm(apiResponse) {
     // const fakeWidget = {'hidden': true};
-
     if (apiResponse) {
-
-      console.log(apiResponse);
-
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
       const profileUnits = apiResponse.ordered_fields.map( (profileUnitName, index) => {
         const profileUnit = apiResponse.fields[profileUnitName];
-
         function wrap(child) {
           return (
             <FieldWrapper
@@ -158,8 +155,15 @@ class Module extends React.Component {
               />
           );
         case 'select':
-          // return <AdvancedSelect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
-          return <BasicSelect {...profileUnit} name={profileUnitName} errorMessages={apiResponse.errors} onChange={this.onChange.bind(this)} key={index}/>;
+          const initial = find(profileUnit.choices, function(c) { return c.value === profileUnit.initial; });
+          return wrap(
+            <AdvancedSelect
+              name={profileUnitName}
+              onChange={this.onChange.bind(this)}
+              initial={initial}
+              choices={profileUnit.choices}
+              />
+          );
         case 'checkbox':
           return wrap(
             <BasicCheckBox
