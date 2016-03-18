@@ -21,13 +21,15 @@ class Module extends React.Component {
   constructor(props) {
     super(props);
 
+    const {location, params} = this.props;
+
     const formContents = {};
     formContents.csrfmiddlewaretoken = getCsrf();
-    formContents.module = this.props.location.query.module;
+    formContents.module = location.query.module;
 
     // Editing existing module
-    if (this.props.params.moduleId) {
-      formContents.id = this.props.params.moduleId;
+    if (params.moduleId) {
+      formContents.id = params.moduleId;
     } else {
       // Creating new module
       formContents.id = 'new';
@@ -44,7 +46,8 @@ class Module extends React.Component {
   }
   onChange(event) {
     const fieldID = event.target.name;
-    const formContents = this.state.formContents;
+
+    const {formContents} = this.state;
 
     let value;
     if (event.target.type === 'checkbox') {
@@ -62,9 +65,11 @@ class Module extends React.Component {
     });
   }
   handleDelete() {
+    const {formContents} = this.state;
+
     $.ajax({
       type: 'get',
-      url: '/profile/view/delete?item=' + this.state.formContents.id,
+      url: '/profile/view/delete?item=' + formContents.id,
       beforeSend: function prepSendDelete(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
@@ -77,10 +82,12 @@ class Module extends React.Component {
     window.location.assign('/profile/view/');
   }
   handleSave() {
+    const {formContents} = this.state;
+
     $.ajax({
       type: 'post',
       url: '/profile/api',
-      data: this.state.formContents,
+      data: formContents,
       beforeSend: function prepSendSave(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
@@ -96,7 +103,6 @@ class Module extends React.Component {
     });
   }
   processForm(apiResponse) {
-    // const fakeWidget = {'hidden': true};
     if (apiResponse) {
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
@@ -154,7 +160,7 @@ class Module extends React.Component {
               />
           );
         case 'select':
-          const initial = find(profileUnit.choices, function(c) { return c.value === profileUnit.initial; });
+          const initial = find(profileUnit.choices, function findValueOfInitialItem(c) {return c.value === profileUnit.initial;});
           return wrap(
             <Select
               name={profileUnitName}
@@ -182,17 +188,18 @@ class Module extends React.Component {
     }
   }
   callAPI() {
+    const {formContents} = this.state;
+
     $.ajax({
       type: 'get',
       url: '/profile/api',
-      data: {id: this.state.formContents.id,
-             module: this.state.formContents.module},
+      data: {id: formContents.id,
+             module: formContents.module},
       beforeSend: function prepSendCallAPI(xhr) {
         xhr.setRequestHeader('Accept', 'application/json');
       },
       success: (apiResponse) => {
         // Add form fields to state object
-        const formContents = this.state.formContents;
         for (const field in apiResponse.data) {
           if (apiResponse.data.hasOwnProperty(field)) {
             formContents[field] = apiResponse.data[field];
@@ -210,8 +217,10 @@ class Module extends React.Component {
     });
   }
   render() {
-    const formComponents = this.processForm(this.state.apiResponse);
-    const moduleName = this.state.formContents.module;
+    const {formContents, apiResponse} = this.state;
+    const moduleName = formContents.module;
+    const processedFormComponents = this.processForm(apiResponse);
+
     return (
       <div>
         <div className="row">
@@ -220,7 +229,7 @@ class Module extends React.Component {
           </div>
         </div>
         <form action="" method="post" id="profile-unit-form" _lpchecked="1">
-          {formComponents}
+          {processedFormComponents}
           <div className="actions row">
             <div className="col-xs-12 col-md-offset-4 col-md-8 text-center">
               <a

@@ -3,9 +3,11 @@ import React from 'react';
 class Select extends React.Component {
   constructor(props) {
     super(props);
+    const {initial} = this.props;
+
     this.state = {
       selectDropped: false,
-      currentValue: this.props.initial.display,
+      currentValue: initial.display,
       keySelectedIndex: null,
     };
     this.openSelectMenu = this.openSelectMenu.bind(this);
@@ -67,26 +69,27 @@ class Select extends React.Component {
     this.setState({selectDropped: false});
   }
   selectFromMenu(itemKey, name) {
-    // With a basic select we can use an onChange handler and we get a nice event
-    // object. Here we'll fake it
+    const {onChange} = this.props;
+    // With an HTML select we can use an onChange handler and we get a nice event
+    // object. Here we have to fake it.
     const fakeEvent = {};
     fakeEvent.target = {};
     fakeEvent.target.name = name;
     fakeEvent.target.type = 'advanced-select';
     fakeEvent.target.value = itemKey.value;
 
-    this.props.onChange(fakeEvent);
+    onChange(fakeEvent);
     this.setState({currentValue: itemKey.display});
 
     this.closeSelectMenu();
   }
   render() {
-    const {choices} = this.props;
-    const {keySelectedIndex} = this.state;
+    const {choices, name} = this.props;
+    const {keySelectedIndex, selectDropped, currentValue} = this.state;
 
     let dropdown;
     let dropdownItems = [];
-    if (this.state.selectDropped) {
+    if (selectDropped) {
       dropdownItems = choices.map((item, index)=> {
         let active = '';
         if (index === keySelectedIndex) {
@@ -97,7 +100,7 @@ class Select extends React.Component {
             key={index}
             className={active}
             onMouseEnter={() => this.onMenuItemEnter(index)}
-            onClick={() => this.selectFromMenu(this, item, this.props.name)}>
+            onClick={() => this.selectFromMenu(this, item, name)}>
               {item.display}
             </li>
           );
@@ -117,7 +120,7 @@ class Select extends React.Component {
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input">
           <div className="select-element-chosen-container" onClick={this.openSelectMenu}>
-            <span className="select-element-chosen">{this.state.currentValue}</span>
+            <span className="select-element-chosen">{currentValue}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>
