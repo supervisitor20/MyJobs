@@ -596,6 +596,8 @@ def topbar(request):
                             value=last_name,
                             max_age=max_age,
                             domain='.my.jobs')
+        ctx['current_microsite_name'] = last_name
+        ctx['current_microsite_url'] = caller
 
     html = render_to_response('includes/topbar.html', ctx,
                               RequestContext(request))
