@@ -183,19 +183,20 @@ export class ReportConfiguration {
   }
 
   async run() {
-    const response = await this.api.runReport(
-      this.rpId,
-      this.name,
-      this.getFilter());
-    const {ok: reportId, clienterrors} = response;
-    if (reportId) {
+    try {
+      const response = await this.api.runReport(
+        this.rpId,
+        this.name,
+        this.getFilter());
       this.overallErrors = null;
       this.nameErrors = null;
-      this.newReportNote(reportId);
-    } else {
-      const partitioned = partition(clienterrors, e => e.field === 'name');
-      const messagesOnly = map(partitioned, o => pluck(o, 'message'));
-      [this.nameErrors, this.overallErrors] = messagesOnly;
+      this.newReportNote(response.id);
+    } catch (exc) {
+      if (exc.data) {
+        const partitioned = partition(exc.data, e => e.field === 'name');
+        const messagesOnly = map(partitioned, o => pluck(o, 'message'));
+        [this.nameErrors, this.overallErrors] = messagesOnly;
+      }
     }
   }
 }

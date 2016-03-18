@@ -10,13 +10,16 @@ export class MyJobsApi {
     this.csrf = csrf;
   }
 
-  checkStatus(response) {
+  async checkStatus(response) {
     if (response.status === 200) {
       return response;
     }
 
     const error = new Error(response.statusText);
     error.response = response;
+    if (response.headers.get('content-type') === 'application/json') {
+      error.data = await response.json();
+    }
     throw error;
   }
 
@@ -29,7 +32,7 @@ export class MyJobsApi {
       method: 'GET',
       credentials: 'include',
     });
-    return this.parseJSON(this.checkStatus(response));
+    return this.parseJSON(await this.checkStatus(response));
   }
 
   async ajaxWithFormData(method, url, data) {
@@ -43,7 +46,7 @@ export class MyJobsApi {
         'X-CSRFToken': this.csrf,
       },
     });
-    return this.parseJSON(this.checkStatus(response));
+    return this.parseJSON(await this.checkStatus(response));
   }
 
   async post(url, data) {

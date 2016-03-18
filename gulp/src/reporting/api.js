@@ -86,16 +86,16 @@ class Api {
     return (await promise);
   }
 
-    async runReport(reportPresentationId, name, filter) {
-      const formData = {
-        name: name,
-        filter: JSON.stringify(filter),
-        rp_id: reportPresentationId,
-      };
-      return await this.postToReportingApiWithErrors(
-          '/reports/api/run_report',
-          formData);
-    }
+  async runReport(reportPresentationId, name, filter) {
+    const formData = {
+      name: name,
+      filter: JSON.stringify(filter),
+      rp_id: reportPresentationId,
+    };
+    return await this.postToReportingApi(
+      '/reports/api/run_report',
+      formData);
+  }
 }
 
 export {Api as default};
