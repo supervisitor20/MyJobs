@@ -212,6 +212,9 @@ Run Webpack Dev Server
 Add to dev_settings.py::
 
     WEBPACK_DEV_SERVER_BASE_URL = "https://secure.my.jobs:8080"
+    TEMPLATE_CONTEXT_PROCESSORS += (
+        'myjobs.context_processors.webpack_dev_setting',
+    )
 
 Run::
 
