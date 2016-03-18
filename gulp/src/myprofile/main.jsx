@@ -14,7 +14,6 @@ import BasicTextField from '../common/ui/BasicTextField';
 import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetime from '../common/ui/BasicDatetime';
-// import BasicSelect from '../common/ui/BasicSelect';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
@@ -122,7 +121,7 @@ class Module extends React.Component {
           return wrap(
             <BasicTextField
               name={profileUnitName}
-              onChange={this.onChange.bind(this)}
+              onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
               initial={profileUnit.initial}
               maxLength={profileUnit.widget.maxlength}
@@ -134,7 +133,7 @@ class Module extends React.Component {
           return wrap(
             <BasicTextarea
               name={profileUnitName}
-              onChange={this.onChange.bind(this)}
+              onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
               initial={profileUnit.initial}
               maxLength={profileUnit.widget.maxlength}
@@ -146,7 +145,7 @@ class Module extends React.Component {
           return wrap(
             <BasicDatetime
               name={profileUnitName}
-              onChange={this.onChange.bind(this)}
+              onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
               initial={profileUnit.initial}
               maxLength={profileUnit.widget.maxlength}
@@ -159,7 +158,7 @@ class Module extends React.Component {
           return wrap(
             <Select
               name={profileUnitName}
-              onChange={this.onChange.bind(this)}
+              onChange={e => this.onChange(e, this)}
               initial={initial}
               choices={profileUnit.choices}
               />
@@ -168,7 +167,7 @@ class Module extends React.Component {
           return wrap(
             <BasicCheckBox
               name={profileUnitName}
-              onChange={this.onChange.bind(this)}
+              onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
               initial={profileUnit.initial}
               maxLength={profileUnit.widget.maxlength}
@@ -224,9 +223,24 @@ class Module extends React.Component {
           {formComponents}
           <div className="actions row">
             <div className="col-xs-12 col-md-offset-4 col-md-8 text-center">
-              <a className="button" id="delete" onClick={this.handleDelete.bind(this)}>Delete</a>
-              <a href="/profile/view/" className="button" onClick={this.handleCancel.bind(this)}>Cancel</a>
-              <a className="button primary" id="profile-save" onClick={this.handleSave.bind(this)}>Save</a>
+              <a
+                className="button"
+                id="delete"
+                onClick={e => this.handleDelete(e, this)}>
+                Delete
+              </a>
+              <a
+                href="/profile/view/"
+                className="button"
+                onClick={e => this.handleCancel(e, this)}>
+                Cancel
+              </a>
+              <a
+                className="button primary"
+                id="profile-save"
+                onClick={e => this.handleSave(e, this)}>
+                Save
+              </a>
             </div>
           </div>
         </form>

@@ -97,7 +97,7 @@ class Select extends React.Component {
             key={index}
             className={active}
             onMouseEnter={() => this.onMenuItemEnter(index)}
-            onClick={this.selectFromMenu.bind(this, item, this.props.name)}>
+            onClick={() => this.selectFromMenu(this, item, this.props.name)}>
               {item.display}
             </li>
           );
