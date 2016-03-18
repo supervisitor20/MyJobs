@@ -11,52 +11,54 @@ class AdvancedSelect extends React.Component {
     this.openSelectMenu = this.openSelectMenu.bind(this);
     this.closeSelectMenu = this.closeSelectMenu.bind(this);
   }
-  componentDidMount() {
-    // get your data from props
-  }
   onInputKeyDown(event) {
     const {choices, name} = this.props;
     const {keySelectedIndex, selectDropped} = this.state;
+
     let killEvent = false;
-    let newIndex = keySelectedIndex;
-    if (selectDropped) {
-      const lastIndex = choices.length - 1;
-      if (event.key === 'ArrowDown') {
-        killEvent = true;
-        if (keySelectedIndex < 0 || keySelectedIndex >= lastIndex) {
-          newIndex = 0;
-        } else {
-          newIndex += 1;
-        }
-      } else if (event.key === 'ArrowUp') {
-        killEvent = true;
-        if (keySelectedIndex <= 0 || keySelectedIndex > lastIndex) {
-          newIndex = lastIndex;
-        } else {
-          newIndex -= 1;
-        }
-      } else if (event.key === 'Enter') {
-        killEvent = true;
-        if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
-          this.selectFromMenu(choices[keySelectedIndex], name);
-          return;
-        }
-      } else if (event.key === 'Escape') {
-        this.closeSelectMenu();
-        killEvent = true;
-      }
+
+    if (selectDropped && event.key === 'ArrowDown') {
+      killEvent = true;
+      this.shiftKeySelectedIndex(1);
+    } else if (selectDropped && event.key === 'ArrowUp') {
+      killEvent = true;
+      this.shiftKeySelectedIndex(-1);
+    } else if (selectDropped && event.key === 'Enter') {
+      killEvent = true;
+      this.selectFromMenu(choices[keySelectedIndex], name);
+    } else if (selectDropped && event.key === 'Escape') {
+      killEvent = true;
+      this.closeSelectMenu();
     } else if (event.key === 'ArrowDown') {
-      newIndex = 0;
+      killEvent = true;
+      this.resetKeySelectedIndex();
       this.openSelectMenu();
     }
     if (killEvent) {
       event.preventDefault();
       event.stopPropagation();
     }
-    this.setState({keySelectedIndex: newIndex});
   }
   onMenuItemEnter(index) {
     this.setState({keySelectedIndex: index});
+  }
+  shiftKeySelectedIndex(delta) {
+    const {choices} = this.props;
+    const {keySelectedIndex} = this.state;
+    const lastIndex = choices.length - 1;
+
+    let newIndex = keySelectedIndex + delta;
+
+    if (newIndex < 0) {
+      newIndex = lastIndex;
+    }
+    if (newIndex > lastIndex) {
+      newIndex = 0;
+    }
+    this.setState({keySelectedIndex: newIndex});
+  }
+  resetKeySelectedIndex() {
+    this.setState({keySelectedIndex: 0});
   }
   openSelectMenu() {
     this.setState({selectDropped: true});
