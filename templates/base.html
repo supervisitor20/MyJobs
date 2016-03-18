@@ -30,6 +30,7 @@
 
     {% compress js %}
       <script type="text/javascript" src="{% static "utils.js" %}"></script>
+      <script type="text/javascript" src="{{ STATIC_URL }}custom.166-06.js{{ gz }}"></script>
     {% endcompress %}
 </head>
 
@@ -127,7 +128,6 @@
     <script type="text/javascript" src="{{ STATIC_URL }}es5-shim.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}es5-sham.min.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="{{ STATIC_URL }}custom.166-06.js{{ gz }}"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}my.jobs.160-30.js{{ gz }}"></script>
     <script type="text/javascript">
       // check for logout cookie every second
