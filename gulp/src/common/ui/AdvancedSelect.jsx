@@ -1,6 +1,6 @@
 import React from 'react';
 
-class AdvancedSelect extends React.Component {
+class Select extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -129,7 +129,7 @@ class AdvancedSelect extends React.Component {
   }
 }
 
-AdvancedSelect.propTypes = {
+Select.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   name: React.PropTypes.string.isRequired,
   initial: React.PropTypes.shape({
@@ -145,8 +145,8 @@ AdvancedSelect.propTypes = {
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
 };
 
-AdvancedSelect.defaultProps = {
+Select.defaultProps = {
   initial: '',
 };
 
-export default AdvancedSelect;
+export default Select;

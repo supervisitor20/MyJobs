@@ -15,7 +15,7 @@ import BasicCheckBox from '../common/ui/BasicCheckBox';
 import BasicTextarea from '../common/ui/BasicTextarea';
 import BasicDatetime from '../common/ui/BasicDatetime';
 // import BasicSelect from '../common/ui/BasicSelect';
-import AdvancedSelect from '../common/ui/AdvancedSelect';
+import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
 class Module extends React.Component {
@@ -157,7 +157,7 @@ class Module extends React.Component {
         case 'select':
           const initial = find(profileUnit.choices, function(c) { return c.value === profileUnit.initial; });
           return wrap(
-            <AdvancedSelect
+            <Select
               name={profileUnitName}
               onChange={this.onChange.bind(this)}
               initial={initial}
