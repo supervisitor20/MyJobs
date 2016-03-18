@@ -1,35 +1,39 @@
-
 import React from 'react';
 
-function BasicTextarea(props) {
-  const {name, onChange, required, initial, isHidden, placeholder} = props;
+function Datetime(props) {
+  const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
   return (
-    <textarea
-      defaultValue={initial}
+    <input
+      type="datetime"
       id={name}
       name={name}
+      className=""
+      maxLength={maxLength}
       required={required}
       hidden={isHidden}
+      defaultValue={initial}
       placeholder={placeholder}
       onChange={onChange}
       />
   );
 }
 
-BasicTextarea.propTypes = {
+Datetime.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   name: React.PropTypes.string.isRequired,
   placeholder: React.PropTypes.string,
   initial: React.PropTypes.string,
+  maxLength: React.PropTypes.number,
   isHidden: React.PropTypes.bool,
   required: React.PropTypes.bool,
 };
 
-BasicTextarea.defaultProps = {
+Datetime.defaultProps = {
   placeholder: '',
   initial: '',
+  maxLength: null,
   isHidden: false,
   required: false,
 };
 
-export default BasicTextarea;
+export default Datetime;

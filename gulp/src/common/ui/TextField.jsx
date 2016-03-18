@@ -1,10 +1,10 @@
 import React from 'react';
 
-function BasicDatetime(props) {
+function TextField(props) {
   const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
   return (
     <input
-      type="datetime"
+      type="text"
       id={name}
       name={name}
       className=""
@@ -18,7 +18,7 @@ function BasicDatetime(props) {
   );
 }
 
-BasicDatetime.propTypes = {
+TextField.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   name: React.PropTypes.string.isRequired,
   placeholder: React.PropTypes.string,
@@ -28,7 +28,7 @@ BasicDatetime.propTypes = {
   required: React.PropTypes.bool,
 };
 
-BasicDatetime.defaultProps = {
+TextField.defaultProps = {
   placeholder: '',
   initial: '',
   maxLength: null,
@@ -36,4 +36,4 @@ BasicDatetime.defaultProps = {
   required: false,
 };
 
-export default BasicDatetime;
+export default TextField;

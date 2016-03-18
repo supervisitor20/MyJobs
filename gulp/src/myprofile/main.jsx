@@ -10,10 +10,10 @@ import {Router, Route, IndexRoute} from 'react-router';
 
 import {find} from 'lodash-compat/collection';
 
-import BasicTextField from '../common/ui/BasicTextField';
-import BasicCheckBox from '../common/ui/BasicCheckBox';
-import BasicTextarea from '../common/ui/BasicTextarea';
-import BasicDatetime from '../common/ui/BasicDatetime';
+import TextField from '../common/ui/TextField';
+import CheckBox from '../common/ui/CheckBox';
+import Textarea from '../common/ui/Textarea';
+import Datetime from '../common/ui/Datetime';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
@@ -119,7 +119,7 @@ class Module extends React.Component {
         switch (profileUnit.widget.input_type) {
         case 'text':
           return wrap(
-            <BasicTextField
+            <TextField
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
@@ -131,7 +131,7 @@ class Module extends React.Component {
           );
         case 'textarea':
           return wrap(
-            <BasicTextarea
+            <Textarea
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
@@ -143,7 +143,7 @@ class Module extends React.Component {
           );
         case 'date':
           return wrap(
-            <BasicDatetime
+            <Datetime
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
@@ -165,7 +165,7 @@ class Module extends React.Component {
           );
         case 'checkbox':
           return wrap(
-            <BasicCheckBox
+            <CheckBox
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}

@@ -1,6 +1,6 @@
 import React from 'react';
 
-function BasicCheckBox(props) {
+function CheckBox(props) {
   const {name, onChange, required, initial, isHidden} = props;
   return (
     <input
@@ -16,7 +16,7 @@ function BasicCheckBox(props) {
   );
 }
 
-BasicCheckBox.propTypes = {
+CheckBox.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   name: React.PropTypes.string.isRequired,
   initial: React.PropTypes.bool,
@@ -24,10 +24,10 @@ BasicCheckBox.propTypes = {
   required: React.PropTypes.bool,
 };
 
-BasicCheckBox.defaultProps = {
+CheckBox.defaultProps = {
   initial: false,
   isHidden: false,
   required: false,
 };
 
-export default BasicCheckBox;
+export default CheckBox;
