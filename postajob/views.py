@@ -568,7 +568,6 @@ class JobFormView(BaseJobFormView):
         """
         return super(JobFormView, self).dispatch(*args, **kwargs)
 
-    @method_decorator(requires('read job'))
     def get(self, *args, **kwargs):
         company = get_company_or_404(self.request)
         can = self.request.user.can
