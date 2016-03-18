@@ -1,15 +1,16 @@
+var timer;
+
 /**
  * A hodge podge of useful utility functions used across site. This is imported
  * in base.html before anything else to ensure that it is globally available.
  **/
-var timer;
+var utils = {};
 
-var utils = {
-  /**
-   * Returns the value of the cookie. Returns null if that cookie is not found.
-   * cookie: The name of the cookie to retreive.
-   **/
-  readCookie: function(cookie) {
+/**
+ * Returns the value of the cookie. Returns null if that cookie is not found.
+ * cookie: The name of the cookie to retreive.
+ **/
+utils.readCookie = function(cookie) {
     var nameEQ = cookie + '=';
     var ca = document.cookie.split(';');
     for (var i = 0; i < ca.length; i++) {
@@ -23,13 +24,14 @@ var utils = {
     }
     return null;
   },
-  /**
-   * Creates a new timer which redirects the user if the `loggedout` cookie is
-   * set.
-   *
-   * url: The url to redirect to.
-   **/
-  logoutTimer: function(url) {
+
+/**
+ * Creates a new timer which redirects the user if the `loggedout` cookie is
+ * set.
+ *
+ * url: The url to redirect to.
+ **/
+utils.logoutTimer = function(url) {
     if (!timer) {
       timer = window.setInterval(function() {
         // if we are logged out and not already on the home page
