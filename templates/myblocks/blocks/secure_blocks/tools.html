@@ -16,12 +16,13 @@
                 </a>
             </div>
 
-            {% get_ms_name as microsite_name %}
-            {% if microsite_name != None %}
+            {% get_ms_name as last_microsite_name %}
+            {% if current_microsite_name or last_microsite_name %}
             <div id="last-microsite" class="de-topbar-item">
-                <a href="{% get_ms_url %}">
+                <a href="{% if current_microsite_url %}{{current_microsite_url}}
+                        {% else %}{% get_ms_url %}{% endif %}">
                     <span id="last-microsite-name">
-                        {{ microsite_name }}
+                        {% firstof current_microsite_name last_microsite_name %}
                     </span>
                     <span class="arrow pull-left"></span>
                 </a>
