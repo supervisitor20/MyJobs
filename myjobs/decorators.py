@@ -3,7 +3,7 @@ from functools import wraps
 from django.contrib.auth import logout
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User, AppAccess
@@ -106,15 +106,6 @@ Received invalid callbacks:
 {callbacks}
 Expected "access_callback" and/or "activity_callback".
 """
-
-class MissingAppAccess(HttpResponseForbidden):
-    """
-    MissingAppAccess is raised when a company user access a view but that
-    company doesn't have the app access required for that view. It is no
-    different than an HttpResponseForbidden, other than it's name, which we can
-    use to assert that the correct response type was returned without leaking
-    information to the user.
-    """
 
 
 class MissingActivity(HttpResponseForbidden):
@@ -234,10 +225,19 @@ def requires(*activities, **callbacks):
         raise TypeError(CALLBACK_ERROR_TEMPLATE.format(callbacks="\n".join(
             "- {0}".format(callback) for callback in invalid_callbacks)))
 
+    def access_callback(request):
+        """
+        Default callback used when appropriate app-level access isn't
+        found.
+
+        """
+        company = get_company_or_404(request)
+        raise Http404("%s doesn't have sufficient app access" % company.name)
+
     activity_callback = callbacks.get(
         'activity_callback', lambda request: MissingActivity())
     access_callback = callbacks.get(
-        'access_callback', lambda request: MissingAppAccess())
+        'access_callback', access_callback)
 
     compare = callbacks.get('compare', every)
 
