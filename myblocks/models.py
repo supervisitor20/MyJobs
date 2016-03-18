@@ -443,7 +443,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'templates/includes/topbar.html'
+    base_template = 'includes/topbar.html'
 
     def context(self, request, **kwargs):
         """
