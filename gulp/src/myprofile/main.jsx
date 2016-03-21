@@ -199,6 +199,9 @@ class Module extends React.Component {
         xhr.setRequestHeader('Accept', 'application/json');
       },
       success: (apiResponse) => {
+
+        console.log(apiResponse);
+
         // Add form fields to state object
         for (const field in apiResponse.data) {
           if (apiResponse.data.hasOwnProperty(field)) {
