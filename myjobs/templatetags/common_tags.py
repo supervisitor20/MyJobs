@@ -283,6 +283,7 @@ def get_menus(context):
 
     employer_menu = {
         "label": "Employers",
+        "id": "employers",
         "submenuId": "employer-apps",
         "submenus": [
         ]
