@@ -4,7 +4,6 @@ class Select extends React.Component {
   constructor(props) {
     super(props);
     const {initial} = this.props;
-
     this.state = {
       selectDropped: false,
       currentValue: initial.display,
@@ -100,7 +99,7 @@ class Select extends React.Component {
             key={index}
             className={active}
             onMouseEnter={() => this.onMenuItemEnter(index)}
-            onClick={() => this.selectFromMenu(this, item, name)}>
+            onClick={() => this.selectFromMenu(item, name)}>
               {item.display}
             </li>
           );
@@ -135,10 +134,7 @@ class Select extends React.Component {
 Select.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   name: React.PropTypes.string.isRequired,
-  initial: React.PropTypes.shape({
-    value: React.PropTypes.any.isRequired,
-    display: React.PropTypes.string.isRequired,
-  }),
+  initial: React.PropTypes.any,
   choices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
@@ -149,7 +145,7 @@ Select.propTypes = {
 };
 
 Select.defaultProps = {
-  initial: '',
+  initial: 'test',
 };
 
 export default Select;
