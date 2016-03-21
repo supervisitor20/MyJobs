@@ -86,7 +86,7 @@ $(window).ready(function() {
         $("#search-jobs").removeClass("no-show");
         $("#settings-link").removeClass("no-show");
     });
-    if (tools_companies) {
+    if (typeof tools_companies !== 'undefined') {
         get_companies();
     }
 });

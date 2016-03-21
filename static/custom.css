@@ -4591,3 +4591,9 @@ a.btn.pull-right {
 @media(min-width:1200px){
 
 }
+#auth-code {
+    font-size: 2em;
+    color: red;
+    font-weight: bold;
+    border: 2px solid #000;
+}

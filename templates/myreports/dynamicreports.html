@@ -34,5 +34,14 @@
 <script>
 spinnerImg = "{% static "images/ajax-loader.gif" %}";
 </script>
-{% js_bundle "reporting" %}
+
+{% if wp_base_url %}
+  <script src="{{wp_base_url}}/reporting.js"/></script>
+{% else %}
+  {% compress js %}
+  <script src="{% static "bundle/vendor.js" %}"></script>
+  <script src="{% static "bundle/reporting.js" %}"></script>
+  {% endcompress %}
+{% endif %}
+
 {% endblock %}
