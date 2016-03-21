@@ -41,6 +41,10 @@ $(window).ready(function() {
         $("#nav").removeClass("active");
     });
 
+    $(".nav-item").click(function(e) {
+      $("#back-btn-li").removeClass("no-show");
+    });
+
     $("#employer-tools").click(function(e) {
         $("#back-btn-li").removeClass("no-show");
         $(".employer-menu").removeClass("no-show");

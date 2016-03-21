@@ -61,40 +61,17 @@
                         <li>
                             <a class="main-nav"></a>
                             <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
-                                <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
-                                  {% for menu in menus %}
-                                    <li><a class="nav-item">{{ menu.label }}</a></li>
-                                    {% for submenu in menu.submenus %}
-                                      <li>
-                                        <a class="no-show sub-nav-item" href="{{ submenu.href }}">
-                                          {{ submenu.label }}
-                                        </a>
-                                      </li>
-                                    {% endfor %}
+                              <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
+                                {% for menu in menus %}
+                                  <li><a class="nav-item">{{ menu.label }}</a></li>
+                                  {% for submenu in menu.submenus %}
+                                    <li>
+                                      <a class="no-show sub-nav-item" href="{{ submenu.href }}">
+                                        {{ submenu.label }}
+                                      </a>
+                                    </li>
                                   {% endfor %}
-                                    <li><a id="profile-link" class="no-show seeker-menu" href="{{ ABSOLUTE_URL }}profile/view/">{% trans "My Profile" %}</a></li>
-                                        <li><a id="savedsearch-link" class="no-show seeker-menu" href="{{ ABSOLUTE_URL }}saved-search/view/">{% trans "My Saved Searches" %}</a></li>
-
-
-                                            <li><a id="employer-tools" class="no-show desktop_hide" style="cursor: pointer;">{% trans "Employer" %}</a></li>
-
-
-                                            <li><a id="partner-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}prm/view?company={{ company.id }}">{% trans "PRM" %}</a></li>
-
-                                            <li><a id="reports-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
-                                            <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'purchasedmicrosite_admin_overview' %}">{% trans "Partner Microsite" %}</a></li>
-                                            <li><a id="purchasedproducts-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL}}{% url 'purchasedproducts_overview' %}">{% trans "Purchased Jobs" %}</a></li>
-                                            <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
-                                          <li><a id="posted-jobs-tab" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
-                                    <li><a id="account-link" href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                                    <li><a id="menu-inbox-link" href="{{ ABSOLUTE_URL }}message/inbox">{% trans "Messages" %} ({{ new_messages.count }})</a></li>
-                                    <li><a id="search-jobs" href="{% get_ms_url %}">{% trans "Search Jobs" %}</a></li>
-                                    <li><a id="settings-link" style="cursor: pointer;">{% trans "Settings" %}</a></li>
-
-                                <li><a id="logout-link" href="https://secure.my.jobs/accounts/logout/">Log Out</a></li>
-
-                                <li><a class="settings-nav-item sub-nav-item no-show" href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                                <li><a class="settings-nav-item sub-nav-item no-show" href="{{ ABSOLUTE_URL }}accounts/logout">Log Out</a></li>
+                                {% endfor %}
                             </ul>{# /pop-menu #}
                         </li>
                     </ul>{# /nav #}
