@@ -268,9 +268,10 @@ def get_menus(context):
         "label": "No new unread messages"
     }]
     messages_menu = {
-        "label": context["new_messages"].count(),
+        "label": "Messages",
         "id": "menu-inbox",
         "icon": "icon-envelope icon-white",
+        "iconLabel": str(context["new_messages"].count()),
         "submenus": [
             {
                 "id": "menu-inbox-all",

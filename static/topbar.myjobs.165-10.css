@@ -398,6 +398,7 @@ ul.submenu > li > a:hover {
         display: block;
     }
 
+    .nav-item:after,
     #employer-tools:after,
     #settings-link:after,
     #mobile-company-select > a:after{
