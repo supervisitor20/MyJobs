@@ -33,59 +33,21 @@
             <div class="menu-container" role="menu">
                 {% if user.is_authenticated and request.session.keys|length %}
                 <ul class="mobile_hide">
-                    <li class="has-drop">
-                        <a id="menu-inbox">{{ new_messages.count }}<div class="icon-envelope icon-white"></div></a>
-                        <ul class="submenu">
-                            <li id="menu-inbox-all"><a href="{{ ABSOLUTE_URL }}message/inbox">Inbox (See All)</a></li>
-                            {% for message in new_messages %}
-                                {% if forloop.counter <= 3 %}
-                                    <li><a href="{{ ABSOLUTE_URL }}message/inbox?message={{ message.message.pk }}">{{ message.message.start_on.date }} - {{ message.message.subject|truncatewords:'10' }}</a></li>
-                                {% endif %}
-                            {% empty %}
-                                <li><p>No new unread messages</p></li>
-                            {% endfor %}
+                  {% get_menus as menus %}
+                  {% for menu in menus %}
+                    <li {% if menu.submenus %}class="has-drop"{% endif %}>
+                      <a id="{{ menu.id }}">{{ menu.label}}
+                        {% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}
+                      </a>
+                      <ul class="submenu" id="{{ menu.submenuId }}">
+                        {% for submenu in menu.submenus %}
+                          <li id="{{ submenu.id }}">
+                            <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                          </li>
+                        {% endfor %}
                         </ul>
                     </li>
-                    {% get_company_from_cookie as company %}
-                    {% can user company "read partner" as can_read_partner %}
-                    {% can user company "read role" as can_read_role %}
-                    {% is_a_group_member company user "Employer" as group_member %}
-                    {% get_company_name user as company_name %}
-                    {% if group_member %}
-                    <li class="{% active_tab 'employer-tools' %} has-drop">
-                        <a>{% trans "Employers" %}</a>
-                        <ul id="employer-apps" class="submenu">
-                            {% if can_read_partner %}
-                                <li><a id="partner-tab" href="{{ ABSOLUTE_URL }}prm/view">{% trans "PRM" %}</a></li>
-                            {% endif %}
-                            {% if can_read_partner %}
-                                <li><a id="reports-tab" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
-                            {% endif %}
-                            {% if company.product_access %}
-                                <li><a id="purchasedmicrosite-tab" href="{% url 'purchasedmicrosite_admin_overview' %}">{% trans "Partner Microsite" %}</a></li>
-                            {% endif %}
-                            {% if company.purchasedproduct_set.exists %}
-                                <li><a id="purchasedproducts-tab" href="{% url 'purchasedproducts_overview' %}">{% trans "Purchased Jobs" %}</a></li>
-                            {% endif %}
-                            {% if company.posting_access %}
-                                <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
-                            {% endif %}
-                            {% if can_read_role %}
-                              <li><a id="posted-jobs-tab" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    {% endif %}
-                    <li class="has-drop">
-                        <a onclick="return false;">{{ user.email }}</a>
-                        <ul class="submenu">
-                            <li><a href="{{ ABSOLUTE_URL }}profile/view/">{% trans "My Profile" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}saved-search/view/">{% trans "My Saved Searches" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                            <li><a href="{% get_ms_url %}">{% trans "Search Jobs" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}accounts/logout">Log Out</a></li>
-                        </ul>
-                    </li>
+                  {% endfor %}
                 </ul>
 
                 <a id="topbar-back" class="desktop_hide" href="#" onclick="javascript:window.history.back(-1);return false;"><span id="prm-arrow-left"></span></a>

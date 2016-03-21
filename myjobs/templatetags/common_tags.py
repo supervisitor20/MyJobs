@@ -3,6 +3,7 @@ import json
 from time import strptime, strftime
 from django import template
 from django.conf import settings
+from django.core.urlresolvers import reverse
 
 from myjobs import version
 from myjobs.helpers import get_completion, make_fake_gravatar
@@ -240,3 +241,104 @@ def get_company_from_cookie(context):
     if request:
         return get_company(request)
     return None
+
+@register.assignment_tag(takes_context=True)
+def get_menus(context):
+    """
+    Returns menu items used in the topbar.
+
+    Each top-level item is a 'menu' (eg. "Employers"), where as everything
+    below those is a submenu (eg. "PRM").
+
+    """
+    # since we're using ABSOLUTE_URL in the template, we have to strip the
+    # leading slash to avoid double-slashes in the resulting URL
+    url = lambda name: settings.ABSOLUTE_URL + reverse(name).lstrip("/")
+    company = get_company(context["request"])
+
+    new_messages = [{
+        "id": info.message.pk,
+        "href": url("inbox") + "?message=%s" % info.message.pk,
+        "label": "%s - %s" % (
+            info.message.start_on.date(), info.message.subject[:10]
+        )
+    } for info in context["new_messages"][:3]] or [{
+        "id": "no-messages",
+        "href": url("inbox"),
+        "label": "No new unread messages"
+    }]
+    messages_menu = {
+        "label": context["new_messages"].count(),
+        "id": "menu-inbox",
+        "icon": "icon-envelope icon-white",
+        "submenus": [
+            {
+                "id": "menu-inbox-all",
+                "href": url("inbox"),
+                "label": "Inbox (See All)",
+            }
+        ] + new_messages
+    }
+
+    employer_menu = {
+        "label": "Employers",
+        "submenuId": "employer-apps",
+        "submenus": [
+        ]
+    } if context["user"].roles.exists() else {}
+
+    if employer_menu and context["user"].can(company, "read partner"):
+        employer_menu["submenus"] += [
+            {
+                "id": "partner-tab",
+                "href": url("prm"),
+                "label": "PRM"
+            },
+            {
+                "id": "reports-tab",
+                "href": url("overview"),
+                "label": "Reports",
+            }
+        ]
+
+    if employer_menu and context["user"].can(company, "read role"):
+        employer_menu["submenus"].append(
+            {
+                "id": "manage-users-tab",
+                "href": url("manage_users"),
+                "label": "Manage Users",
+            }
+        )
+
+    profile_menu = {
+        "label": context["user"].email,
+        "submenus": [
+            {
+                "id": "profile-tab",
+                "href": url("view_profile"),
+                "label": "My Profile"
+            },
+            {
+                "id": "searches-tab",
+                "href": url("saved_search_main"),
+                "label": "My Saved Searches"
+            },
+            {
+                "id": "account-tab",
+                "href": url("edit_account"),
+                "label": "Account Settings"
+            },
+            {
+                "id": "search-tab",
+                "href": get_ms_url(context),
+                "label": "Search Jobs"
+            },
+            {
+                "id": "logout-tab",
+                "href": url("auth_logout"),
+                "label": "Log Out"
+            }
+        ]
+    }
+
+    return [messages_menu, employer_menu, profile_menu]
