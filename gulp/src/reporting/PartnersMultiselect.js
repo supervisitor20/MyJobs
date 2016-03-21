@@ -1,12 +1,12 @@
 import React from 'react';
 import FilteredMultiSelect from 'react-filtered-multiselect';
 
-class RolesMultiselect extends React.Component {
+class PartnersMultiselect extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      assignedRoles: this.props.assignedRoles,
-      availableRoles: this.props.availableRoles,
+      selectedPartners: this.props.selectedPartners,
+      availablePartners: this.props.availablePartners,
     };
     // React components using ES6 no longer autobind 'this' to non React methods
     // Thank you: https://github.com/goatslacker/alt/issues/283
@@ -15,28 +15,28 @@ class RolesMultiselect extends React.Component {
   }
   componentWillReceiveProps(nextProps) {
     this.setState({
-      availableRoles: nextProps.availableRoles,
-      assignedRoles: nextProps.assignedRoles,
+      availablePartners: nextProps.availablePartners,
+      selectedPartners: nextProps.selectedPartners,
     });
   }
-  _onSelect(assignedRoles) {
-    assignedRoles.sort((a, b) => a.id - b.id);
-    this.setState({assignedRoles});
+  _onSelect(selectedPartners) {
+    selectedPartners.sort((a, b) => a.id - b.id);
+    this.setState({selectedPartners});
   }
   _onDeselect(deselectedOptions) {
-    const assignedRoles = this.state.assignedRoles.slice();
+    const selectedPartners = this.state.selectedPartners.slice();
     deselectedOptions.forEach(option => {
-      assignedRoles.splice(assignedRoles.indexOf(option), 1);
+      selectedPartners.splice(selectedPartners.indexOf(option), 1);
     });
-    this.setState({assignedRoles});
+    this.setState({selectedPartners});
   }
   render() {
-    const {assignedRoles, availableRoles} = this.state;
+    const {selectedPartners, availablePartners} = this.state;
 
     return (
         <div className="row">
           <div className="col-xs-6">
-            <label>Roles Available</label>
+            <label>Available Partners</label>
             <FilteredMultiSelect
               buttonText="Add"
               classNames={{
@@ -46,14 +46,14 @@ class RolesMultiselect extends React.Component {
                 buttonActive: 'button primary',
               }}
               onChange={this._onSelect}
-              options={availableRoles}
-              selectedOptions={assignedRoles}
+              options={availablePartners}
+              selectedOptions={selectedPartners}
               textProp="name"
               valueProp="id"
             />
           </div>
           <div className="col-xs-6">
-            <label>Roles Assigned</label>
+            <label>Selected Partners</label>
             <FilteredMultiSelect
               buttonText="Remove"
               classNames={{
@@ -63,7 +63,7 @@ class RolesMultiselect extends React.Component {
                 buttonActive: 'button',
               }}
               onChange={this._onDeselect}
-              options={assignedRoles}
+              options={selectedPartners}
               textProp="name"
               valueProp="id"
             />
@@ -73,9 +73,9 @@ class RolesMultiselect extends React.Component {
   }
 }
 
-RolesMultiselect.propTypes = {
-  assignedRoles: React.PropTypes.array.isRequired,
-  availableRoles: React.PropTypes.array.isRequired,
+PartnersMultiselect.propTypes = {
+  selectedPartners: React.PropTypes.array.isRequired,
+  availablePartners: React.PropTypes.array.isRequired,
 };
 
-export default RolesMultiselect;
+export default PartnersMultiselect;

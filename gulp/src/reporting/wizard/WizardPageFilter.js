@@ -9,7 +9,7 @@ import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
-import {SelectElementController} from 'common/ui/SelectElementController';
+import {PartnerSelectElementController} from 'common/ui/PartnerSelectElementController';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -182,7 +182,8 @@ export class WizardPageFilter extends Component {
         <hr/>
         {rows}
         {this.renderRow('partners1', '',
-            <SelectElementController/>)}
+            <PartnerSelectElementController
+            />)}
         <hr/>
         {this.renderRow('', 'submit',
           <button

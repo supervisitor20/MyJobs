@@ -3179,6 +3179,10 @@ height: 33px;
     border: 1px solid #999;
 }
 
+.row .col-md-8 select[multiple] {
+    height: 200px;
+}
+
 .row .col-md-8 .fsm select[multiple] {
     height: 200px;
     border-radius: 3px;
@@ -3258,6 +3262,7 @@ height: 33px;
 /* Select Element React Component Styles */
 .select-element-outer {
   position: relative;
+  margin-bottom: 10px;
 }
 .select-element-input {
     background-color: #fff;
@@ -4149,21 +4154,12 @@ span.helptext {
     color: red;
 }
 
-
-
-
-
-
-
-
-
-
 /*Manage Users*/
 /*New*/
 
-.FilteredMultiSelect select, .FilteredMultiSelect button {
-  margin-top: 15px;
-  height: 200px;
+.row .col-md-8 .FilteredMultiSelect select, 
+.row .col-md-8 .FilteredMultiSelect button {
+  margin-top: 10px;
 }
 
 section {
@@ -4237,10 +4233,6 @@ h1 a {
 
 .product-card-full .col-xs-6 {
   padding: 0px;
-}
-
-.FilteredMultiSelect {
-  padding-right: 15px;
 }
 
 .wrapper-header + .product-card-full {

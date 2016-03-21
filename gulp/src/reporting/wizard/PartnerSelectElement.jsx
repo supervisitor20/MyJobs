@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
+import PartnersMultiselect from 'reporting/PartnersMultiselect';
 
 export class SelectElement extends Component {
   constructor(props) {
     super(props);
     this.state = {
       selectDropped: false,
+      availablePartners: [],
+      selectedPartners: [],
     };
     this.popSelectMenu = this.popSelectMenu.bind(this);
   }
@@ -19,8 +22,19 @@ export class SelectElement extends Component {
     onChange(itemKey);
     this.popSelectMenu();
   }
+  renderPartnerControl(itemKey) {
+    if (itemKey && itemKey.key === 1) {
+      return (
+        <PartnersMultiselect
+          availablePartners={this.state.availablePartners}
+          selectedPartners={this.state.selectedPartners}
+          ref="partners"/>
+      );
+    }
+    return '';
+  }
   render() {
-    const {items, childSelectName} = this.props;
+    const {items, childSelectName, itemKey} = this.props;
     let item;
     let dropdown;
     const dropdownItems = [];
@@ -41,16 +55,21 @@ export class SelectElement extends Component {
       dropdown = '';
     }
     return (
-      <div className="select-element-outer">
-        <div className="select-element-input">
-          <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
-            <span className="select-element-chosen">{childSelectName}</span>
-            <span className="select-element-arrow">
-              <b role="presentation"></b>
-            </span>
+      <div>
+        <div className="select-element-outer">
+          <div className="select-element-input">
+            <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
+              <span className="select-element-chosen">{childSelectName}</span>
+              <span className="select-element-arrow">
+                <b role="presentation"></b>
+              </span>
+            </div>
           </div>
+          {dropdown}
         </div>
-        {dropdown}
+        <div className="partner-control-chosen">
+          {this.renderPartnerControl(itemKey)}
+        </div>
       </div>
     );
   }
@@ -60,13 +79,13 @@ SelectElement.propTypes = {
   items: React.PropTypes.array.isRequired,
   childSelectName: React.PropTypes.string,
   onChange: React.PropTypes.func.isRequired,
+  itemKey: React.PropTypes.object,
 };
 
 SelectElement.defaultProps = {
   items: [
-    {name: 'number 1', key: 1},
-    {name: 'number 2', key: 2},
-    {name: 'number #', key: 3},
+    {name: 'No filter', key: 0},
+    {name: 'Filter by name', key: 1},
   ],
   childSelectName: 'this is a test',
 };
