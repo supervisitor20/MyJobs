@@ -28,6 +28,13 @@
 <script src="{{ STATIC_URL }}es5-sham.min.js"></script>
 <![endif]-->
 
-{% js_bundle "myprofile" %}
+{% if wp_base_url %}
+  <script src="{{wp_base_url}}/myprofile.js"/></script>
+{% else %}
+  {% compress js %}
+  <script src="{% static "bundle/vendor.js" %}"></script>
+  <script src="{% static "bundle/myprofile.js" %}"></script>
+  {% endcompress %}
+{% endif %}
 
 {% endblock %}

@@ -65,6 +65,10 @@ class Module extends React.Component {
     });
   }
   handleDelete() {
+    if (confirm('Are you sure you want to delete this item?') === false) {
+      return;
+    }
+
     const {formContents} = this.state;
 
     $.ajax({
