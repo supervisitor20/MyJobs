@@ -199,9 +199,6 @@ class Module extends React.Component {
         xhr.setRequestHeader('Accept', 'application/json');
       },
       success: (apiResponse) => {
-
-        console.log(apiResponse);
-
         // Add form fields to state object
         for (const field in apiResponse.data) {
           if (apiResponse.data.hasOwnProperty(field)) {
@@ -263,12 +260,17 @@ class Module extends React.Component {
 }
 
 Module.propTypes = {
-  location: React.PropTypes.object.isRequired,
-  params: React.PropTypes.object.isRequired,
+  location: React.PropTypes.shape({
+    query: React.PropTypes.shape({
+      module: React.PropTypes.string.isRequired,
+    }),
+  }).isRequired,
+  params: React.PropTypes.shape({
+    moduleId: React.PropTypes.string,
+  }).isRequired,
 };
 
 Module.defaultProps = {
-  location: {},
   params: {},
 };
 

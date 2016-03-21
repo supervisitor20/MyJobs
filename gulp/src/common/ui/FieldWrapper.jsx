@@ -3,7 +3,7 @@ import {map} from 'lodash-compat/collection';
 
 class FieldWrapper extends React.Component {
   render() {
-    const {label, helpText, errors, children, required} = this.props;
+    const {label, helpText, errors, children, required, isHidden} = this.props;
 
     const requiredIndicator = required ? ' *' : '';
 
@@ -17,8 +17,10 @@ class FieldWrapper extends React.Component {
       helpOrErrorText = '';
     }
 
+    const rowClasses = isHidden ? 'row hidden' : 'row';
+
     return (
-      <div className="row">
+      <div className={rowClasses}>
         <div className="col-xs-12 col-md-4">
           <label>{label}{requiredIndicator}:</label>
         </div>
@@ -36,12 +38,15 @@ FieldWrapper.propTypes = {
   helpText: React.PropTypes.string,
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
   children: React.PropTypes.element.isRequired,
-  required: React.PropTypes.bool.isRequired,
+  required: React.PropTypes.bool,
+  isHidden: React.PropTypes.bool,
 };
 
 FieldWrapper.defaultProps = {
   helpText: '',
   errors: [],
+  required: false,
+  isHidden: false,
 };
 
 export default FieldWrapper;
