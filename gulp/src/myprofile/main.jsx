@@ -220,6 +220,7 @@ class Module extends React.Component {
     const {formContents, apiResponse} = this.state;
     const moduleName = formContents.module;
     const processedFormComponents = this.processForm(apiResponse);
+    const deleteButtonClasses = (formContents.id === 'new') ? 'hidden' : 'button';
 
     return (
       <div>
@@ -233,7 +234,7 @@ class Module extends React.Component {
           <div className="actions row">
             <div className="col-xs-12 col-md-offset-4 col-md-8 text-center">
               <a
-                className="button"
+                className={deleteButtonClasses}
                 id="delete"
                 onClick={e => this.handleDelete(e, this)}>
                 Delete
