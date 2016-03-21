@@ -398,9 +398,9 @@ ul.submenu > li > a:hover {
         display: block;
     }
 
-    .nav-item:after,
     #employer-tools:after,
     #settings-link:after,
+    .nav-item > a:after,
     #mobile-company-select > a:after{
         border-bottom: 10px solid transparent;
         border-left: 15px solid #FFF;

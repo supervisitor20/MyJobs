@@ -63,13 +63,13 @@
                             <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
                               <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
                                 {% for menu in menus %}
-                                  <li><a class="nav-item">{{ menu.label }}</a></li>
+                                  <li class="nav-item"><a>{{ menu.label }}</a></li>
                                   {% for submenu in menu.submenus %}
-                                    <li>
-                                      <a class="no-show sub-nav-item" href="{{ submenu.href }}">
-                                        {{ submenu.label }}
-                                      </a>
-                                    </li>
+                                  <li class="no-show sub-nav-item">
+                                    <a href="{{ submenu.href }}">
+                                      {{ submenu.label }}
+                                    </a>
+                                  </li>
                                   {% endfor %}
                                 {% endfor %}
                             </ul>{# /pop-menu #}
