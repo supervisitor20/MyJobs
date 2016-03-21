@@ -7,6 +7,11 @@ from secrets import REDIRECT_STAGING, ARCHIVE_STAGING
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
+
+STATIC_URL = "http://directemployers-staging.s3.amazonaws.com/Microsites/"
+
 ABSOLUTE_URL = 'http://staging.secure.my.jobs/'
 
 DATABASES = {

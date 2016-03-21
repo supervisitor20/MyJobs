@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base-react.html" %}
 {% load compress %}
 {% load staticfiles %}
 
@@ -8,20 +8,22 @@
 {% endblock %}
 
 {% block meta-extra %}
-<link rel="stylesheet" href="{{STATIC_URL}}font-awesome.css">
-<link rel="stylesheet" href="{{STATIC_URL}}andor.171-14.css">
+{% compress css %}
+<link rel="stylesheet" href={% static "font-awesome.css" %}>
+<link rel="stylesheet" href={% static "andor.css" %}>
+{% endcompress %}
 {% endblock %}
 
 {% block content %}
     <div class="row">
-        <div class="span12">
+        <div class="col-xs-12">
             <h1 class="bottom-bordered">{{ company.name }} <small>Dynamic Reports (beta)</small></h1>
         </div>
     </div>
     <!-- This UI is a placeholder for QA purposes.
          It is not intended to set any precedent. -->
     <div class="row">
-        <div id="reporting-app" class="span12">
+        <div id="reporting-app" class="col-xs-12">
         </div>
     </div>
 

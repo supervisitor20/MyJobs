@@ -6,7 +6,6 @@ import os
 from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
 
 DEBUG = True
-ROLES_ENABLED = True
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
@@ -85,14 +84,14 @@ HAYSTACK_CONNECTIONS = {
         # code is deployed. Check the deployment project in
         # direct_seo/web/conf/hosts and make sure the one in production looks
         # like that.
-        'URL': 'http://solr_server:8983/solr',
+        'URL': 'http://solr_server:8983/solr/qc',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
     },
     'groups': {
         'ENGINE': 'saved_search.groupsearch.SolrGrpEngine',
-        'URL': 'http://solr_server:8983/solr',
+        'URL': 'http://solr_server:8983/solr/qc',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']

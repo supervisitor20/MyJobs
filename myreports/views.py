@@ -21,7 +21,6 @@ from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
 from universal.helpers import get_company_or_404
-from universal.decorators import has_access
 
 from myreports.datasources import ds_json_drivers
 
@@ -29,7 +28,6 @@ from cStringIO import StringIO
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def overview(request):
     """The Reports app landing page."""
     company = get_company_or_404(request)
@@ -61,7 +59,6 @@ def overview(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def report_archive(request):
     """Archive of previously run reports."""
     if request.is_ajax():
@@ -81,7 +78,6 @@ def report_archive(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def view_records(request, app="mypartners", model="contactrecord"):
     """
     Returns records as JSON.
@@ -144,7 +140,6 @@ class ReportView(View):
 
     @method_decorator(requires(
         'read partner', 'read contact', 'read communication record'))
-    @method_decorator(has_access('prm'))
     def dispatch(self, *args, **kwargs):
         return super(ReportView, self).dispatch(*args, **kwargs)
 
@@ -235,7 +230,6 @@ class ReportView(View):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def regenerate(request):
     """
     Regenerates a report.
@@ -262,7 +256,6 @@ def regenerate(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def downloads(request):
     """ Renders a download customization screen.
 
@@ -324,7 +317,6 @@ def downloads(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 def download_report(request):
     """
     Download report as CSV.
@@ -368,7 +360,6 @@ def download_report(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['GET'])
 def dynamicoverview(request):
     """The Dynamic Reports page."""
@@ -378,7 +369,6 @@ def dynamicoverview(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def reporting_types_api(request):
     """Get a list of reporting types for this user."""
@@ -399,7 +389,6 @@ def reporting_types_api(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def report_types_api(request):
     """Get a list of report types
@@ -423,7 +412,6 @@ def report_types_api(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def data_types_api(request):
     """Get a list of data types
@@ -447,7 +435,6 @@ def data_types_api(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def presentation_types_api(request):
     """Get a list of presentation types
@@ -475,7 +462,6 @@ def presentation_types_api(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def filters_api(request):
     """Get a list of filters for the UI.
@@ -499,7 +485,6 @@ def filters_api(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def help_api(request):
     """Get help for a partially filled out field.
@@ -529,7 +514,6 @@ def help_api(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['POST'])
 def run_dynamic_report(request):
     """Run a dynamic report.
@@ -562,7 +546,6 @@ def run_dynamic_report(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['GET'])
 def list_dynamic_reports(request):
     """Get a list of dynamic report runs for this user."""
@@ -580,7 +563,6 @@ def list_dynamic_reports(request):
 
 
 @requires('read partner', 'read contact', 'read communication record')
-@has_access('prm')
 @require_http_methods(['GET'])
 def download_dynamic_report(request):
     """

@@ -157,7 +157,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
         my_group_fieldset = [('title', 'group', 'status', 'percent_featured'),
                              ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
-                              'show_saved_search_widget'),
+                              'show_saved_search_widget', 'use_secure_blocks'),
                              'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
@@ -165,7 +165,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                  'percent_featured'),
                 ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
-                 'show_saved_search_widget', ),
+                 'show_saved_search_widget', 'use_secure_blocks'),
                 'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
@@ -479,7 +479,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -749,7 +749,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),
@@ -885,6 +885,10 @@ class SeoSiteFacetAdmin(admin.ModelAdmin):
 class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
     related_search_fields = {
         'parent_site': ('domain', 'name'),
+    }
+
+    related_string_functions = {
+        'seosite': lambda site: "%s (%s)" % (site.name, site.domain)
     }
 
     form = SeoSiteForm
@@ -1031,7 +1035,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(u"{name}{transblock}{key} {noexist}".format(
+            raise Http404(u"{name} {transblock} {key} {noexist}".format(
                 name=force_unicode(opts.verbose_name),
                 transblock=_("object with primary key"),
                 key=escape(object_id),

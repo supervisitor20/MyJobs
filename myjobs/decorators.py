@@ -209,12 +209,6 @@ def requires(*activities, **callbacks):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            # TODO: Remove this logic once feature is rolled out. for the
-            #      moment, we only want this decorator factory to work in QC
-            #      and Staging.
-            if not settings.ROLES_ENABLED:
-                return view_func(request, *args, **kwargs)
-
             company = get_company_or_404(request)
 
             # the app_access we need, determined by the activities passed in
