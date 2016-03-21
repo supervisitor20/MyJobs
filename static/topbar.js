@@ -14,7 +14,7 @@ $(window).ready(function() {
             $("#back-btn-li").addClass("no-show");
             $(".multiple_companies").addClass("no-show");
 
-            $("#mobile-company-select").removeClass("no-show");
+            $("#mobile-company-select").addClass("no-show");
 
             //Not logged in mobile view
             $("#demo-link").removeClass("no-show");
@@ -32,6 +32,7 @@ $(window).ready(function() {
     });
 
     $(".nav-item").click(function(e) {
+      $("#mobile-company-select").removeClass("no-show");
       $("#back-btn-li").removeClass("no-show");
       $(".nav-item").addClass("no-show");
       $(this).nextUntil(".nav-item").removeClass("no-show");
@@ -148,8 +149,8 @@ function get_companies() {
         $("#mobile-company-select").addClass("no-show");
     };
     var pop_menu = document.getElementById("pop-menu"),
-        search_item = document.getElementById("search-jobs");
-    pop_menu.insertBefore(mobile_parent_element, search_item.parentNode);
+        employers_item = document.getElementById("employers-mobile");
+    pop_menu.insertBefore(mobile_parent_element, employers_item);
 
     for(var j=0; j<tools_companies.length; j++) {
         var mobile_list_item = document.createElement("li");
