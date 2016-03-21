@@ -3287,6 +3287,9 @@ height: 33px;
   display: block;
   line-height: 24px;
 }
+.select-element-chosen-container {
+  height: 33px;
+}
 .select-element-arrow {
   height: 33px;
   position: absolute;
