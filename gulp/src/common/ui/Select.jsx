@@ -145,7 +145,7 @@ Select.propTypes = {
 };
 
 Select.defaultProps = {
-  initial: 'test',
+  initial: '',
 };
 
 export default Select;
