@@ -283,7 +283,7 @@ def admin_purchasedproduct(request):
         'expired_products': purchases.filter(expiration_date__lt=date.today()),
     }
 
-    return render_to_response('postajob/purchasedproduct.html',
+    return render_to_response('postajob/purchasedproduct.html', data,
                               RequestContext(request))
 
 @user_is_allowed()
@@ -997,7 +997,7 @@ def blocked_user_management(request):
         'company': company,
         'blocked_users': blocked_users
     }
-    return render_to_response('postajob/blocked_user_management.html',
+    return render_to_response('postajob/blocked_user_management.html', data,
                               RequestContext(request))
 
 
