@@ -2,10 +2,15 @@
 {% load common_tags %}
 {% load staticfiles %}
 {% load compress %}
+
 {% if request.GET.callback %}
-<link href="{{ STATIC_URL }}topbar.directseo.165-10.css" rel="stylesheet" type="text/css">
+  {% compress css %}
+    <link href="{% static "topbar.directseo.css" %}" rel="stylesheet" type="text/css">
+  {% end compress %}
 {% else %}
-<link href="{{ STATIC_URL }}topbar.myjobs.165-10.css" rel="stylesheet" type="text/css">
+  {% compress css %}
+    <link href="{% static "topbar.myjobs.css" %}" rel="stylesheet" type="text/css">
+  {% endcompress %}
 {% endif %}
 
 <div class="topbar{{ topbar_class }}" data-dropdown="dropdown" role="menubar">
