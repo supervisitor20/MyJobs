@@ -6,7 +6,7 @@
 {% if request.GET.callback %}
   {% compress css %}
     <link href="{% static "topbar.directseo.css" %}" rel="stylesheet" type="text/css">
-  {% end compress %}
+  {% endcompress %}
 {% else %}
   {% compress css %}
     <link href="{% static "topbar.myjobs.css" %}" rel="stylesheet" type="text/css">
