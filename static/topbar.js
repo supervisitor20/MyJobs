@@ -2,33 +2,61 @@
 var readCookie = utils.readCookie;
 
 $(window).ready(function() {
-  /*
-     Explicit control of main menu, primarily for mobile but also provides
-     non hover and cover option if that becomes an issue.
-     */
-  $(".main-nav").click(function(e){
-    e.preventDefault();
-    if($(window).width() < 994){
-      $("#nav").toggleClass("active");
-      $(".company-nav-item").addClass("no-show");
-      $(".settings-nav-item").addClass("no-show");
-      $(".employer-menu").addClass("no-show");
-      $("#back-btn-li").addClass("no-show");
-      $("#account-link").addClass("no-show");
-      $("#logout-link").addClass("no-show");
-      $("#logged-in-li").addClass("no-show");
-      $(".multiple_companies").addClass("no-show");
+    /*
+    Explicit control of main menu, primarily for mobile but also provides
+    non hover and cover option if that becomes an issue.
+    */
+    $(".main-nav").click(function(e){
+        e.preventDefault();
+        if($(window).width() < 994){
+            $("#nav").toggleClass("active");
+            // menus
+            $(".nav-item").removeClass("no-show");
+            // submenus
+            $(".sub-nav-item").addClass("no-show");
 
+            $("#back-btn-li").addClass("no-show");
+
+            $(".multiple_companies").addClass("no-show");
+            $("#mobile-company-select").addClass("no-show");
+
+            //Not logged in mobile view
+            $("#demo-link").removeClass("no-show");
+            $("#create-profile").removeClass("no-show");
+            $("#login-link").removeClass("no-show");
+        }
+    });
+
+    $("#pop-menu").mouseleave(function(){
+        $("#back-btn-li").addClass("no-show");
+        $(".nav-item").removeClass("no-show");
+        $(".sub-nav-item").addClass("no-show");
+
+        $("#nav").removeClass("active");
+    });
+
+    $(".nav-item").click(function(e) {
       $("#mobile-company-select").removeClass("no-show");
-      $(".seeker-menu").removeClass("no-show");
-      $("#employer-tools").removeClass("no-show");
-      $("#search-jobs").removeClass("no-show");
-      $('#settings-link').removeClass("no-show");
+      $("#back-btn-li").removeClass("no-show");
+      $(".nav-item").addClass("no-show");
+      $(this).nextUntil(".nav-item").removeClass("no-show");
+    });
 
-      //Not logged in mobile view
-      $("#demo-link").removeClass("no-show");
-      $("#create-profile").removeClass("no-show");
-      $("#login-link").removeClass("no-show");
+    $("#employers-mobile").click(function(e) {
+      $("#company-name-menu").removeClass("no-show");
+    });
+
+    $("#back-btn").click(function(e){
+        e.preventDefault();
+
+        $(".nav-item").removeClass("no-show");
+        $(".sub-nav-item").addClass("no-show");
+        $("#back-btn-li").addClass("no-show");
+        $("#company-name-menu").addClass("no-show");
+    });
+
+    if (typeof tools_companies !== 'undefined') {
+        get_companies();
     }
   });
 
@@ -140,81 +168,49 @@ function get_companies() {
       }
     }
 
-    var list_item = document.createElement("li");
-    list_item.setAttribute("id", "company_" + String(company.id));
-    list_item.setAttribute("style", "cursor: pointer");
-    list_item.innerHTML = "<a>"+company.name+"</a>";
-    list_item.onclick = function() {
-      // this.id Format: company_COMPANYID
-      var item_id = this.id.split("_")[1];
+    label.innerHTML = "<b>"+ menu_company_name +"</b>";
+    parent_list_item.appendChild(label);
+    parent_list_item.appendChild(list);
 
-      // 14 = 2 weeks
-      set_cookie(item_id, 14);
+    var parent_element = document.getElementById("employer-apps"),
+        first_child = parent_element.firstChild;
+    parent_element.insertBefore(parent_list_item, first_child);
 
-      // replaces text of main li holding company list
-      parent_list_item.firstChild.innerHTML = "<b>"+ this.firstChild.innerHTML +"</b>";
+    // Mobile
+    var mobile_parent_element = document.createElement("li"),
+        mobile_label = document.createElement("a");
+    mobile_parent_element.setAttribute("id", "mobile-company-select");
+    mobile_parent_element.setAttribute("class", "no-show");
+    mobile_parent_element.setAttribute("style", "cursor:pointer");
+    mobile_label.innerHTML = "<b>" + menu_company_name + "</b>";
+    if(menu_company_name.length > 20)
+        mobile_label.setAttribute("style", "font-size: 21px");
+    mobile_parent_element.appendChild(mobile_label);
+    mobile_parent_element.onclick = function() {
+        $(".multiple_companies").removeClass("no-show");
+        $("#back-btn-li").removeClass("no-show");
+        $(".nav-item").addClass("no-show");
 
-      process_reload();
+        $("#mobile-company-select").addClass("no-show");
     };
-    list.appendChild(list_item);
-  }
+    var pop_menu = document.getElementById("company-name-menu"),
+        search_item = document.getElementById("employers-mobile");
+    $(pop_menu).append(mobile_parent_element);
 
-  if (company_not_found) {
-    set_cookie(tools_companies[0].id, 14);
-    menu_company_name = tools_companies[0].name;
-  }
-
-  label.innerHTML = "<b>"+ menu_company_name +"</b>";
-  parent_list_item.appendChild(label);
-  parent_list_item.appendChild(list);
-
-  var parent_element = document.getElementById("employer-apps"),
-  first_child = parent_element.firstChild;
-  parent_element.insertBefore(parent_list_item, first_child);
-
-  // Mobile
-  var mobile_parent_element = document.createElement("li"),
-  mobile_label = document.createElement("a");
-  mobile_parent_element.setAttribute("id", "mobile-company-select");
-  mobile_parent_element.setAttribute("class", "no-show");
-  mobile_parent_element.setAttribute("style", "cursor:pointer");
-  mobile_label.innerHTML = "<b>" + menu_company_name + "</b>";
-  if(menu_company_name.length > 20)
-    mobile_label.setAttribute("style", "font-size: 21px");
-  mobile_parent_element.appendChild(mobile_label);
-  mobile_parent_element.onclick = function() {
-    $(".multiple_companies").removeClass("no-show");
-    $("#back-btn-li").removeClass("no-show");
-
-    $("#mobile-company-select").addClass("no-show");
-    $("#settings-link").addClass("no-show");
-    $("#job-tools").addClass("no-show");
-    $("#employer-tools").addClass("no-show");
-    $("#search-jobs").addClass("no-show");
-    $("#profile-link").addClass("no-show");
-    $("#savedsearch-link").addClass("no-show");
-    $("#candidate-link").addClass("no-show");
-    $("#partner-link").addClass("no-show");
-    $("#account-link").addClass("no-show");
-  };
-  var pop_menu = document.getElementById("pop-menu"),
-  search_item = document.getElementById("search-jobs");
-  pop_menu.insertBefore(mobile_parent_element, search_item.parentNode);
-
-  for(var j=0; j<tools_companies.length; j++) {
-    var mobile_list_item = document.createElement("li");
-    mobile_list_item.setAttribute("id", "mobilecompany_" + tools_companies[j].id);
-    mobile_list_item.setAttribute("class", "no-show sub-nav-item multiple_companies");
-    mobile_list_item.setAttribute("style", "cursor:pointer");
-    mobile_list_item.innerHTML = "<a>"+ tools_companies[j].name +"</a>";
-    mobile_list_item.onclick = function() {
-      var mobile_item_id = this.id.split("_")[1];
-      set_cookie(mobile_item_id, 14);
-      mobile_parent_element.firstChild.innerHTML = "<b>"+ this.firstChild.innerHTML + "</b>";
-      process_reload();
-    };
-    pop_menu.appendChild(mobile_list_item);
-  }
+    for(var j=0; j<tools_companies.length; j++) {
+        var mobile_list_item = document.createElement("li");
+        mobile_list_item.setAttribute("id", "mobilecompany_" + tools_companies[j].id);
+        mobile_list_item.setAttribute("class", "no-show sub-nav-item multiple_companies");
+        mobile_list_item.setAttribute("style", "cursor:pointer");
+        mobile_list_item.innerHTML = "<a>"+ tools_companies[j].name +"</a>";
+        mobile_list_item.onclick = function() {
+            var mobile_item_id = this.id.split("_")[1];
+            set_cookie(mobile_item_id, 14);
+            mobile_parent_element.firstChild.innerHTML = "<b>"+ this.firstChild.innerHTML + "</b>";
+            process_reload();
+        };
+        pop_menu.appendChild(mobile_list_item);
+    }
 }
 
 function process_reload() {

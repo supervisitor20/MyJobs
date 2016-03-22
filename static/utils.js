@@ -36,7 +36,7 @@ utils.logoutTimer = function readCookie(url) {
   if (!timer) {
     timer = window.setInterval(function redirect() {
       // if we are logged out and not already on the home page
-      if (this.readCookie('loggedout') && window.location.pathname !== url) {
+      if (utils.readCookie('loggedout') && window.location.pathname !== url) {
         window.location.assign(url);
       }
     }, 500);
