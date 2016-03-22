@@ -100,13 +100,11 @@ def get_company(request):
 
     # If settings.SITE is set we're on a microsite, so get the company
     # based on the microsite we're on instead.
-    """
     if hasattr(settings, "SITE") and settings.SITE.canonical_company:
         company = settings.SITE.canonical_company
 
         if company.user_has_access(request.user):
             return company
-    """
 
     # If the current hit is for a non-microsite admin, we don't know what
     # company we should be using; don't guess.
