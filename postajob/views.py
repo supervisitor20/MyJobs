@@ -45,8 +45,7 @@ def jobs_overview(request):
         'company' : company,
         'jobs': jobs.filter(owner=company, purchasedjob__isnull=True),
     }
-    return render_to_response('postajob/%s/jobs_overview.html'
-                              % settings.PROJECT, data,
+    return render_to_response('postajob/jobs_overview.html', data,
                               RequestContext(request))
 
 
@@ -71,7 +70,7 @@ def view_job(request, purchased_product, pk, admin):
         'purchased_product': purchased_product,
         'job': PurchasedJob.objects.get(pk=pk)
     }
-    return render_to_response('postajob/%s/view_job.html' % settings.PROJECT,
+    return render_to_response('postajob/view_job.html',
                               data, RequestContext(request))
 
 @company_has_access(None)
@@ -100,8 +99,7 @@ def view_invoice(request, purchased_product):
                      'alert_message': '<b>Success!</b>  You should receive '
                                       'this invoice shortly.'
                      })
-    return render_to_response('postajob/%s/view_invoice.html'
-                              % settings.PROJECT,
+    return render_to_response('postajob/view_invoice.html',
                               data, RequestContext(request))
 
 
@@ -124,8 +122,7 @@ def purchasedproducts_overview(request):
         'active_products': products.filter(expiration_date__gte=date.today()),
         'expired_products': products.filter(expiration_date__lt=date.today()),
     }
-    return render_to_response('postajob/%s/purchasedproducts_overview.html'
-                              % settings.PROJECT,
+    return render_to_response('postajob/purchasedproducts_overview.html',
                               data, RequestContext(request))
 
 
@@ -149,11 +146,10 @@ def purchasedjobs_overview(request, purchased_product, admin):
     }
     if admin:
         return render_to_response(
-            'postajob/%s/purchasedjobs_admin_overview.html' % settings.PROJECT,
+            'postajob/purchasedjobs_admin_overview.html',
             data, RequestContext(request))
     else:
-        return render_to_response('postajob/%s/purchasedjobs_overview.html'
-                                  % settings.PROJECT,
+        return render_to_response('postajob/purchasedjobs_overview.html',
                                   data, RequestContext(request))
 
 
@@ -187,8 +183,7 @@ def purchasedmicrosite_admin_overview(request):
         'company': company
     }
 
-    return render_to_response('postajob/%s/admin_overview.html'
-                              % settings.PROJECT, data,
+    return render_to_response('postajob/admin_overview.html',
                               RequestContext(request))
 
 
@@ -207,8 +202,7 @@ def admin_products(request):
         'products': products.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/%s/products.html'
-                              % settings.PROJECT, data,
+    return render_to_response('postajob/products.html',
                               RequestContext(request))
 
 
@@ -227,8 +221,7 @@ def admin_groupings(request):
         'product_groupings': grouping.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/%s/productgrouping.html'
-                               % settings.PROJECT, data,
+    return render_to_response('postajob/productgrouping.html',
                               RequestContext(request))
 
 
@@ -248,8 +241,7 @@ def admin_offlinepurchase(request):
         'offline_purchases': purchases.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/%s/offlinepurchase.html'
-                               % settings.PROJECT, data,
+    return render_to_response('postajob/offlinepurchase.html',
                               RequestContext(request))
 
 
@@ -270,9 +262,7 @@ def admin_request(request):
         'processed_requests': requests.filter(owner=company, action_taken=True)
     }
 
-    return render_to_response('postajob/%s/request.html'
-                               % settings.PROJECT, data,
-                              RequestContext(request))
+    return render_to_response('postajob/request.html', RequestContext(request))
 
 
 @user_is_allowed()
@@ -293,8 +283,7 @@ def admin_purchasedproduct(request):
         'expired_products': purchases.filter(expiration_date__lt=date.today()),
     }
 
-    return render_to_response('postajob/%s/purchasedproduct.html'
-                               % settings.PROJECT, data,
+    return render_to_response('postajob/purchasedproduct.html',
                               RequestContext(request))
 
 @user_is_allowed()
@@ -302,7 +291,7 @@ def admin_purchasedproduct(request):
 @error_when_company_missing_from_sitepackages(feature='Reqeusts are')
 @error_when_site_misconfigured(feature='Requests are')
 def view_request(request, pk, model=None):
-    template = 'postajob/{project}/request/{model}.html'
+    template = 'postajob/request/{model}.html'
     company = get_company(request)
     model = model or Request
 
@@ -330,8 +319,7 @@ def view_request(request, pk, model=None):
         raise Http404("postajob.views.view_request: user does not have access "
                       "to this object")
 
-    return render_to_response(template.format(project=settings.PROJECT,
-                                              model=content_type.model),
+    return render_to_response(template.format(model=content_type.model),
                               data, RequestContext(request))
 
 
@@ -413,8 +401,7 @@ def product_listing(request):
     # Sort the grouped packages by the specified display order.
     groupings = sorted(groupings, key=lambda grouping: grouping.display_order)
 
-    return render_to_response('postajob/%s/package_list.html'
-                              % settings.PROJECT,
+    return render_to_response('postajob/package_list.html',
                               {'product_groupings': groupings,
                                'company': company},
                               RequestContext(request))
@@ -486,7 +473,7 @@ class PostajobModelFormMixin(object):
     """
     model = None
     prevent_delete = False
-    template_name = 'postajob/%s/form.html' % settings.PROJECT
+    template_name = 'postajob/form.html'
 
     def get_queryset(self, request):
         kwargs = {'owner__in': request.user.roles.values('company')}
@@ -552,7 +539,7 @@ class JobFormView(BaseJobFormView):
     form_class = JobForm
     model = Job
     display_name = 'Job'
-    template_name = 'postajob/%s/job_form.html' % settings.PROJECT
+    template_name = 'postajob/job_form.html'
 
     success_url = reverse_lazy('jobs_overview')
     add_name = 'job_add'
@@ -608,7 +595,7 @@ class PurchasedJobFormView(BaseJobFormView):
     add_name = 'purchasedjob_add'
     update_name = 'purchasedjob_update'
     delete_name = 'purchasedjob_delete'
-    template_name = 'postajob/%s/job_form.html' % settings.PROJECT
+    template_name = 'postajob/job_form.html'
 
     purchase_field = 'purchased_product'
     purchase_model = PurchasedProduct
@@ -617,7 +604,7 @@ class PurchasedJobFormView(BaseJobFormView):
         if resolve(self.request.path).url_name == self.add_name:
             http404_view = "postajob.views.PurchasedJobFormView"
             if not self.product.can_post_more():
-                # If more jobs can't be posted to the project, don't allow
+                # If more jobs can't be posted to the product, don't allow
                 # the user to access the add view.
                 raise Http404("{view}: all available jobs for this posting "
                               "have been used".format(view=http404_view))
@@ -1010,8 +997,7 @@ def blocked_user_management(request):
         'company': company,
         'blocked_users': blocked_users
     }
-    return render_to_response('postajob/%s/blocked_user_management.html'
-                              % settings.PROJECT, data,
+    return render_to_response('postajob/blocked_user_management.html',
                               RequestContext(request))
 
 

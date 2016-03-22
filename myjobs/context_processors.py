@@ -46,7 +46,9 @@ def activities(request):
 
     """
     company = get_company(request)
-    return {"activities": request.user.get_activities(company)}
+    if not request.user.is_anonymous() and request.user.pk:
+        return {"activities": request.user.get_activities(company)}
+    return {"activities": []}
 
 
 def webpack_dev_setting(request):
