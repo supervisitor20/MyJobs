@@ -250,9 +250,9 @@ def get_menus(context):
     below those is a submenu (eg. "PRM").
 
     """
-    # since we're using ABSOLUTE_URL in the template, we have to strip the
-    # leading slash to avoid double-slashes in the resulting URL
-    url = lambda name: settings.ABSOLUTE_URL + reverse(name).lstrip("/")
+    # have to use hard coded urls since the named views don't exist on
+    # microsites.
+    url = lambda path: settings.ABSOLUTE_URL + path
     company = get_company(context.get("request"))
     user = context.get("user")
     new_messages = context.get("new_messages")
@@ -265,7 +265,7 @@ def get_menus(context):
         message_submenus = [
             {
                 "id": info.message.pk,
-                "href": url("inbox") + "?message=%s" % info.message.pk,
+                "href": url("message/inbox?message=%s" % info.message.pk),
                 "label": "%s - %s" % (
                     info.message.start_on.date(), info.message.subject[:10]
                 )
@@ -274,7 +274,7 @@ def get_menus(context):
         message_submenus = [
             {
                 "id": "no-messages",
-                "href": url("inbox"),
+                "href": url("message/inbox"),
                 "label": "No new unread messages"
             }
         ]
@@ -286,7 +286,7 @@ def get_menus(context):
         "submenus": [
             {
                 "id": "menu-inbox-all",
-                "href": url("inbox"),
+                "href": url("message/inbox"),
                 "label": "Inbox (See All)",
             }
         ] + message_submenus
@@ -304,12 +304,12 @@ def get_menus(context):
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
-                "href": url("prm"),
+                "href": url("prm/view"),
                 "label": "PRM"
             },
             {
                 "id": "reports-tab",
-                "href": url("overview"),
+                "href": url("reports/view/overview"),
                 "label": "Reports",
             }
         ]
@@ -318,7 +318,7 @@ def get_menus(context):
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",
-                "href": url("manage_users"),
+                "href": url("manage-users"),
                 "label": "Manage Users",
             }
         )
@@ -328,17 +328,17 @@ def get_menus(context):
         "submenus": [
             {
                 "id": "profile-tab",
-                "href": url("view_profile"),
+                "href": url("profile/view"),
                 "label": "My Profile"
             },
             {
                 "id": "searches-tab",
-                "href": url("saved_search_main"),
+                "href": url("saved-search/view"),
                 "label": "My Saved Searches"
             },
             {
                 "id": "account-tab",
-                "href": url("edit_account"),
+                "href": url("account/edit"),
                 "label": "Account Settings"
             },
             {
@@ -348,7 +348,7 @@ def get_menus(context):
             },
             {
                 "id": "logout-tab",
-                "href": url("auth_logout"),
+                "href": url("accounts/logout"),
                 "label": "Log Out"
             }
         ]
