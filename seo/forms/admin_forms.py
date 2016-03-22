@@ -678,11 +678,9 @@ class CompanyForm(SeoSiteReverseForm):
     def __init__(self, *args, **kwargs):
         super(CompanyForm, self).__init__(*args, **kwargs)
         instance = kwargs.get('instance')
-        if instance and instance.first_invitation:
-            text = "Invitation sent to %s." % (
-                instance.first_invitation.invitee_email)
+        if instance and instance.role_set.filter(user__isnull=False).count():
             self.fields['admin_email'] = forms.fields.CharField(
-                initial=text,
+                initial="An admin already exists for this company",
                 widget=forms.widgets.TextInput(
                     attrs={"style": "border: 0; "
                                     "background: 'transparent'; "
