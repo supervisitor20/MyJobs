@@ -89,10 +89,9 @@ def get_company_name(user):
     :user: User instance
 
     Outputs:
-    A `QuerySet` of companies for which the user is a `CompanyUser`.
-    """
+    A `QuerySet` of companies for which the user is assigned the "Admin" role.
 
-    # Only return companies for which the user is a company user
+    """
     return Company.objects.filter(role__user=user).distinct()
 
 
@@ -259,7 +258,7 @@ def get_menus(context):
     new_messages = context.get("new_messages")
 
     # menu item cant be generated for a user who isn't logged in
-    if user.is_anonymous() or not user.pk:
+    if not user or not user.pk or user.is_anonymous():
         return []
 
     if new_messages:
