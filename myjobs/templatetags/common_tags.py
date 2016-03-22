@@ -259,7 +259,7 @@ def get_menus(context):
     new_messages = context.get("new_messages")
 
     # menu item cant be generated for a user who isn't logged in
-    if user.is_anonymous():
+    if user.is_anonymous() or not user.pk:
         return []
 
     if new_messages:
