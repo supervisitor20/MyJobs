@@ -245,7 +245,21 @@ goes to the purchased products page and posts a job. The job appears on the
 site after approval.
 
 Requirements:
+  - The company who owns the product being purchased should have a functional
+    `use case 2 <use-case-2>`
 
+Views
+'''''
+
+============================== ============= ===================
+URL Path                        View Name     Required Activities
+============================== ============= ===================
+/posting/list/       
+/posting/product/purchase/add/
+/posting/purchased-jobs/
+============================== ============= ===================
+
+.. _use-case-2:
 
 Use Case 2: Site owner posting to their own site
 -------------------------------------------------
