@@ -41,10 +41,7 @@
                 <ul class="mobile_hide">
                   {% for menu in menus %}
                     <li {% if menu.submenus %}class="has-drop"{% endif %}>
-                      <a id="{{ menu.id }}">
-                        {% firstof menu.iconLabel menu.label %}
-                        {% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}
-                      </a>
+                      <a id="{{ menu.id }}">{% firstof menu.iconLabel menu.label %}{% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}</a>
                       <ul class="submenu" id="{{ menu.submenuId }}">
                         {% for submenu in menu.submenus %}
                           <li id="{{ submenu.id }}">
@@ -62,25 +59,23 @@
                 </ul>
 
                 <div id="" class="menu-bar desktop_hide" style="text-align: right;">
-                    <ul id="nav">
-                        <li>
-                            <a class="main-nav"></a>
-                            <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
-                              <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
-                                <ul class="no-show" id="company-name-menu"></ul>
-                                {% for menu in menus %}
-                                <li class="nav-item"><a id="{{ menu.id }}-mobile">{{ menu.label }}</a></li>
-                                  {% for submenu in menu.submenus %}
-                                  <li class="no-show sub-nav-item">
-                                    <a href="{{ submenu.href }}">
-                                      {{ submenu.label }}
-                                    </a>
-                                  </li>
-                                  {% endfor %}
-                                {% endfor %}
-                            </ul>{# /pop-menu #}
-                        </li>
-                    </ul>{# /nav #}
+                  <ul id="nav">
+                    <li>
+                      <a class="main-nav"></a>
+                      <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
+                        <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
+                          <ul class="no-show" id="company-name-menu"></ul>
+                          {% for menu in menus %}
+                          <li class="nav-item"><a id="{{ menu.id }}-mobile">{{ menu.label }}</a></li>
+                            {% for submenu in menu.submenus %}
+                            <li class="no-show sub-nav-item">
+                              <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                            </li>
+                            {% endfor %}
+                          {% endfor %}
+                      </ul>{# /pop-menu #}
+                    </li>
+                  </ul>{# /nav #}
                 </div>{# /menu-bar pagination-right pull-right #}
                 {% else %}
                     {# MOBILE VIEW #}
