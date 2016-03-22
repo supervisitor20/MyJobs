@@ -9,11 +9,14 @@ $(window).ready(function() {
         e.preventDefault();
         if($(window).width() < 994){
             $("#nav").toggleClass("active");
+            // menus
             $(".nav-item").removeClass("no-show");
+            // submenus
             $(".sub-nav-item").addClass("no-show");
-            $("#back-btn-li").addClass("no-show");
-            $(".multiple_companies").addClass("no-show");
 
+            $("#back-btn-li").addClass("no-show");
+
+            $(".multiple_companies").addClass("no-show");
             $("#mobile-company-select").addClass("no-show");
 
             //Not logged in mobile view
@@ -38,14 +41,19 @@ $(window).ready(function() {
       $(this).nextUntil(".nav-item").removeClass("no-show");
     });
 
+    $("#employers-mobile").click(function(e) {
+      $("#company-name-menu").removeClass("no-show");
+    });
+
     $("#back-btn").click(function(e){
         e.preventDefault();
 
         $(".nav-item").removeClass("no-show");
         $(".sub-nav-item").addClass("no-show");
         $("#back-btn-li").addClass("no-show");
-
+        $("#company-name-menu").addClass("no-show");
     });
+
     if (typeof tools_companies !== 'undefined') {
         get_companies();
     }
@@ -148,9 +156,9 @@ function get_companies() {
 
         $("#mobile-company-select").addClass("no-show");
     };
-    var pop_menu = document.getElementById("pop-menu"),
-        employers_item = document.getElementById("employers-mobile");
-    pop_menu.insertBefore(mobile_parent_element, employers_item);
+    var pop_menu = document.getElementById("company-name-menu"),
+        search_item = document.getElementById("employers-mobile");
+    $(pop_menu).append(mobile_parent_element);
 
     for(var j=0; j<tools_companies.length; j++) {
         var mobile_list_item = document.createElement("li");
