@@ -254,31 +254,43 @@ def get_menus(context):
     # since we're using ABSOLUTE_URL in the template, we have to strip the
     # leading slash to avoid double-slashes in the resulting URL
     url = lambda name: settings.ABSOLUTE_URL + reverse(name).lstrip("/")
-    company = get_company(context["request"])
+    company = get_company(context.get("request"))
+    user = context.get("user")
+    new_messages = context.get("new_messages")
 
-    new_messages = [{
-        "id": info.message.pk,
-        "href": url("inbox") + "?message=%s" % info.message.pk,
-        "label": "%s - %s" % (
-            info.message.start_on.date(), info.message.subject[:10]
-        )
-    } for info in context["new_messages"][:3]] or [{
-        "id": "no-messages",
-        "href": url("inbox"),
-        "label": "No new unread messages"
-    }]
-    messages_menu = {
+    # menu item cant be generated for a user who isn't logged in
+    if user.is_anonymous():
+        return []
+
+    if new_messages:
+        message_submenus = [
+            {
+                "id": info.message.pk,
+                "href": url("inbox") + "?message=%s" % info.message.pk,
+                "label": "%s - %s" % (
+                    info.message.start_on.date(), info.message.subject[:10]
+                )
+            } for info in context["new_messages"][:3]]
+    else:
+        message_submenus = [
+            {
+                "id": "no-messages",
+                "href": url("inbox"),
+                "label": "No new unread messages"
+            }
+        ]
+    message_menu = {
         "label": "Messages",
         "id": "menu-inbox",
         "icon": "icon-envelope icon-white",
-        "iconLabel": str(context["new_messages"].count()),
+        "iconLabel": str(new_messages.count() if new_messages else 0),
         "submenus": [
             {
                 "id": "menu-inbox-all",
                 "href": url("inbox"),
                 "label": "Inbox (See All)",
             }
-        ] + new_messages
+        ] + message_submenus
     }
 
     employer_menu = {
@@ -287,9 +299,9 @@ def get_menus(context):
         "submenuId": "employer-apps",
         "submenus": [
         ]
-    } if context["user"].roles.exists() else {}
+    } if user.roles.exists() else {}
 
-    if employer_menu and context["user"].can(company, "read partner"):
+    if employer_menu and user.can(company, "read partner"):
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
@@ -303,7 +315,7 @@ def get_menus(context):
             }
         ]
 
-    if employer_menu and context["user"].can(company, "read role"):
+    if employer_menu and user.can(company, "read role"):
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",
@@ -313,7 +325,7 @@ def get_menus(context):
         )
 
     profile_menu = {
-        "label": context["user"].email,
+        "label": user.email,
         "submenus": [
             {
                 "id": "profile-tab",
@@ -343,4 +355,4 @@ def get_menus(context):
         ]
     }
 
-    return [messages_menu, employer_menu, profile_menu]
+    return [message_menu, employer_menu, profile_menu]
