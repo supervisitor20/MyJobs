@@ -132,15 +132,33 @@ class Select extends React.Component {
 }
 
 Select.propTypes = {
+  /**
+  * Callback: the user has selected an item.
+  *
+  * obj: the object selected by the user.
+  */
   onChange: React.PropTypes.func.isRequired,
+  /**
+   * under_score_seperated, unique name of this field. Used to post form
+   * content to Django
+   */
   name: React.PropTypes.string.isRequired,
+  /**
+   * Value at first page load
+   */
   initial: React.PropTypes.any,
+  /**
+   * Array of objects, each an item in the select component
+   */
   choices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
     })
   ),
+  /**
+   * Array of strings, each a possible error produced by Django
+   */
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
 };
 

@@ -34,11 +34,29 @@ class FieldWrapper extends React.Component {
 }
 
 FieldWrapper.propTypes = {
+  /**
+   * Human readable label for user
+   */
   label: React.PropTypes.string.isRequired,
+  /**
+   * Human readable description of information to go in this field
+   */
   helpText: React.PropTypes.string,
+  /**
+   * Array of strings, each a possible error produced by Django
+   */
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
+  /**
+   * Form element for this Component to wrap
+   */
   children: React.PropTypes.element.isRequired,
+  /**
+   * Should the label for this form element have an asterisk to indicate required?
+   */
   required: React.PropTypes.bool,
+  /**
+   * Should this component be shown or not?
+   */
   isHidden: React.PropTypes.bool,
 };
 
