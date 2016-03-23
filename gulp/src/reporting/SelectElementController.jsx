@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import Multiselect from 'common/ui/MultiSelect';
-import {PartnerSelectElement} from './PartnerSelectElement';
+import {SelectElement} from 'common/ui/SelectElement';
+import {map} from 'lodash-compat/collection';
 
-export class PartnerSelectElementController extends Component {
+export class SelectElementController extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -12,20 +13,30 @@ export class PartnerSelectElementController extends Component {
           {display: 'No filter', value: 0},
           {display: 'Filter by name', value: 1},
       ],
+      availableHints: [],
     };
+  }
+  componentDidMount() {
+    this.getHints();
+  }
+  async getHints() {
+    const {getHints} = this.props;
+    const availableHints = await getHints();
+    const fixedAvailableHints = map(availableHints, value => ({value: value.key, display: value.display}));
+    this.setState({availableHints: fixedAvailableHints});
   }
   changeHandler(value) {
     this.setState({
       initial: value,
     });
   }
-  renderPartnerControl(value) {
+  renderControl(value) {
     const {onSelectAdd, onSelectRemove} = this.props;
     if (value === 1) {
       return (
         <Multiselect
-          available={this.props.availablePartners}
-          selected={this.props.selectedPartners}
+          available={this.state.availableHints}
+          selected={this.props.selectedOptions}
           availableHeader={'Available'}
           selectedHeader={'Selected'}
           onAdd={v => onSelectAdd(v)}
@@ -39,27 +50,26 @@ export class PartnerSelectElementController extends Component {
     const {choices, initial} = this.state;
     return (
       <div>
-        <PartnerSelectElement
+        <SelectElement
           onChange={v => this.changeHandler(v)}
-          availablePartners = {this.props.availablePartners}
           choices = {choices}
           initial = {initial}
         />
-        <div className="partner-control-chosen">
-          {this.renderPartnerControl(initial.value)}
+        <div className="select-control-chosen">
+          {this.renderControl(initial.value)}
         </div>
       </div>
     );
   }
 }
 
-PartnerSelectElementController.propTypes = {
-  availablePartners: React.PropTypes.array.isRequired,
-  selectedPartners: React.PropTypes.array.isRequired,
+SelectElementController.propTypes = {
+  getHints: React.PropTypes.func.isRequired,
+  selectedOptions: React.PropTypes.array.isRequired,
   onSelectAdd: React.PropTypes.func.isRequired,
   onSelectRemove: React.PropTypes.func.isRequired,
 };
 
-PartnerSelectElementController.defaultProps = {
+SelectElementController.defaultProps = {
 
 };

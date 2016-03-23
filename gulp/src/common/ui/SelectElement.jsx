@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-export class PartnerSelectElement extends Component {
+export class SelectElement extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -56,7 +56,7 @@ export class PartnerSelectElement extends Component {
   }
 }
 
-PartnerSelectElement.propTypes = {
+SelectElement.propTypes = {
   onChange: React.PropTypes.func.isRequired,
   initial: React.PropTypes.shape({
     value: React.PropTypes.any.isRequired,
@@ -70,6 +70,6 @@ PartnerSelectElement.propTypes = {
   ),
 };
 
-PartnerSelectElement.defaultProps = {
+SelectElement.defaultProps = {
   childSelectName: 'this is a test',
 };

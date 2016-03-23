@@ -1,14 +1,14 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
-import {map, forEach} from 'lodash-compat/collection';
+import {forEach} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCityState} from './WizardFilterCityState';
-import {PartnerSelectElementController} from './PartnerSelectElementController';
+import {SelectElementController} from '../SelectElementController';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -16,7 +16,6 @@ export class WizardPageFilter extends Component {
     this.state = {
       reportName: 'Report Name',
       loading: true,
-      partnerHints: [],
     };
   }
 
@@ -60,9 +59,6 @@ export class WizardPageFilter extends Component {
     await this.buildReportConfig();
     this.updateState();
     this.setState({loading: false});
-    const partnerHints = await this.getHints('partner', '');
-    const fixedPartnerHints = map(partnerHints, value => ({value: value.key, display: value.display}));
-    this.setState({partnerHints: fixedPartnerHints});
   }
 
   updateFilter(filter, value) {
@@ -172,9 +168,9 @@ export class WizardPageFilter extends Component {
         break;
       case 'search_multiselect':
         rows.push(this.renderRow(col.display, col.filter,
-            <PartnerSelectElementController
-              availablePartners = {this.state.partnerHints}
-              selectedPartners = {this.getFromMultifilter(col.filter)}
+            <SelectElementController
+              getHints={v => this.getHints(col.filter, v)}
+              selectedOptions = {this.getFromMultifilter(col.filter)}
               onSelectAdd = {v => this.addAllToMultifilter(col.filter, v)}
               onSelectRemove = {v => this.removeAllFromMultifilter(col.filter, v)}
             />));
