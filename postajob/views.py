@@ -604,9 +604,6 @@ class PurchasedJobFormView(BaseJobFormView):
 
     def get(self, *args, **kwargs):
         company = get_company_or_404(self.request)
-        if not company:
-            raise Http404("PurchasedJobFormView: Canonical company not set "
-                          " for %s" % settings.SITE.domain)
 
         if not can_modify(self.request.user, company, kwargs,
                           "update purchased job", "create purchased job"):
@@ -616,9 +613,6 @@ class PurchasedJobFormView(BaseJobFormView):
 
     def post(self, *args, **kwargs):
         company = get_company_or_404(self.request)
-        if not company:
-            raise Http404("PurchasedJobFormView: Canonical company not set "
-                          " for %s" % settings.SITE.domain)
 
         if not can_modify(self.request.user, company, kwargs,
                           "update purchased job", "create purchased job"):
