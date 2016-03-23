@@ -7,10 +7,9 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
 from django.core.urlresolvers import reverse_lazy
 from django import forms
-from django.forms import (CharField, CheckboxSelectMultiple, HiddenInput,
-                          IntegerField, ModelChoiceField,
-                          ModelMultipleChoiceField, RadioSelect, Select,
-                          TextInput, ChoiceField)
+from django.forms import (CharField, CheckboxSelectMultiple,
+                          HiddenInput, IntegerField, ModelMultipleChoiceField,
+                          RadioSelect, Select, TextInput, ChoiceField)
 from django.forms.models import modelformset_factory, BaseModelFormSet
 
 from seo.models import Company, SeoSite
@@ -613,15 +612,9 @@ class PurchasedProductNoPurchaseForm(RequestForm):
     def __init__(self, *args, **kwargs):
         self.product = kwargs.pop('product', None)
         super(PurchasedProductNoPurchaseForm, self).__init__(*args, **kwargs)
-        if self.request.user.roles.exists():
-            self.fields['owner'] = ModelChoiceField(
-                empty_label=None,
-                queryset=Company.objects.filter(role__user=self.request.user),
-                help_text="The company who will have access to this product.")
-        else:
-            # allow user to create a company if he doesn't belong to one
+        if not self.company:
             self.fields['company_name'] = CharField(label='Company Name')
-        self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+            self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
 
     def clean(self):
         cleaned_data = self.cleaned_data

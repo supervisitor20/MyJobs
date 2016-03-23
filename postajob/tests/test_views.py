@@ -220,13 +220,13 @@ class ViewTests(PostajobTestBase):
         self.user.roles.clear()
 
         response = self.client.post(reverse('jobs_overview'))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
         response = self.client.post(reverse('job_add'))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
         response = self.client.post(reverse('job_delete', kwargs={'pk': 1}))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
         response = self.client.post(reverse('job_update', kwargs={'pk': 1}))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
     def test_job_access_not_for_company(self):
         new_company = CompanyFactory(name='Another Company', pk=1000)

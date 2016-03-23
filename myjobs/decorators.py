@@ -7,8 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User, AppAccess
-from universal.helpers import (get_company_or_404, every,
-                               get_project_company_or_404)
+from universal.helpers import (get_company_or_404, every)
 
 
 def user_is_allowed(model=None, pk_name=None, pass_user=False):
@@ -255,7 +254,7 @@ def requires(*activities, **callbacks):
                 return HttpResponseRedirect(reverse('login')+'?next='+next_url)
 
             # get_company isn't reliable, see PD-2260 on JIRA
-            company = get_project_company_or_404(request)
+            company = get_company_or_404(request)
 
             # the app_access we need, determined by the activities passed in
             required_access = filter(bool, AppAccess.objects.filter(

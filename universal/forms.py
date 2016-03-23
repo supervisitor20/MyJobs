@@ -1,13 +1,13 @@
 from django.forms import ModelForm
 from django.conf import settings
 
-from universal.helpers import get_company_from_project
+from universal.helpers import get_company
 
 
 class RequestForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
-        self.company = get_company_from_project(self.request)
+        self.company = get_company(self.request)
         super(RequestForm, self).__init__(*args, **kwargs)
 
 
