@@ -1,10 +1,8 @@
 import React from 'react';
 import FilteredMultiSelect from 'react-filtered-multiselect';
-import {filter, includes} from 'lodash-compat/collection';
 
 function Multiselect(props) {
   const {selected, available, availableHeader, selectedHeader, onAdd, onRemove} = props;
-  const filteredAvailable = filter(available, v => !includes(selected, v));
 
   return (
       <div className="row">
@@ -19,7 +17,8 @@ function Multiselect(props) {
               buttonActive: 'button primary',
             }}
             onChange={v => onAdd(v)}
-            options={filteredAvailable}
+            options={available}
+            selectedOptions={selected}
             textProp="display"
             valueProp="value"
           />
@@ -35,7 +34,7 @@ function Multiselect(props) {
               buttonActive: 'button',
             }}
             onChange={v => onRemove(v)}
-            options={selected}
+            options={[...selected]}
             textProp="display"
             valueProp="value"
           />

@@ -22,7 +22,6 @@ export class PartnerSelectElementController extends Component {
   renderPartnerControl(value) {
     const {onSelectAdd, onSelectRemove} = this.props;
     if (value === 1) {
-      console.log(this.props.selectedPartners);
       return (
         <Multiselect
           available={this.props.availablePartners}

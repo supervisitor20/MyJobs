@@ -7,9 +7,7 @@ import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
-import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
-import {SearchInput} from 'common/ui/SearchInput';
 import {PartnerSelectElementController} from './PartnerSelectElementController';
 
 export class WizardPageFilter extends Component {
@@ -26,9 +24,36 @@ export class WizardPageFilter extends Component {
     this.loadData();
   }
 
+  getFromMultifilter(filter) {
+    const {reportConfig} = this.state;
+    const values = reportConfig.getMultiFilter(filter);
+    const values2 = JSON.parse(JSON.stringify(values).split('"key":').join('"value":'));
+    return values2;
+  }
+
   async getHints(filter, partial) {
     const {reportConfig} = this.state;
     return await reportConfig.getHints(filter, partial);
+  }
+
+  addAllToMultifilter(filter, values) {
+    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
+    forEach(values2, v => this.addToMultifilter(filter, v));
+    this.updateState();
+  }
+
+  removeAllFromMultifilter(filter, values) {
+    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
+    forEach(values2, v => this.removeFromMultifilter(filter, v));
+    this.updateState();
+  }
+
+  async buildReportConfig() {
+    const {reportFinder} = this.props;
+    const {presentationType} = this.props.routeParams;
+    const reportConfig = await reportFinder.buildReportConfiguration(
+      presentationType);
+    this.setState({reportConfig});
   }
 
   async loadData() {
@@ -40,29 +65,6 @@ export class WizardPageFilter extends Component {
     this.setState({partnerHints: fixedPartnerHints});
   }
 
-  async buildReportConfig() {
-    const {reportFinder} = this.props;
-    const {presentationType} = this.props.routeParams;
-    const reportConfig = await reportFinder.buildReportConfiguration(
-      presentationType);
-    this.setState({reportConfig});
-  }
-
-  addAllToMultifilter(filter, values) {
-    console.log('addAll', values);
-    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
-    console.log('addAll2', values2);
-    forEach(values2, v => this.addToMultifilter(filter, v));
-    this.updateState();
-  }
-
-  removeAllFromMultifilter(filter, values) {
-    console.log('removeAll', values);
-    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
-    forEach(values2, v => this.removeFromMultifilter(filter, v));
-    this.updateState();
-  }
-
   updateFilter(filter, value) {
     const {reportConfig} = this.state;
     reportConfig.setFilter(filter, value);
@@ -70,7 +72,6 @@ export class WizardPageFilter extends Component {
   }
 
   addToMultifilter(filter, value) {
-    console.log('addToMulti', filter, value);
     const {reportConfig} = this.state;
     reportConfig.addToMultifilter(filter, value);
     this.updateState();
@@ -171,42 +172,20 @@ export class WizardPageFilter extends Component {
         break;
       case 'search_multiselect':
         rows.push(this.renderRow(col.display, col.filter,
-          <SearchInput
-            id={col.filter}
-            emptyOnSelect
-            onSelect={v =>
-              this.addToMultifilter(col.filter, v)}
-            getHints={v =>
-              this.getHints(col.filter, v)}/>
-        ));
-        rows.push(this.renderRow(
-          '',
-          col.filter + '-selected',
-          <WizardFilterCollectedItems
-            items={
-              reportConfig.getMultiFilter(col.filter)
-                || []
-            }
-            remove={v =>
-              this.removeFromMultifilter(
-                col.filter,
-                v)}/>));
+            <PartnerSelectElementController
+              availablePartners = {this.state.partnerHints}
+              selectedPartners = {this.getFromMultifilter(col.filter)}
+              onSelectAdd = {v => this.addAllToMultifilter(col.filter, v)}
+              onSelectRemove = {v => this.removeAllFromMultifilter(col.filter, v)}
+            />));
         break;
       default:
         warning(true, 'Unknown interface type: ' + col.interface_type);
       }
     });
-    console.log(reportConfig.getMultiFilter('partner'));
     return (
       <form>
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
-        {this.renderRow('partners1', '',
-            <PartnerSelectElementController
-              availablePartners = {this.state.partnerHints}
-              selectedPartners = {reportConfig.getMultiFilter('partner')}
-              onSelectAdd = {v => this.addAllToMultifilter('partner', v)}
-              onSelectRemove = {v => this.removeAllFromMultifilter('partner', v)}
-            />)}
         {rows}
         {this.renderRow('', 'submit',
           <button

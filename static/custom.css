@@ -3181,6 +3181,8 @@ height: 33px;
 
 .row .col-md-8 select[multiple] {
     height: 200px;
+    font-size: 1em;
+    padding: 4px;
 }
 
 .row .col-md-8 .fsm select[multiple] {

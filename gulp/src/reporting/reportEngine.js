@@ -99,25 +99,19 @@ export class ReportConfiguration {
   }
 
   addToMultifilter(field, obj) {
-    console.log("add",field,obj,this.multiFilter);
     if (!(field in this.multiFilter)) {
-      console.log('if1');
       this.multiFilter[field] = [];
     }
     if (this.multiFilter[field].findIndex(i => i.key === obj.key) === -1) {
-      console.log('if2');
       this.multiFilter[field].push(obj);
     }
-    console.log(this.multiFilter);
   }
 
   removeFromMultifilter(field, obj) {
-    console.log("remove",field,obj);
     const index = this.multiFilter[field].findIndex(i => i.key === obj.key);
     if (index !== -1) {
       this.multiFilter[field].splice(index, 1);
     }
-    console.log(this.multiFilter);
   }
 
   addToAndOrFilter(field, index, obj) {
