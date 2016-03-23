@@ -1,5 +1,8 @@
 import React from 'react';
 
+/**
+ * Simple input element with onChange handler
+ */
 function TextField(props) {
   const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
   return (

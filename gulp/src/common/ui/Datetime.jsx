@@ -1,5 +1,8 @@
 import React from 'react';
 
+/**
+ * Like TextField but with a special type value
+ */
 function Datetime(props) {
   const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
   return (

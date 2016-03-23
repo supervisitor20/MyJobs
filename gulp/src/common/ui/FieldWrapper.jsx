@@ -1,6 +1,9 @@
 import React from 'react';
 import {map} from 'lodash-compat/collection';
 
+/**
+ * Wraps a child field with standardized layout of helptext, error text, and label
+ */
 class FieldWrapper extends React.Component {
   render() {
     const {label, helpText, errors, children, required, isHidden} = this.props;

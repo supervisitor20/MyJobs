@@ -1,5 +1,8 @@
 import React from 'react';
 
+/**
+ * Custom select box (i.e. not standard HTML form element) with keyboard support
+ */
 class Select extends React.Component {
   constructor(props) {
     super(props);

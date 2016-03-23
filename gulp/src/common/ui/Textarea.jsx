@@ -1,6 +1,8 @@
-
 import React from 'react';
 
+/**
+ * Simple Textarea element with onChange handler
+ */
 function Textarea(props) {
   const {name, onChange, required, initial, isHidden, placeholder} = props;
   return (
