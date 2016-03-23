@@ -220,7 +220,7 @@ def get_company_or_404(request):
 def get_object_or_none(*args, **kwargs):
     try:
         return get_object_or_404(*args, **kwargs)
-    except ObjectDoesNotExist:
+    except Http404:
         return None
 
 
