@@ -132,8 +132,12 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertEquals(200, resp.status_code)
         self.assertIn('application/json', resp['content-type'])
         data = json.loads(resp.content)
-        self.assertEquals(3, len(data['fields']))
         self.assertEquals(3, len(data['ordered_fields']))
+        self.assertIsInstance(data['ordered_fields'], list)
+        self.assertEquals(3, len(data['fields']))
+        self.assertIsInstance(data['fields'], dict)
+        self.assertEquals(3, len(data['data']))
+        self.assertIsInstance(data['data'], dict)
 
     def test_handle_form_redirect_summary(self):
         """
