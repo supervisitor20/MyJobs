@@ -1,13 +1,10 @@
 import React, {Component} from 'react';
-import PartnersMultiselect from 'reporting/PartnersMultiselect';
 
-export class SelectElement extends Component {
+export class PartnerSelectElement extends Component {
   constructor(props) {
     super(props);
     this.state = {
       selectDropped: false,
-      availablePartners: [],
-      selectedPartners: [],
     };
     this.popSelectMenu = this.popSelectMenu.bind(this);
   }
@@ -22,26 +19,15 @@ export class SelectElement extends Component {
     onChange(itemKey);
     this.popSelectMenu();
   }
-  renderPartnerControl(itemKey) {
-    if (itemKey && itemKey.key === 1) {
-      return (
-        <PartnersMultiselect
-          availablePartners={this.state.availablePartners}
-          selectedPartners={this.state.selectedPartners}
-          ref="partners"/>
-      );
-    }
-    return '';
-  }
   render() {
-    const {items, childSelectName, itemKey} = this.props;
+    const {choices, initial} = this.props;
     let item;
     let dropdown;
     const dropdownItems = [];
     if (this.state.selectDropped) {
-      for (item of items) {
+      for (item of choices) {
         if (item) {
-          dropdownItems.push(<li key={item.key} onClick={this.selectFromMenu.bind(this, item)}>{item.name}</li>);
+          dropdownItems.push(<li key={item.value} onClick={this.selectFromMenu.bind(this, item)}>{item.display}</li>);
         }
       }
       dropdown = (
@@ -55,37 +41,35 @@ export class SelectElement extends Component {
       dropdown = '';
     }
     return (
-      <div>
-        <div className="select-element-outer">
-          <div className="select-element-input">
-            <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
-              <span className="select-element-chosen">{childSelectName}</span>
-              <span className="select-element-arrow">
-                <b role="presentation"></b>
-              </span>
-            </div>
+      <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
+        <div className="select-element-input">
+          <div className="select-element-chosen-container" onClick={this.popSelectMenu}>
+            <span className="select-element-chosen">{initial.display}</span>
+            <span className="select-element-arrow">
+              <b role="presentation"></b>
+            </span>
           </div>
-          {dropdown}
         </div>
-        <div className="partner-control-chosen">
-          {this.renderPartnerControl(itemKey)}
-        </div>
+        {dropdown}
       </div>
     );
   }
 }
 
-SelectElement.propTypes = {
-  items: React.PropTypes.array.isRequired,
-  childSelectName: React.PropTypes.string,
+PartnerSelectElement.propTypes = {
   onChange: React.PropTypes.func.isRequired,
-  itemKey: React.PropTypes.object,
+  initial: React.PropTypes.shape({
+    value: React.PropTypes.any.isRequired,
+    display: React.PropTypes.string.isRequired,
+  }),
+  choices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
 };
 
-SelectElement.defaultProps = {
-  items: [
-    {name: 'No filter', key: 0},
-    {name: 'Filter by name', key: 1},
-  ],
+PartnerSelectElement.defaultProps = {
   childSelectName: 'this is a test',
 };
