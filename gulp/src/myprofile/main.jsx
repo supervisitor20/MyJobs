@@ -2,6 +2,10 @@
 /* global id */
 /* global module */
 
+import 'babel/polyfill';
+import {installPolyfills} from '../common/polyfills.js';
+import param from 'jquery-param';
+
 import React from 'react';
 import {getCsrf} from 'common/cookie';
 
@@ -16,6 +20,10 @@ import Textarea from '../common/ui/Textarea';
 import Datetime from '../common/ui/Datetime';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
+
+import {MyJobsApi} from '../common/myjobs-api';
+
+installPolyfills();
 
 class Module extends React.Component {
   constructor(props) {
@@ -64,47 +72,38 @@ class Module extends React.Component {
       formContents: formContents,
     });
   }
-  handleDelete() {
+  async handleDelete() {
     if (confirm('Are you sure you want to delete this item?') === false) {
       return;
     }
 
     const {formContents} = this.state;
 
-    $.ajax({
-      type: 'get',
-      url: '/profile/view/delete?item=' + formContents.id,
-      beforeSend: function prepSendDelete(xhr) {
-        xhr.setRequestHeader('Accept', 'application/json');
-      },
-      success: () => {
-        window.location.assign('/profile/view/');
-      },
-    });
+    const myJobsApi = new MyJobsApi(getCsrf());
+
+    const formData = {
+      item: formContents.id,
+    };
+
+    await myJobsApi.get('/profile/view/delete?' + param(formData));
+    window.location.assign('/profile/view/');
   }
   handleCancel() {
     window.location.assign('/profile/view/');
   }
-  handleSave() {
+  async handleSave() {
     const {formContents} = this.state;
+    const myJobsApi = new MyJobsApi(getCsrf());
 
-    $.ajax({
-      type: 'post',
-      url: '/profile/api',
-      data: formContents,
-      beforeSend: function prepSendSave(xhr) {
-        xhr.setRequestHeader('Accept', 'application/json');
-      },
-      success: (apiResponse) => {
-        if (apiResponse.errors) {
-          this.setState({
-            apiResponse: apiResponse,
-          });
-        } else {
-          window.location.assign('/profile/view/');
-        }
-      },
-    });
+    const apiResponse = await myJobsApi.post('/profile/api', formContents);
+
+    if (apiResponse.errors) {
+      this.setState({
+        apiResponse: apiResponse,
+      });
+    } else {
+      window.location.assign('/profile/view/');
+    }
   }
   processForm(apiResponse) {
     if (apiResponse) {
@@ -191,33 +190,19 @@ class Module extends React.Component {
       return profileUnits;
     }
   }
-  callAPI() {
+  async callAPI() {
     const {formContents} = this.state;
+    const myJobsApi = new MyJobsApi(getCsrf());
+    const formData = {
+      id: formContents.id,
+      module: formContents.module,
+    };
 
-    $.ajax({
-      type: 'get',
-      url: '/profile/api',
-      data: {id: formContents.id,
-             module: formContents.module},
-      beforeSend: function prepSendCallAPI(xhr) {
-        xhr.setRequestHeader('Accept', 'application/json');
-      },
-      success: (apiResponse) => {
-        // Add form fields to state object
-        for (const field in apiResponse.data) {
-          if (apiResponse.data.hasOwnProperty(field)) {
-            formContents[field] = apiResponse.data[field];
-            // Replace null values with empty strings
-            if (!formContents[field]) {
-              formContents[field] = '';
-            }
-          }
-        }
-        this.setState({
-          apiResponse: apiResponse,
-          formContents: formContents,
-        });
-      },
+    const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
+
+    this.setState({
+      apiResponse: apiResponse,
+      formContents: formContents,
     });
   }
   render() {

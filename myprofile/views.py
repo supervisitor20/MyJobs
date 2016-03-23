@@ -74,6 +74,7 @@ def handle_form(request):
     then uses these to update the existing item or create a new instance
     """
     http404_view = 'myprofile.views.handle_form'
+
     item_id = request.REQUEST.get('id', 'new')
     module = request.REQUEST.get('module')
     module = module.replace(" ", "")
@@ -185,7 +186,11 @@ def delete_item(request):
         request.user.profileunits_set.get(id=item_id).delete()
     except ProfileUnits.DoesNotExist:
         pass
-    return HttpResponseRedirect(reverse('view_profile'))
+    if request.META.get('HTTP_ACCEPT') == 'application/json':
+        return HttpResponse(content_type='application/json',
+                            content=json.dumps({}))
+    else:
+        return HttpResponseRedirect(reverse('view_profile'))
 
 
 @user_passes_test(User.objects.not_disabled)
