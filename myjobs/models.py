@@ -633,20 +633,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         except (IndexError, ValueError):
             return None
 
-    def can_access_site(self, site):
-        """
-        If a user belongs to a company who has at least one site package which
-        includes `site`, this method will return `True`. This method will also
-        return `True` if the site has no site packages.
-
-        Inputs:
-        :site: The site to look for
-        """
-        packages = site.sitepackage_set
-
-        return not packages.exists() or packages.filter(
-            owner__role__user=self).exists()
-
     def can(self, company, *activity_names, **kwargs):
         """
         Checks if a user may perform certain activities for a company.

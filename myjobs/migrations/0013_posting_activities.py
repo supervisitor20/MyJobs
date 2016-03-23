@@ -25,6 +25,11 @@ class Migration(DataMigration):
             ("read grouping", "View existing product groupings."),
             ("update grouping", "Edit existing product groupings."),
             ("delete grouping", "Delete existing product groupings."),
+            ("create purchased product", "Create new purchased products."),
+            ("read purchased product", "View existing purchased products."),
+            ("create purchased job", "Create new purchased jobs."),
+            ("read purchased job", "View existing purchased jobs."),
+            ("update purchased job", "Edit existing purchased jobs.")
         ]
         # We use a for loop and directly access the models so that signals fire
         for name, desc in posting_activities:

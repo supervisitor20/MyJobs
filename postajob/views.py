@@ -15,7 +15,7 @@ from postajob.location_data import state_list
 
 from universal.decorators import company_has_access
 from seo.models import SeoSite
-from myjobs.decorators import user_is_allowed, MissingActivity
+from myjobs.decorators import MissingActivity
 from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
                             OfflinePurchaseRedemptionForm, ProductForm,
                             ProductGroupingForm, PurchasedJobForm,
@@ -24,23 +24,18 @@ from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              Product, ProductGrouping, PurchasedJob,
                              PurchasedProduct, Request, JobLocation)
-from postajob.decorators import (error_when_site_misconfigured,
-                                 error_when_company_missing_from_sitepackages)
+from postajob.helpers import can_modify
 from universal.helpers import (get_company, get_object_or_none,
-                               get_company_or_404, at_least_one)
+                               get_project_company_or_404, at_least_one)
 from universal.views import RequestFormViewBase
 from myjobs.decorators import requires
 
 
-@user_is_allowed()
 @requires('read job')
 def jobs_overview(request):
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        jobs = Job.objects.filter_by_sites(sites)
-    else:
-        jobs = Job.objects.all()
-    company = get_company(request)
+    sites = settings.SITE.postajob_site_list()
+    jobs = Job.objects.filter_by_sites(sites)
+    company = settings.SITE.canonical_company
     data = {
         'company' : company,
         'jobs': jobs.filter(owner=company, purchasedjob__isnull=True),
@@ -49,14 +44,9 @@ def jobs_overview(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
-@company_has_access(None)
-@error_when_company_missing_from_sitepackages(
-    feature='Purchased Job Management')
-@error_when_site_misconfigured(feature='Purchased Job Management')
 def view_job(request, purchased_product, pk, admin):
     http404_view = 'postajob.views.view_job'
-    company = get_company_or_404(request)
+    company = get_project_company_or_404(request)
     purchased_product = PurchasedProduct.objects.get(pk=purchased_product)
     if admin and purchased_product.product.owner != company:
         raise Http404("{view}: Current company and product owner do not "
@@ -73,11 +63,8 @@ def view_job(request, purchased_product, pk, admin):
     return render_to_response('postajob/view_job.html',
                               data, RequestContext(request))
 
-@company_has_access(None)
-@error_when_company_missing_from_sitepackages(feature='Purchased Products are')
-@error_when_site_misconfigured(feature='Purchased Products are')
 def view_invoice(request, purchased_product):
-    company = get_company_or_404(request)
+    company = get_project_company_or_404(request)
     kwargs = {
         'pk': purchased_product,
     }
@@ -103,22 +90,15 @@ def view_invoice(request, purchased_product):
                               data, RequestContext(request))
 
 
-@user_is_allowed()
-@company_has_access(None)
-@error_when_site_misconfigured(feature='Purchased Job Management')
 def purchasedproducts_overview(request):
-    company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        products = PurchasedProduct.objects.filter_by_sites(sites)
-        jobs = PurchasedJob.objects.filter_by_sites(sites)
-    else:
-        products = Product.objects.all()
-        jobs = PurchasedJob.objects.all()
-    products = products.filter(owner=company)
+    company = get_project_company_or_404(request)
+    sites = settings.SITE.postajob_site_list()
+    products = PurchasedProduct.objects.filter_by_sites(sites)
+    jobs = PurchasedJob.objects.filter_by_sites(sites)
+    products = products.filter(owner=company, owner__role__user=request.user)
     data = {
         'company': company,
-        'jobs': jobs.filter(owner=company),
+        'jobs': jobs.filter(owner=company, owner__role__user=request.user),
         'active_products': products.filter(expiration_date__gte=date.today()),
         'expired_products': products.filter(expiration_date__lt=date.today()),
     }
@@ -126,17 +106,18 @@ def purchasedproducts_overview(request):
                               data, RequestContext(request))
 
 
-@error_when_company_missing_from_sitepackages(
-    feature='Purchased Job Mangement')
-@error_when_site_misconfigured(feature='Purchased Job Management')
 def purchasedjobs_overview(request, purchased_product, admin):
     """
     Normally we would need to filter by settings.SITE for objects in postajob
     but this is already done from a previous view.
     """
-    company = get_company_or_404(request)
-    product = PurchasedProduct.objects.prefetch_related('purchasedjob_set')\
-        .get(pk=purchased_product)
+    product = PurchasedProduct.objects.prefetch_related(
+        'purchasedjob_set').get(pk=purchased_product)
+    company = product.owner
+
+    if not request.user.can(company, 'read purchased job'):
+        return MissingActivity()
+
     jobs = product.purchasedjob_set.all()
     data = {
         'company': company,
@@ -153,9 +134,6 @@ def purchasedjobs_overview(request, purchased_product, admin):
                                   data, RequestContext(request))
 
 
-@user_is_allowed()
-@error_when_company_missing_from_sitepackages(feature='Microsite Admin is')
-@error_when_site_misconfigured(feature='Microsite Admin is')
 @requires('read product', 'read request', 'read offline purchase',
           'read purchased product', 'read grouping', compare=at_least_one)
 def purchasedmicrosite_admin_overview(request):
@@ -187,10 +165,7 @@ def purchasedmicrosite_admin_overview(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @requires('read product')
-@error_when_company_missing_from_sitepackages(feature='Product Management is')
-@error_when_site_misconfigured(feature='Product Management is')
 def admin_products(request):
     company = get_company(request)
     if settings.SITE:
@@ -206,10 +181,7 @@ def admin_products(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @requires('read grouping')
-@error_when_company_missing_from_sitepackages(feature='Product Groupings are')
-@error_when_site_misconfigured(feature='Product Groupings are')
 def admin_groupings(request):
     company = get_company(request)
     if settings.SITE:
@@ -225,11 +197,7 @@ def admin_groupings(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(
-    feature='Offline Purchases are')
-@error_when_site_misconfigured(feature="Offline Purchases are")
 def admin_offlinepurchase(request):
     company = get_company(request)
     if settings.SITE:
@@ -245,10 +213,7 @@ def admin_offlinepurchase(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(feature='Requests are')
-@error_when_site_misconfigured(feature='Requests are')
 def admin_request(request):
     company = get_company(request)
     if settings.SITE:
@@ -265,10 +230,7 @@ def admin_request(request):
     return render_to_response('postajob/request.html', RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(feature='Purchased Products are')
-@error_when_site_misconfigured(feature='Purchased Products are')
 def admin_purchasedproduct(request):
     company = get_company(request)
     if settings.SITE:
@@ -286,10 +248,7 @@ def admin_purchasedproduct(request):
     return render_to_response('postajob/purchasedproduct.html', data,
                               RequestContext(request))
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(feature='Reqeusts are')
-@error_when_site_misconfigured(feature='Requests are')
 def view_request(request, pk, model=None):
     template = 'postajob/request/{model}.html'
     company = get_company(request)
@@ -323,10 +282,7 @@ def view_request(request, pk, model=None):
                               data, RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(feature='Requests are')
-@error_when_site_misconfigured(feature='Requests are')
 def process_admin_request(request, pk, approve=True,
                           block=False):
     """
@@ -379,10 +335,9 @@ def process_admin_request(request, pk, approve=True,
     return redirect('request')
 
 
-@error_when_site_misconfigured(feature='Job Listing', redirect=False)
 def product_listing(request):
     site = settings.SITE
-    company = get_company(request)
+    company = site.canonical_company
 
     # Get all site packages and products for a site.
     site_packages = site.sitepackage_set.all()
@@ -407,7 +362,6 @@ def product_listing(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
 def order_postajob(request):
     """
@@ -418,7 +372,7 @@ def order_postajob(request):
         'groupings': ProductGrouping
     }
 
-    company = get_company_or_404(request)
+    company = get_project_company_or_404(request)
     obj_type = request.GET.get('obj_type')
     # Variables
 
@@ -450,10 +404,7 @@ def order_postajob(request):
 
 
 @csrf_exempt
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(feature='Invoices are')
-@error_when_site_misconfigured(feature='Invoices are')
 def resend_invoice(request, pk):
     company = get_company(request)
 
@@ -546,7 +497,6 @@ class JobFormView(BaseJobFormView):
     update_name = 'job_update'
     delete_name = 'job_delete'
 
-    @method_decorator(user_is_allowed())
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -556,20 +506,17 @@ class JobFormView(BaseJobFormView):
         return super(JobFormView, self).dispatch(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        can = self.request.user.can
-        if 'pk' in kwargs and not can(company, 'update job'):
-            return MissingActivity()
-        elif not can(company, 'create job'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update job", "create job"):
             return MissingActivity()
 
         return super(JobFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        if 'pk' in kwargs and not self.request.user.can(company, 'update job'):
-            return MissingActivity()
-        elif not self.request.user.can(company, 'create job'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update job", "create job"):
             return MissingActivity()
 
         return super(JobFormView, self).post(*args, **kwargs)
@@ -621,7 +568,6 @@ class PurchasedJobFormView(BaseJobFormView):
 
         return super(PurchasedJobFormView, self).set_object(*args, **kwargs)
 
-    @method_decorator(user_is_allowed())
     def dispatch(self, *args, **kwargs):
         """
         Determine and set which product is attempting to be purchased.
@@ -640,6 +586,30 @@ class PurchasedJobFormView(BaseJobFormView):
         self.display_name = self.display_name.format(product=self.product)
 
         return super(PurchasedJobFormView, self).dispatch(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        company = get_project_company_or_404(self.request)
+        if not company:
+            raise Http404("PurchasedJobFormView: Canonical company not set "
+                          " for %s" % settings.SITE.domain)
+
+        if not can_modify(self.request.user, company, kwargs,
+                          "update purchased job", "create purchased job"):
+            return MissingActivity()
+
+        return super(PurchasedJobFormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        company = get_project_company_or_404(self.request)
+        if not company:
+            raise Http404("PurchasedJobFormView: Canonical company not set "
+                          " for %s" % settings.SITE.domain)
+
+        if not can_modify(self.request.user, company, kwargs,
+                          "update purchased job", "create purchased job"):
+            return MissingActivity()
+
+        return super(PurchasedJobFormView, self).post(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(PurchasedJobFormView, self).get_form_kwargs()
@@ -664,28 +634,18 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     delete_name = 'product_delete'
 
     def get(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        can = self.request.user.can
-        if 'pk' in kwargs and not can(company, 'update product'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update product", "create product"):
             return MissingActivity()
-        elif not can(company, 'create product'):
-            return MissingActivity()
-        return super(ProductFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        can = self.request.user.can
-        if 'pk' in kwargs and not can(company, 'update product'):
-            return MissingActivity()
-        elif not can(company, 'create product'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update product", "create product"):
             return MissingActivity()
         return super(ProductFormView, self).post(*args, **kwargs)
 
-    @method_decorator(user_is_allowed())
-    @method_decorator(error_when_company_missing_from_sitepackages(
-        feature='Porduct Management is'))
-    @method_decorator(error_when_site_misconfigured(
-        feature='Product Management is'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -706,34 +666,25 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
     delete_name = 'productgrouping_delete'
 
     def get(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        can = self.request.user.can
-        if 'pk' in kwargs and not can(company, 'update grouping'):
-            return MissingActivity()
-        elif not can(company, 'create grouping'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update grouping", "create grouping"):
             return MissingActivity()
         return super(ProductGroupingFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        company = get_company_or_404(self.request)
-        can = self.request.user.can
-        if 'pk' in kwargs and not can(company, 'update grouping'):
-            return MissingActivity()
-        elif not can(company, 'create grouping'):
+        company = get_project_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update grouping", "create grouping"):
             return MissingActivity()
         return super(ProductGroupingFormView, self).post(*args, **kwargs)
 
     def delete(self):
-        company = get_company_or_404(self.request)
+        company = get_project_company_or_404(self.request)
         if self.request.user.can(company, 'delete grouping'):
             return super(ProductGroupingFormView, self).delete()
         return MissingActivity()
 
-    @method_decorator(user_is_allowed())
-    @method_decorator(error_when_company_missing_from_sitepackages(
-        feature='Product Groupingsare'))
-    @method_decorator(error_when_site_misconfigured(
-        feature='Product Groupings are'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -757,7 +708,6 @@ class PurchasedProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     purchase_field = 'product'
     purchase_model = Product
 
-    @method_decorator(user_is_allowed())
     def dispatch(self, *args, **kwargs):
         """
         Determine and set which product is attempting to be purchased.
@@ -776,7 +726,7 @@ class PurchasedProductFormView(PostajobModelFormMixin, RequestFormViewBase):
         # un-filled-out profile, use the product form that only gets company
         # information.
         if self.product.cost < 0.01:
-            company = get_company(self.request)
+            company = get_project_company_or_404(self.request)
             profile = get_object_or_none(CompanyProfile, company=company)
 
             if company and profile and profile.address_line_one:
@@ -846,12 +796,7 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
                           "can't delete redeemed OfflinePurchases")
         return super(OfflinePurchaseFormView, self).delete()
 
-    @method_decorator(user_is_allowed())
     @method_decorator(company_has_access('product_access'))
-    @method_decorator(error_when_company_missing_from_sitepackages(
-        feature='Offline Purchases are'))
-    @method_decorator(error_when_site_misconfigured(
-        feature="Offline Purchases are"))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -899,9 +844,6 @@ class OfflinePurchaseRedemptionFormView(PostajobModelFormMixin,
     update_name = None
     delete_name = None
 
-    @method_decorator(user_is_allowed())
-    @method_decorator(error_when_site_misconfigured(
-        feature='Purchase Redemption'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -934,8 +876,6 @@ class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'companyprofile_edit'
     delete_name = 'companyprofile_delete'
 
-    @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access(None))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -949,7 +889,7 @@ class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
         Every add is actually an edit.
 
         """
-        company = get_company_or_404(self.request)
+        company = get_project_company_or_404(self.request)
         kwargs = {'company': company}
         self.object, _ = self.model.objects.get_or_create(**kwargs)
         return self.object
@@ -976,21 +916,18 @@ class SitePackageFilter(FSMView):
         return super(SitePackageFilter, self).get(request)
 
     def get_queryset(self):
-        company = get_company_or_404(self.request)
+        company = get_project_company_or_404(self.request)
         sites = company.get_seo_sites()
         return sites
 
 
-@user_is_allowed()
-@error_when_company_missing_from_sitepackages(
-    feature='Blocked User Management is')
 @company_has_access('product_access')
 def blocked_user_management(request):
     """
     Displays blocked users (if any) for the current company as well as
     an unblock link.
     """
-    company = get_company_or_404(request)
+    company = get_project_company_or_404(request)
     profile = CompanyProfile.objects.get_or_create(company=company)[0]
     blocked_users = profile.blocked_users.all()
     data = {
@@ -1001,10 +938,7 @@ def blocked_user_management(request):
                               RequestContext(request))
 
 
-@user_is_allowed()
 @company_has_access('product_access')
-@error_when_company_missing_from_sitepackages(
-    feature='Blocked User Management is')
 def unblock_user(request, pk):
     """
     Unblocks a given user that has previously been blocked from posting jobs.
@@ -1012,7 +946,7 @@ def unblock_user(request, pk):
     Inputs:
     :pk: ID of user that has been blocked
     """
-    company = get_company_or_404(request)
+    company = get_project_company_or_404(request)
     profile = company.companyprofile
     if profile:
         try:

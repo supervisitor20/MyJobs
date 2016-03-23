@@ -236,6 +236,11 @@ postajob use cases.
 
 Use Case 1: External party buying a job
 ----------------------------------------
+.. note:: 
+  There are often times wheree the choice of company is ambiguous. This
+  is a known limitation of the current system which we hope to correct after
+  site families are implemented.
+
 A small business owner (SBO) finds Paul's website. They decide to post a job,
 so they create an account. This account is with paul's site, powered by
 My.jobs. After creating an account, the SBO goes to the product listing and
@@ -245,19 +250,24 @@ goes to the purchased products page and posts a job. The job appears on the
 site after approval.
 
 Requirements:
+
   - The company who owns the product being purchased should have a functional
-    `use case 2 <use-case-2>`
+    :ref:`use case 2 <use-case-2>`.
 
 Views
 '''''
 
-============================== ============= ===================
-URL Path                        View Name     Required Activities
-============================== ============= ===================
-/posting/list/       
-/posting/product/purchase/add/
-/posting/purchased-jobs/
-============================== ============= ===================
+================================ =========================== ======================
+URL Path                         View Name                   Required Activities
+================================ =========================== ======================
+/posting/list/                   product_listing             N/A
+/posting/product/purchase/add/   PurchasedProductFormView    N/A
+/posting/purchased-jobs/         purchasedproducts_overview  read purchased product
+/posting/purchased-jobs/product/ purchasedjobs_overview      read purchsaed job 
+/postign/job/purchase/add/       PurchasedJobFormView        create purchased job
+/posting/job/purchase/update/
+/posting/job/purchase/update/
+================================ =========================== ======================
 
 .. _use-case-2:
 

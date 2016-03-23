@@ -7,7 +7,8 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User, AppAccess
-from universal.helpers import get_company_or_404, every
+from universal.helpers import (get_company_or_404, every,
+                               get_project_company_or_404)
 
 
 def user_is_allowed(model=None, pk_name=None, pass_user=False):
@@ -132,6 +133,7 @@ def at_least_one(x, y):
     return not set(x).isdisjoint(y)
 
 
+# TODO: See if I can rewrite requires in terms of User.can
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
@@ -231,8 +233,6 @@ def requires(*activities, **callbacks):
         found.
 
         """
-        company = get_company_or_404(request)
-        raise Http404("%s doesn't have sufficient app access" % company.name)
 
     activity_callback = callbacks.get(
         'activity_callback', lambda request: MissingActivity())
@@ -244,7 +244,18 @@ def requires(*activities, **callbacks):
     def decorator(view_func):
         @wraps(view_func)
         def wrap(request, *args, **kwargs):
-            company = get_company_or_404(request)
+            invalid_user = any([not request.user, not request.user.pk,
+                                request.user.is_anonymous()])
+
+            if invalid_user:
+                path = request.path
+                qs = request.META.get('QUERY_STRING')
+                next_url = request.get_full_path()
+
+                return HttpResponseRedirect(reverse('login')+'?next='+next_url)
+
+            # get_company isn't reliable, see PD-2260 on JIRA
+            company = get_project_company_or_404(request)
 
             # the app_access we need, determined by the activities passed in
             required_access = filter(bool, AppAccess.objects.filter(

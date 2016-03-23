@@ -130,6 +130,39 @@ def sequence_to_dict(from_):
     return dict(zip(*[iter(from_)] * 2))
 
 
+def get_company_from_cookie(request):
+    Company = get_model('seo', 'Company')
+    pk = request.COOKIES.get('myjobs_company')
+
+    return get_object_or_none(Company, pk=pk)
+
+
+def get_company_from_settings():
+    try:
+        return settings.SITE.canonical_company
+    except AttributeError:
+        return None
+
+
+def get_company_from_project(request=None):
+    if settings.PROJECT == 'dseo':
+        return get_company_from_settings()
+    else:
+        return get_company_from_cookie(request)
+
+
+def get_project_company_or_404(request=None):
+    company = get_company_from_project(request)
+    if not company:
+        if settings.PROJECT == "dseo":
+            message = "%s doesn't have a canonical company." % settings.SITE
+        else:
+            message = "Invalid ID used for the myjobs_company cookie."
+        raise Http404(message)
+
+    return company
+
+
 def get_company(request):
     """
     Uses the myjobs_company cookie to determine what the current company is.
@@ -184,10 +217,10 @@ def get_company_or_404(request):
         return company
 
 
-def get_object_or_none(model, **kwargs):
+def get_object_or_none(*args, **kwargs):
     try:
-        return model.objects.get(**kwargs)
-    except (model.DoesNotExist, ValueError):
+        return get_object_or_404(*args, **kwargs)
+    except ObjectDoesNotExist:
         return None
 
 

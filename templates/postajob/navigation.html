@@ -5,11 +5,10 @@
         <li id="product-listing" class="{% if request.resolver_match.url_name == 'product_listing' %}active{% endif %}"><a href="{% url 'product_listing' %}">Product Listing</a></li>
         {% endif %}
         {% if 'create job' in activities %}
+        <li>{{ company.name }}</li>
         <li id="our-postings" class="{% if request.resolver_match.url_name == 'jobs_overview' %}active{% endif %}"><a href="{% url 'jobs_overview' %}">Posted Jobs</a></li>
         {% endif %}
-        {% if company.purchasedproduct_set.exists %}
         <li id="purchased-products" class="{% if request.resolver_match.url_name == 'purchasedproducts_overview' %}active{% endif %}"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
-        {% endif %}
         {% if 'read product' in activities %}
         <li id="posting-admin" class="{% if request.resolver_match.url_name == 'purchasedmicrosite_admin_overview' %}active{% endif %}"><a href="{% url 'purchasedmicrosite_admin_overview' %}">Partner Microsite</a></li>
         {% endif %}

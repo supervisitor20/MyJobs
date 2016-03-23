@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
-from universal.helpers import get_company
+from universal.helpers import get_company, get_company_from_project
 
 
 def current_site_info(request):
@@ -45,7 +45,7 @@ def activities(request):
     company.
 
     """
-    company = get_company(request)
+    company = get_company_from_project(request)
     if not request.user.is_anonymous() and request.user.pk:
         return {"activities": request.user.get_activities(company)}
     return {"activities": []}
