@@ -1,4 +1,6 @@
-import {map, partition, pluck} from 'lodash-compat/collection';
+import {map, groupBy} from 'lodash-compat/collection';
+import {remove} from 'lodash-compat/array';
+import {mapValues, assign} from 'lodash-compat/object';
 
 // This is the business logic of the myreports client.
 
@@ -30,11 +32,16 @@ export class ReportFinder {
     return this.api.getPresentationTypes(reportTypeId, dataTypeId);
   }
 
-  async buildReportConfiguration(rpId) {
+  async buildReportConfiguration(rpId, onNameChanged, onFilterChange,
+      onErrorsChanged) {
     const filters = await this.api.getFilters(rpId);
     const name = await this.api.getDefaultReportName(rpId);
     return await this.configBuilder.build(
-      name.name, rpId, filters.filters, reportId => this.noteNewReport(reportId));
+      name.name, rpId, filters.filters,
+      reportId => this.noteNewReport(reportId),
+      onNameChanged,
+      onFilterChange,
+      onErrorsChanged);
   }
 
   async getReportList() {
@@ -77,22 +84,31 @@ export class ReportFinder {
 // Future: consider restructuring this class so that it's methods which mutate
 // state operate on and return a new react state object.
 export class ReportConfiguration {
-  constructor(name, rpId, filters, api, newReportNote) {
+  constructor(name, rpId, filters, api,
+      onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
     this.name = name;
     this.rpId = rpId;
     this.filters = filters;
     this.simpleFilter = {};
     this.multiFilter = {};
     this.andOrFilter = {};
+    this.errors = {};
     this.api = api;
-    this.nameErrors = null;
-    this.overallErrors = null;
-    this.newReportNote = newReportNote;
+    this.onNewReport = onNewReport;
+    this.onNameChanged = onNameChanged;
+    this.onUpdateFilter = onUpdateFilter;
+    this.onErrorsChanged = onErrorsChanged;
   }
 
   async getHints(field, partial) {
     return await this.api.getHelp(
       this.rpId, this.getFilter(), field, partial);
+  }
+
+  callUpdateFilter() {
+    const filterInfo = assign(
+        {}, this.simpleFilter, this.multiFilter, this.andOrFilter);
+    this.onUpdateFilter(filterInfo);
   }
 
   setFilter(field, value) {
@@ -101,6 +117,7 @@ export class ReportConfiguration {
     } else {
       this.simpleFilter[field] = value;
     }
+    this.callUpdateFilter();
   }
 
   addToMultifilter(field, obj) {
@@ -110,13 +127,12 @@ export class ReportConfiguration {
     if (this.multiFilter[field].findIndex(i => i.key === obj.key) === -1) {
       this.multiFilter[field].push(obj);
     }
+    this.callUpdateFilter();
   }
 
   removeFromMultifilter(field, obj) {
-    const index = this.multiFilter[field].findIndex(i => i.key === obj.key);
-    if (index !== -1) {
-      this.multiFilter[field].splice(index, 1);
-    }
+    remove(this.multiFilter[field], i => i.key === obj.key);
+    this.callUpdateFilter();
   }
 
   addToAndOrFilter(field, index, obj) {
@@ -127,6 +143,7 @@ export class ReportConfiguration {
       this.andOrFilter[field][index] = [];
     }
     this.andOrFilter[field][index].push(obj);
+    this.callUpdateFilter();
   }
 
   removeFromAndOrFilter(field, index, obj) {
@@ -137,6 +154,7 @@ export class ReportConfiguration {
         this.andOrFilter[field].splice(index, 1);
       }
     }
+    this.callUpdateFilter();
   }
 
   getFilter() {
@@ -155,31 +173,15 @@ export class ReportConfiguration {
     return filter;
   }
 
-  getMultiFilter(key) {
-    return this.multiFilter[key];
-  }
-
-  getAndOrFilter(key) {
-    if (!this.andOrFilter.hasOwnProperty(key)) {
-      return [];
-    }
-    return this.andOrFilter[key];
-  }
-
   changeReportName(name) {
     this.name = name;
+    this.onNameChanged(name);
   }
 
-  getReportName() {
-    return this.name;
-  }
-
-  getReportNameErrors() {
-    return this.nameErrors;
-  }
-
-  getOverallErrors() {
-    return this.overallErrors;
+  runCallbacks() {
+    this.onErrorsChanged(this.errors);
+    this.onNameChanged(this.name);
+    this.callUpdateFilter();
   }
 
   async run() {
@@ -188,16 +190,16 @@ export class ReportConfiguration {
         this.rpId,
         this.name,
         this.getFilter());
-      this.overallErrors = null;
-      this.nameErrors = null;
-      this.newReportNote(response.id);
+      this.errors = {};
+      this.onNewReport(response.id);
     } catch (exc) {
       if (exc.data) {
-        const partitioned = partition(exc.data, e => e.field === 'name');
-        const messagesOnly = map(partitioned, o => pluck(o, 'message'));
-        [this.nameErrors, this.overallErrors] = messagesOnly;
+        const grouped = groupBy(exc.data, 'field');
+        const fixed = mapValues(grouped, values => map(values, v => v.message));
+        this.errors = fixed;
       }
     }
+    this.onErrorsChanged(this.errors);
   }
 }
 
@@ -209,7 +211,9 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  async build(name, rpId, filters, cb) {
-    return new ReportConfiguration(name, rpId, filters, this.api, cb);
+  async build(name, rpId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
+    return new ReportConfiguration(
+        name, rpId, filters, this.api, onNewReport, onNameChanged, onUpdateFilter,
+        onErrorsChanged);
   }
 }

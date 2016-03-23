@@ -24,14 +24,21 @@ export class WizardPageFilter extends Component {
     this.loadData();
   }
 
-  async getHints(filter, partial) {
-    const {reportConfig} = this.state;
-    return await reportConfig.getHints(filter, partial);
+  onFilterUpdate(filter) {
+    this.setState({filter});
+  }
+
+  onErrorsChanged(errors) {
+    const reportNameError = errors.name;
+    this.setState({reportNameError});
+  }
+
+  onReportNameChanged(reportName) {
+    this.setState({reportName});
   }
 
   async loadData() {
     await this.buildReportConfig();
-    this.updateState();
     this.setState({loading: false});
   }
 
@@ -39,59 +46,12 @@ export class WizardPageFilter extends Component {
     const {reportFinder} = this.props;
     const {presentationType} = this.props.routeParams;
     const reportConfig = await reportFinder.buildReportConfiguration(
-      presentationType);
+      presentationType,
+      n => this.onReportNameChanged(n),
+      f => this.onFilterUpdate(f),
+      errors => this.onErrorsChanged(errors));
     this.setState({reportConfig});
-  }
-
-  updateFilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.setFilter(filter, value);
-    this.updateState();
-  }
-
-  addToMultifilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.addToMultifilter(filter, value);
-    this.updateState();
-  }
-
-  removeFromMultifilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.removeFromMultifilter(filter, value);
-    this.updateState();
-  }
-
-  addToAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.state;
-    reportConfig.addToAndOrFilter(filter, index, value);
-    this.updateState();
-  }
-
-  removeFromAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.state;
-    reportConfig.removeFromAndOrFilter(filter, index, value);
-    this.updateState();
-  }
-
-  changeReportName(name) {
-    const {reportConfig} = this.state;
-    reportConfig.changeReportName(name);
-    this.updateState();
-  }
-
-  async runReport() {
-    const {reportConfig} = this.state;
-    await reportConfig.run();
-    this.updateState();
-  }
-
-  updateState() {
-    const {reportConfig} = this.state;
-    this.setState({
-      filter: reportConfig.getFilter(),
-      reportName: reportConfig.getReportName(),
-      reportNameError: reportConfig.getReportNameErrors(),
-    });
+    reportConfig.runCallbacks();
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
@@ -114,7 +74,13 @@ export class WizardPageFilter extends Component {
   }
 
   render() {
-    const {loading, reportConfig, reportName, reportNameError} = this.state;
+    const {
+      loading,
+      reportConfig,
+      reportName,
+      reportNameError,
+      filter,
+    } = this.state;
 
     if (loading) {
       return <Loading/>;
@@ -127,7 +93,7 @@ export class WizardPageFilter extends Component {
         value={reportName}
         helpText="Name will appear in downloaded filenames."
         errorTexts={errorTexts}
-        onValueChange={v => this.changeReportName(v)}/>
+        onValueChange={v => reportConfig.changeReportName(v)}/>
     ));
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
@@ -135,39 +101,36 @@ export class WizardPageFilter extends Component {
         rows.push(this.renderRow(col.display, col.filter,
           <WizardFilterDateRange
             id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}/>
+            updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
         ));
         break;
       case 'search_select':
         rows.push(this.renderRow(col.display, col.filter,
           <WizardFilterSearchDropdown
             id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}
+            updateFilter={v => reportConfig.setFilter(col.filter, v)}
             getHints={v =>
-              this.getHints(col.filter, v)}/>
+              reportConfig.getHints(col.filter, v)}/>
         ));
         break;
       case 'city_state':
         rows.push(this.renderRow(col.display, col.filter,
           <WizardFilterCityState
             id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}
+            updateFilter={v => reportConfig.setFilter(col.filter, v)}
             getHints={(f, v) =>
-              this.getHints(f, v)}/>
+              reportConfig.getHints(f, v)}/>
         ));
         break;
       case 'tags':
         rows.push(this.renderRow(col.display, col.filter,
           <WizardFilterTags
-            tags={reportConfig.getAndOrFilter(col.filter)}
+            tags={filter[col.filter] || []}
             addTag={(i, t) =>
-              this.addToAndOrFilter(col.filter, i, t)}
+              reportConfig.addToAndOrFilter(col.filter, i, t)}
             removeTag={(i, t) =>
-              this.removeFromAndOrFilter(col.filter, i, t)}
-            getHints={v => this.getHints(col.filter, v)}/>
+              reportConfig.removeFromAndOrFilter(col.filter, i, t)}
+            getHints={v => reportConfig.getHints(col.filter, v)}/>
         ));
         break;
       case 'search_multiselect':
@@ -176,20 +139,17 @@ export class WizardPageFilter extends Component {
             id={col.filter}
             emptyOnSelect
             onSelect={v =>
-              this.addToMultifilter(col.filter, v)}
+              reportConfig.addToMultifilter(col.filter, v)}
             getHints={v =>
-              this.getHints(col.filter, v)}/>
+              reportConfig.getHints(col.filter, v)}/>
         ));
         rows.push(this.renderRow(
           '',
           col.filter + '-selected',
           <WizardFilterCollectedItems
-            items={
-              reportConfig.getMultiFilter(col.filter)
-                || []
-            }
+            items={filter[col.filter] || []}
             remove={v =>
-              this.removeFromMultifilter(
+              reportConfig.removeFromMultifilter(
                 col.filter,
                 v)}/>));
         break;
@@ -207,7 +167,7 @@ export class WizardPageFilter extends Component {
         {this.renderRow('', 'submit',
           <button
             className="button"
-            onClick={() => this.runReport()}>
+            onClick={() => reportConfig.run()}>
             Run Report
           </button>, true, true)}
       </form>
