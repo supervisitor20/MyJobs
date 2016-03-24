@@ -1035,16 +1035,9 @@ class ViewTests(PostajobTestBase):
         self.admin_role.company = CompanyFactory(pk=41, name="Wrong Company")
         self.admin_role.save()
 
-        for page in ['view_job', 'view_invoice',
-                     'purchasedmicrosite_admin_overview', 'admin_products',
-                     'admin_groupings', 'admin_offlinepurchase',
-                     'admin_purchasedproduct', 'view_request',
-                     'process_admin_request', 'resend_invoice',
-                     'block_user_management']:
-
-            response = self.client.get(reverse(page))
-
-            self.assertTrue(isinstance(response, MissingActivity))
+        response = self.client.get(
+            reverse('purchasedmicrosite_admin_overview'))
+        self.assertTrue(isinstance(response, MissingActivity))
 
 
 class PurchasedJobActionTests(PostajobTestBase):
