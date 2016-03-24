@@ -937,7 +937,7 @@ class SitePackageFilter(FSMView):
 
 
 @user_is_allowed()
-@requires("read request")
+@requires("request")
 def blocked_user_management(request):
     """
     Displays blocked users (if any) for the current company as well as
@@ -955,7 +955,7 @@ def blocked_user_management(request):
 
 
 @user_is_allowed()
-@requires("read request")
+@requires("update request")
 def unblock_user(request, pk):
     """
     Unblocks a given user that has previously been blocked from posting jobs.

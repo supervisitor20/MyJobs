@@ -334,6 +334,8 @@ job".
 
 Requirements:
 
+  - :ref:`enable-login`
+
   - :ref:`enable-marketplace`
 
 Views
@@ -346,9 +348,31 @@ URL Path                            View Name               Required Activities
 /posting/admin/request/view/        read_request            read request
 /posting/admin/request/approve/     process_admin_request   update request
 /posting/admin/request/deny/        process_admin_request   update request
-/posting/admin/request/block        process_admin_request   update request
-/posting/admin/blocked-users/       blocked_user_management read request
 =================================== ======================= ===================
+
+Use Case 5: Site owner blcoks and unblocks a user
+-------------------------------------------------
+An SBO posts a job and Paul thinks it is inappropriate. Instead of approving
+the job, he clicks on "Block postings from this user". Later, the SBO explains
+that it is a legit posting. Paul logs in, goes to "Blocked Users", and unblocks
+the SBO.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+==================================== ======================= ==================
+URL Path                            View Name               Required Activities
+==================================== ======================= ==================
+/posting/admin/blocked-users/        blocked_user_management read request
+/posting/admin/request/block         process_admin_request   update request
+/posting/admin/blocked-users/unblock unblock_user            update request
+==================================== ======================= ==================
 
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
