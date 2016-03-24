@@ -257,17 +257,17 @@ Requirements:
 Views
 '''''
 
-================================ =========================== ======================
-URL Path                         View Name                   Required Activities
-================================ =========================== ======================
-/posting/list/                   product_listing             N/A
-/posting/product/purchase/add/   PurchasedProductFormView    N/A
-/posting/purchased-jobs/         purchasedproducts_overview  read purchased product
-/posting/purchased-jobs/product/ purchasedjobs_overview      read purchsaed job 
-/postign/job/purchase/add/       PurchasedJobFormView        create purchased job
-/posting/job/purchase/update/
-/posting/job/purchase/update/
-================================ =========================== ======================
+======================================== =========================== ======================
+URL Path                                 View Name                   Required Activities
+======================================== =========================== ======================
+/posting/list/                           product_listing             N/A
+/posting/product/purchase/add/           PurchasedProductFormView    create purchased product
+/posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
+/posting/purchased-jobs/product/         purchasedjobs_overview      read purchased job 
+/posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
+/postign/job/purchase/add/               PurchasedJobFormView        create purchased job
+/posting/job/purchase/update/            PurchasedJobFormView        update purchased job
+======================================== =========================== ======================
 
 .. _use-case-2:
 
