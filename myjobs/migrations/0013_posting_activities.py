@@ -31,6 +31,7 @@ class Migration(DataMigration):
             ("read purchased job", "View existing purchased jobs."),
             ("update purchased job", "Edit existing purchased jobs."),
             ("read request", "View existing requests."),
+            ("update request", "Edit existing request."),
         ]
         # We use a for loop and directly access the models so that signals fire
         for name, desc in posting_activities:

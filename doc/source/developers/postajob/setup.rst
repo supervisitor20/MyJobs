@@ -326,6 +326,30 @@ URL Path                            View Name               Required Activities
 /posting/admin/product/group/delete ProductGroupingFormView delete grouping
 =================================== ======================= ===================
 
+Use Case 4: Site owner reviewing posted jobs
+--------------------------------------------
+An SBO has posted a job to Paul's site. Paul logs into the admin and goes to
+requests. He reviews the jobs and approves it by clicking on "Approve this
+job".
+
+Requirements:
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+=================================== ======================= ===================
+URL Path                            View Name               Required Activities
+=================================== ======================= ===================
+/posting/admin/request/             admin_request           read request
+/posting/admin/request/view/        read_request            read request
+/posting/admin/request/approve/     process_admin_request   update request
+/posting/admin/request/deny/        process_admin_request   update request
+/posting/admin/request/block        process_admin_request   update request
+/posting/admin/blocked-users/       blocked_user_management read request
+=================================== ======================= ===================
+
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
 .. _create a new row: http://directemployers.jobs/admin/myblocks/row/add/

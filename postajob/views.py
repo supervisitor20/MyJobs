@@ -221,14 +221,12 @@ def admin_offlinepurchase(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("read request")
 def admin_request(request):
     company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        requests = Request.objects.filter_by_sites(sites)
-    else:
-        requests = Request.objects.all()
+    sites = settings.SITE.postajob_site_list()
+    requests = Request.objects.filter_by_sites(sites)
+
     data = {
         'company': company,
         'pending_requests': requests.filter(owner=company, action_taken=False),
@@ -259,7 +257,7 @@ def admin_purchasedproduct(request):
                               RequestContext(request))
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("read request")
 def view_request(request, pk, model=None):
     template = 'postajob/request/{model}.html'
     company = get_company(request)
@@ -294,7 +292,7 @@ def view_request(request, pk, model=None):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("update request")
 def process_admin_request(request, pk, approve=True,
                           block=False):
     """
@@ -314,9 +312,7 @@ def process_admin_request(request, pk, approve=True,
         if block and request_object.created_by:
             # Block the user that initiated this request
             # and deny all of that user's outstanding requests
-            profile = CompanyProfile.objects.get_or_create(
-                company=request_object.owner)[0]
-            profile.blocked_users.add(request_object.created_by)
+            company.companyprofile.blocked_users.add(request_object.created_by)
 
             # Since Requests and the objects associated with them are related
             # using a fake foreign key, we have to do multiple queries. We
@@ -571,7 +567,7 @@ class PurchasedJobFormView(BaseJobFormView):
                 raise Http404("{view}: all available jobs for this posting "
                               "have been used".format(view=http404_view))
             else:
-                company = get_company(self.request)
+                company = self.product.product.owner
                 if company and hasattr(company, 'companyprofile'):
                     if self.request.user in company.companyprofile.blocked_users.all():
                         # If the current user has been blocked by the company
@@ -940,7 +936,7 @@ class SitePackageFilter(FSMView):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("read request")
 def blocked_user_management(request):
     """
     Displays blocked users (if any) for the current company as well as
@@ -958,7 +954,7 @@ def blocked_user_management(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("read request")
 def unblock_user(request, pk):
     """
     Unblocks a given user that has previously been blocked from posting jobs.

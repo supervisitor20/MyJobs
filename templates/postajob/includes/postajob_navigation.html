@@ -21,6 +21,8 @@
           <a class="btn {% select 'group' %}" href="{% url 'productgrouping' %}">Groupings</a>
         {% endif %}
         <a class="btn {% select 'profile' %}" href="{% url 'companyprofile_add' %}">Company Profile</a>
-        <a class="btn {% select 'blocked-users' %}" href="{% url 'blocked_user_management' %}">Blocked Users</a>
+        {% if 'read request' in activities %}
+          <a class="btn {% select 'blocked-users' %}" href="{% url 'blocked_user_management' %}">Blocked Users</a>
+        {% endif %}
     </div>
 </div>
