@@ -681,7 +681,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not company:
             return False
 
-        compare = kwargs.get('function', every)
+        compare = kwargs.get('compare', every)
 
         required_access = filter(bool, AppAccess.objects.filter(
             activity__name__in=activity_names).values_list(

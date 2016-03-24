@@ -140,23 +140,21 @@ def purchasedjobs_overview(request, purchased_product, admin):
 
 
 @user_is_allowed()
-@requires('read product', 'read request', 'read offline purchase',
-          'read purchased product', 'read grouping', compare=at_least_one)
 def purchasedmicrosite_admin_overview(request):
-    company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        products = Product.objects.filter_by_sites(sites)
-        purchased = PurchasedProduct.objects.filter_by_sites(sites)
-        groupings = ProductGrouping.objects.filter_by_sites(sites)
-        offline_purchases = OfflinePurchase.objects.filter_by_sites(sites)
-        requests = Request.objects.filter_by_sites(sites)
-    else:
-        products = Product.objects.all()
-        purchased = PurchasedProduct.objects.all()
-        groupings = ProductGrouping.objects.all()
-        offline_purchases = OfflinePurchase.objects.all()
-        requests = Request.objects.all()
+    company = settings.SITE.canonical_company
+    has_access = request.user.can(company, 'read product', 'read request',
+                                  'read offline purchase',
+                                  'read purchased product', 'read grouping',
+                                  compare=at_least_one)
+    if not has_access:
+        return MissingActivity()
+
+    sites = settings.SITE.postajob_site_list()
+    products = Product.objects.filter_by_sites(sites)
+    purchased = PurchasedProduct.objects.filter_by_sites(sites)
+    groupings = ProductGrouping.objects.filter_by_sites(sites)
+    offline_purchases = OfflinePurchase.objects.filter_by_sites(sites)
+    requests = Request.objects.filter_by_sites(sites)
 
     data = {
         'products': products.filter(owner=company)[:3],
@@ -167,7 +165,7 @@ def purchasedmicrosite_admin_overview(request):
         'company': company
     }
 
-    return render_to_response('postajob/admin_overview.html',
+    return render_to_response('postajob/admin_overview.html', data,
                               RequestContext(request))
 
 
@@ -184,7 +182,7 @@ def admin_products(request):
         'products': products.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/products.html',
+    return render_to_response('postajob/products.html', data,
                               RequestContext(request))
 
 
@@ -201,7 +199,7 @@ def admin_groupings(request):
         'product_groupings': grouping.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/productgrouping.html',
+    return render_to_response('postajob/productgrouping.html', data,
                               RequestContext(request))
 
 
@@ -218,7 +216,7 @@ def admin_offlinepurchase(request):
         'offline_purchases': purchases.filter(owner=company),
         'company': company,
     }
-    return render_to_response('postajob/offlinepurchase.html',
+    return render_to_response('postajob/offlinepurchase.html', data,
                               RequestContext(request))
 
 
@@ -237,7 +235,8 @@ def admin_request(request):
         'processed_requests': requests.filter(owner=company, action_taken=True)
     }
 
-    return render_to_response('postajob/request.html', RequestContext(request))
+    return render_to_response('postajob/request.html', data,
+                              RequestContext(request))
 
 
 @user_is_allowed()
@@ -649,6 +648,8 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
         if not can_modify(self.request.user, company, kwargs,
                           "update product", "create product"):
             return MissingActivity()
+
+        return super(ProductFormView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         company = get_company_or_404(self.request)
