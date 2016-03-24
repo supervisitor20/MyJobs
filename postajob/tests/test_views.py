@@ -729,7 +729,6 @@ class ViewTests(PostajobTestBase):
             'redemption_id': offline_purchase.redemption_uid
         }
         current_product_count = PurchasedProduct.objects.all().count()
-        settings.DEBUG = True
         response = self.client.post(reverse('offlinepurchase_redeem'),
                                     data=data, follow=True)
         self.assertEqual(response.status_code, 200)
