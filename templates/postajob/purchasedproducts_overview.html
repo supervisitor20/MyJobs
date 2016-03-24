@@ -26,7 +26,9 @@
                     <div class="product-details">
                         Expire{%if is_expired %}d{%else%}s{%endif%}: <b>{{ product.expiration_date }}</b>
                     </div>
+                    {% if "read purchased job" in activities %}
                     <a class="btn" href="{% url 'purchasedjobs_overview' purchased_product=product.pk %}">View</a>
+                    {% endif %}
                 </div>
             {% empty %}
                 <div class="product-card">
@@ -51,7 +53,9 @@
                     <div class="product-details">
                         Expire{%if is_expired %}d{%else%}s{%endif%}: <b>{{ product.expiration_date }}</b>
                     </div>
+                    {% if "read purchased job" in activities %}
                     <a class="btn" href="{% url 'purchasedjobs_overview' purchased_product=product.pk %}">View</a>
+                    {% endif %}
                 </div>
             {% empty %}
                 <div class="product-card">

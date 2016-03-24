@@ -93,12 +93,14 @@ def view_invoice(request, purchased_product):
 
 
 @user_is_allowed()
+@requires("read purchased product")
 def purchasedproducts_overview(request):
     company = get_company_or_404(request)
     sites = settings.SITE.postajob_site_list()
     products = PurchasedProduct.objects.filter_by_sites(sites)
     jobs = PurchasedJob.objects.filter_by_sites(sites)
     products = products.filter(owner=company, owner__role__user=request.user)
+
     data = {
         'company': settings.SITE.canonical_company,
         'jobs': jobs.filter(owner=company, owner__role__user=request.user),
