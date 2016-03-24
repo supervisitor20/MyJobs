@@ -475,6 +475,7 @@ class ViewTests(PostajobTestBase):
         response = self.client.post(reverse('product_add'),
                                     data=self.product_form_data,
                                     follow=True)
+        open("foo.html", "w").write(response.content)
         self.assertIn('You cannot charge for jobs', response.content)
 
         data = dict(self.product_form_data)

@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 
 from myjobs.models import User, AppAccess
-from universal.helpers import (get_company_or_404, every)
+from universal.helpers import (get_company_or_404, get_company, every)
 
 
 def user_is_allowed(model=None, pk_name=None, pass_user=False):
@@ -125,16 +125,15 @@ def requires(*activities, **callbacks):
 
     This decorator determines from the list of passed in :activities: what app
     access is needed to continue processing the decorated view. If the user
-    belongs to a company who doesn't have the right app access, a
-    `MissingAppAccess` response is returned. If the company has the right app
-    access but the user's roles don't include the enumerated activities, a
-    `MissingActivity` response is returned instead. If both activities and app
-    access constraints are met, the decorated view is processed as normal.
+    belongs to a company who doesn't have the right app access, a response is
+    returned. If the company has the right app access but the user's roles
+    don't include the enumerated activities, a `MissingActivity` response is
+    returned instead. If both activities and app access constraints are met,
+    the decorated view is processed as normal.
 
-    `MissingAppAccess` and `MissingActivity` are simply aliases for
-    `HttpResponseForbidden'. They are made distinct so that in testing the
-    reason for a 403 response is clearer, without actually having to leak
-    information back to the user.
+    `MissingActivity` is simply an alias for `HttpResponseForbidden'. They are
+    made distinct so that in testing the reason for a 403 response is clearer,
+    without actually having to leak information back to the user.
 
     Inputs:
     :activities: A list of activity names that the decorated view should
@@ -172,9 +171,9 @@ def requires(*activities, **callbacks):
             ...
 
     If `TestCompany` doesn't have access to "User Management", then attempting
-    to navigate to `modify_user` would result in a `MissingAppAccess` response.
-    If that company does have "User Management" access, but the user's roles
-    don't include both the "read user" and "update user" activities, a
+    to navigate to `modify_user` would result in an `Http404` response.  If
+    that company does have "User Management" access, but the user's roles don't
+    include both the "read user" and "update user" activities, a
     `MissingActivity` response would returned instead. If both conditions are
     met, the `modify_user` view will proceed as though it weren't decorated at
     all.
@@ -218,11 +217,14 @@ def requires(*activities, **callbacks):
         found.
 
         """
+        company = get_company(request)
+        raise Http404("%s doesn't have sufficient app-level access." % (
+            company.name))
 
-    activity_callback = callbacks.get(
-        'activity_callback', lambda request: MissingActivity())
     access_callback = callbacks.get(
         'access_callback', access_callback)
+    activity_callback = callbacks.get(
+        'activity_callback', lambda request: MissingActivity())
 
     compare = callbacks.get('compare', every)
 
