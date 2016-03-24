@@ -136,6 +136,9 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertIsInstance(data['ordered_fields'], list)
         self.assertEquals(3, len(data['fields']))
         self.assertIsInstance(data['fields'], dict)
+        self.assertIsInstance(data['fields']['family_name'], dict)
+        self.assertIsInstance(data['fields']['given_name'], dict)
+        self.assertIsInstance(data['fields']['primary'], dict)
         self.assertEquals(3, len(data['data']))
         self.assertIsInstance(data['data'], dict)
 
