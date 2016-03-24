@@ -727,15 +727,6 @@ class PurchasedProductFormView(PostajobModelFormMixin, RequestFormViewBase):
         Determine and set which product is attempting to be purchased.
 
         """
-
-        # TODO: This is a kludge meant to mimick the old system that will be
-        # dealt with in PD-2267. Not checking against a company here is
-        # intentional
-        can_purchase = self.request.user.roles.filter(
-            activities__name='create purchased product').exists()
-        if not can_purchase:
-            return MissingActivity()
-
         # The add url also has the pk for the product they're attempting
         # to purchase.
 
@@ -875,8 +866,8 @@ class OfflinePurchaseRedemptionFormView(PostajobModelFormMixin,
         goes through this class.
 
         """
-        return super(OfflinePurchaseRedemptionFormView, self).dispatch(*args,
-                                                                       **kwargs)
+        return super(OfflinePurchaseRedemptionFormView, self).dispatch(
+            *args, **kwargs)
 
     def set_object(self, request):
         """

@@ -53,7 +53,7 @@ class PostajobTestBase(DirectSEOBase):
                 "create product", "read product", "update product",
                 "create grouping", "read grouping", "update grouping",
                 "delete grouping", "create purchased product",
-                "read purchasd product", "create purchased job",
+                "read purchased product", "create purchased job",
                 "read purchased job", "update purchased job"
             ]
         ]
@@ -729,6 +729,7 @@ class ViewTests(PostajobTestBase):
             'redemption_id': offline_purchase.redemption_uid
         }
         current_product_count = PurchasedProduct.objects.all().count()
+        settings.DEBUG = True
         response = self.client.post(reverse('offlinepurchase_redeem'),
                                     data=data, follow=True)
         self.assertEqual(response.status_code, 200)
