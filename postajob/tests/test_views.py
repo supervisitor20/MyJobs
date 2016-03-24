@@ -5,10 +5,12 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.http import Http404
 
 from seo.tests.setup import DirectSEOBase
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
+from myjobs.decorators import MissingActivity
 from myjobs.tests.setup import TestClient
 from myjobs.tests.factories import (UserFactory, RoleFactory, AppAccessFactory,
                                     ActivityFactory)
@@ -1022,6 +1024,27 @@ class ViewTests(PostajobTestBase):
                     args=[request.pk]))
         self.assertFalse(self.user in company.admins.all())
         self.assertEqual(response.status_code, 200)
+
+    def test_accessing_wrong_company_admin(self):
+        """
+        Trying to access the admin pages for a site that is a part of a package
+        which isn't own by a company to which you belong should return a
+        MissingActivity response.
+
+        """
+        self.admin_role.company = CompanyFactory(pk=41, name="Wrong Company")
+        self.admin_role.save()
+
+        for page in ['view_job', 'view_invoice',
+                     'purchasedmicrosite_admin_overview', 'admin_products',
+                     'admin_groupings', 'admin_offlinepurchase',
+                     'admin_purchasedproduct', 'view_request',
+                     'process_admin_request', 'resend_invoice',
+                     'block_user_management']:
+
+            response = self.client.get(reverse(page))
+
+            self.assertTrue(isinstance(response, MissingActivity))
 
 
 class PurchasedJobActionTests(PostajobTestBase):
