@@ -100,7 +100,7 @@ def purchasedproducts_overview(request):
     jobs = PurchasedJob.objects.filter_by_sites(sites)
     products = products.filter(owner=company, owner__role__user=request.user)
     data = {
-        'company': company,
+        'company': settings.SITE.canonical_company,
         'jobs': jobs.filter(owner=company, owner__role__user=request.user),
         'active_products': products.filter(expiration_date__gte=date.today()),
         'expired_products': products.filter(expiration_date__lt=date.today()),
