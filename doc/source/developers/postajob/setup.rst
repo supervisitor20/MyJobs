@@ -261,7 +261,7 @@ Views
 URL Path                                 View Name                   Required Activities
 ======================================== =========================== ======================
 /posting/list/                           product_listing             N/A
-/posting/product/purchase/add/           PurchasedProductFormView    create purchased product
+/posting/product/purchase/add/           PurchasedProductFormView    N/A
 /posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
 /posting/purchased-jobs/product/         purchasedjobs_overview      read purchased job 
 /posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
