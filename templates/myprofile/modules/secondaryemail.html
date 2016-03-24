@@ -10,6 +10,6 @@
         Not Verified
         {% endif %}
     </div>
-    <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
+    <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>
 {% endfor %}

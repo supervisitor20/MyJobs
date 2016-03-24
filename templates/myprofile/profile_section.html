@@ -8,7 +8,7 @@
     {% include c_template %}
     {% if not module.0.get_verbose == "Summary" %}
     <div class="wrapper-footer">
-        <a class="pull-right" href="{% url 'edit_summary' %}#/?module={{module.0.get_verbose}}&id=new">Add {{ module.0.get_verbose }}</a>
+        <a class="pull-right" href="{% url 'handle_form' %}?module={{ module.0.get_verbose.title }}">Add {{ module.0.get_verbose }}</a>
         <div class="clearfix"></div>
     </div>
     {% endif %}
