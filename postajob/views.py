@@ -111,6 +111,7 @@ def purchasedproducts_overview(request):
                               data, RequestContext(request))
 
 
+@user_is_allowed()
 def purchasedjobs_overview(request, purchased_product, admin):
     """
     Normally we would need to filter by settings.SITE for objects in postajob
