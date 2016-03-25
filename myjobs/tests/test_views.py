@@ -1049,7 +1049,7 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         response = self.client.get(reverse('topbar'),
                                    HTTP_X_REQUEST_WITH='XMLHttpRequest')
 
-        str_to_find = 'var data = '
+        str_to_find = 'var tools_companies = '
         # Find the index of where json is generated from template tag
         # 'json_companies'
         begin = response.content.find(str_to_find) + len(str_to_find)

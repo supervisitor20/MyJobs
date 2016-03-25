@@ -443,7 +443,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'myblocks/blocks/secure_blocks/tools.html'
+    base_template = 'includes/topbar.html'
 
     def context(self, request, **kwargs):
         """
@@ -500,13 +500,6 @@ class ToolsWidgetBlock(SecureBlock):
                             'max_age':max_age,
                             'domain':'.my.jobs'})
         return cookies
-
-    def required_js(self):
-        """
-        Return a list of all required javascript in URL format
-
-        """
-        return ['%ssecure-blocks/sb-tools.js' % settings.STATIC_URL]
 
 
 class SavedSearchWidgetBlock(SecureBlock):
