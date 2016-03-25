@@ -56,7 +56,10 @@ class PostajobTestBase(DirectSEOBase):
                 "create grouping", "read grouping", "update grouping",
                 "delete grouping", "create purchased product",
                 "read purchased product", "create purchased job",
-                "read purchased job", "update purchased job"
+                "read purchased job", "update purchased job",
+                "read request", "update request", "create offline purchase",
+                "read offline purchase", "update offline purchase",
+                "delete offline purchase",
             ]
         ]
         self.admin_role = RoleFactory(
@@ -1087,6 +1090,7 @@ class PurchasedJobActionTests(PostajobTestBase):
 
     def test_unblock_user(self):
         response = self.client.get(reverse('blocked_user_management'))
+        open("foo.html", "w").write(response.content)
         self.assertTrue("You currently have not blocked any users"
                         in response.content)
         profile = CompanyProfile.objects.get(company=self.company)

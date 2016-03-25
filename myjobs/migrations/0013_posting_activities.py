@@ -35,7 +35,7 @@ class Migration(DataMigration):
             ("create offline purchase", "Add new offline purchase"),
             ("read offline purchase", "View existing offline purchase"),
             ("update offline purchase", "Edit existing offline purchase"),
-            ("delete offine purchase", "Delete existing offlien purchase"),
+            ("delete offline purchase", "Delete existing offlien purchase"),
         ]
         # We use a for loop and directly access the models so that signals fire
         for name, desc in posting_activities:

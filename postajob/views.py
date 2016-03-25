@@ -312,7 +312,9 @@ def process_admin_request(request, pk, approve=True,
         if block and request_object.created_by:
             # Block the user that initiated this request
             # and deny all of that user's outstanding requests
-            company.companyprofile.blocked_users.add(request_object.created_by)
+            profile, _ = CompanyProfile.objects.get_or_create(
+                company=company)
+            profile.blocked_users.add(request_object.created_by)
 
             # Since Requests and the objects associated with them are related
             # using a fake foreign key, we have to do multiple queries. We
@@ -458,7 +460,7 @@ class BaseJobFormView(PostajobModelFormMixin, RequestFormViewBase):
     """
     prevent_delete = True
 
-    def delete(self):
+    def delete(self, request):
         raise Http404("postajob.views.BaseJobFormView: delete not allowed")
 
     def get_context_data(self, **kwargs):
@@ -688,10 +690,10 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
             return MissingActivity()
         return super(ProductGroupingFormView, self).post(*args, **kwargs)
 
-    def delete(self):
+    def delete(self, request):
         company = get_company_or_404(self.request)
         if self.request.user.can(company, 'delete grouping'):
-            return super(ProductGroupingFormView, self).delete()
+            return super(ProductGroupingFormView, self).delete(request)
         return MissingActivity()
 
     @method_decorator(user_is_allowed())
@@ -802,11 +804,11 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
     delete_name = 'offlinepurchase_delete'
 
     @method_decorator(requires("delete offline purchase"))
-    def delete(self):
+    def delete(self, request):
         if self.object.redeemed_on:
             raise Http404("postajob.views.OfflinePurchaseFormView: "
                           "can't delete redeemed OfflinePurchases")
-        return super(OfflinePurchaseFormView, self).delete()
+        return super(OfflinePurchaseFormView, self).delete(request)
 
     @method_decorator(user_is_allowed())
     def dispatch(self, *args, **kwargs):
@@ -926,7 +928,7 @@ class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
         self.object, _ = self.model.objects.get_or_create(**kwargs)
         return self.object
 
-    def delete(self):
+    def delete(self, request):
         raise Http404("postajob.views.CompanyProfileFormView: "
                       "delete not allowed")
 
