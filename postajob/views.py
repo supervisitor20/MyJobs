@@ -639,7 +639,6 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     success_url = reverse_lazy('product')
     add_name = 'product_add'
     update_name = 'product_update'
-    delete_name = 'product_delete'
 
     def get(self, *args, **kwargs):
         company = get_company_or_404(self.request)
@@ -956,7 +955,7 @@ class SitePackageFilter(FSMView):
 
 
 @user_is_allowed()
-@requires("request")
+@requires("update request")
 def blocked_user_management(request):
     """
     Displays blocked users (if any) for the current company as well as

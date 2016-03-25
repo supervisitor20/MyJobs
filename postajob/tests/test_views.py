@@ -506,13 +506,6 @@ class ViewTests(PostajobTestBase):
         product = Product.objects.get()
         self.assertEqual(product.name, self.product_form_data['name'])
 
-    def test_product_delete(self):
-        self.product_form_data['name'] = 'New Title'
-        kwargs = {'pk': self.product.pk}
-
-        response = self.client.post(reverse('product_delete', kwargs=kwargs))
-        self.assertEqual(response.status_code, 404)
-
     def test_product_update_job_limit(self):
         self.product_form_data['name'] = 'New Title'
         kwargs = {'pk': self.product.pk}
@@ -1090,7 +1083,6 @@ class PurchasedJobActionTests(PostajobTestBase):
 
     def test_unblock_user(self):
         response = self.client.get(reverse('blocked_user_management'))
-        open("foo.html", "w").write(response.content)
         self.assertTrue("You currently have not blocked any users"
                         in response.content)
         profile = CompanyProfile.objects.get(company=self.company)
