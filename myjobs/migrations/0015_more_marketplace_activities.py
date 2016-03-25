@@ -22,7 +22,7 @@ class Migration(DataMigration):
                 app_access=marketplace, name=name, description=desc)
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        """Marketplace activities are removed in migration 0013."""
 
     models = {
         u'auth.group': {
