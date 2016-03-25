@@ -374,6 +374,33 @@ URL Path                            View Name               Required Activities
 /posting/admin/blocked-users/unblock unblock_user            update request
 ==================================== ======================= ==================
 
+Use Case 6: Site owner entering offline purchases
+-------------------------------------------------
+Paul sells a job posting at a conference. He creates an offline purchase and
+emails the SBO a redemption code. The SBO goes to /posting/purchase/redeem/ and
+redeems the purchase by entering the code. The SBO can now post jobs within
+that product.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+======================================== ================================= =======================
+URL Path                                 View Name                         Required Activities
+======================================== ================================= =======================
+/posting/admin/purchase/offline/         admin_offlinepurchase             read offline purchase
+/posting/admin/purchase/offline/add/     OfflinePurchaseFormView           create offline purchase
+/posting/admin/purchase/offline/update/  OfflinePurchaseFormView           update offline purchase
+/posting/admin/purchase/offline/delete/  OfflinePurchaseFormView           delete offline purchase
+/posting/admin/purchase/offline/success/ view_request                      read offline purchase
+/posting/purchase/redeem/                OfflinePurchaseRedemptionFormView
+======================================== ================================= =======================
+
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
 .. _create a new row: http://directemployers.jobs/admin/myblocks/row/add/

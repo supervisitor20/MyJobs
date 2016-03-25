@@ -257,8 +257,6 @@ def admin_purchasedproduct(request):
     return render_to_response('postajob/purchasedproduct.html', data,
                               RequestContext(request))
 
-@user_is_allowed()
-@requires("read request")
 def view_request(request, pk, model=None):
     template = 'postajob/request/{model}.html'
     company = get_company(request)
@@ -271,8 +269,10 @@ def view_request(request, pk, model=None):
 
     request_made = get_object_or_404(model, **request_kwargs)
     if model == Request:
+        activity = "read request"
         request_object = request_made.request_object()
     else:
+        activity = "read offline purchase"
         request_object = request_made
 
     content_type = ContentType.objects.get_for_model(type(request_object))
@@ -284,9 +284,8 @@ def view_request(request, pk, model=None):
         'request_obj': request_made,
     }
 
-    if not data['object'].user_has_access(request.user):
-        raise Http404("postajob.views.view_request: user does not have access "
-                      "to this object")
+    if not request.user.can(company, activity):
+        return MissingActivity()
 
     return render_to_response(template.format(model=content_type.model),
                               data, RequestContext(request))
@@ -802,6 +801,7 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'offlinepurchase_update'
     delete_name = 'offlinepurchase_delete'
 
+    @method_decorator(requires("delete offline purchase"))
     def delete(self):
         if self.object.redeemed_on:
             raise Http404("postajob.views.OfflinePurchaseFormView: "
@@ -809,7 +809,6 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
         return super(OfflinePurchaseFormView, self).delete()
 
     @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access('product_access'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -838,6 +837,24 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
             raise Http404("postajob.views.OfflinePurchaseFormView: "
                           "OfflinePurchases can only be added or deleted")
         return super(OfflinePurchaseFormView, self).set_object(request)
+
+    def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update offline purchase",
+                          "create offline purchase"):
+            return MissingActivity()
+
+        return super(OfflinePurchaseFormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update offline purchase",
+                          "create offline purchase"):
+            return MissingActivity()
+
+        return super(OfflinePurchaseFormView, self).post(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(OfflinePurchaseFormView, self).get_context_data(**kwargs)
