@@ -8,28 +8,15 @@ from myjobs.models import Activity, AppAccess
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        posting = AppAccess.objects.get(name='Posting')
         marketplace = AppAccess.objects.get(name='MarketPlace')
-
-        posting_activities = [
-            ("create job", "Add new jobs."),
-            ("read job", "View existing jobs."),
-            ("update job", "Edit existing jobs."),
-        ]
-
         marketplace_activities = [
-            ("create product", "Add new products"),
-            ("read product", "View existing products."),
-            ("update product", "Edit existing products."),
-            ("create grouping", "Add new product groupings."),
-            ("read grouping", "View existing product groupings."),
-            ("update grouping", "Edit existing product groupings."),
-            ("delete grouping", "Delete existing product groupings."),
+            ("create purchased product", "Create new purchased products."),
+            ("read purchased product", "View existing purchased products."),
+            ("create purchased job", "Create new purchased jobs."),
+            ("read purchased job", "View existing purchased jobs."),
+            ("update purchased job", "Edit existing purchased jobs."),
+            ("read request", "View existing requests."),
         ]
-        # We use a for loop and directly access the models so that signals fire
-        for name, desc in posting_activities:
-            Activity.objects.create(
-                app_access=posting, name=name, description=desc)
 
         for name, desc in marketplace_activities:
             Activity.objects.create(
@@ -37,9 +24,7 @@ class Migration(DataMigration):
 
 
     def backwards(self, orm):
-        apps = orm.AppAccess.objects.filter(
-            name__in=['Posting', 'MarketPlace'])
-        orm.Activity.objects.filter(app_access=apps).delete()
+        """Migration 0013 takes care of removing postajob activities"""
 
     models = {
         u'auth.group': {
@@ -325,7 +310,6 @@ class Migration(DataMigration):
         },
         u'seo.company': {
             'Meta': {'ordering': "['name']", 'unique_together': "(('name', 'user_created'),)", 'object_name': 'Company'},
-            'admins': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.User']", 'through': u"orm['seo.CompanyUser']", 'symmetrical': 'False'}),
             'app_access': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['myjobs.AppAccess']", 'symmetrical': 'False', 'blank': 'True'}),
             'canonical_microsite': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'company_slug': ('django.db.models.fields.SlugField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
@@ -343,14 +327,6 @@ class Migration(DataMigration):
             'product_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'site_package': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['postajob.SitePackage']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'user_created': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
-        },
-        u'seo.companyuser': {
-            'Meta': {'unique_together': "(('user', 'company'),)", 'object_name': 'CompanyUser', 'db_table': "'mydashboard_companyuser'"},
-            'company': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.Company']"}),
-            'date_added': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'group': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['myjobs.User']"})
         },
         u'seo.configuration': {
             'Meta': {'object_name': 'Configuration'},
@@ -419,6 +395,7 @@ class Migration(DataMigration):
             'status': ('django.db.models.fields.IntegerField', [], {'default': '1', 'null': 'True', 'db_index': 'True', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
             'title_tag': ('django.db.models.fields.CharField', [], {'default': "'jobs-in'", 'max_length': '50'}),
+            'use_secure_blocks': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'view_all_jobs_detail': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'what_helptext': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'what_label': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
