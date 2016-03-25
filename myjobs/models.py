@@ -690,9 +690,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Company must have correct access and user must have correct
         # activities
         return all([
-            bool(company.enabled_access),
             set(required_access).issubset(company.enabled_access),
-            bool(self.get_activities(company)),
             compare(activity_names, self.get_activities(company))])
 
     def send_invite(self, email, company, role_name=None):
