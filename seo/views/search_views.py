@@ -1154,7 +1154,7 @@ def home_page(request):
         'featured': str(bool(featured)).lower(),
         'filters': {},
         'view_source': settings.VIEW_SOURCE}
-
+    data_dict.update(get_analytics_info())
     return render_to_response(home_page_template, data_dict,
                               context_instance=RequestContext(request))
 
@@ -1696,6 +1696,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     facet_slugs = []
     active_facets = []
 
+
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1791,16 +1792,35 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'site_name': settings.SITE_NAME,
         'site_tags': settings.SITE_TAGS,
         'site_title': settings.SITE_TITLE,
+
         'sort_fields': helpers.sort_fields,
         'sort_order': sort_order,
         'title_term': q_term if q_term else '\*',
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
     }
-
+    data_dict.update(get_analytics_info())
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 
+
+def get_analytics_info():
+    """
+    Return a dictionary of analytics info to be added to the context for job
+    listing views. Used with homebrew analytics.
+
+    :return: dictionary with analytics info
+
+    """
+    site_buid_objects = BusinessUnit.objects.filter(id__in=settings.SITE_BUIDS)
+    analytics_info = {
+        'site_business_units': json.dumps([bu.title for bu in site_buid_objects]),
+        'default_facet_names': json.dumps([df.name for df in
+                                                settings.DEFAULT_FACET]),
+        'featured_facet_names': json.dumps([ff.name for ff in
+                                                settings.FEATURED_FACET])
+        }
+    return analytics_info
 
 class SearchResults(FallbackBlockView):
     page_type = Page.SEARCH_RESULTS

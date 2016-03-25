@@ -1331,7 +1331,6 @@ def add_text_to_job(job):
 
 def jobs_and_counts(request, filters, num_jobs, fl=search_fields):
     sort_order = request.GET.get('sort', 'relevance')
-
     sqs = prepare_sqs_from_search_params(request.GET)
     default_jobs = get_jobs(default_sqs=sqs,
                             custom_facets=settings.DEFAULT_FACET,

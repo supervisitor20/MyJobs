@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 from slugify import slugify
 from urlparse import urlparse
@@ -598,6 +599,7 @@ class SearchResultBlock(Block):
     base_head = 'myblocks/head/searchresult.html'
 
     def context(self, request, **kwargs):
+        site_buid_objects = BusinessUnit.objects.filter(id__in=settings.SITE_BUIDS)
         return {
             'arranged_jobs': context_tools.get_arranged_jobs(request),
             'data_type': '',
@@ -611,6 +613,12 @@ class SearchResultBlock(Block):
             'site_config': context_tools.get_site_config(request),
             'site_tags': settings.SITE_TAGS,
             'title_term': context_tools.get_title_term(request),
+            'site_business_units': json.dumps([bu.title for bu in
+                                                    site_buid_objects]),
+            'default_facet_names': json.dumps([df.name for df in
+                                                    settings.DEFAULT_FACET]),
+            'featured_facet_names': json.dumps([ff.name for ff in
+                                                    settings.FEATURED_FACET])
         }
 
     def render_for_ajax(self, request, **kwargs):
