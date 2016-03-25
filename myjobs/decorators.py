@@ -250,14 +250,11 @@ def requires(*activities, **callbacks):
                     'name', flat=True).distinct())
 
             # company should have at least the access required by the view
-            has_access = all([
-                bool(company.enabled_access),
-                set(required_access).issubset(company.enabled_access)])
+            has_access = set(required_access).issubset(company.enabled_access)
 
             # the user should have at least the activities required by the view
-            has_activities = all([
-                bool(request.user.get_activities(company)),
-                compare(activities, request.user.get_activities(company))])
+            has_activities = compare(
+                activities, request.user.get_activities(company))
 
             if not has_access:
                 return access_callback(request)
