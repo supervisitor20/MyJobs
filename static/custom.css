@@ -3154,6 +3154,14 @@ fieldset:nth-child(n+2) {
     margin: 0;
 }
 
+.row .col-md-8 textarea {
+  height: auto;
+}
+
+.row .col-md-8 input[type='checkbox'] {
+  width: initial;
+}
+
 .row .col-md-8 input[type='radio'] {
     width: auto;
     height: auto;
@@ -3169,7 +3177,7 @@ fieldset:nth-child(n+2) {
     font-weight: normal;
 }
 
-.row .col-md-8 select { 
+.row .col-md-8 select {
 height: 33px;
     line-height: 33px;
     font-size: 14pt;
@@ -3238,10 +3246,6 @@ height: 33px;
     color: #fff;
 }
 
-.actions.row .col-md-8 .button:hover {
-    color: #fff;
-}
-
 .row .col-md-8 .card-wrapper {
     margin: 0;
     box-shadow: none;
@@ -3249,7 +3253,7 @@ height: 33px;
     border-radius: 3px;
 }
 
-.row .col-md-8 #job-location-display .wrapper-header, 
+.row .col-md-8 #job-location-display .wrapper-header,
 .row .col-md-8 #job-location-display .wrapper-footer {
     border: none;
 }
@@ -3853,7 +3857,14 @@ body.modal-open {
 .required-label,
 .error-text {
     color: #900;
-    margin-bottom: 5px;
+    width: auto;
+    margin: 5px 0 0;
+    font-size: 10pt;
+    font-style: normal;
+}
+
+.error-text {
+    display: block;
 }
 
 .required-border {
@@ -4570,4 +4581,10 @@ a.btn.pull-right {
 }
 @media(min-width:1200px){
 
+}
+#auth-code {
+    font-size: 2em;
+    color: red;
+    font-weight: bold;
+    border: 2px solid #000;
 }
