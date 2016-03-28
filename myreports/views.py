@@ -467,16 +467,16 @@ def presentation_types_api(request):
 def filters_api(request):
     """Get a list of filters for the UI.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Presentation ID
 
     response: See ContactsJsonDriver.encode_filter_interface()
     """
     request_data = request.POST
-    rp_id = request_data['rp_id']
-    report_pres = ReportPresentation.objects.get(id=rp_id)
-    datasource = report_pres.report_data.report_type.datasource
+    report_data_id = request_data['report_data_id']
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
+    datasource = report_data.report_type.datasource
 
-    report_configuration = (report_pres.configuration.build_configuration())
+    report_configuration = (report_data.configuration.build_configuration())
 
     driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
@@ -490,7 +490,7 @@ def filters_api(request):
 def help_api(request):
     """Get help for a partially filled out field.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Data ID
     filter: JSON string with user filter to use
     field: Name of field to get help for
     partial: Data entered so far
@@ -499,13 +499,13 @@ def help_api(request):
     """
     company = get_company_or_404(request)
     request_data = request.POST
-    rp_id = request_data['rp_id']
+    report_data_id = request_data['report_data_id']
     filter_spec = request_data['filter']
     field = request_data['field']
     partial = request_data['partial']
 
-    report_pres = ReportPresentation.objects.get(id=rp_id)
-    datasource = report_pres.report_data.report_type.datasource
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
+    datasource = report_data.report_type.datasource
     driver = ds_json_drivers[datasource]
 
     result = driver.help(company, filter_spec, field, partial)
@@ -519,7 +519,7 @@ def help_api(request):
 def run_dynamic_report(request):
     """Run a dynamic report.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Presentation ID
     name: name of report
     filter_spec: JSON string with user filter to use
 
@@ -527,18 +527,18 @@ def run_dynamic_report(request):
     """
     validator = ApiValidator()
     company = get_company_or_404(request)
-    rp_id = request.POST['rp_id']
+    report_data_id = request.POST['report_data_id']
     name = request.POST.get('name', '')
     if not name:
         validator.note_field_error("name", "Report name must not be empty.")
     filter_spec = request.POST.get('filter', '{}')
-    report_pres = ReportPresentation.objects.get(id=rp_id)
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
 
     if validator.has_errors():
         return validator.build_error_response()
 
     report = DynamicReport.objects.create(
-        report_presentation=report_pres,
+        report_data=report_data,
         filters=filter_spec,
         name=name,
         owner=company)
@@ -580,6 +580,8 @@ def download_dynamic_report(request):
         :values: Fields to include in the resulting CSV, as well as the order
                  in which to include them.
         :order_by: The sort order for the resulting CSV.
+        :report_presentation_id: id of report presentation to use for file
+                                 format.
 
     Outputs:
         The report with the specified options rendered as a CSV file.
@@ -589,11 +591,13 @@ def download_dynamic_report(request):
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
     order_by = request.GET.get('order_by', None)
+    report_presentation_id = request.GET.get('report_presentation_id', None)
 
     report = get_object_or_404(DynamicReport, pk=report_id)
-    report_configuration = (
-            report.report_presentation
-            .configuration.build_configuration())
+    report_presentation = (
+        ReportPresentation.objects.get(id=report_presentation_id))
+    config = report.report_data.configuration
+    report_configuration = config.build_configuration()
 
     if order_by:
         report.order_by = order_by
@@ -603,7 +607,7 @@ def download_dynamic_report(request):
     records = [report_configuration.format_record(r) for r in report.python]
 
     presentation_driver = (
-        report.report_presentation.presentation_type.presentation_type)
+        report_presentation.presentation_type.presentation_type)
     presentation = presentation_drivers[presentation_driver]
     response = HttpResponse(content_type=presentation.content_type)
     disposition = get_content_disposition(
@@ -625,11 +629,11 @@ def get_default_report_name(request):
     get_company_or_404(request)
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
-    rp_id = request.POST.get('report_presentation_id', None)
-    if not rp_id:
+    report_data_id = request.POST.get('report_data_id', None)
+    if not report_data_id:
         validator.note_field_error(
-            "report_presentation_id",
-            "Report presentation id must not be empty.")
+            "report_data_id",
+            "Report data id must not be empty.")
 
     if validator.has_errors():
         return validator.build_error_response()

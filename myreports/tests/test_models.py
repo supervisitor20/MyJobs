@@ -71,20 +71,19 @@ class TestActiveModels(MyReportsTestCase):
 
     def test_active_report_presentations(self):
         """Avoid different kinds of inactive presentation types."""
-        rtdt = ReportTypeDataTypes.objects.get(
-                data_type__data_type='Unaggregated',
-                report_type__report_type='Contacts')
+        report_data = ReportTypeDataTypes.objects.get(id=4)
         rps = (ReportPresentation.objects
-               .active_for_report_type_data_type(rtdt))
+               .active_for_report_type_data_type(report_data))
         names = set([rp.display_name for rp in rps])
         expected_names = set(['Contact CSV', 'Contact Excel Spreadsheet'])
         self.assertEqual(expected_names, names)
 
     def test_active_columns(self):
         """Avoid different kinds of inactive column types."""
-        rp = ReportPresentation.objects.get(id=3)
-        columns = (ConfigurationColumn.objects
-                   .active_for_report_presentation(rp))
+        report_data = ReportTypeDataTypes.objects.get(id=4)
+        columns = (
+            ConfigurationColumn.objects
+            .active_for_report_data(report_data))
         expected_columns = set([
             u'phone', u'date', u'locations', u'partner', u'tags',
             u'name', u'email', u'notes'])
@@ -155,9 +154,9 @@ class TestDynamicReport(MyReportsTestCase):
         for i in range(0, 10):
             ContactFactory.create(name="name-%s" % i, partner=partner)
 
-        report_pres = ReportPresentation.objects.get(id=3)
+        report_data = ReportTypeDataTypes.objects.get(id=4)
         report = DynamicReport.objects.create(
-            report_presentation=report_pres,
+            report_data=report_data,
             owner=self.company)
         report.regenerate()
         expected_column_names = set([
@@ -177,9 +176,9 @@ class TestDynamicReport(MyReportsTestCase):
                 partner=partner,
                 locations=[location])
 
-        report_pres = ReportPresentation.objects.get(id=3)
+        report_data = ReportTypeDataTypes.objects.get(id=4)
         report = DynamicReport.objects.create(
-            report_presentation=report_pres,
+            report_data=report_data,
             filters=json.dumps({
                 'locations': {
                     'city': 'city-2',

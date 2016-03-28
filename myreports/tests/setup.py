@@ -176,21 +176,6 @@ def create_full_fixture():
         data_type="count_comm_rec_per_month",
         description="Number of Communication Records per Month per Partner")
 
-    ReportTypeDataTypes.objects.all().delete()
-    ReportTypeDataTypesFactory.create(
-        report_type=rt_con, data_type=dt_dead)
-    ReportTypeDataTypesFactory.create(
-        report_type=rt_con, data_type=dt_maybe_dead, is_active=False)
-    rtdt_con_unagg = ReportTypeDataTypesFactory.create(
-        report_type=rt_con, data_type=dt_unagg)
-    rtdt_part_unagg = ReportTypeDataTypesFactory.create(
-        report_type=rt_partners, data_type=dt_unagg)
-    rtdt_comm_unagg = ReportTypeDataTypesFactory.create(
-        report_type=rt_comm, data_type=dt_unagg)
-    rtdt_comm_count_pmpp = ReportTypeDataTypesFactory.create(
-        report_type=rt_partners,
-        data_type=dt_count_comm_per_month_per_partner)
-
     PresentationType.objects.all().delete()
     pre_dead = PresentationTypeFactory.create(
         id=1, description="Inactive", is_active=False)
@@ -577,59 +562,75 @@ def create_full_fixture():
         configuration=con_comm_count,
         multi_value_expansion=False)
 
+    ReportTypeDataTypes.objects.all().delete()
+    ReportTypeDataTypesFactory.create(
+        id=1, report_type=rt_con, data_type=dt_dead,  configuration=con_con)
+    ReportTypeDataTypesFactory.create(
+        id=2, report_type=rt_con, data_type=dt_maybe_dead, is_active=False,
+        configuration=con_con)
+    ReportTypeDataTypesFactory.create(
+        id=3, report_type=rt_con, data_type=dt_maybe_dead, is_active=False,
+        configuration=con_dead)
+    rtdt_con_unagg = ReportTypeDataTypesFactory.create(
+        id=4, report_type=rt_con, data_type=dt_unagg, configuration=con_con)
+    rtdt_part_unagg = ReportTypeDataTypesFactory.create(
+        id=5, report_type=rt_partners, data_type=dt_unagg,
+        configuration=con_part)
+    rtdt_comm_unagg = ReportTypeDataTypesFactory.create(
+        id=6, report_type=rt_comm, data_type=dt_unagg, configuration=con_comm)
+    rtdt_comm_count_pmpp = ReportTypeDataTypesFactory.create(
+        id=7, report_type=rt_partners, configuration=con_comm_count,
+        data_type=dt_count_comm_per_month_per_partner)
+
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(
-        id=1, presentation_type=pre_maybe_dead, configuration=con_con,
+        id=1, presentation_type=pre_maybe_dead,
         display_name="Dead", report_data=rtdt_con_unagg, is_active=False)
     ReportPresentationFactory.create(
-        id=2, presentation_type=pre_dead, configuration=con_con,
+        id=2, presentation_type=pre_dead,
         display_name="Dead Presentation",
         report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=3, presentation_type=pre_csv, configuration=con_con,
+        id=3, presentation_type=pre_csv,
         display_name="Contact CSV",
         report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=4, presentation_type=pre_csv, configuration=con_dead,
-        display_name="Dead Configuration",
-        report_data=rtdt_con_unagg, is_active=True)
-    ReportPresentationFactory.create(
-        id=5, presentation_type=pre_csv, configuration=con_part,
+        id=5, presentation_type=pre_csv,
         display_name="Partner CSV",
         report_data=rtdt_part_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=6, presentation_type=pre_csv, configuration=con_comm,
+        id=6, presentation_type=pre_csv,
         display_name="Communication Record CSV",
         report_data=rtdt_comm_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=7, presentation_type=pre_xlsx, configuration=con_con,
+        id=7, presentation_type=pre_xlsx,
         display_name="Contact Excel Spreadsheet",
         report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=8, presentation_type=pre_xlsx, configuration=con_part,
+        id=8, presentation_type=pre_xlsx,
         display_name="Partner Excel Spreadsheet",
         report_data=rtdt_part_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=9, presentation_type=pre_xlsx, configuration=con_comm,
+        id=9, presentation_type=pre_xlsx,
         display_name="Communication Record Excel Spreadsheet",
         report_data=rtdt_comm_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=10, presentation_type=pre_json, configuration=con_part,
+        id=10, presentation_type=pre_json,
         display_name="Partner JSON Passthrough",
         report_data=rtdt_part_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=11, presentation_type=pre_json, configuration=con_con,
+        id=11, presentation_type=pre_json,
         display_name="Contact JSON Passthrough",
         report_data=rtdt_con_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=12, presentation_type=pre_json, configuration=con_comm,
+        id=12, presentation_type=pre_json,
         display_name="Communication Record JSON Passthrough",
         report_data=rtdt_comm_unagg, is_active=True)
     ReportPresentationFactory.create(
-        id=13, presentation_type=pre_csv, configuration=con_comm_count,
+        id=13, presentation_type=pre_csv,
         display_name="Communication Record Count CSV",
         report_data=rtdt_comm_count_pmpp, is_active=True)
     ReportPresentationFactory.create(
-        id=14, presentation_type=pre_json, configuration=con_comm_count,
+        id=14, presentation_type=pre_json,
         display_name="Communication Record Count JSON Passthrough",
         report_data=rtdt_comm_count_pmpp, is_active=True)

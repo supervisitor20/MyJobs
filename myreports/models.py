@@ -161,6 +161,7 @@ class DataTypeManager(models.Manager):
     def active_for_report_type(self, report_type):
         query_filter = dict(
             is_active=True,
+            reporttypedatatypes__configuration__is_active=True,
             reporttypedatatypes__report_type=report_type,
             reporttypedatatypes__is_active=True)
         return DataType.objects.filter(**query_filter)
@@ -177,6 +178,7 @@ class ReportTypeDataTypes(models.Model):
     report_type = models.ForeignKey('ReportType')
     data_type = models.ForeignKey('DataType')
     is_active = models.BooleanField(default=False)
+    configuration = models.ForeignKey('Configuration', null=True)
 
 
 class Configuration(models.Model):
@@ -202,7 +204,6 @@ class ReportPresentationManager(models.Manager):
     def active_for_report_type_data_type(self, rtdt):
         query_filter = dict(
             presentation_type__is_active=True,
-            configuration__is_active=True,
             report_data=rtdt,
             is_active=True)
         return ReportPresentation.objects.filter(**query_filter)
@@ -211,7 +212,6 @@ class ReportPresentationManager(models.Manager):
 class ReportPresentation(models.Model):
     report_data = models.ForeignKey('ReportTypeDataTypes')
     presentation_type = models.ForeignKey('PresentationType')
-    configuration = models.ForeignKey('Configuration')
     display_name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=False)
     objects = ReportPresentationManager()
@@ -230,9 +230,9 @@ class Column(models.Model):
 
 
 class ConfigurationColumnManager(models.Manager):
-    def active_for_report_presentation(self, rp):
+    def active_for_report_data(self, report_data):
         return (ConfigurationColumn.objects
-                .filter(configuration__reportpresentation=rp)
+                .filter(configuration__reporttypedatatypes=report_data)
                 .filter(is_active=True)
                 .select_related())
 
@@ -274,7 +274,7 @@ class DynamicReport(models.Model):
         'myjobs.User', null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey('seo.Company')
-    report_presentation = models.ForeignKey('myreports.ReportPresentation')
+    report_data = models.ForeignKey('myreports.ReportTypeDataTypes', null=True)
     filters = models.TextField(default="{}")
     results = models.FileField(upload_to='reports')
 
@@ -304,8 +304,8 @@ class DynamicReport(models.Model):
         return json.loads(self._results, object_hook=report_hook)
 
     def regenerate(self):
-        report_type = self.report_presentation.report_data.report_type
-        data_type = self.report_presentation.report_data.data_type
+        report_type = self.report_data.report_type
+        data_type = self.report_data.data_type
 
         driver = ds_json_drivers[report_type.datasource]
         data_type_name = data_type.data_type
