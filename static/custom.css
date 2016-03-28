@@ -3335,6 +3335,27 @@ height: 33px;
 .select-element-menu-container ul li.active {
   background-color: #C6D6EA;
 }
+
+fieldset.fieldset-border {
+  border: 1px solid #ddd;
+  padding: 0 15px 15px;
+  border-radius: 3px;
+}
+
+legend.fieldset-border {
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: left;
+  width:auto;
+  padding:0 5px;
+  border-bottom:none;
+  margin: 0 0 10px;
+}
+
+.fieldset-border label {
+  display: block;
+}
+
 /* End Select Element React Component Styles */
 
 input[type='checkbox'] + .help-block {

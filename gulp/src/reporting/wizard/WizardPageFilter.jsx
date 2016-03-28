@@ -1,6 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
+import Select from 'common/ui/Select';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
@@ -16,6 +17,11 @@ export class WizardPageFilter extends Component {
     this.state = {
       reportName: 'Report Name',
       loading: true,
+      initial: {display: 'No filter', value: 0},
+      choices: [
+          {display: 'No filter', value: 0},
+          {display: 'Filter by name', value: 1},
+      ],
     };
   }
 
@@ -79,6 +85,12 @@ export class WizardPageFilter extends Component {
     });
   }
 
+  changeHandler(value) {
+    this.setState({
+      initial: value,
+    });
+  }
+
   renderRow(displayName, key, content, buttonRow, textCenter) {
     return (
       <div key={key} className={
@@ -94,6 +106,48 @@ export class WizardPageFilter extends Component {
         <div className="col-xs-12 col-md-8">
           {content}
         </div>
+      </div>
+    );
+  }
+
+  renderSetupRow() {
+    const {intentionChoices, intentionInitial, categoryChoices, categoryInitial, dataSetChoices, dataSetInitial} = this.props;
+    console.log(this.props);
+    return (
+      <div className="row">
+        <fieldset className="fieldset-border">
+            <legend className="fieldset-border">Report Configuration</legend>
+            <div className="col-xs-3">
+              <label>Report Intention
+                <Select
+                  onChange={v => this.changeHandler(v)}
+                  choices = {intentionChoices}
+                  initial = {intentionInitial}
+                  name = ""
+                />
+              </label>
+            </div>
+            <div className="col-xs-3">
+              <label>Report Category
+                <Select
+                  onChange={v => this.changeHandler(v)}
+                  choices = {categoryChoices}
+                  initial = {categoryInitial}
+                  name = ""
+                />
+              </label>
+            </div>
+            <div className="col-xs-6">
+              <label>Data Set
+                <Select
+                  onChange={v => this.changeHandler(v)}
+                  choices = {dataSetChoices}
+                  initial = {dataSetInitial}
+                  name = ""
+                />
+              </label>
+            </div>
+        </fieldset>
       </div>
     );
   }
@@ -177,6 +231,7 @@ export class WizardPageFilter extends Component {
 
     return (
       <form>
+        {this.renderSetupRow()}
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         <hr/>
         {rows}
@@ -197,4 +252,49 @@ WizardPageFilter.propTypes = {
     presentationType: PropTypes.string.isRequired,
   }).isRequired,
   reportFinder: PropTypes.object.isRequired,
+  intentionChoices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  intentionInitial: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  categoryChoices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  categoryInitial: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  dataSetChoices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  dataSetInitial: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+};
+
+WizardPageFilter.defaultProps = {
+  intentionChoices: [{value: 1, display: 'PRM'}],
+  intentionInitial: [{value: 1, display: 'PRM'}],
+  categoryChoices: [{value: 1, display: 'Partners'}, {value: 2, display: 'Contacts'}, {value: 3, display: 'Communications'}],
+  categoryInitial: [{value: 1, display: 'Partners'}],
+  dataSetChoices: [{value: 1, display: 'Communication Records (state)'}],
+  dataSetInitial: [{value: 1, display: 'Communication Records (state)'}],
 };
