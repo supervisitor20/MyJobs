@@ -766,6 +766,16 @@ class TestDynamicReports(MyReportsTestCase):
         report_presentation = self.find_report_presentation(
             'partners',
             'json_pass')
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': report_presentation.pk,
+                'filter': json.dumps({}),
+            })
+        self.assertEqual(400, resp.status_code)
+        doc = json.loads(resp.content)
+        field_keys = {r['field'] for r in doc}
+        self.assertIn('name', field_keys)
 
     def test_dynamic_partners_report_comm_per_month(self):
         """Run the comm_rec per month per partner report."""
