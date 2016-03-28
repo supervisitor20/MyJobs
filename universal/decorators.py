@@ -122,3 +122,10 @@ warn_when_inactive = partial(
     message='You have yet to activate your account.',
     link='/accounts/register/resend',
     link_text='Resend Activation')
+
+
+restrict_to_staff = partial(
+    not_found_when,
+    condition=lambda req: not req.user.is_staff,
+    feature="MyReports",
+    message="Feature currently restricted to DirectEmployers staff.")
