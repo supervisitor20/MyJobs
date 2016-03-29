@@ -1697,7 +1697,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     facet_slugs = []
     active_facets = []
 
-
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1793,7 +1792,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'site_name': settings.SITE_NAME,
         'site_tags': settings.SITE_TAGS,
         'site_title': settings.SITE_TITLE,
-
         'sort_fields': helpers.sort_fields,
         'sort_order': sort_order,
         'title_term': q_term if q_term else '\*',
