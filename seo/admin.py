@@ -1160,7 +1160,7 @@ class CompanyAdmin(admin.ModelAdmin):
     save_on_top = True
     filter_horizontal = ('job_source_ids', 'prm_saved_search_sites',
                          'app_access')
-    list_display = ('name', 'featured_on','company_user_count')
+    list_display = ('name', 'featured_on', 'admin_count')
     list_filter = ('enhanced', 'digital_strategies_customer')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [
@@ -1169,13 +1169,16 @@ class CompanyAdmin(admin.ModelAdmin):
                                ('digital_strategies_customer'),
                                ('admin_email'),
                                ('app_access')]}),
-        ('Company Info',{'fields':[('logo_url'),('linkedin_id'),
-                                   ('canonical_microsite'),
-                                   ('og_img')]}),
+        ('Company Info', {'fields':[('logo_url'), ('linkedin_id'),
+                                    ('canonical_microsite'),
+                                    ('og_img')]}),
         ('Job Sources', {'fields': ['job_source_ids']}),
         ('Featured on', {'fields': ['sites']}),
         ('PRM', {'fields': ['prm_saved_search_sites']}),
     ]
+
+    def admin_count(self, obj):
+        return obj.admins.count()
 
     def save_model(self, request, instance, form, change):
         invitee_email = form.cleaned_data.get('admin_email')
