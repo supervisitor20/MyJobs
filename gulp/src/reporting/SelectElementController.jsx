@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import Multiselect from 'common/ui/MultiSelect';
-import {SelectElement} from 'common/ui/SelectElement';
+import Select from 'common/ui/Select';
 import {map} from 'lodash-compat/collection';
 
 export class SelectElementController extends Component {
@@ -14,6 +14,7 @@ export class SelectElementController extends Component {
           {display: 'Filter by name', value: 1},
       ],
       availableHints: [],
+      choice: 0,
     };
   }
   componentDidMount() {
@@ -25,9 +26,9 @@ export class SelectElementController extends Component {
     const fixedAvailableHints = map(availableHints, value => ({value: value.key, display: value.display}));
     this.setState({availableHints: fixedAvailableHints});
   }
-  changeHandler(value) {
+  changeHandler(event) {
     this.setState({
-      initial: value,
+      choice: event.target.value,
     });
   }
   renderControl(value) {
@@ -47,16 +48,17 @@ export class SelectElementController extends Component {
     return '';
   }
   render() {
-    const {choices, initial} = this.state;
+    const {choices, initial, choice} = this.state;
     return (
       <div>
-        <SelectElement
+        <Select
+          name=""
           onChange={v => this.changeHandler(v)}
+          initial={initial}
           choices = {choices}
-          initial = {initial}
         />
         <div className="select-control-chosen">
-          {this.renderControl(initial.value)}
+          {this.renderControl(choice)}
         </div>
       </div>
     );
