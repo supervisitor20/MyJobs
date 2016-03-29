@@ -561,7 +561,9 @@ class PurchasedProduct(BaseModel):
 
     # owner is the person that purchased a product that created this
     # PurchasedProduct object.
-    owner = models.ForeignKey('seo.Company')
+    owner = models.ForeignKey(
+        'seo.Company',
+        help_text='The company who will have access to this product.')
     purchase_date = models.DateField(auto_now_add=True)
     is_approved = models.BooleanField(default=False)
     paid = models.BooleanField(default=False)

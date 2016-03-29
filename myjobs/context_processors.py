@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from universal.helpers import get_company
 
 
 def current_site_info(request):
@@ -36,6 +37,18 @@ def absolute_url(request):
         'ABSOLUTE_URL': settings.ABSOLUTE_URL
     }
     return values
+
+
+def activities(request):
+    """
+    Returns the activities a user can perform for the currently selected
+    company.
+
+    """
+    company = get_company(request)
+    if not request.user.is_anonymous() and request.user.pk:
+        return {"activities": request.user.get_activities(company)}
+    return {"activities": []}
 
 
 def webpack_dev_setting(request):

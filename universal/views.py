@@ -20,12 +20,13 @@ class FormViewBase(FormView, ModelFormMixin, SingleObjectMixin):
     def get_context_data(self, **kwargs):
         if self.object:
             pk = {'pk': self.object.pk}
-            kwargs['delete_url'] = reverse(self.delete_name, kwargs=pk)
+            if self.delete_name:
+                kwargs['delete_url'] = reverse(self.delete_name, kwargs=pk)
         kwargs['success_url'] = self.success_url
         kwargs['display_name'] = self.display_name
         return super(FormViewBase, self).get_context_data(**kwargs)
 
-    def delete(self):
+    def delete(self, request, *args, **kwargs):
         """
         Calls the delete() method on the fetched object and then
         redirects to the success URL.
@@ -52,17 +53,23 @@ class FormViewBase(FormView, ModelFormMixin, SingleObjectMixin):
         self.set_object(request)
         if self.object:
             pk = {'pk': self.object.pk}
-            if request.path == reverse(self.delete_name, kwargs=pk):
-                return self.delete()
+            if self._is_delete_request(request, pk):
+                return self.delete(request)
         return super(FormViewBase, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.set_object(request)
         if self.object:
             pk = {'pk': self.object.pk}
-            if request.path == reverse(self.delete_name, kwargs=pk):
-                    return self.delete()
+            if self._is_delete_request(request, pk):
+                return self.delete(request)
         return super(FormViewBase, self).post(request, *args, **kwargs)
+
+    def _is_delete_request(self, request, kwargs):
+        if self.delete_name:
+            return request.path == reverse(self.delete_name, kwargs=kwargs)
+
+        return False
 
 
 class RequestFormViewBase(FormViewBase):

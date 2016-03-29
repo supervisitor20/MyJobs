@@ -36,13 +36,6 @@ def completion_level(level):
     return get_completion(level)
 
 
-@register.assignment_tag
-def can(user, company, *activity_names):
-    """Template tag analog to `myjobs.User.can()` method."""
-
-    return not user.is_anonymous() and user.can(company, *activity_names)
-
-
 @register.simple_tag
 def get_description(module):
     """
