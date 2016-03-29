@@ -94,7 +94,6 @@ class Module extends React.Component {
   async handleSave() {
     const {formContents} = this.state;
     const myJobsApi = new MyJobsApi(getCsrf());
-
     const apiResponse = await myJobsApi.post('/profile/api', formContents);
 
     if (apiResponse.errors) {
@@ -199,6 +198,13 @@ class Module extends React.Component {
     };
 
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
+
+    // Update state
+    for (const item in apiResponse.data) {
+      if (apiResponse.data.hasOwnProperty(item)) {
+        formContents[item] = apiResponse.data[item];
+      }
+    }
 
     this.setState({
       apiResponse: apiResponse,
