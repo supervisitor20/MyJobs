@@ -152,7 +152,6 @@ The microsites on which a job will be posted to is determined by the site
 package (not to be confused with site familiess) associated with the compnay
 who owns the job. Creating a site package is straight forward.
 
-
 From the Django Shell
 '''''''''''''''''''''
 
@@ -235,8 +234,45 @@ Use Cases
 Here, we describe the purpose of and setup requirements of each of the eight
 postajob use cases.
 
-Use Case 2: External party buying a job
----------------------------------------
+Use Case 1: External party buying a job
+----------------------------------------
+.. note:: 
+  There are often times wheree the choice of company is ambiguous. This
+  is a known limitation of the current system which we hope to correct after
+  site families are implemented.
+
+A small business owner (SBO) finds Paul's website. They decide to post a job,
+so they create an account. This account is with paul's site, powered by
+My.jobs. After creating an account, the SBO goes to the product listing and
+purchases a product, 5 posting for 30 days, for $100. Paul receives an invoice
+email that he can forward to the SBO. After purchasing the product, the SBO
+goes to the purchased products page and posts a job. The job appears on the
+site after approval.
+
+Requirements:
+
+  - The company who owns the product being purchased should have a functional
+    :ref:`use case 2 <use-case-2>`.
+
+Views
+'''''
+
+======================================== =========================== ======================
+URL Path                                 View Name                   Required Activities
+======================================== =========================== ======================
+/posting/list/                           product_listing             N/A
+/posting/product/purchase/add/           PurchasedProductFormView    N/A
+/posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
+/posting/purchased-jobs/product/         purchasedjobs_overview      read purchased job 
+/posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
+/postign/job/purchase/add/               PurchasedJobFormView        create purchased job
+/posting/job/purchase/update/            PurchasedJobFormView        update purchased job
+======================================== =========================== ======================
+
+.. _use-case-2:
+
+Use Case 2: Site owner posting to their own site
+-------------------------------------------------
 
 Rebecca has a job that can't be indexed, as it is on an internal ATS that can't
 be reached by DE's agents. She logs into post-a-job and posts the site to her

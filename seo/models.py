@@ -647,16 +647,12 @@ class Company(models.Model):
         return self.app_access.exists()
 
     @property
-    def company_user_count(self):
-        """
-        Counts how many users are mapped to this company. This is useful for
-        determining which user to map a company to when two company instances
-        have very similar names.
+    def admins(self):
+        """Returns all users associated with this company's "Admin" role."""
 
-        """
-        return self.role_set.values('user').distinct().count()
+        admin_role = self.role_set.get(name='Admin')
+        return User.objects.filter(roles=admin_role).distinct()
 
-    admins = models.ManyToManyField(User, through='CompanyUser')
     name = models.CharField('Name', max_length=200)
     company_slug = models.SlugField('Company Slug', max_length=200, null=True,
                                     blank=True)
@@ -671,11 +667,11 @@ class Company(models.Model):
     og_img = models.URLField('Open Graph Image URL', max_length=200, null=True,
                              blank=True, help_text="The url for the large "
                              "format logo for use when sharing jobs on "
-                             "LinkedIn, and other social platforms that support"
-                             " OpenGraph.")
+                             "LinkedIn, and other social platforms that "
+                             "support OpenGraph.")
     canonical_microsite = models.URLField('Canonical Microsite URL',
-                                          max_length=200, null=True, blank=True,
-                                          help_text="The primary "
+                                          max_length=200, null=True,
+                                          blank=True, help_text="The primary "
                                           "directemployers microsite for this "
                                           "company.")
     member = models.BooleanField('DirectEmployers Association Member',

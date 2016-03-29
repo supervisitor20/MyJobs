@@ -29,8 +29,8 @@ def company_has_access(perm_field):
                 next_url = build_url(reverse('login'), params)
                 return HttpResponseRedirect(next_url)
 
-            # If the user is logged in, but they aren't a CompanyUser or they
-            # are a CompanyUser, but their current Company doesn't have
+            # If the user is logged in, but they aren't an admin or they
+            # are an admin , but their current Company doesn't have
             # perm_field access, return a 404.
             company = get_company(request)
 
