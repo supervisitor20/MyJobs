@@ -10,29 +10,31 @@ export function Tag(props) {
   const {display, hexColor, removeTag, onClick, highlight} = props;
 
   let backgroundColor;
+  let borderColor;
   if (highlight) {
     backgroundColor = tinycolor(hexColor)
       .saturate(30).darken(25).toHexString();
+    borderColor = tinycolor(hexColor)
+      .saturate(30).darken(35).toHexString();
   } else {
     backgroundColor = '#' + hexColor;
   }
 
   return (
-    <div
+    <span
       className={
         classNames(
-          'tag-name',
+          'tag-select-tag',
           {'faded': highlight},
           {'removable': removeTag})}
-      style={{backgroundColor}}
+      style={{backgroundColor, borderColor}}
       onClick={() => onClick()}>
         {display}
         {removeTag ?
           <i
-            className="fa fa-times close"
             onClick={() => removeTag()}/>
           : ''}
-    </div>
+    </span>
   );
 }
 
@@ -57,7 +59,7 @@ Tag.propTypes = {
   /**
    * Callback: user clicked the tag
    */
-  onClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
 
   /**
    * Is this tag currently highlighted?

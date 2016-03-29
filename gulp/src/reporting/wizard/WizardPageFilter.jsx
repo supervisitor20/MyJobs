@@ -9,6 +9,8 @@ import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
+import TextField from 'common/ui/TextField';
+import {Tag} from 'common/ui/tags/Tag';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -77,6 +79,52 @@ export class WizardPageFilter extends Component {
     this.setState({
       filter: reportConfig.getFilter(),
     });
+  }
+
+  removeTag(tag) {
+    console.log('remove tag: ', tag);
+  }
+
+  tagSelect() {
+    return (
+      <div className="tag-select-outer">
+        <div className="tag-select-first-input">
+          <label>Include any of these tags</label>
+          <div className="tag-select-input-element">
+            <TextField
+              name="name"
+              onChange={e => this.addToMultifilter('newEntryJS', e)}
+              placeholder="Type to filter tags, or click and select tags"
+            />
+            <div className="tag-select-menu">
+              <Tag
+              key="1"
+              display="Farmers Only"
+              hexColor="ff3343"
+              removeTag={(i) => this.removeTag(i)}
+              onClick={}
+              highlight />
+            </div>
+          </div>
+        </div>
+        <div className="tag-select-subsequent-input">
+          <label><strong>and</strong> any of these tags</label>
+            <div className="tag-select-input-element">
+              <TextField
+                name="name"
+                onChange={e => this.addToMultifilter('newEntryJS', e)}
+                placeholder="(optional)"
+              />
+              <div className="tag-select-menu">
+                <span className="tag-select-tag">Widgets Inc.<i></i></span>
+                <span className="tag-select-tag">NAFTASDE<i></i></span>
+                <span className="tag-select-tag">NASA Immigration<i></i></span>
+                <span className="tag-select-tag">Farmers Only<i></i></span>
+              </div>
+            </div>
+        </div>
+      </div>
+    );
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
@@ -178,9 +226,8 @@ export class WizardPageFilter extends Component {
     return (
       <form>
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
-        <hr/>
+        {this.renderRow('Tag Select', 'tagSelect', this.tagSelect())}
         {rows}
-        <hr/>
         {this.renderRow('', 'submit',
           <button
             className="button"
