@@ -6,6 +6,7 @@ module.exports = {
     reporting: './src/reporting/main',
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
+    myprofile: './src/myprofile/main',
   },
   resolve: {
     root: path.resolve('src'),

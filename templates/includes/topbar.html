@@ -2,10 +2,15 @@
 {% load common_tags %}
 {% load staticfiles %}
 {% load compress %}
+
 {% if request.GET.callback %}
-<link href="{{ STATIC_URL }}topbar.directseo.165-10.css" rel="stylesheet" type="text/css">
+  {% compress css %}
+    <link href="{% static "topbar.directseo.css" %}" rel="stylesheet" type="text/css">
+  {% endcompress %}
 {% else %}
-<link href="{{ STATIC_URL }}topbar.myjobs.165-10.css" rel="stylesheet" type="text/css">
+  {% compress css %}
+    <link href="{% static "topbar.myjobs.css" %}" rel="stylesheet" type="text/css">
+  {% endcompress %}
 {% endif %}
 
 <div class="topbar{{ topbar_class }}" data-dropdown="dropdown" role="menubar">
@@ -30,141 +35,47 @@
             </div>
             {% endif %}
 
+            {% get_menus as menus %}
             <div class="menu-container" role="menu">
                 {% if user.is_authenticated and request.session.keys|length %}
                 <ul class="mobile_hide">
-                    <li class="has-drop">
-                        <a id="menu-inbox">{{ new_messages.count }}<div class="icon-envelope icon-white"></div></a>
-                        <ul class="submenu">
-                            <li id="menu-inbox-all"><a href="{{ ABSOLUTE_URL }}message/inbox">Inbox (See All)</a></li>
-                            {% for message in new_messages %}
-                                {% if forloop.counter <= 3 %}
-                                    <li><a href="{{ ABSOLUTE_URL }}message/inbox?message={{ message.message.pk }}">{{ message.message.start_on.date }} - {{ message.message.subject|truncatewords:'10' }}</a></li>
-                                {% endif %}
-                            {% empty %}
-                                <li><p>No new unread messages</p></li>
-                            {% endfor %}
+                  {% for menu in menus %}
+                    <li {% if menu.submenus %}class="has-drop"{% endif %}>
+                      <a id="{{ menu.id }}">{% firstof menu.iconLabel menu.label %}{% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}</a>
+                      <ul class="submenu" id="{{ menu.submenuId }}">
+                        {% for submenu in menu.submenus %}
+                          <li id="{{ submenu.id }}">
+                            <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                          </li>
+                        {% endfor %}
                         </ul>
                     </li>
+                  {% endfor %}
                     {% get_company_from_cookie as company %}
                     {% can user company "read partner" as can_read_partner %}
                     {% can user company "read role" as can_read_role %}
                     {% is_a_group_member company user "Employer" as group_member %}
                     {% get_company_name user as company_name %}
-                    {% if group_member %}
-                    <li class="{% active_tab 'employer-tools' %} has-drop">
-                        <a>{% trans "Employers" %}</a>
-                        <ul id="employer-apps" class="submenu">
-                            {% if can_read_partner %}
-                                <li><a id="partner-tab" href="{{ ABSOLUTE_URL }}prm/view">{% trans "PRM" %}</a></li>
-                            {% endif %}
-                            {% if can_read_partner %}
-                                <li><a id="reports-tab" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
-                            {% endif %}
-                            {% if company.product_access %}
-                                <li><a id="purchasedmicrosite-tab" href="{% url 'purchasedmicrosite_admin_overview' %}">{% trans "Partner Microsite" %}</a></li>
-                            {% endif %}
-                            {% if company.purchasedproduct_set.exists %}
-                                <li><a id="purchasedproducts-tab" href="{% url 'purchasedproducts_overview' %}">{% trans "Purchased Jobs" %}</a></li>
-                            {% endif %}
-                            {% if company.posting_access %}
-                                <li><a id="posted-jobs-tab" href="{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
-                            {% endif %}
-                            {% if can_read_role %}
-                              <li><a id="posted-jobs-tab" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    {% endif %}
-                    <li class="has-drop">
-                        <a onclick="return false;">{{ user.email }}</a>
-                        <ul class="submenu">
-                            <li><a href="{{ ABSOLUTE_URL }}profile/view/">{% trans "My Profile" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}saved-search/view/">{% trans "My Saved Searches" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                            <li><a href="{% get_ms_url %}">{% trans "Search Jobs" %}</a></li>
-                            <li><a href="{{ ABSOLUTE_URL }}accounts/logout">Log Out</a></li>
-                        </ul>
-                    </li>
                 </ul>
 
-                <a id="topbar-back" class="desktop_hide" href="#" onclick="javascript:window.history.back(-1);return false;"><span id="prm-arrow-left"></span></a>
                 <div id="" class="menu-bar desktop_hide" style="text-align: right;">
-                    <ul id="nav">
-                        <li>
-                            <a class="main-nav"></a>
-                            <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
-                                <li id="logged-in-li">
-                                    {% trans "Logged in as " %}
-                                    <b>
-
-                                        {% with short_email=user.email|truncatechars:"20" %}
-
-                                        {% with name_obj=user.get_full_name %}
-
-                                        {% if not name_obj %}
-
-                                        {{ short_email }}
-
-                                        {% else %}
-
-                                        {{ name_obj }}
-
-                                        {% endif %}
-
-                                        {% endwith %}
-
-                                        {% endwith %}
-
-                                    </b>
-                                </li>
-                                <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
-
-                                {% if not user.is_disabled %}
-                                    <li><a id="profile-link" class="no-show seeker-menu" href="{{ ABSOLUTE_URL }}profile/view/">{% trans "My Profile" %}</a></li>
-
-                                    {% if user.is_active %}
-
-                                        <li><a id="savedsearch-link" class="no-show seeker-menu" href="{{ ABSOLUTE_URL }}saved-search/view/">{% trans "My Saved Searches" %}</a></li>
-
-                                        {% if can_read_partner %}
-
-                                            <li><a id="employer-tools" class="no-show desktop_hide" style="cursor: pointer;">{% trans "Employer" %}</a></li>
-
-
-                                            <li><a id="partner-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}prm/view?company={{ company.id }}">{% trans "PRM" %}</a></li>
-
-                                        {% endif %}
-                                        {% if can_read_partner %}
-                                            <li><a id="reports-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}reports/view/overview">{% trans "Reports" %}</a></li>
-                                        {% endif %}
-                                        {% if company.product_access %}
-                                            <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'purchasedmicrosite_admin_overview' %}">{% trans "Partner Microsite" %}</a></li>
-                                        {% endif %}
-                                        {% if company.has_purchased_products %}
-                                            <li><a id="purchasedproducts-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL}}{% url 'purchasedproducts_overview' %}">{% trans "Purchased Jobs" %}</a></li>
-                                        {% endif %}
-                                        {% if company.posting_access %}
-                                            <li><a id="purchased-microsite-link" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}{% url 'jobs_overview' %}">{% trans "Posted Jobs" %}</a></li>
-                                        {% endif %}
-                                        {% if can_read_role %}
-                                          <li><a id="posted-jobs-tab" class="no-show sub-nav-item employer-menu" href="{{ ABSOLUTE_URL }}manage-users">{% trans "Manage Users" %}</a></li>
-                                        {% endif %}
-                                    {% endif %}
-                                    <li><a id="account-link" href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                                    <li><a id="menu-inbox-link" href="{{ ABSOLUTE_URL }}message/inbox">{% trans "Messages" %} ({{ new_messages.count }})</a></li>
-                                    <li><a id="search-jobs" href="{% get_ms_url %}">{% trans "Search Jobs" %}</a></li>
-                                    <li><a id="settings-link" style="cursor: pointer;">{% trans "Settings" %}</a></li>
-
-                                {% endif %}
-
-                                <li><a id="logout-link" href="https://secure.my.jobs/accounts/logout/">Log Out</a></li>
-
-                                <li><a class="settings-nav-item sub-nav-item no-show" href="{{ ABSOLUTE_URL }}account/edit">{% trans "Account Settings" %}</a></li>
-                                <li><a class="settings-nav-item sub-nav-item no-show" href="{{ ABSOLUTE_URL }}accounts/logout">Log Out</a></li>
-                            </ul>{# /pop-menu #}
-                        </li>
-                    </ul>{# /nav #}
+                  <ul id="nav">
+                    <li>
+                      <a class="main-nav"></a>
+                      <ul class="{% firstof pop_menu_class "span4" %}" id="pop-menu">
+                        <li id="back-btn-li" class="no-show"><a id="back-btn"><span class="arrow-left"></span></a></li>
+                          <ul class="no-show" id="company-name-menu"></ul>
+                          {% for menu in menus %}
+                          <li class="nav-item"><a id="{{ menu.id }}-mobile">{{ menu.label }}</a></li>
+                            {% for submenu in menu.submenus %}
+                            <li class="no-show sub-nav-item">
+                              <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                            </li>
+                            {% endfor %}
+                          {% endfor %}
+                      </ul>{# /pop-menu #}
+                    </li>
+                  </ul>{# /nav #}
                 </div>{# /menu-bar pagination-right pull-right #}
                 {% else %}
                     {# MOBILE VIEW #}
@@ -172,7 +83,6 @@
                         <li><a href="http://www.my.jobs/employers/">{% trans "Employers / Post Jobs" %}</a></li>
                         <li><a href="{{ ABSOLUTE_URL }}">{% trans 'Create Account / Log In' %}</a></li>
                     </ul>
-                    <a id="topbar-back" class="desktop_hide" href="#" onclick="javascript:window.history.back(-1);return false;"><span id="prm-arrow-left"></span></a>
                     <div id="" class="menu-bar desktop_hide" style="text-align: right;">
                         <ul id="nav">
                             <li>
