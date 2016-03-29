@@ -7,7 +7,6 @@ import urllib2
 from urlparse import urlparse, urljoin
 import uuid
 
-from myreports.decorators import restrict_to_staff
 from django.conf import settings
 from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import user_passes_test
@@ -24,6 +23,7 @@ from django.views.generic import TemplateView
 from captcha.fields import ReCaptchaField
 
 from universal.helpers import get_domain
+from universal.decorators import restrict_to_staff
 from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
                           CompanyAccessRequestForm)
