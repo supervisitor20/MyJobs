@@ -108,12 +108,12 @@ def secure_blocks(request):
                     request.GET))
         raise SuspiciousOperation(message)
 
-    response = {'cookies':[]}
+    response = {'cookies':[], 'errors': {}}
 
     for element_id in blocks:
         block = Block.objects.filter(element_id=element_id).first()
         if block is None:
-            logger.warn("Failed block lookup: %s", element_id)
+            response['errors'][element_id] = "Failed block lookup"
         else:
             try:
                 block = block.cast()
@@ -122,6 +122,7 @@ def secure_blocks(request):
                 response['cookies'].extend(
                     block.get_cookies(request, **blocks[element_id]))
             except Exception as ex:
-                logger.warn("Error loading widget: %s" % ex.message)
+                error_message = ex.message if settings.DEBUG else "Error in block"
+                response['errors'][element_id] = error_message
 
     return response
