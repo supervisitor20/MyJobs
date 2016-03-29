@@ -26,6 +26,7 @@ from mysearches.models import SavedSearch
 from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
+from seo.models import BusinessUnit
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 
 logger = logging.getLogger(__name__)
