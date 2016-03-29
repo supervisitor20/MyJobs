@@ -56,7 +56,10 @@ class PostajobTestBase(DirectSEOBase):
                 "create grouping", "read grouping", "update grouping",
                 "delete grouping", "create purchased product",
                 "read purchased product", "create purchased job",
-                "read purchased job", "update purchased job"
+                "read purchased job", "update purchased job",
+                "read request", "update request", "create offline purchase",
+                "read offline purchase", "update offline purchase",
+                "delete offline purchase",
             ]
         ]
         self.admin_role = RoleFactory(
@@ -502,13 +505,6 @@ class ViewTests(PostajobTestBase):
 
         product = Product.objects.get()
         self.assertEqual(product.name, self.product_form_data['name'])
-
-    def test_product_delete(self):
-        self.product_form_data['name'] = 'New Title'
-        kwargs = {'pk': self.product.pk}
-
-        response = self.client.post(reverse('product_delete', kwargs=kwargs))
-        self.assertEqual(response.status_code, 404)
 
     def test_product_update_job_limit(self):
         self.product_form_data['name'] = 'New Title'

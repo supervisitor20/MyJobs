@@ -7,7 +7,9 @@
         {% if 'create job' in activities %}
         <li id="our-postings" class="{% if request.resolver_match.url_name == 'jobs_overview' %}active{% endif %}"><a href="{% url 'jobs_overview' %}">Posted Jobs</a></li>
         {% endif %}
-        <li id="purchased-products" class="{% if request.resolver_match.url_name == 'purchasedproducts_overview' %}active{% endif %}"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
+        {% if 'read purchased product' in activities %}
+          <li id="purchased-products" class="{% if request.resolver_match.url_name == 'purchasedproducts_overview' %}active{% endif %}"><a href="{% url 'purchasedproducts_overview' %}">Purchased Jobs</a></li>
+        {% endif %}
         {% if 'read product' in activities %}
         <li id="posting-admin" class="{% if request.resolver_match.url_name == 'purchasedmicrosite_admin_overview' %}active{% endif %}"><a href="{% url 'purchasedmicrosite_admin_overview' %}">Partner Microsite</a></li>
         {% endif %}
