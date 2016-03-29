@@ -11,7 +11,7 @@ from django.views.decorators.csrf import (
 
 from myjobs.autoserialize import autoserialize
 from myjobs.cross_site_verify import cross_site_verify
-from myreports.decorators import restrict_to_staff
+from universal.decorators import restrict_to_staff
 from myblocks.models import Page, Block
 
 logger = logging.getLogger(__name__)
