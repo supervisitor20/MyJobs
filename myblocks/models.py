@@ -520,7 +520,6 @@ class SavedSearchWidgetBlock(SecureBlock):
         context = super(SavedSearchWidgetBlock, self).context(request, **kwargs)
         saved_search_url = request.META.get('HTTP_REFERER', None)
         search = None
-        raise ValueError("Bollocks is bollocks")
         user = request.user if request.user.is_authenticated() else None
 
         if user and saved_search_url:
