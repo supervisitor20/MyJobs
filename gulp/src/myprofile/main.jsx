@@ -101,11 +101,20 @@ class Module extends React.Component {
       this.setState({
         apiResponse: apiResponse,
       });
+      this.updateFormContents(apiReponse);
     } else {
       window.location.assign('/profile/view/');
     }
   }
+  updateFormContents(apiResponse) {
+    const {formContents} = this.state;
+    apiResponse.ordered_fields.forEach( profileUnitName => {
+      const profileUnit = apiResponse.fields[profileUnitName];
+      formContents[profileUnitName] = profileUnit.initial;
+    });
+  }
   processForm(apiResponse) {
+    const {formContents} = this.state;
     if (apiResponse) {
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
@@ -163,12 +172,17 @@ class Module extends React.Component {
               />
           );
         case 'select':
-          const initial = find(profileUnit.choices, function findValueOfInitialItem(c) {return c.value === profileUnit.initial;});
+          const selected = formContents[profileUnitName];
+          const value = find(profileUnit.choices, c => c.value === selected);
+          let display = null;
+          if (value) {
+            display = value.display;
+          }
           return wrap(
             <Select
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
-              initial={initial}
+              value={display}
               choices={profileUnit.choices}
               />
           );
@@ -199,11 +213,8 @@ class Module extends React.Component {
     };
 
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
-
-    this.setState({
-      apiResponse: apiResponse,
-      formContents: formContents,
-    });
+    this.updateFormContents(apiResponse);
+    this.setState({apiResponse});
   }
   render() {
     const {formContents, apiResponse} = this.state;
