@@ -612,14 +612,13 @@ def filter_sqs(sqs, filters):
             else:
                 sqs = sqs.narrow("moc_exact:(%s)" % _clean(t))
         elif f == 'company_slug':
-            company = BusinessUnit.objects.filter(title_slug=filters[f])
-
+            company = Company.objects.filter(company_slug=filters[f])
             if not company:
-                logging.error("No BusinessUnit found for title_slug %s" %
+                logging.error("No company found for company_slug %s" %
                               filters[f])
                 sqs = sqs.narrow("company:(%s)" % filters[f])
             else:
-                sqs = sqs.narrow('buid:(%s)' % ' OR '.join([str(c.id) for c
+                sqs = sqs.narrow('company_exact:(%s)' % ' OR '.join([str(c.id) for c
                                                             in company]))
         else:
             t = filters[f]
