@@ -208,7 +208,13 @@ class RegistrationViewTests(MyJobsBase):
 
         self.client.login_user(self.user)
         response = self.client.get(reverse('invitation_activate', args=[key]))
-        self.assertTrue('Thanks for registering!' in response.content)
+
+        print response
+
+        self.assertIsNotNone(response.gravatar_url)
+
+
+
         invitation = Invitation.objects.get()
         invitation.send()
         self.assertTrue(invitation.accepted)
@@ -524,4 +530,3 @@ class DseoLoginTests(DirectSEOBase):
 
         user = User.objects.get(email=user_email)
         self.assertEqual(user.source, site.domain)
-
