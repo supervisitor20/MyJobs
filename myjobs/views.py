@@ -134,8 +134,9 @@ def home(request):
                 expire_login(request, user_cache)
                 # pass in gravatar url once user is logged in. Image generated
                 # on AJAX success
-                data = {'gravatar_url': new_user.get_gravatar_url(size=100)}
-                response = HttpResponse(json.dumps(data))
+                ctx = {}
+                ctx['success'] = True
+                response = HttpResponse(json.dumps(ctx))
                 response.set_cookie('myguid', new_user.user_guid,
                                     expires=365*24*60*60, domain='.my.jobs')
                 response.delete_cookie('loggedout')

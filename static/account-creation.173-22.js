@@ -89,7 +89,9 @@ $(document).on("click", "button#register", function(e) {
             */
             var json = jQuery.parseJSON(data);
             // Check to see if json.gravatar_url is present, in this case, success.
-            if (Boolean(json.gravatar_url)){
+            console.log(json);
+
+            if (json.success === true){
                 window.location.assign('/profile/view/');
             }else{
                 // Remove all required field changes, if any
@@ -185,10 +187,10 @@ $(document).on("click", "button.activation-login", function(e) {
                 // perform the visual transition to page 2
                 if (json.units == true){
                     window.location = profile_url
-                } else if (Boolean(json.gravatar_url)){
+                } else if (json.success === true){
                     window.location.assign('/profile/view/');
-                  }
                 }
+
             }
         }
     });
