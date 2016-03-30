@@ -14,7 +14,6 @@ $(document).ready(function() {
 function rotate_tagline(){
     /*
     Rotates the tagline target audience keyword.
-    
     Inputs: none
     Returns: none (DOM manipulation)
     */
@@ -49,10 +48,8 @@ function rotate_tagline(){
 function shuffle(list) {
     /*
     Fisher-Yates Shuffle
-
     Inputs:
     :list:      The source array
-
     Returns:
     :list:      A randomized array
      */
@@ -91,21 +88,9 @@ $(document).on("click", "button#register", function(e) {
             outputs a gravatar url, instead of 'valid' or 'success'.
             */
             var json = jQuery.parseJSON(data);
-            $("#header .row").append(json.html);
             // Check to see if json.gravatar_url is present, in this case, success.
             if (Boolean(json.gravatar_url)){
-                var gravatar_url = json.gravatar_url;
-                // perform the visual transition to page 2
-                $("#id_name-primary").hide()
-                $("label[for=id_name-primary]").hide()
-                $("#titleRow").hide( 'slide',{direction: 'left'},250 );
-                $("#topbar-login").fadeOut(250);
-                setTimeout(function(){
-                    $("#account-page-2").show('slide',{direction: 'right'},250);
-                }, 250);
-                $("#gravatar").append(gravatar_url);
-                clearForm("form#registration-form");
-                $(".newUserEmail").html(user_email);
+                window.location.assign('/profile/view/');
             }else{
                 // Remove all required field changes, if any
                 removeRequiredChanges();
@@ -200,21 +185,9 @@ $(document).on("click", "button.activation-login", function(e) {
                 // perform the visual transition to page 2
                 if (json.units == true){
                     window.location = profile_url
-                }else{
-                    if (Boolean(json.gravatar_url)){
-                        $("#gravatar").append(json.gravatar_url);
-                    }
-                    $("#page-1").hide()
-                    $("label[for=id_name-primary]").hide()
-                    $("#titleRow").hide( 'slide',{direction: 'left'},250 );
-                    $("#topbar-login").fadeOut(250);
-                    setTimeout(function(){
-                        $("#account-page-2").show('slide',{direction: 'right'},250);
-                    }, 250);
-                    clearForm("form#registration-form");
-                    $(".newUserEmail").html(user_email);
-                    $(".pendingText").html('Account Activated');
-                    $("#send-act-text").html('');
+                } else if (Boolean(json.gravatar_url)){
+                    window.location.assign('/profile/view/');
+                  }
                 }
             }
         }
@@ -222,15 +195,15 @@ $(document).on("click", "button.activation-login", function(e) {
 
 });
 
-$(document).on("click", "button#save", function(e) {            
+$(document).on("click", "button#save", function(e) {
     e.preventDefault();
     csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     setPrimaryName();
     var form = $('form#profile-form');
-    // replace on and off with True and False to allow Django to validate 
+    // replace on and off with True and False to allow Django to validate
     // boolean fields
     var json_data = form.serialize().replace('=on','=True')
-        .replace('=off','=False')+'&action=save_profile&csrfmiddlewaretoken='+csrf_token;        
+        .replace('=off','=False')+'&action=save_profile&csrfmiddlewaretoken='+csrf_token;
     $.ajax({
         type: "POST",
         url: current_url,
@@ -253,7 +226,7 @@ $(document).on("click", "button#save", function(e) {
 $(document).on("change", "#newAccountData", function() {
     // Calculates the profile completion level every time a field on
     // the new account profile form is changed.
-     
+
     profile_completion = 0;
     if($("#id_name-given_name").val() != "" && $("#id_name-family_name").val() != "") {
         profile_completion += 1;
@@ -275,9 +248,9 @@ $(document).on("change", "#newAccountData", function() {
        $("#id_work-start_date").val() != "") {
         profile_completion += 1;
     }
-    
+
     profile_completion = Math.round((profile_completion/num_modules)*100);
-    
+
     bar = "bar ";
     if(profile_completion <= 20) {
         bar += "bar-danger";
@@ -291,10 +264,10 @@ $(document).on("change", "#newAccountData", function() {
     else {
         bar += "bar-success";
     }
-    
+
     $("#initial-bar").removeClass();
     $("#initial-bar").addClass(bar);
-    
+
     $("#initial-bar").css("width", profile_completion + "%");
     $(".initial-highlight").text(profile_completion + "% complete");
 });
@@ -315,8 +288,8 @@ function setPrimaryName(){
     /**
     Detects if a value hasbeen entered in either name form and sets the hidden
     checkmark field for priamry to true (since this is the users only name
-    at this point. This prevents false validation errors when the form is empty.    
-    **/    
+    at this point. This prevents false validation errors when the form is empty.
+    **/
     first_name = $("#id_name-given_name").val();
     last_name = $("#id_name-family_name").val();
     if(first_name!=""||last_name!=""){
@@ -343,11 +316,9 @@ function jsonErrors(index, errors){
     what went wrong with their form. Shows error messages in placeholders for
     browsers with the exception of IE. IE messages are displayed above the field
     that has the error.
-
     This function in most cases will be ran in conjunction with a for loop.
-
     :index:     Is an integer, comes from the iterated value from a for loop.
-    :errors:    Parsed json that has the label "errors". Errors is a 
+    :errors:    Parsed json that has the label "errors". Errors is a
                 'multidimensional array' {errors:[key][value]}
     */
 

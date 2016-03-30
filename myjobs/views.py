@@ -75,7 +75,6 @@ def home(request):
     error occurs, this triggers the jQuery to update the page. The form
     instances with errors must be passed back to the form template it was
     originally from.
-
     """
     registration_form = RegistrationForm(auto_id=False)
     login_form = CustomAuthForm(auto_id=False)
@@ -135,10 +134,7 @@ def home(request):
                 expire_login(request, user_cache)
                 # pass in gravatar url once user is logged in. Image generated
                 # on AJAX success
-                html = render_to_response('includes/account-page-2.html',
-                                          data_dict, RequestContext(request))
-                data = {'gravatar_url': new_user.get_gravatar_url(size=100),
-                        'html': html.content}
+                data = {'gravatar_url': new_user.get_gravatar_url(size=100)}
                 response = HttpResponse(json.dumps(data))
                 response.set_cookie('myguid', new_user.user_guid,
                                     expires=365*24*60*60, domain='.my.jobs')
@@ -232,7 +228,6 @@ def home(request):
 def contact_faq(request):
     """
     Grabs FAQ and orders them by alphabetical order on question.
-
     """
     faq = FAQ.objects.filter(is_visible=True).order_by('question')
     if faq.count() <= 0:
@@ -275,7 +270,6 @@ def contact(request):
                    Name: %s
                    Is a(n): %s
                    Email: %s
-
                    %s
                    """ % (name, contact_type, from_email, comment)
 
@@ -399,13 +393,10 @@ def disable_account(request):
 def batch_message_digest(request):
     """
     Used by SendGrid to POST batch events.
-
     Accepts a POST request containing a batch of events from SendGrid. A batch
     of events is a series of JSON strings separated by new lines (Version 1 and
     2) or as well formed JSON (Version 3)
-
     Creates a celery task that adds these events to the EmailLog.
-
     """
     if 'HTTP_AUTHORIZATION' in request.META:
         method, details = request.META['HTTP_AUTHORIZATION'].split()
@@ -441,10 +432,8 @@ def continue_sending_mail(request, user=None):
 def check_name_obj(user):
     """
     Utility function to process and return the user name object.
-
     Inputs:
     :user:  request.user object
-
     Returns:
     :initial_dict: Dictionary object with updated name information
     """
@@ -794,12 +783,10 @@ def api_create_role(request):
     """
     POST /manage-users/api/roles/create
     Creates a new role
-
     Inputs:
     :role_name:                 name of role
     :assigned_activities:       activities assigned to this role
     :assigned_users:            users assigned to this role
-
     Returns:
     :success:                   boolean
     """
@@ -861,13 +848,11 @@ def api_edit_role(request, role_id=0):
     """
     POST /manage-users/api/roles/edit
     Edits an existing role
-
     Inputs:
     :role_id:                   unique id of role
     :role_name:                 name of role
     :assigned_activites:        PKs of activities assigned to this role
     :assigned_users:            users assigned to this role
-
     Returns:
     :success:                   boolean
     """
@@ -958,10 +943,8 @@ def api_delete_role(request, role_id=0):
     """
     POST /manage-users/api/roles/delete/NUMBER
     Deletes a role
-
     Inputs:
     :role_id:                   id of role
-
     Returns:
     :success:                   boolean
     """
@@ -1126,11 +1109,9 @@ def api_create_user(request):
     """
     POST /manage-users/api/user/create
     Creates a new user
-
     Inputs:
     :user_email:                user email
     :assigned_roles:            roles assigned to this user
-
     Returns:
     :success:                   boolean
     """
@@ -1182,11 +1163,9 @@ def api_edit_user(request, user_id=0):
     """
     POST /manage-users/api/users/edit
     Edits an existing user
-
     Inputs:
     :user_id:                   unique id of user
     :assigned_roles:            roles assigned to this role
-
     Returns:
     :success:                   boolean
     """
@@ -1292,10 +1271,8 @@ def api_delete_user(request, user_id=0):
     """
     DELETE /manage-users/api/users/delete/NUMBER
     Removes user from roles managed by current company
-
     Inputs:
     :user_id:                   id of user
-
     Returns:
     :success:                   boolean
     """
@@ -1329,7 +1306,6 @@ def api_delete_user(request, user_id=0):
 def request_company_access(request):
     """
     User-Facing view for a user to request access to a company.
-
     Methods:
         :GET: Shows the request form, which only requires that a company name
               be entered. That company need not map to an actual company.
