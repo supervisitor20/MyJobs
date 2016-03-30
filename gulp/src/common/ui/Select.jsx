@@ -89,9 +89,11 @@ class Select extends React.Component {
     const {choices, name} = this.props;
     const {keySelectedIndex, selectDropped, currentValue} = this.state;
 
+    let selectAction;
     let dropdown;
     let dropdownItems = [];
     if (selectDropped) {
+      selectAction = this.closeSelectMenu;
       dropdownItems = choices.map((item, index)=> {
         let active = '';
         if (index === keySelectedIndex) {
@@ -116,12 +118,13 @@ class Select extends React.Component {
       </div>
       );
     } else {
+      selectAction = this.openSelectMenu;
       dropdown = '';
     }
     return (
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input">
-          <div className="select-element-chosen-container" onClick={this.openSelectMenu}>
+          <div className="select-element-chosen-container" onClick={selectAction}>
             <span className="select-element-chosen">{currentValue}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
