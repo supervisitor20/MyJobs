@@ -1155,7 +1155,8 @@ def home_page(request):
         'featured': str(bool(featured)).lower(),
         'filters': {},
         'view_source': settings.VIEW_SOURCE}
-    data_dict.update(get_analytics_info())
+
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response(home_page_template, data_dict,
                               context_instance=RequestContext(request))
 
@@ -1798,7 +1799,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
     }
-    data_dict.update(get_analytics_info())
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 

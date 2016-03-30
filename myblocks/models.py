@@ -614,13 +614,17 @@ class SearchResultBlock(Block):
             'site_config': context_tools.get_site_config(request),
             'site_tags': settings.SITE_TAGS,
             'title_term': context_tools.get_title_term(request),
-            'site_business_units': json.dumps([bu.title for bu in
+            'analytics_info': {
+                'site_business_units': json.dumps([bu.title for bu in
                                                     site_buid_objects]),
-            'default_facet_names': json.dumps([df.name for df in
+                'default_facet_names': json.dumps([df.name for df in
                                                     settings.DEFAULT_FACET]),
-            'featured_facet_names': json.dumps([ff.name for ff in
+                'featured_facet_names': json.dumps([ff.name for ff in
                                                     settings.FEATURED_FACET])
+            }
         }
+
+
 
     def render_for_ajax(self, request, **kwargs):
         """

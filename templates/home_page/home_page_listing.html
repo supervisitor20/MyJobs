@@ -76,11 +76,7 @@
 {% endblock directseo_micrositecarousel %}  
 {% block extra-js %}
 <script type="text/javascript">
-    var analytics_info = {
-        site_business_units: {{ site_business_units|safe }},
-        default_facets: {{ default_facet_names|safe }},
-        featured_facets: {{ featured_facet_names|safe }},
-    }
+    var analytics_info = {{ analytics_info|safe }};
 </script>
 {% endblock extra-js %}
 
