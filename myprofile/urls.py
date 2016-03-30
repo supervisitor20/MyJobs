@@ -8,4 +8,7 @@ urlpatterns = patterns('myprofile.views',
     url(r'^view/delete$', 'delete_item', name='delete_item'),
     url(r'^view/edit$', 'handle_form', name='handle_form'),
     url(r'^view/details$', 'get_details', name='get_details'),
+    url(r'^view/module$', 'edit_summary', name='edit_summary'),
+    url(r'^view/module/$', 'edit_summary', name='edit_summary'),
+    url(r'^api$', 'handle_form', name='handle_form'),
 )

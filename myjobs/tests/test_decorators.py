@@ -7,7 +7,7 @@ from django.http import HttpResponse, Http404
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
-from myjobs.decorators import requires, MissingAppAccess, MissingActivity
+from myjobs.decorators import requires, MissingActivity
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
@@ -52,10 +52,13 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.company.app_access.clear()
-        response = requires(self.activity.name)(dummy_view)(self.request)
+        with self.assertRaises(Http404) as cm:
+            response = requires(self.activity.name)(dummy_view)(self.request)
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(type(response), MissingAppAccess)
+        self.assertEqual(
+            cm.exception.message,
+            "%s doesn't have sufficient app-level access." % self.company.name)
+
 
     def test_access_callback(self):
         """

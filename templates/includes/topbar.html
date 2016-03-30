@@ -51,9 +51,6 @@
                         </ul>
                     </li>
                   {% endfor %}
-                    {% get_company_from_cookie as company %}
-                    {% can user company "read partner" as can_read_partner %}
-                    {% can user company "read role" as can_read_role %}
                     {% is_a_group_member company user "Employer" as group_member %}
                     {% get_company_name user as company_name %}
                 </ul>
