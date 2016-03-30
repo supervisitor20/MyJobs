@@ -208,13 +208,7 @@ class RegistrationViewTests(MyJobsBase):
 
         self.client.login_user(self.user)
         response = self.client.get(reverse('invitation_activate', args=[key]))
-
-        print response
-
-        self.assertIsNotNone(response.gravatar_url)
-
-
-
+        self.assertTrue('Account Activated' in response.content)
         invitation = Invitation.objects.get()
         invitation.send()
         self.assertTrue(invitation.accepted)
