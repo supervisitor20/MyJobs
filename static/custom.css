@@ -3326,8 +3326,8 @@ height: 33px;
   top: 30px;
   left: 0;
   z-index: 1;
-  height: 300px;
-  overflow-y: scroll;
+  max-height: 230px;
+  overflow-y: auto;
 }
 .select-element-menu-container ul {
   list-style-type: none;

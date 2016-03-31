@@ -66,9 +66,26 @@ export class SelectElementController extends Component {
 }
 
 SelectElementController.propTypes = {
+  /**
+   * Function that gets the hints
+   */
   getHints: React.PropTypes.func.isRequired,
-  selectedOptions: React.PropTypes.array.isRequired,
+  /**
+   * Currently selected options
+   */
+  selectedOptions: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
+    })
+  ),
+  /**
+   * Function to add when selected
+   */
   onSelectAdd: React.PropTypes.func.isRequired,
+  /**
+   * Function to remove when deselected
+   */
   onSelectRemove: React.PropTypes.func.isRequired,
 };
 
