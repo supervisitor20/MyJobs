@@ -94,14 +94,12 @@ class Module extends React.Component {
   async handleSave() {
     const {formContents} = this.state;
     const myJobsApi = new MyJobsApi(getCsrf());
-
     const apiResponse = await myJobsApi.post('/profile/api', formContents);
 
     if (apiResponse.errors) {
       this.setState({
         apiResponse: apiResponse,
       });
-      this.updateFormContents(apiReponse);
     } else {
       window.location.assign('/profile/view/');
     }
@@ -213,8 +211,18 @@ class Module extends React.Component {
     };
 
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
-    this.updateFormContents(apiResponse);
-    this.setState({apiResponse});
+
+    // Update state
+    for (const item in apiResponse.data) {
+      if (apiResponse.data.hasOwnProperty(item)) {
+        formContents[item] = apiResponse.data[item];
+      }
+    }
+
+    this.setState({
+      apiResponse: apiResponse,
+      formContents: formContents,
+    });
   }
   render() {
     const {formContents, apiResponse} = this.state;
