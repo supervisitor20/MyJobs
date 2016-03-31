@@ -3354,12 +3354,32 @@ height: 33px;
   margin-top: 10px;
 }
 
+.tag-select-chosen-tags {
+  width: 100%;
+  border-radius: 3px;
+  border: 1px solid #999;
+  background-color: #fff;
+  height: 33px;
+  padding: 3px;
+  margin: 0;
+}
+
 .tag-select-input-element {
   position: relative;
 }
 
+.row .col-md-8 .tag-select-input-element input{
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  line-height: 33px;
+  padding: 0 5px;
+  margin: 0 0 5px;
+}
+
 .tag-select-menu {
   background-color: #fff;
+  /*display: none;*/
   display: block;
   font-size: 14px;
   color: #555;
@@ -3390,6 +3410,16 @@ height: 33px;
   margin: 0 5px 5px 0;
   position: relative;
   cursor: default;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* non-prefixed version, currently */
+  -moz-transition: all .2s ease-in;
+  -o-transition: all .2s ease-in;
+  -webkit-transition: all .2s ease-in;
+  transition: all .2s ease-in;
 }
 
 .tag-select-tag.removable {

@@ -2,7 +2,6 @@ import React, {PropTypes} from 'react';
 import classNames from 'classnames';
 import tinycolor from 'tinycolor2';
 
-
 /**
  * Show a single tag.
  */
@@ -18,6 +17,8 @@ export function Tag(props) {
       .saturate(30).darken(35).toHexString();
   } else {
     backgroundColor = '#' + hexColor;
+    borderColor = tinycolor(hexColor)
+      .darken(35).toHexString();
   }
 
   return (
@@ -28,11 +29,11 @@ export function Tag(props) {
           {'faded': highlight},
           {'removable': removeTag})}
       style={{backgroundColor, borderColor}}
-      onClick={() => onClick()}>
+      onClick={(e) => onClick(e)}>
         {display}
         {removeTag ?
           <i
-            onClick={() => removeTag()}/>
+            onClick={(e) => removeTag(e)}/>
           : ''}
     </span>
   );

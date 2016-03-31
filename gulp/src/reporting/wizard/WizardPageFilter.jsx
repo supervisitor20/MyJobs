@@ -10,7 +10,7 @@ import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
 import {SearchInput} from 'common/ui/SearchInput';
 import TextField from 'common/ui/TextField';
-import {Tag} from 'common/ui/tags/Tag';
+import NewTag from 'common/ui/tags/NewTag';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -18,6 +18,8 @@ export class WizardPageFilter extends Component {
     this.state = {
       reportName: 'Report Name',
       loading: true,
+      highlights: {},
+      chosenTags: [],
     };
   }
 
@@ -81,29 +83,82 @@ export class WizardPageFilter extends Component {
     });
   }
 
+  chooseTag(tagID) {
+    const {chosenTags} = this.state;
+    chosenTags.push({tag: tagID});
+    this.updateState();
+    console.log(chosenTags);
+  }
+
   removeTag(tag) {
     console.log('remove tag: ', tag);
   }
 
+    // const {chosenTags} = this.state;
+  activeTags() {
+    const {highlights} = this.state;
+    return (
+      <NewTag
+        key="0"
+        display="Farmers Only"
+        hexColor="33bb33"
+        onClick={() => this.chooseTag('fakeid01')}
+        onMouseOver={() => this.pulseHighlight('the tag')}
+        highlight={Boolean(highlights['the tag'])}/>
+    );
+  }
+
+  pulseHighlight(key) {
+    console.log('highlight');
+    {
+      const {highlights} = this.state;
+      highlights[key] = true;
+      this.setState({highlights});
+    }
+    setTimeout(() => {
+      const {highlights} = this.state;
+      delete highlights[key];
+      this.setState({highlights});
+    }, 200);
+  }
+
   tagSelect() {
+    const {highlights} = this.state;
+
     return (
       <div className="tag-select-outer">
         <div className="tag-select-first-input">
           <label>Include any of these tags</label>
           <div className="tag-select-input-element">
-            <TextField
-              name="name"
-              onChange={e => this.addToMultifilter('newEntryJS', e)}
-              placeholder="Type to filter tags, or click and select tags"
-            />
+            <div className="tag-select-chosen-tags">
+              {this.activeTags()}
+            </div>
             <div className="tag-select-menu">
-              <Tag
+              <TextField
+                name="name"
+                onChange={e => this.addToMultifilter('newEntryJS', e)}
+                placeholder="Type to filter tags, or click and select tags"/>
+              <NewTag
               key="1"
               display="Farmers Only"
-              hexColor="ff3343"
-              removeTag={(i) => this.removeTag(i)}
-              onClick={}
-              highlight />
+              hexColor="33bb33"
+              onClick={() => this.chooseTag('fakeid01')}
+              onMouseOver={() => this.pulseHighlight('the tag')}
+              highlight={Boolean(highlights['the tag'])}/>
+              <NewTag
+              key="2"
+              display="Horsin Around"
+              hexColor="ff842f"
+              onClick={() => this.chooseTag('fakeid02')}
+              onMouseOver={() => this.pulseHighlight('the tag')}
+              highlight={Boolean(highlights['other tag'])}/>
+              <NewTag
+              key="3"
+              display="Wilbur"
+              hexColor="33bb33"
+              onClick={() => this.chooseTag('fakeid03')}
+              onMouseOver={() => this.pulseHighlight('the tag')}
+              highlight={Boolean(highlights['the tag'])}/>
             </div>
           </div>
         </div>
@@ -112,14 +167,18 @@ export class WizardPageFilter extends Component {
             <div className="tag-select-input-element">
               <TextField
                 name="name"
-                onChange={e => this.addToMultifilter('newEntryJS', e)}
+                onChange={e => this.addToMultifilter('newEntryJS2', e)}
                 placeholder="(optional)"
               />
               <div className="tag-select-menu">
-                <span className="tag-select-tag">Widgets Inc.<i></i></span>
-                <span className="tag-select-tag">NAFTASDE<i></i></span>
-                <span className="tag-select-tag">NASA Immigration<i></i></span>
-                <span className="tag-select-tag">Farmers Only<i></i></span>
+                <NewTag
+                key="4"
+                display="Wilbur"
+                hexColor="33bb33"
+                removeTag={(i) => this.removeTag(i)}
+                onClick={() => this.chooseTag('fakeid04')}
+                onMouseOver={() => this.pulseHighlight('the tag')}
+                highlight={Boolean(highlights['the tag'])}/>
               </div>
             </div>
         </div>
