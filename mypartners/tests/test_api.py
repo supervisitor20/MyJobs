@@ -5,7 +5,7 @@ from django.conf import settings
 
 from mypartners.tests.test_views import MyPartnersTestCase
 from mypartners.tests.factories import OutreachEmailAddressFactory
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, ActivityFactory
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
@@ -16,8 +16,15 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def setUp(self):
         super(NonUserOutreachTestCase, self).setUp()
+        self.nuo_activities = [
+            ActivityFactory(name=activity, app_access=self.app_access)
+            for activity in [
+                "create outreach email address",
+                "read outreach email address",
+                "delete outreach email address"]]
         self.inbox = OutreachEmailAddressFactory(company=self.company)
         self.other_company_inbox = OutreachEmailAddressFactory()
+        self.role.activities.add(*self.nuo_activities)
 
     def test_inbox_list_api(self):
         """
