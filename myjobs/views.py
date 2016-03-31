@@ -132,8 +132,6 @@ def home(request):
                     username=registration_form.cleaned_data['email'],
                     password=registration_form.cleaned_data['password1'])
                 expire_login(request, user_cache)
-                # pass in gravatar url once user is logged in. Image generated
-                # on AJAX success
                 ctx = {}
                 ctx['success'] = True
                 response = HttpResponse(json.dumps(ctx))
