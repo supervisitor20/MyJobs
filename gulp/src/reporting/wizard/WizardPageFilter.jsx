@@ -94,97 +94,148 @@ export class WizardPageFilter extends Component {
     console.log('remove tag: ', tag);
   }
 
-    // const {chosenTags} = this.state;
   activeTags() {
     const {highlights} = this.state;
+    const {chosenTags} = this.state;
+
     return (
-      <NewTag
-        key="0"
-        display="Farmers Only"
-        hexColor="33bb33"
-        onClick={() => this.chooseTag('fakeid01')}
-        onMouseOver={() => this.pulseHighlight('the tag')}
-        highlight={Boolean(highlights['the tag'])}/>
+      chosenTags.map((item) =>
+        [<NewTag
+          key="0"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>,
+        <NewTag
+          key="5"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>,
+        <NewTag
+          key="6"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>,
+        <NewTag
+          key="7"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>,
+          <NewTag
+          key="20"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>,
+          <NewTag
+          key="21"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseEnter={() => this.turnOnHighlight('the tag')}
+          onMouseLeave={() => this.turnOffHighlight('the tag')}
+          removeTag={(i) => this.removeTag(i)}
+          highlight={Boolean(highlights['the tag'])}/>]
+      )
     );
+  }
+
+  turnOnHighlight(key) {
+    const {highlights} = this.state;
+    highlights[key] = true;
+    this.setState({highlights});
+  }
+
+  turnOffHighlight(key) {
+    const {highlights} = this.state;
+    delete highlights[key];
+    this.setState({highlights});
   }
 
   pulseHighlight(key) {
     console.log('highlight');
-    {
-      const {highlights} = this.state;
-      highlights[key] = true;
-      this.setState({highlights});
-    }
+    this.turnOnHighlight(key);
     setTimeout(() => {
-      const {highlights} = this.state;
-      delete highlights[key];
-      this.setState({highlights});
+      this.turnOffHighlight(key);
     }, 200);
   }
 
-  tagSelect() {
+  tagMenu() {
     const {highlights} = this.state;
 
+    return (
+      <div className="tag-select-menu">
+        <TextField
+          name="name"
+          onChange={e => this.addToMultifilter('newEntryJS', e)}
+          placeholder="Type to filter tags"/>
+        <NewTag
+          key="1"
+          display="Farmers Only"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid01')}
+          onMouseOver={() => this.pulseHighlight('the tag')}
+          highlight={Boolean(highlights['the tag'])}/>
+        <NewTag
+          key="2"
+          display="Horsin Around"
+          hexColor="ff842f"
+          onClick={() => this.chooseTag('fakeid02')}
+          onMouseOver={() => this.pulseHighlight('the tag')}
+          highlight={Boolean(highlights['other tag'])}/>
+        <NewTag
+          key="3"
+          display="Wilbur"
+          hexColor="33bb33"
+          onClick={() => this.chooseTag('fakeid03')}
+          onMouseOver={() => this.pulseHighlight('the tag')}
+          highlight={Boolean(highlights['the tag'])}/>
+      </div>
+    );
+  }
+
+// The tag component.
+  tagSelect() {
     return (
       <div className="tag-select-outer">
         <div className="tag-select-first-input">
           <label>Include any of these tags</label>
           <div className="tag-select-input-element">
-            <div className="tag-select-chosen-tags">
+            <div
+              className="tag-select-chosen-tags">
+              <span className="tag-select-placeholder">Select tags</span>
               {this.activeTags()}
             </div>
-            <div className="tag-select-menu">
-              <TextField
-                name="name"
-                onChange={e => this.addToMultifilter('newEntryJS', e)}
-                placeholder="Type to filter tags, or click and select tags"/>
-              <NewTag
-              key="1"
-              display="Farmers Only"
-              hexColor="33bb33"
-              onClick={() => this.chooseTag('fakeid01')}
-              onMouseOver={() => this.pulseHighlight('the tag')}
-              highlight={Boolean(highlights['the tag'])}/>
-              <NewTag
-              key="2"
-              display="Horsin Around"
-              hexColor="ff842f"
-              onClick={() => this.chooseTag('fakeid02')}
-              onMouseOver={() => this.pulseHighlight('the tag')}
-              highlight={Boolean(highlights['other tag'])}/>
-              <NewTag
-              key="3"
-              display="Wilbur"
-              hexColor="33bb33"
-              onClick={() => this.chooseTag('fakeid03')}
-              onMouseOver={() => this.pulseHighlight('the tag')}
-              highlight={Boolean(highlights['the tag'])}/>
+            <div className="tag-select-menu-container">
+              {this.tagMenu()}
             </div>
           </div>
-        </div>
-        <div className="tag-select-subsequent-input">
-          <label><strong>and</strong> any of these tags</label>
-            <div className="tag-select-input-element">
-              <TextField
-                name="name"
-                onChange={e => this.addToMultifilter('newEntryJS2', e)}
-                placeholder="(optional)"
-              />
-              <div className="tag-select-menu">
-                <NewTag
-                key="4"
-                display="Wilbur"
-                hexColor="33bb33"
-                removeTag={(i) => this.removeTag(i)}
-                onClick={() => this.chooseTag('fakeid04')}
-                onMouseOver={() => this.pulseHighlight('the tag')}
-                highlight={Boolean(highlights['the tag'])}/>
-              </div>
-            </div>
         </div>
       </div>
     );
   }
+  // SAMPLE FOR SUBSEQUENT INPUT DIFFRENCES
+        // <div className="tag-select-subsequent-input">
+        //   <label><strong>and</strong> any of these tags</label>
+        // </div>
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
     return (

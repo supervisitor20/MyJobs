@@ -3359,9 +3359,16 @@ height: 33px;
   border-radius: 3px;
   border: 1px solid #999;
   background-color: #fff;
-  height: 33px;
+  min-height: 33px;
   padding: 3px;
   margin: 0;
+}
+
+.tag-select-placeholder {
+  color: #adadad;
+  cursor: default;
+  line-height: 26px;
+  padding: 5px;
 }
 
 .tag-select-input-element {
@@ -3377,6 +3384,10 @@ height: 33px;
   margin: 0 0 5px;
 }
 
+.tag-select-menu-container {
+  position: relative;
+}
+
 .tag-select-menu {
   background-color: #fff;
   /*display: none;*/
@@ -3390,11 +3401,12 @@ height: 33px;
   width: 100%;
   line-height: 16px;
   position: absolute;
-  /* position the top at the height of the input, minus the border radius.  33-3=30 */
-  top: 30px;
+  top: -3px;
   left: 0;
   z-index: 1;
   padding: 6px 6px 0;
+  -webkit-box-shadow: 0 3px 3px 1px rgba(0,0,0,.1);
+  box-shadow: 0 3px 3px 1px rgba(0,0,0,.1);
 }
 
 .tag-select-tag {

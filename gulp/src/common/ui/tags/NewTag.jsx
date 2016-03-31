@@ -12,7 +12,7 @@ class NewTag extends React.Component {
   }
 
   render() {
-    const {display, hexColor, removeTag, onClick, onMouseOver, highlight} = this.props;
+    const {display, hexColor, removeTag, onClick, onMouseEnter, onMouseLeave, highlight} = this.props;
 
     let backgroundColor;
     let borderColor;
@@ -36,7 +36,8 @@ class NewTag extends React.Component {
             {'removable': removeTag})}
         style={{backgroundColor, borderColor}}
         onClick={(e) => onClick(e)}
-        onMouseOver={(e) => onMouseOver(e)}>
+        onMouseEnter={(e) => onMouseEnter(e)}
+        onMouseLeave={(e) => onMouseLeave(e)}>
           {display}
           {removeTag ?
             <i
@@ -71,9 +72,14 @@ NewTag.propTypes = {
   onClick: React.PropTypes.func,
 
   /**
-   * Callback: user hovered the tag
+   * Callback: mouse hovered over the tag
    */
-  onMouseOver: React.PropTypes.func,
+  onMouseEnter: React.PropTypes.func,
+
+  /**
+   * Callback: mouse left the tag
+   */
+  onMouseLeave: React.PropTypes.func,
 
   /**
    * Is this tag currently highlighted?
