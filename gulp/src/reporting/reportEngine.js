@@ -40,7 +40,7 @@ export class ReportFinder {
     if (reportDataId) {
       const filters = await this.api.getFilters(reportDataId);
       const name = await this.api.getDefaultReportName(reportDataId);
-      reportConfiguration = await this.configBuilder.build(
+      reportConfiguration = this.configBuilder.build(
         name.name, reportDataId, filters.filters,
         reportId => this.noteNewReport(reportId),
         onNameChanged,
@@ -321,7 +321,7 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  async build(name, reportDataId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
+  build(name, reportDataId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
     return new ReportConfiguration(
         name, reportDataId, filters, this.api, onNewReport, onNameChanged,
         onUpdateFilter, onErrorsChanged);

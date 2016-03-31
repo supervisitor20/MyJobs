@@ -8,12 +8,16 @@ import {promiseTest} from '../../common/spec';
 
 class FakeBuilder {
   build(name, rpId, filters) {
-    return {name: name, rpId: rpId, filters: filters};
+    return {
+      marker: 'report configuration here',
+      runCallbacks: () => {},
+    }
   }
 }
 
 function buildFakeApi() {
   return {
+    getSetUpMenuChoices: () => ({report_data_id: 12}),
     getPresentationTypes: () => [4],
     getFilters: () => ({filters: {6: 6}}),
     getHelp: () =>
@@ -29,8 +33,13 @@ describe('ReportFinder', () => {
     new FakeBuilder());
 
   it('can build a ReportConfiguration', promiseTest(async () => {
-    expect(await finder.buildReportConfiguration(2)).toEqual(
-      {rpId: 2, filters: {6: 6}, name: 'zzz'});
+    let reportConfig;
+    const nop = () => {};
+    finder.subscribeToMenuChoices(
+      (rits, rts, dts, rit, rt, dt, rc) =>
+        {reportConfig = rc});
+    await finder.buildReportConfiguration('', '', '', nop, nop, nop);
+    expect(reportConfig.marker).toEqual('report configuration here');
   }));
 
   describe('subscriptions', () => {

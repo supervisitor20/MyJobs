@@ -56,7 +56,6 @@ export default class SetUpReport extends Component {
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
       reportingType, reportType, dataType, reportConfig) {
-    console.log('onMenuChanged', reportingType, reportType, dataType);
     this.setState({
       reportingTypes,
       reportTypes,
@@ -88,7 +87,6 @@ export default class SetUpReport extends Component {
 
   async buildReportConfig(reportingType, reportType, dataType) {
     const {reportFinder} = this.props;
-    console.log('buildReportConfig', reportingType, reportType, dataType);
     reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
