@@ -442,11 +442,11 @@ class TestReportsApi(MyReportsTestCase):
                 {u'value': u'unaggregated', u'display': u'Unaggregated'},
             ],
             u'selected_data_type': u'unaggregated',
-            u'report_data_id': 5,
+            u'report_data_id': 6,
         }
         self.assertEquals(expected, data)
 
-    def test_select_data_type_api(self):
+    def test_select_data_type_api_dead_end(self):
         """Test that we get useful report setup menu choices."""
         self.maxDiff = 10000
         resp = self.client.post(
