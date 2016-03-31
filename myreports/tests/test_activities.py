@@ -10,13 +10,10 @@ As such, these tests assume that the settings.ENABLE_ROLES is True.
 """
 
 from django.core.urlresolvers import reverse
-from django.conf import settings
 
 from myjobs.decorators import MissingActivity
-from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
-                                    ActivityFactory)
+from myjobs.tests.factories import AppAccessFactory
 from mypartners.tests.test_views import TestClient
-from seo.tests.factories import CompanyFactory
 from myreports.tests.setup import MyReportsTestCase
 
 

@@ -1,9 +1,5 @@
-from django.conf import settings
-
-from myjobs.tests.setup import MyJobsBase, TestClient
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.setup import MyJobsBase
 from mypartners.tests.factories import PartnerFactory
-from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 from myreports.tests.factories import (
     UserTypeFactory, ReportingTypeFactory, UserReportingTypesFactory,
