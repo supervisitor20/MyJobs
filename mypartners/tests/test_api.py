@@ -16,15 +16,9 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def setUp(self):
         super(NonUserOutreachTestCase, self).setUp()
-        self.nuo_activities = [
-            ActivityFactory(name=activity, app_access=self.app_access)
-            for activity in [
-                "create outreach email address",
-                "read outreach email address",
-                "delete outreach email address"]]
         self.inbox = OutreachEmailAddressFactory(company=self.company)
         self.other_company_inbox = OutreachEmailAddressFactory()
-        self.role.activities.add(*self.nuo_activities)
+        self.role.activities.add(*self.activities)
 
     def test_inbox_list_api(self):
         """
