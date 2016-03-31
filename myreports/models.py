@@ -1,6 +1,7 @@
 import json
 
 from django.core.files.base import ContentFile
+from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.db.models.loading import get_model
 
@@ -174,11 +175,78 @@ class DataType(models.Model):
     objects = DataTypeManager()
 
 
+class ReportTypeDataTypesManager(models.Manager):
+    def build_choices(
+            self, user, reporting_type_name, report_type_name, data_type_name):
+
+        if not user:
+            raise SuspiciousOperation("No user provided.")
+
+        reporting_types = self.get_choices_from_model(
+            ReportingType.objects.active_for_user(user),
+            None, None, 'reporting_type')
+        selected_reporting_type = self.select_best(
+            reporting_types, 'reporting_type', reporting_type_name)
+
+        report_types = self.get_choices_from_model(
+            ReportType.objects.active_for_reporting_type(
+                selected_reporting_type),
+            None, None, 'report_type')
+        selected_report_type = self.select_best(
+            report_types, 'report_type', report_type_name)
+
+        data_types = self.get_choices_from_model(
+            DataType.objects.active_for_report_type(selected_report_type),
+            None, None, 'data_type')
+        selected_data_type = self.select_best(
+            data_types, 'data_type', data_type_name)
+
+        return {
+            'reporting_types': reporting_types,
+            'selected_reporting_type': selected_reporting_type,
+            'report_types': report_types,
+            'selected_report_type': selected_report_type,
+            'data_types': data_types,
+            'selected_data_type': selected_data_type,
+        }
+
+    def get_choices_from_model(
+            self, model_qs, filter_field, filter_value, name_field):
+        choices = model_qs.order_by('description')
+        if filter_value:
+            kwargs = {filter_field: filter_value}
+            choices = model_qs.filter(**kwargs)
+        return choices
+
+    def select_best(self, choices, name_field, selected_name):
+        choices_list = list(choices)
+        for choice in choices_list:
+            if getattr(choice, name_field) == selected_name:
+                return choice
+
+        if len(choices_list) > 0:
+            return choices_list[0]
+        else:
+            return None
+
+    def first_active_for_report_type_data_type(self, report_type, data_type):
+        query_filter = dict(
+            report_type=report_type,
+            data_type=data_type,
+            is_active=True)
+        report_datas = list(ReportTypeDataTypes.objects.filter(**query_filter))
+        if len(report_datas) > 0:
+            return report_datas[0]
+        else:
+            return None
+
+
 class ReportTypeDataTypes(models.Model):
     report_type = models.ForeignKey('ReportType')
     data_type = models.ForeignKey('DataType')
     is_active = models.BooleanField(default=False)
     configuration = models.ForeignKey('Configuration', null=True)
+    objects = ReportTypeDataTypesManager()
 
 
 class Configuration(models.Model):

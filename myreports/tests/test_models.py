@@ -1,5 +1,6 @@
 import json
 
+from django.core.exceptions import SuspiciousOperation
 from myreports.tests.setup import MyReportsTestCase
 from myreports.tests.factories import ConfigurationColumnFactory
 
@@ -12,7 +13,6 @@ from myreports.report_configuration import (
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import (
     ContactFactory, PartnerFactory, LocationFactory)
-from seo.tests.factories import CompanyUserFactory
 
 
 class TestActiveModels(MyReportsTestCase):
@@ -48,7 +48,7 @@ class TestActiveModels(MyReportsTestCase):
         """Avoid different kinds of inactive reporting types."""
         reporting_type = (ReportingType.objects
                           .active_for_user(self.user).first())
-        self.assertEqual('PRM', reporting_type.reporting_type)
+        self.assertEqual('prm', reporting_type.reporting_type)
 
     def test_active_report_type_by_reporting_type(self):
         """Avoid different kinds of inactive report types."""
@@ -57,7 +57,7 @@ class TestActiveModels(MyReportsTestCase):
                         .active_for_reporting_type(reporting_type))
         names = set(t.report_type for t in report_types)
         expected_names = set([
-            'Partners', 'Communication Records', 'Contacts'])
+            'partners', 'communication-records', 'contacts'])
         self.assertEqual(expected_names, names)
 
     def test_active_data_types(self):
@@ -68,6 +68,35 @@ class TestActiveModels(MyReportsTestCase):
         names = set(d.data_type for d in data_types)
         expected_names = set(['unaggregated'])
         self.assertEqual(expected_names, names)
+
+    def test_first_active_report_data(self):
+        """Avoid different kinds of inactive report/data types."""
+
+        report_type = ReportType.objects.get(id=2)
+        data_type = DataType.objects.get(id=3)
+        report_data = (
+            ReportTypeDataTypes.objects
+            .first_active_for_report_type_data_type(report_type, data_type))
+        self.assertEqual('contacts', report_data.report_type.report_type)
+        self.assertEqual('unaggregated', report_data.data_type.data_type)
+
+    def test_first_active_report_data_mismatch(self):
+        """Avoid different kinds of inactive report/data types."""
+
+        report_type = ReportType.objects.get(id=6)
+        data_type = DataType.objects.get(id=4)
+        report_data = (
+            ReportTypeDataTypes.objects
+            .first_active_for_report_type_data_type(report_type, data_type))
+        self.assertIsNone(report_data)
+
+    def test_first_active_report_data_none(self):
+        """Avoid different kinds of inactive report/data types."""
+
+        report_data = (
+            ReportTypeDataTypes.objects
+            .first_active_for_report_type_data_type(None, None))
+        self.assertIsNone(report_data)
 
     def test_active_report_presentations(self):
         """Avoid different kinds of inactive presentation types."""
@@ -89,6 +118,121 @@ class TestActiveModels(MyReportsTestCase):
             u'name', u'email', u'notes'])
         actual_columns = set(c.column_name for c in columns)
         self.assertEqual(expected_columns, actual_columns)
+
+    def test_build_choices_blank(self):
+        choices = ReportTypeDataTypes.objects.build_choices(
+            self.user, None, None, None)
+        self.assertEquals(2, len(choices['reporting_types']))
+        self.assertEquals(
+            'compliance',
+            choices['reporting_types'][0].reporting_type)
+        self.assertEquals(
+            choices['reporting_types'][0],
+            choices['selected_reporting_type'])
+        self.assertEquals(2, len(choices['report_types']))
+        self.assertEquals(
+            'screenshots',
+            choices['report_types'][0].report_type)
+        self.assertEquals(
+            choices['report_types'][0],
+            choices['selected_report_type'])
+        self.assertEquals([], list(choices['data_types']))
+        self.assertEquals(None, choices['selected_data_type'])
+
+    def test_build_choices_select_reporting_type(self):
+        choices = ReportTypeDataTypes.objects.build_choices(
+            self.user, 'prm', None, None)
+        self.assertEquals(2, len(choices['reporting_types']))
+        self.assertEquals(
+            'compliance',
+            choices['reporting_types'][0].reporting_type)
+        self.assertEquals(
+            choices['reporting_types'][1],
+            choices['selected_reporting_type'])
+        self.assertEquals(3, len(choices['report_types']))
+        self.assertEquals(
+            'communication-records',
+            choices['report_types'][0].report_type)
+        self.assertEquals(
+            choices['report_types'][0],
+            choices['selected_report_type'])
+        self.assertEquals(1, len(choices['data_types']))
+        self.assertEquals(
+            choices['data_types'][0],
+            choices['selected_data_type'])
+
+    def test_build_choices_select_report_type(self):
+        choices = ReportTypeDataTypes.objects.build_choices(
+            self.user, 'prm', 'partners', None)
+        self.assertEquals(2, len(choices['reporting_types']))
+        self.assertEquals(
+            'compliance',
+            choices['reporting_types'][0].reporting_type)
+        self.assertEquals(
+            choices['reporting_types'][1],
+            choices['selected_reporting_type'])
+        self.assertEquals(3, len(choices['report_types']))
+        self.assertEquals(
+            'communication-records',
+            choices['report_types'][0].report_type)
+        self.assertEquals(
+            choices['report_types'][2],
+            choices['selected_report_type'])
+        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(
+            choices['data_types'][0],
+            choices['selected_data_type'])
+
+    def test_build_choices_select_data_type(self):
+        choices = ReportTypeDataTypes.objects.build_choices(
+            self.user, 'prm', 'partners', 'unaggregated')
+        self.assertEquals(2, len(choices['reporting_types']))
+        self.assertEquals(
+            'compliance',
+            choices['reporting_types'][0].reporting_type)
+        self.assertEquals(
+            choices['reporting_types'][1],
+            choices['selected_reporting_type'])
+        self.assertEquals(3, len(choices['report_types']))
+        self.assertEquals(
+            'communication-records',
+            choices['report_types'][0].report_type)
+        self.assertEquals(
+            choices['report_types'][2],
+            choices['selected_report_type'])
+        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(
+            choices['data_types'][1],
+            choices['selected_data_type'])
+
+    def test_build_choices_wrong_report_type(self):
+        choices = ReportTypeDataTypes.objects.build_choices(
+            self.user, 'prm', 'WRONG', 'unaggregated')
+        self.assertEquals(2, len(choices['reporting_types']))
+        self.assertEquals(
+            'compliance',
+            choices['reporting_types'][0].reporting_type)
+        self.assertEquals(
+            choices['reporting_types'][1],
+            choices['selected_reporting_type'])
+        self.assertEquals(3, len(choices['report_types']))
+        self.assertEquals(
+            'communication-records',
+            choices['report_types'][0].report_type)
+        self.assertEquals(
+            choices['report_types'][0],
+            choices['selected_report_type'])
+        self.assertEquals(1, len(choices['data_types']))
+        self.assertEquals(
+            choices['data_types'][0],
+            choices['selected_data_type'])
+
+    def test_build_choices_no_user(self):
+        try:
+            ReportTypeDataTypes.objects.build_choices(None, None, None, None)
+            self.fail("Should have thrown exception")
+        except SuspiciousOperation:
+            pass
 
 
 class TestReportConfiguration(MyReportsTestCase):

@@ -68,11 +68,11 @@ def create_full_fixture():
     ReportingType.objects.all().delete()
     rit_prm = ReportingTypeFactory.create(
         id=1,
-        reporting_type="PRM",
+        reporting_type="prm",
         description="PRM Reports")
     rit_comp = ReportingTypeFactory.create(
         id=2,
-        reporting_type="Compliance",
+        reporting_type="compliance",
         description="Compliance Reports")
     rit_dead = ReportingTypeFactory.create(
         id=3,
@@ -93,6 +93,8 @@ def create_full_fixture():
     UserReportingTypesFactory.create(
         user_type=ut_emp, reporting_type=rit_prm)
     UserReportingTypesFactory.create(
+        user_type=ut_emp, reporting_type=rit_comp)
+    UserReportingTypesFactory.create(
         user_type=ut_emp, reporting_type=rit_dead)
     UserReportingTypesFactory.create(
         user_type=ut_emp, reporting_type=rit_maybe_dead, is_active=False)
@@ -104,26 +106,26 @@ def create_full_fixture():
     ReportType.objects.all().delete()
     rt_partners = ReportTypeFactory(
         id=1,
-        report_type="Partners",
+        report_type="partners",
         description="Partners Report",
         datasource="partners")
     rt_con = ReportTypeFactory(
         id=2,
-        report_type="Contacts",
+        report_type="contacts",
         description="Contacts Report",
         datasource="contacts")
     rt_comm = ReportTypeFactory(
         id=3,
-        report_type="Communication Records",
+        report_type="communication-records",
         description="Communication Records Report",
         datasource="comm_records")
     rt_state = ReportTypeFactory(
         id=4,
-        report_type="State",
+        report_type="state",
         description="State Report")
     rt_screen = ReportTypeFactory(
         id=5,
-        report_type="Screenshots",
+        report_type="screenshots",
         description="Screenshots Report")
     rt_dead = ReportTypeFactory(
         id=6,
@@ -581,6 +583,9 @@ def create_full_fixture():
     rtdt_comm_count_pmpp = ReportTypeDataTypesFactory.create(
         id=7, report_type=rt_partners, configuration=con_comm_count,
         data_type=dt_count_comm_per_month_per_partner)
+    ReportTypeDataTypesFactory.create(
+        id=8, report_type=rt_con, data_type=dt_unagg, is_active=False,
+        configuration=con_dead)
 
     ReportPresentation.objects.all().delete()
     ReportPresentationFactory.create(

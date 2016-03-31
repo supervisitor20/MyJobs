@@ -412,46 +412,67 @@ class TestReportsApi(MyReportsTestCase):
                     state="IL"),
                 ])
 
-    def test_reporting_types_api_fail_get(self):
-        """Try an invalid method on reporting types."""
-        resp = self.client.get(reverse('reporting_types_api'))
-        self.assertEquals(405, resp.status_code)
+    def test_select_data_type_api(self):
+        """Test that we get useful report setup menu choices."""
+        self.maxDiff = 10000
+        resp = self.client.post(
+            reverse('select_data_type_api'),
+            data={
+                'reporting_type': 'prm',
+                'report_type': None,
+                'data_type': None,
+            })
+        data = json.loads(resp.content)
+        expected = {
+            u'reporting_types': [
+                {u'value': u'compliance', u'display': u'Compliance Reports'},
+                {u'value': u'prm', u'display': u'PRM Reports'},
+            ],
+            u'selected_reporting_type': u'prm',
+            u'report_types': [
+                {
+                    u'value': u'communication-records',
+                    u'display': u'Communication Records Report',
+                },
+                {u'value': u'contacts', u'display': u'Contacts Report'},
+                {u'value': u'partners', u'display': u'Partners Report'},
+            ],
+            u'selected_report_type': u'communication-records',
+            u'data_types': [
+                {u'value': u'unaggregated', u'display': u'Unaggregated'},
+            ],
+            u'selected_data_type': u'unaggregated',
+            u'report_data_id': 5,
+        }
+        self.assertEquals(expected, data)
 
-    def test_reporting_types_api(self):
-        """Test that we get only active reporting types."""
-        resp = self.client.post(reverse('reporting_types_api'))
-        data = json.loads(resp.content)['reporting_type']
-        self.assertEquals(1, len(data))
-        self.assertEquals('PRM', data['1']['name'])
-        self.assertEquals('PRM Reports', data['1']['description'])
-
-    def test_report_types_api_fail_get(self):
-        """Try an invalid method on report types."""
-        resp = self.client.get(reverse('report_types_api'))
-        self.assertEquals(405, resp.status_code)
-
-    def test_report_types_api(self):
-        """Test that we get only active report types."""
-        resp = self.client.post(reverse('report_types_api'),
-                                data={'reporting_type_id': '1'})
-        data = json.loads(resp.content)['report_type']
-        self.assertEquals(3, len(data))
-        self.assertEquals("Partners", data['1']['name'])
-        self.assertEquals("Partners Report", data['1']['description'])
-        self.assertEquals("Contacts", data['2']['name'])
-        self.assertEquals("Contacts Report", data['2']['description'])
-        self.assertEquals("Communication Records", data['3']['name'])
-        self.assertEquals("Communication Records Report",
-                          data['3']['description'])
-
-    def test_data_types_api(self):
-        """Test that we get only active data types."""
-        resp = self.client.post(reverse('data_types_api'),
-                                data={'report_type_id': '2'})
-        data = json.loads(resp.content)['data_type']
-        self.assertEquals(1, len(data))
-        self.assertEquals("unaggregated", data['3']['name'])
-        self.assertEquals("Unaggregated", data['3']['description'])
+    def test_select_data_type_api(self):
+        """Test that we get useful report setup menu choices."""
+        self.maxDiff = 10000
+        resp = self.client.post(
+            reverse('select_data_type_api'),
+            data={
+                'reporting_type': 'compliance',
+                'report_type': None,
+                'data_type': None,
+            })
+        data = json.loads(resp.content)
+        expected = {
+            u'reporting_types': [
+                {u'value': u'compliance', u'display': u'Compliance Reports'},
+                {u'value': u'prm', u'display': u'PRM Reports'},
+            ],
+            u'selected_reporting_type': u'compliance',
+            u'report_types': [
+                {u'value': u'screenshots', u'display': u'Screenshots Report'},
+                {u'value': u'state', u'display': u'State Report'},
+            ],
+            u'selected_report_type': u'screenshots',
+            u'data_types': [],
+            u'selected_data_type': None,
+            u'report_data_id': None,
+        }
+        self.assertEquals(expected, data)
 
     def test_presentation_api(self):
         """Test that we get only active presentation types."""
@@ -467,6 +488,7 @@ class TestReportsApi(MyReportsTestCase):
         """Test that we get descriptions of available filters."""
         resp = self.client.post(reverse('filters_api'),
                                 data={'report_data_id': '3'})
+
         result = json.loads(resp.content)
         expected_keys = set(['filters', 'help'])
         self.assertEquals(expected_keys, set(result.keys()))

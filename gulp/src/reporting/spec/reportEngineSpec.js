@@ -14,9 +14,6 @@ class FakeBuilder {
 
 function buildFakeApi() {
   return {
-    getReportingTypes: () => [1],
-    getReportTypes: () => [2],
-    getDataTypes: () => [3],
     getPresentationTypes: () => [4],
     getFilters: () => ({filters: {6: 6}}),
     getHelp: () =>
@@ -30,11 +27,6 @@ describe('ReportFinder', () => {
   const finder = new ReportFinder(
     buildFakeApi(),
     new FakeBuilder());
-
-  it('can get reporting types', promiseTest(async () => {
-    expect(await finder.getReportingTypes()).toEqual([1]);
-  }));
-
 
   it('can build a ReportConfiguration', promiseTest(async () => {
     expect(await finder.buildReportConfiguration(2)).toEqual(

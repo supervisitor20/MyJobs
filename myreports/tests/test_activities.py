@@ -143,34 +143,14 @@ class TestViewLevelActivities(MyReportsTestCase):
             "dynamicoverview",
             "read partner", "read contact", "read communication record")
 
-    def test_reporting_types_api(self):
+    def test_select_data_type_api(self):
         """
-        /reports/api/reporting_types requires "read partner", "read contact",
-        and "read communication record"
-        """
-
-        self.assertRequires(
-            "reporting_types_api",
-            "read partner", "read contact", "read communication record")
-
-    def test_report_types_api(self):
-        """
-        /reports/api/report_types requires "read partner", "read contact",
-        and "read communication record"
+        /reports/api/select_data_type_api requires "read partner",
+        "read contact", and "read communication record"
         """
 
         self.assertRequires(
-            "report_types_api",
-            "read partner", "read contact", "read communication record")
-
-    def test_data_types_api(self):
-        """
-        /reports/api/data_types requires "read partner", "read contact",
-        and "read communication record"
-        """
-
-        self.assertRequires(
-            "data_types_api",
+            "select_data_type_api",
             "read partner", "read contact", "read communication record")
 
     def test_presentation_types_api(self):

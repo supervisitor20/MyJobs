@@ -24,25 +24,14 @@ class Api {
     return response.reports;
   }
 
-  async getReportingTypes() {
-    const promise = this.postToReportingApi('/reports/api/reporting_types', {});
-    return (await promise).reporting_type;
-  }
-
-  async getReportTypes(reportingTypeId) {
+  async getSetUpMenuChoices(reportingType, reportType, dataType) {
     const formData = {
-      reporting_type_id: reportingTypeId,
+      reporting_type: reportingType,
+      report_type: reportType,
+      data_type: dataType,
     };
-    const promise = this.postToReportingApi('/reports/api/report_types', formData);
-    return (await promise).report_type;
-  }
-
-  async getDataTypes(reportTypeId) {
-    const formData = {
-      report_type_id: reportTypeId,
-    };
-    const promise = this.postToReportingApi('/reports/api/data_types', formData);
-    return (await promise).data_type;
+    return this.postToReportingApi(
+      '/reports/api/select_data_type_api', formData);
   }
 
   async getPresentationTypes(reportTypeId, dataTypeId) {
@@ -54,28 +43,28 @@ class Api {
     return (await promise).report_presentation;
   }
 
-    async getDefaultReportName(reportPresentationId) {
-      const formData = {
-        report_presentation_id: reportPresentationId,
-      };
-      return await this.postToReportingApi(
-            '/reports/api/default_report_name',
-            formData);
-    }
-
-    async getFilters(reportPresentationId) {
-      const formData = {
-        rp_id: reportPresentationId,
-      };
-      const promise = this.postToReportingApi(
-            '/reports/api/filters',
-            formData);
-      return (await promise);
-    }
-
-  async getHelp(reportPresentationId, filter, field, partial) {
+  async getDefaultReportName(reportDataId) {
     const formData = {
-      rp_id: reportPresentationId,
+      report_data_id: reportDataId,
+    };
+    return await this.postToReportingApi(
+          '/reports/api/default_report_name',
+          formData);
+  }
+
+  async getFilters(reportDataId) {
+    const formData = {
+      report_data_id: reportDataId,
+    };
+    const promise = this.postToReportingApi(
+          '/reports/api/filters',
+          formData);
+    return (await promise);
+  }
+
+  async getHelp(reportDataId, filter, field, partial) {
+    const formData = {
+      report_data_id: reportDataId,
       filter: JSON.stringify(filter),
       field: field,
       partial: partial,
@@ -86,11 +75,11 @@ class Api {
     return (await promise);
   }
 
-  async runReport(reportPresentationId, name, filter) {
+  async runReport(reportDataId, name, filter) {
     const formData = {
       name: name,
       filter: JSON.stringify(filter),
-      rp_id: reportPresentationId,
+      report_data_id: reportDataId,
     };
     return await this.postToReportingApi(
       '/reports/api/run_report',
