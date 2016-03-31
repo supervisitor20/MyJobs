@@ -44,21 +44,39 @@ function Multiselect(props) {
 }
 
 Multiselect.propTypes = {
+  /**
+   * Selected list items.
+   */
   selected: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
     })
   ),
+  /**
+   * Available list items.
+   */
   available: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
     })
   ),
+  /**
+   * Header text for left side select
+   */
   availableHeader: React.PropTypes.string.isRequired,
+  /**
+   * Header text for right select
+   */
   selectedHeader: React.PropTypes.string.isRequired,
+  /**
+   * Function fired when an item is selected from the left side
+   */
   onAdd: React.PropTypes.func.isRequired,
+  /**
+   * Function fired when an item is selected from the right side
+   */
   onRemove: React.PropTypes.func.isRequired,
 };
 
