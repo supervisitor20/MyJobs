@@ -6,10 +6,8 @@ import React from 'react';
 class Select extends React.Component {
   constructor(props) {
     super(props);
-    const {initial} = this.props;
     this.state = {
       selectDropped: false,
-      currentValue: initial.display,
       keySelectedIndex: null,
     };
     this.openSelectMenu = this.openSelectMenu.bind(this);
@@ -81,13 +79,12 @@ class Select extends React.Component {
     fakeEvent.target.value = itemKey.value;
 
     onChange(fakeEvent);
-    this.setState({currentValue: itemKey.display});
 
     this.closeSelectMenu();
   }
   render() {
-    const {choices, name} = this.props;
-    const {keySelectedIndex, selectDropped, currentValue} = this.state;
+    const {choices, name, value} = this.props;
+    const {keySelectedIndex, selectDropped} = this.state;
 
     let selectAction;
     let dropdown;
@@ -125,7 +122,7 @@ class Select extends React.Component {
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input">
           <div className="select-element-chosen-container" onClick={selectAction}>
-            <span className="select-element-chosen">{currentValue}</span>
+            <span className="select-element-chosen">{value}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>
@@ -150,9 +147,9 @@ Select.propTypes = {
    */
   name: React.PropTypes.string.isRequired,
   /**
-   * Value at first page load
+   * Value shown as the selected value in the control.
    */
-  initial: React.PropTypes.any,
+  value: React.PropTypes.string,
   /**
    * Array of objects, each an item in the select component
    */
@@ -169,7 +166,7 @@ Select.propTypes = {
 };
 
 Select.defaultProps = {
-  initial: '',
+  value: '',
 };
 
 export default Select;
