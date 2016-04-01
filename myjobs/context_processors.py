@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from universal.helpers import get_company
 
 
 def current_site_info(request):
@@ -36,3 +37,35 @@ def absolute_url(request):
         'ABSOLUTE_URL': settings.ABSOLUTE_URL
     }
     return values
+
+
+def activities(request):
+    """
+    Returns the activities a user can perform for the currently selected
+    company.
+
+    """
+    company = get_company(request)
+    if not request.user.is_anonymous() and request.user.pk:
+        return {"activities": request.user.get_activities(company)}
+    return {"activities": []}
+
+
+def webpack_dev_setting(request):
+    """
+    Used in templates that need to use webpack-dev-server in development.
+
+    Don't set the setting in default_settings.py as it should remain off in
+    production.
+
+    i.e. Docker machine users probably want this:
+    WEBPACK_DEV_SERVER_BASE_URL = 'http://secure.my.jobs:8080'
+
+    Linux users probably want something like this:
+    WEBPACK_DEV_SERVER_BASE_URL = 'http://10.10.12.999:8080'
+
+    Linux users need an IP reachable by Modern IE VMs etc.
+    """
+    return {
+        'wp_base_url': settings.WEBPACK_DEV_SERVER_BASE_URL,
+    }

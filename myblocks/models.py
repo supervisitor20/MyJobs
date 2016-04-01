@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 from slugify import slugify
 from urlparse import urlparse
@@ -25,6 +26,7 @@ from mysearches.models import SavedSearch
 from redirect.helpers import redirect_if_new
 from registration.forms import CustomAuthForm, RegistrationForm
 from seo import helpers
+from seo.models import BusinessUnit
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
 
 logger = logging.getLogger(__name__)
@@ -443,7 +445,7 @@ class ToolsWidgetBlock(SecureBlock):
 
     """
     # temporarily use the current topbar template
-    base_template = 'myblocks/blocks/secure_blocks/tools.html'
+    base_template = 'includes/topbar.html'
 
     def context(self, request, **kwargs):
         """
@@ -461,9 +463,25 @@ class ToolsWidgetBlock(SecureBlock):
             except User.DoesNotExist:
                pass
 
+        caller = self.get_caller_info(request, **kwargs)
+        microsite_name = kwargs.get('site_name', caller)
         context['user'] = user
-
+        context['current_microsite_name'] = microsite_name
+        context['current_microsite_url'] = caller
         return context
+
+    def get_caller_info(self, request, **kwargs):
+        """
+        Get site info for caller site
+
+        """
+        caller = None
+        if request.META.get('HTTP_ORIGIN'):
+            caller = request.META.get('HTTP_ORIGIN')
+        elif request.META.get('HTTP_REFERER'):
+            parsed_url =  urlparse(request.META.get('HTTP_REFERER'))
+            caller = "%s://%s" % (parsed_url.scheme, parsed_url.netloc)
+        return caller
 
     def get_cookies(self, request, **kwargs):
         """
@@ -471,13 +489,7 @@ class ToolsWidgetBlock(SecureBlock):
 
         """
         cookies = []
-        caller = None
-        if request.META.get('HTTP_ORIGIN'):
-            caller = request.META.get('HTTP_ORIGIN')
-        elif request.META.get('HTTP_REFERER'):
-            parsed_url =  urlparse(request.META.get('HTTP_REFERER'))
-            caller = "%s://%s" % (parsed_url.scheme, parsed_url.netloc)
-
+        caller = self.get_caller_info(request, **kwargs)
         if caller:
             max_age = 30 * 24 * 60 * 60
             last_name = kwargs.get('site_name', caller)
@@ -489,15 +501,7 @@ class ToolsWidgetBlock(SecureBlock):
                             'value':last_name,
                             'max_age':max_age,
                             'domain':'.my.jobs'})
-
         return cookies
-
-    def required_js(self):
-        """
-        Return a list of all required javascript in URL format
-
-        """
-        return ['%ssecure-blocks/sb-tools.js' % settings.STATIC_URL]
 
 
 class SavedSearchWidgetBlock(SecureBlock):
@@ -596,6 +600,7 @@ class SearchResultBlock(Block):
     base_head = 'myblocks/head/searchresult.html'
 
     def context(self, request, **kwargs):
+        site_buid_objects = BusinessUnit.objects.filter(id__in=settings.SITE_BUIDS)
         return {
             'arranged_jobs': context_tools.get_arranged_jobs(request),
             'data_type': '',
@@ -609,7 +614,17 @@ class SearchResultBlock(Block):
             'site_config': context_tools.get_site_config(request),
             'site_tags': settings.SITE_TAGS,
             'title_term': context_tools.get_title_term(request),
+            'analytics_info': json.dumps({
+                'site_business_units': ([bu.title for bu in
+                                                    site_buid_objects]),
+                'default_facet_names': ([df.name for df in
+                                                    settings.DEFAULT_FACET]),
+                'featured_facet_names': ([ff.name for ff in
+                                                    settings.FEATURED_FACET])
+            })
         }
+
+
 
     def render_for_ajax(self, request, **kwargs):
         """
@@ -785,10 +800,10 @@ class Page(models.Model):
 
     add_blank = lambda choices: (('', 'Inherit from Configuration'),) + choices
 
-    doc_type = models.CharField(max_length=255, blank=False,
+    doc_type = models.CharField(max_length=255, blank=True,
                                 choices=add_blank(DOCTYPE_CHOICES),
                                 default='')
-    language_code = models.CharField(max_length=16, blank=False,
+    language_code = models.CharField(max_length=16, blank=True,
                                      choices=add_blank(LANGUAGE_CODES_CHOICES),
                                      default='')
 

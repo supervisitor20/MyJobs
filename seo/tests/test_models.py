@@ -174,11 +174,13 @@ class TestRoles(DirectSEOBase):
         self.user.roles.add(role)
         self.assertTrue(self.company.user_has_access(self.user))
 
-    def test_company_user_count(self):
+    def test_admin_count(self):
         """
-        SeoSite.company_user_count should return the number of users who can be
-        tied back to that company.
+        SeoSite.admins.count() should return the number of users who can be
+        tied back to that company as an admin.
+
         """
+
 
         # can't use create_batch since emails need to be unique and
         # updating the User model disrupts other tests
@@ -187,16 +189,12 @@ class TestRoles(DirectSEOBase):
 
         # When activities are enabled, company user count is determined by
         # the number distinct users assigned a role within that company
-        self.assertEqual(self.company.company_user_count, 0)
-        role = RoleFactory(company=self.company)
-
-        # delete company users to prevent the possibility of a false
-        # positive
-        self.company.companyuser_set.all().delete()
+        role = RoleFactory(company=self.company, name='Admin')
+        self.assertEqual(self.company.admins.count(), 0)
 
         for user in users:
             user.roles = [role]
-        self.assertEqual(self.company.company_user_count, 10)
+        self.assertEqual(self.company.admins.count(), 10)
 
 
 class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
@@ -342,13 +340,3 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
         self.company.app_access.add(app_access)
 
         self.assertItemsEqual(self.company.enabled_access, ['Test Access'])
-
-    def test_first_invitation(self):
-        """
-        `Company.first_invitation` should return the first invitation created
-        for a company.
-
-        """
-        self.assertEqual(
-            self.company.first_invitation, Invitation.objects.filter(
-                inviting_company=self.company).order_by('-invited').first())

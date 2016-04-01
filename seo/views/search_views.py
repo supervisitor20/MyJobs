@@ -59,6 +59,7 @@ from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
+from universal.decorators import restrict_to_staff
 from myjobs.decorators import user_is_allowed
 from myemails.models import EmailSection
 from myblocks.models import Page
@@ -1155,6 +1156,7 @@ def home_page(request):
         'filters': {},
         'view_source': settings.VIEW_SOURCE}
 
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response(home_page_template, data_dict,
                               context_instance=RequestContext(request))
 
@@ -1797,10 +1799,28 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
     }
-
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 
+
+def get_analytics_info():
+    """
+    Return a dictionary of analytics info to be added to the context for job
+    listing views. Used with homebrew analytics.
+
+    :return: dictionary with analytics info
+
+    """
+    site_buid_objects = BusinessUnit.objects.filter(id__in=settings.SITE_BUIDS)
+    analytics_info = {
+        'site_business_units': ([bu.title for bu in site_buid_objects]),
+        'default_facet_names': ([df.name for df in
+                                                settings.DEFAULT_FACET]),
+        'featured_facet_names': ([ff.name for ff in
+                                                settings.FEATURED_FACET])
+        }
+    return json.dumps(analytics_info)
 
 class SearchResults(FallbackBlockView):
     page_type = Page.SEARCH_RESULTS
@@ -1929,6 +1949,7 @@ def test_markdown(request):
                                   context_instance=RequestContext(request))
 
 
+@restrict_to_staff()
 @user_is_allowed()
 def admin_dashboard(request):
     data_dict = {}
@@ -1936,6 +1957,7 @@ def admin_dashboard(request):
                               context_instance=RequestContext(request))
 
 
+@restrict_to_staff()
 @user_is_allowed()
 def event_overview(request):
     data_dict = {'active_events': [],
@@ -1945,6 +1967,7 @@ def event_overview(request):
                               context_instance=RequestContext(request))
 
 
+@restrict_to_staff()
 @user_is_allowed()
 def manage_header_footer(request):
     headers = EmailSection.objects.filter(section_type=1)
@@ -1959,6 +1982,7 @@ def manage_header_footer(request):
                               context_instance=RequestContext(request))
 
 
+@restrict_to_staff()
 @user_is_allowed()
 def manage_templates(request):
     data_dict = {'events': []}
@@ -1967,6 +1991,7 @@ def manage_templates(request):
                               context_instance=RequestContext(request))
 
 
+@restrict_to_staff()
 @user_is_allowed()
 def blocks_overview(request):
     company = get_company_or_404(request)

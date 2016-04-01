@@ -16,6 +16,46 @@ from django.core.mail import EmailMessage
 from django.http import QueryDict
 
 
+def every(x, y):
+    """
+    Returns True if every element of x is also an element of y.
+
+    :Inputs
+    :x: An iterable of hashable values.
+    :y: An iterable of elements of the same time as x's elements.
+
+    :Output
+    A boolean.
+
+    Example::
+
+        every([1, 2, 3], [1, 2, 3]) => True
+        every([1, 2, 3], [2, 3, 4]) => False
+
+    """
+    return set(x).issubset(y)
+
+
+def at_least_one(x, y):
+    """
+    Returns True if at least one element of x is also an element of y.
+
+    :Inputs
+    :x: An iterable of hashable values.
+    :y: An iterable of elements of the same time as x's elements.
+
+    :Output
+    A boolean.
+
+    Example::
+
+        at_least_one([1, 2, 3], [3, 4, 5]) => True
+        at_least_one([1, 2, 3], [4, 5, 6]) => False
+
+    """
+    return not set(x).isdisjoint(y)
+
+
 def update_url_param(url, param, new_val):
     """
     Changes the value for a parameter in a query string. If the parameter

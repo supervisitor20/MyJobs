@@ -28,7 +28,8 @@ from django.utils.translation import ugettext_lazy as _
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
 from registration import signals as custom_signals
 from mymessages.models import Message, MessageInfo
-from universal.helpers import get_domain, send_email, invitation_context
+from universal.helpers import (get_domain, send_email, invitation_context,
+                               every)
 
 BAD_EMAIL = ['dropped', 'bounce']
 STOP_SENDING = ['unsubscribe', 'spamreport']
@@ -353,11 +354,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
-    @property
-    def activities(self):
+    def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
 
-        return filter(bool, self.roles.values_list(
+        return filter(bool, self.roles.filter(company=company).values_list(
             'activities__name', flat=True))
 
     def email_user(self, message, email_type=settings.GENERIC, **kwargs):
@@ -633,21 +633,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         except (IndexError, ValueError):
             return None
 
-    def can_access_site(self, site):
-        """
-        If a user belongs to a company who has at least one site package which
-        includes `site`, this method will return `True`. This method will also
-        return `True` if the site has no site packages.
-
-        Inputs:
-        :site: The site to look for
-        """
-        packages = site.sitepackage_set
-
-        return not packages.exists() or packages.filter(
-            owner__role__user=self).exists()
-
-    def can(self, company, *activity_names):
+    def can(self, company, *activity_names, **kwargs):
         """
         Checks if a user may perform certain activities for a company.
 
@@ -655,7 +641,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             :company: The company who's role activities to check.
             :activity_names: Positional arguments are the names of the
                              activities the user wants to perform.
-             belonging to the given company
+            :compare: A binary function which takes two iterables and returns a
+                      boolean. It is used to determine whether, based on the
+                      provided activities, this method should return True or
+                      False. By default, `universal.helpers.every` is used,
+                      which only returns two if the two iterables contain the
+                      same elements.
 
         Output:
             A boolean signifying whether the provided actions may be performed.
@@ -685,10 +676,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
             # results
             user.can(company, "create example") == False
-        """
 
+        """
         if not company:
             return False
+
+        compare = kwargs.get('compare', every)
 
         required_access = filter(bool, AppAccess.objects.filter(
             activity__name__in=activity_names).values_list(
@@ -697,10 +690,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Company must have correct access and user must have correct
         # activities
         return all([
-            bool(company.enabled_access),
             set(required_access).issubset(company.enabled_access),
-            bool(self.activities),
-            set(activity_names).issubset(self.activities)])
+            compare(activity_names, self.get_activities(company))])
 
     def send_invite(self, email, company, role_name=None):
         """
@@ -716,10 +707,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Output:
             The invited user if sucessful, otherwise None.
 
-        When roles are disabled, it is sufficient to pass `True` to
-        `role_name`, which will signify that the invited user should be invited
-        as a `CompanyUser`. If `role_name` is unspecified, only the invite is
-        sent.
+        If `role_name` is unspecified, only the invite is sent.
         """
 
         user, _ = User.objects.create_user(
@@ -885,8 +873,8 @@ def update_role_admins(sender, instance, created, *args, **kwargs):
     """
     When a new activity is created, that activity should immediately be
     associated with the Admin role.
-    """
 
+    """
     if created:
         roles = Role.objects.filter(name="Admin")
         RoleActivities = Role.activities.through

@@ -29,8 +29,8 @@ def company_has_access(perm_field):
                 next_url = build_url(reverse('login'), params)
                 return HttpResponseRedirect(next_url)
 
-            # If the user is logged in, but they aren't a CompanyUser or they
-            # are a CompanyUser, but their current Company doesn't have
+            # If the user is logged in, but they aren't an admin or they
+            # are an admin , but their current Company doesn't have
             # perm_field access, return a 404.
             company = get_company(request)
 
@@ -43,29 +43,6 @@ def company_has_access(perm_field):
             return view_func(request, *args, **kwargs)
         return wraps(view_func)(wrap)
     return decorator
-
-
-def company_in_sitepackages(view_func):
-    """
-    Raises an Http404 exception if the wrapped view is accessed by a user who
-    isn't a member of a company who owns a site package which includes the
-    current seo site.
-
-    That is, if John is visiting testing.jobs, which is in a site package owned
-    by DirectEmployers, but John isn't a company user for DirectEmployers, he
-    will see a 404 page.
-    """
-    @wraps(view_func)
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_anonymous() and not request.user.can_access_site(
-                settings.SITE):
-            raise Http404("universal.decorators.company_in_sitepackages: "
-                          "User is anonymous or user.can_access_site returned "
-                          "False")
-
-        return view_func(request, *args, **kwargs)
-    return wrap
-
 
 def activate_user(view_func):
     """
@@ -133,9 +110,7 @@ def warn_when(condition, feature, message, link=None, link_text=None,
         return wrap
     return decorator
 
-not_found_when = partial(
-    warn_when,
-    exception=Http404)
+not_found_when = partial(warn_when, exception=Http404)
 
 # TODO: refactor these so that warn_when/not_found_when can be passed in,
 # rather than having a separate function for each one.
@@ -147,3 +122,10 @@ warn_when_inactive = partial(
     message='You have yet to activate your account.',
     link='/accounts/register/resend',
     link_text='Resend Activation')
+
+
+restrict_to_staff = partial(
+    not_found_when,
+    condition=lambda req: not req.user.is_staff,
+    feature="MyReports",
+    message="Feature currently restricted to DirectEmployers staff.")

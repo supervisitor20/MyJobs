@@ -271,6 +271,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'myjobs.context_processors.current_site_info',
     'myjobs.context_processors.absolute_url',
+    'myjobs.context_processors.activities',
 )
 
 INTERNAL_IPS = ('127.0.0.1', '216.136.63.6',)
@@ -665,3 +666,6 @@ EXCLUDED_VIEW_SOURCE_CACHE_KEY = 'excluded_view_sources'
 CUSTOM_EXCLUSION_CACHE_KEY = 'custom_excluded_view_sources'
 
 ENV_URL_PREFIXES = ['qc', 'staging']
+
+# See template tag js_bundle for details.
+WEBPACK_DEV_SERVER_BASE_URL = None
