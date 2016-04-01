@@ -1169,7 +1169,7 @@ class CompanyAdmin(admin.ModelAdmin):
                                                ('digital_strategies_customer'),
                                                ('app_access')]}),
                  ('User Roles', {'classes': ('collapse',),
-                                 'fields': [('company_user_roles')]}),
+                                 'fields': [('user_roles')]}),
                  ('Company Info', {'fields':[('logo_url'), ('linkedin_id'),
                                      ('canonical_microsite'),
                                      ('og_img')]}),
