@@ -8,7 +8,7 @@ import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCityState} from './WizardFilterCityState';
-import {ValidatedInput} from 'common/ui/ValidatedInput';
+import FieldWrapper from 'common/ui/FieldWrapper';
 import {SelectElementController} from '../SelectElementController';
 
 export class WizardPageFilter extends Component {
@@ -87,54 +87,70 @@ export class WizardPageFilter extends Component {
     }
 
     const rows = [];
-    const errorTexts = reportNameError ? [reportNameError] : null;
-    rows.push(this.renderRow('Report Name', 'reportName',
-      <ValidatedInput
-        value={reportName}
+    const errorTexts = reportNameError ? [reportNameError] : [];
+    rows.push(
+      <FieldWrapper
+        key="reportName"
+        label="Report Name"
         helpText="Name will appear in downloaded filenames."
-        errorTexts={errorTexts}
-        onValueChange={v => reportConfig.changeReportName(v)}/>
-    ));
+        errors={errorTexts}>
+        <input
+          value={reportName}
+          onChange={v => reportConfig.changeReportName(v.target.value)}/>
+      </FieldWrapper>
+    );
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
       case 'date_range':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterDateRange
-            id={col.filter}
-            updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterDateRange
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'search_select':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterSearchDropdown
-            id={col.filter}
-            updateFilter={v => reportConfig.setFilter(col.filter, v)}
-            getHints={v =>
-              reportConfig.getHints(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterSearchDropdown
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}
+              getHints={v =>
+                reportConfig.getHints(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'city_state':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterCityState
-            id={col.filter}
-            updateFilter={v => reportConfig.setFilter(col.filter, v)}
-            getHints={(f, v) =>
-              reportConfig.getHints(f, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterCityState
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}
+              getHints={(f, v) =>
+                reportConfig.getHints(f, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'tags':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterTags
-            tags={filter[col.filter] || []}
-            addTag={(i, t) =>
-              reportConfig.addToAndOrFilter(col.filter, i, t)}
-            removeTag={(i, t) =>
-              reportConfig.removeFromAndOrFilter(col.filter, i, t)}
-            getHints={v => reportConfig.getHints(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterTags
+              tags={filter[col.filter] || []}
+              addTag={(i, t) =>
+                reportConfig.addToAndOrFilter(col.filter, i, t)}
+              removeTag={(i, t) =>
+                reportConfig.removeFromAndOrFilter(col.filter, i, t)}
+              getHints={v => reportConfig.getHints(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'search_multiselect':
-        rows.push(this.renderRow(col.display, col.filter,
+        rows.push(
+          <FieldWrapper
+            key={col.filter}
+            label={col.display}>
+
             <SelectElementController
               getHints={v => reportConfig.getHints(col.filter, v)}
               selectedOptions = {
@@ -146,7 +162,10 @@ export class WizardPageFilter extends Component {
               onSelectRemove = {vs => forEach(vs, v =>
                 reportConfig.removeFromMultifilter(col.filter,
                   {key: v.value, display: v.display}))}
-            />));
+            />
+
+          </FieldWrapper>
+          );
         break;
       default:
         warning(true, 'Unknown interface type: ' + col.interface_type);
@@ -156,12 +175,16 @@ export class WizardPageFilter extends Component {
       <form>
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         {rows}
-        {this.renderRow('', 'submit',
-          <button
-            className="button"
-            onClick={() => reportConfig.run()}>
-            Run Report
-          </button>, true, true)}
+        <div className="row actions text-center">
+          <div className="col-xs-12 col-md-4"></div>
+          <div className="col-xs-12 col-md-8">
+            <button
+              className="button"
+              onClick={() => reportConfig.run()}>
+              Run Report
+            </button>
+          </div>
+        </div>
       </form>
     );
   }
