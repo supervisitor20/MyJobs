@@ -18,11 +18,11 @@ export default class SetUpReport extends Component {
     this.state = {
       reportName: '',
       loading: true,
-      reportingType: null,
+      reportingType: '',
       reportingTypes: [],
-      reportType: null,
+      reportType: '',
       reportTypes: [],
-      dataType: null,
+      dataType: '',
       dataTypes: [],
     };
   }
@@ -236,8 +236,5 @@ export default class SetUpReport extends Component {
 }
 
 SetUpReport.propTypes = {
-  routeParams: PropTypes.shape({
-    dataType: PropTypes.string,
-  }).isRequired,
   reportFinder: PropTypes.object.isRequired,
 };

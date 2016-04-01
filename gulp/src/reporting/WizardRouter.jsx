@@ -17,7 +17,7 @@ export class WizardRouter extends Component {
         <Route path="/" component={DynamicReportApp}>
           <IndexRedirect to="set-up-report"/>
           <Route
-            path="set-up-report(/:dataType)"
+            path="set-up-report"
             component={SetUpReport}/>
         </Route>
       </Router>
