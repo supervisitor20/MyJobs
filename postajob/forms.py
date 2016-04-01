@@ -22,6 +22,7 @@ from postajob.payment import authorize_card, get_card, settle_transaction
 from postajob.widgets import ExpField
 from universal.forms import RequestForm
 from universal.helpers import get_object_or_none
+from myjobs.models import AppAccess
 
 
 def is_superuser_in_admin(request):
@@ -33,9 +34,6 @@ class BaseJobForm(RequestForm):
         exclude = ('is_syndicated', 'created_by', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     apply_choices = [('link', "Link"), ('email', 'Email'),
@@ -442,9 +440,6 @@ class ProductForm(RequestForm):
                   'is_displayed', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     job_limit_choices = [('unlimited', "Unlimited"),
@@ -531,11 +526,6 @@ class ProductGroupingForm(RequestForm):
         fields = ('products', 'display_title', 'explanation',
                   'name', 'owner', 'is_displayed', )
 
-    class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
-
     products_widget = CheckboxSelectMultiple()
     products = ModelMultipleChoiceField(Product.objects.all(),
                                         widget=products_widget)
@@ -575,12 +565,15 @@ def make_company_from_form(form_instance):
     """
     cleaned_data = form_instance.cleaned_data
     company_name = cleaned_data.get('company_name')
-    form_instance.company = Company.objects.create(name=company_name,
-                                                   user_created=True)
+    form_instance.company = Company.objects.create(
+        name=company_name, user_created=True)
+    # this new company is purchasing a product, so we need the "create product"
+    # permission, which is part of the Marketplace app access
+    form_instance.company.app_access.add(AppAccess.objects.get(
+        name='MarketPlace'))
+    # We make the logged in user an Admin for the new company
     form_instance.request.user.roles.add(
-        form_instance.company.role_set.first())
-    form_instance.request.user.roles.add(
-        form_instance.company.role_set.first())
+        form_instance.company.role_set.get(name='Admin'))
 
     profile = CompanyProfile.objects.create(
         company=form_instance.company,
@@ -602,9 +595,6 @@ class PurchasedProductNoPurchaseForm(RequestForm):
                   'region', 'country', 'zipcode')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = (
             'postajob.173-18.js',
         )
@@ -686,9 +676,6 @@ class PurchasedProductForm(RequestForm):
                   'region', 'country', 'zipcode')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = (
             'postajob.173-18.js',
         )
@@ -822,9 +809,6 @@ class OfflinePurchaseForm(RequestForm):
                    'redemption_uid', 'products', 'invoice', 'owner', )
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):
@@ -953,9 +937,6 @@ class CompanyProfileForm(RequestForm):
         exclude = ('company', 'blocked_users', 'customer_of')
 
     class Media:
-        css = {
-            'all': ('postajob.159-9.css', )
-        }
         js = ('postajob.173-18.js', )
 
     def __init__(self, *args, **kwargs):

@@ -828,18 +828,15 @@ class MyJobsViewsTests(MyJobsBase):
         # email should be sent to right person
         self.assertIn(creator.email, mail.outbox[0].to)
 
-    def test_toolbar_logged_in(self):
+    def test_topbar_logged_in(self):
         self.client.login_user(self.user)
-        response = self.client.get(reverse('toolbar'))
-        expected_response = '"user_fullname": "alice@example.com"'
-        self.assertIn(expected_response, response.content)
+        response = self.client.get(reverse('topbar'))
+        self.assertIn("alice@example.com", response.content)
 
-    def test_toolbar_not_logged_in(self):
+    def test_topbar_not_logged_in(self):
         Session.objects.all().delete()
-        response = self.client.get(reverse('toolbar'))
-        expected_response = '({"user_fullname": "", "user_gravatar": '\
-                            '"", "employer": ""});'
-        self.assertEqual(response.content, expected_response)
+        response = self.client.get(reverse('topbar'))
+        self.assertNotIn("alice@example.com", response.content)
 
     def test_p3p(self):
         """
@@ -847,7 +844,7 @@ class MyJobsViewsTests(MyJobsBase):
 
         """
         self.client.login_user(self.user)
-        response = self.client.get(reverse('toolbar'))
+        response = self.client.get(reverse('topbar'))
         p3p = str(response["P3P"])
         self.assertEqual('CP="ALL' in p3p, True)
 
@@ -867,7 +864,7 @@ class MyJobsViewsTests(MyJobsBase):
 
     def test_referring_site_in_topbar(self):
         self.client.get(
-            reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'
+            reverse('topbar') + '?site_name=Indianapolis%20Jobs&site=http%3A'
                                  '%2F%2Findianapolis.jobs&callback=foo',
             HTTP_REFERER='http://indianapolis.jobs')
 
@@ -943,7 +940,7 @@ class MyJobsViewsTests(MyJobsBase):
         self.assertEqual(user.source, 'jobs.directemployers.org')
 
         self.client.get(
-            reverse('toolbar') + '?site_name=Indianapolis%20Jobs&site=http'
+            reverse('topbar') + '?site_name=Indianapolis%20Jobs&site=http'
                                  '%3A%2F%2Findianapolis.jobs&callback=foo',
             HTTP_REFERER='http://indianapolis.jobs')
 
@@ -1089,39 +1086,3 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         expected_company_names = [c for c in self.user.roles.values_list(
             'company__name', flat=True)]
         self.assertItemsEqual(context_company_names, expected_company_names)
-
-    def test_can_template_tag(self):
-        """
-        The {% can company user activity %} template tag should return False
-        when roles are disabled if passed an activity that includes "role"
-        """
-
-        template = """{% load common_tags %}
-                      {% can user company "read partner" as read_partner %}
-                      {% can user company "read role" as read_role %}"""
-
-        context = Context({
-            'user': self.user, 'company': self.company})
-
-        self.role.activities = self.activities
-        self.user.roles.add(self.role)
-
-        context = Context({
-            'user': self.user, 'company': self.company})
-
-        Template(template).render(context)
-
-        self.assertTrue(context['read_partner'])
-        self.assertTrue(context['read_role'])
-
-        # disable PRM (by removing PRM-related activities when roles are
-        # enabled
-        self.role.remove_activity('read partner')
-        self.role.remove_activity('read role')
-
-        # recreate the context since the last rendering modified it
-        context = Context({
-            'user': self.user, 'company': self.companies[0]})
-        Template(template).render(context)
-        self.assertFalse(context['read_partner'])
-        self.assertFalse(context['read_role'])

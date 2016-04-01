@@ -30,11 +30,10 @@ from urllib2 import HTTPError
 from email_parser import build_email_dicts, get_datetime_from_str
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
-from universal.decorators import warn_when_inactive
+from universal.decorators import warn_when_inactive, restrict_to_staff
 from myjobs.models import User
 
 from myjobs.decorators import requires
-from myreports.decorators import restrict_to_staff
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -1318,7 +1317,7 @@ def process_email(request):
 
 
 @restrict_to_staff()
-@requires("create partner", "create contact", "create communication record")
+@requires("read outreach email address")
 def nuo_main(request):
     """
     View for non user outreach module
@@ -1331,16 +1330,18 @@ def nuo_main(request):
         }
 
     return render_to_response('nonuseroutreach/nuo_main.html', ctx,
-                                RequestContext(request))
+                              RequestContext(request))
 
 
-# TODO: Add proper activities for the APIs
 @restrict_to_staff()
-@requires("create partner", "create contact", "create communication record")
+@requires("read outreach email address")
 def api_get_nuo_inbox_list(request):
     """
-    Retrieves all non user outreach inboxes for a company. Returns json object with id, email of each
     GET /prm/api/nonuseroutreach/inbox/list
+
+    Retrieves all non user outreach inboxes for a company. Returns json object
+    with id, email of each.
+
     """
     company = get_company_or_404(request)
 
@@ -1349,7 +1350,7 @@ def api_get_nuo_inbox_list(request):
 
 
 @restrict_to_staff()
-@requires("create partner", "create contact", "create communication record")
+@requires("create outreach email address")
 def api_save_nuo_inbox(request):
     """
     stub for save api
@@ -1358,7 +1359,7 @@ def api_save_nuo_inbox(request):
 
 
 @restrict_to_staff()
-@requires("create partner", "create contact", "create communication record")
+@requires("delete outreach email address")
 def api_delete_nuo_inbox(request):
     """
     stub for delete api

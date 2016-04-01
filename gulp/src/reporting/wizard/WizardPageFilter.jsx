@@ -1,15 +1,15 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
+import {forEach, map} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
-import {WizardFilterCollectedItems} from './WizardFilterCollectedItems';
 import {WizardFilterCityState} from './WizardFilterCityState';
-import {SearchInput} from 'common/ui/SearchInput';
 import {ValidatedInput} from 'common/ui/ValidatedInput';
+import {SelectElementController} from '../SelectElementController';
 
 export class WizardPageFilter extends Component {
   constructor() {
@@ -135,35 +135,27 @@ export class WizardPageFilter extends Component {
         break;
       case 'search_multiselect':
         rows.push(this.renderRow(col.display, col.filter,
-          <SearchInput
-            id={col.filter}
-            emptyOnSelect
-            onSelect={v =>
-              reportConfig.addToMultifilter(col.filter, v)}
-            getHints={v =>
-              reportConfig.getHints(col.filter, v)}/>
-        ));
-        rows.push(this.renderRow(
-          '',
-          col.filter + '-selected',
-          <WizardFilterCollectedItems
-            items={filter[col.filter] || []}
-            remove={v =>
-              reportConfig.removeFromMultifilter(
-                col.filter,
-                v)}/>));
+            <SelectElementController
+              getHints={v => reportConfig.getHints(col.filter, v)}
+              selectedOptions = {
+                map(reportConfig.multiFilter[col.filter] || [],
+                  v => ({value: v.key, display: v.display}))}
+              onSelectAdd = {vs => forEach(vs, v =>
+                reportConfig.addToMultifilter(col.filter,
+                  {key: v.value, display: v.display}))}
+              onSelectRemove = {vs => forEach(vs, v =>
+                reportConfig.removeFromMultifilter(col.filter,
+                  {key: v.value, display: v.display}))}
+            />));
         break;
       default:
         warning(true, 'Unknown interface type: ' + col.interface_type);
       }
     });
-
     return (
       <form>
         {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
-        <hr/>
         {rows}
-        <hr/>
         {this.renderRow('', 'submit',
           <button
             className="button"

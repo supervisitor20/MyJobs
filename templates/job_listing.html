@@ -56,7 +56,6 @@
   {% include 'includes/company_module.html'%}
 </div>
 {% endif %}
-
 {% if default_jobs or featured_jobs %}
     {% if "network" in site_tags or site_config.show_saved_search_widget %}
         {% if site_config.use_secure_blocks %}
@@ -91,4 +90,9 @@
     {% endif %}
 </div>
 {% endblock %}
+{% block extra-js %}
+<script type="text/javascript">
+    var analytics_info = {{ analytics_info|safe }};
+</script>
+{% endblock extra-js %}
 {% endcache %}
