@@ -351,6 +351,9 @@ def product_listing(request):
     site = settings.SITE
     company = site.canonical_company
 
+    if not 'MarketPlace' in company.enabled_access:
+        raise Http404("MarketPlace access not enabled for %s" % company.name)
+
     # Get all site packages and products for a site.
     site_packages = site.sitepackage_set.all()
     products = Product.objects.filter(package__sitepackage__in=site_packages)
