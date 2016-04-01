@@ -75,9 +75,6 @@ class RegistrationViewTests(MyJobsBase):
             response.cookies.get("loggedout"),
             "Expected the loggedout cookie to not be set, but it was")
 
-
-
-
     def test_valid_activation(self):
         """
         Test that the ``activate`` view properly handles a valid
