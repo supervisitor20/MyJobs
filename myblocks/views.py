@@ -111,18 +111,15 @@ def secure_blocks(request):
     response = {'cookies':[], 'errors': {}}
 
     for element_id in blocks:
-        block = Block.objects.filter(element_id=element_id).first()
-        if block is None:
-            response['errors'][element_id] = "Failed block lookup"
-        else:
-            try:
-                block = block.cast()
-                rendered = block.render_for_ajax(request, blocks[element_id])
-                response[element_id] = rendered
-                response['cookies'].extend(
-                    block.get_cookies(request, **blocks[element_id]))
-            except Exception as ex:
-                error_message = ex.message if settings.DEBUG else "Error in block"
-                response['errors'][element_id] = error_message
+        try:
+            block = Block.objects.get(element_id=element_id)
+            block = block.cast()
+            rendered = block.render_for_ajax(request, blocks[element_id])
+            response[element_id] = rendered
+            response['cookies'].extend(
+                block.get_cookies(request, **blocks[element_id]))
+        except Exception as ex:
+            error_message = ex.message if settings.DEBUG else "Could not load"
+            response['errors'][element_id] = error_message
 
     return response
