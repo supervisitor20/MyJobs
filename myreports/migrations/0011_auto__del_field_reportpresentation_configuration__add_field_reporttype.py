@@ -28,7 +28,8 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
 
         # User chose to not deal with backwards NULL issues for 'ReportPresentation.configuration'
-        raise RuntimeError("Cannot reverse this migration. 'ReportPresentation.configuration' and its values cannot be restored.")
+        # Better than nothing
+        #raise RuntimeError("Cannot reverse this migration. 'ReportPresentation.configuration' and its values cannot be restored.")
         
         # The following code is provided here to aid in writing a correct migration        # Adding field 'ReportPresentation.configuration'
         db.add_column(u'myreports_reportpresentation', 'configuration',
@@ -40,7 +41,8 @@ class Migration(SchemaMigration):
 
 
         # User chose to not deal with backwards NULL issues for 'DynamicReport.report_presentation'
-        raise RuntimeError("Cannot reverse this migration. 'DynamicReport.report_presentation' and its values cannot be restored.")
+        # Better than nothing
+        #raise RuntimeError("Cannot reverse this migration. 'DynamicReport.report_presentation' and its values cannot be restored.")
         
         # The following code is provided here to aid in writing a correct migration        # Adding field 'DynamicReport.report_presentation'
         db.add_column(u'myreports_dynamicreport', 'report_presentation',
