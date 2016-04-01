@@ -151,7 +151,7 @@ export class ReportConfiguration {
   }
 
   getMultiFilter(key) {
-    return this.multiFilter[key];
+    return this.multiFilter[key] ? this.multiFilter[key] : [];
   }
 
   getAndOrFilter(key) {
