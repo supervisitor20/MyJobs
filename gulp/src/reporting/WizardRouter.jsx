@@ -5,6 +5,7 @@ import {WizardPageReportingTypes} from './wizard/WizardPageReportingTypes';
 import {WizardPageReportTypes} from './wizard/WizardPageReportTypes';
 import {WizardPageDataTypes} from './wizard/WizardPageDataTypes';
 import {WizardPageFilter} from './wizard/WizardPageFilter';
+import {ExportReport} from './wizard/ExportReport';
 import {
   WizardPagePresentationTypes,
 } from './wizard/WizardPagePresentationTypes';
@@ -37,6 +38,9 @@ export class WizardRouter extends Component {
           <Route
             path="set-up-report/:presentationType"
             component={WizardPageFilter}/>
+          <Route
+            path="export/:reportId"
+            component={ExportReport}/>
         </Route>
       </Router>
     );
