@@ -6,6 +6,7 @@
 
 {% block direct_extraHeaderContent %}
 <link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
+
 {% endblock direct_extraHeaderContent %}
 
 {% block publisher %}
@@ -42,7 +43,7 @@
 
 {% block directseo_right_hand_column %}
 {% if default_jobs or featured_jobs %}
-<a name="filters"></a>  
+<a name="filters"></a>
 <div id="direct_shareDiv" class="direct_rightColBox direct_shareSolo" role="menu">
     <h3>{% trans "Share" %}</h3>
     {% include 'includes/add_this.html' %}<!--temp rollback of my.jobs sharing [JPS 10.4.12]-->
@@ -73,6 +74,10 @@
     </div>
     {% endif %}
 {% endblock directseo_micrositecarousel %}  
-
+{% block extra-js %}
+<script type="text/javascript">
+    var analytics_info = {{ analytics_info|safe }};
+</script>
+{% endblock extra-js %}
 
 {% endcache %}

@@ -105,6 +105,7 @@ class Module extends React.Component {
     }
   }
   processForm(apiResponse) {
+    const {formContents} = this.state;
     if (apiResponse) {
       // TODO This could be abstracted further for reuse throughout all
       // React / Django forms
@@ -162,12 +163,17 @@ class Module extends React.Component {
               />
           );
         case 'select':
-          const initial = find(profileUnit.choices, function findValueOfInitialItem(c) {return c.value === profileUnit.initial;});
+          const selected = formContents[profileUnitName];
+          const value = find(profileUnit.choices, c => c.value === selected);
+          let display = null;
+          if (value) {
+            display = value.display;
+          }
           return wrap(
             <Select
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
-              initial={initial}
+              value={display}
               choices={profileUnit.choices}
               />
           );

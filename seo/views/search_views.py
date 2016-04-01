@@ -1156,6 +1156,7 @@ def home_page(request):
         'filters': {},
         'view_source': settings.VIEW_SOURCE}
 
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response(home_page_template, data_dict,
                               context_instance=RequestContext(request))
 
@@ -1798,10 +1799,28 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
     }
-
+    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 
+
+def get_analytics_info():
+    """
+    Return a dictionary of analytics info to be added to the context for job
+    listing views. Used with homebrew analytics.
+
+    :return: dictionary with analytics info
+
+    """
+    site_buid_objects = BusinessUnit.objects.filter(id__in=settings.SITE_BUIDS)
+    analytics_info = {
+        'site_business_units': ([bu.title for bu in site_buid_objects]),
+        'default_facet_names': ([df.name for df in
+                                                settings.DEFAULT_FACET]),
+        'featured_facet_names': ([ff.name for ff in
+                                                settings.FEATURED_FACET])
+        }
+    return json.dumps(analytics_info)
 
 class SearchResults(FallbackBlockView):
     page_type = Page.SEARCH_RESULTS
