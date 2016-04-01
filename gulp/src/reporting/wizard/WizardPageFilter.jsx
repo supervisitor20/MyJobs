@@ -3,7 +3,6 @@ import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {forEach, map} from 'lodash-compat/collection';
 
-import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
@@ -52,25 +51,6 @@ export class WizardPageFilter extends Component {
       errors => this.onErrorsChanged(errors));
     this.setState({reportConfig});
     reportConfig.runCallbacks();
-  }
-
-  renderRow(displayName, key, content, buttonRow, textCenter) {
-    return (
-      <div key={key} className={
-        classnames(
-        {'row': true},
-        {'actions': buttonRow},
-        {'text-center': textCenter})}>
-        <div className="col-xs-12 col-md-4">
-          <label>
-            {displayName}
-          </label>
-        </div>
-        <div className="col-xs-12 col-md-8">
-          {content}
-        </div>
-      </div>
-    );
   }
 
   render() {
@@ -173,7 +153,6 @@ export class WizardPageFilter extends Component {
     });
     return (
       <form>
-        {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         {rows}
         <div className="row actions text-center">
           <div className="col-xs-12 col-md-4"></div>
