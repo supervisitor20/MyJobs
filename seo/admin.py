@@ -1167,7 +1167,7 @@ class CompanyAdmin(admin.ModelAdmin):
     fieldsets = [('Basics', {'fields': [('name'), ('company_slug'), ('member'),
                                                ('posting_access'), ('enhanced'),
                                                ('digital_strategies_customer'),
-                                               ('app_access')]}),
+                                               ('app_access'), ('admin_email')]}),
                  ('User Roles', {'classes': ('collapse',),
                                  'fields': [('user_roles')]}),
                  ('Company Info', {'fields':[('logo_url'), ('linkedin_id'),
