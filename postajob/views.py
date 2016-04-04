@@ -111,6 +111,7 @@ def purchasedproducts_overview(request):
                               data, RequestContext(request))
 
 
+@user_is_allowed()
 def purchasedjobs_overview(request, purchased_product, admin):
     """
     Normally we would need to filter by settings.SITE for objects in postajob
@@ -221,14 +222,12 @@ def admin_offlinepurchase(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("read request")
 def admin_request(request):
     company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        requests = Request.objects.filter_by_sites(sites)
-    else:
-        requests = Request.objects.all()
+    sites = settings.SITE.postajob_site_list()
+    requests = Request.objects.filter_by_sites(sites)
+
     data = {
         'company': company,
         'pending_requests': requests.filter(owner=company, action_taken=False),
@@ -258,8 +257,6 @@ def admin_purchasedproduct(request):
     return render_to_response('postajob/purchasedproduct.html', data,
                               RequestContext(request))
 
-@user_is_allowed()
-@company_has_access('product_access')
 def view_request(request, pk, model=None):
     template = 'postajob/request/{model}.html'
     company = get_company(request)
@@ -272,8 +269,10 @@ def view_request(request, pk, model=None):
 
     request_made = get_object_or_404(model, **request_kwargs)
     if model == Request:
+        activity = "read request"
         request_object = request_made.request_object()
     else:
+        activity = "read offline purchase"
         request_object = request_made
 
     content_type = ContentType.objects.get_for_model(type(request_object))
@@ -285,16 +284,15 @@ def view_request(request, pk, model=None):
         'request_obj': request_made,
     }
 
-    if not data['object'].user_has_access(request.user):
-        raise Http404("postajob.views.view_request: user does not have access "
-                      "to this object")
+    if not request.user.can(company, activity):
+        return MissingActivity()
 
     return render_to_response(template.format(model=content_type.model),
                               data, RequestContext(request))
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("update request")
 def process_admin_request(request, pk, approve=True,
                           block=False):
     """
@@ -314,8 +312,8 @@ def process_admin_request(request, pk, approve=True,
         if block and request_object.created_by:
             # Block the user that initiated this request
             # and deny all of that user's outstanding requests
-            profile = CompanyProfile.objects.get_or_create(
-                company=request_object.owner)[0]
+            profile, _ = CompanyProfile.objects.get_or_create(
+                company=company)
             profile.blocked_users.add(request_object.created_by)
 
             # Since Requests and the objects associated with them are related
@@ -465,7 +463,7 @@ class BaseJobFormView(PostajobModelFormMixin, RequestFormViewBase):
     """
     prevent_delete = True
 
-    def delete(self):
+    def delete(self, request):
         raise Http404("postajob.views.BaseJobFormView: delete not allowed")
 
     def get_context_data(self, **kwargs):
@@ -574,7 +572,7 @@ class PurchasedJobFormView(BaseJobFormView):
                 raise Http404("{view}: all available jobs for this posting "
                               "have been used".format(view=http404_view))
             else:
-                company = get_company(self.request)
+                company = self.product.product.owner
                 if company and hasattr(company, 'companyprofile'):
                     if self.request.user in company.companyprofile.blocked_users.all():
                         # If the current user has been blocked by the company
@@ -644,7 +642,6 @@ class ProductFormView(PostajobModelFormMixin, RequestFormViewBase):
     success_url = reverse_lazy('product')
     add_name = 'product_add'
     update_name = 'product_update'
-    delete_name = 'product_delete'
 
     def get(self, *args, **kwargs):
         company = get_company_or_404(self.request)
@@ -695,10 +692,10 @@ class ProductGroupingFormView(PostajobModelFormMixin, RequestFormViewBase):
             return MissingActivity()
         return super(ProductGroupingFormView, self).post(*args, **kwargs)
 
-    def delete(self):
+    def delete(self, request):
         company = get_company_or_404(self.request)
         if self.request.user.can(company, 'delete grouping'):
-            return super(ProductGroupingFormView, self).delete()
+            return super(ProductGroupingFormView, self).delete(request)
         return MissingActivity()
 
     @method_decorator(user_is_allowed())
@@ -808,14 +805,14 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
     update_name = 'offlinepurchase_update'
     delete_name = 'offlinepurchase_delete'
 
-    def delete(self):
+    @method_decorator(requires("delete offline purchase"))
+    def delete(self, request):
         if self.object.redeemed_on:
             raise Http404("postajob.views.OfflinePurchaseFormView: "
                           "can't delete redeemed OfflinePurchases")
-        return super(OfflinePurchaseFormView, self).delete()
+        return super(OfflinePurchaseFormView, self).delete(request)
 
     @method_decorator(user_is_allowed())
-    @method_decorator(company_has_access('product_access'))
     def dispatch(self, *args, **kwargs):
         """
         Decorators on this function will be run on every request that
@@ -844,6 +841,24 @@ class OfflinePurchaseFormView(PostajobModelFormMixin, RequestFormViewBase):
             raise Http404("postajob.views.OfflinePurchaseFormView: "
                           "OfflinePurchases can only be added or deleted")
         return super(OfflinePurchaseFormView, self).set_object(request)
+
+    def get(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update offline purchase",
+                          "create offline purchase"):
+            return MissingActivity()
+
+        return super(OfflinePurchaseFormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        company = get_company_or_404(self.request)
+        if not can_modify(self.request.user, company, kwargs,
+                          "update offline purchase",
+                          "create offline purchase"):
+            return MissingActivity()
+
+        return super(OfflinePurchaseFormView, self).post(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(OfflinePurchaseFormView, self).get_context_data(**kwargs)
@@ -915,7 +930,7 @@ class CompanyProfileFormView(PostajobModelFormMixin, RequestFormViewBase):
         self.object, _ = self.model.objects.get_or_create(**kwargs)
         return self.object
 
-    def delete(self):
+    def delete(self, request):
         raise Http404("postajob.views.CompanyProfileFormView: "
                       "delete not allowed")
 
@@ -943,7 +958,7 @@ class SitePackageFilter(FSMView):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("update request")
 def blocked_user_management(request):
     """
     Displays blocked users (if any) for the current company as well as
@@ -961,7 +976,7 @@ def blocked_user_management(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires("update request")
 def unblock_user(request, pk):
     """
     Unblocks a given user that has previously been blocked from posting jobs.

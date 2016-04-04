@@ -112,7 +112,9 @@ class MyJobsBase(TestCase):
                 "read communication record", "read partner saved search",
                 "read partner", "read role", "read user", "read tag",
                 "update communication record", "update contact",
-                "update partner", "update role", "update tag", "update user"]]
+                "update partner", "update role", "update tag", "update user",
+                "read outreach email address", "create outreach email address",
+                "delete outreach email address"]]
 
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
@@ -151,8 +153,8 @@ class MyJobsBase(TestCase):
         """
         Asserst that the given view is only accessible when a user has a role
         with the given activities.
-        """
 
+        """
         url = reverse(view_name, kwargs=kwargs.get('kwargs'))
         method = kwargs.get("method", "get").lower()
 

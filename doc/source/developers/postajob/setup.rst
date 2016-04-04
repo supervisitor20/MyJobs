@@ -326,6 +326,81 @@ URL Path                            View Name               Required Activities
 /posting/admin/product/group/delete ProductGroupingFormView delete grouping
 =================================== ======================= ===================
 
+Use Case 4: Site owner reviewing posted jobs
+--------------------------------------------
+An SBO has posted a job to Paul's site. Paul logs into the admin and goes to
+requests. He reviews the jobs and approves it by clicking on "Approve this
+job".
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+=================================== ======================= ===================
+URL Path                            View Name               Required Activities
+=================================== ======================= ===================
+/posting/admin/request/             admin_request           read request
+/posting/admin/request/view/        read_request            read request
+/posting/admin/request/approve/     process_admin_request   update request
+/posting/admin/request/deny/        process_admin_request   update request
+=================================== ======================= ===================
+
+Use Case 5: Site owner blcoks and unblocks a user
+-------------------------------------------------
+An SBO posts a job and Paul thinks it is inappropriate. Instead of approving
+the job, he clicks on "Block postings from this user". Later, the SBO explains
+that it is a legit posting. Paul logs in, goes to "Blocked Users", and unblocks
+the SBO.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+==================================== ======================= ==================
+URL Path                            View Name               Required Activities
+==================================== ======================= ==================
+/posting/admin/blocked-users/        blocked_user_management read request
+/posting/admin/request/block         process_admin_request   update request
+/posting/admin/blocked-users/unblock unblock_user            update request
+==================================== ======================= ==================
+
+Use Case 6: Site owner entering offline purchases
+-------------------------------------------------
+Paul sells a job posting at a conference. He creates an offline purchase and
+emails the SBO a redemption code. The SBO goes to /posting/purchase/redeem/ and
+redeems the purchase by entering the code. The SBO can now post jobs within
+that product.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+======================================== ================================= =======================
+URL Path                                 View Name                         Required Activities
+======================================== ================================= =======================
+/posting/admin/purchase/offline/         admin_offlinepurchase             read offline purchase
+/posting/admin/purchase/offline/add/     OfflinePurchaseFormView           create offline purchase
+/posting/admin/purchase/offline/update/  OfflinePurchaseFormView           update offline purchase
+/posting/admin/purchase/offline/delete/  OfflinePurchaseFormView           delete offline purchase
+/posting/admin/purchase/offline/success/ view_request                      read offline purchase
+/posting/purchase/redeem/                OfflinePurchaseRedemptionFormView
+======================================== ================================= =======================
+
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
 .. _create a new row: http://directemployers.jobs/admin/myblocks/row/add/
