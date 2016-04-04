@@ -1,4 +1,4 @@
-import {intersperse, flatMap} from '../array';
+import {intersperse, flatMap, lookupByValue} from '../array';
 
 
 const add200 = (item, index) => item + index + 200;
@@ -33,5 +33,38 @@ describe('flatMap', () => {
   it('can handle multiple elements', () => {
     expect(flatMap(add200Twice, [1000, 1001]))
       .toEqual([1200, 200, 1201, 201]);
+  });
+});
+
+describe('lookupByValue', () => {
+  const defaultVal = {value: '', description: ''};
+  const oneVal = [{value: 'a', description: 'red'}];
+  const twoVal = [...oneVal, {value: 'b', description: 'blue'}];
+
+  it('returns a default on an empty value', () => {
+    const result = lookupByValue([], null);
+    expect(result).toEqual(defaultVal);
+  });
+
+  it('returns a default on an missing value', () => {
+    const result = lookupByValue(oneVal, 'b');
+    expect(result).toEqual(defaultVal);
+  });
+
+  it('finds correct values', () => {
+    const resultA = lookupByValue(twoVal, 'a');
+    expect(resultA).toEqual({value: 'a', description: 'red'});
+    const resultB = lookupByValue(twoVal, 'b');
+    expect(resultB).toEqual({value: 'b', description: 'blue'});
+  });
+
+  it('returns a default on an undefined value', () => {
+    const result = lookupByValue(undefined, 'b');
+    expect(result).toEqual(defaultVal);
+  });
+
+  it('returns a default on a null value', () => {
+    const result = lookupByValue(null, 'b');
+    expect(result).toEqual(defaultVal);
   });
 });

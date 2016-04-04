@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import Select from 'common/ui/Select';
+import {lookupByValue} from 'common/array';
 
 export default class DataTypeSelectBar extends Component {
   render() {
@@ -24,7 +25,8 @@ export default class DataTypeSelectBar extends Component {
                 <Select
                   onChange={e => onIntentionChange(e.target.value)}
                   choices = {intentionChoices}
-                  value = {intentionValue}
+                  value = {
+                    lookupByValue(intentionChoices, intentionValue).display}
                   name = ""
                 />
               </label>
@@ -34,7 +36,8 @@ export default class DataTypeSelectBar extends Component {
                 <Select
                   onChange={e => onCategoryChange(e.target.value)}
                   choices = {categoryChoices}
-                  value = {categoryValue}
+                  value = {
+                    lookupByValue(categoryChoices, categoryValue).display}
                   name = ""
                 />
               </label>
@@ -44,7 +47,8 @@ export default class DataTypeSelectBar extends Component {
                 <Select
                   onChange={e => onDataSetChange(e.target.value)}
                   choices = {dataSetChoices}
-                  value = {dataSetValue}
+                  value = {
+                    lookupByValue(dataSetChoices, dataSetValue).display}
                   name = ""
                 />
               </label>
