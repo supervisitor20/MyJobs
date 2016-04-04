@@ -350,7 +350,7 @@ URL Path                            View Name               Required Activities
 /posting/admin/request/deny/        process_admin_request   update request
 =================================== ======================= ===================
 
-Use Case 5: Site owner blcoks and unblocks a user
+Use Case 5: Site owner blocks and unblocks a user
 -------------------------------------------------
 An SBO posts a job and Paul thinks it is inappropriate. Instead of approving
 the job, he clicks on "Block postings from this user". Later, the SBO explains
