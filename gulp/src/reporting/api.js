@@ -34,13 +34,10 @@ class Api {
       '/reports/api/select_data_type_api', formData);
   }
 
-  async getPresentationTypes(reportTypeId, dataTypeId) {
-    const formData = {
-      report_type_id: reportTypeId,
-      data_type_id: dataTypeId,
-    };
-    const promise = this.postToReportingApi('/reports/api/report_presentations', formData);
-    return (await promise).report_presentation;
+  async getExportOptions(reportId) {
+    const response = await this.getFromReportingApi(
+      '/reports/api/export_options_api?report_id=' + reportId);
+    return response.report_options;
   }
 
   async getDefaultReportName(reportDataId) {

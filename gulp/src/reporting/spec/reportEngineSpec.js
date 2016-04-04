@@ -18,7 +18,6 @@ class FakeBuilder {
 function buildFakeApi() {
   return {
     getSetUpMenuChoices: () => ({report_data_id: 12}),
-    getPresentationTypes: () => [4],
     getFilters: () => ({filters: {6: 6}}),
     getHelp: () =>
       [{'city': 'Indianapolis'}, {'city': 'Chicago'}],

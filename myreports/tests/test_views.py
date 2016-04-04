@@ -11,7 +11,8 @@ from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         PartnerFactory, LocationFactory,
                                         TagFactory)
 from myreports.models import (
-    Report, ReportPresentation, PresentationType, ReportTypeDataTypes)
+    Report, ReportPresentation, PresentationType, ReportTypeDataTypes,
+    DynamicReport)
 from myreports.tests.setup import MyReportsTestCase
 
 
@@ -474,15 +475,44 @@ class TestReportsApi(MyReportsTestCase):
         }
         self.assertEquals(expected, data)
 
-    def test_presentation_api(self):
-        """Test that we get only active presentation types."""
-        resp = self.client.post(reverse('presentation_types_api'),
-                                data={'report_type_id': '2',
-                                      'data_type_id': '3'})
-        data = json.loads(resp.content)['report_presentation']
-        names = set(v['name'] for v in data.values())
-        expected_names = set(["Contact CSV", "Contact Excel Spreadsheet"])
-        self.assertEquals(expected_names, names)
+    def test_export_options_api(self):
+        report_data = ReportTypeDataTypes.objects.get(id=4)
+
+        report = DynamicReport.objects.create(
+            name='The Report',
+            owner=self.company,
+            report_data=report_data,
+            filters={})
+
+        resp = self.client.get(
+            "%s?report_id=%d" % (reverse('export_options_api'), report.id))
+        self.assertEquals(200, resp.status_code)
+
+        data = json.loads(resp.content)
+        self.assertEquals({
+            u'report_options': {
+                u'id': report.id,
+                u'formats': [
+                    {u'value': 3, u'display': u'Contact CSV'},
+                    {u'value': 7, u'display': u'Contact Excel Spreadsheet'},
+                ],
+            },
+        }, data)
+
+    def test_export_options_api_missing_report_param(self):
+        resp = self.client.get(reverse('export_options_api'))
+        self.assertEquals(400, resp.status_code)
+        data = json.loads(resp.content)
+        field_keys = {r['field'] for r in data}
+        self.assertIn('report_id', field_keys)
+
+    def test_export_options_api_missing_invalid_report_id(self):
+        resp = self.client.get(
+            "%s?report_id=%d" % (reverse('export_options_api'), -1))
+        self.assertEquals(400, resp.status_code)
+        data = json.loads(resp.content)
+        field_keys = {r['field'] for r in data}
+        self.assertIn('report_id', field_keys)
 
     def test_filters_api(self):
         """Test that we get descriptions of available filters."""

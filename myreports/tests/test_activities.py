@@ -150,14 +150,14 @@ class TestViewLevelActivities(MyReportsTestCase):
             "select_data_type_api",
             "read partner", "read contact", "read communication record")
 
-    def test_presentation_types_api(self):
+    def test_export_options_api(self):
         """
-        /reports/api/presentations requires "read partner", "read contact",
-        and "read communication record"
+        /reports/api/export_options_api requires "read partner",
+        "read contact", and "read communication record"
         """
 
         self.assertRequires(
-            "presentation_types_api",
+            "export_options_api",
             "read partner", "read contact", "read communication record")
 
     def test_run_dynmaic_report(self):

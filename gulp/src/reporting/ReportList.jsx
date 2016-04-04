@@ -1,14 +1,14 @@
 import React, {PropTypes} from 'react';
+import {Link} from 'react-router';
 
 export function ReportList(props) {
   const reportData = props.reports.map(report => ({
     id: report.id,
     name: report.name,
-    href: '/reports/view/dynamicdownload?id=' + report.id,
   }));
   const reportLinks = reportData.map(r =>
     <li key={r.id}>
-      <a href={r.href}>{r.name}</a>
+      <Link to={'/export/' + r.id}>{r.name}</Link>
     </li>
   );
 

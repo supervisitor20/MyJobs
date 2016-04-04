@@ -452,30 +452,37 @@ def select_data_type_api(request):
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@require_http_methods(['POST'])
-def presentation_types_api(request):
-    """Get a list of presentation types
+@require_http_methods(['GET'])
+def export_options_api(request):
+    validator = ApiValidator()
 
-    report_type_id: report type id from earlier call
-    data_type_id: data type id from earlier call
-    """
-    report_type_id = request.POST['report_type_id']
-    data_type_id = request.POST['data_type_id']
-    report_type = ReportType.objects.get(id=report_type_id)
-    data_type = ReportType.objects.get(id=data_type_id)
-    rpdt = (ReportTypeDataTypes.objects
-            .first_active_for_report_type_data_type(
-                report_type=report_type,
-                data_type=data_type))
+    report_id = request.GET.get('report_id', None)
+    if report_id is None:
+        validator.note_field_error('report_id', 'Missing report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report_list = list(DynamicReport.objects.filter(id=report_id))
+    if len(report_list) < 1:
+        validator.note_field_error('report_id', 'Unknown report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report = report_list[0]
     rps = (ReportPresentation.objects
-           .active_for_report_type_data_type(rpdt))
+           .active_for_report_type_data_type(report.report_data))
 
-    def entry(rp):
-        return (str(rp.id),
-                {'name': rp.display_name})
-
-    data = {'report_presentation':
-            dict(entry(rp) for rp in rps)}
+    data = {
+        'report_options': {
+            'id': report.id,
+            'formats': [
+                {'value': rp.id, 'display': rp.display_name}
+                for rp in rps
+            ],
+        },
+    }
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
 
@@ -487,29 +494,12 @@ def filters_api(request):
     """Get a list of filters for the UI.
 
     report_data_id: Report Presentation ID
-#    reporting_type: name of selected reporting type
-#    report_type: name of selected report type
-#    data_type: name of selected data type
 
     response: See ContactsJsonDriver.encode_filter_interface()
     """
     request_data = request.POST
     report_data_id = request_data['report_data_id']
     report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
-#    validator = ApiValidator()
-#
-#    reporting_type = request.POST.get('reporting_type', None)
-#    report_type = request.POST.get('report_type', None)
-#    data_type = request.POST.get('data_type', None)
-#
-#    report_data = ReportTypeDataTypes.objects.find_report_data(
-#        request.user, reporting_type, report_type, data_type)
-#
-#    if report_data is None:
-#        validator.note_error("No report_data found.")
-#
-#    if validator.has_errors():
-#        return validator.build_error_response()
 
     datasource = report_data.report_type.datasource
 

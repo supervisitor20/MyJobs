@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Router, Route, IndexRedirect} from 'react-router';
 import {DynamicReportApp} from 'reporting/DynamicReportApp';
 import SetUpReport from 'reporting/SetUpReport';
+import ExportReport from 'reporting/ExportReport';
 
 export class WizardRouter extends Component {
   createElement(TheComponent, componentProps) {
@@ -19,6 +20,9 @@ export class WizardRouter extends Component {
           <Route
             path="set-up-report"
             component={SetUpReport}/>
+          <Route
+            path="export/:reportId"
+            component={ExportReport}/>
         </Route>
       </Router>
     );

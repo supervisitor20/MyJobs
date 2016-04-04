@@ -18,10 +18,6 @@ export class ReportFinder {
     this.newMenuChoicesSubscribers = {};
   }
 
-  getPresentationTypes(reportTypeId, dataTypeId) {
-    return this.api.getPresentationTypes(reportTypeId, dataTypeId);
-  }
-
   /**
    * Get a report configuration which can be customized and later run.
    *
@@ -64,6 +60,13 @@ export class ReportFinder {
    */
   async getReportList() {
     return await this.api.listReports();
+  }
+
+  /**
+   * Get a set of report options for this report.
+   */
+  async getExportOptions(reportId) {
+    return await this.api.getExportOptions(reportId);
   }
 
   /**
