@@ -82,7 +82,7 @@ def get_purchase_total(purchases):
 def get_redeemer(offline_purchase):
     # This is only set if a user has redeemed the purchase.
     if offline_purchase.redeemed_by:
-        return offline_purchase.redeemed_by.company.name
+        return offline_purchase.owner.name
     # Otherwise attempt to get the name from a Product created from the
     # OfflinePurchase.
     else:
