@@ -1351,11 +1351,11 @@ def api_get_nuo_inbox_list(request):
 
 @restrict_to_staff()
 @requires("create outreach email address")
-def api_save_nuo_inbox(request):
+def api_add_nuo_inbox(request):
     """
     stub for save api
     """
-    pass
+    import ipdb; ipdb.set_trace()
 
 
 @restrict_to_staff()
@@ -1364,7 +1364,7 @@ def api_delete_nuo_inbox(request):
     """
     stub for delete api
     """
-    pass
+    import ipdb; ipdb.set_trace()
 
 
 @requires('read tag')
