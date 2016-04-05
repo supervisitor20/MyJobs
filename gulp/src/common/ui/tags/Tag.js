@@ -1,5 +1,5 @@
 import React, {PropTypes} from 'react';
-import classNames from 'classnames';
+import classnames from 'classnames';
 import tinycolor from 'tinycolor2';
 
 
@@ -20,7 +20,7 @@ export function Tag(props) {
   return (
     <div
       className={
-        classNames(
+        classnames(
           'tag-name',
           {'faded': highlight},
           {'removable': removeTag})}

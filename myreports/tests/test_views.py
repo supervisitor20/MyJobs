@@ -761,6 +761,22 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertIn('The_Report.xlsx', resp['content-disposition'])
         self.assertIn('application/vnd.', resp['content-type'])
 
+    def test_missing_report_name(self):
+        """Returns an error if the report name is missing."""
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'json_pass')
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'rp_id': report_presentation.pk,
+                'filter': json.dumps({}),
+            })
+        self.assertEqual(400, resp.status_code)
+        doc = json.loads(resp.content)
+        field_keys = {r['field'] for r in doc}
+        self.assertIn('name', field_keys)
+
     def test_dynamic_partners_report_comm_per_month(self):
         """Run the comm_rec per month per partner report."""
         self.client.login_user(self.user)
@@ -813,3 +829,23 @@ class TestDynamicReports(MyReportsTestCase):
         february = response_data['records'][1]
         self.assertEqual('2', february['month'])
         self.assertEqual('20', february['comm_rec_count'])
+
+    def test_default_report_name(self):
+        """Returns a nice timestampy default report name."""
+        report_presentation = self.find_report_presentation(
+            'partners',
+            'xlsx')
+        post_data = {'report_presentation_id': report_presentation.pk}
+        resp = self.client.post(reverse('get_default_report_name'), post_data)
+        self.assertEqual(200, resp.status_code)
+        doc = json.loads(resp.content)
+        self.assertIn('name', doc)
+        self.assertRegexpMatches(doc['name'], '^\d{4}-')
+
+    def test_default_report_name_error(self):
+        """Returns a 400 on missing parameter."""
+        resp = self.client.post(reverse('get_default_report_name'), {})
+        self.assertEqual(400, resp.status_code)
+        doc = json.loads(resp.content)
+        field_keys = {r['field'] for r in doc}
+        self.assertIn('report_presentation_id', field_keys)

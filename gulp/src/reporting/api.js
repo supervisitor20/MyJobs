@@ -54,15 +54,24 @@ class Api {
     return (await promise).report_presentation;
   }
 
-  async getFilters(reportPresentationId) {
-    const formData = {
-      rp_id: reportPresentationId,
-    };
-    const promise = this.postToReportingApi(
-          '/reports/api/filters',
-          formData);
-    return (await promise);
-  }
+    async getDefaultReportName(reportPresentationId) {
+      const formData = {
+        report_presentation_id: reportPresentationId,
+      };
+      return await this.postToReportingApi(
+            '/reports/api/default_report_name',
+            formData);
+    }
+
+    async getFilters(reportPresentationId) {
+      const formData = {
+        rp_id: reportPresentationId,
+      };
+      const promise = this.postToReportingApi(
+            '/reports/api/filters',
+            formData);
+      return (await promise);
+    }
 
   async getHelp(reportPresentationId, filter, field, partial) {
     const formData = {
@@ -83,7 +92,9 @@ class Api {
       filter: JSON.stringify(filter),
       rp_id: reportPresentationId,
     };
-    return await this.postToReportingApi('/reports/api/run_report', formData);
+    return await this.postToReportingApi(
+      '/reports/api/run_report',
+      formData);
   }
 }
 
