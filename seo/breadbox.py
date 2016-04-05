@@ -178,7 +178,7 @@ class Breadbox(object):
 
             self.custom_facet_breadcrumbs = []
             for facet in custom_facets:
-                path_for_facet = new_path.replace("/%s" % facet.name_slug, '')
+                path_for_facet = new_path.replace("/%s" % facet.name_slug, '/')
                 kwargs = {
                     'breadcrumb_class': 'facet_bread_box',
                     'display_title': facet.name,

@@ -1,20 +1,20 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
-import {forEach} from 'lodash-compat/collection';
+import {forEach, map} from 'lodash-compat/collection';
 
-import classnames from 'classnames';
 import {WizardFilterDateRange} from './WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './WizardFilterSearchDropdown';
 import {WizardFilterTags} from './WizardFilterTags';
 import {WizardFilterCityState} from './WizardFilterCityState';
+import FieldWrapper from 'common/ui/FieldWrapper';
 import {SelectElementController} from '../SelectElementController';
 
 export class WizardPageFilter extends Component {
   constructor() {
     super();
     this.state = {
-      reportName: 'Report Name',
+      reportName: '',
       loading: true,
     };
   }
@@ -23,157 +23,129 @@ export class WizardPageFilter extends Component {
     this.loadData();
   }
 
-  getFromMultifilter(filter) {
-    const {reportConfig} = this.state;
-    const values = reportConfig.getMultiFilter(filter);
-    const values2 = JSON.parse(JSON.stringify(values).split('"key":').join('"value":'));
-    return values2;
+  onFilterUpdate(filter) {
+    this.setState({filter});
   }
 
-  async getHints(filter, partial) {
-    const {reportConfig} = this.state;
-    return await reportConfig.getHints(filter, partial);
+  onErrorsChanged(errors) {
+    const reportNameError = errors.name;
+    this.setState({reportNameError});
   }
 
-  addAllToMultifilter(filter, values) {
-    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
-    forEach(values2, v => this.addToMultifilter(filter, v));
-    this.updateState();
+  onReportNameChanged(reportName) {
+    this.setState({reportName});
   }
 
-  removeAllFromMultifilter(filter, values) {
-    const values2 = JSON.parse(JSON.stringify(values).split('"value":').join('"key":'));
-    forEach(values2, v => this.removeFromMultifilter(filter, v));
-    this.updateState();
+  async loadData() {
+    await this.buildReportConfig();
+    this.setState({loading: false});
   }
 
   async buildReportConfig() {
     const {reportFinder} = this.props;
     const {presentationType} = this.props.routeParams;
     const reportConfig = await reportFinder.buildReportConfiguration(
-      presentationType);
+      presentationType,
+      n => this.onReportNameChanged(n),
+      f => this.onFilterUpdate(f),
+      errors => this.onErrorsChanged(errors));
     this.setState({reportConfig});
-  }
-
-  async loadData() {
-    await this.buildReportConfig();
-    this.updateState();
-    this.setState({loading: false});
-  }
-
-  updateFilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.setFilter(filter, value);
-    this.updateState();
-  }
-
-  addToMultifilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.addToMultifilter(filter, value);
-    this.updateState();
-  }
-
-  removeFromMultifilter(filter, value) {
-    const {reportConfig} = this.state;
-    reportConfig.removeFromMultifilter(filter, value);
-    this.updateState();
-  }
-
-  addToAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.state;
-    reportConfig.addToAndOrFilter(filter, index, value);
-    this.updateState();
-  }
-
-  removeFromAndOrFilter(filter, index, value) {
-    const {reportConfig} = this.state;
-    reportConfig.removeFromAndOrFilter(filter, index, value);
-    this.updateState();
-  }
-
-  updateState() {
-    const {reportConfig} = this.state;
-    this.setState({
-      filter: reportConfig.getFilter(),
-    });
-  }
-
-  renderRow(displayName, key, content, buttonRow, textCenter) {
-    return (
-      <div key={key} className={
-        classnames(
-        {'row': true},
-        {'actions': buttonRow},
-        {'text-center': textCenter})}>
-        <div className="col-xs-12 col-md-4">
-          <label>
-            {displayName}
-          </label>
-        </div>
-        <div className="col-xs-12 col-md-8">
-          {content}
-        </div>
-      </div>
-    );
+    reportConfig.runCallbacks();
   }
 
   render() {
-    const {loading, reportConfig, reportName} = this.state;
+    const {
+      loading,
+      reportConfig,
+      reportName,
+      reportNameError,
+      filter,
+    } = this.state;
 
     if (loading) {
       return <Loading/>;
     }
 
     const rows = [];
+    const errorTexts = reportNameError ? [reportNameError] : [];
+    rows.push(
+      <FieldWrapper
+        key="reportName"
+        label="Report Name"
+        helpText="Name will appear in downloaded filenames."
+        errors={errorTexts}>
+        <input
+          value={reportName}
+          onChange={v => reportConfig.changeReportName(v.target.value)}/>
+      </FieldWrapper>
+    );
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
       case 'date_range':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterDateRange
-            id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterDateRange
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'search_select':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterSearchDropdown
-            id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}
-            getHints={v =>
-              this.getHints(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterSearchDropdown
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}
+              getHints={v =>
+                reportConfig.getHints(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'city_state':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterCityState
-            id={col.filter}
-            updateFilter={v =>
-              this.updateFilter(col.filter, v)}
-            getHints={(f, v) =>
-              this.getHints(f, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterCityState
+              id={col.filter}
+              updateFilter={v => reportConfig.setFilter(col.filter, v)}
+              getHints={(f, v) =>
+                reportConfig.getHints(f, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'tags':
-        rows.push(this.renderRow(col.display, col.filter,
-          <WizardFilterTags
-            tags={reportConfig.getAndOrFilter(col.filter)}
-            addTag={(i, t) =>
-              this.addToAndOrFilter(col.filter, i, t)}
-            removeTag={(i, t) =>
-              this.removeFromAndOrFilter(col.filter, i, t)}
-            getHints={v => this.getHints(col.filter, v)}/>
-        ));
+        rows.push(
+          <FieldWrapper key={col.filter} label={col.display}>
+            <WizardFilterTags
+              tags={filter[col.filter] || []}
+              addTag={(i, t) =>
+                reportConfig.addToAndOrFilter(col.filter, i, t)}
+              removeTag={(i, t) =>
+                reportConfig.removeFromAndOrFilter(col.filter, i, t)}
+              getHints={v => reportConfig.getHints(col.filter, v)}/>
+          </FieldWrapper>
+        );
         break;
       case 'search_multiselect':
-        rows.push(this.renderRow(col.display, col.filter,
+        rows.push(
+          <FieldWrapper
+            key={col.filter}
+            label={col.display}>
+
             <SelectElementController
-              getHints={v => this.getHints(col.filter, v)}
-              selectedOptions = {this.getFromMultifilter(col.filter)}
-              onSelectAdd = {v => this.addAllToMultifilter(col.filter, v)}
-              onSelectRemove = {v => this.removeAllFromMultifilter(col.filter, v)}
-            />));
+              getHints={v => reportConfig.getHints(col.filter, v)}
+              selectedOptions = {
+                map(reportConfig.multiFilter[col.filter] || [],
+                  v => ({value: v.key, display: v.display}))}
+              onSelectAdd = {vs => forEach(vs, v =>
+                reportConfig.addToMultifilter(col.filter,
+                  {key: v.value, display: v.display}))}
+              onSelectRemove = {vs => forEach(vs, v =>
+                reportConfig.removeFromMultifilter(col.filter,
+                  {key: v.value, display: v.display}))}
+            />
+
+          </FieldWrapper>
+          );
         break;
       default:
         warning(true, 'Unknown interface type: ' + col.interface_type);
@@ -181,14 +153,17 @@ export class WizardPageFilter extends Component {
     });
     return (
       <form>
-        {this.renderRow('', 'head', <h2>Set Up Report</h2>)}
         {rows}
-        {this.renderRow('', 'submit',
-          <button
-            className="button"
-            onClick={() => reportConfig.run(reportName)}>
-            Run Report
-          </button>, true, true)}
+        <div className="row actions text-center">
+          <div className="col-xs-12 col-md-4"></div>
+          <div className="col-xs-12 col-md-8">
+            <button
+              className="button"
+              onClick={() => reportConfig.run()}>
+              Run Report
+            </button>
+          </div>
+        </div>
       </form>
     );
   }
