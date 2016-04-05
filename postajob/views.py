@@ -13,7 +13,6 @@ from django.views.decorators.csrf import csrf_exempt
 from myjobs.models import User
 from postajob.location_data import state_list
 
-from universal.decorators import company_has_access
 from seo.models import SeoSite
 from myjobs.decorators import user_is_allowed, MissingActivity
 from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
@@ -46,6 +45,7 @@ def jobs_overview(request):
 
 
 @user_is_allowed()
+@requires('read purchased product')
 def view_job(request, purchased_product, pk, admin):
     http404_view = 'postajob.views.view_job'
     company = get_company_or_404(request)
@@ -65,6 +65,7 @@ def view_job(request, purchased_product, pk, admin):
     return render_to_response('postajob/view_job.html',
                               data, RequestContext(request))
 
+@requires('read invoice')
 def view_invoice(request, purchased_product):
     company = get_company_or_404(request)
     kwargs = {
@@ -119,7 +120,11 @@ def purchasedjobs_overview(request, purchased_product, admin):
     """
     product = PurchasedProduct.objects.prefetch_related(
         'purchasedjob_set').get(pk=purchased_product)
-    company = product.owner
+
+    if admin:
+        company = product.product.owner
+    else:
+        company = product.owner
 
     if not request.user.can(company, 'read purchased job'):
         return MissingActivity()
@@ -205,14 +210,11 @@ def admin_groupings(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read offline purchase')
 def admin_offlinepurchase(request):
     company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        purchases = OfflinePurchase.objects.filter_by_sites(sites)
-    else:
-        purchases = OfflinePurchase.objects.all()
+    sites = settings.SITE.postajob_site_list()
+    purchases = OfflinePurchase.objects.filter_by_sites(sites)
     data = {
         'offline_purchases': purchases.filter(owner=company),
         'company': company,
@@ -239,15 +241,12 @@ def admin_request(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read purchased product')
 def admin_purchasedproduct(request):
     company = get_company(request)
-    if settings.SITE:
-        sites = settings.SITE.postajob_site_list()
-        purchases = PurchasedProduct.objects.filter_by_sites(sites)
-    else:
-        purchases = Request.objects.all()
-    purchases = purchases.filter(product__owner=company)
+    sites = settings.SITE.postajob_site_list()
+    purchases = PurchasedProduct.objects.filter_by_sites(sites).filter(
+        product__owner=company)
     data = {
         'company': company,
         'active_products': purchases.filter(expiration_date__gte=date.today()),
@@ -349,9 +348,6 @@ def product_listing(request):
     site = settings.SITE
     company = site.canonical_company
 
-    if not 'MarketPlace' in company.enabled_access:
-        raise Http404("MarketPlace access not enabled for %s" % company.name)
-
     # Get all site packages and products for a site.
     site_packages = site.sitepackage_set.all()
     products = Product.objects.filter(package__sitepackage__in=site_packages)
@@ -376,7 +372,7 @@ def product_listing(request):
 
 
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read grouping')
 def order_postajob(request):
     """
     This view will always get two variables and always switches display_order.
@@ -419,7 +415,7 @@ def order_postajob(request):
 
 @csrf_exempt
 @user_is_allowed()
-@company_has_access('product_access')
+@requires('read invoice')
 def resend_invoice(request, pk):
     company = get_company(request)
 
