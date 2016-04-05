@@ -1,15 +1,15 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
+import {forEach, map} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
 import {WizardFilterTags} from './wizard/WizardFilterTags';
-import {WizardFilterCollectedItems} from './wizard/WizardFilterCollectedItems';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
-import {SearchInput} from 'common/ui/SearchInput';
-import {ValidatedInput} from 'common/ui/ValidatedInput';
+import FieldWrapper from 'common/ui/FieldWrapper';
+import {SelectElementController} from 'reporting/SelectElementController';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
 
 export default class SetUpReport extends Component {
@@ -136,82 +136,90 @@ export default class SetUpReport extends Component {
 
     const rows = [];
     if (reportConfig && filter) {
-      const errorTexts = reportNameError ? [reportNameError] : null;
-      rows.push(this.renderRow('Report Name', 'reportName',
-        <ValidatedInput
-          value={reportName}
+      const errorTexts = reportNameError ? [reportNameError] : [];
+      rows.push(
+        <FieldWrapper
+          key="reportName"
+          label="Report Name"
           helpText="Name will appear in downloaded filenames."
-          errorTexts={errorTexts}
-          onValueChange={v => reportConfig.changeReportName(v)}/>
-      ));
+          errors={errorTexts}>
+          <input
+            value={reportName}
+            onChange={v => reportConfig.changeReportName(v.target.value)}/>
+        </FieldWrapper>
+      );
       reportConfig.filters.forEach(col => {
         switch (col.interface_type) {
         case 'date_range':
-          rows.push(this.renderRow(col.display, col.filter,
-            <WizardFilterDateRange
-              id={col.filter}
-              updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
-          ));
+          rows.push(
+            <FieldWrapper key={col.filter} label={col.display}>
+              <WizardFilterDateRange
+                id={col.filter}
+                updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
+            </FieldWrapper>
+          );
           break;
         case 'search_select':
-          rows.push(this.renderRow(col.display, col.filter,
-            <WizardFilterSearchDropdown
-              id={col.filter}
-              updateFilter={v => reportConfig.setFilter(col.filter, v)}
-              getHints={v =>
-                reportConfig.getHints(col.filter, v)}/>
-          ));
+          rows.push(
+            <FieldWrapper key={col.filter} label={col.display}>
+              <WizardFilterSearchDropdown
+                id={col.filter}
+                updateFilter={v => reportConfig.setFilter(col.filter, v)}
+                getHints={v =>
+                  reportConfig.getHints(col.filter, v)}/>
+            </FieldWrapper>
+          );
           break;
         case 'city_state':
-          rows.push(this.renderRow(col.display, col.filter,
-            <WizardFilterCityState
-              id={col.filter}
-              updateFilter={v => reportConfig.setFilter(col.filter, v)}
-              getHints={(f, v) =>
-                reportConfig.getHints(f, v)}/>
-          ));
+          rows.push(
+            <FieldWrapper key={col.filter} label={col.display}>
+              <WizardFilterCityState
+                id={col.filter}
+                updateFilter={v => reportConfig.setFilter(col.filter, v)}
+                getHints={(f, v) =>
+                  reportConfig.getHints(f, v)}/>
+            </FieldWrapper>
+          );
           break;
         case 'tags':
-          rows.push(this.renderRow(col.display, col.filter,
-            <WizardFilterTags
-              tags={filter[col.filter] || []}
-              addTag={(i, t) =>
-                reportConfig.addToAndOrFilter(col.filter, i, t)}
-              removeTag={(i, t) =>
-                reportConfig.removeFromAndOrFilter(col.filter, i, t)}
-              getHints={v => reportConfig.getHints(col.filter, v)}/>
-          ));
+          rows.push(
+            <FieldWrapper key={col.filter} label={col.display}>
+              <WizardFilterTags
+                tags={filter[col.filter] || []}
+                addTag={(i, t) =>
+                  reportConfig.addToAndOrFilter(col.filter, i, t)}
+                removeTag={(i, t) =>
+                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}
+                getHints={v => reportConfig.getHints(col.filter, v)}/>
+            </FieldWrapper>
+          );
           break;
         case 'search_multiselect':
-          rows.push(this.renderRow(col.display, col.filter,
-            <SearchInput
-              id={col.filter}
-              emptyOnSelect
-              onSelect={v =>
-                reportConfig.addToMultifilter(col.filter, v)}
-              getHints={v =>
-                reportConfig.getHints(col.filter, v)}/>
-          ));
-          rows.push(this.renderRow(
-            '',
-            col.filter + '-selected',
-            <WizardFilterCollectedItems
-              items={filter[col.filter] || []}
-              remove={v =>
-                reportConfig.removeFromMultifilter(
-                  col.filter,
-                  v)}/>));
+          rows.push(
+            <FieldWrapper
+              key={col.filter}
+              label={col.display}>
+
+              <SelectElementController
+                getHints={v => reportConfig.getHints(col.filter, v)}
+                selectedOptions = {
+                  map(reportConfig.multiFilter[col.filter] || [],
+                    v => ({value: v.key, display: v.display}))}
+                onSelectAdd = {vs => forEach(vs, v =>
+                  reportConfig.addToMultifilter(col.filter,
+                    {key: v.value, display: v.display}))}
+                onSelectRemove = {vs => forEach(vs, v =>
+                  reportConfig.removeFromMultifilter(col.filter,
+                    {key: v.value, display: v.display}))}
+              />
+
+            </FieldWrapper>
+            );
           break;
         default:
           warning(true, 'Unknown interface type: ' + col.interface_type);
         }
       });
-      rows.push(this.renderRow('', 'submit',
-          <button
-            className="button"
-            onClick={() => reportConfig.run()}>
-            Run Report
-          </button>, true, true));
     }
 
     return (

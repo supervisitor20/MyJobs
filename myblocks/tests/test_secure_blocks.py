@@ -27,7 +27,7 @@ class TestSecureBlocks(DirectSEOBase):
         resp = make_cors_request(self.client, self.sb_url, '{"blocks": {}}')
         self.assertEqual(200, resp.status_code)
         result = json.loads(resp.content)
-        self.assertEqual({}, result,
+        self.assertEqual({u'errors':{}}, result,
                          msg="got %s! secure block returned block when none was"
                              " requested" % result)
 

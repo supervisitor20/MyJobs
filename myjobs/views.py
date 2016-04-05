@@ -133,13 +133,9 @@ def home(request):
                     username=registration_form.cleaned_data['email'],
                     password=registration_form.cleaned_data['password1'])
                 expire_login(request, user_cache)
-                # pass in gravatar url once user is logged in. Image generated
-                # on AJAX success
-                html = render_to_response('includes/account-page-2.html',
-                                          data_dict, RequestContext(request))
-                data = {'gravatar_url': new_user.get_gravatar_url(size=100),
-                        'html': html.content}
-                response = HttpResponse(json.dumps(data))
+                ctx = {}
+                ctx['success'] = True
+                response = HttpResponse(json.dumps(ctx))
                 response.set_cookie('myguid', new_user.user_guid,
                                     expires=365*24*60*60, domain='.my.jobs')
                 response.delete_cookie('loggedout')
