@@ -3274,6 +3274,9 @@ height: 33px;
   display: block;
   line-height: 24px;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .select-element-arrow {
   height: 33px;
@@ -3344,6 +3347,7 @@ legend.fieldset-border {
 
 .fieldset-border label {
   display: block;
+  font-weight: normal;
 }
 
 /* End Select Element React Component Styles */

@@ -21,37 +21,34 @@ export default class DataTypeSelectBar extends Component {
         <fieldset className="fieldset-border">
             <legend className="fieldset-border">Report Configuration</legend>
             <div className="col-xs-3">
-              <label>Report Intention
-                <Select
-                  onChange={e => onIntentionChange(e.target.value)}
-                  choices = {intentionChoices}
-                  value = {
-                    lookupByValue(intentionChoices, intentionValue).display}
-                  name = ""
-                />
-              </label>
+              <label>Report Intention</label>
+              <Select
+                onChange={e => onIntentionChange(e.target.value)}
+                choices = {intentionChoices}
+                value = {
+                  lookupByValue(intentionChoices, intentionValue).display}
+                name = ""
+              />
             </div>
             <div className="col-xs-3">
-              <label>Report Category
-                <Select
-                  onChange={e => onCategoryChange(e.target.value)}
-                  choices = {categoryChoices}
-                  value = {
-                    lookupByValue(categoryChoices, categoryValue).display}
-                  name = ""
-                />
-              </label>
+              <label>Report Category</label>
+              <Select
+                onChange={e => onCategoryChange(e.target.value)}
+                choices = {categoryChoices}
+                value = {
+                  lookupByValue(categoryChoices, categoryValue).display}
+                name = ""
+              />
             </div>
             <div className="col-xs-6">
-              <label>Data Set
-                <Select
-                  onChange={e => onDataSetChange(e.target.value)}
-                  choices = {dataSetChoices}
-                  value = {
-                    lookupByValue(dataSetChoices, dataSetValue).display}
-                  name = ""
-                />
-              </label>
+              <label>Data Set</label>
+              <Select
+                onChange={e => onDataSetChange(e.target.value)}
+                choices = {dataSetChoices}
+                value = {
+                  lookupByValue(dataSetChoices, dataSetValue).display}
+                name = ""
+              />
             </div>
         </fieldset>
       </div>
