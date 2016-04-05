@@ -108,20 +108,18 @@ def secure_blocks(request):
                     request.GET))
         raise SuspiciousOperation(message)
 
-    response = {'cookies':[]}
+    response = {'cookies':[], 'errors': {}}
 
     for element_id in blocks:
-        block = Block.objects.filter(element_id=element_id).first()
-        if block is None:
-            logger.warn("Failed block lookup: %s", element_id)
-        else:
-            try:
-                block = block.cast()
-                rendered = block.render_for_ajax(request, blocks[element_id])
-                response[element_id] = rendered
-                response['cookies'].extend(
-                    block.get_cookies(request, **blocks[element_id]))
-            except Exception as ex:
-                logger.warn("Error loading widget: %s" % ex.message)
+        try:
+            block = Block.objects.get(element_id=element_id)
+            block = block.cast()
+            rendered = block.render_for_ajax(request, blocks[element_id])
+            response[element_id] = rendered
+            response['cookies'].extend(
+                block.get_cookies(request, **blocks[element_id]))
+        except Exception as ex:
+            error_message = ex.message if settings.DEBUG else "Could not load"
+            response['errors'][element_id] = error_message
 
     return response
