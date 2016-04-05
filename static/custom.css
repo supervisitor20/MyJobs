@@ -2741,12 +2741,6 @@ input[name="password2"] {
     color: #FFF;
 }
 
-#account-page-2 .loginBox,
-#account-page-2 .profileBox {
-    padding-left: 0;
-    padding-right: 0;
-}
-
 .loginBox + .loginBox {
     margin-top: 20px;
     border-color: #a3aeb1;
@@ -2791,14 +2785,8 @@ input[name="password2"] {
     width: 100%;
 }
 
-#account-page-2 .loginBox input,
-#account-page-2 .initial-profileBox input[type=text] {
-    width: 100%;
-}
-
 .initial-profileBox input.comboboxWidget,
-.loginBox input.comboboxWidget,
-#account-page-2 .loginBox input.comboboxWidget {
+.loginBox input.comboboxWidget {
     width: 230px;
 }
 
@@ -2936,20 +2924,16 @@ input[name="password2"] {
     width: 61.5%;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneCountryCode,
 .loginBox .phoneCountryCode,
 .phoneCountryCode {
     width: 45px;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneAreaCode,
 .loginBox .phoneAreaCode,
 .phoneAreaCode {
     width: 45px;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneExtension,
-#account-page-2 .loginBox input[type="text"].phoneNumber,
 .loginBox .phoneExtension,
 .loginBox .phoneNumber,
 .phoneExtension,
@@ -4172,7 +4156,7 @@ span.helptext {
 /*Manage Users*/
 /*New*/
 
-.row .col-md-8 .FilteredMultiSelect select, 
+.row .col-md-8 .FilteredMultiSelect select,
 .row .col-md-8 .FilteredMultiSelect button {
   margin-top: 10px;
 }
