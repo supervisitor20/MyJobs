@@ -238,6 +238,16 @@ export default class SetUpReport extends Component {
           onDataSetChange={v => this.onDataSetChange(v)}
           />
         {rows}
+        <div className="row actions text-center">
+          <div className="col-xs-12 col-md-4"></div>
+          <div className="col-xs-12 col-md-8">
+            <button
+              className="button"
+              onClick={() => reportConfig.run()}>
+              Run Report
+            </button>
+          </div>
+        </div>
       </form>
     );
   }
