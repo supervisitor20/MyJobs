@@ -104,13 +104,6 @@ class Module extends React.Component {
       window.location.assign('/profile/view/');
     }
   }
-  updateFormContents(apiResponse) {
-    const {formContents} = this.state;
-    apiResponse.ordered_fields.forEach( profileUnitName => {
-      const profileUnit = apiResponse.fields[profileUnitName];
-      formContents[profileUnitName] = profileUnit.initial;
-    });
-  }
   processForm(apiResponse) {
     const {formContents} = this.state;
     if (apiResponse) {
