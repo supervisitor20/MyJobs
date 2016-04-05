@@ -162,7 +162,7 @@ def logout(request):
     log_out(request)
     response = redirect('home')
     # this cookie forces other tabs to logout immediately
-    response.set_cookie('loggedout', True)
+    response.set_cookie('loggedout', True, 3)
     if 'myguid' in request.COOKIES:
         response.delete_cookie(key='myguid', domain='.my.jobs')
     return response
@@ -207,5 +207,8 @@ def custom_password_reset(request):
     from_email = settings.EMAIL_FORMATS[settings.FORGOTTEN_PASSWORD]['address']
     from_email = from_email.format(domain=email_domain.lower())
 
-    return password_reset(request,  password_reset_form=CustomPasswordResetForm,
-                          from_email=from_email, template_name=template)
+    response = password_reset(
+        request, password_reset_form=CustomPasswordResetForm,
+        from_email=from_email, template_name=template)
+    response.delete_cookie('loggedout')
+    return response

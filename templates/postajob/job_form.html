@@ -100,7 +100,7 @@
             <div class="col-xs-12 col-md-offset-4 col-md-8 text-center">
                 {% if item.pk and not prevent_delete %}
                     <button id="delete" type="button" data-toggle="modal" data-target="#delete-confirm" class="btn">{% trans 'Delete' %}</button>
-                    <div id="delete-confirm" class="modal hide fade row">
+                    <div id="delete-confirm" class="modal hide fade">
                         <div class="modal-header">{% trans 'Really Delete?' %}</div>
                         <div class="modal-body">{% blocktrans %}Are you sure you want to delete this {{verbose}}?{% endblocktrans %}</div>
                         <div class="modal-footer">

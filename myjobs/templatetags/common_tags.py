@@ -347,4 +347,5 @@ def get_menus(context):
         ]
     }
 
-    return [message_menu, employer_menu, profile_menu]
+    # only return menus we've populated
+    return [menu for menu in message_menu, employer_menu, profile_menu if menu]

@@ -2741,12 +2741,6 @@ input[name="password2"] {
     color: #FFF;
 }
 
-#account-page-2 .loginBox,
-#account-page-2 .profileBox {
-    padding-left: 0;
-    padding-right: 0;
-}
-
 .loginBox + .loginBox {
     margin-top: 20px;
     border-color: #a3aeb1;
@@ -2791,14 +2785,8 @@ input[name="password2"] {
     width: 100%;
 }
 
-#account-page-2 .loginBox input,
-#account-page-2 .initial-profileBox input[type=text] {
-    width: 100%;
-}
-
 .initial-profileBox input.comboboxWidget,
-.loginBox input.comboboxWidget,
-#account-page-2 .loginBox input.comboboxWidget {
+.loginBox input.comboboxWidget {
     width: 230px;
 }
 
@@ -2936,20 +2924,16 @@ input[name="password2"] {
     width: 61.5%;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneCountryCode,
 .loginBox .phoneCountryCode,
 .phoneCountryCode {
     width: 45px;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneAreaCode,
 .loginBox .phoneAreaCode,
 .phoneAreaCode {
     width: 45px;
 }
 
-#account-page-2 .loginBox input[type="text"].phoneExtension,
-#account-page-2 .loginBox input[type="text"].phoneNumber,
 .loginBox .phoneExtension,
 .loginBox .phoneNumber,
 .phoneExtension,
@@ -3187,6 +3171,12 @@ height: 33px;
     border: 1px solid #999;
 }
 
+.row .col-md-8 select[multiple] {
+    height: 200px;
+    font-size: 1em;
+    padding: 4px;
+}
+
 .row .col-md-8 .fsm select[multiple] {
     height: 200px;
     border-radius: 3px;
@@ -3262,6 +3252,7 @@ height: 33px;
 /* Select Element React Component Styles */
 .select-element-outer {
   position: relative;
+  margin-bottom: 10px;
 }
 .select-element-input {
     background-color: #fff;
@@ -3282,9 +3273,7 @@ height: 33px;
   padding: 4px 20px 4px 4px;
   display: block;
   line-height: 24px;
-}
-.select-element-chosen-container {
-  height: 33px;
+  cursor: pointer;
 }
 .select-element-arrow {
   height: 33px;
@@ -3321,8 +3310,8 @@ height: 33px;
   top: 30px;
   left: 0;
   z-index: 1;
-  height: 300px;
-  overflow-y: scroll;
+  max-height: 230px;
+  overflow-y: auto;
 }
 .select-element-menu-container ul {
   list-style-type: none;
@@ -3333,8 +3322,7 @@ height: 33px;
   cursor: pointer;
   padding: 6px;
 }
-
-.select-element-menu-container ul li.active {
+.select-element-menu-container ul li:hover {
   background-color: #C6D6EA;
 }
 /* End Select Element React Component Styles */
@@ -4165,21 +4153,12 @@ span.helptext {
     color: red;
 }
 
-
-
-
-
-
-
-
-
-
 /*Manage Users*/
 /*New*/
 
-.FilteredMultiSelect select, .FilteredMultiSelect button {
-  margin-top: 15px;
-  height: 200px;
+.row .col-md-8 .FilteredMultiSelect select,
+.row .col-md-8 .FilteredMultiSelect button {
+  margin-top: 10px;
 }
 
 section {
@@ -4253,10 +4232,6 @@ h1 a {
 
 .product-card-full .col-xs-6 {
   padding: 0px;
-}
-
-.FilteredMultiSelect {
-  padding-right: 15px;
 }
 
 .wrapper-header + .product-card-full {

@@ -56,6 +56,27 @@ class BreadboxTests(DirectSEOBase):
         for breadcrumb in breadbox.custom_facet_breadcrumbs:
             self.assertIn(breadcrumb.display_title, names)
 
+    def test_removing_breacrumb(self):
+        """Removing a breadcrumb shouldn't result in broken links."""
+
+        self.filters['title_slug'] = 'computer-network-defense-analyst'
+        self.filters['facet_slug'] = 'communication-jobs/custom-facet-1'
+        self.filters['company_slug'] = 'booz-allen-hamilton'
+        path = "/%s/jobs-in/%s/new-jobs/%s/careers/" % (
+            self.filters['title_slug'],
+            self.filters['facet_slug'],
+            self.filters['company_slug'])
+        jobs = []
+        query_dict = QueryDict('')
+
+        breadbox = Breadbox(path, self.filters, jobs, query_dict)
+        # before, the resulting url would be missing a '/' bertween 'jobs-in'
+        # and 'booz-allen-hamilton'
+        self.assertEqual(breadbox.custom_facet_breadcrumbs[0].url,
+                         '/computer-network-defense-analyst/jobs-in'
+                         '/communication-jobs/booz-allen-hamilton/careers/')
+
+
     def test_title_breadcrumbs(self):
         path = '/test-title/%s/' % settings.SLUG_TAGS['title_slug']
 
