@@ -100,7 +100,8 @@ def purchasedproducts_overview(request):
     sites = settings.SITE.postajob_site_list()
     products = PurchasedProduct.objects.filter_by_sites(sites)
     jobs = PurchasedJob.objects.filter_by_sites(sites)
-    products = products.filter(owner=company, owner__role__user=request.user)
+    products = products.filter(
+        owner=company, owner__role__user=request.user).distinct()
 
     data = {
         'company': settings.SITE.canonical_company,
