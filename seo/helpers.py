@@ -618,8 +618,7 @@ def filter_sqs(sqs, filters):
                               filters[f])
                 sqs = sqs.narrow("company:(%s)" % filters[f])
             else:
-                sqs = sqs.narrow('company_exact:(%s)' % ' OR '.join([str(c.id) for c
-                                                            in company]))
+                sqs = sqs.narrow('company_exact:(%s)' % ' OR '.join(['"%s"' % c.name for c in company]))
         else:
             t = filters[f]
             sqs = sqs.narrow("title_slug:(%s)" % _clean(t))
@@ -794,6 +793,7 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
 
     num_items = site_config.num_filter_items_to_show
     widgets = []
+
     for _type in types:
         w = FacetListWidget(request, site_config, _type[0],
                             facet_counts['%s_slab' % _type[0]][0:num_items*2],
