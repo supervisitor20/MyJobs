@@ -566,10 +566,10 @@ def filter_sqs_by_location(sqs, location_slug):
                 sqs = sqs.narrow('country_short_exact:("%s")' % v.upper())
             elif k == 'state':
                 if v != 'none':
-                    sqs = sqs.narrow('state_slug:("%s")' % v)
+                    sqs = sqs.narrow('state_slug:(%s)' % v)
             else:
                 if v != 'none':
-                    sqs = sqs.narrow('city_slug:("%s")' % v)
+                    sqs = sqs.narrow('city_slug:(%s)' % v)
     return sqs
 
 
