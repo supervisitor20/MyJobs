@@ -71,7 +71,7 @@ var load_event = function(){
 
     $.each(["#deny-reason", "#block-reason"], function(index, value) {
         $(value).on("keyup", function() {
-            var next_button = $(value + "~button");
+            var next_button = $(value + "-button");
             if ($(this).val() == "") {
                 next_button.attr("disabled", "disabled");
             } else {

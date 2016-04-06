@@ -55,10 +55,13 @@ class RegistrationViewTests(MyJobsBase):
         password = "password"
         self.user.set_password(password)
 
-        response = self.client.get(reverse("auth_logout"))
-        self.assertTrue(
-            response.cookies.get("loggedout"),
-            "Expected the loggedout cookie to be set, but it's not")
+        def set_logout_cookie():
+            response = self.client.get(reverse("auth_logout"))
+            self.assertTrue(
+                response.cookies.get("loggedout"),
+                "Expected the loggedout cookie to be set, but it's not")
+
+        set_logout_cookie()
 
         response = self.client.post(
             reverse("home"), {"email": self.user.email, "password": password})
@@ -66,8 +69,11 @@ class RegistrationViewTests(MyJobsBase):
             response.cookies.get("loggedout"),
             "Expected the loggedout cookie to not be set, but it was")
 
-
-
+        set_logout_cookie()
+        response = self.client.get("password_reset")
+        self.assertFalse(
+            response.cookies.get("loggedout"),
+            "Expected the loggedout cookie to not be set, but it was")
 
     def test_valid_activation(self):
         """
@@ -208,7 +214,8 @@ class RegistrationViewTests(MyJobsBase):
 
         self.client.login_user(self.user)
         response = self.client.get(reverse('invitation_activate', args=[key]))
-        self.assertTrue('Thanks for registering!' in response.content)
+
+        self.assertTrue('Account Activated' in response.content)
         invitation = Invitation.objects.get()
         invitation.send()
         self.assertTrue(invitation.accepted)
@@ -524,4 +531,3 @@ class DseoLoginTests(DirectSEOBase):
 
         user = User.objects.get(email=user_email)
         self.assertEqual(user.source, site.domain)
-
