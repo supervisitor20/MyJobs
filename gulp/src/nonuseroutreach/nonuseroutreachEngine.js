@@ -9,6 +9,14 @@ export class InboxManagement {
     this.api = api;
   }
 
+  async createNewInbox(email) {
+    return this.api.createNewInbox(email);
+  }
+
+  async deleteInbox(id) {
+    return this.api.deleteInbox(id);
+  }
+
   async getExistingInboxes() {
     return this.api.getExistingInboxes();
   }

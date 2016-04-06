@@ -1346,16 +1346,28 @@ def api_get_nuo_inbox_list(request):
     company = get_company_or_404(request)
 
     inboxes = OutreachEmailAddress.objects.filter(company=company)
-    return HttpResponse(serializers.serialize("json", inboxes, fields=('email')))
+    ctx = serializers.serialize("json", inboxes, fields=('email',))
+
+    return HttpResponse(ctx)
 
 
 @restrict_to_staff()
 @requires("create outreach email address")
 def api_add_nuo_inbox(request):
     """
-    stub for save api
+    Create a new ``OutreachEmailAddress`` instance from the provided email.
+
     """
-    import ipdb; ipdb.set_trace()
+    company = get_company_or_404(request)
+    if not request.method == "POST":
+        raise Http404("This view is only accessible via POST method, not %s" %
+                      request.method)
+
+    inbox = OutreachEmailAddress.objects.create(
+        company=company,
+        email=request.POST.get("email"))
+
+    return HttpResponse(json.dumps({"id": inbox.pk, "email": inbox.email}))
 
 
 @restrict_to_staff()
@@ -1363,8 +1375,20 @@ def api_add_nuo_inbox(request):
 def api_delete_nuo_inbox(request):
     """
     stub for delete api
+
     """
-    import ipdb; ipdb.set_trace()
+    if not request.method == "POST":
+        raise Http404("This view is only accessible via POST method, not %s" %
+                      request.method)
+
+    inbox = OutreachEmailAddress.objects.filter(pk=request.POST.get('id'))
+    if inbox:
+        inbox.delete()
+        ctx = {"status": "success"}
+    else:
+        ctx = {"status": "not found"}
+
+    return HttpResponse(json.dumps(ctx))
 
 
 @requires('read tag')

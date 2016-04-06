@@ -14,11 +14,19 @@ export class AddInboxForm extends Component {
     };
   }
 
+  onClick() {
+    this.props.inboxManager.createNewInbox(this.state.currentEmail);
+    this.setState({
+      currentEmail: '',
+    });
+  }
+
+
   emailFieldChanged(value) {
     const {inboxManager} = this.props;
     const validationObject = inboxManager.validateEmailInput(value);
     this.setState({
-      current_email: value,
+      currentEmail: value,
       validationMessages: validationObject.messages,
     });
     if (validationObject.success) {
@@ -26,10 +34,6 @@ export class AddInboxForm extends Component {
     } else {
       this.setState({addDisabled: true});
     }
-  }
-
-  submitInbox() {
-    // TODO: Submit API
   }
 
   render() {
@@ -41,8 +45,11 @@ export class AddInboxForm extends Component {
         {validationMessages}
         <EmailInput
           id="add"
+          email={this.state.currentEmail}
           emailFieldChanged={v => this.emailFieldChanged(v)} />
-        <AddInboxButton addDisabled={this.state.addDisabled} />
+        <AddInboxButton
+          addDisabled={this.state.addDisabled}
+          onClick={() => this.onClick()} />
       </div>
     );
   }
