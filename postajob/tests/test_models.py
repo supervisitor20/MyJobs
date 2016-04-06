@@ -7,6 +7,7 @@ from django.core import mail
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
 from myjobs.models import User
+from postajob.helpers import enable_posting, enable_marketplace
 from postajob.models import (CompanyProfile, Invoice, Job, JobLocation,
                              OfflineProduct, OfflinePurchase, Package,
                              Product, ProductGrouping, ProductOrder,
@@ -22,7 +23,8 @@ from postajob.tests.factories import (JobFactory,
                                       PurchasedProductFactory,
                                       SitePackageFactory)
 from myjobs.tests.setup import MyJobsBase
-from myjobs.tests.factories import RoleFactory
+from myjobs.tests.factories import RoleFactory, AppAccessFactory
+from seo.models import Company, SeoSite
 
 
 class ModelTests(MyJobsBase):
@@ -1002,3 +1004,49 @@ class ModelTests(MyJobsBase):
         request.save()
         job.save()
         self.assertEqual(Request.objects.count(), 2)
+
+    def test_enable_posting(self):
+        """
+        Attempting to automatically enable posting for a company should result
+        in a valid site package owned by that company.
+
+        """
+        AppAccessFactory(name='Posting')
+        company = CompanyFactory(name='Posting Company')
+        site = SeoSite.objects.create(domain='somewhere.jobs')
+        # sanity checks
+        self.assertIsNone(site.canonical_company)
+        self.assertEqual(company.enabled_access, [])
+
+        package = enable_posting(company, site)
+
+        # Django caches model instances
+        company = Company.objects.get(pk=company.pk)
+        site = SeoSite.objects.get(pk=site.pk)
+
+        self.assertEqual(site.canonical_company, company)
+        self.assertIn("Posting", company.enabled_access)
+        self.assertIn(site, package.sites.all())
+
+    def test_enable_marketplace(self):
+        """
+        Attempting to automatically enable posting for a company should result
+        in a valid site package owned by that company.
+
+        """
+        AppAccessFactory(name='MarketPlace')
+        company = CompanyFactory(name='Marketplace Company')
+        site = SeoSite.objects.create(domain='somewhereelse.jobs')
+        # sanity checks
+        self.assertIsNone(site.canonical_company)
+        self.assertEqual(company.enabled_access, [])
+
+        package = enable_marketplace(company, site)
+
+        # Django caches model instances
+        company = Company.objects.get(pk=company.pk)
+        site = SeoSite.objects.get(pk=site.pk)
+
+        self.assertEqual(site.canonical_company, company)
+        self.assertIn("MarketPlace", company.enabled_access)
+        self.assertIn(site, package.sites.all())
