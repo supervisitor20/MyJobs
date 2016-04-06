@@ -1325,9 +1325,7 @@ def nuo_main(request):
     """
     company = get_company_or_404(request)
 
-    ctx = {
-        "company": company
-        }
+    ctx = { "company": company }
 
     return render_to_response('nonuseroutreach/nuo_main.html', ctx,
                               RequestContext(request))
@@ -1366,8 +1364,10 @@ def api_add_nuo_inbox(request):
     inbox = OutreachEmailAddress.objects.create(
         company=company,
         email=request.POST.get("email"))
+    ctx = {"pk": inbox.pk, "email": inbox.email}
 
-    return HttpResponse(json.dumps({"id": inbox.pk, "email": inbox.email}))
+    return HttpResponse(json.dumps(ctx),
+                        content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()
@@ -1388,7 +1388,8 @@ def api_delete_nuo_inbox(request):
     else:
         ctx = {"status": "not found"}
 
-    return HttpResponse(json.dumps(ctx))
+    return HttpResponse(json.dumps(ctx),
+                        content_type='application/json; charset=utf-8')
 
 
 @requires('read tag')

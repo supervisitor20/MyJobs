@@ -4,6 +4,8 @@ import {promiseTest} from '../../common/spec';
 
 const fakeApi = {
   getExistingInboxes: () => ([{pk: 1, fields: {email: 'thistest'}}]),
+  deleteInbox: (id) => ({status: 'success'}),
+  createNewInbox: (email) => ({pk: 1, email: 'thistest'}),
 };
 
 describe('Inbox Manager', () => {
@@ -13,6 +15,17 @@ describe('Inbox Manager', () => {
     const inboxes = await inboxManager.getExistingInboxes();
     expect(inboxes[0].pk).toEqual(1);
     expect(inboxes[0].fields.email).toEqual('thistest');
+  }));
+
+  it('can create a new inbox', promiseTest(async () => {
+    const response = await inboxManager.createNewInbox('thistest');
+    expect(response.pk).toEqual(1);
+    expect(response.email).toEqual('thistest');
+  }));
+
+  it('can delete existing inbox', promiseTest(async () => {
+    const response = await inboxManager.deleteInbox(1);
+    expect(response.status).toEqual('success');
   }));
 
   it('can validate email usernames', () => {

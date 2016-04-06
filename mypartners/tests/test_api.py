@@ -6,6 +6,7 @@ from django.conf import settings
 from mypartners.tests.test_views import MyPartnersTestCase
 from mypartners.tests.factories import OutreachEmailAddressFactory
 from myjobs.tests.factories import UserFactory, ActivityFactory
+from mypartners.models import OutreachEmailAddress
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
@@ -60,3 +61,28 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
         self.assertEqual(response.status_code, 404, msg="assert NUO inboxes returns 404 for a user that is not"
                                                         " a company user for a member company")
+
+    def test_add_new_inbox(self):
+        """Tests that a user can create a new outreach inbox."""
+
+        response = self.client.post(reverse('api_add_nuo_inbox'),
+                                    {"email": "testemail"})
+        data = json.loads(response.content)
+        inbox = OutreachEmailAddress.objects.last()
+        self.assertEqual(inbox.pk, data["pk"],
+                         "Was expecting an inbox to be created with a pk of "
+                         "%s, but the latest one has a pk of %s." % (
+                             inbox.pk, data["pk"]))
+
+    def test_remove_inbox(self):
+        """Tests that a user can delete an existing outreach inbox."""
+
+        inbox = OutreachEmailAddressFactory(email="testemail")
+        response = self.client.post(reverse('api_delete_nuo_inbox'),
+                                    {'id': inbox.pk})
+        data = json.loads(response.content)
+        self.assertEqual(data["status"], "success")
+        self.assertFalse(
+            OutreachEmailAddress.objects.filter(pk=inbox.pk).exists(),
+            "Inbox %s should have been deleted, but wasn't" % inbox.pk)
+
