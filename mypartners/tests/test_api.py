@@ -86,3 +86,14 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             OutreachEmailAddress.objects.filter(pk=inbox.pk).exists(),
             "Inbox %s should have been deleted, but wasn't" % inbox.pk)
 
+    def test_update_inbox(self):
+        """Tests that an inbox can be updated through the api."""
+
+        inbox = OutreachEmailAddressFactory(email="testemail")
+        response = self.client.post(reverse('api_update_nuo_inbox'),
+                                    {'id': inbox.pk, 'email': 'newemail'})
+        data = json.loads(response.content)
+        self.assertEqual(data["status"],  "success")
+        self.assertEqual(OutreachEmailAddress.objects.get(pk=inbox.pk).email,
+                         'newemail')
+

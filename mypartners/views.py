@@ -1392,7 +1392,7 @@ def api_delete_nuo_inbox(request):
                         content_type='application/json; charset=utf-8')
 
 @restrict_to_staff()
-@require("update outreach email address")
+@requires("update outreach email address")
 def api_update_nuo_inbox(request):
     if not request.method == "POST":
         raise Http404("This view is only accessible via POST method, not %s" %

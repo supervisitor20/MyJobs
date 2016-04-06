@@ -17,8 +17,18 @@ class Api {
 
   async createNewInbox(email) {
     const promise = this.postToNuoApi('/prm/api/nonuseroutreach/inbox/add', {
-      'email': email,
+      email: email,
     });
+    return (await promise);
+  }
+
+  async updateInbox(id, email) {
+    const promise = this.postToNuoApi(
+      '/prm/api/nonuseroutreach/inbox/update', {
+        id: id,
+        email: email,
+      }
+    );
     return (await promise);
   }
 

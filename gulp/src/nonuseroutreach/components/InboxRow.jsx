@@ -63,9 +63,18 @@ export class InboxRow extends Component {
   }
 
   updateEmail() {
-    this.props.inboxManager.updatInbox(this.state.id, this.state.currentEmail);
-    this.setState({currentEmail: value});
-    this.props.loadInboxesFromApi();
+    const {inboxManager} = this.props;
+    const validationObject = inboxManager.validateEmailInput(
+      this.state.currentEmail);
+    if (validationObject.success) {
+      inboxManager.updateInbox(this.state.id, this.state.currentEmail);
+      this.props.loadInboxesFromApi();
+
+      this.setState({
+        initial_email: this.state.currentEmail,
+        validationMessages: [],
+      });
+    }
     return;
   }
 

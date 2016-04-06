@@ -6,6 +6,7 @@ const fakeApi = {
   getExistingInboxes: () => ([{pk: 1, fields: {email: 'thistest'}}]),
   deleteInbox: (id) => ({status: 'success'}),
   createNewInbox: (email) => ({pk: 1, email: 'thistest'}),
+  updateInbox: (id, email) => ({status: 'success'}),
 };
 
 describe('Inbox Manager', () => {
@@ -25,6 +26,11 @@ describe('Inbox Manager', () => {
 
   it('can delete existing inbox', promiseTest(async () => {
     const response = await inboxManager.deleteInbox(1);
+    expect(response.status).toEqual('success');
+  }));
+
+  it('can edit exising inbox', promiseTest(async () => {
+    const response = await inboxManager.updateInbox(1, 'thattest');
     expect(response.status).toEqual('success');
   }));
 

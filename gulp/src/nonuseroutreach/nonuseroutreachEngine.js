@@ -21,6 +21,10 @@ export class InboxManagement {
     return this.api.getExistingInboxes();
   }
 
+  async updateInbox(id, email) {
+    return this.api.updateInbox(id, email);
+  }
+
   /**
     * validation method to ensure value is a proper email username
     * returns:
