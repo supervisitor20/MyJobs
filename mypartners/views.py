@@ -1374,7 +1374,7 @@ def api_add_nuo_inbox(request):
 @requires("delete outreach email address")
 def api_delete_nuo_inbox(request):
     """
-    stub for delete api
+    Remove an existing NonUserOutreachEmailAddress
 
     """
     if not request.method == "POST":
@@ -1384,6 +1384,23 @@ def api_delete_nuo_inbox(request):
     inbox = OutreachEmailAddress.objects.filter(pk=request.POST.get('id'))
     if inbox:
         inbox.delete()
+        ctx = {"status": "success"}
+    else:
+        ctx = {"status": "not found"}
+
+    return HttpResponse(json.dumps(ctx),
+                        content_type='application/json; charset=utf-8')
+
+@restrict_to_staff()
+@require("update outreach email address")
+def api_update_nuo_inbox(request):
+    if not request.method == "POST":
+        raise Http404("This view is only accessible via POST method, not %s" %
+                      request.method)
+
+    inbox = OutreachEmailAddress.objects.filter(pk=request.POST.get('id'))
+    if inbox:
+        inbox.update(email=request.POST.get('email'))
         ctx = {"status": "success"}
     else:
         ctx = {"status": "not found"}

@@ -62,7 +62,9 @@ export class InboxRow extends Component {
     this.props.handleDelete(this.props.index);
   }
 
-  saveEmail() {
+  updateEmail() {
+    this.props.inboxManager.updatInbox(this.state.id, this.state.currentEmail);
+    this.setState({currentEmail: value});
     this.props.loadInboxesFromApi();
     return;
   }
@@ -82,8 +84,8 @@ export class InboxRow extends Component {
     let buttons;
     if (this.state.currentEmail !== this.state.initial_email) {
       buttons = [
-        new ControlButton('Save', !this.state.success, true,
-          () => this.saveEmail()),
+        new ControlButton('Update', !this.state.success, true,
+          () => this.updateEmail()),
         new ControlButton('Cancel', false, false, () => this.cancelChanges()),
       ];
     } else {
