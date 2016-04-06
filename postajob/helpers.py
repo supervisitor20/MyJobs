@@ -1,5 +1,6 @@
 from myjobs.models import AppAccess
 from postajob.models import SitePackage
+from myblocks.models import Page, Row, RowOrder, LoginBlock, BlockOrder
 
 def can_modify(user, company, kwargs, update_activity, create_activity):
     """
@@ -54,6 +55,16 @@ def enable_posting(company, site):
     # enable posting access for the company
     company.app_access.add(AppAccess.objects.get(name='Posting'))
 
+    # create a login block so that users can log in
+    page = Page.objects.create(
+        name="%s Login Page" % company.name, page_type=Page.LOGIN)
+    page.sites.add(site)
+    row = Row.objects.create()
+    row_order = RowOrder.objects.create(row=row, page=page, order=0)
+    login_block = LoginBlock.objects.create(
+        name="%s Login Block" % company.name, offset=0, span=12)
+    BlockOrder.objects.create(block=login_block, row=row, order=0)
+
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(
         owner=company, name="%s Sites" % company.name)
@@ -68,6 +79,7 @@ def enable_marketplace(company, site):
         - setting the site's canonical_company to company
         - enabling "Marketplace" access for the company
         - creating a site package with site in it, owned by company
+        - creating a login page to be used for admin
 
     Inputs:
     :company: The ``Company`` to add posting access for
@@ -83,6 +95,16 @@ def enable_marketplace(company, site):
 
     # enable posting access for the company
     company.app_access.add(AppAccess.objects.get(name='MarketPlace'))
+
+    # create a login block so that users can log in
+    page = Page.objects.create(
+        name="%s Login Page" % company.name, page_type=Page.LOGIN)
+    page.sites.add(site)
+    row = Row.objects.create()
+    row_order = RowOrder.objects.create(row=row, page=page, order=0)
+    login_block = LoginBlock.objects.create(
+        name="%s Login Block" % company.name, offset=0, span=12)
+    BlockOrder.objects.create(block=login_block, row=row, order=0)
 
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(

@@ -7,6 +7,7 @@ from django.core import mail
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
 from myjobs.models import User
+from myblocks.models import LoginBlock
 from postajob.helpers import enable_posting, enable_marketplace
 from postajob.models import (CompanyProfile, Invoice, Job, JobLocation,
                              OfflineProduct, OfflinePurchase, Package,
@@ -1027,6 +1028,8 @@ class ModelTests(MyJobsBase):
         self.assertEqual(site.canonical_company, company)
         self.assertIn("Posting", company.enabled_access)
         self.assertIn(site, package.sites.all())
+        self.assertTrue(LoginBlock.objects.filter(
+            name="Posting Company Login Block").exists())
 
     def test_enable_marketplace(self):
         """
@@ -1050,3 +1053,5 @@ class ModelTests(MyJobsBase):
         self.assertEqual(site.canonical_company, company)
         self.assertIn("MarketPlace", company.enabled_access)
         self.assertIn(site, package.sites.all())
+        self.assertTrue(LoginBlock.objects.filter(
+            name="Marketplace Company Login Block").exists())
