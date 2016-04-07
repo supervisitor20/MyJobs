@@ -7,7 +7,7 @@ export default function TagAnd(props) {
 
   const selectedPlusBlank = [...selectedTags, []];
   return (
-    <div>
+    <div className="tag-select-outer">
       {map(selectedPlusBlank, (ts, i) => (
         <TagSelect
           key={i}

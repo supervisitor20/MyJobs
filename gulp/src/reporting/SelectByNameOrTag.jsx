@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from 'react';
+import warning from 'warning';
 import Multiselect from 'common/ui/MultiSelect';
 import Select from 'common/ui/Select';
 import {map} from 'lodash-compat/collection';
@@ -8,17 +9,36 @@ import TagAnd from 'common/ui/tags/TagAnd';
 export class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
+    const {getItemHints, getTagHints} = props;
+
+    let initialChoice;
+    if (getItemHints && getTagHints) {
+      initialChoice = 0;
+    } else if (getItemHints) {
+      initialChoice = 1;
+    } else if (getTagHints) {
+      initialChoice = 2;
+    } else {
+      initialChoice = 0;
+      warning('SelectByNameOrTag nees one of getItemHints or getTagHints');
+    }
+
+    const showSwitcher = initialChoice === 0;
+
+    const choices = [
+        {display: 'No filter', value: 0},
+        {display: 'Filter by name', value: 1},
+        {display: 'Filter by tag', value: 2},
+    ];
+
     this.state = {
       itemKey: undefined,
       value: 'No filter',
-      choices: [
-          {display: 'No filter', value: 0},
-          {display: 'Filter by name', value: 1},
-          {display: 'Filter by tag', value: 2},
-      ],
       availableItemHints: [],
       availableTagHints: [],
-      choice: 0,
+      choice: initialChoice,
+      showSwitcher,
+      choices,
     };
   }
 
@@ -99,15 +119,16 @@ export class SelectByNameOrTag extends Component {
   }
 
   render() {
-    const {choices, value, choice} = this.state;
+    const {choices, value, choice, showSwitcher} = this.state;
     return (
       <div>
-        <Select
-          name=""
-          onChange={v => this.changeHandler(v)}
-          value={value}
-          choices = {choices}
-        />
+        {showSwitcher
+          ? <Select
+              name=""
+              onChange={v => this.changeHandler(v)}
+              value={value}
+              choices = {choices}/>
+          : ''}
         <div className="select-control-chosen">
           {this.renderControl(choice)}
         </div>

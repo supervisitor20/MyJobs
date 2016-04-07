@@ -65,10 +65,7 @@ export default class TagSelect extends Component {
     const {availableTags, selectedTags, first} = this.props;
     const {selectDropped} = this.state;
     return (
-      <div
-        className="tag-select-outer"
-        tabIndex="0"
-        onBlur={() => this.closeSelectMenu()}>
+      <div tabIndex="0" onBlur={() => this.closeSelectMenu()}>
         <div className="tag-select-first-input">
           {first
             ? <label>Include any of these tags</label>
