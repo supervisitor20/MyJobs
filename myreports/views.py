@@ -364,7 +364,9 @@ def download_report(request):
 @require_http_methods(['GET'])
 def dynamicoverview(request):
     """The Dynamic Reports page."""
-    return render_to_response('myreports/dynamicreports.html', {},
+    company = get_company_or_404(request)
+    ctx = {"company": company}
+    return render_to_response('myreports/dynamicreports.html', ctx,
                               RequestContext(request))
 
 
