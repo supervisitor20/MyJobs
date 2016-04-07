@@ -5,7 +5,7 @@ import {map} from 'lodash-compat/collection';
 import {lookupByValue} from 'common/array';
 import TagAnd from 'common/ui/tags/TagAnd';
 
-export class SelectElementController extends Component {
+export class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,7 +116,7 @@ export class SelectElementController extends Component {
   }
 }
 
-SelectElementController.propTypes = {
+SelectByNameOrTag.propTypes = {
   /**
    * Function that gets the hints
    */

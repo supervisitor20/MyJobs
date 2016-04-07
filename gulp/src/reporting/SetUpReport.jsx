@@ -8,7 +8,7 @@ import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
-import {SelectElementController} from 'reporting/SelectElementController';
+import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
 
 export default class SetUpReport extends Component {
@@ -186,7 +186,7 @@ export default class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <SelectElementController
+              <SelectByNameOrTag
                 getTagHints={v => reportConfig.getHints(col.filter, v)}
                 selectedTags={filter[col.filter] || []}
                 onSelectTagAdd={(i, t) =>
@@ -204,7 +204,7 @@ export default class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <SelectElementController
+              <SelectByNameOrTag
                 getItemHints={v => reportConfig.getHints(col.filter, v)}
                 selectedItems={
                   map(reportConfig.multiFilter[col.filter] || [],
