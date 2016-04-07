@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Tag} from 'common/ui/tags/Tag';
 import TextField from 'common/ui/TextField';
-import {map} from 'lodash-compat/collection';
+import {map, filter, find} from 'lodash-compat/collection';
 
 export default class TagSelect extends Component {
   constructor() {
@@ -64,6 +64,10 @@ export default class TagSelect extends Component {
   render() {
     const {availableTags, selectedTags, first} = this.props;
     const {selectDropped} = this.state;
+    const filteredAvailableTags =
+      filter(availableTags, at =>
+        !find(selectedTags, st => st.value === at.value));
+
     return (
       <div tabIndex="0" onBlur={() => this.closeSelectMenu()}>
         <div className="tag-select-first-input">
@@ -93,7 +97,7 @@ export default class TagSelect extends Component {
                     name="name"
                     onChange={e => this.addToMultifilter('newEntryJS', e)}
                     placeholder="Type to filter tags"/>
-                  {map(availableTags, t => this.renderTag(
+                  {map(filteredAvailableTags, t => this.renderTag(
                       t,
                       () => this.handleAdd(t),
                       null))}
