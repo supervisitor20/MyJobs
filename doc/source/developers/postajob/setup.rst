@@ -285,9 +285,9 @@ Requirements:
 Views
 '''''
 
-======================================== =========================== =======================
-URL Path                                 View Name                   Required Activities[1]_
-======================================== =========================== =======================
+======================================== =========================== ========================
+URL Path                                 View Name                   Required Activities [1]_
+======================================== =========================== ========================
 /posting/list/                           product_listing             N/A
 /posting/product/purchase/add/           PurchasedProductFormView    N/A
 /posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
@@ -295,7 +295,7 @@ URL Path                                 View Name                   Required Ac
 /posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
 /postign/job/purchase/add/               PurchasedJobFormView        create purchased job
 /posting/job/purchase/update/            PurchasedJobFormView        update purchased job
-======================================== =========================== =======================
+======================================== =========================== ========================
 
 .. _use-case-2:
 
@@ -316,13 +316,13 @@ Requirements:
 Views
 '''''
 
-=================== ============= =======================
-URL Path            View Name     Required Activities[1]_
-=================== ============= =======================
+=================== ============= ========================
+URL Path            View Name     Required Activities [1]_
+=================== ============= ========================
 /posting/all/       jobs_overview read job
 /posting/job/add/   JobFormView   create job
 /posting/job/update JobFormView   update job
-=================== ============= =======================
+=================== ============= ========================
 
 
 Use Case 3: Site owner creating a product for sale
@@ -343,7 +343,7 @@ Views
 '''''
 
 =================================== ================================= ============================================================================================
-URL Path                            View Name                         Required Activities[1]_
+URL Path                            View Name                         Required Activities [1]_
 =================================== ================================= ============================================================================================
 /posting/admin/                     purchasedmicrosite_admin_overview read product | read request | read offline purchase | read purchased product | read grouping
 /posting/admin/product              admin_products                    read product
@@ -370,14 +370,14 @@ Requirements:
 Views
 '''''
 
-=================================== ======================= =======================
-URL Path                            View Name               Required Activities[1]_
-=================================== ======================= =======================
+=================================== ======================= ========================
+URL Path                            View Name               Required Activities [1]_
+=================================== ======================= ========================
 /posting/admin/request/             admin_request           read request
 /posting/admin/request/view/        read_request            read request
 /posting/admin/request/approve/     process_admin_request   update request
 /posting/admin/request/deny/        process_admin_request   update request
-=================================== ======================= =======================
+=================================== ======================= ========================
 
 Use Case 5: Site owner blocks and unblocks a user
 -------------------------------------------------
@@ -395,13 +395,13 @@ Requirements:
 Views
 '''''
 
-==================================== ======================= =======================
-URL Path                             View Name               Required Activities[1]_
-==================================== ======================= =======================
+==================================== ======================= ========================
+URL Path                             View Name               Required Activities [1]_
+==================================== ======================= ========================
 /posting/admin/blocked-users/        blocked_user_management read request
 /posting/admin/request/block         process_admin_request   update request
 /posting/admin/blocked-users/unblock unblock_user            update request
-==================================== ======================= =======================
+==================================== ======================= ========================
 
 Use Case 6: Site owner entering offline purchases
 -------------------------------------------------
@@ -419,16 +419,16 @@ Requirements:
 Views
 '''''
 
-======================================== ================================= =======================
-URL Path                                 View Name                         Required Activities[#]_
-======================================== ================================= =======================
+======================================== ================================= ========================
+URL Path                                 View Name                         Required Activities [1]_
+======================================== ================================= ========================
 /posting/admin/purchase/offline/         admin_offlinepurchase             read offline purchase
 /posting/admin/purchase/offline/add/     OfflinePurchaseFormView           create offline purchase
 /posting/admin/purchase/offline/update/  OfflinePurchaseFormView           update offline purchase
 /posting/admin/purchase/offline/delete/  OfflinePurchaseFormView           delete offline purchase
 /posting/admin/purchase/offline/success/ view_request                      read offline purchase
 /posting/purchase/redeem/                OfflinePurchaseRedemptionFormView
-======================================== ================================= =======================
+======================================== ================================= ========================
 
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
@@ -440,5 +440,8 @@ URL Path                                 View Name                         Requi
 .. _enable marketplace access: http://directemployers.jobs/admin/seo/company/999999/?_changelist_filters=q%3Ddirectemployers%2Bass
 .. _assign your user a role: https://secure.my.jobs/manage-users/#/users?_k=w22qot
 .. _Ceate a new site package: https://secure.my.jobs/admin/postajob/sitepackage/add/
+
+
+.. rubric:: Footnotes
 
 .. [1] A requirement listed as "foo | bar" signifies that either foo *or* bar is required, not both
