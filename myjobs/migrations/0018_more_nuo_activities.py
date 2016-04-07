@@ -9,14 +9,9 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         nuo = AppAccess.objects.get(name='NUO')
-
-        nuo_activities = [
-            ("update outreach email address", "Edit existing outreach inboxes")
-        ]
-
-        for name, desc in nuo_activities:
-            Activity.objects.create(
-                app_access=nuo, name=name, description=desc)
+        Activity.objects.create(app_access=nuo,
+                                name="update outreach email address",
+                                description="Edit existing outreach inboxes.")
 
 
     def backwards(self, orm):
