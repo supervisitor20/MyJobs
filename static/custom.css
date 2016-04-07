@@ -3098,18 +3098,25 @@ fieldset:nth-child(n+2) {
     margin-top: 20px;
 }
 
+.row .col-md-8 label {
+    margin-top: 5px;
+    font-weight: normal;
+}
+
 .row .col-md-4 label {
     color: #676767;
     font-size: 10pt;
     text-align: left;
     display: block;
     line-height: normal;
+    margin-top: 0;
 }
 
 @media screen and (min-width: 768px){
     .row .col-md-4 label {
         line-height: 33px;
         text-align: right;
+        font-weight: normal;
     }
 }
 
@@ -3159,6 +3166,11 @@ fieldset:nth-child(n+2) {
 
 .row .col-md-8 ul li label {
     font-weight: normal;
+}
+
+.row .col-md-8 label input[type='checkbox'] {
+    height: inherit;
+    margin-right: 10px;
 }
 
 .row .col-md-8 select {
@@ -3326,6 +3338,12 @@ height: 33px;
   background-color: #C6D6EA;
 }
 /* End Select Element React Component Styles */
+
+/* Export Page Styles */
+#export-page #record-count {
+  text-align: center;
+}
+/* End Export Page Styles */
 
 input[type='checkbox'] + .help-block {
     display:inline;
