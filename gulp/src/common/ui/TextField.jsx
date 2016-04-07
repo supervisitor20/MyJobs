@@ -8,6 +8,7 @@ function TextField(props) {
   return (
     <input
       type="text"
+      autoComplete="off"
       id={name}
       name={name}
       className=""
