@@ -100,6 +100,20 @@ related to job posting. Specifically, you need to:
   - assign the user trying to access job posting a role with the correct
     activities
 
+Automatically
+'''''''''''''
+
+Open a Django shell and run the following commands::
+
+>>> from seo.models import Company, SeoSite
+>>> from postajob.helpers import enable_posting
+>>> company = Company.objects.get(name="DirectEmployers Association")
+>>> site = SeoSite.objects.get(domain="directemployers.jobs")
+>>> enable_posting(company, site)
+
+Note that it is not possible to automatically enable posting from the Django
+admin.
+
 From the Django shell
 '''''''''''''''''''''
 
@@ -195,6 +209,20 @@ activities. All together then, you need to:
   - assign the user trying to access the marketplace a role with the correct
     activities
 
+Automatically
+'''''''''''''
+
+Open a Django shell and run the following commands::
+
+>>> from seo.models import Company, SeoSite
+>>> from postajob.helpers import enable_marketplace
+>>> company = Company.objects.get(name="DirectEmployers Association")
+>>> site = SeoSite.objects.get(domain="directemployers.jobs")
+>>> enable_marketplace(company, site)
+
+Note that it is not possible to automatically enable posting from the Django
+admin.
+
 From the Django Shell
 '''''''''''''''''''''
 
@@ -257,9 +285,9 @@ Requirements:
 Views
 '''''
 
-======================================== =========================== ======================
-URL Path                                 View Name                   Required Activities
-======================================== =========================== ======================
+======================================== =========================== =======================
+URL Path                                 View Name                   Required Activities[1]_
+======================================== =========================== =======================
 /posting/list/                           product_listing             N/A
 /posting/product/purchase/add/           PurchasedProductFormView    N/A
 /posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
@@ -267,7 +295,7 @@ URL Path                                 View Name                   Required Ac
 /posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
 /postign/job/purchase/add/               PurchasedJobFormView        create purchased job
 /posting/job/purchase/update/            PurchasedJobFormView        update purchased job
-======================================== =========================== ======================
+======================================== =========================== =======================
 
 .. _use-case-2:
 
@@ -288,13 +316,13 @@ Requirements:
 Views
 '''''
 
-=================== ============= ===================
-URL Path            View Name     Required Activities
-=================== ============= ===================
+=================== ============= =======================
+URL Path            View Name     Required Activities[1]_
+=================== ============= =======================
 /posting/all/       jobs_overview read job
 /posting/job/add/   JobFormView   create job
 /posting/job/update JobFormView   update job
-=================== ============= ===================
+=================== ============= =======================
 
 
 Use Case 3: Site owner creating a product for sale
@@ -314,17 +342,18 @@ Requirements:
 Views
 '''''
 
-=================================== ======================= ===================
-URL Path                            View Name               Required Activities
-=================================== ======================= ===================
-/posting/admin/product              admin_products          read product
-/posting/admin/product/add          ProductFormView         create product
-/posting/admin/product/update       ProductFormView         update product
-/posting/admin/product/group        admin_groupings         read grouping
-/posting/admin/product/group/add    ProductGroupingFormView create grouping
-/posting/admin/product/group/update ProductGroupingFormView update grouping
-/posting/admin/product/group/delete ProductGroupingFormView delete grouping
-=================================== ======================= ===================
+=================================== ================================= ============================================================================================
+URL Path                            View Name                         Required Activities[1]_
+=================================== ================================= ============================================================================================
+/posting/admin/                     purchasedmicrosite_admin_overview read product | read request | read offline purchase | read purchased product | read grouping
+/posting/admin/product              admin_products                    read product
+/posting/admin/product/add          ProductFormView                   create product
+/posting/admin/product/update       ProductFormView                   update product
+/posting/admin/product/group        admin_groupings                   read grouping
+/posting/admin/product/group/add    ProductGroupingFormView           create grouping
+/posting/admin/product/group/update ProductGroupingFormView           update grouping
+/posting/admin/product/group/delete ProductGroupingFormView           delete grouping
+=================================== ================================= ============================================================================================
 
 Use Case 4: Site owner reviewing posted jobs
 --------------------------------------------
@@ -341,14 +370,14 @@ Requirements:
 Views
 '''''
 
-=================================== ======================= ===================
-URL Path                            View Name               Required Activities
-=================================== ======================= ===================
+=================================== ======================= =======================
+URL Path                            View Name               Required Activities[1]_
+=================================== ======================= =======================
 /posting/admin/request/             admin_request           read request
 /posting/admin/request/view/        read_request            read request
 /posting/admin/request/approve/     process_admin_request   update request
 /posting/admin/request/deny/        process_admin_request   update request
-=================================== ======================= ===================
+=================================== ======================= =======================
 
 Use Case 5: Site owner blocks and unblocks a user
 -------------------------------------------------
@@ -366,13 +395,13 @@ Requirements:
 Views
 '''''
 
-==================================== ======================= ==================
-URL Path                            View Name               Required Activities
-==================================== ======================= ==================
+==================================== ======================= =======================
+URL Path                             View Name               Required Activities[1]_
+==================================== ======================= =======================
 /posting/admin/blocked-users/        blocked_user_management read request
 /posting/admin/request/block         process_admin_request   update request
 /posting/admin/blocked-users/unblock unblock_user            update request
-==================================== ======================= ==================
+==================================== ======================= =======================
 
 Use Case 6: Site owner entering offline purchases
 -------------------------------------------------
@@ -391,7 +420,7 @@ Views
 '''''
 
 ======================================== ================================= =======================
-URL Path                                 View Name                         Required Activities
+URL Path                                 View Name                         Required Activities[#]_
 ======================================== ================================= =======================
 /posting/admin/purchase/offline/         admin_offlinepurchase             read offline purchase
 /posting/admin/purchase/offline/add/     OfflinePurchaseFormView           create offline purchase
@@ -411,3 +440,5 @@ URL Path                                 View Name                         Requi
 .. _enable marketplace access: http://directemployers.jobs/admin/seo/company/999999/?_changelist_filters=q%3Ddirectemployers%2Bass
 .. _assign your user a role: https://secure.my.jobs/manage-users/#/users?_k=w22qot
 .. _Ceate a new site package: https://secure.my.jobs/admin/postajob/sitepackage/add/
+
+.. [1] A requirement listed as "foo | bar" signifies that either foo *or* bar is required, not both
