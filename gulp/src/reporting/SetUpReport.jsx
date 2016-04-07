@@ -6,7 +6,6 @@ import {forEach, map} from 'lodash-compat/collection';
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
-import {WizardFilterTags} from './wizard/WizardFilterTags';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import {SelectElementController} from 'reporting/SelectElementController';
@@ -183,16 +182,21 @@ export default class SetUpReport extends Component {
           break;
         case 'tags':
           rows.push(
-            <FieldWrapper key={col.filter} label={col.display}>
-              <WizardFilterTags
-                tags={filter[col.filter] || []}
-                addTag={(i, t) =>
+            <FieldWrapper
+              key={col.filter}
+              label={col.display}>
+
+              <SelectElementController
+                getTagHints={v => reportConfig.getHints(col.filter, v)}
+                selectedTags={filter[col.filter] || []}
+                onSelectTagAdd={(i, t) =>
                   reportConfig.addToAndOrFilter(col.filter, i, t)}
-                removeTag={(i, t) =>
+                onSelectTagRemove={(i, t) =>
                   reportConfig.removeFromAndOrFilter(col.filter, i, t)}
-                getHints={v => reportConfig.getHints(col.filter, v)}/>
+              />
+
             </FieldWrapper>
-          );
+            );
           break;
         case 'search_multiselect':
           rows.push(
@@ -201,14 +205,14 @@ export default class SetUpReport extends Component {
               label={col.display}>
 
               <SelectElementController
-                getHints={v => reportConfig.getHints(col.filter, v)}
-                selectedOptions = {
+                getItemHints={v => reportConfig.getHints(col.filter, v)}
+                selectedItems={
                   map(reportConfig.multiFilter[col.filter] || [],
                     v => ({value: v.key, display: v.display}))}
-                onSelectAdd = {vs => forEach(vs, v =>
+                onSelectItemAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter,
                     {key: v.value, display: v.display}))}
-                onSelectRemove = {vs => forEach(vs, v =>
+                onSelectItemRemove = {vs => forEach(vs, v =>
                   reportConfig.removeFromMultifilter(col.filter,
                     {key: v.value, display: v.display}))}
               />

@@ -1,60 +1,111 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import Multiselect from 'common/ui/MultiSelect';
 import Select from 'common/ui/Select';
 import {map} from 'lodash-compat/collection';
+import {lookupByValue} from 'common/array';
+import TagAnd from 'common/ui/tags/TagAnd';
 
 export class SelectElementController extends Component {
   constructor(props) {
     super(props);
     this.state = {
       itemKey: undefined,
-      initial: {display: 'No filter', value: 0},
+      value: 'No filter',
       choices: [
           {display: 'No filter', value: 0},
           {display: 'Filter by name', value: 1},
+          {display: 'Filter by tag', value: 2},
       ],
-      availableHints: [],
+      availableItemHints: [],
+      availableTagHints: [],
       choice: 0,
     };
   }
+
   componentDidMount() {
     this.getHints();
   }
+
   async getHints() {
-    const {getHints} = this.props;
-    const availableHints = await getHints();
-    const fixedAvailableHints = map(availableHints, value => ({value: value.key, display: value.display}));
-    this.setState({availableHints: fixedAvailableHints});
+    const {getItemHints, getTagHints} = this.props;
+    if (getItemHints) {
+      const availableItemHints = await getItemHints();
+      const fixedAvailableItemHints =
+        map(availableItemHints, value =>
+            ({value: value.key, display: value.display}));
+      this.setState({
+        availableItemHints: fixedAvailableItemHints,
+      });
+    }
+    if (getTagHints) {
+      const availableTagHints = await getTagHints();
+      const fixedAvailableTagHints =
+        map(availableTagHints, tag =>
+            ({...tag, value: tag.key, display: tag.display}));
+      this.setState({
+        availableTagHints: fixedAvailableTagHints,
+      });
+    }
   }
+
   changeHandler(event) {
+    const {choices} = this.state;
+    const value = event.target.value;
+    const display = lookupByValue(choices, value).display;
     this.setState({
-      choice: event.target.value,
+      choice: value,
+      value: display,
     });
   }
+
   renderControl(value) {
-    const {onSelectAdd, onSelectRemove} = this.props;
-    if (value === 1) {
+    const {
+      onSelectItemAdd,
+      onSelectItemRemove,
+      onSelectTagAdd,
+      onSelectTagRemove,
+      selectedTags,
+      selectedItems,
+    } = this.props;
+    const {
+      availableItemHints,
+      availableTagHints,
+    } = this.state;
+
+    switch (value) {
+    case 1:
       return (
         <Multiselect
-          available={this.state.availableHints}
-          selected={this.props.selectedOptions}
+          available={availableItemHints}
+          selected={selectedItems}
           availableHeader={'Available'}
           selectedHeader={'Selected'}
-          onAdd={v => onSelectAdd(v)}
-          onRemove={v => onSelectRemove(v)}
+          onAdd={v => onSelectItemAdd(v)}
+          onRemove={v => onSelectItemRemove(v)}
           />
       );
+    case 2:
+      return (
+        <TagAnd
+          availableTags={availableTagHints}
+          selectedTags={selectedTags}
+          onChooseTag={onSelectTagAdd}
+          onRemoveTag={onSelectTagRemove}
+          />
+      );
+    default:
+      return '';
     }
-    return '';
   }
+
   render() {
-    const {choices, initial, choice} = this.state;
+    const {choices, value, choice} = this.state;
     return (
       <div>
         <Select
           name=""
           onChange={v => this.changeHandler(v)}
-          initial={initial}
+          value={value}
           choices = {choices}
         />
         <div className="select-control-chosen">
@@ -69,26 +120,50 @@ SelectElementController.propTypes = {
   /**
    * Function that gets the hints
    */
-  getHints: React.PropTypes.func.isRequired,
+  getItemHints: PropTypes.func,
+
   /**
-   * Currently selected options
+   * Currently selected items
    */
-  selectedOptions: React.PropTypes.arrayOf(
-    React.PropTypes.shape({
-      value: React.PropTypes.any.isRequired,
-      display: React.PropTypes.string.isRequired,
+  selectedItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
     })
   ),
-  /**
-   * Function to add when selected
-   */
-  onSelectAdd: React.PropTypes.func.isRequired,
-  /**
-   * Function to remove when deselected
-   */
-  onSelectRemove: React.PropTypes.func.isRequired,
-};
 
-SelectElementController.defaultProps = {
+  /**
+   * Function to add items when selected
+   */
+  onSelectItemAdd: PropTypes.func,
 
+  /**
+   * Function to remove items when deselected
+   */
+  onSelectItemRemove: PropTypes.func,
+
+  getTagHints: PropTypes.func,
+
+  /**
+   * Currently selected tags
+   */
+  selectedTags: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.any.isRequired,
+        display: PropTypes.string.isRequired,
+        hexColor: PropTypes.string.isRequired,
+      })
+    )
+  ),
+
+  /**
+   * Function to add tags when selected
+   */
+  onSelectTagAdd: PropTypes.func,
+
+  /**
+   * Function to remove tags when deselected
+   */
+  onSelectTagRemove: PropTypes.func,
 };

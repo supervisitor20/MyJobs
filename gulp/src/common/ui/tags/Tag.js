@@ -7,32 +7,45 @@ import tinycolor from 'tinycolor2';
  * Show a single tag.
  */
 export function Tag(props) {
-  const {display, hexColor, removeTag, onClick, highlight} = props;
+  const {
+    display,
+    hexColor,
+    onRemoveTag,
+    onClick,
+    onMouseEnter,
+    onMouseLeave,
+    highlight,
+  } = props;
 
   let backgroundColor;
+  let borderColor;
   if (highlight) {
     backgroundColor = tinycolor(hexColor)
-      .saturate(30).darken(25).toHexString();
+      .lighten(20).toHexString();
+    borderColor = tinycolor(hexColor)
+      .lighten(20).toHexString();
   } else {
     backgroundColor = '#' + hexColor;
+    borderColor = tinycolor(hexColor)
+      .darken(10).toHexString();
   }
+  const textColor =
+    tinycolor.mostReadable(backgroundColor, ['#000', '#fff']).toHexString();
 
   return (
-    <div
+    <span
       className={
         classnames(
-          'tag-name',
-          {'faded': highlight},
-          {'removable': removeTag})}
-      style={{backgroundColor}}
-      onClick={() => onClick()}>
-        {display}
-        {removeTag ?
-          <i
-            className="fa fa-times close"
-            onClick={() => removeTag()}/>
-          : ''}
-    </div>
+          'tag-select-tag',
+          {'higlighted': highlight},
+          {'removable': onRemoveTag})}
+      style={{backgroundColor, borderColor, color: textColor}}
+      onClick={e => {e.stopPropagation(); onClick(e);}}
+      onMouseEnter={(e) => onMouseEnter(e)}
+      onMouseLeave={(e) => onMouseLeave(e)}>
+      {display}
+      {onRemoveTag ? <i onClick={e => {e.stopPropagation(); onRemoveTag();}}/> : ''}
+    </span>
   );
 }
 
@@ -45,14 +58,19 @@ Tag.propTypes = {
   /**
    * Color to use for this tag.
    */
-  hexColor: PropTypes.string,
+  hexColor: PropTypes.string.isRequired,
+
+  /**
+   * Is this tag currently highlighted?
+   */
+  highlight: PropTypes.bool,
 
   /**
    * Callback: call with no args to indicate that the user clicked remove.
    *
    * Optional: If not present, no UI for tags removal will appear.
    */
-  removeTag: PropTypes.func,
+  onRemoveTag: PropTypes.func,
 
   /**
    * Callback: user clicked the tag
@@ -60,7 +78,12 @@ Tag.propTypes = {
   onClick: PropTypes.func.isRequired,
 
   /**
-   * Is this tag currently highlighted?
+   * Callback: mouse hovered over the tag
    */
-  highlight: PropTypes.bool,
+  onMouseEnter: React.PropTypes.func,
+
+  /**
+   * Callback: mouse left the tag
+   */
+  onMouseLeave: React.PropTypes.func,
 };
