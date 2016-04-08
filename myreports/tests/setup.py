@@ -24,7 +24,7 @@ class MyReportsTestCase(MyJobsBase):
         super(MyReportsTestCase, self).setUp()
         self.role.activities = self.activities
         self.partner = PartnerFactory(name='Test Partner', owner=self.company)
-        create_full_fixture()
+        self.dynamic_models = create_full_fixture()
 
 
 def create_full_fixture():
@@ -41,6 +41,9 @@ def create_full_fixture():
         * UI and "active_..." manager methods should never return or show
           an inactive record. So UI should never see "Dead" or "Maybe Dead"
           items.
+
+    returns:
+        a dictionary of references to models important for testing
     """
 
     # For each model create one or more plausible active records.
@@ -591,7 +594,7 @@ def create_full_fixture():
         id=2, presentation_type=pre_dead,
         display_name="Dead Presentation",
         report_data=rtdt_con_unagg, is_active=True)
-    ReportPresentationFactory.create(
+    rtpt_con = ReportPresentationFactory.create(
         id=3, presentation_type=pre_csv,
         display_name="Contact CSV",
         report_data=rtdt_con_unagg, is_active=True)
@@ -603,7 +606,7 @@ def create_full_fixture():
         id=6, presentation_type=pre_csv,
         display_name="Communication Record CSV",
         report_data=rtdt_comm_unagg, is_active=True)
-    ReportPresentationFactory.create(
+    rtpt_xlsx = ReportPresentationFactory.create(
         id=7, presentation_type=pre_xlsx,
         display_name="Contact Excel Spreadsheet",
         report_data=rtdt_con_unagg, is_active=True)
@@ -635,3 +638,59 @@ def create_full_fixture():
         id=14, presentation_type=pre_json,
         display_name="Communication Record Count JSON Passthrough",
         report_data=rtdt_comm_count_pmpp, is_active=True)
+
+    return {
+        'user_type': {
+            'dead': ut_emp_dead,
+            'employee': ut_emp,
+            'staff': ut_staff,
+        },
+        'reporting_type': {
+            'prm': rit_prm,
+            'compliance': rit_comp,
+            'dead': rit_dead,
+            'maybe_dead': rit_maybe_dead,
+            'wrong': rit_wrong,
+        },
+        'report_type': {
+            'partners': rt_partners,
+            'contacts': rt_con,
+            'communication_records': rt_comm,
+            'state': rt_state,
+            'screenshots': rt_screen,
+            'dead': rt_dead,
+            'maybe_dead': rt_maybe_dead,
+        },
+        'data_type': {
+            'dead': dt_dead,
+            'maybe_dead': dt_maybe_dead,
+            'unaggregated': dt_unagg,
+            'count_comm_per_month_per_partner':
+                dt_count_comm_per_month_per_partner,
+        },
+        'presentation_type': {
+            'dead': pre_dead,
+            'maybe_dead': pre_maybe_dead,
+            'csv': pre_csv,
+            'xlsx': pre_xlsx,
+            'json': pre_json,
+        },
+        'configuration': {
+            'dead': con_dead,
+            'contacts': con_con,
+            'partners': con_part,
+            'communication_records': con_comm,
+            'communication_records_count': con_comm_count,
+        },
+        'report_type/data_type': {
+            'contacts/unaggregated': rtdt_con_unagg,
+            'partners/unaggregated': rtdt_part_unagg,
+            'communication_records/unaggregated': rtdt_comm_unagg,
+            'communication_records_count/unaggregated':
+                rtdt_comm_count_pmpp,
+        },
+        'report_type/presentation_type': {
+            'contacts/csv': rtpt_con,
+            'contacts/xlsx': rtpt_xlsx,
+        },
+    }
