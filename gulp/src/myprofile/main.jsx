@@ -132,7 +132,7 @@ class Module extends React.Component {
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
-              initial={profileUnit.initial}
+              value={formContents[profileUnitName]}
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}

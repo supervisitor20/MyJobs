@@ -4,7 +4,7 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
+  const {name, onChange, required, maxLength, value, isHidden, placeholder} = props;
   return (
     <input
       type="text"
@@ -15,7 +15,7 @@ function TextField(props) {
       maxLength={maxLength}
       required={required}
       hidden={isHidden}
-      defaultValue={initial}
+      value={value}
       placeholder={placeholder}
       onChange={onChange}
       />
@@ -39,9 +39,9 @@ TextField.propTypes = {
    */
   placeholder: React.PropTypes.string,
   /**
-   * Value at first page load
+   * Value shown in control
    */
-  initial: React.PropTypes.string,
+  value: React.PropTypes.string,
   /**
    * Number of characters allowed in this field
    */
@@ -58,7 +58,7 @@ TextField.propTypes = {
 
 TextField.defaultProps = {
   placeholder: '',
-  initial: '',
+  value: '',
   maxLength: null,
   isHidden: false,
   required: false,
