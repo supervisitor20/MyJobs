@@ -48,6 +48,8 @@ export default class TagSelect extends Component {
 
   handleAdd(tag) {
     const {onChooseTag} = this.props;
+    this.setState({partial: ''});
+    this.setHighlight(tag.value, false);
     onChooseTag(tag);
   }
 
@@ -56,7 +58,7 @@ export default class TagSelect extends Component {
     onRemoveTag(tag);
   }
 
-  handleBlur(e) {
+  handleBlur() {
     const {mouseInMenu} = this.state;
     if (!mouseInMenu) {
       this.closeSelectMenu();
@@ -87,7 +89,8 @@ export default class TagSelect extends Component {
     const {selectDropped, partial} = this.state;
     const filteredAvailableTags =
       filter(availableTags, at =>
-        (!partial || at.display.indexOf(partial) != -1) &&
+        (!partial ||
+         at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
         !find(selectedTags, st => st.value === at.value));
 
     return (
