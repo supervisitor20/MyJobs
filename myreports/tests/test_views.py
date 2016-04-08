@@ -479,7 +479,9 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(expected, data)
 
     def test_export_options_api(self):
-        report_data = ReportTypeDataTypes.objects.get(id=4)
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
 
         report = DynamicReport.objects.create(
             name='The Report',
