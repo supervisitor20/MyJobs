@@ -1,34 +1,42 @@
-export class Api {
-  constructor(csrf) {
-    this.csrf = csrf;
-  }
-  withCsrf(formData) {
-    return {...formData, csrfmiddlewaretoken: this.csrf};
-  }
-
-  checkStatus(response) {
-    if (response.status === 200) {
-      return response;
-    }
-    const error = new Error(response.statusText);
-    error.response = response;
-    throw error;
-  }
-
-  parseJSON(response) {
-    return response.json();
+class Api {
+  constructor(myJobsApi) {
+    this.myJobsApi = myJobsApi;
   }
 
   async getFromNuoApi(url) {
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    return this.parseJSON(this.checkStatus(response));
+    return this.myJobsApi.get(url);
+  }
+
+  async postToNuoApi(url, data) {
+    return this.myJobsApi.post(url, data);
   }
 
   async getExistingInboxes() {
     return await this.getFromNuoApi('/prm/api/nonuseroutreach/inbox/list');
+  }
+
+  async createNewInbox(email) {
+    const promise = this.postToNuoApi('/prm/api/nonuseroutreach/inbox/add', {
+      email: email,
+    });
+    return (await promise);
+  }
+
+  async updateInbox(id, email) {
+    const promise = this.postToNuoApi(
+      '/prm/api/nonuseroutreach/inbox/update', {
+        id: id,
+        email: email,
+      }
+    );
+    return (await promise);
+  }
+
+  async deleteInbox(id) {
+    const promise = this.postToNuoApi(
+      '/prm/api/nonuseroutreach/inbox/delete/', {'id': id}
+    );
+    return (await promise);
   }
 }
 
