@@ -72,9 +72,7 @@ export class WizardPageFilter extends Component {
     // If the current list of filters does not contain a "city", we
     // need to autofocus on the report name.
     const autoFocusOnName = reportConfig.filters.filter(
-      function hasCity(element) {
-        return element.filter === 'city';
-      }).length > 0 ? '' : 'autofocus';
+      e => e.filter === 'city').length > 0 ? '' : 'autofocus';
     rows.push(
       <FieldWrapper
         key="reportName"
