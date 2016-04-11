@@ -311,7 +311,8 @@ function Field(options) {
     defaultVal: '',
     helpText: '',
     errors: [],
-    isFilter: true
+    isFilter: true,
+    autofocus: false
   }));
 
   this.key = this.key || options.id;
@@ -460,7 +461,8 @@ TextField.prototype = $.extend(Object.create(Field.prototype), {
   render: function() {
     var label = this.renderLabel(),
         field = '<input id="' + this.id + '" value="' + this.defaultVal +
-          '" type="text" placeholder="' + this.label + '" />',
+          '" type="text" placeholder="' + this.label + (this.autofocus?
+          '" autofocus="autofocus" />' : '" />'),
         helpText = '<div class="help-text">' + this.helpText + '</div>';
     return label + field + (this.helpText ? helpText : '');
   }
@@ -1313,7 +1315,8 @@ function createReport(type) {
                                     new TextField({
                                           label: "City", 
                                           id: "city",
-                                          key: "locations.city.icontains"
+                                          key: "locations.city.icontains",
+                                          autofocus: "autofocus"
                                         }),
                                     new TagField({
                                       label: "Tags", 
@@ -1356,7 +1359,8 @@ function createReport(type) {
                                     new TextField({
                                       label: "City", 
                                       id: "city",
-                                      key: "contact.locations.city.icontains"
+                                      key: "contact.locations.city.icontains",
+                                      autofocus: "autofocus"
                                     }),
                                     new TextField({
                                       label: "URL", 
@@ -1430,7 +1434,8 @@ function createReport(type) {
                                           new TextField({
                                             label: "City", 
                                             id: "city", 
-                                            key: "contact.locations.city.icontains"
+                                            key: "contact.locations.city.icontains",
+                                            autofocus: "autofocus"
                                           }),
                                           new CheckList({
                                             label: "Communication Types", 

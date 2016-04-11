@@ -21,7 +21,7 @@ from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
 from postajob.payment import authorize_card, get_card, settle_transaction
 from postajob.widgets import ExpField
 from universal.forms import RequestForm
-from universal.helpers import get_object_or_none
+from universal.helpers import get_object_or_none, autofocus_input
 from myjobs.models import AppAccess
 
 
@@ -77,6 +77,7 @@ class BaseJobForm(RequestForm):
             # Remove the option to set the company.
             self.fields['owner'].widget = HiddenInput()
             self.initial['owner'] = self.company
+        autofocus_input(self, 'title')
 
     def clean_apply_link(self):
         """
@@ -429,6 +430,7 @@ class SitePackageForm(RequestForm):
 
             # Limit a user to only companies they have access to.
             self.fields['owner'].queryset = self.request.user.companies.all()
+        autofocus_input(self)
 
 
 class ProductForm(RequestForm):
@@ -489,6 +491,7 @@ class ProductForm(RequestForm):
                 self.initial['cost'] = 0
                 self.fields['cost'].widget.attrs['readonly'] = True
                 setattr(self, 'no_payment_info', True)
+        autofocus_input(self)
 
     def clean_cost(self):
         cost = self.cleaned_data.get('cost')
@@ -540,6 +543,7 @@ class ProductGroupingForm(RequestForm):
 
             self.initial['owner'] = self.company
             self.fields['owner'].widget = HiddenInput()
+        autofocus_input(self)
 
     def save(self, commit=True):
         products = self.cleaned_data.pop('products')
@@ -619,6 +623,7 @@ class PurchasedProductNoPurchaseForm(RequestForm):
         if not self.company:
             self.fields['company_name'] = CharField(label='Company Name')
             self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+        autofocus_input(self, 'address_line_one')
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -706,6 +711,7 @@ class PurchasedProductForm(RequestForm):
         if not self.company:
             self.fields['company_name'] = CharField(label='Company Name')
             self.fields.keyOrder.insert(0, self.fields.keyOrder.pop())
+        autofocus_input(self)
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -821,6 +827,7 @@ class OfflinePurchaseForm(RequestForm):
             label = '{name}'.format(name=product.name)
             self.fields[str(product.pk)] = IntegerField(label=label, initial=0,
                                                         min_value=0)
+        autofocus_input(self)
 
     def save(self, commit=True):
         self.instance.owner = self.company
@@ -873,6 +880,7 @@ class OfflinePurchaseRedemptionForm(RequestForm):
             self.fields['state'] = CharField(label='State')
             self.fields['country'] = CharField(label='Country')
             self.fields['zipcode'] = CharField(label='Zip Code')
+        autofocus_input(self)
 
     def clean_company_name(self):
         company_name = self.cleaned_data.get('company_name')
@@ -953,6 +961,7 @@ class CompanyProfileForm(RequestForm):
         if not self.instance.company.user_created:
             self.fields['company_name'].widget.attrs['readonly'] = True
             self.fields['description'].widget.attrs['readonly'] = True
+        autofocus_input(self)
 
     def clean(self):
         cleaned_data = self.cleaned_data

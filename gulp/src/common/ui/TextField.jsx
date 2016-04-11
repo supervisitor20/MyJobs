@@ -4,7 +4,7 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
+  const {name, onChange, required, maxLength, initial, isHidden, placeholder, autoFocus} = props;
   return (
     <input
       type="text"
@@ -17,6 +17,7 @@ function TextField(props) {
       defaultValue={initial}
       placeholder={placeholder}
       onChange={onChange}
+      autoFocus={autoFocus}
       />
   );
 }
@@ -53,6 +54,7 @@ TextField.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 TextField.defaultProps = {
@@ -61,6 +63,7 @@ TextField.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
+  autoFocus: false,
 };
 
 export default TextField;

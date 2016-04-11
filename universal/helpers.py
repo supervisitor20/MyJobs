@@ -490,3 +490,15 @@ def str_invitation_reaason(string):
     """Returns the string verbatim as the `message`."""
 
     return {"message": (" " if string else "") + string + "."}
+
+
+def autofocus_input(form, field_name=None):
+    #import ipdb; ipdb.set_trace()
+    if field_name:
+        field = form.fields[field_name]
+        #bound_field = filter(lambda x: x.auto_id == field_name,
+        #                     visible_fields)[0]
+    else:
+        visible_fields = form.visible_fields()
+        field = visible_fields[0].field
+    field.widget.attrs.update({'autofocus': 'autofocus'})
