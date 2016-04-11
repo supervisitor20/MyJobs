@@ -19,6 +19,7 @@ export class InboxList extends Component {
   }
 
   handleDelete(index) {
+    this.props.inboxManager.deleteInbox(this.state.inboxes[index].pk);
     this.setState({
       inboxes: this.state.inboxes.filter((_, i) => i !== index),
     });

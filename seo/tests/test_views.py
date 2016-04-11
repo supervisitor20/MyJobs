@@ -495,6 +495,33 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.context['default_jobs']), 1)
 
+    def test_solr_reserve_words_in_country_facet(self):
+        """
+        Ensure that solr reserve words work properly in search facets
+
+        """
+        self.conn.delete(q='*:*')
+        andorra_job = solr_settings.SOLR_FIXTURE[0].copy()
+        andorra_job.update({
+                'country': 'Andorra',
+                'country_ac': 'Andorra',
+                'country_exact': 'Andorra',
+                'country_short': 'AND',
+                'country_short_exact': 'AND',
+                'country_slab': 'and/jobs::Andorra',
+                'country_slab_exact': 'and/jobs::Andorra',
+                'country_slug': 'andorra',
+                'buid': self.buid_id,
+                })
+        self.conn.add([andorra_job])
+        site = SeoSite.objects.get(id=1)
+        site.business_units = [self.buid_id]
+        site.save()
+
+        resp = self.client.get('/and/jobs/', follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['default_jobs']), 1)
+
     def test_postajob(self):
         company = factories.CompanyFactory()
         jobs = []

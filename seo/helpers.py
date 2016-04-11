@@ -563,13 +563,13 @@ def filter_sqs_by_location(sqs, location_slug):
     for k, v in loc.items():
         if v:
             if k == 'country_short':
-                sqs = sqs.narrow('country_short_exact:(%s)' % v.upper())
+                sqs = sqs.narrow('country_short_exact:("%s")' % v.upper())
             elif k == 'state':
                 if v != 'none':
-                    sqs = sqs.narrow("state_slug:(%s)" % v)
+                    sqs = sqs.narrow('state_slug:(%s)' % v)
             else:
                 if v != 'none':
-                    sqs = sqs.narrow("city_slug:(%s)" % v)
+                    sqs = sqs.narrow('city_slug:(%s)' % v)
     return sqs
 
 
@@ -594,9 +594,7 @@ def filter_sqs(sqs, filters):
         # custom facet.
         for custom_facet in custom_facets:
             sqs = sqs_apply_custom_facets([custom_facet], sqs)
-
     _filters = filter(lambda x: filters.get(x) and x != 'facet_slug', filters)
-
     for f in _filters:
         if f == 'location_slug':
             sqs = filter_sqs_by_location(sqs, filters['location_slug'])
@@ -608,9 +606,9 @@ def filter_sqs(sqs, filters):
             except IndexError:
                 pass
             if settings.SITE_BUIDS:
-                sqs = sqs.narrow("mapped_moc_exact:(%s)" % _clean(t))
+                sqs = sqs.narrow('mapped_moc_exact:("%s")' % _clean(t))
             else:
-                sqs = sqs.narrow("moc_exact:(%s)" % _clean(t))
+                sqs = sqs.narrow('moc_exact:("%s")' % _clean(t))
         elif f == 'company_slug':
             company = BusinessUnit.objects.filter(title_slug=filters[f])
 

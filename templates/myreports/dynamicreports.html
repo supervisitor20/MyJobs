@@ -14,32 +14,17 @@
 {% endcompress %}
 {% endblock %}
 
-{% block content %}
-    <div class="row">
-        <div class="col-xs-12">
-            <h1 class="bottom-bordered">{{ company.name }} <small>Dynamic Reports (beta)</small></h1>
-        </div>
-    </div>
-    <!-- This UI is a placeholder for QA purposes.
-         It is not intended to set any precedent. -->
-    <div class="row">
-        <div id="reporting-app" class="col-xs-12">
-        </div>
-    </div>
-
-{% endblock %}
-
 {% block extra-js %}
-<script>
-spinnerImg = "{% static "images/ajax-loader.gif" %}";
-</script>
+    <script>
+    spinnerImg = "{% static "images/ajax-loader.gif" %}";
+    </script>
 
 {% if wp_base_url %}
   <script src="{{wp_base_url}}/reporting.js"/></script>
 {% else %}
   {% compress js %}
-  <script src="{% static "bundle/vendor.js" %}"></script>
-  <script src="{% static "bundle/reporting.js" %}"></script>
+      <script src="{% static "bundle/vendor.js" %}"></script>
+      <script src="{% static "bundle/reporting.js" %}"></script>
   {% endcompress %}
 {% endif %}
 
