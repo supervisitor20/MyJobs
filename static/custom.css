@@ -3343,6 +3343,38 @@ height: 33px;
 #export-page #record-count {
   text-align: center;
 }
+
+.sortable-report-field {
+  border-radius: 3px;
+  margin-bottom: 5px;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.sortable-report-field:hover {
+  background-color: #C6D6EA;
+}
+
+.sortable-report-field:hover .sortable-report-arrows {
+  display: inline-block;
+}
+
+.sortable-report-field .sortable-report-arrows {
+  float: right;
+  line-height: 30px;
+  display: none;
+}
+
+.sortable-report-field .sortable-report-arrows .up,
+.sortable-report-field .sortable-report-arrows .down {
+  margin: 0;
+  padding: 0 3px;
+}
+
+.sortable-report-field .sortable-report-arrows .up:hover,
+.sortable-report-field .sortable-report-arrows .down:hover {
+  color: lawngreen;
+}
 /* End Export Page Styles */
 
 input[type='checkbox'] + .help-block {

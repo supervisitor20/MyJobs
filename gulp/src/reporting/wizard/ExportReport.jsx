@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 
-import {SortByController} from '../SortByController';
-import CheckBox from '../../common/ui/CheckBox';
+import SortByController from '../SortByController';
+import SortableField from '../SortableField';
 import Select from 'common/ui/Select';
 import {lookupByValue} from 'common/array';
 import classnames from 'classnames';
@@ -16,8 +16,28 @@ export class ExportReport extends Component {
     console.log(e);
   }
 
+  
+
+  sortableFields(fieldsToInclude) {
+    const fieldsToRender = [];
+    fieldsToInclude.forEach(option => {
+      fieldsToRender.push(
+        <SortableField
+          labelText={option.labelText}
+          nameText={option.nameText}
+          onChange={e => this.onChange(e, this)}
+          onUp={e => this.onChange(e, this)}
+          onDown={e => this.onChange(e, this)}
+        />
+      );
+    });
+    return (
+      fieldsToRender
+    );
+  }
+
   render() {
-    const {contactChoices, recordCount} = this.props;
+    const {contactChoices, recordCount, fieldsToInclude} = this.props;
     return (
       <div id="export-page">
         <div className="row">
@@ -33,30 +53,7 @@ export class ExportReport extends Component {
               <label>Fields to include:</label>
             </div>
             <div className="col-md-8">
-              <div>
-                <label htmlFor="selectAll">
-                  <CheckBox
-                    name="selectAll"
-                    onChange={e => this.onChange(e, this)}
-                  />
-                Deselect All</label>
-              </div>
-              <div>
-                <label htmlFor="contact">
-                  <CheckBox
-                    name="contact"
-                    onChange={e => this.onChange(e, this)}
-                  />
-                Contact</label>
-              </div>
-              <div>
-                <label htmlFor="contactEmail">
-                  <CheckBox
-                    name="contactEmail"
-                    onChange={e => this.onChange(e, this)}
-                  />
-                Contact Email</label>
-              </div>
+              {this.sortableFields(fieldsToInclude)}
             </div>
         </div>
         <div className="row">
@@ -85,7 +82,7 @@ export class ExportReport extends Component {
             )}>
           <div className="col-md-offset-4 col-md-8 col-xs-12">
             <button className="button">Cancel</button>
-            <button className={classnames('button','primary')}>Export</button>
+            <button className={classnames('button', 'primary')}>Export</button>
           </div>
         </div>
       </div>
@@ -103,10 +100,38 @@ ExportReport.propTypes = {
       display: React.PropTypes.string.isRequired,
     })
   ),
+  /**
+   * Fields to include
+   */
+  fieldsToInclude: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      labelText: React.PropTypes.string.isRequired,
+      nameText: React.PropTypes.string.isRequired,
+    })
+  ),
+  /**
+   * Records to be exported
+   */
   recordCount: React.PropTypes.number,
 };
 
 ExportReport.defaultProps = {
   contactChoices: [{value: 1, display: 'choice b'}],
   recordCount: 231,
+  fieldsToInclude: [{
+    labelText: 'Select All',
+    nameText: 'selectAll',
+  }, {
+    labelText: 'Contact',
+    nameText: 'contactField',
+  }, {
+    labelText: 'Contact Email',
+    nameText: 'contactEmailField',
+  }, {
+    labelText: 'Contact Phone',
+    nameText: 'contactPhoneField',
+  }, {
+    labelText: 'Communication Type',
+    nameText: 'communicationTypeField',
+  }],
 };

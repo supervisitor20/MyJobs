@@ -41,7 +41,7 @@ export class SortByController extends Component {
 
 SortByController.propTypes = {
   /**
-   * Currently selected options
+   * Options to order by
    */
   orderByChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
@@ -50,7 +50,7 @@ SortByController.propTypes = {
     })
   ),
   /**
-   * Currently selected options
+   * Options to sort by
    */
   sortByChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
@@ -61,6 +61,8 @@ SortByController.propTypes = {
 };
 
 SortByController.defaultProps = {
-  orderByChoices: [{value: 1, display: 'Contact'},{value: 2, display: 'Etc'}],
-  sortByChoices: [{value: 1, display: 'Ascending'},{value: 2, display: 'Descending'}],
+  orderByChoices: [{value: 1, display: 'Contact'}, {value: 2, display: 'Etc'}],
+  sortByChoices: [{value: 1, display: 'Ascending'}, {value: 2, display: 'Descending'}],
 };
+
+export default SortByController;
