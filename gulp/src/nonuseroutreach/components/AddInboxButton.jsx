@@ -7,6 +7,7 @@ export function AddInboxButton(props) {
   return (
     <Button
       disabled={props.addDisabled}
+      onClick={props.onClick}
       className="primary pull-right margin-top">
         Add Inbox
     </Button>
@@ -15,4 +16,5 @@ export function AddInboxButton(props) {
 
 AddInboxButton.propTypes = {
   addDisabled: PropTypes.bool.isRequired,
+  onClick: PropTypes.func.isRequired,
 };

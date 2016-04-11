@@ -1,6 +1,6 @@
 {% if blocked %}
     <a href="#" id="blocked" data-toggle="modal" data-target="#block-modal" class="btn">Post New Job</a>
-    <div id="block-modal" class="modal hide fade row">
+    <div id="block-modal" class="modal hide fade" style="display: none;">
         <div class="modal-header">Posting Blocked</div>
         <div class="modal-body">The ability to post jobs from this account has been suspended. Please contact the site administrator.</div>
         <div class="modal-footer">
@@ -10,6 +10,7 @@
         </div>
     </div>
 {% else %}
+  {% if "create purchased job" in activities %}
     {% if purchased_product.can_post_more %}
         <a href="{% url 'purchasedjob_add' product=purchased_product.pk%}" class="btn">Post New Job</a>
         <div class="clear"></div>
@@ -17,4 +18,5 @@
         <a href="#" class="btn disabled" title="This product has expired">Post New Job</a>
         <div class="clear"></div>
     {% endif %}
+  {% endif %}
 {% endif %}
