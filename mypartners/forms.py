@@ -16,6 +16,7 @@ from mypartners.helpers import (log_change, get_attachment_link,
 from mypartners.widgets import (MultipleFileField,
                                 SplitDateTimeDropDownField, TimeDropDownField)
 from universal.forms import NormalizedModelForm
+from universal.helpers import autofocus_input
 
 
 def init_tags(self):
@@ -67,6 +68,7 @@ class ContactForm(NormalizedModelForm):
                                              'maintained by the owner ' \
                                              'of the My.jobs email account ' \
                                              'and cannot be changed.'
+        autofocus_input(self, 'name')
 
     class Meta:
         form_name = "Contact Information"
@@ -187,6 +189,7 @@ class NewPartnerForm(NormalizedModelForm):
         ordered_fields = OrderedDict(new_fields)
         ordered_fields.update(model_fields)
         self.fields = ordered_fields
+        autofocus_input(self, 'partnername')
 
     class Meta:
         form_name = "Partner Information"
@@ -303,6 +306,7 @@ class PartnerForm(NormalizedModelForm):
             choices=choices)
 
         init_tags(self)
+        autofocus_input(self, 'name')
 
     class Meta:
         form_name = "Partner Information"
@@ -379,6 +383,7 @@ class ContactRecordForm(NormalizedModelForm):
         # mark contact type specific fields as required
         for field in ['contact_email', 'contact_phone', 'location', 'job_id']:
             self.fields[field].label += " *"
+        autofocus_input(self, "notes" if self.instance.pk else "contact_type")
 
     def clean(self):
         contact_type = self.cleaned_data.get('contact_type', None)
@@ -465,6 +470,10 @@ class TagForm(NormalizedModelForm):
 
 
 class LocationForm(NormalizedModelForm):
+    def __init__(self, *args, **kwargs):
+        super(LocationForm, self).__init__(*args, **kwargs)
+        autofocus_input(self, 'address_line_one')
+
     class Meta:
         form_name = "Location"
         model = Location

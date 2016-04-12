@@ -68,6 +68,11 @@ export class WizardPageFilter extends Component {
 
     const rows = [];
     const errorTexts = reportNameError ? [reportNameError] : [];
+
+    // If the current list of filters does not contain a "city", we
+    // need to autofocus on the report name.
+    const autoFocusOnName = reportConfig.filters.filter(
+      e => e.filter === 'city').length > 0 ? '' : 'autofocus';
     rows.push(
       <FieldWrapper
         key="reportName"
@@ -76,9 +81,11 @@ export class WizardPageFilter extends Component {
         errors={errorTexts}>
         <input
           value={reportName}
-          onChange={v => reportConfig.changeReportName(v.target.value)}/>
+          onChange={v => reportConfig.changeReportName(v.target.value)}
+          autoFocus={autoFocusOnName} />
       </FieldWrapper>
     );
+
     reportConfig.filters.forEach(col => {
       switch (col.interface_type) {
       case 'date_range':
