@@ -188,7 +188,7 @@ class TestContactsDataSource(MyJobsBase):
         """Make sure we only get data for this user."""
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(self.company, ContactsFilter(), [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.sue.name, self.john.name}
         self.assertEqual(expected, names)
 
@@ -200,7 +200,7 @@ class TestContactsDataSource(MyJobsBase):
             ContactsFilter(
                 date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.sue.name}
         self.assertEqual(expected, names)
 
@@ -212,7 +212,7 @@ class TestContactsDataSource(MyJobsBase):
             ContactsFilter(
                 date=[None, datetime(2015, 9, 30)]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.sue.name}
         self.assertEqual(expected, names)
 
@@ -224,7 +224,7 @@ class TestContactsDataSource(MyJobsBase):
             ContactsFilter(
                 date=[datetime(2015, 10, 1), None]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.john.name}
         self.assertEqual(expected, names)
 
@@ -235,7 +235,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(tags=[['EaSt']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.john.name}
         self.assertEqual(expected, names)
 
@@ -246,7 +246,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(tags=[['EaSt', 'wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.john.name, self.sue.name}
         self.assertEqual(expected, names)
 
@@ -257,7 +257,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = set()
         self.assertEqual(expected, names)
 
@@ -267,7 +267,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.john.name}
         self.assertEqual(expected, names)
 
@@ -281,7 +281,7 @@ class TestContactsDataSource(MyJobsBase):
                 tags=[],
                 locations={'city': '', 'state': ''}),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.john.name, self.sue.name}
         self.assertEqual(expected, names)
 
@@ -320,7 +320,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(partner=[self.partner_a.pk]),
             [])
-        subjects = set([r['name'] for r in recs])
+        subjects = {r['name'] for r in recs}
         expected = {self.john.name}
         self.assertEqual(expected, subjects)
 
@@ -331,7 +331,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(locations={'city': "zz"}),
             "angel")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -341,14 +341,14 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(locations={'state': "zz"}),
             "i")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = ContactsDataSource()
         recs = ds.help_tags(self.company, ContactsFilter(), "E")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
