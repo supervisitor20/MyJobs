@@ -392,9 +392,9 @@ def select_data_type_api(request):
             selected_data_type: suggested selected data type
         }
     """
-    reporting_type = request.POST.get('reporting_type', None)
-    report_type = request.POST.get('report_type', None)
-    data_type = request.POST.get('data_type', None)
+    reporting_type = request.POST.get('reporting_type')
+    report_type = request.POST.get('report_type')
+    data_type = request.POST.get('data_type')
 
     choices = ReportTypeDataTypes.objects.build_choices(
         request.user, reporting_type, report_type, data_type)
@@ -456,7 +456,7 @@ def select_data_type_api(request):
 def export_options_api(request):
     validator = ApiValidator()
 
-    report_id = request.GET.get('report_id', None)
+    report_id = request.GET.get('report_id')
     if report_id is None:
         validator.note_field_error('report_id', 'Missing report id.')
 
@@ -617,8 +617,8 @@ def download_dynamic_report(request):
     # SECURITY: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
-    order_by = request.GET.get('order_by', None)
-    report_presentation_id = request.GET.get('report_presentation_id', None)
+    order_by = request.GET.get('order_by')
+    report_presentation_id = request.GET.get('report_presentation_id')
 
     report = get_object_or_404(DynamicReport, pk=report_id)
     report_presentation = (
@@ -656,7 +656,7 @@ def get_default_report_name(request):
     get_company_or_404(request)
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
-    report_data_id = request.POST.get('report_data_id', None)
+    report_data_id = request.POST.get('report_data_id')
     if not report_data_id:
         validator.note_field_error(
             "report_data_id",
