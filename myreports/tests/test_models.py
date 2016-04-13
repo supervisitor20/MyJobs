@@ -8,8 +8,7 @@ from myreports.tests.factories import ConfigurationColumnFactory
 from myjobs.models import User
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
-    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes,
-    Configuration)
+    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes)
 from myreports.report_configuration import (
     ReportConfiguration, ColumnConfiguration)
 from myjobs.tests.factories import UserFactory

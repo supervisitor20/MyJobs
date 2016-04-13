@@ -14,7 +14,7 @@ from django.views.decorators.http import require_http_methods
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
 from myreports.models import (
-    Report, ReportType, ReportPresentation, DynamicReport, ReportTypeDataTypes)
+    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes)
 from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
