@@ -151,6 +151,9 @@ class ReportType(models.Model):
     datasource = models.CharField(max_length=50, default='')
     objects = ReportTypeManager()
 
+    def __unicode__(self):
+        return unicode((self.pk, self.report_type))
+
 
 class ReportingTypeReportTypes(models.Model):
     reporting_type = models.ForeignKey('ReportingType')
