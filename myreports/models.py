@@ -179,7 +179,7 @@ class ReportTypeDataTypesManager(models.Manager):
     def build_choices(
             self, user, reporting_type_name, report_type_name, data_type_name):
 
-        if not user:
+        if not user or not user.pk or user.is_anonymous():
             raise SuspiciousOperation("No user provided.")
 
         reporting_types = (

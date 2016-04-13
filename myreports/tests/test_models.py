@@ -1,9 +1,11 @@
 import json
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import SuspiciousOperation
 from myreports.tests.setup import MyReportsTestCase
 from myreports.tests.factories import ConfigurationColumnFactory
 
+from myjobs.models import User
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
     ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes,
@@ -234,6 +236,24 @@ class TestActiveModels(MyReportsTestCase):
     def test_build_choices_no_user(self):
         try:
             ReportTypeDataTypes.objects.build_choices(None, None, None, None)
+            self.fail("Should have thrown exception")
+        except SuspiciousOperation:
+            pass
+
+    def test_build_choices_user_has_no_pk(self):
+        # Should not have a primary key yet.
+        user = User()
+        try:
+            ReportTypeDataTypes.objects.build_choices(user, None, None, None)
+            self.fail("Should have thrown exception")
+        except SuspiciousOperation:
+            pass
+
+    def test_build_choices_user_is_anonymous(self):
+        # Should not have a primary key yet.
+        user = AnonymousUser()
+        try:
+            ReportTypeDataTypes.objects.build_choices(user, None, None, None)
             self.fail("Should have thrown exception")
         except SuspiciousOperation:
             pass
