@@ -612,11 +612,13 @@ def filter_sqs(sqs, filters):
             else:
                 sqs = sqs.narrow("moc_exact:(%s)" % _clean(t))
         elif f == 'company_slug':
-            # the company slab is the URL and company named, joined by ::
-            # company_slab can be filtered with the slug in order to
-            # accurately narrow search results. The trailing / prevents
-            # wildcard (*) from pulling in jobs from slugs containing other
-            # slugs (slug verizon-store being inside verizon-store-california)
+            """
+            the company slab is the URL and company named, joined by ::
+            company_slab can be filtered with the slug in order to
+            accurately narrow search results. The trailing / prevents
+            wildcard (*) from pulling in jobs from slugs containing other
+            slugs (slug verizon-store being inside verizon-store-california)
+            """
             sqs = sqs.narrow('company_slab_exact:%s/*' % filters[f])
         else:
             t = filters[f]
