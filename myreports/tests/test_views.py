@@ -424,6 +424,9 @@ class TestReportsApi(MyReportsTestCase):
                 'data_type': None,
             })
         data = json.loads(resp.content)
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['communication_records/unaggregated'])
         expected = {
             u'reporting_types': [
                 {u'value': u'compliance', u'display': u'Compliance Reports'},
@@ -443,7 +446,7 @@ class TestReportsApi(MyReportsTestCase):
                 {u'value': u'unaggregated', u'display': u'Unaggregated'},
             ],
             u'selected_data_type': u'unaggregated',
-            u'report_data_id': 6,
+            u'report_data_id': report_data.pk,
         }
         self.assertEquals(expected, data)
 
@@ -476,7 +479,9 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(expected, data)
 
     def test_export_options_api(self):
-        report_data = ReportTypeDataTypes.objects.get(id=4)
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
 
         report = DynamicReport.objects.create(
             name='The Report',
@@ -484,17 +489,27 @@ class TestReportsApi(MyReportsTestCase):
             report_data=report_data,
             filters={})
 
+        csv = (
+            self.dynamic_models['report_type/presentation_type']
+            ['contacts/csv'])
+        xlsx = (
+            self.dynamic_models['report_type/presentation_type']
+            ['contacts/xlsx'])
+
         resp = self.client.get(
-            "%s?report_id=%d" % (reverse('export_options_api'), report.id))
+            "%s?report_id=%d" % (reverse('export_options_api'), report.pk))
         self.assertEquals(200, resp.status_code)
 
         data = json.loads(resp.content)
         self.assertEquals({
             u'report_options': {
-                u'id': report.id,
+                u'id': report.pk,
                 u'formats': [
-                    {u'value': 3, u'display': u'Contact CSV'},
-                    {u'value': 7, u'display': u'Contact Excel Spreadsheet'},
+                    {u'value': csv.pk, u'display': u'Contact CSV'},
+                    {
+                        u'value': xlsx.pk,
+                        u'display': u'Contact Excel Spreadsheet',
+                    },
                 ],
             },
         }, data)
@@ -516,11 +531,14 @@ class TestReportsApi(MyReportsTestCase):
 
     def test_filters_api(self):
         """Test that we get descriptions of available filters."""
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['partners/unaggregated'])
         resp = self.client.post(reverse('filters_api'),
-                                data={'report_data_id': '3'})
+                                data={'report_data_id': report_data.pk})
 
         result = json.loads(resp.content)
-        expected_keys = set(['filters', 'help'])
+        expected_keys = {'filters', 'help'}
         self.assertEquals(expected_keys, set(result.keys()))
 
     def test_help_api(self):
@@ -528,10 +546,13 @@ class TestReportsApi(MyReportsTestCase):
 
         We should get back suggestions based on existing input.
         """
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
         resp = self.client.post(
             reverse('help_api'),
             data={
-                'report_data_id': 4,
+                'report_data_id': report_data.pk,
                 'filter': json.dumps({'locations': {'state': 'IL'}}),
                 'field': 'city',
                 'partial': 'i',

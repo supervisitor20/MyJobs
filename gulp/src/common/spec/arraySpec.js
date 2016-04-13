@@ -1,4 +1,4 @@
-import {intersperse, lookupByValue} from '../array';
+import {intersperse, getDisplayForValue} from '../array';
 
 
 const add200 = (item, index) => item + index + 200;
@@ -19,35 +19,34 @@ describe('intersperse', () => {
   });
 });
 
-describe('lookupByValue', () => {
-  const defaultVal = {value: '', description: ''};
-  const oneVal = [{value: 'a', description: 'red'}];
-  const twoVal = [...oneVal, {value: 'b', description: 'blue'}];
+describe('getDisplayForValue', () => {
+  const oneVal = [{value: 'a', display: 'red'}];
+  const twoVal = [...oneVal, {value: 'b', display: 'blue'}];
 
-  it('returns a default on an empty value', () => {
-    const result = lookupByValue([], null);
-    expect(result).toEqual(defaultVal);
+  it('returns blank on an empty value', () => {
+    const result = getDisplayForValue([], null);
+    expect(result).toEqual('');
   });
 
-  it('returns a default on an missing value', () => {
-    const result = lookupByValue(oneVal, 'b');
-    expect(result).toEqual(defaultVal);
+  it('returns blank on an missing value', () => {
+    const result = getDisplayForValue(oneVal, 'b');
+    expect(result).toEqual('');
   });
 
   it('finds correct values', () => {
-    const resultA = lookupByValue(twoVal, 'a');
-    expect(resultA).toEqual({value: 'a', description: 'red'});
-    const resultB = lookupByValue(twoVal, 'b');
-    expect(resultB).toEqual({value: 'b', description: 'blue'});
+    const resultA = getDisplayForValue(twoVal, 'a');
+    expect(resultA).toEqual('red');
+    const resultB = getDisplayForValue(twoVal, 'b');
+    expect(resultB).toEqual('blue');
   });
 
-  it('returns a default on an undefined value', () => {
-    const result = lookupByValue(undefined, 'b');
-    expect(result).toEqual(defaultVal);
+  it('returns blank on an undefined value', () => {
+    const result = getDisplayForValue(undefined, 'b');
+    expect(result).toEqual('');
   });
 
-  it('returns a default on a null value', () => {
-    const result = lookupByValue(null, 'b');
-    expect(result).toEqual(defaultVal);
+  it('returns blank on a null value', () => {
+    const result = getDisplayForValue(null, 'b');
+    expect(result).toEqual('');
   });
 });

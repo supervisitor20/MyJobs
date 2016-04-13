@@ -151,6 +151,9 @@ class ReportType(models.Model):
     datasource = models.CharField(max_length=50, default='')
     objects = ReportTypeManager()
 
+    def __unicode__(self):
+        return unicode((self.pk, self.report_type))
+
 
 class ReportingTypeReportTypes(models.Model):
     reporting_type = models.ForeignKey('ReportingType')
@@ -179,25 +182,25 @@ class ReportTypeDataTypesManager(models.Manager):
     def build_choices(
             self, user, reporting_type_name, report_type_name, data_type_name):
 
-        if not user:
+        if not user or not user.pk or user.is_anonymous():
             raise SuspiciousOperation("No user provided.")
 
-        reporting_types = self.get_choices_from_model(
-            ReportingType.objects.active_for_user(user),
-            None, None, 'reporting_type')
+        reporting_types = (
+            ReportingType.objects.active_for_user(user)
+            .order_by('description'))
         selected_reporting_type = self.select_best(
             reporting_types, 'reporting_type', reporting_type_name)
 
-        report_types = self.get_choices_from_model(
+        report_types = (
             ReportType.objects.active_for_reporting_type(
-                selected_reporting_type),
-            None, None, 'report_type')
+                selected_reporting_type)
+            .order_by('description'))
         selected_report_type = self.select_best(
             report_types, 'report_type', report_type_name)
 
-        data_types = self.get_choices_from_model(
-            DataType.objects.active_for_report_type(selected_report_type),
-            None, None, 'data_type')
+        data_types = (
+            DataType.objects.active_for_report_type(selected_report_type)
+            .order_by('description'))
         selected_data_type = self.select_best(
             data_types, 'data_type', data_type_name)
 
@@ -209,14 +212,6 @@ class ReportTypeDataTypesManager(models.Manager):
             'data_types': data_types,
             'selected_data_type': selected_data_type,
         }
-
-    def get_choices_from_model(
-            self, model_qs, filter_field, filter_value, name_field):
-        choices = model_qs.order_by('description')
-        if filter_value:
-            kwargs = {filter_field: filter_value}
-            choices = model_qs.filter(**kwargs)
-        return choices
 
     def select_best(self, choices, name_field, selected_name):
         choices_list = list(choices)

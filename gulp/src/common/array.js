@@ -37,13 +37,12 @@ export function intersperse(sepFn, inputFn, input) {
  * If multiple entries have the same value, only the first will be found.
  *
  * value: entry should have a value key equal to this.
- * returns: the matching object or an blank object if none is found:
- *   {value: '', display: ''}
+ * returns: the display name corresponding to this value or a blank string
  */
-export function lookupByValue(objects, value) {
+export function getDisplayForValue(objects, value) {
   const result = find(objects, {value});
   if (result) {
-    return result;
+    return result.display;
   }
-  return {value: '', description: ''};
+  return '';
 }

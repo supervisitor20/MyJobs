@@ -7,7 +7,7 @@ export default class ExportReport extends Component {
     super();
     this.state = {
       loading: true,
-      options: null,
+      options: [],
     };
   }
 
