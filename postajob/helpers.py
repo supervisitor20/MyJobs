@@ -33,6 +33,22 @@ def can_modify(user, company, kwargs, update_activity, create_activity):
     else:
         return user.can(company, create_activity)
 
+
+def create_login_block(company, site):
+    page = Page.objects.create(
+        name="%s Login Page" % company.name, page_type=Page.LOGIN)
+    page.sites.add(site)
+    row = Row.objects.create()
+    row_order = RowOrder.objects.create(row=row, page=page, order=0)
+    template = open("templates/" + LoginBlock.base_template, "r").read()
+    login_block = LoginBlock.objects.create(
+        name="%s Login Block" % company.name, offset=0, span=12,
+        template=template)
+    BlockOrder.objects.create(block=login_block, row=row, order=0)
+
+    return login_block
+
+
 def enable_posting(company, site):
     """
     Convenience function which enables posting for a company by:
@@ -56,14 +72,7 @@ def enable_posting(company, site):
     company.app_access.add(AppAccess.objects.get(name='Posting'))
 
     # create a login block so that users can log in
-    page = Page.objects.create(
-        name="%s Login Page" % company.name, page_type=Page.LOGIN)
-    page.sites.add(site)
-    row = Row.objects.create()
-    row_order = RowOrder.objects.create(row=row, page=page, order=0)
-    login_block = LoginBlock.objects.create(
-        name="%s Login Block" % company.name, offset=0, span=12)
-    BlockOrder.objects.create(block=login_block, row=row, order=0)
+    create_login_block(company, site)
 
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(
@@ -97,14 +106,7 @@ def enable_marketplace(company, site):
     company.app_access.add(AppAccess.objects.get(name='MarketPlace'))
 
     # create a login block so that users can log in
-    page = Page.objects.create(
-        name="%s Login Page" % company.name, page_type=Page.LOGIN)
-    page.sites.add(site)
-    row = Row.objects.create()
-    row_order = RowOrder.objects.create(row=row, page=page, order=0)
-    login_block = LoginBlock.objects.create(
-        name="%s Login Block" % company.name, offset=0, span=12)
-    BlockOrder.objects.create(block=login_block, row=row, order=0)
+    create_login_block(company, site)
 
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(
