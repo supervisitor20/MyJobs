@@ -7,19 +7,15 @@ export class SortableField extends Component {
   }
 
   render() {
-    const {labelText, nameText, onChange, onUp, onDown} = this.props;
+    const {sharedProps, item} = this.props;
     return (
       <div className="sortable-report-field">
-        <label htmlFor={nameText}>
+        <label htmlFor={item.nameText}>
           <CheckBox
-            name={nameText}
-            onChange={onChange}
+            name={item.nameText}
+            onChange={sharedProps.onChange}
           />
-        {labelText}</label>
-        <span className="sortable-report-arrows">
-          <span className="up" onClick={onUp}>▲</span>
-          <span className="down" onClick={onDown}>▼</span>
-        </span>
+        {item.labelText}</label>
       </div>
     );
   }
@@ -29,11 +25,13 @@ SortableField.propTypes = {
   /**
    * Label text
    */
-  labelText: React.PropTypes.string.isRequired,
-  nameText: React.PropTypes.string.isRequired,
-  onChange: React.PropTypes.func.isRequired,
-  onUp: React.PropTypes.func.isRequired,
-  onDown: React.PropTypes.func.isRequired,
+  item: React.PropTypes.shape({
+    labelText: React.PropTypes.string.isRequired,
+    nameText: React.PropTypes.string.isRequired,
+  }),
+  sharedProps: React.PropTypes.shape({
+    onChange: React.PropTypes.func.isRequired,
+  }),
 };
 
 export default SortableField;

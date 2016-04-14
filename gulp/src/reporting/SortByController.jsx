@@ -60,9 +60,4 @@ SortByController.propTypes = {
   ),
 };
 
-SortByController.defaultProps = {
-  orderByChoices: [{value: 1, display: 'Contact'}, {value: 2, display: 'Etc'}],
-  sortByChoices: [{value: 1, display: 'Ascending'}, {value: 2, display: 'Descending'}],
-};
-
 export default SortByController;
