@@ -1,43 +1,29 @@
 import React, {Component, PropTypes} from 'react';
-import warning from 'warning';
 import Multiselect from 'common/ui/MultiSelect';
 import Select from 'common/ui/Select';
 import {map} from 'lodash-compat/collection';
-import {lookupByValue} from 'common/array';
+import {getDisplayForValue} from 'common/array';
 import TagAnd from 'common/ui/tags/TagAnd';
 
+/**
+ * Reporting filter component that works for selecting individual entities
+ * or tags.
+ */
 export class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
-    const {getItemHints, getTagHints} = props;
-
-    let initialChoice;
-    if (getItemHints && getTagHints) {
-      initialChoice = 0;
-    } else if (getItemHints) {
-      initialChoice = 1;
-    } else if (getTagHints) {
-      initialChoice = 2;
-    } else {
-      initialChoice = 0;
-      warning('SelectByNameOrTag nees one of getItemHints or getTagHints');
-    }
-
-    const showSwitcher = initialChoice === 0;
 
     const choices = [
-        {display: 'No filter', value: 0},
-        {display: 'Filter by name', value: 1},
-        {display: 'Filter by tag', value: 2},
+      {display: 'No filter', value: 0},
+      {display: 'Filter by name', value: 1},
+      {display: 'Filter by tag', value: 2},
     ];
 
     this.state = {
-      itemKey: undefined,
       value: 'No filter',
       availableItemHints: [],
       availableTagHints: [],
-      choice: initialChoice,
-      showSwitcher,
+      choice: 0,
       choices,
     };
   }
@@ -69,9 +55,10 @@ export class SelectByNameOrTag extends Component {
   }
 
   changeHandler(event) {
+    console.log('changeHandler', event);
     const {choices} = this.state;
     const value = event.target.value;
-    const display = lookupByValue(choices, value).display;
+    const display = getDisplayForValue(choices, value);
     this.setState({
       choice: value,
       value: display,
@@ -119,16 +106,14 @@ export class SelectByNameOrTag extends Component {
   }
 
   render() {
-    const {choices, value, choice, showSwitcher} = this.state;
+    const {choices, value, choice} = this.state;
     return (
       <div>
-        {showSwitcher
-          ? <Select
-              name=""
-              onChange={v => this.changeHandler(v)}
-              value={value}
-              choices = {choices}/>
-          : ''}
+        <Select
+          name=""
+          onChange={v => this.changeHandler(v)}
+          value={value}
+          choices = {choices}/>
         <div className="select-control-chosen">
           {this.renderControl(choice)}
         </div>
@@ -141,7 +126,7 @@ SelectByNameOrTag.propTypes = {
   /**
    * Function that gets the hints
    */
-  getItemHints: PropTypes.func,
+  getItemHints: PropTypes.func.isRequired,
 
   /**
    * Currently selected items
@@ -151,19 +136,19 @@ SelectByNameOrTag.propTypes = {
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     })
-  ),
+  ).isRequired,
 
   /**
    * Function to add items when selected
    */
-  onSelectItemAdd: PropTypes.func,
+  onSelectItemAdd: PropTypes.func.isRequired,
 
   /**
    * Function to remove items when deselected
    */
-  onSelectItemRemove: PropTypes.func,
+  onSelectItemRemove: PropTypes.func.isRequired,
 
-  getTagHints: PropTypes.func,
+  getTagHints: PropTypes.func.isRequired,
 
   /**
    * Currently selected tags
@@ -176,15 +161,15 @@ SelectByNameOrTag.propTypes = {
         hexColor: PropTypes.string.isRequired,
       })
     )
-  ),
+  ).isRequired,
 
   /**
    * Function to add tags when selected
    */
-  onSelectTagAdd: PropTypes.func,
+  onSelectTagAdd: PropTypes.func.isRequired,
 
   /**
    * Function to remove tags when deselected
    */
-  onSelectTagRemove: PropTypes.func,
+  onSelectTagRemove: PropTypes.func.isRequired,
 };
