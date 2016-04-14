@@ -447,6 +447,7 @@ def create_full_fixture():
         has_help=True)
     ConfigurationColumnFactory.create(
         order=102,
+        column_name="locations",
         filter_interface_type='city_state',
         filter_interface_display='Contact Location',
         filter_only=True,
