@@ -4,6 +4,7 @@ from django import forms
 from django.core.urlresolvers import reverse_lazy
 
 from myblocks import models
+from universal.helpers import autofocus_input
 
 
 class BlockForm(forms.ModelForm):
@@ -15,6 +16,7 @@ class BlockForm(forms.ModelForm):
         super(BlockForm, self).__init__(*args, **kwargs)
         self.fields['template'].initial = models.raw_base_template(self.Meta.model)
         self.fields['head'].initial = models.raw_base_head(self.Meta.model)
+        autofocus_input(self)
 
 
 class ApplyLinkBlockForm(BlockForm):

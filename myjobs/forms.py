@@ -1,15 +1,15 @@
 import pytz
 
-from django.forms import (ModelForm, ModelChoiceField, ChoiceField, Select,
+from django.forms import (ModelForm, ChoiceField, Select,
                           Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
 from ajax_select.fields import AutoCompleteSelectField
 
-from myjobs.models import User, CompanyAccessRequest, Role
+from myjobs.models import User, CompanyAccessRequest
 from myprofile.models import SecondaryEmail
-from seo.models import Company
+from universal.helpers import autofocus_input
 
 
 timezones = [('America/New_York', 'America/New_York'),
@@ -229,12 +229,17 @@ class UserAdminForm(ModelForm):
                 instance.set_password(self.cleaned_data['new_password'])
         return instance
 
+
 class CompanyAccessRequestForm(ModelForm):
     """Form used by users to request access to a company."""
+    def __init__(self, *args, **kwargs):
+        super(CompanyAccessRequestForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
 
     class Meta:
         model = CompanyAccessRequest
         fields = ('company_name',)
+
 
 class CompanyAccessRequestApprovalForm(ModelForm):
     """
@@ -245,6 +250,9 @@ class CompanyAccessRequestApprovalForm(ModelForm):
     but provide our own fields and custom behavior for submission.
 
     """
+    def __init__(self, *args, **kwargs):
+        super(CompanyAccessRequestApprovalForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
 
     class Meta:
         model = CompanyAccessRequest

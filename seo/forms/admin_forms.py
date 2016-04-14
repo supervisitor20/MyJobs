@@ -1,6 +1,5 @@
+from itertools import cycle
 import os
-from fsm.widget import FSM
-from taggit.forms import TagField, TagWidget
 
 from django.conf import settings
 from django import forms
@@ -10,8 +9,13 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
 from django.core.validators import EMPTY_VALUES
 from django.utils.decorators import method_decorator
+from django.utils.encoding import smart_text
+from django.utils.html import format_html 
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
+from fsm.widget import FSM
+from taggit.forms import TagField, TagWidget
 
 from postajob.models import SitePackage
 from seo.models import (ATSSourceCode, BillboardImage,
@@ -77,6 +81,39 @@ class MyModelChoiceField(forms.ModelChoiceField):
         except self.queryset.model.DoesNotExist:
             raise ValidationError(self.error_messages['invalid_choice'])
         return value
+
+
+class TableWidget(forms.Widget):
+    """
+    Widget for displaying readonly data in an HTML table. TableWidget can be used with
+    the base forms.fields.Field type. 
+ 
+    Inputs:
+    :headings: Iterable of header cell data. ["cell1", "cell2", "cell3"]
+    :rows: Iterable of rows of cell data [["row1-1", "row1-2"], ["row2-1, row2-2"]]
+    """
+    
+    # Django admin styles alternating rows using these class names
+    row_class = cycle(["row1", "row2"])
+
+    def __init__(self, attrs=None, headings=None, rows=None):
+        super(TableWidget, self).__init__(attrs)
+        self.headings = headings if headings else []
+        self.rows = rows if rows else []
+
+    def make_row(self, values, cell_tag='td'):
+        text_values = [smart_text(value) for value in values]
+        cells = ''
+        for cell in text_values:
+            cells += "<{tag}>{value}</{tag}>".format(tag=cell_tag, value=cell)
+        return '<tr class="form-row {0}">{1}</tr>'.format(self.row_class.next(), cells)
+
+    def render(self, value, name, attrs=None):
+        table = '<table>'
+        table += self.make_row(self.headings, cell_tag='th')
+        table += ''.join(self.make_row(row) for row in self.rows)
+        table += "</table>"
+        return format_html(table)
 
 
 class RowPermissionsForm(forms.ModelForm):
@@ -662,6 +699,7 @@ class BusinessUnitForm(SeoSiteReverseForm):
         return bu
 
 
+
 class CompanyForm(SeoSiteReverseForm):
     job_source_ids_widget = FSM('Job Sources', reverse_lazy('buid_admin_fsm'),
                                 lazy=True)
@@ -669,7 +707,19 @@ class CompanyForm(SeoSiteReverseForm):
                                                 my_model=BusinessUnit,
                                                 required=False,
                                                 widget=job_source_ids_widget)
+    sites_widget = FSM('PRM Saved Search Sites', 
+                       reverse_lazy('site_admin_fsm'),
+                       lazy=True)
+    prm_saved_search_sites = MyModelMultipleChoiceField(
+            SeoSite.objects.all(),
+            my_model=SeoSite,
+            required=False,
+            widget=sites_widget)
+
     admin_email = forms.fields.EmailField(label='Admin Email', required=False)
+
+    user_roles = forms.fields.Field(required=False)
+    role_headings = ['Role', 'Last Name', 'First Name', 'Email', 'Verified']
 
     class Meta:
         model = Company
@@ -681,9 +731,26 @@ class CompanyForm(SeoSiteReverseForm):
             attrs = {
                 "style": "border: 0; background: 'transparent'; width: 300px;",
                 "readonly": True, "onfocus": "this.blur()"}
-            self.fields['admin_email'] = forms.fields.CharField(
+
+            self.fields['admin_email'] = forms.fields.Field(
+                required=False,
                 initial="An admin already exists for this company",
                 widget=forms.widgets.TextInput(attrs=attrs))
+
+            user_role_data = instance.role_set.values_list(
+                    'name', 'user__last_name', 'user__first_name',
+                    'user__email', 'user__is_verified')
+        else:
+            self.role_headings = []
+            user_role_data = []
+
+        self.fields['user_roles'] = forms.fields.Field(
+                required=False,
+                widget=TableWidget(headings=self.role_headings,
+                                   rows=user_role_data,
+                                   attrs={"readonly": True}))
+
+
 
 
 class SpecialCommitmentForm(SeoSiteReverseForm):

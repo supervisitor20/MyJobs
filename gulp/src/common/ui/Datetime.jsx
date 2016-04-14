@@ -4,7 +4,7 @@ import React from 'react';
  * Like TextField but with a special type value
  */
 function Datetime(props) {
-  const {name, onChange, required, maxLength, initial, isHidden, placeholder} = props;
+  const {name, onChange, required, maxLength, initial, isHidden, placeholder, autoFocus} = props;
   return (
     <input
       type="datetime"
@@ -17,6 +17,7 @@ function Datetime(props) {
       defaultValue={initial}
       placeholder={placeholder}
       onChange={onChange}
+      autoFocus={autoFocus}
       />
   );
 }
@@ -53,6 +54,7 @@ Datetime.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 Datetime.defaultProps = {
@@ -61,6 +63,7 @@ Datetime.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
+  autoFocus: false,
 };
 
 export default Datetime;
