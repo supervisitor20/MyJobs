@@ -1,5 +1,3 @@
-/* global companyName */
-
 import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills.js';
 import {getCsrf} from '../common/cookie';
@@ -35,7 +33,6 @@ export class App extends React.Component {
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
-      company: companyName,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
@@ -150,20 +147,13 @@ export class App extends React.Component {
     });
   }
   render() {
-    const {company} = this.state;
     return (
       <div>
         <div className="row">
           <div className="col-sm-12">
-            <h1>{company}</h1>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-sm-12">
             <div className="breadcrumbs">
               <span>
-                <Link to="/">Manage Users</Link>
+                Manage Users
               </span>
             </div>
           </div>

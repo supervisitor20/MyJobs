@@ -44,6 +44,8 @@ def create_full_fixture():
 
     returns:
         a dictionary of references to models important for testing
+        Keys named "dead" or "maybe_dead" refer to models that exist to
+        catch failures to filter out various kinds of inactive-ness.
     """
 
     # For each model create one or more plausible active records.
@@ -57,7 +59,21 @@ def create_full_fixture():
     # inactive through record.
     # - If a variable is needed, name the variable "..._maybe_dead".
 
-    # Delete all
+    # Naming convention:
+    # ut_... User Type
+    # rit_... ReportING Type
+    # rt_... Report Type
+    # dt_... Data Type
+    # pre... Presentation Type
+    # con... Configuration
+    # rtdt... Report Type/Data Type
+    # rtpt... Report Type/Presentation Type
+    # ...con Contact
+    # ...comm Communication Record
+    # ...dead Record is marked inactive
+    # ...maybe_dead Record will be related to another inactive record.
+    # ...unagg Unagregated
+
     UserType.objects.all().delete()
     ut_emp_dead = UserTypeFactory.create(
         user_type="EMPLOYER", is_active=False)

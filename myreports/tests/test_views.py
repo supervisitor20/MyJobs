@@ -538,7 +538,7 @@ class TestReportsApi(MyReportsTestCase):
                                 data={'report_data_id': report_data.pk})
 
         result = json.loads(resp.content)
-        expected_keys = set(['filters', 'help'])
+        expected_keys = {'filters', 'help'}
         self.assertEquals(expected_keys, set(result.keys()))
 
     def test_help_api(self):

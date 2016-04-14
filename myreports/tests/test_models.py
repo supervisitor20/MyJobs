@@ -1,13 +1,14 @@
 import json
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import SuspiciousOperation
 from myreports.tests.setup import MyReportsTestCase
 from myreports.tests.factories import ConfigurationColumnFactory
 
+from myjobs.models import User
 from myreports.models import (
     UserType, ReportingType, ReportType, DynamicReport,
-    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes,
-    Configuration)
+    ConfigurationColumn, ReportPresentation, DataType, ReportTypeDataTypes)
 from myreports.report_configuration import (
     ReportConfiguration, ColumnConfiguration)
 from myjobs.tests.factories import UserFactory
@@ -56,8 +57,8 @@ class TestActiveModels(MyReportsTestCase):
         report_types = (ReportType.objects
                         .active_for_reporting_type(reporting_type))
         names = set(t.report_type for t in report_types)
-        expected_names = set([
-            'partners', 'communication-records', 'contacts'])
+        expected_names = {
+            'partners', 'communication-records', 'contacts'}
         self.assertEqual(expected_names, names)
 
     def test_active_data_types(self):
@@ -66,7 +67,7 @@ class TestActiveModels(MyReportsTestCase):
         data_types = (DataType.objects
                       .active_for_report_type(report_type))
         names = set(d.data_type for d in data_types)
-        expected_names = set(['unaggregated'])
+        expected_names = {'unaggregated'}
         self.assertEqual(expected_names, names)
 
     def test_first_active_report_data(self):
@@ -105,8 +106,8 @@ class TestActiveModels(MyReportsTestCase):
             ['contacts/unaggregated'])
         rps = (ReportPresentation.objects
                .active_for_report_type_data_type(report_data))
-        names = set([rp.display_name for rp in rps])
-        expected_names = set(['Contact CSV', 'Contact Excel Spreadsheet'])
+        names = {rp.display_name for rp in rps}
+        expected_names = {'Contact CSV', 'Contact Excel Spreadsheet'}
         self.assertEqual(expected_names, names)
 
     def test_active_columns(self):
@@ -117,9 +118,9 @@ class TestActiveModels(MyReportsTestCase):
         columns = (
             ConfigurationColumn.objects
             .active_for_report_data(report_data))
-        expected_columns = set([
+        expected_columns = {
             u'phone', u'date', u'locations', u'partner', u'tags',
-            u'name', u'email', u'notes'])
+            u'name', u'email', u'notes'}
         actual_columns = set(c.column_name for c in columns)
         self.assertEqual(expected_columns, actual_columns)
 
@@ -238,6 +239,24 @@ class TestActiveModels(MyReportsTestCase):
         except SuspiciousOperation:
             pass
 
+    def test_build_choices_user_has_no_pk(self):
+        # Should not have a primary key yet.
+        user = User()
+        try:
+            ReportTypeDataTypes.objects.build_choices(user, None, None, None)
+            self.fail("Should have thrown exception")
+        except SuspiciousOperation:
+            pass
+
+    def test_build_choices_user_is_anonymous(self):
+        # Should not have a primary key yet.
+        user = AnonymousUser()
+        try:
+            ReportTypeDataTypes.objects.build_choices(user, None, None, None)
+            self.fail("Should have thrown exception")
+        except SuspiciousOperation:
+            pass
+
 
 class TestReportConfiguration(MyReportsTestCase):
     def test_build_config(self):
@@ -321,9 +340,9 @@ class TestDynamicReport(MyReportsTestCase):
             report_data=report_data,
             owner=self.company)
         report.regenerate()
-        expected_column_names = set([
+        expected_column_names = {
             'name', 'tags', 'notes', 'locations', 'phone', 'partner',
-            'email', 'date'])
+            'email', 'date'}
         self.assertEqual(10, len(report.python))
         self.assertEqual(expected_column_names, set(report.python[0]))
 
@@ -350,9 +369,9 @@ class TestDynamicReport(MyReportsTestCase):
             }),
             owner=self.company)
         report.regenerate()
-        expected_column_names = set([
+        expected_column_names = {
             'name', 'tags', 'notes', 'locations', 'phone', 'partner',
-            'email', 'date'])
+            'email', 'date'}
         self.assertEqual(1, len(report.python))
         self.assertEqual('name-2', report.python[0]['name'])
         self.assertEqual(expected_column_names, set(report.python[0]))

@@ -1,5 +1,3 @@
-/* global companyName */
-
 import React, {Component, PropTypes} from 'react';
 
 import {Content} from './Content';
@@ -12,7 +10,6 @@ export class Container extends Component {
     super(props);
     this.state = {
       page: 'Overview',
-      company: companyName,
       tips: [],
     };
   }
@@ -28,21 +25,9 @@ export class Container extends Component {
   }
 
   render() {
-    const {page, company, tips} = this.state;
+    const {page, tips} = this.state;
     return (
       <div>
-        <div className="row">
-          <div className="col-sm-12">
-            <h1>
-              <a
-                href="/manage-users/"
-                title="Back to Manage Users">
-                  {company}
-              </a>
-            </h1>
-          </div>
-        </div>
-
         <div className="row">
           <div className="col-sm-12">
             <div className="breadcrumbs">

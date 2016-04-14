@@ -151,6 +151,9 @@ class ReportType(models.Model):
     datasource = models.CharField(max_length=50, default='')
     objects = ReportTypeManager()
 
+    def __unicode__(self):
+        return unicode((self.pk, self.report_type))
+
 
 class ReportingTypeReportTypes(models.Model):
     reporting_type = models.ForeignKey('ReportingType')
@@ -179,7 +182,7 @@ class ReportTypeDataTypesManager(models.Manager):
     def build_choices(
             self, user, reporting_type_name, report_type_name, data_type_name):
 
-        if not user:
+        if not user or not user.pk or user.is_anonymous():
             raise SuspiciousOperation("No user provided.")
 
         reporting_types = (
