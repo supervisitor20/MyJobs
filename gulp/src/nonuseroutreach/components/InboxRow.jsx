@@ -34,7 +34,7 @@ export class InboxRow extends Component {
     this.state = {
       id: inbox.pk,
       initial_email: inbox.fields.email,
-      current_email: inbox.fields.email,
+      currentEmail: inbox.fields.email,
       validationMessages: [],
     };
   }
@@ -43,7 +43,7 @@ export class InboxRow extends Component {
     const {inboxManager} = this.props;
     const validationObject = inboxManager.validateEmailInput(value);
     this.setState({
-      current_email: value,
+      currentEmail: value,
       success: validationObject.success,
       validationMessages: validationObject.messages,
     });
@@ -62,14 +62,25 @@ export class InboxRow extends Component {
     this.props.handleDelete(this.props.index);
   }
 
-  saveEmail() {
-    this.props.loadInboxesFromApi();
+  updateEmail() {
+    const {inboxManager} = this.props;
+    const validationObject = inboxManager.validateEmailInput(
+      this.state.currentEmail);
+    if (validationObject.success) {
+      inboxManager.updateInbox(this.state.id, this.state.currentEmail);
+      this.props.loadInboxesFromApi();
+
+      this.setState({
+        initial_email: this.state.currentEmail,
+        validationMessages: [],
+      });
+    }
     return;
   }
 
   cancelChanges() {
     this.setState({
-      current_email: this.state.initial_email,
+      currentEmail: this.state.initial_email,
       validationMessages: [],
     });
   }
@@ -80,10 +91,10 @@ export class InboxRow extends Component {
         <HelpText message={message} key={i} />
       );
     let buttons;
-    if (this.state.current_email !== this.state.initial_email) {
+    if (this.state.currentEmail !== this.state.initial_email) {
       buttons = [
-        new ControlButton('Save', !this.state.success, true,
-          () => this.saveEmail()),
+        new ControlButton('Update', !this.state.success, true,
+          () => this.updateEmail()),
         new ControlButton('Cancel', false, false, () => this.cancelChanges()),
       ];
     } else {
@@ -97,7 +108,7 @@ export class InboxRow extends Component {
         <div className="col-xs-12">
           <EmailInput
             id={this.state.id.toString()}
-            email={this.state.current_email}
+            email={this.state.currentEmail}
             emailFieldChanged={v => this.emailFieldChanged(v)} />
           <ControlButtons
             buttons={buttons}

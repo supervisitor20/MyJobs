@@ -4,11 +4,13 @@ from django.forms import (
     Select, CheckboxInput, DateInput, TextInput, Textarea, DateTimeInput,
     TimeInput)
 from django.utils.translation import ugettext_lazy as _
+
+from countries import COUNTRIES
 from myjobs.forms import BaseUserForm
 from myprofile.models import (
     Name, SecondaryEmail, Education, EmploymentHistory, Telephone, Address,
     MilitaryService, License, Website, Summary, VolunteerHistory)
-from countries import COUNTRIES
+from universal.helpers import autofocus_input
 
 
 def generate_custom_widgets(model):
@@ -47,6 +49,10 @@ def generate_custom_widgets(model):
 
 
 class NameForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(NameForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         # form_name is used in the templates to render the form header
         form_name = _("Personal Information")
@@ -55,6 +61,10 @@ class NameForm(BaseUserForm):
 
 
 class SecondaryEmailForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(SecondaryEmailForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         form_name = _("Secondary Email")
         model = SecondaryEmail
@@ -73,6 +83,7 @@ class EducationForm(BaseUserForm):
         self.fields['degree_date'].input_formats = settings.DATE_INPUT_FORMATS
         self.fields['start_date'].input_formats = settings.DATE_INPUT_FORMATS
         self.fields['end_date'].input_formats = settings.DATE_INPUT_FORMATS
+        autofocus_input(self)
 
     class Meta:
         form_name = _("Education")
@@ -87,6 +98,7 @@ class EmploymentHistoryForm(BaseUserForm):
         super(EmploymentHistoryForm, self).__init__(*args, **kwargs)
         self.fields['start_date'].input_formats = settings.DATE_INPUT_FORMATS
         self.fields['end_date'].input_formats = settings.DATE_INPUT_FORMATS
+        autofocus_input(self)
 
     class Meta:
         form_name = _("Most Recent Work History")
@@ -101,6 +113,10 @@ class TelephoneForm(BaseUserForm):
     Returns 1 as default country code so that initial-profile-page
     will save properly and prevent a null error.
     """
+    def __init__(self, *args, **kwargs):
+        super(TelephoneForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     def clean_country_dialing(self):
         country_dial = self.cleaned_data.get('country_dialing')
         if not country_dial:
@@ -123,6 +139,10 @@ class TelephoneForm(BaseUserForm):
 
 
 class AddressForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(AddressForm, self).__init__(*args, **kwargs)
+        autofocus_input(self, 'address_line_one')
+
     class Meta:
         form_name = _("Address")
         model = Address
@@ -134,6 +154,7 @@ class MilitaryServiceForm(BaseUserForm):
         super(MilitaryServiceForm, self).__init__(*args, **kwargs)
         self.fields['service_start_date'].input_formats = settings.DATE_INPUT_FORMATS
         self.fields['service_end_date'].input_formats = settings.DATE_INPUT_FORMATS
+        autofocus_input(self)
 
     class Meta:
         form_name = _("Military Service History")
@@ -156,6 +177,10 @@ class MilitaryServiceForm(BaseUserForm):
 
 
 class LicenseForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(LicenseForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         form_name = _("License")
         model = License
@@ -163,6 +188,10 @@ class LicenseForm(BaseUserForm):
 
 
 class WebsiteForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(WebsiteForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         form_name = _('Website')
         model = Website
@@ -171,6 +200,10 @@ class WebsiteForm(BaseUserForm):
 
 
 class SummaryForm(BaseUserForm):
+    def __init__(self, *args, **kwargs):
+        super(SummaryForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         form_name = _('Summary')
         model = Summary
@@ -183,6 +216,7 @@ class VolunteerHistoryForm(BaseUserForm):
         super(VolunteerHistoryForm, self).__init__(*args, **kwargs)
         self.fields['start_date'].input_formats = settings.DATE_INPUT_FORMATS
         self.fields['end_date'].input_formats = settings.DATE_INPUT_FORMATS
+        autofocus_input(self)
 
     class Meta:
         form_name = _("Most Recent Volunteer History")
@@ -203,6 +237,10 @@ class InitialForm(BaseUserForm):
 
 
 class InitialNameForm(InitialForm):
+    def __init__(self, *args, **kwargs):
+        super(InitialNameForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     class Meta:
         model = Name
         fields = ['given_name', 'family_name']

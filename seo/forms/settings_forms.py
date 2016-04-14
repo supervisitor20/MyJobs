@@ -1,13 +1,7 @@
 from django import forms
 
 from seo.models import SeoSite
-from universal.forms import RequestForm
-from universal.helpers import get_company_or_404
-
-
-class SeoSiteSettingsForm(RequestForm):
-    class Meta:
-        model = SeoSite
+from universal.helpers import get_company_or_404, autofocus_input
 
 
 class EmailDomainForm(forms.Form):
@@ -24,6 +18,7 @@ class EmailDomainForm(forms.Form):
                 'label': 'Email Domain For %s' % site.domain,
             }
             self.fields[str(site.pk)] = forms.ChoiceField(**field_kwargs)
+        autofocus_input(self)
 
     def save(self):
         for site in self.sites:

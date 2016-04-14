@@ -19,5 +19,5 @@ const reportFinder = new ReportFinder(reportingApi, configBuilder);
 
 ReactDOM.render(
   <WizardRouter reportFinder={reportFinder}/>,
-  document.getElementById('reporting-app')
+  document.getElementById('content')
 );

@@ -6,21 +6,6 @@ from django.template import RequestContext
 from django.views.generic import View, RedirectView
 
 from seo.forms import settings_forms
-from seo.models import SeoSite
-from universal.views import RequestFormViewBase
-
-
-class SeoSiteSettingsFormView(RequestFormViewBase):
-    display_name = 'Site'
-    form_class = settings_forms.SeoSiteSettingsForm
-    template_name = 'postajob/%s/form.html' % settings.PROJECT
-
-    add_name = 'seosite_settings_add'
-    update_name = 'seosite_settings_update'
-    delete_name = 'seosite_settings_delete'
-
-    def get_queryset(self, request):
-        return SeoSite.objects.all()
 
 
 class EmailDomainFormView(View):
@@ -28,7 +13,7 @@ class EmailDomainFormView(View):
         'custom_action': 'Edit',
         'display_name': 'Email Domains'
     }
-    template = 'postajob/%s/form.html' % settings.PROJECT
+    template = 'postajob/form.html'
 
     def success_url(self):
         return reverse('purchasedmicrosite_admin_overview')

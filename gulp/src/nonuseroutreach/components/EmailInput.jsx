@@ -19,7 +19,8 @@ export class EmailInput extends Component {
           id={this.props.id}
           value={this.props.email}
           onChange={() => this.emailChanged()}
-          ref="email_input" />
+          ref="email_input"
+          autoFocus="autofocus"/>
         <span className="input-group-addon">@my.jobs</span>
       </div>
     );

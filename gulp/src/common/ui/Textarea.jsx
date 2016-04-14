@@ -4,7 +4,7 @@ import React from 'react';
  * Simple Textarea element with onChange handler
  */
 function Textarea(props) {
-  const {name, onChange, required, initial, isHidden, placeholder} = props;
+  const {name, onChange, required, initial, isHidden, placeholder, autoFocus} = props;
   return (
     <textarea
       defaultValue={initial}
@@ -14,6 +14,7 @@ function Textarea(props) {
       hidden={isHidden}
       placeholder={placeholder}
       onChange={onChange}
+      autoFocus={autoFocus}
       />
   );
 }
@@ -46,6 +47,7 @@ Textarea.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 Textarea.defaultProps = {
@@ -53,6 +55,7 @@ Textarea.defaultProps = {
   initial: '',
   isHidden: false,
   required: false,
+  autoFocus: false,
 };
 
 export default Textarea;

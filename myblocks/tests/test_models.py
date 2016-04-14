@@ -501,34 +501,6 @@ class ModelsTests(BlocksTestBase):
         pattern = '.*%s.*%s.*%s.*%s.*' % (two, one, four, three)
         self.assertRegexpMatches(template, pattern)
 
-    def test_page_render_cache_prefix(self):
-        """
-        Changes to any part of a page should change the cache prefix.
-
-        """
-        row = factories.RowFactory()
-        search_filter_block = factories.SearchFilterBlockFactory()
-        breadbox_block = factories.BreadboxBlockFactory()
-
-        models.BlockOrder.objects.create(block=search_filter_block, row=row,
-                                         order=1)
-        models.BlockOrder.objects.create(block=breadbox_block, row=row,
-                                         order=2)
-
-        page = factories.PageFactory()
-        models.RowOrder.objects.create(page=page, row=row, order=1)
-
-        start_prefix = page.render_cache_prefix(self.search_results_request)
-
-        breadbox_block.save()
-
-        # Get the most recent version of the page, without the old
-        # cached blocks.
-        page = models.Page.objects.get(pk=page.pk)
-        end_prefix = page.render_cache_prefix(self.search_results_request)
-
-        self.assertNotEqual(start_prefix, end_prefix)
-
     def test_page_handle_job_detail_redirect(self):
         page = factories.PageFactory(page_type=models.Page.JOB_DETAIL)
 

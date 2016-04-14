@@ -238,7 +238,7 @@ class User extends React.Component {
 
               <div className="row no-gutter">
                 <label htmlFor="id_userEmail" className="col-sm-2 control-label">User Email* </label>
-                <input id="id_userEmail" className="col-sm-6" maxLength="255" name="id_userEmail" type="email" readOnly={userEmailEdit} value={this.state.userEmail} onChange={this.onTextChange} size="35" />
+                <input id="id_userEmail" className="col-sm-6" maxLength="255" name="id_userEmail" type="email" readOnly={userEmailEdit} autoFocus={!userEmailEdit} value={this.state.userEmail} onChange={this.onTextChange} size="35" />
                 <HelpText message={userEmailHelp} styleName="col-sm-4" />
               </div>
 
