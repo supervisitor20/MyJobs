@@ -47,4 +47,4 @@ class ColumnConfiguration(object):
 
     def extract_formatted(self, data):
         """Return a fully formatted value."""
-        return self.format.format(data[self.column])
+        return self.format.format(data.get(self.column, ''))
