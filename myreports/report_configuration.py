@@ -40,7 +40,7 @@ class ColumnConfiguration(object):
     def __init__(self, column, format,
                  filter_interface=None, filter_display=None, help=False):
         self.column = column
-        self.format = COLUMN_FORMATS.get(format)
+        self.format = COLUMN_FORMATS.get(format, '')
         self.filter_interface = filter_interface
         self.filter_display = filter_display
         self.help = help

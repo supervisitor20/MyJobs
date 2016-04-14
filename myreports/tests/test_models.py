@@ -241,12 +241,24 @@ class TestActiveModels(MyReportsTestCase):
 
 class TestReportConfiguration(MyReportsTestCase):
     def test_build_config(self):
-        """Test building a report configuration from the DB."""
+        """
+        Test building a report configuration from the DB.
+        
+        Here, we expect that an appropriate format should be selected for each
+        of the columns configured *except* when that column is marked as
+        ``filter_only```. For those columns, we expect format to be ``None``.
+        """
         expected_config = ReportConfiguration(
             columns=[
                 ColumnConfiguration(
                     column='name',
                     format='text'),
+                ColumnConfiguration(
+                    column='',
+                    format=None,
+                    help=True,
+                    filter_interface=u'city_state',
+                    filter_display=u'Contact Location'),
                 ColumnConfiguration(
                     column='partner',
                     format='text',
