@@ -14,8 +14,7 @@ from django.views.decorators.http import require_http_methods
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
 from myreports.models import (
-    Report, ReportingType, ReportType, ReportPresentation, DynamicReport,
-    DataType, ReportTypeDataTypes)
+    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes)
 from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
@@ -373,92 +372,119 @@ def dynamicoverview(request):
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['POST'])
-def reporting_types_api(request):
-    """Get a list of reporting types for this user."""
-    reporting_types = (ReportingType.objects
-                       .active_for_user(request.user))
+def select_data_type_api(request):
+    """Help a user select a valid data_type to describe a report.
 
-    def entry(reporting_type):
-        return (str(reporting_type.id),
-                {'name': reporting_type.reporting_type,
-                 'description': reporting_type.description})
+    The parameters represent current user selection and are optional.
 
-    data = {'reporting_type':
+    reporting_type: optional name of selected reporting type
+    report_type: optional name of selected report type
+    data_type: optional name of selected data type
 
-            dict(entry(rt) for rt in reporting_types)}
+    This api will make a best effort to fill in missing choices with valid
+    defaults.
+
+    returns:
+        {
+            reporting_types: list of valid reporting_type choices
+            selected_reporting_type: suggested selected reporting type
+            report_types: list of valid report_type choices
+            selected_report_type: suggested selected report type
+            data_types: list of valid data_type choices
+            selected_data_type: suggested selected data type
+        }
+    """
+    reporting_type = request.POST.get('reporting_type')
+    report_type = request.POST.get('report_type')
+    data_type = request.POST.get('data_type')
+
+    choices = ReportTypeDataTypes.objects.build_choices(
+        request.user, reporting_type, report_type, data_type)
+
+    reporting_type_list = [
+        {'value': rit.reporting_type, 'display': rit.description}
+        for rit in choices['reporting_types']
+    ]
+    report_type_list = [
+        {'value': rt.report_type, 'display': rt.description}
+        for rt in choices['report_types']
+    ]
+    data_type_list = [
+        {'value': dt.data_type, 'display': dt.description}
+        for dt in choices['data_types']
+    ]
+
+    report_data = (
+        ReportTypeDataTypes.objects.
+        first_active_for_report_type_data_type(
+            choices['selected_report_type'],
+            choices['selected_data_type']))
+
+    report_data_id = None
+    if report_data:
+        report_data_id = report_data.pk
+
+    selected_reporting_type = None
+    if choices['selected_reporting_type'] is not None:
+        selected_reporting_type = (
+            choices['selected_reporting_type'].reporting_type)
+
+    selected_report_type = None
+    if choices['selected_report_type'] is not None:
+        selected_report_type = (
+            choices['selected_report_type'].report_type)
+
+    selected_data_type = None
+    if choices['selected_data_type'] is not None:
+        selected_data_type = (
+            choices['selected_data_type'].data_type)
+
+    data = {
+        'reporting_types': reporting_type_list,
+        'selected_reporting_type': selected_reporting_type,
+        'report_types': report_type_list,
+        'selected_report_type': selected_report_type,
+        'data_types': data_type_list,
+        'selected_data_type': selected_data_type,
+        'report_data_id': report_data_id,
+    }
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
 
 
 @restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
-@require_http_methods(['POST'])
-def report_types_api(request):
-    """Get a list of report types
+@require_http_methods(['GET'])
+def export_options_api(request):
+    validator = ApiValidator()
 
-    reporting_type_id: reporting type id from earlier call
-    """
-    reporting_type_id = request.POST['reporting_type_id']
-    report_types = (ReportType.objects
-                    .active_for_reporting_type(reporting_type_id))
+    report_id = request.GET.get('report_id')
+    if report_id is None:
+        validator.note_field_error('report_id', 'Missing report id.')
 
-    def entry(report_type):
-        return (str(report_type.id),
-                {'name': report_type.report_type,
-                 'description': report_type.description})
+    if validator.has_errors():
+        return validator.build_error_response()
 
-    data = {'report_type':
-            dict(entry(rt) for rt in report_types)}
-    return HttpResponse(content_type='application/json',
-                        content=json.dumps(data))
+    report_list = list(DynamicReport.objects.filter(id=report_id))
+    if len(report_list) < 1:
+        validator.note_field_error('report_id', 'Unknown report id.')
 
+    if validator.has_errors():
+        return validator.build_error_response()
 
-@restrict_to_staff()
-@requires('read partner', 'read contact', 'read communication record')
-@require_http_methods(['POST'])
-def data_types_api(request):
-    """Get a list of data types
-
-    report_type_id: report type id from earlier call
-    """
-    report_type_id = request.POST['report_type_id']
-    data_types = (DataType.objects
-                  .active_for_report_type(report_type_id))
-
-    def entry(data_type):
-        return (str(data_type.id),
-                {'name': data_type.data_type,
-                 'description': data_type.description})
-
-    data = {'data_type':
-            dict(entry(rt) for rt in data_types)}
-    return HttpResponse(content_type='application/json',
-                        content=json.dumps(data))
-
-
-@restrict_to_staff()
-@requires('read partner', 'read contact', 'read communication record')
-@require_http_methods(['POST'])
-def presentation_types_api(request):
-    """Get a list of presentation types
-
-    report_type_id: report type id from earlier call
-    data_type_id: data type id from earlier call
-    """
-    report_type_id = request.POST['report_type_id']
-    data_type_id = request.POST['data_type_id']
-    rpdt = (ReportTypeDataTypes.objects
-            .get(report_type_id=report_type_id,
-                 data_type_id=data_type_id))
+    report = report_list[0]
     rps = (ReportPresentation.objects
-           .active_for_report_type_data_type(rpdt))
+           .active_for_report_type_data_type(report.report_data))
 
-    def entry(rp):
-        return (str(rp.id),
-                {'name': rp.display_name})
-
-    data = {'report_presentation':
-            dict(entry(rp) for rp in rps)}
+    data = {
+        'report_options': {
+            'id': report.id,
+            'formats': [
+                {'value': rp.id, 'display': rp.display_name}
+                for rp in rps
+            ],
+        },
+    }
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
 
@@ -469,16 +495,17 @@ def presentation_types_api(request):
 def filters_api(request):
     """Get a list of filters for the UI.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Presentation ID
 
     response: See ContactsJsonDriver.encode_filter_interface()
     """
     request_data = request.POST
-    rp_id = request_data['rp_id']
-    report_pres = ReportPresentation.objects.get(id=rp_id)
-    datasource = report_pres.report_data.report_type.datasource
+    report_data_id = request_data['report_data_id']
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
 
-    report_configuration = (report_pres.configuration.build_configuration())
+    datasource = report_data.report_type.datasource
+
+    report_configuration = (report_data.configuration.build_configuration())
 
     driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
@@ -492,7 +519,7 @@ def filters_api(request):
 def help_api(request):
     """Get help for a partially filled out field.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Data ID
     filter: JSON string with user filter to use
     field: Name of field to get help for
     partial: Data entered so far
@@ -501,13 +528,13 @@ def help_api(request):
     """
     company = get_company_or_404(request)
     request_data = request.POST
-    rp_id = request_data['rp_id']
+    report_data_id = request_data['report_data_id']
     filter_spec = request_data['filter']
     field = request_data['field']
     partial = request_data['partial']
 
-    report_pres = ReportPresentation.objects.get(id=rp_id)
-    datasource = report_pres.report_data.report_type.datasource
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
+    datasource = report_data.report_type.datasource
     driver = ds_json_drivers[datasource]
 
     result = driver.help(company, filter_spec, field, partial)
@@ -521,7 +548,7 @@ def help_api(request):
 def run_dynamic_report(request):
     """Run a dynamic report.
 
-    rp_id: Report Presentation ID
+    report_data_id: Report Presentation ID
     name: name of report
     filter_spec: JSON string with user filter to use
 
@@ -529,18 +556,18 @@ def run_dynamic_report(request):
     """
     validator = ApiValidator()
     company = get_company_or_404(request)
-    rp_id = request.POST['rp_id']
+    report_data_id = request.POST['report_data_id']
     name = request.POST.get('name', '')
     if not name:
         validator.note_field_error("name", "Report name must not be empty.")
     filter_spec = request.POST.get('filter', '{}')
-    report_pres = ReportPresentation.objects.get(id=rp_id)
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
 
     if validator.has_errors():
         return validator.build_error_response()
 
     report = DynamicReport.objects.create(
-        report_presentation=report_pres,
+        report_data=report_data,
         filters=filter_spec,
         name=name,
         owner=company)
@@ -582,6 +609,8 @@ def download_dynamic_report(request):
         :values: Fields to include in the resulting CSV, as well as the order
                  in which to include them.
         :order_by: The sort order for the resulting CSV.
+        :report_presentation_id: id of report presentation to use for file
+                                 format.
 
     Outputs:
         The report with the specified options rendered as a CSV file.
@@ -590,12 +619,14 @@ def download_dynamic_report(request):
     # SECURITY: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values', None)
-    order_by = request.GET.get('order_by', None)
+    order_by = request.GET.get('order_by')
+    report_presentation_id = request.GET.get('report_presentation_id')
 
     report = get_object_or_404(DynamicReport, pk=report_id)
-    report_configuration = (
-            report.report_presentation
-            .configuration.build_configuration())
+    report_presentation = (
+        ReportPresentation.objects.get(id=report_presentation_id))
+    config = report.report_data.configuration
+    report_configuration = config.build_configuration()
 
     if order_by:
         report.order_by = order_by
@@ -605,7 +636,7 @@ def download_dynamic_report(request):
     records = [report_configuration.format_record(r) for r in report.python]
 
     presentation_driver = (
-        report.report_presentation.presentation_type.presentation_type)
+        report_presentation.presentation_type.presentation_type)
     presentation = presentation_drivers[presentation_driver]
     response = HttpResponse(content_type=presentation.content_type)
     disposition = get_content_disposition(
@@ -627,11 +658,11 @@ def get_default_report_name(request):
     get_company_or_404(request)
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
-    rp_id = request.POST.get('report_presentation_id', None)
-    if not rp_id:
+    report_data_id = request.POST.get('report_data_id')
+    if not report_data_id:
         validator.note_field_error(
-            "report_presentation_id",
-            "Report presentation id must not be empty.")
+            "report_data_id",
+            "Report data id must not be empty.")
 
     if validator.has_errors():
         return validator.build_error_response()

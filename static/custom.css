@@ -3274,6 +3274,9 @@ height: 33px;
   display: block;
   line-height: 24px;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .select-element-arrow {
   height: 33px;
@@ -3322,9 +3325,31 @@ height: 33px;
   cursor: pointer;
   padding: 6px;
 }
-.select-element-menu-container ul li:hover {
+.select-element-menu-container ul li.active {
   background-color: #C6D6EA;
 }
+
+fieldset.fieldset-border {
+  border: 1px solid #ddd;
+  padding: 0 15px 15px;
+  border-radius: 3px;
+}
+
+legend.fieldset-border {
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: left;
+  width:auto;
+  padding:0 5px;
+  border-bottom:none;
+  margin: 0 0 10px;
+}
+
+.fieldset-border label {
+  display: block;
+  font-weight: normal;
+}
+
 /* End Select Element React Component Styles */
 
 input[type='checkbox'] + .help-block {

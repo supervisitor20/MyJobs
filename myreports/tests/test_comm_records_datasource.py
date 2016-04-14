@@ -121,7 +121,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         """Make sure we only get data for this user."""
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(self.company, CommRecordsFilter(), [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {
             self.record_1.subject,
             self.record_2.subject,
@@ -137,7 +137,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             CommRecordsFilter(
                 date_time=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
         self.assertEqual(expected, subjects)
 
@@ -149,7 +149,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             CommRecordsFilter(
                 date_time=[None, datetime(2015, 9, 30)]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
 
@@ -161,7 +161,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             CommRecordsFilter(
                 date_time=[datetime(2015, 10, 1), None]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
@@ -175,7 +175,7 @@ class TestCommRecordsDataSource(MyJobsBase):
                     'state': 'CA'
                 }),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
@@ -189,7 +189,7 @@ class TestCommRecordsDataSource(MyJobsBase):
                     'city': 'Los Angeles'
                 }),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
@@ -200,7 +200,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(tags=[['EaSt']]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
 
@@ -211,7 +211,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(tags=[['EaSt', 'wEsT']]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {
             self.record_1.subject,
             self.record_2.subject,
@@ -226,7 +226,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = set()
         self.assertEqual(expected, subjects)
 
@@ -237,7 +237,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
         self.assertEqual(expected, subjects)
 
@@ -249,7 +249,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             CommRecordsFilter(
                 locations={'city': '', 'state': ''}),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {
             self.record_1.subject,
             self.record_2.subject,
@@ -264,7 +264,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(communication_type='Email'),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
         self.assertEqual(expected, subjects)
 
@@ -275,7 +275,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(partner=[self.partner_a.pk]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
 
@@ -286,7 +286,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(contact=[self.sue.pk]),
             [])
-        subjects = set([r['subject'] for r in recs])
+        subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
@@ -297,7 +297,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'city': "zz"}),
             "angel")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -307,14 +307,14 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'state': "zz"}),
             "i")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = CommRecordsDataSource()
         recs = ds.help_tags(self.company, CommRecordsFilter(), "E")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -328,7 +328,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'Phone'}, actual)
 
     def test_help_partner(self):

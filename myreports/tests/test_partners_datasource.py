@@ -101,7 +101,7 @@ class TestPartnersDataSource(MyJobsBase):
         """Make sure we only get data for this user."""
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(self.company, PartnersFilter(), [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name, self.partner_b.name}
         self.assertEqual(expected, names)
         expected_tags = {
@@ -219,7 +219,7 @@ class TestPartnersDataSource(MyJobsBase):
             PartnersFilter(
                 date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
@@ -231,7 +231,7 @@ class TestPartnersDataSource(MyJobsBase):
             PartnersFilter(
                 date=[None, datetime(2015, 9, 30)]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
@@ -243,7 +243,7 @@ class TestPartnersDataSource(MyJobsBase):
             PartnersFilter(
                 date=[datetime(2015, 10, 1), None]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_b.name}
         self.assertEqual(expected, names)
 
@@ -282,7 +282,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(tags=[['EaSt']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
@@ -293,7 +293,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(tags=[['EaSt', 'wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name, self.partner_b.name}
         self.assertEqual(expected, names)
 
@@ -304,7 +304,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = set()
         self.assertEqual(expected, names)
 
@@ -314,7 +314,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(tags=[['EaSt'], ['wEsT']]),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
@@ -325,7 +325,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(data_source="zap"),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
         self.assertEqual(expected, names)
 
@@ -336,7 +336,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(uri="http://www.asdf.com/"),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_b.name}
         self.assertEqual(expected, names)
 
@@ -348,7 +348,7 @@ class TestPartnersDataSource(MyJobsBase):
             PartnersFilter(
                 locations={'city': '', 'state': ''}),
             [])
-        names = set([r['name'] for r in recs])
+        names = {r['name'] for r in recs}
         expected = {self.partner_a.name, self.partner_b.name}
         self.assertEqual(expected, names)
 
@@ -359,7 +359,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'city': "zz"}),
             "angel")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -369,14 +369,14 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'state': "zz"}),
             "i")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_tags(self.company, PartnersFilter(), "E")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -392,7 +392,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "ex")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'http://www.example.com/'}, actual)
 
     def test_help_data_source(self):
@@ -402,7 +402,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "z")
-        actual = set([r['key'] for r in recs])
+        actual = {r['key'] for r in recs}
         self.assertEqual({'zap'}, actual)
 
     def test_order(self):
