@@ -3,6 +3,9 @@ import {Tag} from 'common/ui/tags/Tag';
 import TextField from 'common/ui/TextField';
 import {map, filter, find} from 'lodash-compat/collection';
 
+/**
+ * Selection control for tags.
+ */
 export default class TagSelect extends Component {
   constructor() {
     super();
@@ -47,15 +50,15 @@ export default class TagSelect extends Component {
   }
 
   handleAdd(tag) {
-    const {onChooseTag} = this.props;
+    const {onChoose} = this.props;
     this.setState({partial: ''});
     this.setHighlight(tag.value, false);
-    onChooseTag(tag);
+    onChoose(tag);
   }
 
   handleRemove(tag) {
-    const {onRemoveTag} = this.props;
-    onRemoveTag(tag);
+    const {onRemove} = this.props;
+    onRemove(tag);
   }
 
   handleBlur() {
@@ -69,7 +72,7 @@ export default class TagSelect extends Component {
     this.setState({mouseInMenu: value});
   }
 
-  renderTag(tag, handleClick, removeTag) {
+  renderTag(tag, handleClick, remove) {
     const highlight = this.getHighlight(tag.value);
     return (
       <Tag
@@ -79,88 +82,88 @@ export default class TagSelect extends Component {
         onClick={() => handleClick(tag)}
         onMouseEnter={() => this.setHighlight(tag.value, true)}
         onMouseLeave={() => this.setHighlight(tag.value, false)}
-        onRemoveTag={removeTag ? () => removeTag(tag) : undefined}
+        onRemoveTag={remove ? () => remove(tag) : undefined}
         highlight={highlight}/>
     );
   }
 
   render() {
-    const {availableTags, selectedTags, first} = this.props;
+    const {available, selected} = this.props;
     const {selectDropped, partial} = this.state;
-    const filteredAvailableTags =
-      filter(availableTags, at =>
+    const filteredAvailable =
+      filter(available, at =>
         (!partial ||
          at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
-        !find(selectedTags, st => st.value === at.value));
+        !find(selected, st => st.value === at.value));
 
     return (
-      <div
+      <div className="tag-select-input-element"
         tabIndex="0"
         onBlur={e => this.handleBlur(e)}
         onMouseEnter={() => this.handleMouseState(true)}
         onMouseLeave={() => this.handleMouseState(false)}>
-        <div className="tag-select-first-input">
-          {first
-            ? <label>Include any of these tags</label>
-            : <label><b>AND</b> any of these tags</label>}
-          <div className="tag-select-input-element">
-            <div
-              className="tag-select-chosen-tags"
-              onClick={() => this.toggleSelectMenu()}>
-              {selectedTags
-                ? ''
-                : (
-                  <span className="tag-select-placeholder">
-                    Select tags
-                  </span>
-                  )}
-              {map(selectedTags, t => this.renderTag(
-                  t,
-                  () => {},
-                  () => this.handleRemove(t)))}
-            </div>
-            {selectDropped ? (
-              <div className="tag-select-menu-container">
-                <div className="tag-select-menu">
-                  <TextField
-                    name="name"
-                    value={partial}
-                    onChange={e => this.handleFilterChange(e.target.value)}
-                    placeholder="Type to filter tags"/>
-                  {map(filteredAvailableTags, t => this.renderTag(
-                      t,
-                      () => this.handleAdd(t),
-                      null))}
-                </div>
-              </div>
-            ) : '' }
-          </div>
+        <div
+          className="tag-select-chosen-tags"
+          onClick={() => this.toggleSelectMenu()}>
+          {selected
+            ? ''
+            : (
+              <span className="tag-select-placeholder">
+                Select tags
+              </span>
+              )}
+          {map(selected, t => this.renderTag(
+              t,
+              () => {},
+              () => this.handleRemove(t)))}
         </div>
+        {selectDropped ? (
+          <div className="tag-select-menu-container">
+            <div className="tag-select-menu">
+              <TextField
+                name="name"
+                value={partial}
+                onChange={e => this.handleFilterChange(e.target.value)}
+                placeholder="Type to filter tags"/>
+              {map(filteredAvailable, t => this.renderTag(
+                  t,
+                  () => this.handleAdd(t),
+                  null))}
+            </div>
+          </div>
+        ) : '' }
       </div>
     );
   }
 }
 
 TagSelect.propTypes = {
-  first: PropTypes.bool,
-  selectedTags: PropTypes.arrayOf(
+  /**
+   * List of selected tags.
+   */
+  selected: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
       hexColor: PropTypes.string.isRequired,
     })
   ).isRequired,
-  availableTags: PropTypes.arrayOf(
+  /**
+   * List of available tags.
+   */
+  available: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
       hexColor: PropTypes.string.isRequired,
     })
   ).isRequired,
-  onChooseTag: PropTypes.func.isRequired,
-  onRemoveTag: PropTypes.func.isRequired,
-};
-
-TagSelect.defaultProps = {
-  first: true,
+  /**
+   * Function called when an available tag is selected.
+   */
+  onChoose: PropTypes.func.isRequired,
+  /**
+   * Function called when a selected tag is removed.
+   */
+  onRemove: PropTypes.func.isRequired,
 };

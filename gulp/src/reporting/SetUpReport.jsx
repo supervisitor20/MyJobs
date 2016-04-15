@@ -8,8 +8,9 @@ import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
-import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
+import MultiSelectFilter from './MultiSelectFilter';
+import TagAndFilter from './TagAndFilter';
 
 export default class SetUpReport extends Component {
   constructor() {
@@ -186,14 +187,13 @@ export default class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <SelectByNameOrTag
-                getTagHints={v => reportConfig.getHints(col.filter, v)}
-                selectedTags={filter[col.filter] || []}
-                onSelectTagAdd={(i, t) =>
+              <TagAndFilter
+                getHints={v => reportConfig.getHints(col.filter, v)}
+                selected={filter[col.filter] || []}
+                onChoose={(i, t) =>
                   reportConfig.addToAndOrFilter(col.filter, i, t)}
-                onSelectTagRemove={(i, t) =>
-                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}
-              />
+                onRemove={(i, t) =>
+                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}/>
 
             </FieldWrapper>
             );
@@ -204,18 +204,19 @@ export default class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <SelectByNameOrTag
-                getItemHints={v => reportConfig.getHints(col.filter, v)}
-                selectedItems={
+              <MultiSelectFilter
+                availableHeader="Available"
+                selectedHeader="Selected"
+                getHints={v => reportConfig.getHints(col.filter, v)}
+                selected={
                   map(reportConfig.multiFilter[col.filter] || [],
                     v => ({value: v.key, display: v.display}))}
-                onSelectItemAdd = {vs => forEach(vs, v =>
+                onAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter,
                     {key: v.value, display: v.display}))}
-                onSelectItemRemove = {vs => forEach(vs, v =>
+                onRemove = {vs => forEach(vs, v =>
                   reportConfig.removeFromMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}
-              />
+                    {key: v.value, display: v.display}))}/>
 
             </FieldWrapper>
             );

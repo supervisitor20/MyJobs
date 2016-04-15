@@ -85,8 +85,8 @@ export class SelectByNameOrTag extends Component {
         <Multiselect
           available={availableItemHints}
           selected={selectedItems}
-          availableHeader={'Available'}
-          selectedHeader={'Selected'}
+          availableHeader="Available"
+          selectedHeader="Selected"
           onAdd={v => onSelectItemAdd(v)}
           onRemove={v => onSelectItemRemove(v)}
           />
