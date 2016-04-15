@@ -13,7 +13,7 @@ from passwords.fields import PasswordField
 
 from myjobs.models import User
 from registration.templatetags.password_reset_tags import get_current_seosite
-from universal.helpers import send_email
+from universal.helpers import send_email, autofocus_input
 
 
 class CustomSetPasswordForm(SetPasswordForm):
@@ -21,8 +21,12 @@ class CustomSetPasswordForm(SetPasswordForm):
     Custom password form based on Django's default set password form. This
     allows us to enforce the new password rules.
     """
+    def __init__(self, *args, **kwargs):
+        super(CustomSetPasswordForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
+
     new_password1 = PasswordField(error_messages={'required':
-                                              'Password is required.'},
+                                                  'Password is required.'},
                                   label=('Password'), required=True,
                                   widget=forms.PasswordInput(attrs={
                                       'id': 'id_password1',
@@ -32,11 +36,11 @@ class CustomSetPasswordForm(SetPasswordForm):
                                             "number, and special character.")
 
     new_password2 = forms.CharField(error_messages={'required':
-                                                'Password is required.'},
+                                                    'Password is required.'},
                                     label=_("Password (again)"), required=True,
                                     widget=forms.PasswordInput(attrs={
-                                               'id': 'id_password2',
-                                               'autocomplete': 'off'},
+                                        'id': 'id_password2',
+                                        'autocomplete': 'off'},
                                         render_value=False))
 
     def clean(self):
@@ -77,15 +81,17 @@ class CustomAuthForm(AuthenticationForm):
     view for users that haven't activated yet.
 
     """
-    username = forms.CharField(error_messages={'required':'Email is required.'},
+    username = forms.CharField(error_messages={'required':
+                                               'Email is required.'},
                                label=_("Email"), required=True,
                                widget=forms.TextInput(attrs={
-                                          'id':'id_username'}))
-    password = forms.CharField(error_messages={'required':'Password is required.'},
+                                                      'id': 'id_username'}))
+    password = forms.CharField(error_messages={'required':
+                                               'Password is required.'},
                                label=_("Password"), required=True,
                                widget=forms.PasswordInput(attrs={
-                                          'id':'id_password'},
-                                   render_value=False,))
+                                                          'id': 'id_password'},
+                                                          render_value=False,))
 
     remember_me = forms.BooleanField(label=_('Keep me logged in for 2 weeks'),
                                      required=False,
@@ -94,13 +100,15 @@ class CustomAuthForm(AuthenticationForm):
 
     def __init__(self, request=None, *args, **kwargs):
         super(CustomAuthForm, self).__init__(request, *args, **kwargs)
+        autofocus_input(self, 'username')
 
     def clean(self):
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
         if username and password:
-            self.user_cache = authenticate(username=username, password=password)
+            self.user_cache = authenticate(username=username,
+                                           password=password)
             if self.user_cache is None:
                 error_msg = u"Invalid username or password. Please try again."
 
@@ -136,8 +144,12 @@ class CustomPasswordResetForm(PasswordResetForm):
     email = forms.CharField(error_messages={'required': 'Email is required.'},
                             label=_("Email"), required=True,
                             widget=forms.TextInput(attrs={
-                                       'id': 'id_email',
-                                       'class': 'reset-pass-input'}))
+                                'id': 'id_email',
+                                'class': 'reset-pass-input'}))
+
+    def __init__(self, *args, **kwargs):
+        super(CustomPasswordResetForm, self).__init__(*args, **kwargs)
+        autofocus_input(self)
 
     def save(self, domain_override=None,
              subject_template_name='registration/password_reset_subject.txt',
@@ -168,10 +180,10 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class RegistrationForm(forms.Form):
-    email = forms.EmailField(error_messages={'required':'Email is required.'},
+    email = forms.EmailField(error_messages={'required': 'Email is required.'},
                              label=_("Email"), required=True,
                              widget=forms.TextInput(attrs={
-                                 'id':'id_email',
+                                 'id': 'id_email',
                                  'autocomplete': 'off'}),
                              max_length=255)
     password1 = PasswordField(error_messages={'required':
@@ -187,10 +199,9 @@ class RegistrationForm(forms.Form):
                                                 'Password is required.'},
                                 label=_("Password (again)"), required=True,
                                 widget=forms.PasswordInput(attrs={
-                                           'id': 'id_password2',
-                                           'autocomplete': 'off'},
+                                    'id': 'id_password2',
+                                    'autocomplete': 'off'},
                                     render_value=False))
-
 
     def clean(self):
         """
@@ -198,8 +209,10 @@ class RegistrationForm(forms.Form):
         the values entered into the two password fields match.
         """
 
-        if 'email' in self.cleaned_data and User.objects.get_email_owner(self.cleaned_data['email']):
-            raise forms.ValidationError(_("A user with that email already exists."))
+        if 'email' in self.cleaned_data and User.objects.get_email_owner(
+                self.cleaned_data['email']):
+            raise forms.ValidationError(
+                _("A user with that email already exists."))
 
         if 'password1' in self._errors:
             self._errors['password1'] = [
