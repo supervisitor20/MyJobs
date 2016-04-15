@@ -8,7 +8,8 @@ urlpatterns = patterns(
     '',
 
     # Views for job and admin
-    url(r'^enable/$', views.enable_posting, name='enable_posting'),
+    url(r'^enable/$', views.enable_feature,
+        {'feature': 'Posting'}, name='enable_posting'),
     url(r'^order/',
         views.order_postajob,
         name="order_postajob"),
@@ -31,8 +32,8 @@ urlpatterns = patterns(
     # Purchased microsite management
     url(r'^admin/$', views.purchasedmicrosite_admin_overview,
         name='purchasedmicrosite_admin_overview'),
-    url(r'^admin/enable/$', views.enable_marketplace,
-        name='enable_marketplace'),
+    url(r'^admin/enable/$', views.enable_feature,
+        {'feature': 'MarketPlace'}, name='enable_marketplace'),
 
     # Invoices
     url(r'^admin/invoice/(?P<pk>\d+)/$', views.resend_invoice,
