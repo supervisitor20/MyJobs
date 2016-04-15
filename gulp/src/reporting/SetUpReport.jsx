@@ -11,6 +11,7 @@ import FieldWrapper from 'common/ui/FieldWrapper';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
 import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
+import TextField from 'common/ui/TextField';
 
 export default class SetUpReport extends Component {
   constructor() {
@@ -143,8 +144,10 @@ export default class SetUpReport extends Component {
           label="Report Name"
           helpText="Name will appear in downloaded filenames."
           errors={errorTexts}>
-          <input
+          <TextField
             value={reportName}
+            name=""
+            autoFocus
             onChange={v => reportConfig.changeReportName(v.target.value)}/>
         </FieldWrapper>
       );

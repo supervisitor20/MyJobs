@@ -55,6 +55,9 @@ TextField.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  /**
+   * autofocus this field
+   */
   autoFocus: React.PropTypes.string,
 };
 
