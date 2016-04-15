@@ -27,7 +27,18 @@ from postajob.helpers import can_modify
 from universal.helpers import (get_company, get_object_or_none,
                                get_company_or_404, at_least_one)
 from universal.views import RequestFormViewBase
+from universal.decorators import restrict_to_staff
 from myjobs.decorators import requires
+
+
+@restrict_to_staff()
+def enable_posting(request):
+    pass
+
+
+@restrict_to_staff()
+def enable_marketplace(request):
+    pass
 
 
 @user_is_allowed()
