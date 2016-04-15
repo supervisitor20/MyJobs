@@ -1,6 +1,7 @@
 from myjobs.models import AppAccess
 from postajob.models import SitePackage
-from myblocks.models import Page, Row, RowOrder, LoginBlock, BlockOrder
+from myblocks.models import (raw_base_template, Page, Row, RowOrder,
+                             LoginBlock, BlockOrder)
 
 def can_modify(user, company, kwargs, update_activity, create_activity):
     """
@@ -35,12 +36,24 @@ def can_modify(user, company, kwargs, update_activity, create_activity):
 
 
 def create_login_block(company, site):
+    """
+    Given a ``Company`` and a ``SeoSite`, creates a login block for that
+    company on that site.
+
+    Inputs:
+        :company: Who should own the login block
+        :site: The SeoSite the login block should appear on
+
+    Output:
+        The resulting ``LoginBlock`` instance.
+
+    """
     page = Page.objects.create(
         name="%s Login Page" % company.name, page_type=Page.LOGIN)
     page.sites.add(site)
     row = Row.objects.create()
     row_order = RowOrder.objects.create(row=row, page=page, order=0)
-    template = open("templates/" + LoginBlock.base_template, "r").read()
+    template = raw_base_template(LoginBlock)
     login_block = LoginBlock.objects.create(
         name="%s Login Block" % company.name, offset=0, span=12,
         template=template)
