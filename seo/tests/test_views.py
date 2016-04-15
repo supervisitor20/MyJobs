@@ -2888,6 +2888,7 @@ class FilterTestCase404(DirectSeoTCWithSiteAndConfig):
             200 if they have jobs
         """
         job = self.solr_docs[1]
+        print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
         company_from_job = Company.objects.filter(name__iexact=job['company'])
         if company_from_job:
             slug_value = company_from_job[0].company_slug
