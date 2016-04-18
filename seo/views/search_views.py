@@ -1154,9 +1154,10 @@ def home_page(request):
         'billboard_images': billboard_images,
         'featured': str(bool(featured)).lower(),
         'filters': {},
-        'view_source': settings.VIEW_SOURCE}
+        'view_source': settings.VIEW_SOURCE,
+        'analytics_info': get_analytics_info()
+    }
 
-    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response(home_page_template, data_dict,
                               context_instance=RequestContext(request))
 
@@ -1697,7 +1698,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     custom_facet_counts = []
     facet_slugs = []
     active_facets = []
-
     if site_config.browse_facet_show:
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
@@ -1798,8 +1798,8 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'title_term': q_term if q_term else '\*',
         'view_source': settings.VIEW_SOURCE,
         'widgets': widgets,
+        'analytics_info': get_analytics_info()
     }
-    data_dict['analytics_info'] = get_analytics_info()
     return render_to_response('job_listing.html', data_dict,
                               context_instance=RequestContext(request))
 
