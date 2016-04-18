@@ -29,6 +29,7 @@ from mysearches.models import SavedSearch, SavedSearchLog
 from registration import signals as custom_signals
 from registration.models import ActivationProfile
 from secrets import options, my_agent_auth
+from seo.models import SeoSite
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 import tasks
 from tasks import process_batch_events
@@ -1107,7 +1108,8 @@ class RemoteAccessRequestTests(MyJobsBase):
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
             account_owner_email=self.account_owner.email,
-            second_party=self.user, second_party_email=self.user.email)
+            second_party=self.user, second_party_email=self.user.email,
+            site=SeoSite.objects.first())
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403)
@@ -1117,7 +1119,8 @@ class RemoteAccessRequestTests(MyJobsBase):
             account_owner=self.account_owner,
             account_owner_email=self.account_owner.email,
             second_party=self.user, second_party_email=self.user.email,
-            accepted=True, session_started=datetime.now())
+            accepted=True, session_started=datetime.now(),
+            site=SeoSite.objects.first())
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403)
@@ -1140,7 +1143,7 @@ class RemoteAccessRequestTests(MyJobsBase):
             account_owner=self.account_owner,
             account_owner_email=self.account_owner.email,
             second_party=self.user, second_party_email=self.user.email,
-            accepted=True)
+            accepted=True, site=SeoSite.objects.first())
 
         response = self.client.get(self.impersonate_url, follow=True)
         self.assertContains(response, self.account_owner.email)

@@ -21,6 +21,7 @@ class Migration(SchemaMigration):
             ('session_started', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
             ('session_finished', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
             ('expired', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['seo.SeoSite'])),
         ))
         db.send_create_signal(u'myjobs', ['SecondPartyAccessRequest'])
 
@@ -118,6 +119,7 @@ class Migration(SchemaMigration):
             'second_party_email': ('django.db.models.fields.EmailField', [], {'max_length': '255', 'db_index': 'True'}),
             'session_finished': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'session_started': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['seo.SeoSite']"}),
             'submitted': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'})
         },
         u'myjobs.shared_sessions': {

@@ -3,6 +3,8 @@ import hashlib
 import string
 import urllib
 import uuid
+
+from django.core.urlresolvers import reverse
 from django.db.models import Q, F
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
@@ -1024,24 +1026,44 @@ class SecondPartyAccessRequest(models.Model):
     session_started = models.DateTimeField(null=True, default=None)
     session_finished = models.DateTimeField(null=True, default=None)
     expired = models.BooleanField(default=False)
+    # These requests are global (a request made on secure can be used on
+    # www.my.jobs, for instance) but we still need a domain to direct the
+    # user to when we email links. This will default to the site that this
+    # request was created on.
+    site = models.ForeignKey('seo.SeoSite')
 
     # TODO: Create save() which auto-handles filling user or email
 
     def notify_acceptance(self):
         if self.acted_on:
+            message_body = ('{owner} has {approved} your remote access '
+                            'request.<br/>'.format(
+                                owner=self.account_owner.get_full_name(),
+                                approved=self.accepted))
+            if self.accepted:
+                message_body += ('Start using it <url="{domain}{url}">here.'
+                                 '</url>'.format(
+                                     url=reverse('impersonate-start',
+                                                 uid=self.account_owner.pk),
+                                     domain=self.site.domain))
+
             message_kwargs = {'users': [self.second_party],
-                              'expires': False}
+                              'expires': False,
+                              'body': message_body}
+
             if self.accepted:
                 message_kwargs.update({
                     'subject': 'Remote Access Request Approved',
-                    'body': 'body here',
                     'message_type': 'success'})
             else:
                 message_kwargs.update({
                     'subject': 'Remote Access Request Denied',
-                    'body': 'body here',
                     'message_type': 'error'})
             Message.objects.create_message(**message_kwargs)
+            message_kwargs.update({
+                'recipients': [self.second_party_email],
+                'email_type': settings.REMOTE_ACCESS_RESPONSE})
+            self.second_party.email_user(**message_kwargs)
 
 
 """

@@ -577,6 +577,7 @@ SAVED_SEARCH_DIGEST = 13
 SAVED_SEARCH_DISABLED = 14
 SAVED_SEARCH_INITIAL = 15
 SAVED_SEARCH_UPDATED = 16
+REMOTE_ACCESS_RESPONSE = 17
 
 EMAIL_FORMATS = {
     ACTIVATION: {
@@ -637,6 +638,10 @@ EMAIL_FORMATS = {
         'address': u'{company_name} Saved Search <savedsearch@{domain}>',
         'subject': u'{company_name} Saved Search Updated - {label}',
     },
+    REMOTE_ACCESS_RESPONSE: {
+        'address': u'access@{domain}',
+        'subject': u'{subject}',
+    }
 }
 
 MEMOIZE = True
