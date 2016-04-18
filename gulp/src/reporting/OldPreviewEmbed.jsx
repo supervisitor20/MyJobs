@@ -4,7 +4,13 @@ import warning from 'warning';
 import {isEqual} from 'lodash-compat/lang';
 
 
+/**
+ * Actually embed the jQuery report preview.
+ */
 export default class OldPreviewEmbed extends Component {
+  // It is important not to keep any state in this component.
+  // Making ajax calls from componentDidUpdate and updating state leads
+  // to loading loops.
   componentDidMount() {
     this.runJQueryRender();
   }
@@ -50,9 +56,7 @@ export default class OldPreviewEmbed extends Component {
 
   render() {
     return (
-      <div>
-        <div id="main-container"/>
-      </div>
+      <div id="main-container"/>
     );
   }
 }

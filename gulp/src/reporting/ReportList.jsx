@@ -3,16 +3,21 @@ import {Link} from 'react-router';
 import {map} from 'lodash-compat';
 
 export function ReportList(props) {
-  const {reports} = props;
+  const {reports, highlightId} = props;
   const reportLinks = map(reports, r =>
-    <li key={r.id}>
+    <li
+      className={highlightId === r.id ? 'active' : ''}
+      key={r.id}>
       <Link to={'/export/' + r.id}>{r.name}</Link>
+      {" "}
       <Link
         to={'/preview/' + r.id}
         query={{
           reportName: r.name,
           reportType: r.report_type,
         }}>[preview]</Link>
+      {" "}
+      <Link to={'/export/' + r.id}>[export]</Link>
     </li>
   );
 
@@ -20,7 +25,12 @@ export function ReportList(props) {
     <div>
       <div className="sidebar">
         <h2 className="top">Reports</h2>
-        {reportLinks}
+        <ul>
+          <li>
+            <Link to="/set-up-report">Create new report...</Link>
+          </li>
+          {reportLinks}
+        </ul>
       </div>
     </div>
   );
@@ -34,4 +44,5 @@ ReportList.propTypes = {
       report_type: PropTypes.string.isRequired,
     }),
   ).isRequired,
+  highlightId: PropTypes.number,
 };
