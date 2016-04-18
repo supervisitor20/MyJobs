@@ -14,6 +14,7 @@ export class SortableField extends Component {
           <CheckBox
             name={item.nameText}
             onChange={sharedProps.onChange}
+            initial={item.checked}
           />
         {item.labelText}</label>
       </div>

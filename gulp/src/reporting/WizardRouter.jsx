@@ -2,7 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Router, Route, IndexRedirect} from 'react-router';
 import {DynamicReportApp} from 'reporting/DynamicReportApp';
 import SetUpReport from 'reporting/SetUpReport';
-import ExportReport from 'reporting/ExportReport';
+import ExportReport from 'reporting/wizard/ExportReport';
 
 export class WizardRouter extends Component {
   createElement(TheComponent, componentProps) {

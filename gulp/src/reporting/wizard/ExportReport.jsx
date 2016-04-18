@@ -3,48 +3,59 @@ import React, {Component} from 'react';
 import SortByController from '../SortByController';
 import SortableField from '../SortableField';
 import Select from 'common/ui/Select';
-import {lookupByValue} from 'common/array';
+import {getDisplayForValue} from 'common/array';
+import {map, filter, forEach} from 'lodash-compat/collection';
 import classnames from 'classnames';
 import Reorder from 'react-reorder';
 
-export class ExportReport extends Component {
-  constructor() {
+export default class ExportReport extends Component {
+  constructor(props) {
     super();
-    this.state = {};
+    const {fieldsToInclude} = props;
+    const fieldsSelected = map(fieldsToInclude, f =>
+      ({nameText: f.nameText, labelText: f.labelText, key: f.key, checked: true}));
+    this.state = {fieldsSelected};
   }
 
-  onChange(e) {
-    console.log('change', e);
+  onReorder(event, item, index, newIndex, fieldsSelected) {
+    this.setState({fieldsSelected});
   }
 
   onCheck(e) {
-    console.log('check', e);
+    const {fieldsSelected} = this.state;
+    forEach(fieldsSelected, (item)=> {
+      if (item.nameText === e.target.id) {
+        item.checked = e.target.checked;
+      }
+    });
+    this.setState({fieldsSelected});
   }
 
   onCheckAll(e) {
+    const {fieldsSelected} = this.state;
     console.log('checkAll', e);
-  }
-
-  itemClicked(e) {
-    console.log('ItemClick', e);
-  }
-
-  sortableFields() {
-    const {fieldsToInclude} = this.props;
-    const sortBy = [];
-    fieldsToInclude.forEach(option => {
-      sortBy.push(
-        {value: option.key, display: option.labelText}
-      );
-    });
-    console.log(sortBy);
-    return sortBy;
+    if (e.target.checked === false) {
+      console.log('unchecked');
+      forEach(fieldsSelected, (item)=> {
+        item.checked = false;
+        e.target.checked = false;
+      });
+    } else if (e.target.checked === true) {
+      console.log('checked');
+      forEach(fieldsSelected, (item)=> {
+        item.checked = true;
+        e.target.checked = true;
+      });
+    }
+    this.setState({fieldsSelected});
   }
 
   render() {
-    const {contactChoices, recordCount, fieldsToInclude} = this.props;
+    const {contactChoices, recordCount} = this.props;
+    const {fieldsSelected} = this.state;
     const orderBy = [{value: 1, display: 'Ascending'}, {value: 2, display: 'Descending'}];
-    console.log(orderBy);
+    const sortedItems = map(filter(fieldsSelected, f => f.checked === true), f =>
+    ({value: f.key, display: f.labelText}));
     return (
       <div id="export-page">
         <div className="row">
@@ -53,7 +64,7 @@ export class ExportReport extends Component {
           </div>
           <div className="col-md-8 col-xs-12">
           <SortByController
-            orderByChoices={this.sortableFields()}
+            orderByChoices={sortedItems}
             sortByChoices={orderBy}
           />
           </div>
@@ -65,8 +76,8 @@ export class ExportReport extends Component {
             <div className="col-md-8">
               <div className="list-item">
                 <SortableField
-                  item={{labelText: 'Select All', nameText: 'selectAll'}}
-                  sharedProps={{onChange: this.onCheckAll}}
+                  item={{labelText: 'Select All', nameText: 'selectAll', checked: true}}
+                  sharedProps={{onChange: e => this.onCheckAll(e, this)}}
                 />
               </div>
               <Reorder
@@ -79,7 +90,7 @@ export class ExportReport extends Component {
                 // The milliseconds to hold an item for before dragging begins
                 holdTime="100"
                 // The list to display
-                list={fieldsToInclude}
+                list={fieldsSelected}
                 // A template to display for each list item
                 template={SortableField}
                 // Class to be applied to the outer list element
@@ -87,15 +98,15 @@ export class ExportReport extends Component {
                 // Class to be applied to each list item"s wrapper element
                 itemClass="list-item"
                 // Function that is called once a reorder has been performed
-                callback={e => this.onChange(e, this)}
+                callback={(...args) => this.onReorder(...args)}
                 // A function to be called if a list item is clicked (before hold time is up)
-                itemClicked={e => this.itemClicked(e, this)}
-                // The item to be selected (adds "selected" class)
                 selected={this.state.selected}
                 // Allows reordering to be disabled
                 disableReorder={false}
                 sharedProps={
-                  {onChange: this.onCheck}
+                  {
+                    onChange: e => this.onCheck(e, this),
+                  }
                 }
               />
             </div>
@@ -108,7 +119,7 @@ export class ExportReport extends Component {
             <Select
               name="outputFormat"
               onChange={v => this.changeHandler(v)}
-              value={lookupByValue(contactChoices, 1).display}
+              value={getDisplayForValue(contactChoices, 1)}
               choices = {contactChoices}
             />
           </div>
@@ -160,7 +171,7 @@ ExportReport.propTypes = {
 };
 
 ExportReport.defaultProps = {
-  contactChoices: [{value: 1, display: 'choice b'}],
+  contactChoices: [{value: 1, display: 'CSV or something'}],
   recordCount: 231,
   fieldsToInclude: [{
     key: 1,

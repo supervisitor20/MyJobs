@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import Select from 'common/ui/Select';
-import {lookupByValue} from 'common/array';
+import {getDisplayForValue} from 'common/array';
 
 export class SortByController extends Component {
   constructor(props) {
@@ -10,7 +10,7 @@ export class SortByController extends Component {
 
   changeHandler(event) {
     this.setState({
-      choice: event.target.value,
+      value: event.target.value,
     });
   }
 
@@ -21,16 +21,16 @@ export class SortByController extends Component {
         <div className="col-md-6 col-xs-12">
           <Select
             name=""
-            onChange={v => this.changeHandler(v)}
-            value={lookupByValue(orderByChoices, 1).display}
+            onChange={v => this.changeHandler(v, this)}
+            value={getDisplayForValue(orderByChoices, 1)}
             choices = {orderByChoices}
           />
         </div>
         <div className="col-md-6 col-xs-12">
           <Select
             name=""
-            onChange={v => this.changeHandler(v)}
-            value={lookupByValue(sortByChoices, 1).display}
+            onChange={v => this.changeHandler(v, this)}
+            value={getDisplayForValue(sortByChoices, 1)}
             choices = {sortByChoices}
           />
         </div>
