@@ -1011,12 +1011,12 @@ def role_invitation_context(role):
 
 class SecondPartyAccessRequest(models.Model):
     account_owner = models.ForeignKey('User',
-                                      related_name='access_requested_by',
+                                      related_name='+',
                                       on_delete=models.SET_NULL, null=True)
     account_owner_email = models.EmailField(
         verbose_name=_("email address"), max_length=255, db_index=True)
     second_party = models.ForeignKey('User',
-                                     related_name='access_requested_for',
+                                     related_name='+',
                                      on_delete=models.SET_NULL, null=True)
     second_party_email = models.EmailField(
         verbose_name=_("email address"), max_length=255, db_index=True)
@@ -1032,7 +1032,40 @@ class SecondPartyAccessRequest(models.Model):
     # request was created on.
     site = models.ForeignKey('seo.SeoSite')
 
-    # TODO: Create save() which auto-handles filling user or email
+    def save(self, *args, **kwargs):
+        new = False
+        if not self.pk:
+            self.account_owner_email = self.account_owner.email
+            self.second_party_email = self.second_party.email
+            new = True
+
+        super(SecondPartyAccessRequest, self).save(*args, **kwargs)
+
+        if new:
+            second_party = self.second_party.get_full_name()
+            message_body = ('{second_party} has requested the ability to '
+                            'remotely access your account.<br />'
+                            '<a href="{domain}{allow}">Allow</a> or '
+                            '<a href="{domain}{reject}">Reject</a>?'.format(
+                                second_party=second_party,
+                                allow=reverse('impersonate-approve',
+                                              kwargs={'access_id': self.pk}),
+                                reject=reverse('impersonate-reject',
+                                               kwargs={'access_id': self.pk}),
+                                domain=self.site.domain))
+
+            message_kwargs = {'users': [self.account_owner],
+                              'expires': False,
+                              'body': message_body,
+                              'subject': ('Remote Access Request '
+                                          'from {second_party}'.format(
+                                              second_party=second_party)),
+                              'message_type': 'info'}
+            Message.objects.create_message(**message_kwargs)
+            message_kwargs.update({
+                'email_type': settings.REMOTE_ACCESS_REQUEST,
+                'message': message_kwargs['body']})
+            self.account_owner.email_user(**message_kwargs)
 
     def notify_acceptance(self):
         if self.acted_on:
@@ -1061,8 +1094,8 @@ class SecondPartyAccessRequest(models.Model):
                     'message_type': 'error'})
             Message.objects.create_message(**message_kwargs)
             message_kwargs.update({
-                'recipients': [self.second_party_email],
-                'email_type': settings.REMOTE_ACCESS_RESPONSE})
+                'email_type': settings.REMOTE_ACCESS_RESPONSE,
+                'message': message_kwargs['body']})
             self.second_party.email_user(**message_kwargs)
 
 
@@ -1079,9 +1112,9 @@ def begin(sender, impersonator, impersonating, request, **kwargs):
     When a user begins impersonating, we need to mark the relevant entry in
     the SecondPartyAccessRequest table as being in progress.
     """
-    access_request = impersonator.access_requested_for.filter(
-        account_owner=impersonating, accepted=True,
-        session_started__isnull=True).first()
+    access_request = SecondPartyAccessRequest.objects.filter(
+        second_party=impersonator, account_owner=impersonating,
+        accepted=True, session_started__isnull=True, expired=False).first()
     if access_request:
         access_request.session_started = datetime.datetime.now()
         access_request.save()
@@ -1096,9 +1129,9 @@ def end(sender, impersonator, impersonating, request, **kwargs):
     This is called when hitting the view "impersonate-stop". If an impersonated
     session cookie expires naturally, this is not called.
     """
-    access_request = impersonator.access_requested_for.filter(
-        account_owner=impersonating, accepted=True,
-        session_started__isnull=False).first()
+    access_request = SecondPartyAccessRequest.objects.filter(
+        second_party=impersonator, account_owner=impersonating,
+        session_started__isnull=False, accepted=True, expired=False).first()
     if access_request:
         access_request.session_finished = datetime.datetime.now()
         access_request.save()

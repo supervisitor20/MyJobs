@@ -82,4 +82,8 @@ urlpatterns = patterns(
     url(r'^impersonate/(?P<uid>\d+)/$', 'impersonate',
         name='impersonate-start'),
     url(r'^impersonate/stop/$', stop_impersonate, name='impersonate-stop'),
+    url(r'^impersonate/(?P<access_id>\d+)/approve/$', 'process_access_request',
+        {'accepted': True}, name='impersonate-approve'),
+    url(r'^impersonate/(?P<access_id>\d+)/reject/$', 'process_access_request',
+        {'accepted': False}, name='impersonate-reject'),
 )

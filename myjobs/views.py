@@ -1396,20 +1396,23 @@ def impersonate(request, uid, *args, **kwargs):
             second_party=request.user,
             account_owner=account_owner,
             accepted=True,
-            session_started__isnull=True).first()
+            session_started__isnull=True,
+            expired=False).first()
         if access_request:
             return impersonate_(request, uid=uid, *args, **kwargs)
     return HttpResponse(status=403)
 
 
+@user_is_allowed()
 def process_access_request(request, access_id, accepted):
     access_request = SecondPartyAccessRequest.objects.filter(
-        account_owner=request.user, pk=access_id).first()
+        account_owner=request.user, pk=access_id,
+        acted_on__isnull=True, expired=False).first()
     if access_request:
         if not access_request.acted_on:
             access_request.accepted = accepted
             access_request.acted_on = datetime.datetime.now()
             access_request.save()
-            access_request.notify()
+            access_request.notify_acceptance()
     else:
         return HttpResponse(status=403)
