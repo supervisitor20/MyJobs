@@ -234,6 +234,7 @@ def get_company_from_cookie(context):
         return get_company(request)
     return None
 
+
 @register.assignment_tag(takes_context=True)
 def get_menus(context):
     """
@@ -246,7 +247,8 @@ def get_menus(context):
     # have to use hard coded urls since the named views don't exist on
     # microsites.
     url = lambda path: settings.ABSOLUTE_URL + path
-    company = get_company(context.get("request"))
+    request = context.get("request")
+    company = get_company(request)
     user = context.get("user")
     new_messages = context.get("new_messages")
 
@@ -346,6 +348,15 @@ def get_menus(context):
             }
         ]
     }
+
+    if request.user.is_impersonate:
+        profile_menu["submenus"].append(
+            {
+                "id": "impersonate-tab",
+                "href": url("impersonate/stop"),
+                "label": "Stop Impersonating"
+            }
+        )
 
     # only return menus we've populated
     return [menu for menu in message_menu, employer_menu, profile_menu if menu]

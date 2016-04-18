@@ -9,6 +9,7 @@ from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
+from impersonate.signals import session_begin, session_end
 import pytz
 
 from django.utils.safestring import mark_safe
@@ -1004,3 +1005,79 @@ def role_invitation_context(role):
         ctx['redirect'] = {'href': href, 'text': text}
 
     return ctx
+
+
+class SecondPartyAccessRequest(models.Model):
+    account_owner = models.ForeignKey('User',
+                                      related_name='access_requested_by',
+                                      on_delete=models.SET_NULL, null=True)
+    account_owner_email = models.EmailField(
+        verbose_name=_("email address"), max_length=255, db_index=True)
+    second_party = models.ForeignKey('User',
+                                     related_name='access_requested_for',
+                                     on_delete=models.SET_NULL, null=True)
+    second_party_email = models.EmailField(
+        verbose_name=_("email address"), max_length=255, db_index=True)
+    submitted = models.DateTimeField(auto_now_add=True)
+    acted_on = models.DateTimeField(db_index=True, null=True, default=None)
+    accepted = models.BooleanField(default=False)
+    session_started = models.DateTimeField(null=True, default=None)
+    session_finished = models.DateTimeField(null=True, default=None)
+    expired = models.BooleanField(default=False)
+
+    # TODO: Create save() which auto-handles filling user or email
+
+    def notify_acceptance(self):
+        if self.acted_on:
+            message_kwargs = {'users': [self.second_party],
+                              'expires': False}
+            if self.accepted:
+                message_kwargs.update({
+                    'subject': 'Remote Access Request Approved',
+                    'body': 'body here',
+                    'message_type': 'success'})
+            else:
+                message_kwargs.update({
+                    'subject': 'Remote Access Request Denied',
+                    'body': 'body here',
+                    'message_type': 'error'})
+            Message.objects.create_message(**message_kwargs)
+
+
+"""
+django-impersonate provides session_begin and session_end signals that we can
+connect to so that we can add our own logging. We will be using their naming
+scheme (impersonator, impersonating) in the following functions despite us
+avoiding that naming scheme for the SecondPartyAccessRequest model.
+"""
+
+
+def begin(sender, impersonator, impersonating, request, **kwargs):
+    """
+    When a user begins impersonating, we need to mark the relevant entry in
+    the SecondPartyAccessRequest table as being in progress.
+    """
+    access_request = impersonator.access_requested_for.filter(
+        account_owner=impersonating, accepted=True,
+        session_started__isnull=True).first()
+    if access_request:
+        access_request.session_started = datetime.datetime.now()
+        access_request.save()
+session_begin.connect(begin)
+
+
+def end(sender, impersonator, impersonating, request, **kwargs):
+    """
+    This is called when a user stops impersonating. It updates the relevant
+    SecondPartyAccessRequest to denote that the session has ended.
+
+    This is called when hitting the view "impersonate-stop". If an impersonated
+    session cookie expires naturally, this is not called.
+    """
+    access_request = impersonator.access_requested_for.filter(
+        account_owner=impersonating, accepted=True,
+        session_started__isnull=False).first()
+    if access_request:
+        access_request.session_finished = datetime.datetime.now()
+        access_request.save()
+session_end.connect(end)

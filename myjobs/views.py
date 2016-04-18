@@ -21,6 +21,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from captcha.fields import ReCaptchaField
+from impersonate.decorators import allowed_user_required
+from impersonate.views import impersonate as impersonate_
 
 from universal.helpers import get_domain
 from universal.decorators import restrict_to_staff
@@ -29,7 +31,7 @@ from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
                           CompanyAccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
-                           CompanyAccessRequest)
+                           CompanyAccessRequest, SecondPartyAccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -1384,3 +1386,30 @@ def request_company_access(request):
 
     return render_to_response(
         'myjobs/request_company_access.html', ctx, RequestContext(request))
+
+
+@allowed_user_required
+def impersonate(request, uid, *args, **kwargs):
+    account_owner = User.objects.filter(pk=uid).first()
+    if account_owner:
+        access_request = SecondPartyAccessRequest.objects.filter(
+            second_party=request.user,
+            account_owner=account_owner,
+            accepted=True,
+            session_started__isnull=True).first()
+        if access_request:
+            return impersonate_(request, uid=uid, *args, **kwargs)
+    return HttpResponse(status=403)
+
+
+def process_access_request(request, access_id, accepted):
+    access_request = SecondPartyAccessRequest.objects.filter(
+        account_owner=request.user, pk=access_id).first()
+    if access_request:
+        if not access_request.acted_on:
+            access_request.accepted = accepted
+            access_request.acted_on = datetime.datetime.now()
+            access_request.save()
+            access_request.notify()
+    else:
+        return HttpResponse(status=403)

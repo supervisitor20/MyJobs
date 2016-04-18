@@ -1,7 +1,10 @@
 from django.conf.urls import patterns, url, include
 from django.views.generic import RedirectView
 
+from impersonate.views import stop_impersonate
+
 from myjobs.views import About, Privacy, Terms
+
 
 accountpatterns = patterns('myjobs.views',
                            url(r'^edit/$',
@@ -75,4 +78,8 @@ urlpatterns = patterns(
         name='api_get_activities'),
     url(r'^request-company-access/$',
         'request_company_access', name='request_company_access'),
+
+    url(r'^impersonate/(?P<uid>\d+)/$', 'impersonate',
+        name='impersonate-start'),
+    url(r'^impersonate/stop/$', stop_impersonate, name='impersonate-stop'),
 )

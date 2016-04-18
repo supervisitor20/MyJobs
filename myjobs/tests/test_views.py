@@ -1,4 +1,4 @@
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 import time
 import json
 import uuid
@@ -14,7 +14,8 @@ from django.template import Context, Template
 from jira.client import JIRA
 from mock import Mock
 
-from myjobs.models import User, EmailLog, FAQ, CompanyAccessRequest
+from myjobs.models import (User, EmailLog, FAQ, CompanyAccessRequest,
+                           SecondPartyAccessRequest)
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
 from myjobs.tests.setup import MyJobsBase, TestClient
@@ -1086,3 +1087,63 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         expected_company_names = [c for c in self.user.roles.values_list(
             'company__name', flat=True)]
         self.assertItemsEqual(context_company_names, expected_company_names)
+
+
+class RemoteAccessRequestTests(MyJobsBase):
+    def setUp(self):
+        super(RemoteAccessRequestTests, self).setUp()
+        self.password = '5UuYquA@'
+        self.client = TestClient()
+        self.client.login(email=self.user.email, password=self.password)
+
+        self.account_owner = UserFactory(email='accounts@my.jobs')
+        self.impersonate_url = reverse('impersonate-start', kwargs={
+            'uid': self.account_owner.pk})
+
+    def test_unauthorized_remote_access(self):
+        response = self.client.get(self.impersonate_url)
+        self.assertEqual(response.status_code, 403)
+
+        SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner,
+            account_owner_email=self.account_owner.email,
+            second_party=self.user, second_party_email=self.user.email)
+
+        response = self.client.get(self.impersonate_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_using_used_access_request(self):
+        access_request = SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner,
+            account_owner_email=self.account_owner.email,
+            second_party=self.user, second_party_email=self.user.email,
+            accepted=True, session_started=datetime.now())
+
+        response = self.client.get(self.impersonate_url)
+        self.assertEqual(response.status_code, 403)
+
+        access_request.session_finished = datetime.now()
+        access_request.save()
+
+        response = self.client.get(self.impersonate_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_anonymous_access_request(self):
+        self.client.logout()
+        response = self.client.get(self.impersonate_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'],
+                         'http://testserver/?next=%s' % self.impersonate_url)
+
+    def test_authorized_remote_access(self):
+        SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner,
+            account_owner_email=self.account_owner.email,
+            second_party=self.user, second_party_email=self.user.email,
+            accepted=True)
+
+        response = self.client.get(self.impersonate_url, follow=True)
+        self.assertContains(response, self.account_owner.email)
+
+        access_request = SecondPartyAccessRequest.objects.get()
+        self.assertTrue(access_request.session_started)

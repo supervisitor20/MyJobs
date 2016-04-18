@@ -102,6 +102,7 @@ MIDDLEWARE_CLASSES = (
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
     'redirect.middleware.ExcludedViewSourceMiddleware',
+    'impersonate.middleware.ImpersonateMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -305,6 +306,7 @@ INSTALLED_APPS = (
     'compressor',
     'corsheaders',
     'ajax_select',
+    'impersonate',
 )
 
 # Captcha SSL
@@ -669,3 +671,5 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 
 # See template tag js_bundle for details.
 WEBPACK_DEV_SERVER_BASE_URL = None
+
+IMPERSONATE_ALLOW_SUPERUSER = True
