@@ -82,7 +82,7 @@ def get_purchase_total(purchases):
 def get_redeemer(offline_purchase):
     # This is only set if a user has redeemed the purchase.
     if offline_purchase.redeemed_by:
-        return offline_purchase.redeemed_by.company.name
+        return offline_purchase.owner.name
     # Otherwise attempt to get the name from a Product created from the
     # OfflinePurchase.
     else:
@@ -121,17 +121,17 @@ def get_purchasedjob_add_link(context):
     link is replaced with a modal telling them so.
     """
     request = context['request']
-    company = get_company(request)
-
-    # Add 'blocked' context variable; determines if we are going to add a real
-    # link or a modal when rendering the template.
-    context['blocked'] = request.user in company.companyprofile.blocked_users.all()
 
     if 'purchased_product' not in context:
         # This is called from both the company owner side and the job poster
         # side. The context variable for the current purchased product is
         # different between the two.
         context['purchased_product'] = context['product']
+
+    company_profile = context["purchased_product"].product.owner.companyprofile
+    # Add 'blocked' context variable; determines if we are going to add a real
+    # link or a modal when rendering the template.
+    context["blocked"] = request.user in company_profile.blocked_users.all()
 
     link = render_to_string('postajob/includes/purchasedjob_add_link.html',
                             context)

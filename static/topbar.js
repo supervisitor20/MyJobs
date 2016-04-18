@@ -65,7 +65,7 @@ function get_companies() {
     parent_list_item.setAttribute("id", "current-company");
     parent_list_item.setAttribute("class", "submenu-dropdown");
 
-    parent_list_item.onclick = function(event) {
+    $(parent_list_item).bind("click", function(event) {
         event.preventDefault();
         var li_last_child = parent_list_item.lastChild;
 
@@ -73,7 +73,7 @@ function get_companies() {
             li_last_child.style.display = "block";
         else
             li_last_child.style.display = "none";
-    };
+    });
 
     var label = document.createElement("a");
 

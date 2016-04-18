@@ -100,6 +100,20 @@ related to job posting. Specifically, you need to:
   - assign the user trying to access job posting a role with the correct
     activities
 
+Automatically
+'''''''''''''
+
+Open a Django shell and run the following commands::
+
+>>> from seo.models import Company, SeoSite
+>>> from postajob.helpers import enable_posting
+>>> company = Company.objects.get(name="DirectEmployers Association")
+>>> site = SeoSite.objects.get(domain="directemployers.jobs")
+>>> enable_posting(company, site)
+
+Note that it is not possible to automatically enable posting from the Django
+admin.
+
 From the Django shell
 '''''''''''''''''''''
 
@@ -152,7 +166,6 @@ The microsites on which a job will be posted to is determined by the site
 package (not to be confused with site familiess) associated with the compnay
 who owns the job. Creating a site package is straight forward.
 
-
 From the Django Shell
 '''''''''''''''''''''
 
@@ -196,6 +209,20 @@ activities. All together then, you need to:
   - assign the user trying to access the marketplace a role with the correct
     activities
 
+Automatically
+'''''''''''''
+
+Open a Django shell and run the following commands::
+
+>>> from seo.models import Company, SeoSite
+>>> from postajob.helpers import enable_marketplace
+>>> company = Company.objects.get(name="DirectEmployers Association")
+>>> site = SeoSite.objects.get(domain="directemployers.jobs")
+>>> enable_marketplace(company, site)
+
+Note that it is not possible to automatically enable posting from the Django
+admin.
+
 From the Django Shell
 '''''''''''''''''''''
 
@@ -235,8 +262,45 @@ Use Cases
 Here, we describe the purpose of and setup requirements of each of the eight
 postajob use cases.
 
-Use Case 2: External party buying a job
----------------------------------------
+Use Case 1: External party buying a job
+----------------------------------------
+.. note:: 
+  There are often times wheree the choice of company is ambiguous. This
+  is a known limitation of the current system which we hope to correct after
+  site families are implemented.
+
+A small business owner (SBO) finds Paul's website. They decide to post a job,
+so they create an account. This account is with paul's site, powered by
+My.jobs. After creating an account, the SBO goes to the product listing and
+purchases a product, 5 posting for 30 days, for $100. Paul receives an invoice
+email that he can forward to the SBO. After purchasing the product, the SBO
+goes to the purchased products page and posts a job. The job appears on the
+site after approval.
+
+Requirements:
+
+  - The company who owns the product being purchased should have a functional
+    :ref:`use case 2 <use-case-2>`.
+
+Views
+'''''
+
+======================================== =========================== ========================
+URL Path                                 View Name                   Required Activities [1]_
+======================================== =========================== ========================
+/posting/list/                           product_listing             N/A
+/posting/product/purchase/add/           PurchasedProductFormView    N/A
+/posting/purchased-jobs/                 purchasedproducts_overview  read purchased product
+/posting/purchased-jobs/product/         purchasedjobs_overview      read purchased job 
+/posting/purchased-jobs/product/\*/view/ view_job                    read purchased job
+/postign/job/purchase/add/               PurchasedJobFormView        create purchased job
+/posting/job/purchase/update/            PurchasedJobFormView        update purchased job
+======================================== =========================== ========================
+
+.. _use-case-2:
+
+Use Case 2: Site owner posting to their own site
+-------------------------------------------------
 
 Rebecca has a job that can't be indexed, as it is on an internal ATS that can't
 be reached by DE's agents. She logs into post-a-job and posts the site to her
@@ -252,13 +316,13 @@ Requirements:
 Views
 '''''
 
-=================== ============= ===================
-URL Path            View Name     Required Activities
-=================== ============= ===================
+=================== ============= ========================
+URL Path            View Name     Required Activities [1]_
+=================== ============= ========================
 /posting/all/       jobs_overview read job
 /posting/job/add/   JobFormView   create job
 /posting/job/update JobFormView   update job
-=================== ============= ===================
+=================== ============= ========================
 
 
 Use Case 3: Site owner creating a product for sale
@@ -278,17 +342,93 @@ Requirements:
 Views
 '''''
 
-=================================== ======================= ===================
-URL Path                            View Name               Required Activities
-=================================== ======================= ===================
-/posting/admin/product              admin_products          read product
-/posting/admin/product/add          ProductFormView         create product
-/posting/admin/product/update       ProductFormView         update product
-/posting/admin/product/group        admin_groupings         read grouping
-/posting/admin/product/group/add    ProductGroupingFormView create grouping
-/posting/admin/product/group/update ProductGroupingFormView update grouping
-/posting/admin/product/group/delete ProductGroupingFormView delete grouping
-=================================== ======================= ===================
+=================================== ================================= ============================================================================================
+URL Path                            View Name                         Required Activities [1]_
+=================================== ================================= ============================================================================================
+/posting/admin/                     purchasedmicrosite_admin_overview read product | read request | read offline purchase | read purchased product | read grouping
+/posting/admin/product              admin_products                    read product
+/posting/admin/product/add          ProductFormView                   create product
+/posting/admin/product/update       ProductFormView                   update product
+/posting/admin/product/group        admin_groupings                   read grouping
+/posting/admin/product/group/add    ProductGroupingFormView           create grouping
+/posting/admin/product/group/update ProductGroupingFormView           update grouping
+/posting/admin/product/group/delete ProductGroupingFormView           delete grouping
+=================================== ================================= ============================================================================================
+
+Use Case 4: Site owner reviewing posted jobs
+--------------------------------------------
+An SBO has posted a job to Paul's site. Paul logs into the admin and goes to
+requests. He reviews the jobs and approves it by clicking on "Approve this
+job".
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+=================================== ======================= ========================
+URL Path                            View Name               Required Activities [1]_
+=================================== ======================= ========================
+/posting/admin/request/             admin_request           read request
+/posting/admin/request/view/        read_request            read request
+/posting/admin/request/approve/     process_admin_request   update request
+/posting/admin/request/deny/        process_admin_request   update request
+=================================== ======================= ========================
+
+Use Case 5: Site owner blocks and unblocks a user
+-------------------------------------------------
+An SBO posts a job and Paul thinks it is inappropriate. Instead of approving
+the job, he clicks on "Block postings from this user". Later, the SBO explains
+that it is a legit posting. Paul logs in, goes to "Blocked Users", and unblocks
+the SBO.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+==================================== ======================= ========================
+URL Path                             View Name               Required Activities [1]_
+==================================== ======================= ========================
+/posting/admin/blocked-users/        blocked_user_management read request
+/posting/admin/request/block         process_admin_request   update request
+/posting/admin/blocked-users/unblock unblock_user            update request
+==================================== ======================= ========================
+
+Use Case 6: Site owner entering offline purchases
+-------------------------------------------------
+Paul sells a job posting at a conference. He creates an offline purchase and
+emails the SBO a redemption code. The SBO goes to /posting/purchase/redeem/ and
+redeems the purchase by entering the code. The SBO can now post jobs within
+that product.
+
+Requirements:
+
+  - :ref:`enable-login`
+
+  - :ref:`enable-marketplace`
+
+Views
+'''''
+
+======================================== ================================= ========================
+URL Path                                 View Name                         Required Activities [1]_
+======================================== ================================= ========================
+/posting/admin/purchase/offline/         admin_offlinepurchase             read offline purchase
+/posting/admin/purchase/offline/add/     OfflinePurchaseFormView           create offline purchase
+/posting/admin/purchase/offline/update/  OfflinePurchaseFormView           update offline purchase
+/posting/admin/purchase/offline/delete/  OfflinePurchaseFormView           delete offline purchase
+/posting/admin/purchase/offline/success/ view_request                      read offline purchase
+/posting/purchase/redeem/                OfflinePurchaseRedemptionFormView
+======================================== ================================= ========================
 
 
 .. _create a new login block: http://directemployers.jobs/admin/myblocks/loginblock/add/
@@ -300,3 +440,8 @@ URL Path                            View Name               Required Activities
 .. _enable marketplace access: http://directemployers.jobs/admin/seo/company/999999/?_changelist_filters=q%3Ddirectemployers%2Bass
 .. _assign your user a role: https://secure.my.jobs/manage-users/#/users?_k=w22qot
 .. _Ceate a new site package: https://secure.my.jobs/admin/postajob/sitepackage/add/
+
+
+.. rubric:: Footnotes
+
+.. [1] A requirement listed as "foo | bar" signifies that either foo *or* bar is required, not both

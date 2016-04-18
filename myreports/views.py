@@ -11,7 +11,6 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
-from myreports.decorators import restrict_to_staff
 from myreports.helpers import humanize, serialize
 from myjobs.decorators import requires
 from myreports.models import (
@@ -21,6 +20,8 @@ from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
 from universal.helpers import get_company_or_404
+from universal.api_validation import ApiValidator
+from universal.decorators import restrict_to_staff
 
 from myreports.datasources import ds_json_drivers
 
@@ -524,11 +525,17 @@ def run_dynamic_report(request):
 
     response: {'id': new dynamic report id}
     """
+    validator = ApiValidator()
     company = get_company_or_404(request)
     rp_id = request.POST['rp_id']
-    name = request.POST['name']
+    name = request.POST.get('name', '')
+    if not name:
+        validator.note_field_error("name", "Report name must not be empty.")
     filter_spec = request.POST.get('filter', '{}')
     report_pres = ReportPresentation.objects.get(id=rp_id)
+
+    if validator.has_errors():
+        return validator.build_error_response()
 
     report = DynamicReport.objects.create(
         report_presentation=report_pres,
@@ -609,3 +616,24 @@ def download_dynamic_report(request):
     response.write(output.getvalue())
 
     return response
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def get_default_report_name(request):
+    validator = ApiValidator()
+    get_company_or_404(request)
+    # We don't actually need this but it seems like it will be important
+    # if we ever start picking meaningful names.
+    rp_id = request.POST.get('report_presentation_id', None)
+    if not rp_id:
+        validator.note_field_error(
+            "report_presentation_id",
+            "Report presentation id must not be empty.")
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    data = {'name': str(datetime.now())}
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(data))

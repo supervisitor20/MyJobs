@@ -13,7 +13,7 @@ def format_company_name(company):
 
     """
     template = "{name} ({count} users){warning}"
-    count = company.company_user_count
+    count = company.admins.count()
     warning = "" if count else " **Might be a duplicate**"
 
     return template.format(name=company.name, count=count, warning=warning)

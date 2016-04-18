@@ -1,5 +1,6 @@
 import 'babel/polyfill';
-import {installPolyfills} from '../common/polyfills.js';
+import {installPolyfills} from '../common/polyfills';
+import {MyJobsApi} from '../common/myjobs-api';
 import Api from './api';
 import {getCsrf} from 'common/cookie';
 import {Container} from'./components/Container';
@@ -9,8 +10,9 @@ import ReactDOM from 'react-dom';
 
 installPolyfills();
 
-const api = new Api(getCsrf());
-const inboxManager = new InboxManagement(api);
+const myJobsApi = new MyJobsApi(getCsrf());
+const nuoApi = new Api(myJobsApi);
+const inboxManager = new InboxManagement(nuoApi);
 
 ReactDOM.render(
   <Container inboxManager = {inboxManager} />,

@@ -5,7 +5,8 @@ from django.conf import settings
 
 from mypartners.tests.test_views import MyPartnersTestCase
 from mypartners.tests.factories import OutreachEmailAddressFactory
-from myjobs.tests.factories import UserFactory
+from myjobs.tests.factories import UserFactory, ActivityFactory
+from mypartners.models import OutreachEmailAddress
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
@@ -18,6 +19,7 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         super(NonUserOutreachTestCase, self).setUp()
         self.inbox = OutreachEmailAddressFactory(company=self.company)
         self.other_company_inbox = OutreachEmailAddressFactory()
+        self.role.activities.add(*self.activities)
 
     def test_inbox_list_api(self):
         """
@@ -59,3 +61,39 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
         self.assertEqual(response.status_code, 404, msg="assert NUO inboxes returns 404 for a user that is not"
                                                         " a company user for a member company")
+
+    def test_add_new_inbox(self):
+        """Tests that a user can create a new outreach inbox."""
+
+        response = self.client.post(reverse('api_add_nuo_inbox'),
+                                    {"email": "testemail"})
+        data = json.loads(response.content)
+        inbox = OutreachEmailAddress.objects.last()
+        self.assertEqual(inbox.pk, data["pk"],
+                         "Was expecting an inbox to be created with a pk of "
+                         "%s, but the latest one has a pk of %s." % (
+                             inbox.pk, data["pk"]))
+
+    def test_remove_inbox(self):
+        """Tests that a user can delete an existing outreach inbox."""
+
+        inbox = OutreachEmailAddressFactory(email="testemail")
+        response = self.client.post(reverse('api_delete_nuo_inbox'),
+                                    {'id': inbox.pk})
+        data = json.loads(response.content)
+        self.assertEqual(data["status"], "success")
+        self.assertFalse(
+            OutreachEmailAddress.objects.filter(pk=inbox.pk).exists(),
+            "Inbox %s should have been deleted, but wasn't" % inbox.pk)
+
+    def test_update_inbox(self):
+        """Tests that an inbox can be updated through the api."""
+
+        inbox = OutreachEmailAddressFactory(email="testemail")
+        response = self.client.post(reverse('api_update_nuo_inbox'),
+                                    {'id': inbox.pk, 'email': 'newemail'})
+        data = json.loads(response.content)
+        self.assertEqual(data["status"],  "success")
+        self.assertEqual(OutreachEmailAddress.objects.get(pk=inbox.pk).email,
+                         'newemail')
+

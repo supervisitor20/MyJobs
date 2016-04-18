@@ -1,10 +1,14 @@
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from myjobs.models import User
+
+from myjobs.models import User, Activity
+from myjobs.tests.factories import RoleFactory
 from seo.tests import factories
 from seo.models import SeoSite, BusinessUnit
+from seo.tests.factories import CompanyFactory
 from seo.tests.setup import DirectSEOBase
 
+from bs4 import BeautifulSoup
 from djcelery.models import TaskState
 from django.test.utils import override_settings
 from datetime import datetime
@@ -77,6 +81,42 @@ class SeoAdminTestCase(DirectSEOBase):
         self.assertContains(resp, "field-parent_site errors")
         parent_site_refresh = SeoSite.objects.get(pk = parent_seo_site.pk)
         self.assertEqual(parent_site_refresh.parent_site, None)
+
+    def test_company_admin_role_table(self):
+        """
+        Tests the "User Roles" section of the Company admin.
+        """
+        def make_request_and_initial_checks():
+            """
+            Both tests in the parent function involve making a GET request,
+            parsing the HTML, and doing a small amount of checking.
+            """
+            response = self.client.get(reverse('admin:seo_company_change',
+                                               args=(company.pk, )))
+            soup = BeautifulSoup(response.content)
+            user_roles = soup.find('div', {'class': 'field-user_roles'})
+            self.assertTrue(user_roles, "Expected to find a div with class "
+                            "'field-user_roles' but did not.")
+            return user_roles.find('table').text
+
+        company = CompanyFactory()
+        role = RoleFactory(company=company)
+        role.activities = Activity.objects.all()
+
+        # Test once with no roles assigned.
+        table_text = make_request_and_initial_checks()
+        self.assertFalse(table_text, "User roles table should be empty when "
+                         "no users have roles.")
+
+        self.user.roles.add(role)
+
+        # Test again with a role assigned to a user.
+        table_text = make_request_and_initial_checks()
+        self.assertTrue(table_text, "User roles table should contain data "
+                        "when there are users with roles assigned.")
+        for text in [self.user.email, role.name]:
+            self.assertTrue(text in table_text, 'Expected "%s" to be in '
+                            'table text but it was not.' % (text, ))
 
 
 class DJCeleryAdminTestCase(DirectSEOBase):

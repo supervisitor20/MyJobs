@@ -1,13 +1,6 @@
 import React from 'react';
 import FilteredMultiSelect from 'react-filtered-multiselect';
 
-const bootstrapClasses = {
-  filter: 'form-control',
-  select: 'form-control',
-  button: 'btn btn btn-block btn-default',
-  buttonActive: 'btn btn btn-block btn-primary',
-};
-
 class RolesMultiselect extends React.Component {
   constructor(props) {
     super(props);
@@ -46,7 +39,12 @@ class RolesMultiselect extends React.Component {
             <label>Roles Available</label>
             <FilteredMultiSelect
               buttonText="Add"
-              classNames={bootstrapClasses}
+              classNames={{
+                filter: 'form-control',
+                select: 'form-control',
+                button: 'button btn-block',
+                buttonActive: 'button primary',
+              }}
               onChange={this._onSelect}
               options={availableRoles}
               selectedOptions={assignedRoles}
@@ -61,8 +59,8 @@ class RolesMultiselect extends React.Component {
               classNames={{
                 filter: 'form-control',
                 select: 'form-control',
-                button: 'btn btn btn-block btn-default',
-                buttonActive: 'btn btn btn-block btn-danger',
+                button: 'button btn-block',
+                buttonActive: 'button',
               }}
               onChange={this._onDeselect}
               options={assignedRoles}
