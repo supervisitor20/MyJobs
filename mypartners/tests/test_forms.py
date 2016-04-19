@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse
+from mock import Mock
 
 from myjobs.tests.factories import UserFactory
 from mypartners.forms import ContactForm, ContactRecordForm, PartnerForm, NewPartnerForm, LocationForm
@@ -46,10 +47,11 @@ class PartnerFormTests(MyPartnersTestCase):
         """
             Verify last action time is created when partner form is saved
         """
+        request.configure_mock(user=self.staff_user, impersonator=None)
         original_time = self.partner.last_action_time
         new_form = PartnerForm(instance=self.partner, data=self.data)
         self.assertTrue(new_form.is_valid())
-        new_instance = new_form.save(user=self.staff_user)
+        new_instance = new_form.save(request)
         self.assertEqual(self.partner.pk, new_instance.pk)
         self.assertNotEqual(original_time, new_instance.last_action_time)
 
@@ -135,10 +137,13 @@ class ContactFormTests(MyPartnersTestCase):
         """
             Verify last action time is created when contact record form is saved
         """
+        request = Mock()
+        request.configure_mock(user=self.contact_user, impersonator=None)
         new_form = ContactForm(data=self.data)
         self.assertTrue(new_form.is_valid())
         self.assertIsNone(new_form.fields.get('last_action_time'))
-        saved_form_instance = new_form.save(user=self.contact_user, partner=self.partner)
+        saved_form_instance = new_form.save(request=request,
+                partner=self.partner)
         self.assertIsNotNone(saved_form_instance.last_action_time)
 
 
@@ -265,17 +270,22 @@ class ContactRecordFormTests(MyPartnersTestCase):
         """
             Verify last action time is updated when contact record form is edited
         """
+        request = Mock()
+        request.configure_mock(user=self.contact_user, impersonator=None)
         original_time = self.contact_record.last_action_time
         self.assertEqual(original_time, self.form.instance.last_action_time)
-        saved_form_instance = self.form.save(user=self.contact_user, partner=self.partner)
+        saved_form_instance = self.form.save(
+            request=request, partner=self.partner)
         self.assertNotEqual(original_time, saved_form_instance.last_action_time)
 
     def test_add_contact_record_last_action_time(self):
         """
             Verify last action time is created when contact record form is saved
         """
+        request = Mock()
+        request.configure_mock(user=self.contact_user, impersonator=None)
         new_form = ContactRecordForm(data=self.data, partner=self.partner)
         self.assertTrue(new_form.is_valid())
         self.assertIsNone(new_form.fields.get('last_action_time'))
-        saved_form_instance = new_form.save(user=self.contact_user, partner=self.partner)
+        saved_form_instance = new_form.save(request=request, partner=self.partner)
         self.assertIsNotNone(saved_form_instance.last_action_time)

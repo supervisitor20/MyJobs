@@ -90,7 +90,7 @@ class ContactForm(NormalizedModelForm):
         tags = tag_get_or_create(self.data['company_id'], data)
         return tags
 
-    def save(self, user, partner, commit=True):
+    def save(self, request, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
@@ -121,8 +121,9 @@ class ContactForm(NormalizedModelForm):
             if location not in contact.locations.all():
                 contact.locations.add(location)
 
-        log_change(contact, self, user, partner, contact.name,
-                   action_type=new_or_change)
+        log_change(contact, self, request.user, partner, contact.name,
+                   action_type=new_or_change,
+                   impersonator=request.impersonator)
 
         return contact
 
