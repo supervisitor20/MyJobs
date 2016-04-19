@@ -11,7 +11,6 @@
 {% block meta-extra %}
     {% compress css %}
         <link rel="stylesheet" href={% static "font-awesome.css" %}>
-        <link rel="stylesheet" href={% static "andor.css" %}>
     {% endcompress %}
 {% endblock %}
 
@@ -19,6 +18,7 @@
     <script>
     spinnerImg = "{% static "images/ajax-loader.gif" %}";
     </script>
+    <script type="text/javascript" src="{% static "reporting.js" %}"></script>
 
 {% if wp_base_url %}
   <script src="{{wp_base_url}}/reporting.js"/></script>
