@@ -16,6 +16,7 @@ from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory,
                                     CompanyAccessRequestFactory)
+from mymessages.models import Message
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
 from mysearches.tests.factories import PartnerSavedSearchFactory
@@ -312,26 +313,49 @@ class RemoteAccessRequestModelTests(MyJobsBase):
         self.site = SeoSite.objects.first()
 
     def test_create_request_sends_messages(self):
+        """
+        The requesting of remote access should send both a My.jobs message
+        and an email to the account owner.
+        """
+        msg = "User had %s messages, expected %s"
         mail.outbox = []
         spar = SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner, second_party=self.user,
             site=self.site, reason='just cuz')
         self.assertEqual(len(mail.outbox), 1)
 
+        # We're logged in as the requesting user at this point and should
+        # not have any messages.
         response = self.client.get(reverse('home'))
-        self.assertEqual(len(response.context['new_messages']), 0)
+        self.assertEqual(len(response.context['new_messages']), 0,
+                         msg=msg % (len(response.context['new_messages']), 0))
 
+        response = self.client.get(reverse('impersonate-approve',
+                                           kwargs={'access_id': spar.id}))
+        self.assertEqual(response.status_code, 403,
+                         msg=("Unauthorized approval of a request should not "
+                              "happen but did"))
+
+        # Log out then log in as the account owner.
         self.client.get(reverse('auth_logout'))
         self.client.login(email=self.account_owner.email,
                           password=self.password)
-
         response = self.client.get(reverse('home'))
 
+        # We should now have one My.jobs message.
         messages = response.context['new_messages']
-        self.assertEqual(len(messages), 1)
+        self.assertEqual(len(messages), 1,
+                         msg=msg % (len(response.context['new_messages']), 1))
         message = messages[0]
         email = mail.outbox[0]
-        self.assertEqual(message.message.body, email.body)
+        self.assertEqual(message.message.body, email.body,
+                         msg="Message and email bodies were not identical")
         for text in ['>Allow<', '>Deny<', spar.reason,
                      self.user.get_full_name(default=self.user.email)]:
-            self.assertTrue(text in email.body)
+            self.assertTrue(text in email.body,
+                            msg="%s not in email body" % text)
+        response = self.client.get(reverse('impersonate-approve',
+                                           kwargs={'access_id': spar.id}))
+        spar = SecondPartyAccessRequest.objects.get(pk=spar.pk)
+        self.assertEqual(spar.accepted, True,
+                         msg="Acceptance status was not updated")

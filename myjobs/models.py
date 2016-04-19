@@ -1028,7 +1028,7 @@ class SecondPartyAccessRequest(models.Model):
     second_party_email = models.EmailField(
         verbose_name=_("email address"), max_length=255, db_index=True)
     submitted = models.DateTimeField(auto_now_add=True)
-    reason = models.TextField()
+    reason = models.TextField(blank=False)
     acted_on = models.DateTimeField(db_index=True, null=True, default=None)
     accepted = models.BooleanField(default=False)
     session_started = models.DateTimeField(null=True, default=None)
@@ -1054,8 +1054,9 @@ class SecondPartyAccessRequest(models.Model):
             second_party = self.second_party.get_full_name(
                 default=self.second_party_email)
             message_body = ('{second_party} has requested the ability to '
-                            'remotely access your account.<br /><br />'
-                            '{reason}<br /><br />Would you like to '
+                            'remotely access your account and provided the '
+                            'following reason:<br /><br />'
+                            '"{reason}"<br /><br />Would you like to '
                             '<a href="{domain}{allow}">Allow</a> or '
                             '<a href="{domain}{reject}">Deny</a> this '
                             'request?'.format(
@@ -1073,7 +1074,7 @@ class SecondPartyAccessRequest(models.Model):
                               'subject': ('Remote Access Request '
                                           'from {second_party}'.format(
                                               second_party=second_party)),
-                              'message_type': 'info'}
+                              'message_type': 'info', 'system': True}
             Message.objects.create_message(**message_kwargs)
             message_kwargs.update({
                 'email_type': settings.REMOTE_ACCESS_REQUEST,
@@ -1088,20 +1089,23 @@ class SecondPartyAccessRequest(models.Model):
         # Should this be a post-save?
         if self.acted_on:
             message_body = ('{owner} has {approved} your remote access '
-                            'request.<br/>'.format(
+                            'request.'.format(
                                 owner=self.account_owner.get_full_name(
                                     default=self.account_owner_email),
-                                approved=self.accepted))
+                                approved=(
+                                    "approved" if self.accepted
+                                    else "rejected")))
             if self.accepted:
-                message_body += ('Start using it <url="{domain}{url}">here.'
-                                 '</url>'.format(
-                                     url=reverse('impersonate-start',
-                                                 uid=self.account_owner.pk),
+                message_body += ('<br /><br />Start using it '
+                                 '<a href="{domain}{url}">here.</a>'.format(
+                                     url=reverse(
+                                         'impersonate-start',
+                                         kwargs={
+                                             'uid': self.account_owner.pk}),
                                      domain=self.site.domain))
 
-            message_kwargs = {'users': [self.second_party],
-                              'expires': False,
-                              'body': message_body}
+            message_kwargs = {'users': [self.second_party], 'expires': False,
+                              'body': message_body, 'system': True}
 
             if self.accepted:
                 message_kwargs.update({
