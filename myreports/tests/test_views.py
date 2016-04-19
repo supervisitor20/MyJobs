@@ -617,7 +617,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
@@ -664,7 +668,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
+                },
             ]},
             json.loads(resp.content))
 
@@ -714,7 +722,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'communication-records'
+                },
             ]},
             json.loads(resp.content))
 
@@ -809,7 +821,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
@@ -854,7 +870,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
@@ -921,7 +941,11 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
+                },
             ]},
             json.loads(resp.content))
 
