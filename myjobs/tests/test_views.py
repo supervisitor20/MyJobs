@@ -1090,9 +1090,9 @@ class MyJobsTopbarViewsTests(MyJobsBase):
         self.assertItemsEqual(context_company_names, expected_company_names)
 
 
-class RemoteAccessRequestTests(MyJobsBase):
+class RemoteAccessRequestViewTests(MyJobsBase):
     def setUp(self):
-        super(RemoteAccessRequestTests, self).setUp()
+        super(RemoteAccessRequestViewTests, self).setUp()
         self.password = '5UuYquA@'
         self.client = TestClient()
         self.client.login(email=self.user.email, password=self.password)
@@ -1100,6 +1100,7 @@ class RemoteAccessRequestTests(MyJobsBase):
         self.account_owner = UserFactory(email='accounts@my.jobs')
         self.impersonate_url = reverse('impersonate-start', kwargs={
             'uid': self.account_owner.pk})
+        self.site = SeoSite.objects.first()
 
     def test_unauthorized_remote_access(self):
         response = self.client.get(self.impersonate_url)
@@ -1107,9 +1108,7 @@ class RemoteAccessRequestTests(MyJobsBase):
 
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
-            account_owner_email=self.account_owner.email,
-            second_party=self.user, second_party_email=self.user.email,
-            site=SeoSite.objects.first())
+            second_party=self.user, site=self.site)
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403)
@@ -1117,10 +1116,8 @@ class RemoteAccessRequestTests(MyJobsBase):
     def test_using_used_access_request(self):
         access_request = SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
-            account_owner_email=self.account_owner.email,
-            second_party=self.user, second_party_email=self.user.email,
-            accepted=True, session_started=datetime.now(),
-            site=SeoSite.objects.first())
+            second_party=self.user, accepted=True,
+            session_started=datetime.now(), site=self.site)
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403)
@@ -1141,9 +1138,7 @@ class RemoteAccessRequestTests(MyJobsBase):
     def test_authorized_remote_access(self):
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
-            account_owner_email=self.account_owner.email,
-            second_party=self.user, second_party_email=self.user.email,
-            accepted=True, site=SeoSite.objects.first())
+            second_party=self.user, accepted=True, site=self.site)
 
         response = self.client.get(self.impersonate_url, follow=True)
         self.assertContains(response, self.account_owner.email)

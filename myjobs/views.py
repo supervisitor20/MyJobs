@@ -1390,6 +1390,10 @@ def request_company_access(request):
 
 @allowed_user_required
 def impersonate(request, uid, *args, **kwargs):
+    """
+    This view is hit by a staff user after a second party access request is
+    approved by the target. It starts the request and then redirects to "/"
+    """
     account_owner = User.objects.filter(pk=uid).first()
     if account_owner:
         access_request = SecondPartyAccessRequest.objects.filter(
@@ -1405,6 +1409,10 @@ def impersonate(request, uid, *args, **kwargs):
 
 @user_is_allowed()
 def process_access_request(request, access_id, accepted):
+    """
+    The target of a second party access request will hit this view to
+    approve or reject a given request.
+    """
     access_request = SecondPartyAccessRequest.objects.filter(
         account_owner=request.user, pk=access_id,
         acted_on__isnull=True, expired=False).first()

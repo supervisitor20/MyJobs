@@ -11,17 +11,17 @@ from django.utils.http import urlquote
 import pytz
 
 from setup import MyJobsBase
-from myjobs.models import User, Role
+from myjobs.models import User, Role, SecondPartyAccessRequest
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory,
                                     CompanyAccessRequestFactory)
-from seo.tests.factories import CompanyUserFactory
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
-from myreports.models import Report
-from seo.tests.factories import CompanyFactory
 from mysearches.tests.factories import PartnerSavedSearchFactory
+from myreports.models import Report
+from seo.models import SeoSite
+from seo.tests.factories import CompanyFactory
 
 
 class UserManagerTests(MyJobsBase):
@@ -297,3 +297,41 @@ class TestActivities(MyJobsBase):
 
         self.assertTrue(access_request.expired)
 
+
+class RemoteAccessRequestModelTests(MyJobsBase):
+    def setUp(self):
+        super(RemoteAccessRequestModelTests, self).setUp()
+        self.password = '5UuYquA@'
+        self.client = TestClient()
+        self.client.login(email=self.user.email, password=self.password)
+
+        self.account_owner = UserFactory(email='accounts@my.jobs',
+                                         password=self.password)
+        self.impersonate_url = reverse('impersonate-start', kwargs={
+            'uid': self.account_owner.pk})
+        self.site = SeoSite.objects.first()
+
+    def test_create_request_sends_messages(self):
+        mail.outbox = []
+        spar = SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner, second_party=self.user,
+            site=self.site, reason='just cuz')
+        self.assertEqual(len(mail.outbox), 1)
+
+        response = self.client.get(reverse('home'))
+        self.assertEqual(len(response.context['new_messages']), 0)
+
+        self.client.get(reverse('auth_logout'))
+        self.client.login(email=self.account_owner.email,
+                          password=self.password)
+
+        response = self.client.get(reverse('home'))
+
+        messages = response.context['new_messages']
+        self.assertEqual(len(messages), 1)
+        message = messages[0]
+        email = mail.outbox[0]
+        self.assertEqual(message.message.body, email.body)
+        for text in ['>Allow<', '>Deny<', spar.reason,
+                     self.user.get_full_name(default=self.user.email)]:
+            self.assertTrue(text in email.body)

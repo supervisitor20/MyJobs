@@ -1010,6 +1010,13 @@ def role_invitation_context(role):
 
 
 class SecondPartyAccessRequest(models.Model):
+    """
+    The two parties in a contract are the first and second parties. That
+    usage is being adopted here. While there is usually no differentiation
+    between "first" and "second" party, "first party" is generally understood
+    to mean "me." As it could be ambiguous who "me" is, it's always the
+    account owner as far as SecondPartyAccessRequest is concerned.
+    """
     account_owner = models.ForeignKey('User',
                                       related_name='+',
                                       on_delete=models.SET_NULL, null=True)
@@ -1021,6 +1028,7 @@ class SecondPartyAccessRequest(models.Model):
     second_party_email = models.EmailField(
         verbose_name=_("email address"), max_length=255, db_index=True)
     submitted = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
     acted_on = models.DateTimeField(db_index=True, null=True, default=None)
     accepted = models.BooleanField(default=False)
     session_started = models.DateTimeField(null=True, default=None)
@@ -1042,17 +1050,22 @@ class SecondPartyAccessRequest(models.Model):
         super(SecondPartyAccessRequest, self).save(*args, **kwargs)
 
         if new:
-            second_party = self.second_party.get_full_name()
+            # Should this be a post-save?
+            second_party = self.second_party.get_full_name(
+                default=self.second_party_email)
             message_body = ('{second_party} has requested the ability to '
-                            'remotely access your account.<br />'
+                            'remotely access your account.<br /><br />'
+                            '{reason}<br /><br />Would you like to '
                             '<a href="{domain}{allow}">Allow</a> or '
-                            '<a href="{domain}{reject}">Reject</a>?'.format(
+                            '<a href="{domain}{reject}">Deny</a> this '
+                            'request?'.format(
                                 second_party=second_party,
                                 allow=reverse('impersonate-approve',
                                               kwargs={'access_id': self.pk}),
                                 reject=reverse('impersonate-reject',
                                                kwargs={'access_id': self.pk}),
-                                domain=self.site.domain))
+                                domain=self.site.domain,
+                                reason=self.reason))
 
             message_kwargs = {'users': [self.account_owner],
                               'expires': False,
@@ -1068,10 +1081,16 @@ class SecondPartyAccessRequest(models.Model):
             self.account_owner.email_user(**message_kwargs)
 
     def notify_acceptance(self):
+        """
+        Notifies the second party of the account owner's acceptance of their
+        request, whether positive or negative.
+        """
+        # Should this be a post-save?
         if self.acted_on:
             message_body = ('{owner} has {approved} your remote access '
                             'request.<br/>'.format(
-                                owner=self.account_owner.get_full_name(),
+                                owner=self.account_owner.get_full_name(
+                                    default=self.account_owner_email),
                                 approved=self.accepted))
             if self.accepted:
                 message_body += ('Start using it <url="{domain}{url}">here.'
