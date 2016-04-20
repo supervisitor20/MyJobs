@@ -1323,6 +1323,8 @@ def check_inline_instance(obj, req):
         return obj.inline_instances
 
 
+
+
 def copy_to_qc(modeladmin, request, queryset):
     # This shouldn't be used to copy a large number of objects at once.
     if queryset.count() > 5:
