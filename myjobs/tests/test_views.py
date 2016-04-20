@@ -1102,46 +1102,74 @@ class RemoteAccessRequestViewTests(MyJobsBase):
             'uid': self.account_owner.pk})
         self.site = SeoSite.objects.first()
 
+        self.request_denied = ("Expected a 403 for denied remote "
+                               "access, received %s")
+
     def test_unauthorized_remote_access(self):
+        """
+        When no access has been requested or requested access has not been
+        approved, remote access should be denied.
+        """
         response = self.client.get(self.impersonate_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403,
+                         msg=self.msg % response.status_code)
 
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
             second_party=self.user, site=self.site)
 
         response = self.client.get(self.impersonate_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403,
+                         msg=self.msg % response.status_code)
 
     def test_using_used_access_request(self):
+        """
+        If an in-progress or completed access request is accessed in an
+        attempt to gain access again, we should deny access.
+        """
         access_request = SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
             second_party=self.user, accepted=True,
             session_started=datetime.now(), site=self.site)
 
         response = self.client.get(self.impersonate_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403,
+                         msg=self.msg % response.status_code)
 
         access_request.session_finished = datetime.now()
         access_request.save()
 
         response = self.client.get(self.impersonate_url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403,
+                         msg=self.msg % response.status_code)
 
     def test_anonymous_access_request(self):
+        """
+        The second party user needs to be logged in to do remote access.
+        """
         self.client.logout()
         response = self.client.get(self.impersonate_url)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 302,
+                         msg="Unauthenticated access did not redirect")
         self.assertEqual(response['Location'],
-                         'http://testserver/?next=%s' % self.impersonate_url)
+                         'http://testserver/?next=%s' % self.impersonate_url,
+                         msg=("Unauthenticated access didn't redirect to login"
+                              " or lost the redirect link"))
 
     def test_authorized_remote_access(self):
+        """
+        If an access request has been submitted and approved and the
+        requester is logged in, the access request works.
+        """
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
             second_party=self.user, accepted=True, site=self.site)
 
         response = self.client.get(self.impersonate_url, follow=True)
-        self.assertContains(response, self.account_owner.email)
+        self.assertContains(response, self.account_owner.email,
+                            msg=("Response did not contain the impersonated "
+                                 "user's email"))
 
         access_request = SecondPartyAccessRequest.objects.get()
-        self.assertTrue(access_request.session_started)
+        self.assertTrue(access_request.session_started,
+                        msg="Remote access object was not updated on use")

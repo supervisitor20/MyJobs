@@ -1417,10 +1417,17 @@ def process_access_request(request, access_id, accepted):
         account_owner=request.user, pk=access_id,
         acted_on__isnull=True, expired=False).first()
     if access_request:
-        if not access_request.acted_on:
+        context = {
+            'access_request': access_request,
+            'second_party_name': access_request.second_party.get_full_name(
+                default=access_request.second_party_email)}
+        if not (access_request.acted_on or access_request.expired):
+            context['new'] = True
             access_request.accepted = accepted
             access_request.acted_on = datetime.datetime.now()
             access_request.save()
             access_request.notify_acceptance()
+        return render_to_response('myjobs/access_request.html',
+                                  context, RequestContext(request))
     else:
         return HttpResponse(status=403)
