@@ -273,7 +273,7 @@ def save_item(request):
                 form = ContactForm(instance=item, auto_id=False,
                                    data=request.POST)
                 if form.is_valid():
-                    form.save(request.user, partner)
+                    form.save(request, partner)
                     return HttpResponse(status=200)
                 else:
                     return HttpResponse(json.dumps(form.errors))

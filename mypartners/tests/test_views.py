@@ -27,6 +27,7 @@ from tasks import PARTNER_LIBRARY_SOURCES
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory, RoleFactory
+from myjobs.models import SecondPartyAccessRequest
 from mydashboard.tests.factories import CompanyFactory, CompanyUserFactory
 from mymessages.models import MessageInfo
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
@@ -1514,6 +1515,77 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
 
 
 class ContactLogEntryTests(MyPartnersTestCase):
+    def test_impersonation_session_logged(self):
+        """
+        When a record is created while user impersonation is active, the log
+        should reflect so that it's clear that the record wasn't created by the
+        user being impersonated.
+
+        """
+        # we need to know what site we are impersonating on
+        site = SeoSite.objects.first()
+        # the record we will manipulate later to examine for changes
+        record = ContactRecordFactory(contact=self.contact)
+        # form data
+        data = {
+            'contact_type': 'email',
+            'contact': self.contact.id,
+            'contact_email': 'test@email.com',
+            'contact_phone': '',
+            'location': '',
+            'length_0': '00',
+            'length_1': '00',
+            'subject': '',
+            'date_time_0': 'Jan',
+            'date_time_1': '01',
+            'date_time_2': '2005',
+            'date_time_3': '01',
+            'date_time_4': '00',
+            'date_time_5': 'AM',
+            'job_id': '',
+            'job_applications': '',
+            'job_interviews': '',
+            'job_hires': '',
+            'notes': 'A few notes here',
+            'company': self.company.id,
+            'partner': self.partner.id
+        }
+
+        impersonator = UserFactory(email='impersonator@example.com',
+                                   is_superuser=True)
+
+        # we want to log in as the impersonator
+        self.client.logout()
+        self.client.login_user(impersonator)
+
+        # needed because django-impersonate by default doesn't use confirmation
+        # messages, which we wanted for our use case
+        SecondPartyAccessRequest.objects.create(
+            account_owner=self.user,
+            second_party=impersonator, accepted=True, site=site)
+
+        # no UX for this yet, but this url is used to initiate impersonation of
+        # the user with the corresponding pk
+        impersonate_url = reverse('impersonate-start', kwargs={
+            'uid': self.user.pk})
+
+        # url to edit a communication record
+        edit_url = self.get_url(
+            partner=self.partner.id, company=self.company.id, id=record.id,
+            view='partner_edit_record')
+
+
+        # start impersonation session
+        response = self.client.get(impersonate_url, follow=True)
+
+        self.client.post(edit_url, data=data, follow=True)
+
+        log = ContactLogEntry.objects.last()
+        self.assertEqual(log.impersonator, impersonator,
+                         "Expected %s to be logged as an impersonator, but "
+                         "instead, %s was logged." % (
+                             impersonator, log.impersonator))
+
     def test_contact_record_update(self):
         record = ContactRecordFactory(contact=self.contact)
 

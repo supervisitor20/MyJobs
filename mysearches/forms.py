@@ -301,7 +301,7 @@ class PartnerSavedSearchForm(RequestForm):
                                          user=instance.user).first()
         log_change(instance, self, instance.created_by, partner,
                    contact.email, action_type=is_new_or_change,
-                   impersonator=self.request.user.impersonator)
+                   impersonator=self.request.impersonator)
 
         return instance
 
