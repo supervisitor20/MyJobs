@@ -1,18 +1,22 @@
 {% extends "base-react.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block meta-extra %}
+<script src="{% static 'ajax_select/js/bootstrap.js' %}"></script>
+<script src="{% static 'ajax_select/js/ajax_select.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'ajax_select/css/ajax_select.css' %}">
 {% endblock meta-extra %}
 
 {% block content %}
   <div class="row">
     <div class="col-sm-12">
-        <h1><strong>My Account<strong></h1>
+        <h1><strong>Company Management<strong></h1>
     </div>
     <div class="col-sm-12">
         <div class="breadcrumbs">
             <span>
-                Request Company Access
+              Enable {{ feature }}
             </span>
         </div>
     </div>
@@ -24,7 +28,7 @@
         {% include 'includes/form-error-highlight-bs3.html' %}
         <div class="actions row">
           <div class="col-md-offset-4 col-md-8 col-xs-12 text-center">
-            <input type="submit" class="button primary" value="Request Access">
+            <input type="submit" class="button primary" value="Enable">
           </div>
         </div>
       </form>
@@ -32,26 +36,17 @@
     <div class="col-md-4 col-xs-12">
       <div class="sidebar">
         <h2 class="top">Tips</h2>
-        Don't forget to write down your access code once it's generated.
+        The MarketPlace feature requires users to have correct permissions
+        enabled. Be sure to educate the member.
       </div>
     </div>
   </div>
-  {% if access_code %}
+  {% if message %}
     <div class="row">
       <div class="col-md-8 col-xs-12">
         <p class="text-left">
-          Your request has been submitted. A representative will be in contact 
-          with your company shortly.
+          {{ feature }} access has been successfully enabled!
         </p>
-        <p>
-          Please write down the following code. You will need it to verify your
-          request. <strong>This is the only time this code is displayed.</strong>
-        </p>
-      </div>
-      <div class="row">
-        <div class="col-md-offset-3 col-md-3 col-xs-12">
-          <p class="text-center" id="auth-code">{{ access_code }}</p>
-        </div>
       </div>
     </div>
   {% endif %}

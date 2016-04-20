@@ -27,13 +27,6 @@ export function intersperse(sepFn, inputFn, input) {
 }
 
 /**
- * Like map but the function returns an array of items to concatenate.
- */
-export function flatMap(fn, input) {
-  return [].concat(...input.map((item, index) => fn(item, index)));
-}
-
-/**
  * Find an entry by value in an array shaped like this:
  *
  *   [
