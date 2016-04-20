@@ -3051,6 +3051,124 @@ em.pendingText {
     padding: 10px;
 }
 
+/* Tag Select Element React Component Styles */
+.tag-select-outer {
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  background-color: #DDD;
+  padding: 10px;
+}
+
+.tag-select-outer label {
+  font-weight: normal;
+}
+
+.tag-select-subsequent-input {
+  margin-top: 10px;
+}
+
+.tag-select-chosen-tags {
+  width: 100%;
+  border-radius: 3px;
+  border: 1px solid #999;
+  background-color: #fff;
+  min-height: 33px;
+  padding: 3px;
+  margin: 0;
+}
+
+.tag-select-placeholder {
+  color: #adadad;
+  cursor: default;
+  line-height: 26px;
+  padding: 5px;
+}
+
+.tag-select-input-element {
+  position: relative;
+}
+
+.row .col-md-8 .tag-select-input-element input{
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  line-height: 33px;
+  padding: 0 5px;
+  margin: 0 0 5px;
+}
+
+.tag-select-menu-container {
+  position: relative;
+}
+
+.tag-select-menu {
+  background-color: #fff;
+  /*display: none;*/
+  display: block;
+  font-size: 14px;
+  color: #555;
+  border: 1px solid #999;
+  -webkit-border-radius: 0 0 3px 3px;
+  -moz-border-radius: 0 0 3px 3px;
+  border-radius: 0 0 3px 3px;
+  width: 100%;
+  line-height: 16px;
+  position: absolute;
+  top: -3px;
+  left: 0;
+  z-index: 1;
+  padding: 6px 6px 0;
+  -webkit-box-shadow: 0 3px 3px 1px rgba(0,0,0,.1);
+  box-shadow: 0 3px 3px 1px rgba(0,0,0,.1);
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.tag-select-tag {
+  background-color: deeppink;
+  display: inline-block;
+  font-size: 12px;
+  color: #fff;
+  border: 1px solid #ff1089;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  padding: 3px 8px 3px 8px;
+  margin: 0 5px 5px 0;
+  position: relative;
+  cursor: default;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* non-prefixed version, currently */
+  -moz-transition: all .2s ease-in;
+  -o-transition: all .2s ease-in;
+  -webkit-transition: all .2s ease-in;
+  transition: all .2s ease-in;
+}
+
+.tag-select-tag.removable {
+  padding: 3px 18px 3px 8px;
+}
+
+.tag-select-tag.removable i {
+  color: #fff;
+  font: 14px/100% arial, sans-serif;
+  position: absolute;
+  right: 5px;
+  text-decoration: none;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.tag-select-tag.removable i:after {
+  content: '×'; /* UTF-8 symbol */
+}
+/* End Tag Select Element React Component Styles */
+
 input [type='text'] + .help-block,
 div + .help-block,
 div > .help-block{
