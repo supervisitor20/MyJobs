@@ -4,8 +4,7 @@ import csv
 import json
 from cStringIO import StringIO
 
-from myjobs.tests.factories import UserFactory, RoleFactory
-from seo.tests.factories import CompanyUserFactory
+from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import ContactRecordFactory, TagFactory
 from mypartners.models import ContactRecord
 from myreports.tests.test_views import MyReportsTestCase

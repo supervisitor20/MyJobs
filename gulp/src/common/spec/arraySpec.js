@@ -1,4 +1,4 @@
-import {intersperse, flatMap} from '../array';
+import {intersperse, getDisplayForValue} from '../array';
 
 
 const add200 = (item, index) => item + index + 200;
@@ -19,19 +19,34 @@ describe('intersperse', () => {
   });
 });
 
-const add200Twice = (item, index) => [item + 200, index + 200];
+describe('getDisplayForValue', () => {
+  const oneVal = [{value: 'a', display: 'red'}];
+  const twoVal = [...oneVal, {value: 'b', display: 'blue'}];
 
-describe('flatMap', () => {
-  it('can handle an empty input', () => {
-    expect(flatMap(null, [])).toEqual([]);
+  it('returns blank on an empty value', () => {
+    const result = getDisplayForValue([], null);
+    expect(result).toEqual('');
   });
 
-  it('can handle one element', () => {
-    expect(flatMap(add200Twice, [1000])).toEqual([1200, 200]);
+  it('returns blank on an missing value', () => {
+    const result = getDisplayForValue(oneVal, 'b');
+    expect(result).toEqual('');
   });
 
-  it('can handle multiple elements', () => {
-    expect(flatMap(add200Twice, [1000, 1001]))
-      .toEqual([1200, 200, 1201, 201]);
+  it('finds correct values', () => {
+    const resultA = getDisplayForValue(twoVal, 'a');
+    expect(resultA).toEqual('red');
+    const resultB = getDisplayForValue(twoVal, 'b');
+    expect(resultB).toEqual('blue');
+  });
+
+  it('returns blank on an undefined value', () => {
+    const result = getDisplayForValue(undefined, 'b');
+    expect(result).toEqual('');
+  });
+
+  it('returns blank on a null value', () => {
+    const result = getDisplayForValue(null, 'b');
+    expect(result).toEqual('');
   });
 });
