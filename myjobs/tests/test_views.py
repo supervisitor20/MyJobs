@@ -1112,7 +1112,7 @@ class RemoteAccessRequestViewTests(MyJobsBase):
         """
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403,
-                         msg=self.msg % response.status_code)
+                         msg=self.request_denied % response.status_code)
 
         SecondPartyAccessRequest.objects.create(
             account_owner=self.account_owner,
@@ -1120,7 +1120,7 @@ class RemoteAccessRequestViewTests(MyJobsBase):
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403,
-                         msg=self.msg % response.status_code)
+                         msg=self.request_denied % response.status_code)
 
     def test_using_used_access_request(self):
         """
@@ -1134,14 +1134,14 @@ class RemoteAccessRequestViewTests(MyJobsBase):
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403,
-                         msg=self.msg % response.status_code)
+                         msg=self.request_denied % response.status_code)
 
         access_request.session_finished = datetime.now()
         access_request.save()
 
         response = self.client.get(self.impersonate_url)
         self.assertEqual(response.status_code, 403,
-                         msg=self.msg % response.status_code)
+                         msg=self.request_denied % response.status_code)
 
     def test_anonymous_access_request(self):
         """
@@ -1167,8 +1167,8 @@ class RemoteAccessRequestViewTests(MyJobsBase):
 
         response = self.client.get(self.impersonate_url, follow=True)
         self.assertContains(response, self.account_owner.email,
-                            msg=("Response did not contain the impersonated "
-                                 "user's email"))
+                            msg_prefix=("Response did not contain the "
+                                        "impersonated user's email"))
 
         access_request = SecondPartyAccessRequest.objects.get()
         self.assertTrue(access_request.session_started,
