@@ -3216,18 +3216,25 @@ fieldset:nth-child(n+2) {
     margin-top: 20px;
 }
 
+.row .col-md-8 label {
+    margin-top: 5px;
+    font-weight: normal;
+}
+
 .row .col-md-4 label {
     color: #676767;
     font-size: 10pt;
     text-align: left;
     display: block;
     line-height: normal;
+    margin-top: 0;
 }
 
 @media screen and (min-width: 768px){
     .row .col-md-4 label {
         line-height: 33px;
         text-align: right;
+        font-weight: normal;
     }
 }
 
@@ -3277,6 +3284,11 @@ fieldset:nth-child(n+2) {
 
 .row .col-md-8 ul li label {
     font-weight: normal;
+}
+
+.row .col-md-8 label input[type='checkbox'] {
+    height: inherit;
+    margin-right: 10px;
 }
 
 .row .col-md-8 select {
@@ -3339,8 +3351,11 @@ height: 33px;
     margin-right: 10px;
 }
 
-.actions.row .col-md-8 .button:hover {
+.actions.row .col-md-8 .button:hover,
+.actions.row .col-md-8 .button:active,
+.actions.row .col-md-8 .button:focus {
     color: #444545;
+    text-decoration: none;
 }
 
 .actions.row .col-md-8 .button.primary {
@@ -3469,6 +3484,47 @@ legend.fieldset-border {
 }
 
 /* End Select Element React Component Styles */
+
+/* Export Page Styles */
+#export-page #record-count {
+  text-align: center;
+}
+
+.list-item {
+  border-radius: 3px;
+  margin-bottom: 5px;
+  padding: 0 5px;
+  cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* non-prefixed version, currently */
+}
+
+.list-item label {
+  cursor: pointer;
+  width: 100%;
+}
+
+.list-item:hover {
+  background-color: #C6D6EA;
+}
+
+.list-item.dragged {
+  background-color: #EEE;
+  opacity: 0.7;
+}
+
+.list-item.placeholder {
+  background-color: #CCC;
+}
+
+.list-item.placeholder .sortable-report-field {
+  visibility: hidden;
+}
+/* End Export Page Styles */
 
 input[type='checkbox'] + .help-block {
     display:inline;

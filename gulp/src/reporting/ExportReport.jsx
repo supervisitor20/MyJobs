@@ -1,12 +1,20 @@
 import React, {Component, PropTypes} from 'react';
 import {Loading} from 'common/ui/Loading';
-import {map} from 'lodash-compat/collection';
+import SortableField from './SortableField';
+import Select from 'common/ui/Select';
+import Reorder from 'react-reorder';
+import {map, filter, forEach} from 'lodash-compat/collection';
+import {get} from 'lodash-compat/object';
+import {getDisplayForValue} from 'common/array';
 
 export default class ExportReport extends Component {
   constructor() {
     super();
     this.state = {
       loading: true,
+      sortDirection: 'ascending',
+      sortBy: '',
+      fieldsSelected: [],
       options: [],
     };
   }
@@ -15,29 +23,166 @@ export default class ExportReport extends Component {
     this.loadData();
   }
 
+  onReorder(event, item, index, newIndex, fieldsSelected) {
+    this.setState({fieldsSelected});
+  }
+
+  onCheck(e) {
+    const {fieldsSelected} = this.state;
+    forEach(fieldsSelected, (item)=> {
+      if (item.value === e.target.id) {
+        item.checked = e.target.checked;
+      }
+    });
+    this.setState({fieldsSelected});
+  }
+
   async loadData() {
     const {reportFinder} = this.props;
     const {reportId} = this.props.routeParams;
     const options = await reportFinder.getExportOptions(reportId);
-    this.setState({options, loading: false});
+
+    const fields = options.report_options.values;
+    const sortBy = get(fields, '[0].value');
+    const fieldsSelected = map(fields, o =>
+      ({...o, checked: true}));
+
+    const formats = options.report_options.formats;
+    const formatId = get(formats, '[0].value', null);
+
+    this.setState({
+      loading: false,
+      recordCount: options.count,
+      reportId: options.report_options.id,
+      fieldsSelected,
+      formatId,
+      formats,
+      sortBy,
+    });
+  }
+
+  buildExportHref() {
+    const {
+      reportId,
+      formatId,
+      fieldsSelected,
+      sortBy,
+      sortDirection,
+    } = this.state;
+    const baseUri = '/reports/view/dynamicdownload';
+
+    const values = map(
+        filter(fieldsSelected, f => f.checked),
+        f => `&values=${f.value}`).join('');
+
+    return (
+      baseUri
+      + `?id=${reportId}`
+      + `&report_presentation_id=${formatId}`
+      + `&order_by=${sortBy}`
+      + `&direction=${sortDirection}`
+      + values);
   }
 
   render() {
-    const {loading, options} = this.state;
+    const {
+      recordCount,
+      loading,
+      formats,
+      formatId,
+      sortBy,
+      sortDirection,
+      fieldsSelected,
+    } = this.state;
+
+    const sortDirectionChoices = [
+      {value: 'ascending', display: 'Ascending'},
+      {value: 'descending', display: 'Descending'},
+    ];
+    const sortedItems = filter(fieldsSelected, f => f.checked === true);
+
     if (loading) {
       return <Loading/>;
     }
-    const baseUri = '/reports/view/dynamicdownload';
-    const formatLinks = map(options.formats, o => ({
-      display: o.display,
-      value: o.value,
-      href: `${baseUri}?id=${options.id}&report_presentation_id=${o.value}`,
-    }));
+
     return (
-      <div>
-       {map(formatLinks, o =>
-          <div key={o.value}><a href={o.href}>{o.display}</a></div>
-        )}
+      <div id="export-page">
+        <div className="row">
+          <div className="col-md-4 col-xs-12">
+            <label>Sort By:</label>
+          </div>
+          <div className="col-md-8 col-xs-12">
+            <div className="row">
+              <div className="col-md-6 col-xs-12">
+                <Select
+                  name=""
+                  choices={sortedItems}
+                  onChange={e => {this.setState({sortBy: e.target.value});}}
+                  value={getDisplayForValue(sortedItems, sortBy)}/>
+              </div>
+              <div className="col-md-6 col-xs-12">
+                <Select
+                  name=""
+                  choices={sortDirectionChoices}
+                  onChange={e => {this.setState({sortDirection: e.target.value});}}
+                  value={getDisplayForValue(sortDirectionChoices, sortDirection)}/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-4">
+              <label>Fields to include:</label>
+            </div>
+            <div className="col-md-8">
+              <div className="list-item">
+                <SortableField
+                  item={{display: 'Select All', value: 'selectAll', checked: true}}
+                  sharedProps={{onChange: e => this.onCheckAll(e, this)}}
+                />
+              </div>
+              <Reorder
+                itemKey="value"
+                selectedKey="value"
+                lock="horizontal"
+                holdTime=""
+                list={fieldsSelected}
+                template={SortableField}
+                listClass="my-list"
+                itemClass="list-item"
+                callback={(...args) => this.onReorder(...args)}
+                selected={this.state.selected}
+                disableReorder={false}
+                sharedProps={{onChange: e => this.onCheck(e, this)}}
+              />
+            </div>
+        </div>
+        <div className="row">
+          <div className="col-md-4 col-xs-12">
+            <label htmlFor="outputFormat">Output Format</label>
+          </div>
+          <div className="col-md-8 col-xs-12">
+            <Select
+              name=""
+              onChange={v => {this.setState({formatId: v.target.value});}}
+              value={getDisplayForValue(formats, formatId)}
+              choices = {formats}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-offset-4 col-md-8 col-xs-12">
+            <p id="record-count">({recordCount} records will be included in this report)</p>
+          </div>
+        </div>
+        <div className="row actions text-center">
+          <div className="col-md-offset-4 col-md-8 col-xs-12">
+            <button className="button">Cancel</button>
+            <a
+              className="button primary"
+              href={this.buildExportHref()}>Export</a>
+          </div>
+        </div>
       </div>
     );
   }

@@ -479,6 +479,7 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(expected, data)
 
     def test_export_options_api(self):
+        self.maxDiff = 10000
         report_data = (
             self.dynamic_models['report_type/data_type']
             ['contacts/unaggregated'])
@@ -487,7 +488,8 @@ class TestReportsApi(MyReportsTestCase):
             name='The Report',
             owner=self.company,
             report_data=report_data,
-            filters={})
+            filters="{}")
+        report.regenerate()
 
         csv = (
             self.dynamic_models['report_type/presentation_type']
@@ -502,6 +504,7 @@ class TestReportsApi(MyReportsTestCase):
 
         data = json.loads(resp.content)
         self.assertEquals({
+            u'count': 1,
             u'report_options': {
                 u'id': report.pk,
                 u'formats': [
@@ -510,6 +513,16 @@ class TestReportsApi(MyReportsTestCase):
                         u'value': xlsx.pk,
                         u'display': u'Contact Excel Spreadsheet',
                     },
+                ],
+                u'values': [
+                    {u'display': u'name', u'value': u'name'},
+                    {u'display': u'partner', u'value': u'partner'},
+                    {u'display': u'email', u'value': u'email'},
+                    {u'display': u'phone', u'value': u'phone'},
+                    {u'display': u'date', u'value': u'date'},
+                    {u'display': u'notes', u'value': u'notes'},
+                    {u'display': u'locations', u'value': u'locations'},
+                    {u'display': u'tags', u'value': u'tags'},
                 ],
             },
         }, data)
@@ -806,7 +819,7 @@ class TestDynamicReports(MyReportsTestCase):
                 owner=self.company,
                 name=u"partner-%s \u2019" % i)
 
-        report_data = self.find_report_data('contacts')
+        report_data = self.find_report_data('partners')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -824,7 +837,7 @@ class TestDynamicReports(MyReportsTestCase):
                 {
                     'id': report_id,
                     'name': 'The Report',
-                    'report_type': 'contacts'
+                    'report_type': 'partners'
                 },
             ]},
             json.loads(resp.content))
@@ -842,10 +855,8 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertIn('The_Report.csv', resp['content-disposition'])
         self.assertIn('text/csv', resp['content-type'])
 
-    def test_dynamic_partners_report_xlsx(self):
-        """Run a report through the xlsx presentation type.
-
-        Just make sure the document loads.
+    def test_dynamic_partners_report_csv_limit_columns(self):
+        """Make sure the document contains only the columns we care about.
         """
         self.client.login_user(self.user)
 
@@ -853,9 +864,10 @@ class TestDynamicReports(MyReportsTestCase):
             # unicode here to push through report generation/download
             PartnerFactory(
                 owner=self.company,
-                name=u"partner-%s \u2019" % i)
+                name=u"partner-%s \u2019" % i,
+                uri="somewhere")
 
-        report_data = self.find_report_data('contacts')
+        report_data = self.find_report_data('partners')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
@@ -873,7 +885,115 @@ class TestDynamicReports(MyReportsTestCase):
                 {
                     'id': report_id,
                     'name': 'The Report',
-                    'report_type': 'contacts'
+                    'report_type': 'partners'
+                },
+            ]},
+            json.loads(resp.content))
+
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'csv')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+            'values': ['uri', 'name'],
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
+        self.assertEquals(200, resp.status_code)
+        self.assertIn('The_Report.csv', resp['content-disposition'])
+        self.assertIn('text/csv', resp['content-type'])
+
+        lines = resp.content.splitlines()
+        self.assertEquals('uri,name', lines[0])
+        self.assertEquals('somewhere,partner-0 \xe2\x80\x99', lines[2])
+
+    def test_dynamic_partners_report_sort(self):
+        """Make sure the document is sorted the way we expect.
+        """
+        self.client.login_user(self.user)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            PartnerFactory(
+                owner=self.company,
+                name=u"partner-%s \u2019" % i,
+                uri="somewhere")
+
+        report_data = self.find_report_data('partners')
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'report_data_id': report_data.pk,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
+                },
+            ]},
+            json.loads(resp.content))
+
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+            'direction': 'descending',
+            'order_by': 'name',
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
+        self.assertEquals(200, resp.status_code)
+        response_data = json.loads(resp.content)
+        self.assertEquals(21, len(response_data['records']))
+
+        found_name = response_data['records'][0]['name']
+        expected_name = u'partner-9 \u2019'
+        self.assertEqual(expected_name, found_name)
+
+    def test_dynamic_partners_report_xlsx(self):
+        """Run a report through the xlsx presentation type.
+
+        Just make sure the document loads.
+        """
+        self.client.login_user(self.user)
+
+        for i in range(0, 20):
+            # unicode here to push through report generation/download
+            PartnerFactory(
+                owner=self.company,
+                name=u"partner-%s \u2019" % i)
+
+        report_data = self.find_report_data('partners')
+
+        resp = self.client.post(
+            reverse('run_dynamic_report'),
+            data={
+                'report_data_id': report_data.pk,
+                'name': 'The Report',
+            })
+        self.assertEqual(200, resp.status_code)
+        report_id = json.loads(resp.content)['id']
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
                 },
             ]},
             json.loads(resp.content))
