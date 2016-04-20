@@ -4,6 +4,8 @@
 
 import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills.js';
+import {getDisplayForValue} from '../common/array.js';
+
 import param from 'jquery-param';
 
 import React from 'react';
@@ -11,8 +13,6 @@ import {getCsrf} from 'common/cookie';
 
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
-
-import {find} from 'lodash-compat/collection';
 
 import TextField from '../common/ui/TextField';
 import CheckBox from '../common/ui/CheckBox';
@@ -60,8 +60,31 @@ class Module extends React.Component {
     let value;
     if (event.target.type === 'checkbox') {
       value = event.target.checked;
-    } else if (event.target.type === 'select-one') {
-      value = event.target.value;
+    } else if (event.target.type === 'calendar-month') {
+      let month = event.target.value;
+      if (month < 10) {
+        month = '0' + month;
+      }
+      const existingDate = formContents[fieldID];
+      const beforeMonth = existingDate.substring(0, 5);
+      const afterMonth = existingDate.substring(7, 10);
+      const updatedDate = beforeMonth + month + afterMonth;
+      value = updatedDate;
+    } else if (event.target.type === 'calendar-day') {
+      let day = event.target.value;
+      if (day < 10) {
+        day = '0' + day;
+      }
+      const existingDate = formContents[fieldID];
+      const beforeDay = existingDate.substring(0, 8);
+      const updatedDate = beforeDay + day;
+      value = updatedDate;
+    } else if (event.target.type === 'calendar-year') {
+      const year = event.target.value;
+      const existingDate = formContents[fieldID];
+      const afterYear = existingDate.substring(4, 10);
+      const updatedDate = year + afterYear;
+      value = updatedDate;
     } else {
       value = event.target.value;
     }
@@ -119,12 +142,11 @@ class Module extends React.Component {
               errors={apiResponse.errors[profileUnitName]}
               required={profileUnit.required}
               key={index}>
-
               {child}
-
             </FieldWrapper>
           );
         }
+
         switch (profileUnit.widget.input_type) {
         case 'text':
           return wrap(
@@ -132,10 +154,11 @@ class Module extends React.Component {
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
-              initial={profileUnit.initial}
+              value={formContents[profileUnitName]}
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
+              autoFocus={profileUnit.widget.attrs.autofocus}
               />
           );
         case 'textarea':
@@ -157,7 +180,7 @@ class Module extends React.Component {
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
-              initial={profileUnit.initial}
+              value={formContents[profileUnitName]}
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
@@ -166,16 +189,11 @@ class Module extends React.Component {
           );
         case 'select':
           const selected = formContents[profileUnitName];
-          const value = find(profileUnit.choices, c => c.value === selected);
-          let display = null;
-          if (value) {
-            display = value.display;
-          }
           return wrap(
             <Select
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
-              value={display}
+              value={getDisplayForValue(profileUnit.choices, selected)}
               choices={profileUnit.choices}
               />
           );
@@ -205,16 +223,13 @@ class Module extends React.Component {
       id: formContents.id,
       module: formContents.module,
     };
-
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
-
     // Update state
     for (const item in apiResponse.data) {
       if (apiResponse.data.hasOwnProperty(item)) {
         formContents[item] = apiResponse.data[item];
       }
     }
-
     this.setState({
       apiResponse: apiResponse,
       formContents: formContents,
