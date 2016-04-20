@@ -59,6 +59,10 @@ TextField.propTypes = {
    * Should this bad boy focus, all auto like?
    */
   autoFocus: React.PropTypes.any,
+  /**
+   * What happens if you click this field?f
+   */
+  onSelect: React.PropTypes.func,
 };
 
 TextField.defaultProps = {
@@ -68,6 +72,7 @@ TextField.defaultProps = {
   isHidden: false,
   required: false,
   autoFocus: false,
+  onSelect: null,
 };
 
 export default TextField;
