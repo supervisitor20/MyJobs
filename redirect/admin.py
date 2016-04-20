@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
+from ajax_select import make_ajax_form
+
 from redirect.models import (CanonicalMicrosite, CompanyEmail,
     CustomExcludedViewSource, DestinationManipulation, EmailRedirectLog,
     ExcludedViewSource, ViewSource)
@@ -151,8 +153,9 @@ class CustomExcludedViewSourceAdmin(admin.ModelAdmin):
     search_fields = ['buid', 'view_source']
 
 
-
 class DestinationManipulationAdmin(admin.ModelAdmin):
+    form = make_ajax_form(DestinationManipulation, {
+        'view_source': 'view_sources'})
     actions = ['export_as_csv']
     list_filter = ['action_type',
                    ('action', MultiSearchFilter),
