@@ -1199,6 +1199,7 @@ class EmailTests(MyPartnersTestCase):
 
         request = factory.post(reverse('process_email'), self.data)
         request.user = AnonymousUser()
+        request.impersonator = None
 
         # Grab our test file and attach it to the request.
         actual_file = path.join(path.abspath(path.dirname(__file__)), 'data',
@@ -1552,7 +1553,7 @@ class ContactLogEntryTests(MyPartnersTestCase):
         }
 
         impersonator = UserFactory(email='impersonator@example.com',
-                                   is_superuser=True)
+                                   is_staff=True)
 
         # we want to log in as the impersonator
         self.client.logout()

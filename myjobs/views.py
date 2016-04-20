@@ -1393,6 +1393,7 @@ def impersonate(request, uid, *args, **kwargs):
     """
     This view is hit by a staff user after a second party access request is
     approved by the target. It starts the request and then redirects to "/"
+
     """
     account_owner = User.objects.filter(pk=uid).first()
     if account_owner:
