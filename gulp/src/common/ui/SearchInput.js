@@ -256,5 +256,8 @@ SearchInput.propTypes = {
    * itemActive: Applied to li selected via keyboard. (hover is used for mouse)
    */
   theme: PropTypes.object,
-  autofocus: PropTypes.string,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
+  autofocus: PropTypes.any,
 };

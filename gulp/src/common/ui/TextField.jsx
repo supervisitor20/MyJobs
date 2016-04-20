@@ -4,7 +4,7 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, initial, isHidden, placeholder, autoFocus} = props;
+  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus} = props;
   return (
     <input
       type="text"
@@ -14,7 +14,7 @@ function TextField(props) {
       maxLength={maxLength}
       required={required}
       hidden={isHidden}
-      defaultValue={initial}
+      value={value}
       placeholder={placeholder}
       onChange={onChange}
       autoFocus={autoFocus}
@@ -39,9 +39,9 @@ TextField.propTypes = {
    */
   placeholder: React.PropTypes.string,
   /**
-   * Value at first page load
+   * Value shown in control
    */
-  initial: React.PropTypes.string,
+  value: React.PropTypes.string,
   /**
    * Number of characters allowed in this field
    */
@@ -54,12 +54,15 @@ TextField.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
-  autoFocus: React.PropTypes.string,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
+  autoFocus: React.PropTypes.any,
 };
 
 TextField.defaultProps = {
   placeholder: '',
-  initial: '',
+  value: '',
   maxLength: null,
   isHidden: false,
   required: false,

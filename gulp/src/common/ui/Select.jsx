@@ -118,6 +118,7 @@ class Select extends React.Component {
       selectAction = this.openSelectMenu;
       dropdown = '';
     }
+
     return (
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input" onClick={selectAction}>
@@ -149,7 +150,7 @@ Select.propTypes = {
   /**
    * Value shown as the selected value in the control.
    */
-  value: React.PropTypes.string,
+  value: React.PropTypes.string.isRequired,
   /**
    * Array of objects, each an item in the select component
    */
