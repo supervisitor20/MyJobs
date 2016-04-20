@@ -33,8 +33,7 @@ export class WizardFilterCityState extends Component {
             onSelect={v =>
               this.updateField('city', v)}
             getHints={v =>
-              getHints('city', v)}
-            autofocus="autofocus"/>
+              getHints('city', v)}/>
           <SearchInput
             id={id + '-state'}
             callSelectWhenEmpty
@@ -53,5 +52,4 @@ WizardFilterCityState.propTypes = {
   id: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,
   getHints: PropTypes.func.isRequired,
-  autofocus: PropTypes.string.isRequired,
 };

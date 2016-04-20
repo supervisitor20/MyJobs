@@ -30,12 +30,13 @@ export default class ExportReport extends Component {
     const baseUri = '/reports/view/dynamicdownload';
     const formatLinks = map(options.formats, o => ({
       display: o.display,
+      value: o.value,
       href: `${baseUri}?id=${options.id}&report_presentation_id=${o.value}`,
     }));
     return (
       <div>
        {map(formatLinks, o =>
-          <div><a href={o.href}>{o.display}</a></div>
+          <div key={o.value}><a href={o.href}>{o.display}</a></div>
         )}
       </div>
     );
