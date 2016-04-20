@@ -10,13 +10,10 @@ As such, these tests assume that the settings.ENABLE_ROLES is True.
 """
 
 from django.core.urlresolvers import reverse
-from django.conf import settings
 
 from myjobs.decorators import MissingActivity
-from myjobs.tests.factories import (AppAccessFactory, RoleFactory, UserFactory,
-                                    ActivityFactory)
+from myjobs.tests.factories import AppAccessFactory
 from mypartners.tests.test_views import TestClient
-from seo.tests.factories import CompanyFactory
 from myreports.tests.setup import MyReportsTestCase
 
 
@@ -143,44 +140,24 @@ class TestViewLevelActivities(MyReportsTestCase):
             "dynamicoverview",
             "read partner", "read contact", "read communication record")
 
-    def test_reporting_types_api(self):
+    def test_select_data_type_api(self):
         """
-        /reports/api/reporting_types requires "read partner", "read contact",
-        and "read communication record"
+        /reports/api/select_data_type_api requires "read partner",
+        "read contact", and "read communication record"
         """
 
         self.assertRequires(
-            "reporting_types_api",
+            "select_data_type_api",
             "read partner", "read contact", "read communication record")
 
-    def test_report_types_api(self):
+    def test_export_options_api(self):
         """
-        /reports/api/report_types requires "read partner", "read contact",
-        and "read communication record"
-        """
-
-        self.assertRequires(
-            "report_types_api",
-            "read partner", "read contact", "read communication record")
-
-    def test_data_types_api(self):
-        """
-        /reports/api/data_types requires "read partner", "read contact",
-        and "read communication record"
+        /reports/api/export_options_api requires "read partner",
+        "read contact", and "read communication record"
         """
 
         self.assertRequires(
-            "data_types_api",
-            "read partner", "read contact", "read communication record")
-
-    def test_presentation_types_api(self):
-        """
-        /reports/api/presentations requires "read partner", "read contact",
-        and "read communication record"
-        """
-
-        self.assertRequires(
-            "presentation_types_api",
+            "export_options_api",
             "read partner", "read contact", "read communication record")
 
     def test_run_dynmaic_report(self):

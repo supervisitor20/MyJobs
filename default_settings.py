@@ -683,3 +683,6 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 WEBPACK_DEV_SERVER_BASE_URL = None
 
 IMPERSONATE_CUSTOM_ALLOW = 'universal.helpers.impersonate_access_function'
+AJAX_LOOKUP_CHANNELS = {
+    'companies': ('seo.lookups', 'CompaniesLookup')
+}

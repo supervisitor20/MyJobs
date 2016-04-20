@@ -1,3 +1,5 @@
+import {find} from 'lodash-compat/collection';
+
 /**
  * Return a new array with the results of calling inputFn with calls to
  * sepFn between.
@@ -25,8 +27,22 @@ export function intersperse(sepFn, inputFn, input) {
 }
 
 /**
- * Like map but the function returns an array of items to concatenate.
+ * Find an entry by value in an array shaped like this:
+ *
+ *   [
+ *      {value, '1', display: 'one'},
+ *      {value, '2', display: 'red'},
+ *   ]
+ *
+ * If multiple entries have the same value, only the first will be found.
+ *
+ * value: entry should have a value key equal to this.
+ * returns: the display name corresponding to this value or a blank string
  */
-export function flatMap(fn, input) {
-  return [].concat(...input.map((item, index) => fn(item, index)));
+export function getDisplayForValue(objects, value) {
+  const result = find(objects, {value});
+  if (result) {
+    return result.display;
+  }
+  return '';
 }
