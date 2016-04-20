@@ -265,7 +265,7 @@ class TestReportConfiguration(MyReportsTestCase):
         
         Here, we expect that an appropriate format should be selected for each
         of the columns configured *except* when that column is marked as
-        ``filter_only```. For those columns, we expect format to be ``None``.
+        ``filter_only```. For those columns, we expect format to be ``''``.
         """
         expected_config = ReportConfiguration(
             columns=[
