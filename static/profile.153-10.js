@@ -66,7 +66,6 @@ $(function() {
             get_data = '&' + get_data.substr(1);
         }
         serialized_data += get_data;
-
         $.ajax({
             type: 'POST',
             url: '/profile/view/edit',
@@ -245,7 +244,7 @@ function set_autocomplete(){
 }
 
 /*
-Adds a button to the right (after) of a field that has date 
+Adds a button to the right (after) of a field that has date
 somewhere in it's ID.
 
 .icon-search is a bootstrap function that searches a large 'sprite'

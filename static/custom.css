@@ -4599,3 +4599,46 @@ a.btn.pull-right {
     font-weight: bold;
     border: 2px solid #000;
 }
+
+/* React Datepicker */
+
+.datepicker-dropdown {
+  display: block;
+  position: absolute;
+  left: auto;
+  top: 10px;
+  right: 40px;
+  color: #005b82;
+  width: 355px;
+  padding: 10px;
+}
+
+.calendar-table {
+  width: 100%;
+  padding: 10px;
+}
+
+.calendar-table thead tr th,
+.calendar-table tbody tr td {
+  padding: 1rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.calendar-table tbody tr td:hover {
+  background-color: #c6d6ea;
+  color: #fff;
+}
+
+.calendar-table tbody tr td.dim {
+  color: #cddbed;
+}
+
+.calendar-table tbody tr td.selected {
+  background-color: #444545;
+  color: #ebebeb;
+}
+
+.calendar-table .glyphicon-chevron-right, .calendar-table .glyphicon-chevron-left {
+  margin-top: 5px;
+}
