@@ -320,7 +320,7 @@ class PartnerForm(NormalizedModelForm):
         tags = tag_get_or_create(self.data['company_id'], data)
         return tags
 
-    def save(self, user, commit=True):
+    def save(self, request, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.update_last_action_time(False)
         instance = super(PartnerForm, self).save(commit)
@@ -331,8 +331,9 @@ class PartnerForm(NormalizedModelForm):
         except (Contact.DoesNotExist, ValueError):
             instance.primary_contact = None
         instance.save()
-        log_change(instance, self, user, instance, instance.name,
-                   action_type=new_or_change)
+        log_change(instance, self, request.user, instance, instance.name,
+                   action_type=new_or_change,
+                   impersonator=request.impersonator)
         return instance
 
 

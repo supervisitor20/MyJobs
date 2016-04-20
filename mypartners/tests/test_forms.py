@@ -143,7 +143,7 @@ class ContactFormTests(MyPartnersTestCase):
         # resave form to "update" instance
         edited_instance = ContactForm(
             data=self.data, instance=original_instance).save(
-                self.contact_user, partner=self.partner)
+                request, partner=self.partner)
         self.assertEqual(original_instance.pk, edited_instance.pk)
         self.assertNotEqual(original_time, edited_instance.last_action_time)
 
