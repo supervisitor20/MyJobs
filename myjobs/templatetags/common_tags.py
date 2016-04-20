@@ -353,7 +353,7 @@ def get_menus(context):
         profile_menu["submenus"].append(
             {
                 "id": "impersonate-tab",
-                "href": url("impersonate/stop"),
+                "href": reverse("impersonate-stop"),
                 "label": "Stop Impersonating"
             }
         )

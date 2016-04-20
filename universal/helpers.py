@@ -510,7 +510,3 @@ def autofocus_input(form, field_name=None):
         # field attribute which we can use to set autofocus.
         field = visible_fields[0].field
     field.widget.attrs.update({'autofocus': 'autofocus'})
-
-
-def impersonate_access_function(request):
-    return request.user.is_staff

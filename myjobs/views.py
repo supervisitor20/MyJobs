@@ -529,7 +529,7 @@ def topbar(request):
         try:
             user = User.objects.get(user_guid=guid)
         except User.DoesNotExist:
-           pass
+            pass
 
     if not user or user.is_anonymous():
         user = None
