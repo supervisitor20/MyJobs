@@ -427,7 +427,7 @@ class ContactRecordForm(NormalizedModelForm):
         self.instance.update_last_action_time(False)
 
         if new_or_change == ADDITION:
-            self.instance.created_by = user
+            self.instance.created_by = request.user
         instance = super(ContactRecordForm, self).save(commit)
 
         self.instance.tags = self.cleaned_data.get('tags')
