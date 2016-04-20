@@ -522,6 +522,7 @@ def cas(request):
 def topbar(request):
     callback = request.REQUEST.get('callback')
     user = request.user
+    impersonating = request.REQUEST.get('impersonating')
 
     if not user or user.is_anonymous():
         # Ensure that old myguid cookies can be handled correctly
@@ -534,7 +535,7 @@ def topbar(request):
     if not user or user.is_anonymous():
         user = None
 
-    ctx = {'user': user}
+    ctx = {'user': user, 'impersonating': impersonating == u'true'}
 
     response = HttpResponse(content_type='text/javascript')
 
