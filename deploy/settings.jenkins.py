@@ -101,5 +101,3 @@ LOGGING = {
         }
     }
 }
-
-MIDDLEWARE_CLASSES += ('impersonate.middleware.ImpersonateMiddleware', )
