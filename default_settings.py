@@ -682,4 +682,4 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 # See template tag js_bundle for details.
 WEBPACK_DEV_SERVER_BASE_URL = None
 
-IMPERSONATE_ALLOW_SUPERUSER = True
+IMPERSONATE_CUSTOM_ALLOW = 'universal.helpers.impersonate_access_function'
