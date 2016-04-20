@@ -68,12 +68,12 @@ pull() {
 }
 
 background() {
-    docker build \
-        -t darrint/solr \
-        solr
-    docker build \
-         -t darrint/revproxy \
-         nginx-proxy
+#    docker build \
+#        -t darrint/solr \
+#        solr
+#    docker build \
+#         -t darrint/revproxy \
+#         nginx-proxy
     docker run \
         --name solr \
         -d \
