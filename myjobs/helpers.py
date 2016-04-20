@@ -120,3 +120,7 @@ def get_title_template(next_url):
     title_template = 'includes/index_titles/%s.html' % title_template
 
     return title_template
+
+
+def impersonate_access_function(request):
+    return request.user.is_staff

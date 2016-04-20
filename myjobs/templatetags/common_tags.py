@@ -251,6 +251,7 @@ def get_menus(context):
     company = get_company(request)
     user = context.get("user")
     new_messages = context.get("new_messages")
+    impersonating = context.get("impersonating")
 
     # menu item cant be generated for a user who isn't logged in
     if not user or not user.pk or user.is_anonymous():
@@ -349,11 +350,13 @@ def get_menus(context):
         ]
     }
 
-    if getattr(request.user, 'is_impersonate', False):
+    # If the topbar request is coming from a microsite, we've got the wrong
+    # user. This can't simply be a request.user check.
+    if impersonating or getattr(request.user, 'is_impersonate', False):
         profile_menu["submenus"].append(
             {
                 "id": "impersonate-tab",
-                "href": url("impersonate/stop"),
+                "href": reverse("impersonate-stop"),
                 "label": "Stop Impersonating"
             }
         )

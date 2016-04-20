@@ -682,7 +682,8 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 # See template tag js_bundle for details.
 WEBPACK_DEV_SERVER_BASE_URL = None
 
-IMPERSONATE_CUSTOM_ALLOW = 'universal.helpers.impersonate_access_function'
 AJAX_LOOKUP_CHANNELS = {
     'companies': ('seo.lookups', 'CompaniesLookup')
 }
+
+IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
