@@ -349,7 +349,7 @@ def get_menus(context):
         ]
     }
 
-    if request.user.is_impersonate:
+    if getattr(request.user, 'is_impersonate', False):
         profile_menu["submenus"].append(
             {
                 "id": "impersonate-tab",
