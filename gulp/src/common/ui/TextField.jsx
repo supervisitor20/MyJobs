@@ -4,7 +4,7 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus} = props;
+  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus, onSelect} = props;
   return (
     <input
       type="text"
@@ -18,6 +18,7 @@ function TextField(props) {
       placeholder={placeholder}
       onChange={onChange}
       autoFocus={autoFocus}
+      onSelect={onSelect}
       />
   );
 }

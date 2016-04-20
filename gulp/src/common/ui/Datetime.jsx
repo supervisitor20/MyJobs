@@ -1,6 +1,7 @@
 import React from 'react';
 import TextField from './TextField';
 import CalendarPanel from './CalendarPanel';
+import ClickOutHandler from 'react-onclickout';
 
 class Datetime extends React.Component {
   constructor(props) {
@@ -95,6 +96,9 @@ class Datetime extends React.Component {
   closeCalendar() {
     this.setState({displayCalendar: false});
   }
+  openCalendar() {
+    this.setState({displayCalendar: true});
+  }
   toggleCalendar() {
     this.setState({displayCalendar: !this.state.displayCalendar});
   }
@@ -112,7 +116,7 @@ class Datetime extends React.Component {
     const day = parseInt(value.substring(8, 10), 10);
     let calendar;
     if (this.state.displayCalendar) {
-      calendar = (<div className="input-group datepicker-dropdown dropdown-menu" >
+      calendar = (<div className="input-group datepicker-dropdown dropdown-menu">
                     <CalendarPanel
                       year={year}
                       month={month - 1}
@@ -127,7 +131,7 @@ class Datetime extends React.Component {
     }
 
     return (
-      <span>
+      <ClickOutHandler onClickOut={e => this.closeCalendar(e, this)}>
         <div className="input-group">
           <TextField
             id={name}
@@ -139,14 +143,14 @@ class Datetime extends React.Component {
             value={value}
             placeholder={placeholder}
             onChange={onChange}
-            onSelect={e => this.toggleCalendar(e, this)}
+            onSelect={e => this.openCalendar(e, this)}
           />
           <div className="input-group-addon" onClick={e => this.toggleCalendar(e, this)}>
             <span className="glyphicon glyphicon-calendar"></span>
           </div>
         </div>
         {calendar}
-      </span>
+      </ClickOutHandler>
     );
   }
 }
