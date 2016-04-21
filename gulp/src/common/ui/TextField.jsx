@@ -59,7 +59,7 @@ TextField.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.any,
+  autoFocus: React.PropTypes.bool,
   /**
    * What happens if you click this field?
    */

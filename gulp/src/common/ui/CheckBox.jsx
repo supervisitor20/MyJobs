@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * To use this component in an app, you'll need to handle a callback which
  * passes this event:
- * 
+ *
  * event.target.name = checkbox
  */
 
@@ -51,7 +51,7 @@ CheckBox.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.any,
+  autoFocus: React.PropTypes.bool,
 };
 
 CheckBox.defaultProps = {
