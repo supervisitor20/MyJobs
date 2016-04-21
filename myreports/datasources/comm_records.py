@@ -9,10 +9,12 @@ from myreports.datasources.util import (
     filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
-
 from universal.helpers import dict_identity
+from mypartners.models import CONTACT_TYPE_CHOICES
 
 from django.db.models import Q
+
+CONTACT_TYPES = dict(CONTACT_TYPE_CHOICES)
 
 
 class CommRecordsDataSource(DataSource):
@@ -112,7 +114,7 @@ class CommRecordsDataSource(DataSource):
         return [
             {
                 'key': c['contact_type'],
-                'display': c['contact_type'],
+                'display': CONTACT_TYPES[c['contact_type'].lower()],
             } for c in contact_types_qs]
 
     def help_partner(self, company, filter_spec, partial):

@@ -12,7 +12,8 @@ from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import (
+    HttpResponse, HttpResponseRedirect, HttpResponseForbidden)
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, redirect, render, Http404
@@ -1406,7 +1407,7 @@ def impersonate(request, uid, *args, **kwargs):
             expired=False).first()
         if access_request:
             return impersonate_(request, uid=uid, *args, **kwargs)
-    return HttpResponse(status=403)
+    return HttpResponseForbidden()
 
 
 @user_is_allowed()
@@ -1432,4 +1433,4 @@ def process_access_request(request, access_id, accepted):
         return render_to_response('myjobs/access_request.html',
                                   context, RequestContext(request))
     else:
-        return HttpResponse(status=403)
+        return HttpResponseForbidden()

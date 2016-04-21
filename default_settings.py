@@ -683,7 +683,9 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 WEBPACK_DEV_SERVER_BASE_URL = None
 
 AJAX_LOOKUP_CHANNELS = {
-    'companies': ('seo.lookups', 'CompaniesLookup')
+    'companies': ('seo.lookups', 'CompaniesLookup'),
+    'sites': ('seo.lookups', 'SitesLookup'),
+    'view_sources': ('redirect.lookups', 'ViewSourcesLookup'),
 }
 
 IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
