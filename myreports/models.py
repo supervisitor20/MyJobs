@@ -259,7 +259,6 @@ class Configuration(models.Model):
             for cm in (
                 self.configurationcolumn_set
                 .filter(is_active=True)
-                .exclude(filter_only=True)
                 .order_by('order'))])
 
 
