@@ -170,11 +170,11 @@ class DestinationManipulationAdmin(admin.ModelAdmin):
         """Gives the ability to save the queryset as a csv"""
 
         query = request.GET.get('q')
-        # Older  versions of Django are broken with respect to the
-        # "Select all x destination manipulations" link in that regardless of
-        # if it is chosen or not, you will always only get 100 records. Thus,
-        # we manually run the filter and return all results if this option is
-        # present.
+        # Older versions of Django are broken with respect to the 
+        # "Select all x destination manipulations" link in that regardless of 
+        # if it is chosen or not, you will always only get at most 100 records.
+        # Thus, we manually run the filter and return all results if this
+        # option is present.
         select_all = request.POST.get('select_across', '0') == '1'
         if query and select_all:
             result = queryset.filter(Q(buid=query) | Q(view_source=query))
