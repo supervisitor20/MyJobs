@@ -3,10 +3,6 @@ import TextField from './TextField';
 import CalendarPanel from './CalendarPanel';
 import ClickOutHandler from 'react-onclickout';
 
-
-event.target.type === 'calendar-day'
-
-
 /**
  * Date.jsx is a textbox with a Date widget button.
  *
