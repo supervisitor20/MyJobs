@@ -14,6 +14,7 @@ export default class ExportReport extends Component {
       loading: true,
       sortDirection: 'ascending',
       sortBy: '',
+      selectAll: false,
       fieldsSelected: [],
       options: [],
     };
@@ -23,7 +24,10 @@ export default class ExportReport extends Component {
     this.loadData();
   }
 
-  onReorder(event, item, index, newIndex, fieldsSelected) {
+  onReorder(event, item, index, newIndex) {
+    const {fieldsSelected} = this.state;
+    const removed = fieldsSelected.splice(index, 1);
+    fieldsSelected.splice(newIndex, 0, ...removed);
     this.setState({fieldsSelected});
   }
 
@@ -35,6 +39,10 @@ export default class ExportReport extends Component {
       }
     });
     this.setState({fieldsSelected});
+  }
+
+  onCheckAll(e) {
+    this.setState({selectAll: e.target.checked});
   }
 
   async loadData() {
@@ -65,14 +73,14 @@ export default class ExportReport extends Component {
     const {
       reportId,
       formatId,
-      fieldsSelected,
       sortBy,
       sortDirection,
     } = this.state;
+    const fixedFieldsSelected = this.fieldSelectedWithSelectAll();
     const baseUri = '/reports/view/dynamicdownload';
 
     const values = map(
-        filter(fieldsSelected, f => f.checked),
+        filter(fixedFieldsSelected, f => f.checked),
         f => `&values=${f.value}`).join('');
 
     return (
@@ -84,6 +92,14 @@ export default class ExportReport extends Component {
       + values);
   }
 
+  fieldSelectedWithSelectAll() {
+    const {fieldsSelected, selectAll} = this.state;
+    if (selectAll) {
+      return map(fieldsSelected, f => ({...f, checked: true}));
+    }
+    return [...fieldsSelected];
+  }
+
   render() {
     const {
       recordCount,
@@ -93,6 +109,7 @@ export default class ExportReport extends Component {
       sortBy,
       sortDirection,
       fieldsSelected,
+      selectAll,
     } = this.state;
 
     const sortDirectionChoices = [
@@ -100,6 +117,7 @@ export default class ExportReport extends Component {
       {value: 'descending', display: 'Descending'},
     ];
     const sortedItems = filter(fieldsSelected, f => f.checked === true);
+    const fixedFieldsSelected = this.fieldSelectedWithSelectAll();
 
     if (loading) {
       return <Loading/>;
@@ -137,16 +155,15 @@ export default class ExportReport extends Component {
             <div className="col-md-8">
               <div className="list-item">
                 <SortableField
-                  item={{display: 'Select All', value: 'selectAll', checked: true}}
-                  sharedProps={{onChange: e => this.onCheckAll(e, this)}}
-                />
+                  item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
+                  sharedProps={{onChange: e => this.onCheckAll(e)}}/>
               </div>
               <Reorder
                 itemKey="value"
                 selectedKey="value"
                 lock="horizontal"
                 holdTime=""
-                list={fieldsSelected}
+                list={fixedFieldsSelected}
                 template={SortableField}
                 listClass="my-list"
                 itemClass="list-item"
