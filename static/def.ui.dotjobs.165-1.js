@@ -546,10 +546,11 @@ function var_value_or_default(node,def){
 
 
 function get_toolbar(site_name) {
-    var site = encodeURIComponent(window.location.protocol + '//' + window.location.hostname);
+    var site = encodeURIComponent(window.location.protocol + '//' + window.location.hostname),
+        url = ABSOLUTE_URL + "topbar/?site_name=" + site_name + "&site=" + site + "&impersonating=" + impersonating;
     $.ajax({
         //url: "https://secure.my.jobs/topbar/?site_name=" + site_name + '&site=' + site,
-      url: ABSOLUTE_URL + "topbar/?site_name=" + site_name + "&site=" + site,
+      url: url,
         dataType: "jsonp",
         type: "GET",
         jsonpCallback: 'populate_toolbar',

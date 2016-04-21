@@ -234,6 +234,7 @@ def get_company_from_cookie(context):
         return get_company(request)
     return None
 
+
 @register.assignment_tag(takes_context=True)
 def get_menus(context):
     """
@@ -246,9 +247,11 @@ def get_menus(context):
     # have to use hard coded urls since the named views don't exist on
     # microsites.
     url = lambda path: settings.ABSOLUTE_URL + path
-    company = get_company(context.get("request"))
+    request = context.get("request")
+    company = get_company(request)
     user = context.get("user")
     new_messages = context.get("new_messages")
+    impersonating = context.get("impersonating")
 
     # menu item cant be generated for a user who isn't logged in
     if not user or not user.pk or user.is_anonymous():
@@ -346,6 +349,17 @@ def get_menus(context):
             }
         ]
     }
+
+    # If the topbar request is coming from a microsite, we've got the wrong
+    # user. This can't simply be a request.user check.
+    if impersonating or getattr(request.user, 'is_impersonate', False):
+        profile_menu["submenus"].append(
+            {
+                "id": "impersonate-tab",
+                "href": reverse("impersonate-stop"),
+                "label": "Stop Impersonating"
+            }
+        )
 
     # only return menus we've populated
     return [menu for menu in message_menu, employer_menu, profile_menu if menu]
