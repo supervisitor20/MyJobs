@@ -1,4 +1,4 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component} from 'react';
 import classnames from 'classnames';
 
 
@@ -131,7 +131,7 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus} = this.props;
+    const {id, theme, placeholder, autoFocus} = this.props;
     const {value, items, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
@@ -156,7 +156,7 @@ export class SearchInput extends Component {
           aria-owns={suggestId}
           aria-expanded={showItems}
           aria-activedescendant={activeId}
-          autoFocus={autofocus} />
+          autoFocus={autoFocus} />
         {showItems ?
           <ul
             id={this.suggestId()}
@@ -198,6 +198,7 @@ SearchInput.defaultProps = {
     item: '',
     itemActive: 'active',
   },
+  autoFocus: false,
 };
 
 SearchInput.propTypes = {
