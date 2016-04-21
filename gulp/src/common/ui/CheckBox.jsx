@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * To use this component in an app, you'll need to handle a callback which
  * passes this event:
- * 
+ *
  * event.target.name = checkbox
  */
 
