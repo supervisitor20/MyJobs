@@ -194,7 +194,6 @@ export default class ExportReport extends Component {
         </div>
         <div className="row actions text-center">
           <div className="col-md-offset-4 col-md-8 col-xs-12">
-            <button className="button">Cancel</button>
             <a
               className="button primary"
               href={this.buildExportHref()}>Export</a>
