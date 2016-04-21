@@ -3,6 +3,24 @@ import TextField from './TextField';
 import CalendarPanel from './CalendarPanel';
 import ClickOutHandler from 'react-onclickout';
 
+
+event.target.type === 'calendar-day'
+
+
+/**
+ * Date.jsx is a textbox with a Date widget button.
+ *
+ * It wraps CalendarPanel.jsx, which is the popup calendar.
+ *
+ * To use this component in an app, you'll need to handle callbacks which
+ * handle events this component can trigger:
+ *
+ * event.target.name = calendar-day
+ * event.target.name = calendar-month
+ * event.target.name = calendar-year
+ *
+ */
+
 class Date extends React.Component {
   constructor(props) {
     super(props);
