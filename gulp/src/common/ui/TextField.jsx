@@ -61,7 +61,7 @@ TextField.propTypes = {
    */
   autoFocus: React.PropTypes.any,
   /**
-   * What happens if you click this field?f
+   * What happens if you click this field?
    */
   onSelect: React.PropTypes.func,
 };

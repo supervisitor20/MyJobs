@@ -94,28 +94,51 @@ CalendarPanel.defaultProps = {
     {value: 11, display: 'November'},
     {value: 12, display: 'December'},
   ],
-  selectBefore: false,
-  selectAfter: false,
 };
 
 CalendarPanel.propTypes = {
+  /**
+   * Year
+   */
   year: PropTypes.number.isRequired,
+  /**
+   * Dynamic, see generateYearChoices() in Datetime.jsx
+   */
   yearChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
     })
   ),
+  /**
+   * Month
+   */
   month: PropTypes.number.isRequired,
+  /**
+   * The 12 months
+   */
   monthChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
     })
   ),
-  selectBefore: PropTypes.bool,
-  selectAfter: PropTypes.bool,
+  /**
+   * Callback: the user has selected an item.
+   *
+   * obj: the object selected by the user.
+   */
   onSelect: PropTypes.func.isRequired,
+  /**
+   * Callback: the user has selected an item.
+   *
+   * obj: the object selected by the user.
+   */
   onYearChange: PropTypes.func.isRequired,
+  /**
+   * Callback: the user has selected an item.
+   *
+   * obj: the object selected by the user.
+   */
   onMonthChange: PropTypes.func.isRequired,
 };
