@@ -52,7 +52,8 @@ export class DynamicReportApp extends Component {
           <div className="col-xs-6 col-md-4">
             <ReportList
               reports={reportList}
-              highlightId={Number.parseInt(reportId, 10)}/>
+              highlightId={Number.parseInt(reportId, 10)}
+              />
           </div>
         </div>
       </div>

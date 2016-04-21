@@ -58,7 +58,7 @@ TextField.propTypes = {
   /**
    * autofocus this field
    */
-  autoFocus: React.PropTypes.string,
+  autoFocus: React.PropTypes.bool,
 };
 
 TextField.defaultProps = {
