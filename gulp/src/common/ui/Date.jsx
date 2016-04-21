@@ -3,7 +3,7 @@ import TextField from './TextField';
 import CalendarPanel from './CalendarPanel';
 import ClickOutHandler from 'react-onclickout';
 
-class Datetime extends React.Component {
+class Date extends React.Component {
   constructor(props) {
     super(props);
     let year;
@@ -155,7 +155,7 @@ class Datetime extends React.Component {
   }
 }
 
-Datetime.propTypes = {
+Date.propTypes = {
   /**
   * Callback: the user edited this field
   *
@@ -193,7 +193,7 @@ Datetime.propTypes = {
   autoFocus: React.PropTypes.any,
 };
 
-Datetime.defaultProps = {
+Date.defaultProps = {
   placeholder: '',
   value: '',
   maxLength: null,
@@ -202,4 +202,4 @@ Datetime.defaultProps = {
   autoFocus: false,
 };
 
-export default Datetime;
+export default Date;

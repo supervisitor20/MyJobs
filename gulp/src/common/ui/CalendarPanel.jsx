@@ -102,7 +102,7 @@ CalendarPanel.propTypes = {
    */
   year: PropTypes.number.isRequired,
   /**
-   * Dynamic, see generateYearChoices() in Datetime.jsx
+   * Dynamic, see generateYearChoices() in Date.jsx
    */
   yearChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
