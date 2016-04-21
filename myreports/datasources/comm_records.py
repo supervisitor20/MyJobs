@@ -114,7 +114,7 @@ class CommRecordsDataSource(DataSource):
         return [
             {
                 'key': c['contact_type'],
-                'display': CONTACT_TYPES[c['contact_type']],
+                'display': CONTACT_TYPES[c['contact_type'].lower()],
             } for c in contact_types_qs]
 
     def help_partner(self, company, filter_spec, partial):
