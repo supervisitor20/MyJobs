@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.db.models.loading import cache as model_cache
 from django.views.generic import RedirectView
 
+from myjobs.urls import impersonate_patterns
 from seo.views.search_views import (BusinessUnitAdminFilter, SeoSiteAdminFilter,
                                     Dseo404)
 from seo.views.settings_views import secure_redirect
@@ -128,3 +129,5 @@ urlpatterns += patterns(
     'myblocks.views',
     url(r'^secure-blocks/$', 'secure_blocks', name='secure_blocks'),
 )
+
+urlpatterns += impersonate_patterns
