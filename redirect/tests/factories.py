@@ -77,12 +77,12 @@ class ATSSourceCodeFactory(django.DjangoModelFactory):
 
 class DestinationManipulationFactory(django.DjangoModelFactory):
     class Meta:
-        model = 'redirect.DestinationManipulation'
+        model = models.DestinationManipulation
 
     action_type = 1
     action = 'sourcecodetag'
     buid = 0
-    view_source = factory.Sequence(lambda n: n)
+    view_source = 10
     value_1 = '&codes=DEjn'
     value_2 = '&codes=ArmyRES'
 

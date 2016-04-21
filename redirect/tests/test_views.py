@@ -1312,8 +1312,8 @@ class RedirectViewTests(RedirectBase):
         # only superusers are allowed to use Django amin
         self.client.login(username=email, password=password)
 
-        manipulations = DestinationManipulationFactory.create_batch(
-            10, action_type=1)
+        manipulations = [DestinationManipulationFactory(view_source=i)
+                         for i in range(200, 210)]
         # this is the format we expect results to be in if deserializing CSV
         # into a list of dicts
         formatted_manipulations = [{
