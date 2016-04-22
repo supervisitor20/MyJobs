@@ -10,8 +10,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-var faker = require('faker');
-
 class FakeObjectDataListStore {
   constructor(/*number*/ size){
     this.size = size || 2000;
@@ -20,20 +18,19 @@ class FakeObjectDataListStore {
 
   createFakeRowObjectData(/*number*/ index) /*object*/ {
     return {
-      id: index,
-      avartar: faker.image.avatar(),
-      city: faker.address.city(),
-      email: faker.internet.email(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
-      street: faker.address.streetName(),
-      zipCode: faker.address.zipCode(),
-      date: faker.date.past(),
-      bs: faker.company.bs(),
-      catchPhrase: faker.company.catchPhrase(),
-      companyName: faker.company.companyName(),
-      words: faker.lorem.words(),
-      sentence: faker.lorem.sentence(),
+      id: 1,
+      city: 'bloop',
+      email: 'bloop',
+      firstName: 'bloop',
+      lastName: 'bloop',
+      street: 'bloop',
+      zipCode: 'bloop',
+      date: 'bloop',
+      bs: 'bloop',
+      catchPhrase: 'bloop',
+      companyName: 'bloop',
+      words: 'bloop',
+      sentence: 'bloop',
     };
   }
 

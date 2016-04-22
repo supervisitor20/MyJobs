@@ -3,22 +3,14 @@ import React, {PropTypes} from 'react';
 import {InboxList} from './InboxList';
 import {AddInboxForm} from './AddInboxForm';
 
-var ExampleImage = require('./helpers/ExampleImage');
-var FakeObjectDataListStore = require('./helpers/FakeObjectDataListStore');
 var FixedDataTable = require('fixed-data-table');
-
+var FakeObjectDataListStore = require('./helpers/FakeObjectDataListStore.js')
 const {Table, Column, Cell} = FixedDataTable;
 
 const DateCell = ({rowIndex, data, col, ...props}) => (
   <Cell {...props}>
     {data.getObjectAt(rowIndex)[col].toLocaleString()}
   </Cell>
-);
-
-const ImageCell = ({rowIndex, data, col, ...props}) => (
-  <ExampleImage
-    src={data.getObjectAt(rowIndex)[col]}
-  />
 );
 
 const LinkCell = ({rowIndex, data, col, ...props}) => (
@@ -38,7 +30,7 @@ class ObjectDataExample extends React.Component {
     super(props);
 
     this.state = {
-      dataList: new FakeObjectDataListStore(1000000),
+      dataList: new FakeObjectDataListStore(1),
     };
   }
 
@@ -52,11 +44,6 @@ class ObjectDataExample extends React.Component {
         width={1000}
         height={500}
         {...this.props}>
-        <Column
-          cell={<ImageCell data={dataList} col="avartar" />}
-          fixed={true}
-          width={50}
-        />
         <Column
           header={<Cell>First Name</Cell>}
           cell={<LinkCell data={dataList} col="firstName" />}
