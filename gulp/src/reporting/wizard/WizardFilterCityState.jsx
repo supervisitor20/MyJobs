@@ -9,6 +9,7 @@ export class WizardFilterCityState extends Component {
     constructor() {
       super();
       this.state = {
+        // list of states to choose from
         states: [
           {
             display: 'Select a State',
@@ -16,6 +17,7 @@ export class WizardFilterCityState extends Component {
           },
           ...states,
         ],
+        // currently selected city and state, used to filter results
         currentLocation: {
           city: '',
           state: '',
@@ -28,7 +30,7 @@ export class WizardFilterCityState extends Component {
 
       // Update parent
       const {currentLocation} = this.state;
-      currentLocation[field] = value.key;
+      currentLocation[field] = value;
       updateFilter(currentLocation);
 
       // Set internal state
@@ -37,14 +39,12 @@ export class WizardFilterCityState extends Component {
 
     render() {
       const {id, getHints} = this.props;
-      const createValue = value => {
-        return {key: value, value: value};
-      };
+
       return (
         <span>
           <Select
             onChange={e =>
-              this.updateField('state', createValue(e.target.value))}
+              this.updateField('state', e.target.value)}
             name=""
             value={
               getDisplayForValue(
@@ -56,7 +56,7 @@ export class WizardFilterCityState extends Component {
             callSelectWhenEmpty
             placeholder="city"
             onSelect={v =>
-              this.updateField('city', v)}
+              this.updateField('city', v.key)}
             getHints={v =>
               getHints('city', v)}
           />
