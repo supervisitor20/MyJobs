@@ -17,7 +17,7 @@ import {Router, Route, IndexRoute} from 'react-router';
 import TextField from '../common/ui/TextField';
 import CheckBox from '../common/ui/CheckBox';
 import Textarea from '../common/ui/Textarea';
-import Date from '../common/ui/Date';
+import DateField from '../common/ui/DateField';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
@@ -176,7 +176,7 @@ class Module extends React.Component {
           );
         case 'date':
           return wrap(
-            <Date
+            <DateField
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}

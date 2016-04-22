@@ -4,7 +4,7 @@ import CalendarPanel from './CalendarPanel';
 import ClickOutHandler from 'react-onclickout';
 
 /**
- * Date.jsx is a textbox with a Date widget button.
+ * DateField.jsx is a textbox with a Date widget button.
  *
  * It wraps CalendarPanel.jsx, which is the popup calendar.
  *
@@ -17,7 +17,7 @@ import ClickOutHandler from 'react-onclickout';
  *
  */
 
-class Date extends React.Component {
+class DateField extends React.Component {
   constructor(props) {
     super(props);
     let year;
@@ -169,7 +169,7 @@ class Date extends React.Component {
   }
 }
 
-Date.propTypes = {
+DateField.propTypes = {
   /**
   * Callback: the user edited this field
   *
@@ -207,7 +207,7 @@ Date.propTypes = {
   autoFocus: React.PropTypes.any,
 };
 
-Date.defaultProps = {
+DateField.defaultProps = {
   placeholder: '',
   value: '',
   maxLength: null,
@@ -216,4 +216,4 @@ Date.defaultProps = {
   autoFocus: false,
 };
 
-export default Date;
+export default DateField;
