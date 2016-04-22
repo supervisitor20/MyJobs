@@ -342,7 +342,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         column_name="communication_type",
         order=109,
-        filter_interface_type='search_select',
+        filter_interface_type='search_multiselect',
         filter_interface_display='Communication Type',
         configuration=con_comm,
         output_format="text",
@@ -447,6 +447,7 @@ def create_full_fixture():
         has_help=True)
     ConfigurationColumnFactory.create(
         order=102,
+        column_name="locations",
         filter_interface_type='city_state',
         filter_interface_display='Contact Location',
         filter_only=True,
