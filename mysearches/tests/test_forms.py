@@ -97,6 +97,7 @@ class PartnerSavedSearchFormTests(MyJobsBase):
         self.request = RequestFactory().get(
             reverse('partner_savedsearch_save'))
         self.request.user = self.user
+        self.request.impersonator = None
 
         form = PartnerSavedSearchForm(partner=self.partner,
                                       data=self.partner_search_data,

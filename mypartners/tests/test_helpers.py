@@ -1,5 +1,6 @@
 from itertools import product
 from datetime import datetime, timedelta
+from mock import Mock
 import json
 import random
 
@@ -80,6 +81,8 @@ class HelpersTests(MyPartnersTestCase):
     def test_get_form_delta(self):
         """Tests that form changes are properly captured in a delta."""
 
+        request = Mock()
+        request.configure_mock(user=self.staff_user, impersonator=None)
         contact_record = ContactRecordFactory(
             contact=self.contact, partner=self.partner)
         attachment = PRMAttachmentFactory(contact_record=contact_record)
@@ -108,7 +111,7 @@ class HelpersTests(MyPartnersTestCase):
 
         # Before 8/25/2015, saving this form with such changes would cause an
         # error
-        form.save(self.staff_user, contact_record.partner)
+        form.save(request, contact_record.partner)
 
         delta = json.loads(ContactLogEntry.objects.last().delta)
         # ensure a change is logged
