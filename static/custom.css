@@ -1626,9 +1626,6 @@ input[readonly].datepicker {
 .sidebar li {
     padding: 3px 5px;
 }
-.sidebar li.active {
-    background-color: #D5FACF;
-}
 
 .sidebar li i.success {
     color: green;
@@ -2123,6 +2120,10 @@ h3.bottom-bordered {
     border-radius: 3px;
 }
 
+.reporting.sidebar li.active {
+    background-color: #C6D6EA;
+}
+
 .reporting.sidebar ul li a {
     display: block;
     padding: 6px;
@@ -2133,7 +2134,7 @@ h3.bottom-bordered {
 }
 
 .reporting.sidebar ul li:hover {
-    background-color: #C6D6EA;
+    background-color: #ccc;
 }
 
 .pop-menu:before {
@@ -3406,7 +3407,8 @@ height: 33px;
     resize: vertical;
 }
 
-.actions.row .col-md-8 .button {
+.actions.row .col-md-8 .button,
+.col-md-4 .button {
     background-color: #E7E7E7;
     border-radius: 3px;
     padding: 8px;
@@ -3421,15 +3423,24 @@ height: 33px;
     height: inherit;
 }
 
-.actions.row .col-md-8 .button:not(:last-child) {
+.actions.row .col-md-8 .button.wide,
+.col-md-4 .button.wide {
+    width: 100%;
+    text-align: center;
+}
+
+.actions.row .col-md-8 .button:not(:last-child),
+.col-md-4 .button:not(:last-child) {
     margin-right: 10px;
 }
 
-.actions.row .col-md-8 .button:hover {
+.actions.row .col-md-8 .button:hover,
+.col-md-4 .button:hover {
     color: #444545;
 }
 
-.actions.row .col-md-8 .button.primary {
+.actions.row .col-md-8 .button.primary,
+.col-md-4 .button.primary {
     background-color: #444545;
     color: #fff;
 }

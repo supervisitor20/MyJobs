@@ -2,6 +2,7 @@ import React, {PropTypes} from 'react';
 import {Link} from 'react-router';
 import {map} from 'lodash-compat';
 import PopMenu from 'common/ui/PopMenu';
+import classnames from 'classnames';
 
 export function ReportList(props) {
   const {reports, highlightId} = props;
@@ -35,12 +36,10 @@ export function ReportList(props) {
     <div>
       <div className="sidebar reporting">
         <h2 className="top">Saved Reports</h2>
-          <ul>
-            <li>
-              <Link to="/set-up-report">Create new report...</Link>
-            </li>
-            {reportLinks}
-          </ul>
+        <a className={classnames('button', 'primary', 'wide')} href="/set-up-report">Create a New Report</a>
+        <ul>
+          {reportLinks}
+        </ul>
       </div>
     </div>
   );

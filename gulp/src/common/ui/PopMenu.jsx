@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 /* globals document */
 export default class PopMenu extends React.Component {
@@ -16,7 +15,7 @@ export default class PopMenu extends React.Component {
     const dropdownItems = options.map((item, index)=> {
       return (
         <li key={index}>
-          <a href='#'>
+          <a href="#">
             {item.display}
           </a>
         </li>
