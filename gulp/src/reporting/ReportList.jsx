@@ -1,5 +1,4 @@
 import React, {PropTypes, Component} from 'react';
-import {Link} from 'react-router';
 import {map} from 'lodash-compat';
 import PopMenu from 'common/ui/PopMenu';
 
@@ -22,33 +21,41 @@ export class ReportList extends Component {
 
   render() {
     const {reports, highlightId} = this.props;
-    const reportLinks = map(reports, r =>
-      <li
-        className={highlightId === r.id ? 'active' : ''}
-        key={r.id}>
-        <PopMenu
-          options={[
-            {
-              display: 'Preview',
-              onSelect: () => {this.handlePreviewReport(r);},
-            },
-            {
-              display: 'Export',
-              onSelect: () => {this.handleExportReport(r);},
-            },
-          ]}/>
-        {r.name}
-      </li>
-    );
+    const reportLinks = map(reports, r => {
+      const options = [];
+      if (r.report_type && r.id) {
+        options.push({
+          display: 'Preview',
+          onSelect: () => {this.handlePreviewReport(r);},
+        });
+      }
+      if (r.id) {
+        options.push({
+          display: 'Export',
+          onSelect: () => {this.handleExportReport(r);},
+        });
+      }
+      return (
+        <li
+          className={highlightId === r.id ? 'active' : ''}
+          key={r.id}>
+          {options.length > 0 ? <PopMenu options={options}/> : ''}
+          {r.isRunning ? <span className="report-loader"></span> : ''}
+          {r.name}
+        </li>
+      );
+    });
 
     return (
       <div>
         <div className="sidebar reporting">
           <h2 className="top">Saved Reports</h2>
+          <a
+            className="button primary wide"
+            href="#/set-up-report">
+            Create a New Report
+          </a>
           <ul>
-            <li>
-              <Link to="/set-up-report">Create new report...</Link>
-            </li>
             {reportLinks}
           </ul>
         </div>
@@ -61,9 +68,10 @@ ReportList.propTypes = {
   history: PropTypes.object.isRequired,
   reports: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.number,
       name: PropTypes.string.isRequired,
-      report_type: PropTypes.string.isRequired,
+      report_type: PropTypes.string,
+      isRunning: PropTypes.bool.isRequired,
     }),
   ).isRequired,
   highlightId: PropTypes.number,

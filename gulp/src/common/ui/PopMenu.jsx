@@ -13,6 +13,7 @@ export default class PopMenu extends Component {
   handleItemClick(item, e) {
     e.preventDefault();
     item.onSelect();
+    this.setState({isMenuActive: false});
   }
 
   menuContents() {
@@ -42,7 +43,6 @@ export default class PopMenu extends Component {
 
   toggleMenu() {
     const {isMenuActive} = this.state;
-    console.log('toggleMenu', isMenuActive);
     this.setState({isMenuActive: !isMenuActive});
   }
 
