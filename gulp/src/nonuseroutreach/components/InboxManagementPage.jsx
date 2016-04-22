@@ -98,9 +98,6 @@ class ObjectDataExample extends React.Component {
     );
   }
 }
-
-module.exports = ObjectDataExample;
-
 // inbox management app main page
 export function InboxManagementPage(props) {
   const {inboxManager} = props;
