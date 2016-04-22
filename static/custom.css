@@ -1979,6 +1979,17 @@ h3.bottom-bordered {
     top: 0;
 }
 
+#old-report-preview #d-chart,
+#old-report-preview #b-chart {
+    padding: 0 50px;
+}
+
+#old-report-preview .chart-box-holder.legend {
+    position: absolute;
+    left: 350px;
+    top: 0;
+}
+
 .report-box {
     border-radius: 5px;
     color: #FFF;
@@ -1989,10 +2000,18 @@ h3.bottom-bordered {
     width: 80px;
 }
 
+#old-report-preview .report-box {
+    font-size: .8em;
+}
+
 .report-box.small {
     width: 50px;
     height: 45px;
     background-color: #5EB95E;
+}
+
+#old-report-preview .report-box.small {
+    width: 100px;
 }
 
 .report-box.small + .report-box.small {
@@ -2000,11 +2019,21 @@ h3.bottom-bordered {
     background-color: #4BB1CF;
 }
 
+#old-report-preview .report-box.small + .report-box.small {
+    margin-left: 0;
+}
+
 .report-box .big-num {
     font-weight: bold;
     font-size: 2.3em;
     line-height: 30px;
     margin-top: 9px;
+}
+
+#old-report-preview .report-box .big-num {
+    font-size: 2em;
+    line-height: 26px;
+    margin-top: 0;
 }
 
 .report-box .reports-record-type {
@@ -2019,6 +2048,16 @@ h3.bottom-bordered {
 .panel.top-contacts .name {
     font-size: 1.4em;
     font-weight: 700;
+}
+
+.panel.top-contacts .email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#old-report-preview .panel.top-contacts .report-box {
+    float: none;
 }
 
 .panel.top-contacts .report-box {
@@ -2043,6 +2082,10 @@ h3.bottom-bordered {
     margin-top: 10px;
 }
 
+#old-report-preview .top-three-box-container {
+    text-align: center;
+}
+
 .top-three-box-container .report-box {
     display: inline-block;
 }
@@ -2059,6 +2102,13 @@ h3.bottom-bordered {
     left: 14%;
 }
 
+#old-report-preview .piehole.report {
+    top: 140px;
+    left: 93px;
+    width: auto;
+    height: auto;
+}
+
 .piehole.report .piehole-big {
     font-size: 3em;
     line-height: 30px;
@@ -2067,6 +2117,28 @@ h3.bottom-bordered {
 .piehole.report .piehole-topic {
     font-size: 1.4em;
     line-height: 18px;
+}
+
+#old-report-preview .piehole.report .piehole-topic {
+    font-size: 1em;
+}
+
+#old-report-preview .piehole.report {
+    font-size: 1em;
+}
+
+#old-report-preview .table-striped.report-table {
+    table-layout: fixed;
+}
+
+#old-report-preview .table-striped.report-table tr th,
+#old-report-preview .table-striped.report-table tr td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
 }
 
 .table-striped.report-table tbody tr:nth-child(even) td {

@@ -1773,9 +1773,9 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
               contactContainer,
               i;
 
-          $mainContainer.html('').append("<div class='span12'><h2>" + reportName + "</h2></div>" +
-                                         "<div class='span6'><h4>Communication Activity</h4><div id='d-chart'></div>" +
-                                         "</div><div class='span6'><h4>Referral Activity</h4><div id='b-chart'></div></div>");
+          $mainContainer.html('').append("<div class='span12 col-sm-12'><h2>" + reportName + "</h2></div>" +
+                                         "<div class='span6 col-sm-12'><h4>Communication Activity</h4><div id='d-chart'></div>" +
+                                         "</div><div class='span6 col-sm-12'><h4>Referral Activity</h4><div id='b-chart'></div></div>");
 
           for (pKey in pChartInfo) {
             if (pChartInfo.hasOwnProperty(pKey)) {
@@ -1860,8 +1860,8 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
               commRecords = contact.records;
 
               // create container
-              div = $('<div class="span4 panel top-contacts"></div>');
-              div.append('<div class="name">' + name + '</div><div>' + email + '</div><div class="top-three-box-container">' +
+              div = $('<div class="span4 col-md-4 col-sm-12 panel top-contacts"></div>');
+              div.append('<div class="name">' + name + '</div><div class="email">' + email + '</div><div class="top-three-box-container">' +
                          '<div class="report-box small"><div class="big-num">' + commRecords +
                          '</div><div class="reports-record-type">Communication Records</div></div>' +
                          '<div class="report-box small"><div class="big-num">' + cReferrals +
@@ -1876,7 +1876,7 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
           // Don't generate a table if cLength = 0
           if (contacts.length) {
             restRow = $('<div class="row"></div>').append(function() {
-              var div = $('<div class="span12"></div>'),
+              var div = $('<div class="span12 col-sm-12"></div>'),
                   table = $('<table class="table table-striped report-table"><thead><tr><th>Name</th>' +
                             '<th>Email</th><th>Partner</th><th>Communication Records</th><th>Referral Records</th>' +
                             '</tr></thead></table>'),
@@ -1930,7 +1930,7 @@ function renderViewPartner(id, name, overrideUrl) {
     url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/partner"),
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
+      var $span = $('<div class="span12 col-sm-12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Name</th><th>Primary Contact</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
@@ -1957,7 +1957,7 @@ function renderViewContact(id, name, overrideUrl) {
     url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/contact"),
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
+      var $span = $('<div class="span12 col-sm-12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Partner</th><th>Name</th><th>Phone</th><th>Email</th><th>State(s)</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
