@@ -482,6 +482,23 @@ class ManageUsersTests(MyJobsBase):
         self.assertEqual(output["message"],
                          "User created. Invitation email sent.")
 
+    def test_create_user_keeps_roles(self):
+        """
+        Regression test. When attempting to add a user who already exists, that
+        users existing roles would be overwritten. Instead, they should be
+        added to.
+
+        """
+        self.user.roles = [self.role]
+        self.assertItemsEqual(self.user.roles.all(), [self.role])
+        role = RoleFactory(name='Test Role', company=self.company)
+        data = {
+            'user_email': self.user.email,
+            'assigned_roles[]': [role.name]
+        }
+        self.client.post(reverse('api_create_user'), data)
+        self.assertItemsEqual(self.user.roles.all(), [self.role, role])
+
     def test_add_role_to_existing_user(self):
         """
         Tests adding a role to an existing user
