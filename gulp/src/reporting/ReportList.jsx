@@ -1,42 +1,64 @@
-import React, {PropTypes} from 'react';
+import React, {PropTypes, Component} from 'react';
 import {Link} from 'react-router';
 import {map} from 'lodash-compat';
+import PopMenu from 'common/ui/PopMenu';
 
-export function ReportList(props) {
-  const {reports, highlightId} = props;
-  const reportLinks = map(reports, r =>
-    <li
-      className={highlightId === r.id ? 'active' : ''}
-      key={r.id}>
-      <Link to={'/export/' + r.id}>{r.name}</Link>
-      {" "}
-      <Link
-        to={'/preview/' + r.id}
-        query={{
-          reportName: r.name,
-          reportType: r.report_type,
-        }}>[preview]</Link>
-      {" "}
-      <Link to={'/export/' + r.id}>[export]</Link>
-    </li>
-  );
+export class ReportList extends Component {
+  handlePreviewReport(report) {
+    const {history} = this.props;
+    const href = '/preview/' + report.id;
+    const query = {
+      reportName: report.name,
+      reportType: report.report_type,
+    };
+    history.pushState(null, href, query);
+  }
 
-  return (
-    <div>
-      <div className="sidebar">
-        <h2 className="top">Reports</h2>
-        <ul>
-          <li>
-            <Link to="/set-up-report">Create new report...</Link>
-          </li>
-          {reportLinks}
-        </ul>
+  handleExportReport(report) {
+    const {history} = this.props;
+    const href = '/export/' + report.id;
+    history.pushState(null, href);
+  }
+
+  render() {
+    const {reports, highlightId} = this.props;
+    const reportLinks = map(reports, r =>
+      <li
+        className={highlightId === r.id ? 'active' : ''}
+        key={r.id}>
+        <PopMenu
+          options={[
+            {
+              display: 'Preview',
+              onSelect: () => {this.handlePreviewReport(r);},
+            },
+            {
+              display: 'Export',
+              onSelect: () => {this.handleExportReport(r);},
+            },
+          ]}/>
+        {r.name}
+      </li>
+    );
+
+    return (
+      <div>
+        <div className="sidebar reporting">
+          <h2 className="top">Saved Reports</h2>
+          <ul>
+            <li>
+              <Link to="/set-up-report">Create new report...</Link>
+            </li>
+            {reportLinks}
+          </ul>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 ReportList.propTypes = {
+  history: PropTypes.object.isRequired,
   reports: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,

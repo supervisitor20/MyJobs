@@ -2116,7 +2116,91 @@ h3.bottom-bordered {
     cursor: not-allowed;
 }
 
-span.small {
+/* New styles for Reporting sidebar */
+
+.reporting.sidebar ul li {
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.reporting.sidebar ul li a {
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reporting.sidebar ul li:hover {
+    background-color: #C6D6EA;
+}
+
+.pop-menu:before {
+    content: "";
+    position: absolute;
+    right: 11px;
+    top: -10px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #fff transparent;
+    z-index: 9999;
+}
+.pop-menu:after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: -12px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 11px 11px 11px;
+    border-color: transparent transparent #666 transparent;
+    z-index: 9998;
+}
+.pop-menu {
+    background: #fff;
+    border: 1px solid #666;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    margin: 0;
+    top: 2.5em;
+    width: 200px;
+    z-index: 99999;
+    border-radius: 6px;
+    right: -5px;
+    padding: 6px;
+}
+
+.pop-menu ul li {
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.pop-menu ul li:hover {
+    background-color: #C6D6EA;
+}
+
+/* This should become a common element, later. */
+.menuEllipses {
+    display: none;
+    float: right;
+    font-size: 16pt;
+    font-weight: bold;
+    font-family: serif;
+    line-height: 0.5em;
+    margin-right: 6px;
+    cursor: pointer;
+}
+
+.reporting.sidebar ul li:hover .menuEllipses {
+    display: block;
+}
+
+/* End new style for reporting sidebar */
+
+ span.small {
     font-size: 0.9em;
     color: #444;
 }

@@ -33,6 +33,7 @@ export class DynamicReportApp extends Component {
   render() {
     const {reportList} = this.state;
     const {reportId} = this.props.params;
+    const {history} = this.props;
 
     return (
       <div>
@@ -51,6 +52,7 @@ export class DynamicReportApp extends Component {
           </div>
           <div className="col-xs-6 col-md-4">
             <ReportList
+              history={history}
               reports={reportList}
               highlightId={Number.parseInt(reportId, 10)}/>
           </div>
@@ -61,6 +63,7 @@ export class DynamicReportApp extends Component {
 }
 
 DynamicReportApp.propTypes = {
+  history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
   children: PropTypes.node,
   params: PropTypes.shape({
