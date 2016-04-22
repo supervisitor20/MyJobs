@@ -12,7 +12,8 @@ from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import (
+    HttpResponse, HttpResponseRedirect, HttpResponseForbidden)
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, redirect, render, Http404
@@ -21,6 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from captcha.fields import ReCaptchaField
+from impersonate.decorators import allowed_user_required
+from impersonate.views import impersonate as impersonate_
 
 from universal.helpers import get_domain
 from universal.decorators import restrict_to_staff
@@ -29,7 +32,7 @@ from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
                           CompanyAccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
-                           CompanyAccessRequest)
+                           CompanyAccessRequest, SecondPartyAccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
@@ -520,6 +523,7 @@ def cas(request):
 def topbar(request):
     callback = request.REQUEST.get('callback')
     user = request.user
+    impersonating = request.REQUEST.get('impersonating')
 
     if not user or user.is_anonymous():
         # Ensure that old myguid cookies can be handled correctly
@@ -527,12 +531,12 @@ def topbar(request):
         try:
             user = User.objects.get(user_guid=guid)
         except User.DoesNotExist:
-           pass
+            pass
 
     if not user or user.is_anonymous():
         user = None
 
-    ctx = {'user': user}
+    ctx = {'user': user, 'impersonating': impersonating == u'true'}
 
     response = HttpResponse(content_type='text/javascript')
 
@@ -1384,3 +1388,48 @@ def request_company_access(request):
 
     return render_to_response(
         'myjobs/request_company_access.html', ctx, RequestContext(request))
+
+
+@allowed_user_required
+def impersonate(request, uid, *args, **kwargs):
+    """
+    This view is hit by a staff user after a second party access request is
+    approved by the target. It starts the request and then redirects to "/"
+    """
+    account_owner = User.objects.filter(pk=uid).first()
+    if account_owner:
+        access_request = SecondPartyAccessRequest.objects.filter(
+            second_party=request.user,
+            account_owner=account_owner,
+            accepted=True,
+            session_started__isnull=True,
+            expired=False).first()
+        if access_request:
+            return impersonate_(request, uid=uid, *args, **kwargs)
+    return HttpResponseForbidden()
+
+
+@user_is_allowed()
+def process_access_request(request, access_id, accepted):
+    """
+    The target of a second party access request will hit this view to
+    approve or reject a given request.
+    """
+    access_request = SecondPartyAccessRequest.objects.filter(
+        account_owner=request.user, pk=access_id,
+        acted_on__isnull=True, expired=False).first()
+    if access_request:
+        context = {
+            'access_request': access_request,
+            'second_party_name': access_request.second_party.get_full_name(
+                default=access_request.second_party_email)}
+        if not (access_request.acted_on or access_request.expired):
+            context['new'] = True
+            access_request.accepted = accepted
+            access_request.acted_on = datetime.datetime.now()
+            access_request.save()
+            access_request.notify_acceptance()
+        return render_to_response('myjobs/access_request.html',
+                                  context, RequestContext(request))
+    else:
+        return HttpResponseForbidden()

@@ -3,12 +3,15 @@ import hashlib
 import string
 import urllib
 import uuid
+
+from django.core.urlresolvers import reverse
 from django.db.models import Q, F
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.utils.crypto import get_random_string
 
+from impersonate.signals import session_begin, session_end
 import pytz
 
 from django.utils.safestring import mark_safe
@@ -1004,3 +1007,155 @@ def role_invitation_context(role):
         ctx['redirect'] = {'href': href, 'text': text}
 
     return ctx
+
+
+class SecondPartyAccessRequest(models.Model):
+    """
+    The two parties in a contract are the first and second parties. That
+    usage is being adopted here. While there is usually no differentiation
+    between "first" and "second" party, "first party" is generally understood
+    to mean "me." As it could be ambiguous who "me" is, it's always the
+    account owner as far as SecondPartyAccessRequest is concerned.
+    """
+    account_owner = models.ForeignKey('User',
+                                      related_name='+',
+                                      on_delete=models.SET_NULL, null=True)
+    account_owner_email = models.EmailField(
+        verbose_name=_("email address"), max_length=255, db_index=True)
+    second_party = models.ForeignKey('User',
+                                     related_name='+',
+                                     on_delete=models.SET_NULL, null=True)
+    second_party_email = models.EmailField(
+        verbose_name=_("email address"), max_length=255, db_index=True)
+    submitted = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=False)
+    acted_on = models.DateTimeField(db_index=True, null=True, default=None)
+    accepted = models.BooleanField(default=False)
+    session_started = models.DateTimeField(null=True, default=None)
+    session_finished = models.DateTimeField(null=True, default=None)
+    expired = models.BooleanField(default=False)
+    # These requests are global (a request made on secure can be used on
+    # www.my.jobs, for instance) but we still need a domain to direct the
+    # user to when we email links. This will default to the site that this
+    # request was created on.
+    site = models.ForeignKey('seo.SeoSite')
+
+    def save(self, *args, **kwargs):
+        new = False
+        if not self.pk:
+            self.account_owner_email = self.account_owner.email
+            self.second_party_email = self.second_party.email
+            new = True
+
+        super(SecondPartyAccessRequest, self).save(*args, **kwargs)
+
+        if new:
+            # Should this be a post-save?
+            second_party = self.second_party.get_full_name(
+                default=self.second_party_email)
+            message_body = ('{second_party} has requested the ability to '
+                            'remotely access your account and provided the '
+                            'following reason:<br /><br />'
+                            '"{reason}"<br /><br />Would you like to '
+                            '<a href="{domain}{allow}">Allow</a> or '
+                            '<a href="{domain}{reject}">Deny</a> this '
+                            'request?'.format(
+                                second_party=second_party,
+                                allow=reverse('impersonate-approve',
+                                              kwargs={'access_id': self.pk}),
+                                reject=reverse('impersonate-reject',
+                                               kwargs={'access_id': self.pk}),
+                                domain=self.site.domain,
+                                reason=self.reason))
+
+            message_kwargs = {'users': [self.account_owner],
+                              'expires': False,
+                              'body': message_body,
+                              'subject': ('Remote Access Request '
+                                          'from {second_party}'.format(
+                                              second_party=second_party)),
+                              'message_type': 'info', 'system': True}
+            Message.objects.create_message(**message_kwargs)
+            message_kwargs.update({
+                'email_type': settings.REMOTE_ACCESS_REQUEST,
+                'message': message_kwargs['body']})
+            self.account_owner.email_user(**message_kwargs)
+
+    def notify_acceptance(self):
+        """
+        Notifies the second party of the account owner's acceptance of their
+        request, whether positive or negative.
+        """
+        # Should this be a post-save?
+        if self.acted_on:
+            message_body = ('{owner} has {approved} your remote access '
+                            'request.'.format(
+                                owner=self.account_owner.get_full_name(
+                                    default=self.account_owner_email),
+                                approved=(
+                                    "approved" if self.accepted
+                                    else "rejected")))
+            if self.accepted:
+                message_body += ('<br /><br />Start using it '
+                                 '<a href="{domain}{url}">here.</a>'.format(
+                                     url=reverse(
+                                         'impersonate-start',
+                                         kwargs={
+                                             'uid': self.account_owner.pk}),
+                                     domain=self.site.domain))
+
+            message_kwargs = {'users': [self.second_party], 'expires': False,
+                              'body': message_body, 'system': True}
+
+            if self.accepted:
+                message_kwargs.update({
+                    'subject': 'Remote Access Request Approved',
+                    'message_type': 'success'})
+            else:
+                message_kwargs.update({
+                    'subject': 'Remote Access Request Denied',
+                    'message_type': 'error'})
+            Message.objects.create_message(**message_kwargs)
+            message_kwargs.update({
+                'email_type': settings.REMOTE_ACCESS_RESPONSE,
+                'message': message_kwargs['body']})
+            self.second_party.email_user(**message_kwargs)
+
+
+"""
+django-impersonate provides session_begin and session_end signals that we can
+connect to so that we can add our own logging. We will be using their naming
+scheme (impersonator, impersonating) in the following functions despite us
+avoiding that naming scheme for the SecondPartyAccessRequest model.
+"""
+
+
+def begin(sender, impersonator, impersonating, request, **kwargs):
+    """
+    When a user begins impersonating, we need to mark the relevant entry in
+    the SecondPartyAccessRequest table as being in progress.
+    """
+    access_request = SecondPartyAccessRequest.objects.filter(
+        second_party=impersonator, account_owner=impersonating,
+        accepted=True, session_started__isnull=True, expired=False).first()
+    if access_request:
+        access_request.session_started = datetime.datetime.now()
+        access_request.save()
+session_begin.connect(begin)
+
+
+def end(sender, impersonator, impersonating, request, **kwargs):
+    """
+    This is called when a user stops impersonating. It updates the relevant
+    SecondPartyAccessRequest to denote that the session has ended.
+
+    This is called when hitting the view "impersonate-stop". If an impersonated
+    session cookie expires naturally, this is not called.
+    """
+    access_request = SecondPartyAccessRequest.objects.filter(
+        second_party=impersonator, account_owner=impersonating,
+        session_started__isnull=False, accepted=True, expired=False).first()
+    if access_request:
+        access_request.session_finished = datetime.datetime.now()
+        access_request.save()
+session_end.connect(end)
