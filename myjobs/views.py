@@ -1133,6 +1133,7 @@ def api_create_user(request):
 
     Returns:
     :success:                   boolean
+
     """
     ctx = {'success': 'true'}
 
@@ -1160,9 +1161,7 @@ def api_create_user(request):
         # Does user already exist?
         if user:
             existing_roles = set(user.roles.filter(company=company))
-
-            # Update the user's roles, overwriting those for "company"
-            user.roles = user.roles.exclude(company=company) | new_roles
+            user.roles.add(*new_roles)
 
             ctx["message"] = "User already exists. Role invitation email sent."
         else:
