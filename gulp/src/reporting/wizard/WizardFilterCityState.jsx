@@ -1,11 +1,21 @@
 import React, {PropTypes, Component} from 'react';
+import Select from 'common/ui/Select';
 import {SearchInput} from 'common/ui/SearchInput';
+import {getDisplayForValue} from 'common/array';
+import {states} from 'common/states';
 
 
 export class WizardFilterCityState extends Component {
     constructor() {
       super();
       this.state = {
+        states: [
+          {
+            display: 'Select a State',
+            value: '',
+          },
+          ...states,
+        ],
         currentLocation: {
           city: '',
           state: '',
@@ -27,8 +37,20 @@ export class WizardFilterCityState extends Component {
 
     render() {
       const {id, getHints} = this.props;
+      const createValue = value => {
+        return {key: value, value: value};
+      };
       return (
         <span>
+          <Select
+            onChange={e =>
+              this.updateField('state', createValue(e.target.value))}
+            name=""
+            value={
+              getDisplayForValue(
+                this.state.states, this.state.currentLocation.state)}
+            choices={this.state.states}
+          />
           <SearchInput
             id={id + '-city'}
             callSelectWhenEmpty
@@ -36,15 +58,8 @@ export class WizardFilterCityState extends Component {
             onSelect={v =>
               this.updateField('city', v)}
             getHints={v =>
-              getHints('city', v)}/>
-          <SearchInput
-            id={id + '-state'}
-            callSelectWhenEmpty
-            placeholder="state"
-            onSelect={v =>
-              this.updateField('state', v)}
-            getHints={v =>
-              getHints('state', v)}/>
+              getHints('city', v)}
+          />
         </span>
       );
     }
