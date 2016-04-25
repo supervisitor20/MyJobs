@@ -45,7 +45,7 @@ $(document).ready(function() {
               $tags.val(words.splice(0, words.length - 1).join(","));
           }
       },
-      autocomplete: {delay: 0, minLength: 1},
+      autocomplete: {delay: 0, minLength: 1, autoFocus: true},
       placeholderText: "Add Tag"
   });
 });

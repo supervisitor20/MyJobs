@@ -32,15 +32,27 @@ export class DynamicReportApp extends Component {
 
   render() {
     const {reportList} = this.state;
+    const {reportId} = this.props.params;
 
     return (
-      <div className="container-fluid">
+      <div>
+        <div className="row">
+          <div className="col-sm-12">
+            <div className="breadcrumbs">
+              <span>
+                Dynamic Reporting (beta)
+              </span>
+            </div>
+          </div>
+        </div>
         <div className="row">
           <div className="col-xs-12 col-md-8">
             {this.props.children}
           </div>
           <div className="col-xs-6 col-md-4">
-            <ReportList reports={reportList}/>
+            <ReportList
+              reports={reportList}
+              highlightId={Number.parseInt(reportId, 10)}/>
           </div>
         </div>
       </div>
@@ -51,4 +63,7 @@ export class DynamicReportApp extends Component {
 DynamicReportApp.propTypes = {
   reportFinder: PropTypes.object.isRequired,
   children: PropTypes.node,
+  params: PropTypes.shape({
+    reportId: PropTypes.any,
+  }).isRequired,
 };

@@ -490,3 +490,23 @@ def str_invitation_reaason(string):
     """Returns the string verbatim as the `message`."""
 
     return {"message": (" " if string else "") + string + "."}
+
+
+def autofocus_input(form, field_name=None):
+    """
+    Sets the autofocus attribute on one form field.
+
+    Inputs:
+    :form: The form we're examining
+    :field_name: The field we're modifying. If none, we're modifying the first.
+    """
+    if field_name:
+        # We can grab this field directly.
+        field = form.fields[field_name]
+    else:
+        # We need to grab the first visible field.
+        visible_fields = form.visible_fields()
+        # visible_fields() returns a list of BoundFields. BoundField has a
+        # field attribute which we can use to set autofocus.
+        field = visible_fields[0].field
+    field.widget.attrs.update({'autofocus': 'autofocus'})

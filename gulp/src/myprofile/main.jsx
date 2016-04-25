@@ -132,10 +132,11 @@ class Module extends React.Component {
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
-              initial={profileUnit.initial}
+              value={formContents[profileUnitName]}
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
+              autoFocus={profileUnit.widget.attrs.autofocus}
               />
           );
         case 'textarea':
@@ -148,6 +149,7 @@ class Module extends React.Component {
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
+              autoFocus={profileUnit.widget.attrs.autofocus}
               />
           );
         case 'date':
@@ -160,6 +162,7 @@ class Module extends React.Component {
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
+              autoFocus={profileUnit.widget.attrs.autofocus}
               />
           );
         case 'select':
@@ -187,6 +190,7 @@ class Module extends React.Component {
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
+              autoFocus={profileUnit.widget.attrs.autofocus}
               />
           );
         default:
