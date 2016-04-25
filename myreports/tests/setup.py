@@ -287,8 +287,17 @@ def create_full_fixture():
         configuration=con_part,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
-        column_name="date",
         order=105,
+        column_name="locations",
+        filter_interface_type='city_state',
+        filter_interface_display='Contact Location',
+        filter_only=True,
+        configuration=con_part,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        column_name="date",
+        order=106,
         configuration=con_part,
         output_format="us_date",
         filter_interface_type='date_range',
@@ -296,13 +305,13 @@ def create_full_fixture():
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="primary_contact",
-        order=106,
+        order=107,
         output_format="text",
         configuration=con_part,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="tags",
-        order=107,
+        order=108,
         output_format="tags_list",
         filter_interface_type='tags',
         filter_interface_display='Tags',
@@ -311,7 +320,7 @@ def create_full_fixture():
         has_help=True)
     ConfigurationColumnFactory.create(
         column_name="uri",
-        order=108,
+        order=109,
         output_format="text",
         filter_interface_type='search_select',
         filter_interface_display='URL',
