@@ -1712,7 +1712,7 @@ function renderDownload(report_id) {
 }
 
 
-function renderGraphs(report_id, reportName, callback) {
+function renderGraphs(report_id, reportName, callback, overrideUrl) {
   var data = {'id': report_id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
@@ -1720,7 +1720,7 @@ function renderGraphs(report_id, reportName, callback) {
 
   $.ajax({
     type: "GET",
-    url: url + "/reports/view/mypartners/contactrecord",
+    url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/contactrecord"),
     data: data,
     success: function(data) {
       var contacts = data.contacts,
@@ -1921,13 +1921,13 @@ function renderGraphs(report_id, reportName, callback) {
 }
 
 
-function renderViewPartner(id, name) {
+function renderViewPartner(id, name, overrideUrl) {
   var data = {id: id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
   $.ajax({
     type: "GET",
-    url: url + "/reports/view/mypartners/partner",
+    url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/partner"),
     data: data,
     success: function(data) {
       var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
@@ -1948,13 +1948,13 @@ function renderViewPartner(id, name) {
 }
 
 
-function renderViewContact(id, name) {
+function renderViewContact(id, name, overrideUrl) {
    var data = {id: id},
       url = location.protocol + "//" + location.host; // https://secure.my.jobs
 
   $.ajax({
     type: "GET",
-    url: url + "/reports/view/mypartners/contact",
+    url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/contact"),
     data: data,
     success: function(data) {
       var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
@@ -1967,10 +1967,15 @@ function renderViewContact(id, name) {
       // Append content to Table's tbody.
       $tbody.append('<tr class="record">' + data.map(function(record) {
         // Create a list of States based off of locations
-        // in a format of City, State
+        // in a format of City, State, or objects shaped like
+        // {city: '', state: ''}
         location = record.locations.map(function(location) {
             // for each location get state and trim whitespace
-            return (location.split(',')[1] || '').trim();
+            if (typeof(location) === 'string') {
+                return (location.split(',')[1] || '').trim();
+            } else if (typeof(location) === 'object') {
+                return location.state.trim();
+            }
             // Determine uniqueness
           }).sort().filter(function(e, i, a) {
             // Due to sort, duplicates will be together.

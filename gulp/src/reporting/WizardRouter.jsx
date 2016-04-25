@@ -3,6 +3,7 @@ import {Router, Route, IndexRedirect} from 'react-router';
 import {DynamicReportApp} from 'reporting/DynamicReportApp';
 import SetUpReport from 'reporting/SetUpReport';
 import ExportReport from 'reporting/ExportReport';
+import OldPreviewEmbedPage from 'reporting/OldPreviewEmbedPage';
 
 export class WizardRouter extends Component {
   createElement(TheComponent, componentProps) {
@@ -23,6 +24,9 @@ export class WizardRouter extends Component {
           <Route
             path="export/:reportId"
             component={ExportReport}/>
+          <Route
+            path="preview/:reportId"
+            component={OldPreviewEmbedPage}/>
         </Route>
       </Router>
     );
