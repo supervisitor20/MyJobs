@@ -43,5 +43,8 @@
     "warning": "^2.1.0",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.1"
+  },
+  "devDependencies": {
+    "fixed-data-table": "^0.6.0"
   }
 }

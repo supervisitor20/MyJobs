@@ -2,6 +2,7 @@ import React, {PropTypes} from 'react';
 
 import {OverviewPage} from './OverviewPage';
 import {InboxManagementPage} from './InboxManagementPage';
+import {OutreachRecordPage} from './OutreachRecordPage';
 
 
 // the container for the main page. the left side of the screen
@@ -14,6 +15,9 @@ export function Content(props) {
     break;
   case 'InboxManagement':
     pageComponent = <InboxManagementPage inboxManager={inboxManager} />;
+    break;
+  case 'OutreachRecords':
+    pageComponent = <OutreachRecordPage />;
     break;
   default:
     pageComponent = '';
