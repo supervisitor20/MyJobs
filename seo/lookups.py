@@ -22,3 +22,16 @@ class CompaniesLookup(LookupChannel):
         warning = "" if count else " **Might be a duplicate**"
 
         return template.format(name=company.name, count=count, warning=warning)
+
+
+@register('sites')
+class SitesLookup(LookupChannel):
+    model = models.SeoSite
+    min_length = 3
+
+    def get_query(self, q, request):
+        return self.model.objects.filter(
+            domain__istartswith=q).order_by('domain')[:10]
+
+    def get_objects(self, ids):
+        return list(self.model.objects.filter(pk__in=ids))

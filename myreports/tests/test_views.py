@@ -604,6 +604,40 @@ class TestDynamicReports(MyReportsTestCase):
             report_data=report_data,
             presentation_type__presentation_type=presentation_type)
 
+    def test_list_dynamic_reports(self):
+        """Test that list dynamic reports api works."""
+        self.maxDiff = 10000
+        self.client.login_user(self.user)
+
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
+
+        reports = [
+            DynamicReport.objects.create(
+                name='The Report',
+                owner=self.company,
+                report_data=report_data,
+                filters='{"a": %d}' % i)
+            for i in range(0, 6)
+        ]
+        # This situation comes up in some ancient test data that may
+        # be present on developers' machines.
+        reports[3].report_data = None
+        reports[3].save()
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {
+                    u'id': reports[i].pk,
+                    u'name': u'The Report',
+                    u'report_type': u'contacts'
+                } for i in reversed(range(0, 6)) if i != 3
+            ]},
+            json.loads(resp.content))
+
     def test_dynamic_contacts_report(self):
         """Create some test data, run, list, and download a contacts report."""
         self.client.login_user(self.user)

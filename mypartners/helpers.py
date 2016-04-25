@@ -85,7 +85,8 @@ def add_extra_params_to_jobs(items, extra_urls):
 
 
 def log_change(obj, form, user, partner, contact_identifier,
-               action_type=CHANGE, change_msg=None, successful=None):
+               action_type=CHANGE, change_msg=None, successful=None,
+               impersonator=None):
     """
     Creates a ContactLogEntry for obj.
 
@@ -123,6 +124,7 @@ def log_change(obj, form, user, partner, contact_identifier,
         partner=partner,
         user=user,
         successful=successful,
+        impersonator=impersonator,
     )
 
 
