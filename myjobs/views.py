@@ -1133,6 +1133,7 @@ def api_create_user(request):
 
     Returns:
     :success:                   boolean
+
     """
     ctx = {'success': 'true'}
 
@@ -1160,9 +1161,7 @@ def api_create_user(request):
         # Does user already exist?
         if user:
             existing_roles = set(user.roles.filter(company=company))
-
-            # Update the user's roles, overwriting those for "company"
-            user.roles = user.roles.exclude(company=company) | new_roles
+            user.roles.add(*new_roles)
 
             ctx["message"] = "User already exists. Role invitation email sent."
         else:
@@ -1395,6 +1394,7 @@ def impersonate(request, uid, *args, **kwargs):
     """
     This view is hit by a staff user after a second party access request is
     approved by the target. It starts the request and then redirects to "/"
+
     """
     account_owner = User.objects.filter(pk=uid).first()
     if account_owner:

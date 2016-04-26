@@ -587,13 +587,20 @@ def list_dynamic_reports(request):
     """Get a list of dynamic report runs for this user."""
     company = get_company_or_404(request)
 
+    # report_data == NULL should not happen in production data
+    # Checking for it here to catch a situtation that happened due to a
+    # migration before the first release.
     reports = (
         DynamicReport.objects
-        .filter(owner=company)
+        .filter(owner=company, report_data__isnull=False)
         .order_by('-pk')[:10])
 
-    data = [{'id': r.id, 'name': r.name}
-            for r in reports]
+    data = [{
+        'id': r.id,
+        'name': r.name,
+        # report_type is only needed here for old_report_preview
+        'report_type': r.report_data.report_type.report_type,
+    } for r in reports]
     return HttpResponse(content_type='application/json',
                         content=json.dumps({'reports': data}))
 
@@ -670,3 +677,35 @@ def get_default_report_name(request):
     data = {'name': str(datetime.now())}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['GET'])
+def old_report_preview(request):
+    company = get_company_or_404(request)
+    report_id = request.GET.get('id', 0)
+    report = get_object_or_404(DynamicReport, pk=report_id)
+    report_type = report.report_data.report_type.report_type
+
+    if report_type == 'communication-records':
+        driver = ds_json_drivers['comm_records']
+        ds_filter = driver.build_filter(report.filters)
+        records = driver.ds.filtered_query_set(company, ds_filter)
+
+        ctx = {
+            'emails': records.emails,
+            'calls': records.calls,
+            'searches': records.searches,
+            'meetings': records.meetings,
+            'applications': records.applications,
+            'interviews': records.interviews,
+            'hires': records.hires,
+            'communications': records.communication_activity.count(),
+            'referrals': records.referrals,
+            'contacts': list(records.contacts),
+        }
+        return HttpResponse(content_type='application/json',
+                            content=json.dumps(ctx))
+    elif report_type in ['contacts', 'partners']:
+        return HttpResponse(content_type='application/json',
+                            content=report.json)

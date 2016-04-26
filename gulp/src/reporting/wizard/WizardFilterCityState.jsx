@@ -1,47 +1,65 @@
 import React, {PropTypes, Component} from 'react';
+import Select from 'common/ui/Select';
 import {SearchInput} from 'common/ui/SearchInput';
+import {getDisplayForValue} from 'common/array';
+import {states} from 'common/states';
 
 
 export class WizardFilterCityState extends Component {
     constructor() {
       super();
-      this.state = {city: '', state: ''};
+      this.state = {
+        // list of states to choose from
+        states: [
+          {
+            display: 'Select a State',
+            value: '',
+          },
+          ...states,
+        ],
+        // currently selected city and state, used to filter results
+        currentLocation: {
+          city: '',
+          state: '',
+        },
+      };
     }
 
     updateField(field, value) {
       const {updateFilter} = this.props;
 
       // Update parent
-      const newFilter = {...this.state};
-      newFilter[field] = value.key;
-      updateFilter(newFilter);
+      const {currentLocation} = this.state;
+      currentLocation[field] = value;
+      updateFilter(currentLocation);
 
       // Set internal state
-      const newState = {};
-      newState[field] = value.key;
-      this.setState(newState);
+      this.setState(...this.state, currentLocation);
     }
 
     render() {
       const {id, getHints} = this.props;
+
       return (
         <span>
+          <Select
+            onChange={e =>
+              this.updateField('state', e.target.value)}
+            name=""
+            value={
+              getDisplayForValue(
+                this.state.states, this.state.currentLocation.state)}
+            choices={this.state.states}
+          />
           <SearchInput
             id={id + '-city'}
             callSelectWhenEmpty
             placeholder="city"
             onSelect={v =>
-              this.updateField('city', v)}
+              this.updateField('city', v.key)}
             getHints={v =>
-              getHints('city', v)}/>
-          <SearchInput
-            id={id + '-state'}
-            callSelectWhenEmpty
-            placeholder="state"
-            onSelect={v =>
-              this.updateField('state', v)}
-            getHints={v =>
-              getHints('state', v)}/>
+              getHints('city', v)}
+          />
         </span>
       );
     }
