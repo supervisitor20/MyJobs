@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.db.models import Q
+from django.http import Http404
 from django.utils.http import urlquote
 
 import pytz
@@ -229,9 +230,9 @@ class TestActivities(MyJobsBase):
         # existing role should not have new activity
         self.assertNotIn(new_activity, self.role.activities.all())
 
-    def test_can_method(self):
+    def test_can_method_with_app_access(self):
         """
-        `User.can` should return False when a user isn't associated with the
+        ``User.can`` should return False when a user isn't associated with the
         correct activities and True when they are.
         """
 
@@ -249,6 +250,20 @@ class TestActivities(MyJobsBase):
 
         self.assertFalse(user.can(
             self.company, activities[0], "eat a burrito"))
+
+    def test_can_method_without_app_access(self):
+        """
+        ``User.can`` should raise an Http404 when the company doesn't have
+        sufficient app-level access.
+
+        """
+        self.role.activities = self.activities
+        activities = self.role.activities.values_list('name', flat=True)
+        self.user.roles = [self.role]
+        self.company.app_access.clear()
+
+        with self.assertRaises(Http404):
+            self.user.can(self.company, activities[0])
 
     def test_send_invite_method(self):
         """
