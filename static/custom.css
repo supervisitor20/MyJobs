@@ -2005,9 +2005,9 @@ h3.bottom-bordered {
 }
 
 .report-box.small {
-    width: 50px;
-    height: 45px;
-    background-color: #5EB95E;
+    width: 40%;
+    height: 80px;
+    background-color: orange;
 }
 
 #old-report-preview .report-box.small {
@@ -2041,37 +2041,37 @@ h3.bottom-bordered {
     line-height: 14px;
 }
 
-.panel.top-contacts {
+.top-contacts {
     margin-bottom: 20px;
 }
 
-.panel.top-contacts .name {
+.top-contacts .name {
     font-size: 1.4em;
     font-weight: 700;
 }
 
-.panel.top-contacts .email {
+.top-contacts .email {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-#old-report-preview .panel.top-contacts .report-box {
+#old-report-preview .top-contacts .report-box {
     float: none;
 }
 
-.panel.top-contacts .report-box {
+.top-contacts .report-box {
     height: 70px;
     width: 125px;
     background-color: #5EB95E;
     float: left;
 }
 
-.panel.top-contacts .report-box + .report-box {
+.top-contacts .report-box + .report-box {
     background-color: #4BB1CF;
 }
 
-.panel.top-contacts .report-box .big-num {
+.top-contacts .report-box .big-num {
     font-size: 2.3em;
     line-height: normal;
     margin-top: 5px;
@@ -2080,9 +2080,6 @@ h3.bottom-bordered {
 
 .top-three-box-container {
     margin-top: 10px;
-}
-
-#old-report-preview .top-three-box-container {
     text-align: center;
 }
 

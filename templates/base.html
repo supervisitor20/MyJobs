@@ -20,8 +20,10 @@
 
     {% block meta-extra %}{% endblock %}
 
-    <link href="{{ STATIC_URL }}def.ui.152-21.css" rel="stylesheet" type="text/css">
-    <link href="{{ STATIC_URL }}my.jobs.170-2.css" rel="stylesheet" type="text/css">
+    {% compress css %}
+    <link href="{{ STATIC_URL }}def.ui.css" rel="stylesheet" type="text/css">
+    <link href="{{ STATIC_URL }}my.jobs.css" rel="stylesheet" type="text/css">
+    {% endcompress %}
     <!--[if IE]>
     <link href="{{ STATIC_URL }}my.jobs.ie.163-29.css" rel="stylesheet" type="text/css">
     <![endif]-->

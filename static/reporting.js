@@ -1860,12 +1860,14 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
               commRecords = contact.records;
 
               // create container
-              div = $('<div class="span4 col-md-4 col-sm-12 panel top-contacts"></div>');
-              div.append('<div class="name">' + name + '</div><div class="email">' + email + '</div><div class="top-three-box-container">' +
+              div = $('<div class="span4 col-md-4 col-sm-12 top-contacts"></div>');
+              div.append('<div class="panel">' +
+                         '<div class="name">' + name + '</div><div class="email">' + email + '</div><div class="top-three-box-container">' +
                          '<div class="report-box small"><div class="big-num">' + commRecords +
                          '</div><div class="reports-record-type">Communication Records</div></div>' +
                          '<div class="report-box small"><div class="big-num">' + cReferrals +
-                         '</div><div class="reports-record-type">Referral Records</div></div></div>');
+                         '</div><div class="reports-record-type">Referral Records</div></div></div>' +
+                         '</div>');
 
               // add the rendered html as a string.
               html += div.prop("outerHTML");
