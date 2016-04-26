@@ -23,11 +23,12 @@ export class WizardFilterCityState extends Component {
     }
 
     render() {
-      const {id, getHints} = this.props;
+      const {id, getHints, cityValue, stateValue} = this.props;
       return (
         <span>
           <SearchInput
             id={id + '-city'}
+            value={cityValue}
             callSelectWhenEmpty
             placeholder="city"
             onSelect={v =>
@@ -36,6 +37,7 @@ export class WizardFilterCityState extends Component {
               getHints('city', v)}/>
           <SearchInput
             id={id + '-state'}
+            value={stateValue}
             callSelectWhenEmpty
             placeholder="state"
             onSelect={v =>
@@ -50,6 +52,8 @@ export class WizardFilterCityState extends Component {
 
 WizardFilterCityState.propTypes = {
   id: PropTypes.string.isRequired,
+  cityValue: PropTypes.string.isRequired,
+  stateValue: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,
   getHints: PropTypes.func.isRequired,
 };

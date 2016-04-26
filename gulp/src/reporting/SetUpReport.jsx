@@ -212,6 +212,7 @@ export default class SetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterSearchDropdown
                 id={col.filter}
+                value={reportConfig.currentFilter[col.filter] || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={v =>
                   reportConfig.getHints(col.filter, v)}/>
@@ -223,6 +224,8 @@ export default class SetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
                 id={col.filter}
+                cityValue={reportConfig.currentFilter[col.filter].city || ''}
+                stateValue={reportConfig.currentFilter[col.filter].state || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={(f, v) =>
                   reportConfig.getHints(f, v)}/>

@@ -2,7 +2,7 @@ import warning from 'warning';
 import {map, groupBy} from 'lodash-compat/collection';
 import {remove} from 'lodash-compat/array';
 import {mapValues} from 'lodash-compat/object';
-import {isArray, isObject, isString} from 'lodash-compat/lang';
+import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
 
 // This is the business logic of the myreports client.
 
@@ -288,12 +288,12 @@ export class ReportConfiguration {
    */
   getFilter() {
     const result = mapValues(this.currentFilter, item => {
-      if (isString(item)) {
+      if (isString(item) || isPlainObject(item)) {
         return item;
+      } else if (isArray(item) && isPlainObject(item[0])) {
+        return map(item, o => o.key);
       } else if (isArray(item) && isArray(item[0])) {
         return map(item, inner => map(inner, o => o.key));
-      } else if (isArray(item) && isObject(item[0])) {
-        return map(item, o => o.key);
       }
       warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
     });

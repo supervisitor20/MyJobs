@@ -146,6 +146,11 @@ describe('ReportConfiguration', () => {
     });
   });
 
+  it('can set simple filters to object values', () => {
+    config.setFilter('locations', {'city': 'Indianapolis'});
+    expect(config.getFilter()).toEqual({'locations': {city: 'Indianapolis'}});
+  });
+
   it('treats null filter values as removal', () => {
     config.setFilter('city', 'Indianapolis');
     config.setFilter('city', null);

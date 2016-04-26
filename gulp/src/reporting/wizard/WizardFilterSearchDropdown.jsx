@@ -15,12 +15,13 @@ export class WizardFilterSearchDropdown extends Component {
   }
 
   render() {
-    const {id, placeholder} = this.props;
+    const {id, placeholder, value} = this.props;
     const eid = 'filter-autosuggest-' + id;
 
     return (
       <SearchInput
         id={eid}
+        value={value}
         callSelectWhenEmpty
         placeholder={placeholder}
         onSelect={v => this.onSearchSelect(v)}
@@ -31,6 +32,7 @@ export class WizardFilterSearchDropdown extends Component {
 
 WizardFilterSearchDropdown.propTypes = {
   id: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,
   getHints: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
