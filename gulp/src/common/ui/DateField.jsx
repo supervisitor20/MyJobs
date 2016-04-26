@@ -28,11 +28,6 @@ class DateField extends React.Component {
       year = parseInt(value.substring(0, 5), 10);
       month = parseInt(value.substring(5, 7), 10);
       day = parseInt(value.substring(8, 10), 10);
-    } else {
-      const now = new Date();
-      year = now.getFullYear();
-      month = now.getMonth();
-      day = now.getDate();
     }
     this.state = {
       year: year,

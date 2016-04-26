@@ -175,6 +175,18 @@ class Module extends React.Component {
               />
           );
         case 'date':
+          let year;
+          let month;
+          let day;
+          // If date value is empty use today's date
+          if (formContents[profileUnitName] === '') {
+            const now = new Date();
+            year = now.getFullYear();
+            // month and day must both be two characters
+            month = now.getMonth() < 10 ? '0' + now.getMonth() : now.getMonth();
+            day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+            formContents[profileUnitName] = year + '-' + month + '-' + day;
+          }
           return wrap(
             <DateField
               name={profileUnitName}
@@ -227,7 +239,15 @@ class Module extends React.Component {
     // Update state
     for (const item in apiResponse.data) {
       if (apiResponse.data.hasOwnProperty(item)) {
-        formContents[item] = apiResponse.data[item];
+        // django-remote-forms returns empty fields as null, which won't be
+        // caught by React's defaultProps (it only catches undefined). Therefore
+        // convert null fields to empty strings:
+        // https://github.com/facebook/react/issues/2166
+        if (!apiResponse.data[item]) {
+          formContents[item] = '';
+        } else {
+          formContents[item] = apiResponse.data[item];
+        }
       }
     }
     this.setState({
