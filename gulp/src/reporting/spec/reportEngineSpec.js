@@ -11,6 +11,7 @@ class FakeBuilder {
     return {
       marker: 'report configuration here',
       runCallbacks: () => {},
+      name: name,
     }
   }
 }
@@ -37,7 +38,8 @@ describe('ReportFinder', () => {
     finder.subscribeToMenuChoices(
       (rits, rts, dts, rc) =>
         {reportConfig = rc});
-    await finder.buildReportConfiguration('', '', '', 12, {}, nop, nop, nop, nop);
+    await finder.buildReportConfiguration('', '', '', 12, {}, '',
+      nop, nop, nop, nop);
     expect(reportConfig.marker).toEqual('report configuration here');
   }));
 
@@ -49,9 +51,31 @@ describe('ReportFinder', () => {
     finder.subscribeToMenuChoices(
       (rits, rts, dts, rit, rt, dt, rc) =>
         {reportConfig = rc});
-    await finder.buildReportConfiguration('', '', '', reportDataId, {}, nop, nop,
-      nop, onReportDataChanged);
+    await finder.buildReportConfiguration('', '', '', reportDataId, {}, '',
+      nop, nop, nop, onReportDataChanged);
     expect(reportDataId).toEqual(12);
+  }));
+
+  it('sets a default name if it is blank', promiseTest(async () => {
+    let reportConfig;
+    const nop = () => {};
+    finder.subscribeToMenuChoices(
+      (rits, rts, dts, rc) =>
+        {reportConfig = rc});
+    await finder.buildReportConfiguration('', '', '', 12, {}, '',
+      nop, nop, nop, nop);
+    expect('zzz').toEqual(reportConfig.name);
+  }));
+
+  it('leaves nonblank names alone', promiseTest(async () => {
+    let reportConfig;
+    const nop = () => {};
+    finder.subscribeToMenuChoices(
+      (rits, rts, dts, rc) =>
+        {reportConfig = rc});
+    await finder.buildReportConfiguration('', '', '', 12, {}, 'aaa',
+      nop, nop, nop, nop);
+    expect('aaa').toEqual(reportConfig.name);
   }));
 
   describe('subscriptions', () => {

@@ -30,8 +30,8 @@ export class ReportFinder {
    *   see ReportConfiguration for definitions.
    */
   async buildReportConfiguration(reportingType, reportType, dataType,
-      currentReportDataId, currentFilter, onNameChanged, onFilterChange,
-      onErrorsChanged, onReportDataChanged) {
+      currentReportDataId, currentFilter, currentName, onNameChanged,
+      onFilterChange, onErrorsChanged, onReportDataChanged) {
     const choices = await this.api.getSetUpMenuChoices(reportingType,
         reportType, dataType);
     const reportDataId = choices.report_data_id;
@@ -45,7 +45,12 @@ export class ReportFinder {
     let reportConfiguration = null;
     if (reportDataId) {
       const filters = await this.api.getFilters(reportDataId);
-      const name = await this.api.getDefaultReportName(reportDataId);
+      let name;
+      if (currentName) {
+        name = {name: currentName};
+      } else {
+        name = await this.api.getDefaultReportName(reportDataId);
+      }
       reportConfiguration = this.configBuilder.build(
         name.name, reportDataId, filters.filters, currentFilter,
         (reportId, report) => this.noteNewReport(reportId, report),

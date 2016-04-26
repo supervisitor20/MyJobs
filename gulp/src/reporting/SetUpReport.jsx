@@ -17,7 +17,6 @@ export default class SetUpReport extends Component {
   constructor() {
     super();
     this.state = {
-      reportName: '',
       loading: true,
       reportingTypes: [],
       reportTypes: [],
@@ -89,7 +88,12 @@ export default class SetUpReport extends Component {
   }
 
   onReportNameChanged(reportName) {
-    this.setState({reportName});
+    const {history} = this.props;
+    const oldQuery = this.props.location.query;
+
+    const href = '/set-up-report';
+    const query = {...oldQuery, reportName};
+    history.replaceState(null, href, query);
   }
 
   async loadData() {
@@ -106,6 +110,7 @@ export default class SetUpReport extends Component {
     const {
       reportDataId: reportDataIdRaw,
       filterJson,
+      reportName,
     } = this.props.location.query;
     const {reportFinder} = this.props;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
@@ -117,6 +122,7 @@ export default class SetUpReport extends Component {
       dataType,
       reportDataId,
       filter,
+      reportName,
       n => this.onReportNameChanged(n),
       f => this.onFilterUpdate(f),
       errors => this.onErrorsChanged(errors),
@@ -163,11 +169,11 @@ export default class SetUpReport extends Component {
       category: reportType,
       dataSet: dataType,
       filterJson,
+      reportName,
     } = this.props.location.query;
     const {
       loading,
       reportConfig,
-      reportName,
       reportNameError,
       reportingTypes,
       reportTypes,
@@ -299,7 +305,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-8">
             <button
               className="button"
-              onClick={() => reportConfig.run()}>
+              onClick={e => {e.preventDefault(); reportConfig.run();}}>
               Run Report
             </button>
           </div>
@@ -319,6 +325,7 @@ SetUpReport.propTypes = {
       dataSet: PropTypes.string,
       reportDataId: PropTypes.string,
       filterJson: PropTypes.string.isRequired,
+      reportName: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
