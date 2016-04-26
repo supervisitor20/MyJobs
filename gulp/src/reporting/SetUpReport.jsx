@@ -19,11 +19,8 @@ export default class SetUpReport extends Component {
     this.state = {
       reportName: '',
       loading: true,
-      reportingType: '',
       reportingTypes: [],
-      reportType: '',
       reportTypes: [],
-      dataType: '',
       dataTypes: [],
     };
   }
@@ -41,35 +38,49 @@ export default class SetUpReport extends Component {
   }
 
   onIntentionChange(reportingType) {
-    const {reportType, dataType} = this.state;
+    const {
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
     this.buildReportConfig(reportingType, reportType, dataType);
   }
 
   onCategoryChange(reportType) {
-    const {reportingType, dataType} = this.state;
+    const {
+      intention: reportingType,
+      dataSet: dataType,
+    } = this.props.location.query;
     this.buildReportConfig(reportingType, reportType, dataType);
   }
 
   onDataSetChange(dataType) {
-    const {reportingType, reportType} = this.state;
+    const {
+      intention: reportingType,
+      category: reportType,
+    } = this.props.location.query;
     this.buildReportConfig(reportingType, reportType, dataType);
   }
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
-      reportingType, reportType, dataType, reportConfig) {
+      reportConfig) {
     this.setState({
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
       reportConfig,
     });
   }
 
   onFilterUpdate(filter) {
-    this.setState({filter});
+    const {history} = this.props;
+    const oldQuery = this.props.location.query;
+
+    const href = '/set-up-report';
+    const query = {
+      ...oldQuery,
+      filterJson: JSON.stringify(filter),
+    };
+    history.replaceState(null, href, query);
   }
 
   onErrorsChanged(errors) {
@@ -82,19 +93,49 @@ export default class SetUpReport extends Component {
   }
 
   async loadData() {
-    await this.buildReportConfig();
+    const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
+    await this.buildReportConfig(reportingType, reportType, dataType);
     this.setState({loading: false});
   }
 
   async buildReportConfig(reportingType, reportType, dataType) {
+    const {
+      reportDataId: reportDataIdRaw,
+      filterJson,
+    } = this.props.location.query;
     const {reportFinder} = this.props;
+    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
+    const filter = JSON.parse(filterJson);
+
     reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
       dataType,
+      reportDataId,
+      filter,
       n => this.onReportNameChanged(n),
       f => this.onFilterUpdate(f),
-      errors => this.onErrorsChanged(errors));
+      errors => this.onErrorsChanged(errors),
+      (...args) => this.handleNewReportDataId(...args));
+  }
+
+  handleNewReportDataId(newReportDataId, reportingType, reportType, dataType) {
+    const {history} = this.props;
+    const {filterJson} = this.props.location.query;
+
+    const href = '/set-up-report';
+    const query = {
+      reportDataId: newReportDataId,
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+      filterJson,
+    };
+    history.pushState(null, href, query);
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
@@ -118,18 +159,22 @@ export default class SetUpReport extends Component {
 
   render() {
     const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+      filterJson,
+    } = this.props.location.query;
+    const {
       loading,
       reportConfig,
       reportName,
       reportNameError,
-      filter,
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
     } = this.state;
+
+    const filter = JSON.parse(filterJson);
 
     if (loading) {
       return <Loading/>;
@@ -212,7 +257,7 @@ export default class SetUpReport extends Component {
                 selectedHeader="Selected"
                 getHints={v => reportConfig.getHints(col.filter, v)}
                 selected={
-                  map(reportConfig.multiFilter[col.filter] || [],
+                  map(reportConfig.currentFilter[col.filter] || [],
                     v => ({value: v.key, display: v.display}))}
                 onAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter,
@@ -262,5 +307,15 @@ export default class SetUpReport extends Component {
 }
 
 SetUpReport.propTypes = {
+  history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
+  location: PropTypes.shape({
+    query: PropTypes.shape({
+      intention: PropTypes.string,
+      category: PropTypes.string,
+      dataSet: PropTypes.string,
+      reportDataId: PropTypes.string,
+      filterJson: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 };

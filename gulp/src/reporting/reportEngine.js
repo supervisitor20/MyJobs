@@ -1,6 +1,8 @@
+import warning from 'warning';
 import {map, groupBy} from 'lodash-compat/collection';
 import {remove} from 'lodash-compat/array';
-import {mapValues, assign} from 'lodash-compat/object';
+import {mapValues} from 'lodash-compat/object';
+import {isArray, isObject, isString} from 'lodash-compat/lang';
 
 // This is the business logic of the myreports client.
 
@@ -28,16 +30,24 @@ export class ReportFinder {
    *   see ReportConfiguration for definitions.
    */
   async buildReportConfiguration(reportingType, reportType, dataType,
-      onNameChanged, onFilterChange, onErrorsChanged) {
+      currentReportDataId, currentFilter, onNameChanged, onFilterChange,
+      onErrorsChanged, onReportDataChanged) {
     const choices = await this.api.getSetUpMenuChoices(reportingType,
         reportType, dataType);
     const reportDataId = choices.report_data_id;
+    if (currentReportDataId !== reportDataId) {
+      onReportDataChanged(
+        reportDataId,
+        choices.selected_reporting_type,
+        choices.selected_report_type,
+        choices.selected_data_type);
+    }
     let reportConfiguration = null;
     if (reportDataId) {
       const filters = await this.api.getFilters(reportDataId);
       const name = await this.api.getDefaultReportName(reportDataId);
       reportConfiguration = this.configBuilder.build(
-        name.name, reportDataId, filters.filters,
+        name.name, reportDataId, filters.filters, currentFilter,
         (reportId, report) => this.noteNewReport(reportId, report),
         report => this.noteNewRunningReport(report),
         onNameChanged,
@@ -49,9 +59,6 @@ export class ReportFinder {
       choices.reporting_types,
       choices.report_types,
       choices.data_types,
-      choices.selected_reporting_type,
-      choices.selected_report_type,
-      choices.selected_data_type,
       reportConfiguration);
   }
 
@@ -178,6 +185,7 @@ export class ReportFinder {
  * name: Initial name of the report.
  * reportDataId: Report Data id.
  * filters: List of filters supported by this report.
+ * currentFilter: object representing report filter from user so far
  * api: Reporting API instance to use.
  * onNewReport: call back when a new report has been created.
  * onNameChanged: call back when the report name changes.
@@ -185,15 +193,13 @@ export class ReportFinder {
  * onErrorsChanged: call back when the list of user errors changes.
  */
 export class ReportConfiguration {
-  constructor(name, reportDataId, filters, api,
+  constructor(name, reportDataId, filters, currentFilter, api,
       onNewReport, onNewRunningReport, onNameChanged, onUpdateFilter,
       onErrorsChanged) {
     this.name = name;
     this.reportDataId = reportDataId;
     this.filters = filters;
-    this.simpleFilter = {};
-    this.multiFilter = {};
-    this.andOrFilter = {};
+    this.currentFilter = currentFilter;
     this.errors = {};
     this.api = api;
     this.onNewReport = onNewReport;
@@ -212,9 +218,7 @@ export class ReportConfiguration {
   }
 
   callUpdateFilter() {
-    const filterInfo = assign(
-        {}, this.simpleFilter, this.multiFilter, this.andOrFilter);
-    this.onUpdateFilter(filterInfo);
+    this.onUpdateFilter(this.currentFilter);
   }
 
   /**
@@ -222,9 +226,9 @@ export class ReportConfiguration {
    */
   setFilter(field, value) {
     if (value === undefined || value === null || value === '') {
-      delete this.simpleFilter[field];
+      delete this.currentFilter[field];
     } else {
-      this.simpleFilter[field] = value;
+      this.currentFilter[field] = value;
     }
     this.callUpdateFilter();
   }
@@ -233,11 +237,11 @@ export class ReportConfiguration {
    * Set a value for a multiple valued "or" filter.
    */
   addToMultifilter(field, obj) {
-    if (!(field in this.multiFilter)) {
-      this.multiFilter[field] = [];
+    if (!(field in this.currentFilter)) {
+      this.currentFilter[field] = [];
     }
-    if (this.multiFilter[field].findIndex(i => i.key === obj.key) === -1) {
-      this.multiFilter[field].push(obj);
+    if (this.currentFilter[field].findIndex(i => i.key === obj.key) === -1) {
+      this.currentFilter[field].push(obj);
     }
     this.callUpdateFilter();
   }
@@ -247,7 +251,7 @@ export class ReportConfiguration {
    * Get a previously set value for a multiple valued "or" filter.
    */
   removeFromMultifilter(field, obj) {
-    remove(this.multiFilter[field], i => i.key === obj.key);
+    remove(this.currentFilter[field], i => i.key === obj.key);
     this.callUpdateFilter();
   }
 
@@ -255,13 +259,13 @@ export class ReportConfiguration {
    * Add a value to a "and/or" filter. i.e. tags
    */
   addToAndOrFilter(field, index, obj) {
-    if (!(field in this.andOrFilter)) {
-      this.andOrFilter[field] = [];
+    if (!(field in this.currentFilter)) {
+      this.currentFilter[field] = [];
     }
-    if (!(index in this.andOrFilter[field])) {
-      this.andOrFilter[field][index] = [];
+    if (!(index in this.currentFilter[field])) {
+      this.currentFilter[field][index] = [];
     }
-    this.andOrFilter[field][index].push(obj);
+    this.currentFilter[field][index].push(obj);
     this.callUpdateFilter();
   }
 
@@ -269,11 +273,11 @@ export class ReportConfiguration {
    * Remove a value to a "and/or" filter. i.e. tags
    */
   removeFromAndOrFilter(field, index, obj) {
-    const found = this.andOrFilter[field][index].findIndex(i => i.key === obj.key);
+    const found = this.currentFilter[field][index].findIndex(i => i.key === obj.key);
     if (found !== -1) {
-      this.andOrFilter[field][index].splice(found, 1);
-      if (this.andOrFilter[field][index].length < 1) {
-        this.andOrFilter[field].splice(index, 1);
+      this.currentFilter[field][index].splice(found, 1);
+      if (this.currentFilter[field][index].length < 1) {
+        this.currentFilter[field].splice(index, 1);
       }
     }
     this.callUpdateFilter();
@@ -283,19 +287,17 @@ export class ReportConfiguration {
    * Build a filter suitable for sending to the run method of the api.
    */
   getFilter() {
-    const filter = {...this.simpleFilter};
-    for (const key in this.multiFilter) {
-      if (this.multiFilter.hasOwnProperty(key)) {
-        filter[key] = this.multiFilter[key].map(o => o.key);
+    const result = mapValues(this.currentFilter, item => {
+      if (isString(item)) {
+        return item;
+      } else if (isArray(item) && isArray(item[0])) {
+        return map(item, inner => map(inner, o => o.key));
+      } else if (isArray(item) && isObject(item[0])) {
+        return map(item, o => o.key);
       }
-    }
-    for (const key in this.andOrFilter) {
-      if (this.andOrFilter.hasOwnProperty(key)) {
-        filter[key] = this.andOrFilter[key].map(
-          arr => arr.map(o => o.key));
-      }
-    }
-    return filter;
+      warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
+    });
+    return result;
   }
 
   /**
@@ -353,10 +355,10 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  build(name, reportDataId, filters, onNewReport, onNewRunningReport,
-      onNameChanged, onUpdateFilter, onErrorsChanged) {
+  build(name, reportDataId, filters, currentFilter, onNewReport,
+      onNewRunningReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
     return new ReportConfiguration(
-        name, reportDataId, filters, this.api, onNewReport, onNewRunningReport,
-        onNameChanged, onUpdateFilter, onErrorsChanged);
+        name, reportDataId, filters, currentFilter, this.api, onNewReport,
+        onNewRunningReport, onNameChanged, onUpdateFilter, onErrorsChanged);
   }
 }

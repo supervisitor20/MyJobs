@@ -35,10 +35,23 @@ describe('ReportFinder', () => {
     let reportConfig;
     const nop = () => {};
     finder.subscribeToMenuChoices(
+      (rits, rts, dts, rc) =>
+        {reportConfig = rc});
+    await finder.buildReportConfiguration('', '', '', 12, {}, nop, nop, nop, nop);
+    expect(reportConfig.marker).toEqual('report configuration here');
+  }));
+
+  it('calls back if the reportDataId changes', promiseTest(async () => {
+    let reportConfig;
+    const nop = () => {};
+    let reportDataId = 3;
+    const onReportDataChanged = newId => {reportDataId = newId;};
+    finder.subscribeToMenuChoices(
       (rits, rts, dts, rit, rt, dt, rc) =>
         {reportConfig = rc});
-    await finder.buildReportConfiguration('', '', '', nop, nop, nop);
-    expect(reportConfig.marker).toEqual('report configuration here');
+    await finder.buildReportConfiguration('', '', '', reportDataId, {}, nop, nop,
+      nop, onReportDataChanged);
+    expect(reportDataId).toEqual(12);
   }));
 
   describe('subscriptions', () => {
@@ -96,7 +109,7 @@ describe('ReportConfiguration', () => {
     spyOn(fakeComponent, 'onErrorsChanged').and.callThrough();
 
     config = new ReportConfiguration(
-      'defaultName', 2, {}, fakeApi,
+      'defaultName', 2, {}, {}, fakeApi,
       (id, report) => fakeComponent.newReportNote(id, report),
       report => fakeComponent.newRunningReportNote(report),
       name => {fakeComponent.onNameChanged(name)},
