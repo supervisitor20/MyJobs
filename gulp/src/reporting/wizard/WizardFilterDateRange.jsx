@@ -39,6 +39,6 @@ export class WizardFilterDateRange extends Component {
 }
 
 WizardFilterDateRange.propTypes = {
-  id: PropTypes.string.isRequired,
-  updateFilter: PropTypes.func.isRequired,
+  id: React.Proptypes.string.isRequired,
+  updateFilter: React.Proptypes.func.isRequired,
 };

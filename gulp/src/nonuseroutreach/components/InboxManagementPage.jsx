@@ -33,5 +33,5 @@ export function InboxManagementPage(props) {
 }
 
 InboxManagementPage.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
 };

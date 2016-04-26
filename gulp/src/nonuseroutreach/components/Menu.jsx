@@ -28,6 +28,6 @@ export function Menu(props) {
 }
 
 Menu.propTypes = {
-  tips: PropTypes.arrayOf(PropTypes.string).isRequired,
-  changePage: PropTypes.func.isRequired,
+  tips: React.Proptypes.arrayOf(PropTypes.string).isRequired,
+  changePage: React.Proptypes.func.isRequired,
 };

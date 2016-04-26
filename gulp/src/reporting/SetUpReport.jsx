@@ -261,5 +261,5 @@ export default class SetUpReport extends Component {
 }
 
 SetUpReport.propTypes = {
-  reportFinder: PropTypes.object.isRequired,
+  reportFinder: React.Proptypes.object.isRequired,
 };

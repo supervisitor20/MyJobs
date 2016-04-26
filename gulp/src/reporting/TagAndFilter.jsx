@@ -40,16 +40,16 @@ export default class TagAndFilter extends Component {
 }
 
 TagAndFilter.propTypes = {
-  getHints: PropTypes.func.isRequired,
-  selected: PropTypes.arrayOf(
+  getHints: React.Proptypes.func.isRequired,
+  selected: React.Proptypes.arrayOf(
     PropTypes.arrayOf(
       PropTypes.shape({
-        value: PropTypes.any.isRequired,
-        display: PropTypes.string.isRequired,
-        hexColor: PropTypes.string.isRequired,
+        value: React.Proptypes.any.isRequired,
+        display: React.Proptypes.string.isRequired,
+        hexColor: React.Proptypes.string.isRequired,
       })
     ).isRequired
   ).isRequired,
-  onChoose: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
+  onChoose: React.Proptypes.func.isRequired,
+  onRemove: React.Proptypes.func.isRequired,
 };

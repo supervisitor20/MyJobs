@@ -37,12 +37,12 @@ export function ReportList(props) {
 }
 
 ReportList.propTypes = {
-  reports: PropTypes.arrayOf(
+  reports: React.Proptypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      report_type: PropTypes.string.isRequired,
+      id: React.Proptypes.number.isRequired,
+      name: React.Proptypes.string.isRequired,
+      report_type: React.Proptypes.string.isRequired,
     }),
   ).isRequired,
-  highlightId: PropTypes.number,
+  highlightId: React.Proptypes.number,
 };

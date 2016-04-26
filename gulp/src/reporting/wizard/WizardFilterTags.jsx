@@ -16,8 +16,8 @@ export class WizardFilterTags extends Component {
 }
 
 WizardFilterTags.propTypes = {
-  tags: PropTypes.array.isRequired,
-  addTag: PropTypes.func.isRequired,
-  removeTag: PropTypes.func.isRequired,
-  getHints: PropTypes.func.isRequired,
+  tags: React.Proptypes.array.isRequired,
+  addTag: React.Proptypes.func.isRequired,
+  removeTag: React.Proptypes.func.isRequired,
+  getHints: React.Proptypes.func.isRequired,
 };

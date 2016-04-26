@@ -39,22 +39,22 @@ export default class OldPreviewEmbedPage extends Component {
 }
 
 OldPreviewEmbedPage.propTypes = {
-  location: PropTypes.shape({
-    query: PropTypes.shape({
+  location: React.Proptypes.shape({
+    query: React.Proptypes.shape({
       /**
        * Name of the report being previewed
        */
-      reportName: PropTypes.string.isRequired,
+      reportName: React.Proptypes.string.isRequired,
       /**
        * Report type being previewed.
        */
-      reportType: PropTypes.string.isRequired,
+      reportType: React.Proptypes.string.isRequired,
     }),
   }),
-  params: PropTypes.shape({
+  params: React.Proptypes.shape({
     /**
      * Id of report being previewed.
      */
-    reportId: PropTypes.string.isRequired,
+    reportId: React.Proptypes.string.isRequired,
   }).isRequired,
 };

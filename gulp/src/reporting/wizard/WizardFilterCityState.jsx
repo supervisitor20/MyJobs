@@ -67,7 +67,7 @@ export class WizardFilterCityState extends Component {
 }
 
 WizardFilterCityState.propTypes = {
-  id: PropTypes.string.isRequired,
-  updateFilter: PropTypes.func.isRequired,
-  getHints: PropTypes.func.isRequired,
+  id: React.Proptypes.string.isRequired,
+  updateFilter: React.Proptypes.func.isRequired,
+  getHints: React.Proptypes.func.isRequired,
 };

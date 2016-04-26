@@ -126,39 +126,39 @@ SelectByNameOrTag.propTypes = {
   /**
    * Function that gets the hints
    */
-  getItemHints: PropTypes.func.isRequired,
+  getItemHints: React.Proptypes.func.isRequired,
 
   /**
    * Currently selected items
    */
-  selectedItems: PropTypes.arrayOf(
+  selectedItems: React.Proptypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+      value: React.Proptypes.any.isRequired,
+      display: React.Proptypes.string.isRequired,
     })
   ).isRequired,
 
   /**
    * Function to add items when selected
    */
-  onSelectItemAdd: PropTypes.func.isRequired,
+  onSelectItemAdd: React.Proptypes.func.isRequired,
 
   /**
    * Function to remove items when deselected
    */
-  onSelectItemRemove: PropTypes.func.isRequired,
+  onSelectItemRemove: React.Proptypes.func.isRequired,
 
-  getTagHints: PropTypes.func.isRequired,
+  getTagHints: React.Proptypes.func.isRequired,
 
   /**
    * Currently selected tags
    */
-  selectedTags: PropTypes.arrayOf(
+  selectedTags: React.Proptypes.arrayOf(
     PropTypes.arrayOf(
       PropTypes.shape({
-        value: PropTypes.any.isRequired,
-        display: PropTypes.string.isRequired,
-        hexColor: PropTypes.string.isRequired,
+        value: React.Proptypes.any.isRequired,
+        display: React.Proptypes.string.isRequired,
+        hexColor: React.Proptypes.string.isRequired,
       })
     )
   ).isRequired,
@@ -166,10 +166,10 @@ SelectByNameOrTag.propTypes = {
   /**
    * Function to add tags when selected
    */
-  onSelectTagAdd: PropTypes.func.isRequired,
+  onSelectTagAdd: React.Proptypes.func.isRequired,
 
   /**
    * Function to remove tags when deselected
    */
-  onSelectTagRemove: PropTypes.func.isRequired,
+  onSelectTagRemove: React.Proptypes.func.isRequired,
 };

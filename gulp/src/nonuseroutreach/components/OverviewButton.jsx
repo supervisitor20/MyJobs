@@ -16,5 +16,5 @@ export class OverviewButton extends Component {
 }
 
 OverviewButton.propTypes = {
-  changePage: PropTypes.func.isRequired,
+  changePage: React.Proptypes.func.isRequired,
 };

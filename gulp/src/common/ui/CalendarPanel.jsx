@@ -100,7 +100,7 @@ CalendarPanel.propTypes = {
   /**
    * Year
    */
-  year: PropTypes.number.isRequired,
+  year: React.PropTypes.number.isRequired,
   /**
    * Dynamic, see generateYearChoices() in Date.jsx
    */
@@ -113,7 +113,7 @@ CalendarPanel.propTypes = {
   /**
    * Month
    */
-  month: PropTypes.number.isRequired,
+  month: React.PropTypes.number.isRequired,
   /**
    * The 12 months
    */
@@ -128,17 +128,17 @@ CalendarPanel.propTypes = {
    *
    * obj: the object selected by the user.
    */
-  onSelect: PropTypes.func.isRequired,
+  onSelect: React.Proptypes.func.isRequired,
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onYearChange: PropTypes.func.isRequired,
+  onYearChange: React.Proptypes.func.isRequired,
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onMonthChange: PropTypes.func.isRequired,
+  onMonthChange: React.Proptypes.func.isRequired,
 };

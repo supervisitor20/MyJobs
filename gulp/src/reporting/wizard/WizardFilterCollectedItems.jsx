@@ -23,5 +23,5 @@ export function WizardFilterCollectedItems(props) {
 }
 
 WizardFilterCollectedItems.propTypes = {
-  items: PropTypes.array.isRequired,
+  items: React.Proptypes.array.isRequired,
 };

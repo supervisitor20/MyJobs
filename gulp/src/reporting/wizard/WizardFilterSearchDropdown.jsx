@@ -30,8 +30,8 @@ export class WizardFilterSearchDropdown extends Component {
 }
 
 WizardFilterSearchDropdown.propTypes = {
-  id: PropTypes.string.isRequired,
-  updateFilter: PropTypes.func.isRequired,
-  getHints: PropTypes.func.isRequired,
-  placeholder: PropTypes.string,
+  id: React.Proptypes.string.isRequired,
+  updateFilter: React.Proptypes.func.isRequired,
+  getHints: React.Proptypes.func.isRequired,
+  placeholder: React.Proptypes.string,
 };

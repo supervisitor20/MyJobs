@@ -57,29 +57,29 @@ export default class DataTypeSelectBar extends Component {
 }
 
 DataTypeSelectBar.propTypes = {
-  intentionChoices: PropTypes.arrayOf(
+  intentionChoices: React.Proptypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+      value: React.Proptypes.any.isRequired,
+      display: React.Proptypes.string.isRequired,
     })
   ),
-  intentionValue: PropTypes.string.isRequired,
-  onIntentionChange: PropTypes.func.isRequired,
+  intentionValue: React.Proptypes.string.isRequired,
+  onIntentionChange: React.Proptypes.func.isRequired,
 
-  categoryChoices: PropTypes.arrayOf(
+  categoryChoices: React.Proptypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+      value: React.Proptypes.any.isRequired,
+      display: React.Proptypes.string.isRequired,
     })
   ),
-  categoryValue: PropTypes.string.isRequired,
-  onCategoryChange: PropTypes.func.isRequired,
-  dataSetChoices: PropTypes.arrayOf(
+  categoryValue: React.Proptypes.string.isRequired,
+  onCategoryChange: React.Proptypes.func.isRequired,
+  dataSetChoices: React.Proptypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+      value: React.Proptypes.any.isRequired,
+      display: React.Proptypes.string.isRequired,
     })
   ),
-  dataSetValue: PropTypes.string.isRequired,
-  onDataSetChange: PropTypes.func.isRequired,
+  dataSetValue: React.Proptypes.string.isRequired,
+  onDataSetChange: React.Proptypes.func.isRequired,
 };

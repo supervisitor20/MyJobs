@@ -15,6 +15,6 @@ export function AddInboxButton(props) {
 }
 
 AddInboxButton.propTypes = {
-  addDisabled: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
+  addDisabled: React.Proptypes.bool.isRequired,
+  onClick: React.Proptypes.func.isRequired,
 };

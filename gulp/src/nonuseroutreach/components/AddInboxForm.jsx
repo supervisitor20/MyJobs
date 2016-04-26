@@ -56,5 +56,5 @@ export class AddInboxForm extends Component {
 }
 
 AddInboxForm.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
 };

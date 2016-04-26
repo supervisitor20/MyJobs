@@ -15,7 +15,7 @@ export function LinkRow(props) {
 }
 
 LinkRow.propTypes = {
-  text: PropTypes.string.isRequired,
-  to: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
+  text: React.Proptypes.string.isRequired,
+  to: React.Proptypes.string.isRequired,
+  label: React.Proptypes.string.isRequired,
 };

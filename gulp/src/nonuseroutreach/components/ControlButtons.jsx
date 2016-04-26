@@ -36,6 +36,6 @@ export class ControlButtons extends Component {
 }
 
 ControlButtons.propTypes = {
-  buttonClicked: PropTypes.func.isRequired,
-  buttons: PropTypes.arrayOf(PropTypes.object),
+  buttonClicked: React.Proptypes.func.isRequired,
+  buttons: React.Proptypes.arrayOf(PropTypes.object),
 };

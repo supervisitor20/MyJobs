@@ -65,20 +65,20 @@ OldPreviewEmbed.propTypes = {
   /**
    * Name of the report being previewed
    */
-  reportName: PropTypes.string.isRequired,
+  reportName: React.Proptypes.string.isRequired,
   /**
    * Report type being previewed.
    */
-  reportType: PropTypes.string.isRequired,
+  reportType: React.Proptypes.string.isRequired,
   /**
    * Id of report being previewed.
    */
-  reportId: PropTypes.string.isRequired,
+  reportId: React.Proptypes.string.isRequired,
   /**
    * Called when the loading state of the previewed report changes.
    * This is only used for communication record reports.
    */
-  onLoading: PropTypes.func.isRequired,
+  onLoading: React.Proptypes.func.isRequired,
 };
 
 warning(typeof(renderGraphs) !== 'undefined',

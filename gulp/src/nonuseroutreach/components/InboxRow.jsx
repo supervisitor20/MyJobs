@@ -120,9 +120,9 @@ export class InboxRow extends Component {
 }
 
 InboxRow.propTypes = {
-  inbox: PropTypes.object.isRequired,
-  inboxManager: PropTypes.object.isRequired,
-  handleDelete: PropTypes.func.isRequired,
-  loadInboxesFromApi: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
+  inbox: React.Proptypes.object.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
+  handleDelete: React.Proptypes.func.isRequired,
+  loadInboxesFromApi: React.Proptypes.func.isRequired,
+  index: React.Proptypes.number.isRequired,
 };

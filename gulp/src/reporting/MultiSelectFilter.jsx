@@ -51,7 +51,7 @@ MultiSelectFilter.propTypes = {
   /**
    * Function to get available items
    */
-  getHints: PropTypes.func.isRequired,
+  getHints: React.Proptypes.func.isRequired,
   /**
    * Selected list items.
    */

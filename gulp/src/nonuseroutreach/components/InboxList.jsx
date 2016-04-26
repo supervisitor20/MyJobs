@@ -60,5 +60,5 @@ export class InboxList extends Component {
 }
 
 InboxList.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
 };

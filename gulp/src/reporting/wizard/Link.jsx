@@ -17,6 +17,6 @@ export class Link extends Component {
 }
 
 Link.propTypes = {
-  linkClick: PropTypes.func.isRequired,
-  label: PropTypes.string.isRequired,
+  linkClick: React.Proptypes.func.isRequired,
+  label: React.Proptypes.string.isRequired,
 };

@@ -11,5 +11,5 @@ export function HelpText(props) {
 }
 
 HelpText.propTypes = {
-  message: PropTypes.string.isRequired,
+  message: React.Proptypes.string.isRequired,
 };

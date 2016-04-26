@@ -44,8 +44,8 @@ export default class ExportReport extends Component {
 }
 
 ExportReport.propTypes = {
-  routeParams: PropTypes.shape({
-    reportId: PropTypes.string.isRequired,
+  routeParams: React.Proptypes.shape({
+    reportId: React.Proptypes.string.isRequired,
   }).isRequired,
-  reportFinder: PropTypes.object.isRequired,
+  reportFinder: React.Proptypes.object.isRequired,
 };

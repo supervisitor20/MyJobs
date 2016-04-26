@@ -26,6 +26,6 @@ export function Content(props) {
 }
 
 Content.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
-  page: PropTypes.string.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
+  page: React.Proptypes.string.isRequired,
 };

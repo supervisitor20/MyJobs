@@ -34,5 +34,5 @@ export class WizardRouter extends Component {
 }
 
 WizardRouter.propTypes = {
-  reportFinder: PropTypes.object.isRequired,
+  reportFinder: React.Proptypes.object.isRequired,
 };

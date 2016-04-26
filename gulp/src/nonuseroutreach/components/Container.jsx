@@ -49,5 +49,5 @@ export class Container extends Component {
 }
 
 Container.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  inboxManager: React.Proptypes.object.isRequired,
 };

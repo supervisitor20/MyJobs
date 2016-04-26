@@ -20,5 +20,5 @@ export class InboxManagementButton extends Component {
 }
 
 InboxManagementButton.propTypes = {
-  changePage: PropTypes.func.isRequired,
+  changePage: React.Proptypes.func.isRequired,
 };

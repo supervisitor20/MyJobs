@@ -61,9 +61,9 @@ export class DynamicReportApp extends Component {
 }
 
 DynamicReportApp.propTypes = {
-  reportFinder: PropTypes.object.isRequired,
-  children: PropTypes.node,
-  params: PropTypes.shape({
-    reportId: PropTypes.any,
+  reportFinder: React.Proptypes.object.isRequired,
+  children: React.Proptypes.node,
+  params: React.Proptypes.shape({
+    reportId: React.Proptypes.any,
   }).isRequired,
 };
