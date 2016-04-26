@@ -1,5 +1,12 @@
 import React from 'react';
 
+/**
+ * To use this component in an app, you'll need to handle a callback which
+ * passes this event:
+ *
+ * event.target.name = checkbox
+ */
+
 function CheckBox(props) {
   const {name, onChange, required, initial, isHidden, autoFocus} = props;
   return (
@@ -41,7 +48,10 @@ CheckBox.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
-  autoFocus: React.PropTypes.string,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
+  autoFocus: React.PropTypes.bool,
 };
 
 CheckBox.defaultProps = {
