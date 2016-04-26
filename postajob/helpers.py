@@ -1,4 +1,4 @@
-from myjobs.models import AppAccess
+from myjobs.models import AppAccess, Activity
 from postajob.models import SitePackage
 from myblocks.models import (raw_base_template, Page, Row, RowOrder,
                              LoginBlock, BlockOrder)
@@ -21,14 +21,18 @@ def can_modify(user, company, kwargs, update_activity, create_activity):
         A boolean representing whether or not they had permission to perform
         the particular set of actions.
 
+        If the company doesn't have appropriate access, raises an ``Http404``
+        exception.
+
     Example::
 
         if not can_modify(user, company, kwargs, "update job", "create job"):
             return MissingActivity()
 
-        retunr HttpResponse("Success")
+        return HttpResponse("Success")
 
     """
+
     if 'pk' in kwargs:
         return user.can(company, update_activity)
     else:
