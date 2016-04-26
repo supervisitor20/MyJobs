@@ -651,6 +651,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                       False. By default, `universal.helpers.every` is used,
                       which only returns two if the two iterables contain the
                       same elements.
+            :check_access: A boolean that signifies whether app-level access
+                           should be checked. Defaults to True.
 
         Output:
             A boolean signifying whether the provided actions may be performed.
@@ -689,11 +691,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
         compare = kwargs.get('compare', every)
+        check_access = kwargs.get('check_access', True)
 
         required_access = Activity.objects.filter(
             name__in=activity_names).required_access
 
-        if not set(required_access).issubset(company.enabled_access):
+        if check_access and not set(required_access).issubset(
+                company.enabled_access):
             raise Http404(
                 "%s doesn't have sufficient app-level access." % company)
 

@@ -296,7 +296,7 @@ def get_menus(context):
         ]
     } if user.roles.exists() else {}
 
-    if employer_menu and user.can(company, "read partner"):
+    if employer_menu and user.can(company, "read partner", check_access=False):
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
@@ -310,7 +310,7 @@ def get_menus(context):
             }
         ]
 
-    if employer_menu and user.can(company, "read role"):
+    if employer_menu and user.can(company, "read role", check_access=False):
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",
