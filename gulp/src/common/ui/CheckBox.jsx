@@ -51,7 +51,7 @@ CheckBox.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.any,
+  autoFocus: React.PropTypes.bool,
 };
 
 CheckBox.defaultProps = {
