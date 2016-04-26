@@ -44,6 +44,12 @@ class Select extends React.Component {
   onMenuItemEnter(index) {
     this.setState({keySelectedIndex: index});
   }
+  onMouseEnter() {
+    this.preventClose = true;
+  }
+  onMouseLeave() {
+    this.preventClose = false;
+  }
   shiftKeySelectedIndex(delta) {
     const {choices} = this.props;
     const {keySelectedIndex} = this.state;
@@ -66,7 +72,9 @@ class Select extends React.Component {
     this.setState({selectDropped: true});
   }
   closeSelectMenu() {
-    this.setState({selectDropped: false});
+    if (!this.preventClose) {
+      this.setState({selectDropped: false});
+    }
   }
   selectFromMenu(itemKey, name) {
     const {onChange} = this.props;
@@ -80,6 +88,7 @@ class Select extends React.Component {
 
     onChange(fakeEvent);
 
+    this.preventClose = false;
     this.closeSelectMenu();
   }
   render() {
@@ -108,7 +117,10 @@ class Select extends React.Component {
       });
 
       dropdown = (
-      <div className="select-element-menu-container">
+      <div
+        className="select-element-menu-container"
+        onMouseEnter={() => this.onMouseEnter()}
+        onMouseLeave={() => this.onMouseLeave()}>
         <ul>
           {dropdownItems}
         </ul>
@@ -118,6 +130,7 @@ class Select extends React.Component {
       selectAction = this.openSelectMenu;
       dropdown = '';
     }
+
     return (
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input" onClick={selectAction}>
@@ -149,7 +162,7 @@ Select.propTypes = {
   /**
    * Value shown as the selected value in the control.
    */
-  value: React.PropTypes.string,
+  value: React.PropTypes.string.isRequired,
   /**
    * Array of objects, each an item in the select component
    */
