@@ -51,14 +51,14 @@ CheckBox.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 CheckBox.defaultProps = {
   initial: false,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default CheckBox;

@@ -259,5 +259,5 @@ SearchInput.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autofocus: React.PropTypes.bool,
+  autofocus: React.PropTypes.string,
 };

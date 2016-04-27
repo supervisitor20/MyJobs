@@ -59,7 +59,7 @@ TextField.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
   /**
    * What happens if you click this field?
    */
@@ -72,7 +72,7 @@ TextField.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
   onSelect: null,
 };
 

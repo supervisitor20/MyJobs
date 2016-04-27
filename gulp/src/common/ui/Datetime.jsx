@@ -57,7 +57,7 @@ Datetime.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 Datetime.defaultProps = {
@@ -66,7 +66,7 @@ Datetime.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default Datetime;

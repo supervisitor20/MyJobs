@@ -50,7 +50,7 @@ Textarea.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 Textarea.defaultProps = {
@@ -58,7 +58,7 @@ Textarea.defaultProps = {
   initial: '',
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default Textarea;

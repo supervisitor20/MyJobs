@@ -147,6 +147,9 @@ class Module extends React.Component {
 
         switch (profileUnit.widget.input_type) {
         case 'text':
+
+          console.log("profileUnit.widget.attrs:", profileUnit.widget.attrs);
+
           return wrap(
             <TextField
               name={profileUnitName}

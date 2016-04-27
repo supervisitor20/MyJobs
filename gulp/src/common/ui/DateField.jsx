@@ -169,7 +169,7 @@ DateField.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 DateField.defaultProps = {
@@ -178,7 +178,7 @@ DateField.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default DateField;
