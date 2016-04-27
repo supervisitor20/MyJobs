@@ -1,11 +1,11 @@
-import React, {Component, PropTypes} from 'react';
+import React from 'react';
 import {map} from 'lodash-compat/collection';
 import {calendarDays} from 'common/calendar-support';
 import Select from 'common/ui/Select';
 import classnames from 'classnames';
 import {getDisplayForValue} from '../array.js';
 
-export default class CalendarPanel extends Component {
+export default class CalendarPanel extends React.Component {
   renderDayHeader(name) {
     return (
       <th key={name}>{name}</th>
@@ -100,27 +100,27 @@ CalendarPanel.propTypes = {
   /**
    * Year
    */
-  year: PropTypes.number.isRequired,
+  year: React.PropTypes.number.isRequired,
   /**
    * Dynamic, see generateYearChoices() in Date.jsx
    */
-  yearChoices: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+  yearChoices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
     })
   ),
   /**
    * Month
    */
-  month: PropTypes.number.isRequired,
+  month: React.PropTypes.number.isRequired,
   /**
    * The 12 months
    */
-  monthChoices: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.any.isRequired,
-      display: PropTypes.string.isRequired,
+  monthChoices: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      value: React.PropTypes.any.isRequired,
+      display: React.PropTypes.string.isRequired,
     })
   ),
   /**
@@ -128,17 +128,17 @@ CalendarPanel.propTypes = {
    *
    * obj: the object selected by the user.
    */
-  onSelect: PropTypes.func.isRequired,
+  onSelect: React.PropTypes.func.isRequired,
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onYearChange: PropTypes.func.isRequired,
+  onYearChange: React.PropTypes.func.isRequired,
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onMonthChange: PropTypes.func.isRequired,
+  onMonthChange: React.PropTypes.func.isRequired,
 };
