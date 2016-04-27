@@ -14,7 +14,7 @@ export default class ExportReport extends Component {
       loading: true,
       sortDirection: 'ascending',
       sortBy: '',
-      selectAll: false,
+      selectAll: true,
       fieldsSelected: [],
       options: [],
     };
@@ -32,13 +32,17 @@ export default class ExportReport extends Component {
   }
 
   onCheck(e) {
+    const checked = e.target.checked;
     const {fieldsSelected} = this.state;
     forEach(fieldsSelected, (item)=> {
       if (item.value === e.target.id) {
-        item.checked = e.target.checked;
+        item.checked = checked;
       }
     });
     this.setState({fieldsSelected});
+    if (!checked) {
+      this.setState({selectAll: false});
+    }
   }
 
   onCheckAll(e) {
