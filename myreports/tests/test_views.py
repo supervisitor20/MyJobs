@@ -498,6 +498,12 @@ class TestReportsApi(MyReportsTestCase):
             self.dynamic_models['report_type/presentation_type']
             ['contacts/xlsx'])
 
+        # mess up order by pushing name to the end.
+        config_cols = report.report_data.configuration.configurationcolumn_set
+        name_col = config_cols.get(column_name='name')
+        name_col.order = 999999
+        name_col.save()
+
         resp = self.client.get(
             "%s?report_id=%d" % (reverse('export_options_api'), report.pk))
         self.assertEquals(200, resp.status_code)
@@ -515,7 +521,6 @@ class TestReportsApi(MyReportsTestCase):
                     },
                 ],
                 u'values': [
-                    {u'display': u'name', u'value': u'name'},
                     {u'display': u'partner', u'value': u'partner'},
                     {u'display': u'email', u'value': u'email'},
                     {u'display': u'phone', u'value': u'phone'},
@@ -523,6 +528,7 @@ class TestReportsApi(MyReportsTestCase):
                     {u'display': u'notes', u'value': u'notes'},
                     {u'display': u'locations', u'value': u'locations'},
                     {u'display': u'tags', u'value': u'tags'},
+                    {u'display': u'name', u'value': u'name'},
                 ],
             },
         }, data)

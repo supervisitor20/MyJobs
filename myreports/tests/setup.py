@@ -374,12 +374,6 @@ def create_full_fixture():
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
-        column_name="job_applications",
-        order=111,
-        output_format="text",
-        configuration=con_comm,
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
         column_name="job_hires",
         order=112,
         output_format="text",

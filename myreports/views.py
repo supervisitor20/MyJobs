@@ -505,7 +505,8 @@ def export_options_api(request):
 
     cols = (
         ConfigurationColumn.objects
-        .active_for_report_data(report.report_data))
+        .active_for_report_data(report.report_data)
+        .order_by('order'))
     values = [
         {'value': c.column_name, 'display': c.column_name}
         for c in cols
