@@ -6,6 +6,7 @@ import Reorder from 'react-reorder';
 import {map, filter, forEach} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
+import {isIE8} from 'common/browserSpecific';
 
 export default class ExportReport extends Component {
   constructor() {
@@ -146,32 +147,34 @@ export default class ExportReport extends Component {
             </div>
           </div>
         </div>
-        <div className="row">
-          <div className="col-md-4">
-              <label>Fields to include:</label>
-            </div>
-            <div className="col-md-8">
-              <div className="list-item">
-                <SortableField
-                  item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
-                  sharedProps={{onChange: e => this.onCheckAll(e)}}/>
+        { (!isIE8) ?
+          <div className="row">
+            <div className="col-md-4">
+                <label>Fields to include:</label>
               </div>
-              <Reorder
-                itemKey="value"
-                selectedKey="value"
-                lock="horizontal"
-                holdTime=""
-                list={fieldsSelected}
-                template={SortableField}
-                listClass="my-list"
-                itemClass="list-item"
-                callback={(...args) => this.onReorder(...args)}
-                selected={this.state.selected}
-                disableReorder={false}
-                sharedProps={{onChange: e => this.onCheck(e, this)}}
-              />
-            </div>
-        </div>
+              <div className="col-md-8">
+                <div className="list-item">
+                  <SortableField
+                    item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
+                    sharedProps={{onChange: e => this.onCheckAll(e)}}/>
+                </div>
+                <Reorder
+                  itemKey="value"
+                  selectedKey="value"
+                  lock="horizontal"
+                  holdTime=""
+                  list={fieldsSelected}
+                  template={SortableField}
+                  listClass="my-list"
+                  itemClass="list-item"
+                  callback={(...args) => this.onReorder(...args)}
+                  selected={this.state.selected}
+                  disableReorder={false}
+                  sharedProps={{onChange: e => this.onCheck(e, this)}}
+                />
+              </div>
+          </div>
+          : ''}
         <div className="row">
           <div className="col-md-4 col-xs-12">
             <label htmlFor="outputFormat">Output Format</label>
