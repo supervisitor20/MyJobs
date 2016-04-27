@@ -288,15 +288,15 @@ export default class SetUpReport extends Component {
       <form>
         <DataTypeSelectBar
           intentionChoices={reportingTypes}
-          intentionValue={reportingType}
+          intentionValue={reportingType || ''}
           onIntentionChange={v => this.onIntentionChange(v)}
 
           categoryChoices={reportTypes}
-          categoryValue={reportType}
+          categoryValue={reportType || ''}
           onCategoryChange={v => this.onCategoryChange(v)}
 
           dataSetChoices={dataTypes}
-          dataSetValue={dataType}
+          dataSetValue={dataType || ''}
           onDataSetChange={v => this.onDataSetChange(v)}
           />
         {rows}
