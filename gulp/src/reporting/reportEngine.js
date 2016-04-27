@@ -112,7 +112,7 @@ export class ReportFinder {
    * newReportCallback: called when creating a new report completes
    * runningReportCallback: called when the user starts running a report
    * newReportCallback params:
-   *    reportId: id of new report
+   *    reportId: id of new report. If the run fails this will be null.
    *    runningReport: if this was a running report from earlier,
    *      this is the same object
    * runningReportCallback params:
@@ -321,10 +321,10 @@ export class ReportConfiguration {
    * Run the report.
    */
   async run() {
+    const runningReport = {
+      name: this.name,
+    };
     try {
-      const runningReport = {
-        name: this.name,
-      };
       this.onNewRunningReport(runningReport);
       const response = await this.api.runReport(
         this.reportDataId,
@@ -338,6 +338,7 @@ export class ReportConfiguration {
         const fixed = mapValues(grouped, values => map(values, v => v.message));
         this.errors = fixed;
       }
+      this.onNewReport(null, runningReport);
     }
     this.onErrorsChanged(this.errors);
   }
