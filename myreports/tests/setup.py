@@ -328,8 +328,51 @@ def create_full_fixture():
         multi_value_expansion=False)
 
     ConfigurationColumnFactory.create(
+        column_name="date_time",
+        order=100,
+        configuration=con_comm,
+        output_format="us_date",
+        filter_interface_type='date_range',
+        filter_interface_display='Date',
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        order=101,
+        column_name="locations",
+        filter_interface_type='city_state',
+        filter_interface_display='Contact Location',
+        filter_only=True,
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        column_name="tags",
+        order=102,
+        output_format="tags_list",
+        filter_interface_type='tags',
+        filter_interface_display='Tags',
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
+        column_name="communication_type",
+        order=103,
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Communication Type',
+        configuration=con_comm,
+        output_format="text",
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        column_name="partner",
+        order=104,
+        output_format="text",
+        filter_interface_type='search_multiselect',
+        filter_interface_display='Partners',
+        configuration=con_comm,
+        multi_value_expansion=False,
+        has_help=True)
+    ConfigurationColumnFactory.create(
         column_name="contact",
-        order=123,
+        order=105,
         output_format="text",
         filter_interface_type='search_multiselect',
         filter_interface_display='Contacts',
@@ -338,125 +381,82 @@ def create_full_fixture():
         has_help=True)
     ConfigurationColumnFactory.create(
         column_name="contact_email",
-        order=104,
+        order=106,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="contact_phone",
-        order=105,
-        configuration=con_comm,
-        output_format="text",
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
-        column_name="communication_type",
-        order=109,
-        filter_interface_type='search_multiselect',
-        filter_interface_display='Communication Type',
+        order=107,
         configuration=con_comm,
         output_format="text",
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="created_on",
-        order=107,
+        order=108,
         configuration=con_comm,
         output_format="us_date",
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="created_by",
-        order=108,
+        order=109,
         configuration=con_comm,
         output_format="text",
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
-        column_name="date_time",
-        order=106,
-        configuration=con_comm,
-        output_format="us_date",
-        filter_interface_type='date_range',
-        filter_interface_display='Date',
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
         column_name="job_applications",
-        order=111,
+        order=110,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="job_hires",
-        order=112,
+        order=111,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="job_id",
-        order=113,
+        order=112,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="job_interviews",
-        order=114,
+        order=113,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="last_action_time",
-        order=115,
+        order=114,
         output_format="us_date",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="length",
-        order=116,
+        order=115,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="location",
-        order=117,
+        order=116,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="notes",
+        order=117,
+        output_format="text",
+        configuration=con_comm,
+        multi_value_expansion=False)
+    ConfigurationColumnFactory.create(
+        column_name="subject",
         order=118,
         output_format="text",
         configuration=con_comm,
         multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
-        column_name="partner",
-        order=122,
-        output_format="text",
-        filter_interface_type='search_multiselect',
-        filter_interface_display='Partners',
-        configuration=con_comm,
-        multi_value_expansion=False,
-        has_help=True)
-    ConfigurationColumnFactory.create(
-        column_name="subject",
-        order=120,
-        output_format="text",
-        configuration=con_comm,
-        multi_value_expansion=False)
-    ConfigurationColumnFactory.create(
-        column_name="tags",
-        order=121,
-        output_format="tags_list",
-        filter_interface_type='tags',
-        filter_interface_display='Tags',
-        configuration=con_comm,
-        multi_value_expansion=False,
-        has_help=True)
-    ConfigurationColumnFactory.create(
-        order=102,
-        column_name="locations",
-        filter_interface_type='city_state',
-        filter_interface_display='Contact Location',
-        filter_only=True,
-        configuration=con_comm,
-        multi_value_expansion=False,
-        has_help=True)
 
     ConfigurationColumnFactory.create(
         column_name="data_source",
