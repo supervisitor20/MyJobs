@@ -3449,7 +3449,6 @@ height: 33px;
 
 fieldset.fieldset-border {
   border: 1px solid #ddd;
-  padding: 0 15px 15px;
   border-radius: 3px;
 }
 
@@ -3460,7 +3459,7 @@ legend.fieldset-border {
   width:auto;
   padding:0 5px;
   border-bottom:none;
-  margin: 0 0 10px;
+  margin: 0 0 10px 15px;
 }
 
 .fieldset-border label {
