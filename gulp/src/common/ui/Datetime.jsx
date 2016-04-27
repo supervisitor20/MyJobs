@@ -1,17 +1,20 @@
 import React from 'react';
 
 /**
- * Simple Textarea element with onChange handler
+ * Like TextField but with a special type value
  */
-function Textarea(props) {
-  const {name, onChange, required, initial, isHidden, placeholder, autoFocus} = props;
+function Datetime(props) {
+  const {name, onChange, required, maxLength, initial, isHidden, placeholder, autoFocus} = props;
   return (
-    <textarea
-      defaultValue={initial}
+    <input
+      type="datetime"
       id={name}
       name={name}
+      className=""
+      maxLength={maxLength}
       required={required}
       hidden={isHidden}
+      defaultValue={initial}
       placeholder={placeholder}
       onChange={onChange}
       autoFocus={autoFocus}
@@ -19,7 +22,7 @@ function Textarea(props) {
   );
 }
 
-Textarea.propTypes = {
+Datetime.propTypes = {
   /**
   * Callback: the user edited this field
   *
@@ -40,6 +43,10 @@ Textarea.propTypes = {
    */
   initial: React.PropTypes.string,
   /**
+   * Number of characters allowed in this field
+   */
+  maxLength: React.PropTypes.number,
+  /**
    * Should this component be shown or not?
    */
   isHidden: React.PropTypes.bool,
@@ -53,12 +60,13 @@ Textarea.propTypes = {
   autoFocus: React.PropTypes.bool,
 };
 
-Textarea.defaultProps = {
+Datetime.defaultProps = {
   placeholder: '',
   initial: '',
+  maxLength: null,
   isHidden: false,
   required: false,
   autoFocus: false,
 };
 
-export default Textarea;
+export default Datetime;

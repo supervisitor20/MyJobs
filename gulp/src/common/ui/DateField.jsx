@@ -4,17 +4,14 @@ import CalendarPanel from './CalendarPanel';
 import ClickOutHandler from 'react-onclickout';
 
 /**
- * DateField.jsx is a textbox with a Date widget button.
+ * DateField.jsx is a textbox with a calendar button. The button launches the
+ * popup calendar CalendarPanel.jsx.
  *
- * It wraps CalendarPanel.jsx, which is the popup calendar.
- *
- * To use this component in an app, you'll need to handle callbacks which
- * handle events this component can trigger:
- *
- * event.target.name = calendar-day
- * event.target.name = calendar-month
- * event.target.name = calendar-year
- *
+ * To use in an app, pas in onChange as a callback. Detect which element (e.g.
+ * day, month, year) was changed by checking event.target.type. For example,
+ * if the user selects a day then event.target.type === 'calendar-day'.
+ * 
+ * The selected value is in event.target.value.
  */
 
 class DateField extends React.Component {
@@ -64,33 +61,6 @@ class DateField extends React.Component {
     fakeEvent.target.type = 'calendar-year';
     fakeEvent.target.value = year;
     onChange(fakeEvent);
-  }
-  // Leaving here in case we want shift the month (e.g. with left/right arrows)
-  onMonthShift(shift) {
-    let {month, year} = this.state;
-
-    if (shift < 0) {
-      if (month === 0) {
-        year -= 1;
-        month = 11;
-      } else {
-        month -= 1;
-      }
-    }
-
-    if (shift > 0) {
-      if (month === 11) {
-        year += 1;
-        month = 0;
-      } else {
-        month += 1;
-      }
-    }
-
-    this.setState({
-      month: month,
-      year: year,
-    });
   }
   generateYearChoices(numberOfYears) {
     const now = new Date();

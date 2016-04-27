@@ -256,5 +256,8 @@ SearchInput.propTypes = {
    * itemActive: Applied to li selected via keyboard. (hover is used for mouse)
    */
   theme: React.PropTypes.object,
-  autofocus: React.PropTypes.string,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
+  autofocus: React.PropTypes.bool,
 };
