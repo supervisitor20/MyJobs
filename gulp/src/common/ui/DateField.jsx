@@ -10,7 +10,7 @@ import ClickOutHandler from 'react-onclickout';
  * To use in an app, pas in onChange as a callback. Detect which element (e.g.
  * day, month, year) was changed by checking event.target.type. For example,
  * if the user selects a day then event.target.type === 'calendar-day'.
- * 
+ *
  * The selected value is in event.target.value.
  */
 

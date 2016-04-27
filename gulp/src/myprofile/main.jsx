@@ -62,9 +62,8 @@ class Module extends React.Component {
       value = event.target.checked;
     } else if (event.target.type === 'calendar-month') {
       let month = event.target.value;
-      if (month < 10) {
-        month = '0' + month;
-      }
+      // month must be two characters
+      month = (month < 10) ? '0' + month : month;
       const existingDate = formContents[fieldID];
       const beforeMonth = existingDate.substring(0, 5);
       const afterMonth = existingDate.substring(7, 10);
@@ -72,9 +71,8 @@ class Module extends React.Component {
       value = updatedDate;
     } else if (event.target.type === 'calendar-day') {
       let day = event.target.value;
-      if (day < 10) {
-        day = '0' + day;
-      }
+      // day must be two characters
+      day = (day < 10) ? '0' + day : day;
       const existingDate = formContents[fieldID];
       const beforeDay = existingDate.substring(0, 8);
       const updatedDate = beforeDay + day;
