@@ -42,7 +42,10 @@ export default class ExportReport extends Component {
   }
 
   onCheckAll(e) {
-    this.setState({selectAll: e.target.checked});
+    const checked = e.target.checked;
+    const {fieldsSelected} = this.state;
+    forEach(fieldsSelected, (item)=> {item.checked = checked;});
+    this.setState({selectAll: checked, fieldsSelected});
   }
 
   async loadData() {
@@ -75,12 +78,12 @@ export default class ExportReport extends Component {
       formatId,
       sortBy,
       sortDirection,
+      fieldsSelected,
     } = this.state;
-    const fixedFieldsSelected = this.fieldSelectedWithSelectAll();
     const baseUri = '/reports/view/dynamicdownload';
 
     const values = map(
-        filter(fixedFieldsSelected, f => f.checked),
+        filter(fieldsSelected, f => f.checked),
         f => `&values=${f.value}`).join('');
 
     return (
@@ -90,14 +93,6 @@ export default class ExportReport extends Component {
       + `&order_by=${sortBy}`
       + `&direction=${sortDirection}`
       + values);
-  }
-
-  fieldSelectedWithSelectAll() {
-    const {fieldsSelected, selectAll} = this.state;
-    if (selectAll) {
-      return map(fieldsSelected, f => ({...f, checked: true}));
-    }
-    return [...fieldsSelected];
   }
 
   render() {
@@ -117,7 +112,6 @@ export default class ExportReport extends Component {
       {value: 'descending', display: 'Descending'},
     ];
     const sortedItems = filter(fieldsSelected, f => f.checked === true);
-    const fixedFieldsSelected = this.fieldSelectedWithSelectAll();
 
     if (loading) {
       return <Loading/>;
@@ -163,7 +157,7 @@ export default class ExportReport extends Component {
                 selectedKey="value"
                 lock="horizontal"
                 holdTime=""
-                list={fixedFieldsSelected}
+                list={fieldsSelected}
                 template={SortableField}
                 listClass="my-list"
                 itemClass="list-item"
