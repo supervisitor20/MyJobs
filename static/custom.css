@@ -2198,7 +2198,7 @@ h3.bottom-bordered {
     background-color: #C6D6EA;
 }
 
-.reporting.sidebar ul li {
+.reporting.sidebar ul li .menu-text {
     display: block;
     text-decoration: none;
     white-space: nowrap;

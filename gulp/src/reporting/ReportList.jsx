@@ -41,7 +41,7 @@ export class ReportList extends Component {
           key={r.id}>
           {options.length > 0 ? <PopMenu options={options}/> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
-          {r.name}
+          <span className="menu-text">{r.name}</span>
         </li>
       );
     });
