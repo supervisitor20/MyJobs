@@ -193,6 +193,50 @@ class PartnersDataSource(DataSource):
             for c in data_sources_qs
         ]
 
+    def adorn_filter(self, company, filter_spec):
+        adorned = {}
+        empty = PartnersFilter()
+
+        if filter_spec.locations:
+            adorned[u'locations'] = {}
+            known_city = filter_spec.locations.get('city', None)
+            if known_city:
+                cities = self.help_city(company, empty, known_city)
+                if cities:
+                    adorned[u'locations'][u'city'] = cities[0]['value']
+            known_state = filter_spec.locations.get('state', None)
+            if known_state:
+                states = self.help_state(company, empty, known_state)
+                if states:
+                    adorned[u'locations'][u'state'] = states[0]['value']
+
+        if filter_spec.tags:
+            adorned[u'tags'] = []
+            for known_or_tags in filter_spec.tags:
+                or_group = []
+
+                for known_tag in known_or_tags:
+                    tags = self.help_tags(company, empty, known_tag)
+                    if tags:
+                        or_group.append(tags[0])
+
+                if or_group:
+                    adorned[u'tags'].append(or_group)
+
+        if filter_spec.data_source:
+            known_source = filter_spec.data_source
+            sources = self.help_data_source(company, empty, known_source)
+            if sources:
+                adorned[u'data_source'] = sources[0]['value']
+
+        if filter_spec.uri:
+            known_uri = filter_spec.uri
+            uris = self.help_uri(company, empty, known_uri)
+            if uris:
+                adorned[u'uri'] = uris[0]['value']
+
+        return adorned
+
 
 @dict_identity
 class PartnersFilter(DataSourceFilter):

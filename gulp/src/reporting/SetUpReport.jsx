@@ -94,11 +94,18 @@ export default class SetUpReport extends Component {
       category: reportType,
       dataSet: dataType,
     } = this.props.location.query;
-    await this.buildReportConfig(reportingType, reportType, dataType, {});
+    const locationState = (this.props.location || {}).state || {};
+    const {filter: filterFromHistory} = locationState;
+
+    const filter = filterFromHistory || {};
+
+    await this.buildReportConfig(
+      reportingType, reportType, dataType, name, filter);
     this.setState({loading: false});
   }
 
-  async buildReportConfig(reportingType, reportType, dataType, overrideFilter) {
+  async buildReportConfig(reportingType, reportType, dataType, overrideName,
+      overrideFilter) {
     const {
       reportDataId: reportDataIdRaw,
     } = this.props.location.query;
@@ -112,13 +119,20 @@ export default class SetUpReport extends Component {
       newFilter = filter;
     }
 
+    let newName;
+    if (overrideName) {
+      newName = overrideName;
+    } else {
+      newName = reportName;
+    }
+
     reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
       dataType,
       reportDataId,
       newFilter,
-      reportName,
+      newName,
       n => this.onReportNameChanged(n),
       f => this.onFilterUpdate(f),
       errors => this.onErrorsChanged(errors),
@@ -308,6 +322,10 @@ SetUpReport.propTypes = {
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
   location: PropTypes.shape({
+    state: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      filter: PropTypes.object.isRequired,
+    }),
     query: PropTypes.shape({
       intention: PropTypes.string,
       category: PropTypes.string,

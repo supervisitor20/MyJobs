@@ -114,6 +114,49 @@ class ContactsDataSource(DataSource):
         qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
 
+    def adorn_filter(self, company, filter_spec):
+        adorned = {}
+        empty = ContactsFilter()
+
+        if filter_spec.locations:
+            adorned[u'locations'] = {}
+            known_city = filter_spec.locations.get('city', None)
+            if known_city:
+                cities = self.help_city(company, empty, known_city)
+                if cities:
+                    adorned[u'locations'][u'city'] = cities[0]['value']
+            known_state = filter_spec.locations.get('state', None)
+            if known_state:
+                states = self.help_state(company, empty, known_state)
+                if states:
+                    adorned[u'locations'][u'state'] = states[0]['value']
+
+        if filter_spec.tags:
+            adorned[u'tags'] = []
+            for known_or_tags in filter_spec.tags:
+                or_group = []
+
+                for known_tag in known_or_tags:
+                    tags = self.help_tags(company, empty, known_tag)
+                    if tags:
+                        or_group.append(tags[0])
+
+                if or_group:
+                    adorned[u'tags'].append(or_group)
+
+        if filter_spec.partner:
+            partners_qs = (
+                Partner.objects
+                .filter(owner=company)
+                .filter(pk__in=filter_spec.partner)
+                .values('name', 'pk').distinct())
+            adorned[u'partner'] = [
+                {'value': p['pk'], 'display': p['name']}
+                for p in partners_qs
+            ]
+
+        return adorned
+
 
 @dict_identity
 class ContactsFilter(DataSourceFilter):

@@ -378,6 +378,41 @@ class TestContactsDataSource(MyJobsBase):
         expected = [self.sue.name, self.john.name]
         self.assertEqual(expected, names)
 
+    def test_adorn_filter(self):
+        filter_spec = ContactsFilter(
+            locations={'city': 'Chicago', 'state': 'IL'},
+            tags=[['east'], ['west']],
+            partner=[str(self.partner_a.pk)])
+        expected = {
+            u'partner': [
+                {u'value': self.partner_a.pk, 'display': u'aaa'},
+            ],
+            u'locations': {
+                u'city': u'Chicago',
+                u'state': u'IL',
+            },
+            u'tags': [
+                [
+                    {
+                        'value': u'east',
+                        'display': u'east',
+                        'hexColor': u'aaaaaa',
+                    }
+                ],
+                [
+                    {
+                        'value': u'west',
+                        'display': u'west',
+                        'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+        }
+
+        ds = ContactsDataSource()
+        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        self.assertEqual(expected, adorned_filter)
+
 
 class TestContactsFilterCloning(TestCase):
     def test_clone_without_empty(self):

@@ -72,6 +72,23 @@ class DataSource:
         """
         raise NotImplementedError("Missing help method on this instance.")
 
+#    @abstractmethod
+    def adorn_filter(self, company, filter_spec):
+        """Get a version of the filter help added where available.
+
+        company: company model object for this run.
+        filter_spec: an instance of the companion filter type for this class.
+
+        returns:
+            an object shaped like filter_spec
+            values on fields with help available will be replaced with help
+            i.e.
+                {..., 'primary_contact': 4}
+                might be replaced with:
+                {..., 'primary_contact': {'value': 4, 'display': 'Brian Cox'}}
+        """
+        raise NotImplementedError("Missing adorn_filter method.")
+
 
 class DataSourceFilter:
     """A filter on a query for an DataSource, populated with values.

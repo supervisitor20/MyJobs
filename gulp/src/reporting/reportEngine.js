@@ -18,7 +18,6 @@ export class ReportFinder {
     this.configBuilder = configBuilder;
     this.newReportSubscribers = {};
     this.newMenuChoicesSubscribers = {};
-    this.clearReportConfigurationSubscribers = {};
   }
 
   /**
@@ -74,6 +73,15 @@ export class ReportFinder {
    */
   async getReportList() {
     return await this.api.listReports();
+  }
+
+  /**
+   * Retrieve detailed info about a single report
+   *
+   * reportId: id for this report
+   */
+  async getReportInfo(reportId) {
+    return await this.api.getReportInfo(reportId);
   }
 
   /**

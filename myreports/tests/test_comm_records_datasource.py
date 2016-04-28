@@ -362,6 +362,47 @@ class TestCommRecordsDataSource(MyJobsBase):
         ]
         self.assertEqual(expected, subjects)
 
+    def test_adorn_filter(self):
+        filter_spec = CommRecordsFilter(
+            locations={'city': 'Chicago', 'state': 'IL'},
+            tags=[['east'], ['west']],
+            communication_type='Email',
+            partner=[str(self.partner_a.pk)],
+            contact=[str(self.sue.pk)])
+        expected = {
+            u'partner': [
+                {u'value': self.partner_a.pk, 'display': u'aaa'},
+            ],
+            u'contact': [
+                {u'value': self.sue.pk, 'display': u'Sue Baxter'},
+            ],
+            u'locations': {
+                u'city': u'Chicago',
+                u'state': u'IL',
+            },
+            u'tags': [
+                [
+                    {
+                        'value': u'east',
+                        'display': u'east',
+                        'hexColor': u'aaaaaa',
+                    }
+                ],
+                [
+                    {
+                        'value': u'west',
+                        'display': u'west',
+                        'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+            u'communication_type': 'Email',
+        }
+
+        ds = CommRecordsDataSource()
+        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        self.assertEqual(expected, adorned_filter)
+
 
 class TestCommRecordsFilterCloning(TestCase):
     def test_clone_without_empty(self):
