@@ -3,7 +3,7 @@ import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
 import Select from 'common/ui/Select';
 import Reorder from 'react-reorder';
-import {map, filter, forEach} from 'lodash-compat/collection';
+import {map, filter, forEach, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
 import {isIE8} from 'common/browserSpecific';
@@ -34,23 +34,48 @@ export default class ExportReport extends Component {
 
   onCheck(e) {
     const checked = e.target.checked;
-    const {fieldsSelected} = this.state;
-    forEach(fieldsSelected, (item)=> {
-      if (item.value === e.target.id) {
-        item.checked = checked;
-      }
-    });
-    this.setState({fieldsSelected});
+    const {fieldsSelected, sortBy: oldSortBy} = this.state;
+
+    // If unchecking, set select all to false.
     if (!checked) {
       this.setState({selectAll: false});
     }
+
+    // Find field, set checked status.
+    const field = find(fieldsSelected, item => item.value === e.target.id);
+    if (field) {
+      field.checked = checked;
+    }
+
+    const newSortBy = this.findBestSortByValue(fieldsSelected, oldSortBy);
+
+    this.setState({fieldsSelected, sortBy: newSortBy});
   }
 
   onCheckAll(e) {
     const checked = e.target.checked;
-    const {fieldsSelected} = this.state;
+    const {fieldsSelected, sortBy: oldSortBy} = this.state;
     forEach(fieldsSelected, (item)=> {item.checked = checked;});
-    this.setState({selectAll: checked, fieldsSelected});
+    const newSortBy = this.findBestSortByValue(fieldsSelected, oldSortBy);
+    this.setState({selectAll: checked, fieldsSelected, sortBy: newSortBy});
+  }
+
+  findBestSortByValue(fieldsSelected, sortBy) {
+    const field = find(fieldsSelected, item => item.value === sortBy);
+    if (field && field.checked) {
+      // We're fine. Sort by field is still valid.
+      return sortBy;
+    }
+
+    // We're sorting by an unchecked or otherwise invalid field.
+    // Sort by the first checked field.
+    const firstSelected = find(fieldsSelected, item => item.checked);
+    if (firstSelected) {
+      return firstSelected.value;
+    }
+
+    // Nothing is checked or we're in some bad state.
+    return '';
   }
 
   async loadData() {
@@ -116,7 +141,7 @@ export default class ExportReport extends Component {
       {value: 'ascending', display: 'Ascending'},
       {value: 'descending', display: 'Descending'},
     ];
-    const sortedItems = filter(fieldsSelected, f => f.checked === true);
+    const sortableFields = filter(fieldsSelected, f => f.checked === true);
 
     if (loading) {
       return <Loading/>;
@@ -133,9 +158,9 @@ export default class ExportReport extends Component {
               <div className="col-md-6 col-xs-12">
                 <Select
                   name=""
-                  choices={sortedItems}
+                  choices={sortableFields}
                   onChange={e => {this.setState({sortBy: e.target.value});}}
-                  value={getDisplayForValue(sortedItems, sortBy)}/>
+                  value={getDisplayForValue(sortableFields, sortBy)}/>
               </div>
               <div className="col-md-6 col-xs-12">
                 <Select
