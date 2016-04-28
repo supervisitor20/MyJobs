@@ -5,11 +5,11 @@ import {OutreachRecordTable} from './OutreachRecordTable';
 export function OutreachRecordPage(props) {
   return (
     <div>
-      <div className="card-wrapper">
         <div className="row">
-          <OutreachRecordTable />
+          <div className="col-sm-12">
+            <OutreachRecordTable />
+          </div>
         </div>
-      </div>
     </div>
   );
 }
