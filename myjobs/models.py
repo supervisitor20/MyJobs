@@ -1040,6 +1040,10 @@ class SecondPartyAccessRequest(models.Model):
     # request was created on.
     site = models.ForeignKey('seo.SeoSite')
 
+    @property
+    def protocol(self):
+        return '' if self.site.domain.startswith('http') else 'http://'
+
     def save(self, *args, **kwargs):
         new = False
         if not self.pk:
@@ -1050,23 +1054,22 @@ class SecondPartyAccessRequest(models.Model):
         super(SecondPartyAccessRequest, self).save(*args, **kwargs)
 
         if new:
-            # Should this be a post-save?
             second_party = self.second_party.get_full_name(
                 default=self.second_party_email)
             message_body = ('{second_party} has requested the ability to '
                             'remotely access your account and provided the '
                             'following reason:<br /><br />'
                             '"{reason}"<br /><br />Would you like to '
-                            '<a href="{domain}{allow}">Allow</a> or '
-                            '<a href="{domain}{reject}">Deny</a> this '
-                            'request?'.format(
+                            '<a href="{protocol}{domain}{allow}">Allow</a> or '
+                            '<a href="{protocol}{domain}{reject}">Deny</a> '
+                            'this request?'.format(
                                 second_party=second_party,
                                 allow=reverse('impersonate-approve',
                                               kwargs={'access_id': self.pk}),
                                 reject=reverse('impersonate-reject',
                                                kwargs={'access_id': self.pk}),
                                 domain=self.site.domain,
-                                reason=self.reason))
+                                reason=self.reason, protocol=self.protocol))
 
             message_kwargs = {'users': [self.account_owner],
                               'expires': False,
@@ -1086,7 +1089,6 @@ class SecondPartyAccessRequest(models.Model):
         Notifies the second party of the account owner's acceptance of their
         request, whether positive or negative.
         """
-        # Should this be a post-save?
         if self.acted_on:
             message_body = ('{owner} has {approved} your remote access '
                             'request.'.format(
@@ -1097,12 +1099,14 @@ class SecondPartyAccessRequest(models.Model):
                                     else "rejected")))
             if self.accepted:
                 message_body += ('<br /><br />Start using it '
-                                 '<a href="{domain}{url}">here.</a>'.format(
+                                 '<a href="{protocol}{domain}{url}">'
+                                 'here.</a>'.format(
                                      url=reverse(
                                          'impersonate-start',
                                          kwargs={
                                              'uid': self.account_owner.pk}),
-                                     domain=self.site.domain))
+                                     domain=self.site.domain,
+                                     protocol=self.protocol))
 
             message_kwargs = {'users': [self.second_party], 'expires': False,
                               'body': message_body, 'system': True}

@@ -4,6 +4,8 @@ import pytz
 
 from django.contrib import admin
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
@@ -41,6 +43,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 class UserAdmin(admin.ModelAdmin):
+    actions = ['request_account_access']
     list_display = ['email', 'date_joined', 'last_response', 'is_active',
                     'is_verified', 'deactivate_type', 'secondary_emails',
                     'source']
@@ -71,6 +74,27 @@ class UserAdmin(admin.ModelAdmin):
                 'is_verified', 'is_superuser', 'is_staff', 'is_disabled',
                 'source', ]}),
     ]
+
+    def request_account_access(self, request, queryset):
+        """
+        Determines if the "Request account access" action should be allowed to
+        proceed.
+
+        Succeeds if the staff member selects only one non-staff/super user to
+        request account access from.
+        """
+        if queryset.count() != 1:
+            self.message_user(request, ("Only one access request is supported "
+                                        "at a time."))
+        else:
+            user = queryset.first()
+            if user.is_superuser or user.is_staff:
+                self.message_user(request, ("Requesting access to staff or "
+                                            "superusers is not supported."))
+            else:
+                return HttpResponseRedirect(reverse('request-account-access',
+                                                    kwargs={'uid': user.pk}))
+    request_account_access.short_description = "Request account access"
 
 
 class FAQAdmin(admin.ModelAdmin):
