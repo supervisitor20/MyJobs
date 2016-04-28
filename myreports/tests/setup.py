@@ -277,7 +277,7 @@ def create_full_fixture():
         order=103,
         output_format="text",
         filter_interface_type='search_select',
-        filter_interface_display='Data Source',
+        filter_interface_display='Source',
         configuration=con_part,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
@@ -463,7 +463,7 @@ def create_full_fixture():
         order=103,
         output_format="text",
         filter_interface_type='search_select',
-        filter_interface_display='Data Source',
+        filter_interface_display='Source',
         configuration=con_comm_count,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
