@@ -3,6 +3,7 @@ import datetime
 import pytz
 
 from django.contrib import admin
+from django.contrib.messages import ERROR
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -83,14 +84,15 @@ class UserAdmin(admin.ModelAdmin):
         Succeeds if the staff member selects only one non-staff/super user to
         request account access from.
         """
-        if queryset.count() != 1:
+        if queryset.count() > 1:
             self.message_user(request, ("Only one access request is supported "
-                                        "at a time."))
+                                        "at a time."), level=ERROR)
         else:
             user = queryset.first()
             if user.is_superuser or user.is_staff:
                 self.message_user(request, ("Requesting access to staff or "
-                                            "superusers is not supported."))
+                                            "superusers is not supported."),
+                                  level=ERROR)
             else:
                 return HttpResponseRedirect(reverse('request-account-access',
                                                     kwargs={'uid': user.pk}))

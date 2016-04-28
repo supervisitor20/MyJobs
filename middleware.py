@@ -306,7 +306,7 @@ class RedirectOverrideMiddleware(object):
             return redirect(choice.new_path, permanent=True)
 
 
-class ImpersonateTimeoutMiddleware(object):
+class ImpersonateTimeoutMiddleware(ImpersonateMiddleware):
     """
     Wraps ImpersonateMiddleware with a check for non-expired access requests
     """
@@ -334,6 +334,7 @@ class ImpersonateTimeoutMiddleware(object):
                 session_started__range=(started, now),
                 session_finished__isnull=True)
             if access_request:
-                return ImpersonateMiddleware().process_request(request)
+                return super(ImpersonateMiddleware, self).process_request(
+                    request)
             else:
                 return redirect(reverse('impersonate-stop'))
