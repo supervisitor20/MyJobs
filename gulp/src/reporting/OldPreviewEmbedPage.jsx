@@ -25,7 +25,7 @@ export default class OldPreviewEmbedPage extends Component {
     const {reportName, reportType} = this.props.location.query;
     const {loading} = this.state;
     return (
-      <div>
+      <div id="old-report-preview" className="container-fluid">
         {loading ? <Loading/> : ''}
         <OldPreviewEmbed
           reportId={reportId}
