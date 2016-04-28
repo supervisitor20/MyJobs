@@ -90,7 +90,7 @@ class ContactForm(NormalizedModelForm):
         tags = tag_get_or_create(self.data['company_id'], data)
         return tags
 
-    def save(self, user, partner, commit=True):
+    def save(self, request, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         partner = Partner.objects.get(id=self.data['partner'])
         self.instance.partner = partner
@@ -121,8 +121,9 @@ class ContactForm(NormalizedModelForm):
             if location not in contact.locations.all():
                 contact.locations.add(location)
 
-        log_change(contact, self, user, partner, contact.name,
-                   action_type=new_or_change)
+        log_change(contact, self, request.user, partner, contact.name,
+                   action_type=new_or_change,
+                   impersonator=request.impersonator)
 
         return contact
 
@@ -319,7 +320,7 @@ class PartnerForm(NormalizedModelForm):
         tags = tag_get_or_create(self.data['company_id'], data)
         return tags
 
-    def save(self, user, commit=True):
+    def save(self, request, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.update_last_action_time(False)
         instance = super(PartnerForm, self).save(commit)
@@ -330,8 +331,9 @@ class PartnerForm(NormalizedModelForm):
         except (Contact.DoesNotExist, ValueError):
             instance.primary_contact = None
         instance.save()
-        log_change(instance, self, user, instance, instance.name,
-                   action_type=new_or_change)
+        log_change(instance, self, request.user, instance, instance.name,
+                   action_type=new_or_change,
+                   impersonator=request.impersonator)
         return instance
 
 
@@ -420,13 +422,13 @@ class ContactRecordForm(NormalizedModelForm):
         tags = tag_get_or_create(self.data['company'], data)
         return tags
 
-    def save(self, user, partner, commit=True):
+    def save(self, request, partner, commit=True):
         new_or_change = CHANGE if self.instance.pk else ADDITION
         self.instance.partner = partner
         self.instance.update_last_action_time(False)
 
         if new_or_change == ADDITION:
-            self.instance.created_by = user
+            self.instance.created_by = request.user
         instance = super(ContactRecordForm, self).save(commit)
 
         self.instance.tags = self.cleaned_data.get('tags')
@@ -440,8 +442,9 @@ class ContactRecordForm(NormalizedModelForm):
             pk__in=self.cleaned_data.get('attach_delete', [])).delete()
 
         identifier = instance.contact.name
-        log_change(instance, self, user, partner, identifier,
-                   action_type=new_or_change)
+        log_change(instance, self, request.user, partner, identifier,
+                   action_type=new_or_change,
+                   impersonator=request.impersonator)
 
         return instance
 

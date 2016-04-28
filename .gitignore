@@ -35,6 +35,7 @@ content_226
 .coverage
 *.swp
 .ropeproject
+tags
 
 # Secret Stuff
 secrets*

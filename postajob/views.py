@@ -19,15 +19,39 @@ from postajob.forms import (CompanyProfileForm, JobForm, OfflinePurchaseForm,
                             OfflinePurchaseRedemptionForm, ProductForm,
                             ProductGroupingForm, PurchasedJobForm,
                             PurchasedProductForm,
-                            PurchasedProductNoPurchaseForm, JobLocationFormSet)
+                            PurchasedProductNoPurchaseForm,
+                            JobLocationFormSet, MarketPlaceEnableForm)
 from postajob.models import (CompanyProfile, Invoice, Job, OfflinePurchase,
                              Product, ProductGrouping, PurchasedJob,
                              PurchasedProduct, Request, JobLocation)
-from postajob.helpers import can_modify
+from postajob.helpers import can_modify, enable_posting, enable_marketplace
 from universal.helpers import (get_company, get_object_or_none,
                                get_company_or_404, at_least_one)
 from universal.views import RequestFormViewBase
+from universal.decorators import restrict_to_staff
 from myjobs.decorators import requires
+
+
+@restrict_to_staff()
+def enable_feature(request, feature):
+    ctx = {'feature': feature}
+    if request.method == "POST":
+        form = MarketPlaceEnableForm(request.POST)
+
+        if form.is_valid():
+            company = form.cleaned_data['company']
+            site = form.cleaned_data['site']
+            if feature == 'Posting':
+                enable_posting(company, site)
+            elif feature == 'MarketPlace':
+                enable_marketplace(company, site)
+            ctx['message'] = 'Success'
+    else:
+        form = MarketPlaceEnableForm()
+    ctx['form'] = form
+
+    return render_to_response(
+        'postajob/enable_feature.html', ctx, RequestContext(request))
 
 
 @user_is_allowed()
@@ -149,6 +173,9 @@ def purchasedjobs_overview(request, purchased_product, admin):
 @user_is_allowed()
 def purchasedmicrosite_admin_overview(request):
     company = settings.SITE.canonical_company
+    if 'MarketPlace' not in company.enabled_access:
+        raise Http404('%s does not have MarketPlace access.' % company)
+
     has_access = request.user.can(company, 'read product', 'read request',
                                   'read offline purchase',
                                   'read purchased product', 'read grouping',

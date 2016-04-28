@@ -1,3 +1,4 @@
+from ajax_select.fields import AutoCompleteSelectField
 from authorize import AuthorizeInvalidError, AuthorizeResponseError
 from datetime import date, datetime, timedelta
 from fsm.widget import FSM
@@ -996,3 +997,31 @@ def clean_company_name(company_name, current_company):
     if company_query.exists():
         return "A company with that name already exists."
     return None
+
+
+class PostingEnableForm(forms.Form):
+    company = AutoCompleteSelectField(
+        'companies', required=True, help_text=None)
+    site = AutoCompleteSelectField(
+        'sites', required=True, help_text=None)
+
+    def __init__(self, *args, **kwargs):
+        super(MarketPlaceEnableForm, self).__init__(*args, **kwargs)
+        self.fields['company'].help_text = (
+            'The company to add MarketPlace access to.')
+        self.fields['site'].help_text = (
+            'The microsite that purchased jobs will appear on.')
+
+
+class MarketPlaceEnableForm(forms.Form):
+    company = AutoCompleteSelectField(
+        'companies', required=True, help_text=None)
+    site = AutoCompleteSelectField(
+        'sites', required=True, help_text=None)
+
+    def __init__(self, *args, **kwargs):
+        super(MarketPlaceEnableForm, self).__init__(*args, **kwargs)
+        self.fields['company'].help_text = (
+            'The company to add MarketPlace access to.')
+        self.fields['site'].help_text = (
+            'The microsite that purchased jobs will appear on.')

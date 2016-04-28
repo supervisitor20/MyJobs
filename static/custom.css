@@ -1976,6 +1976,17 @@ h3.bottom-bordered {
     top: 0;
 }
 
+#old-report-preview #d-chart,
+#old-report-preview #b-chart {
+    padding: 0 50px;
+}
+
+#old-report-preview .chart-box-holder.legend {
+    position: absolute;
+    left: 350px;
+    top: 0;
+}
+
 .report-box {
     border-radius: 5px;
     color: #FFF;
@@ -1986,15 +1997,27 @@ h3.bottom-bordered {
     width: 80px;
 }
 
+#old-report-preview .report-box {
+    font-size: .8em;
+}
+
 .report-box.small {
-    width: 50px;
-    height: 45px;
-    background-color: #5EB95E;
+    width: 40%;
+    height: 80px;
+    background-color: orange;
+}
+
+#old-report-preview .report-box.small {
+    width: 100px;
 }
 
 .report-box.small + .report-box.small {
     margin-left: 8px;
     background-color: #4BB1CF;
+}
+
+#old-report-preview .report-box.small + .report-box.small {
+    margin-left: 0;
 }
 
 .report-box .big-num {
@@ -2004,32 +2027,48 @@ h3.bottom-bordered {
     margin-top: 9px;
 }
 
+#old-report-preview .report-box .big-num {
+    font-size: 2em;
+    line-height: 26px;
+    margin-top: 0;
+}
+
 .report-box .reports-record-type {
     font-weight: bold;
     line-height: 14px;
 }
 
-.panel.top-contacts {
+.top-contacts {
     margin-bottom: 20px;
 }
 
-.panel.top-contacts .name {
+.top-contacts .name {
     font-size: 1.4em;
     font-weight: 700;
 }
 
-.panel.top-contacts .report-box {
+.top-contacts .email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#old-report-preview .top-contacts .report-box {
+    float: none;
+}
+
+.top-contacts .report-box {
     height: 70px;
     width: 125px;
     background-color: #5EB95E;
     float: left;
 }
 
-.panel.top-contacts .report-box + .report-box {
+.top-contacts .report-box + .report-box {
     background-color: #4BB1CF;
 }
 
-.panel.top-contacts .report-box .big-num {
+.top-contacts .report-box .big-num {
     font-size: 2.3em;
     line-height: normal;
     margin-top: 5px;
@@ -2038,6 +2077,7 @@ h3.bottom-bordered {
 
 .top-three-box-container {
     margin-top: 10px;
+    text-align: center;
 }
 
 .top-three-box-container .report-box {
@@ -2056,6 +2096,13 @@ h3.bottom-bordered {
     left: 14%;
 }
 
+#old-report-preview .piehole.report {
+    top: 140px;
+    left: 93px;
+    width: auto;
+    height: auto;
+}
+
 .piehole.report .piehole-big {
     font-size: 3em;
     line-height: 30px;
@@ -2064,6 +2111,28 @@ h3.bottom-bordered {
 .piehole.report .piehole-topic {
     font-size: 1.4em;
     line-height: 18px;
+}
+
+#old-report-preview .piehole.report .piehole-topic {
+    font-size: 1em;
+}
+
+#old-report-preview .piehole.report {
+    font-size: 1em;
+}
+
+#old-report-preview .table-striped.report-table {
+    table-layout: fixed;
+}
+
+#old-report-preview .table-striped.report-table tr th,
+#old-report-preview .table-striped.report-table tr td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
 }
 
 .table-striped.report-table tbody tr:nth-child(even) td {
@@ -3571,7 +3640,6 @@ height: 33px;
 
 fieldset.fieldset-border {
   border: 1px solid #ddd;
-  padding: 0 15px 15px;
   border-radius: 3px;
 }
 
@@ -3582,7 +3650,7 @@ legend.fieldset-border {
   width:auto;
   padding:0 5px;
   border-bottom:none;
-  margin: 0 0 10px;
+  margin: 0 0 10px 15px;
 }
 
 .fieldset-border label {
