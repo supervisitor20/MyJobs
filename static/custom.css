@@ -2115,6 +2115,11 @@ h3.bottom-bordered {
 
 /* New styles for Reporting sidebar */
 
+.reporting.sidebar .report-list {
+    height: 550px;
+    overflow-y: auto;
+}
+
 .reporting.sidebar ul li {
     cursor: pointer;
     border-radius: 3px;
@@ -2124,7 +2129,7 @@ h3.bottom-bordered {
     background-color: #C6D6EA;
 }
 
-.reporting.sidebar ul li a {
+.reporting.sidebar ul li {
     display: block;
     text-decoration: none;
     white-space: nowrap;
@@ -3440,7 +3445,7 @@ height: 33px;
     margin-bottom: 20px;
     vertical-align: baseline;
     line-height: inherit;
-    height: inherit;
+    height: auto;
 }
 
 .actions.row .col-md-8 .button.wide,

@@ -55,9 +55,11 @@ export class ReportList extends Component {
             href="#/set-up-report">
             Create a New Report
           </a>
-          <ul>
-            {reportLinks}
-          </ul>
+          <div className="report-list">
+            <ul>
+              {reportLinks}
+            </ul>
+          </div>
         </div>
       </div>
     );
