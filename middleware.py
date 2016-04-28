@@ -334,7 +334,7 @@ class ImpersonateTimeoutMiddleware(ImpersonateMiddleware):
                 session_started__range=(started, now),
                 session_finished__isnull=True)
             if access_request:
-                return super(ImpersonateMiddleware, self).process_request(
-                    request)
+                return super(ImpersonateTimeoutMiddleware,
+                             self).process_request(request)
             else:
                 return redirect(reverse('impersonate-stop'))
