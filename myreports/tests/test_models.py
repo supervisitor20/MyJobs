@@ -270,34 +270,16 @@ class TestReportConfiguration(MyReportsTestCase):
         expected_config = ReportConfiguration(
             columns=[
                 ColumnConfiguration(
-                    column='name',
-                    format='text'),
+                    column='date',
+                    format='us_date',
+                    filter_interface='date_range',
+                    filter_display='Date'),
                 ColumnConfiguration(
                     column='',
                     format=None,
                     help=True,
                     filter_interface=u'city_state',
                     filter_display=u'Contact Location'),
-                ColumnConfiguration(
-                    column='partner',
-                    format='text',
-                    filter_interface='search_multiselect',
-                    filter_display='Partners',
-                    help=True),
-                ColumnConfiguration(
-                    column='email',
-                    format='text'),
-                ColumnConfiguration(
-                    column='phone',
-                    format='text'),
-                ColumnConfiguration(
-                    column='date',
-                    format='us_date',
-                    filter_interface='date_range',
-                    filter_display='Date'),
-                ColumnConfiguration(
-                    column='notes',
-                    format='text'),
                 ColumnConfiguration(
                     column='locations',
                     format='city_state_list',
@@ -310,6 +292,24 @@ class TestReportConfiguration(MyReportsTestCase):
                     filter_interface='tags',
                     filter_display='Tags',
                     help=True),
+                ColumnConfiguration(
+                    column='partner',
+                    format='text',
+                    filter_interface='search_multiselect',
+                    filter_display='Partners',
+                    help=True),
+                ColumnConfiguration(
+                    column='name',
+                    format='text'),
+                ColumnConfiguration(
+                    column='email',
+                    format='text'),
+                ColumnConfiguration(
+                    column='phone',
+                    format='text'),
+                ColumnConfiguration(
+                    column='notes',
+                    format='text'),
             ])
         config_model = self.dynamic_models['configuration']['contacts']
         # Add a filter_only column.
