@@ -102,7 +102,7 @@ MIDDLEWARE_CLASSES = (
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
     'redirect.middleware.ExcludedViewSourceMiddleware',
-    'impersonate.middleware.ImpersonateMiddleware',
+    'middleware.ImpersonateTimeoutMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
