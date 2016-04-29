@@ -11,10 +11,11 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
-from myreports.helpers import humanize, serialize
+from myreports.helpers import humanize, serialize, sort_records
 from myjobs.decorators import requires
 from myreports.models import (
-    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes)
+    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes,
+    ConfigurationColumn)
 from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
@@ -456,6 +457,31 @@ def select_data_type_api(request):
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def export_options_api(request):
+    """Get options and defaults, etc. needed to drive a UI for downloads.
+
+    Parameters:
+        :report_id: Id of the report to download
+
+    Outputs an object shaped like this:
+        {
+            'count': number of records in the report,
+            'report_options': {
+                'id': the report id,
+                'formats': [
+                    {
+                        'value': format key,
+                        'display': user visible title for format,
+                    },
+                ],
+                'values': [
+                    {
+                        'value': key describing an available column,
+                        'display': user visible title of column,
+                    },
+                ],
+            },
+        }
+    """
     validator = ApiValidator()
 
     report_id = request.GET.get('report_id')
@@ -473,16 +499,28 @@ def export_options_api(request):
         return validator.build_error_response()
 
     report = report_list[0]
+    count = len(report.python)
     rps = (ReportPresentation.objects
            .active_for_report_type_data_type(report.report_data))
 
+    cols = (
+        ConfigurationColumn.objects
+        .active_for_report_data(report.report_data)
+        .order_by('order'))
+    values = [
+        {'value': c.column_name, 'display': c.column_name}
+        for c in cols
+    ]
+
     data = {
+        'count': count,
         'report_options': {
             'id': report.id,
             'formats': [
                 {'value': rp.id, 'display': rp.display_name}
                 for rp in rps
             ],
+            'values': values,
         },
     }
     return HttpResponse(content_type='application/json',
@@ -609,24 +647,26 @@ def list_dynamic_reports(request):
 @require_http_methods(['GET'])
 def download_dynamic_report(request):
     """
-    Download dynamic report as CSV.
+    Download dynamic report in some format.
 
     Query String Parameters:
-        :id: ID of the report to download
-        :values: Fields to include in the resulting CSV, as well as the order
+        :id: ID of the report to export
+        :values: Fields to include in the data, as well as the order
                  in which to include them.
-        :order_by: The sort order for the resulting CSV.
+        :order_by: The the field to sort the records by
+        :direction: 'ascending' or 'decescending', for sort order
         :report_presentation_id: id of report presentation to use for file
                                  format.
 
     Outputs:
-        The report with the specified options rendered as a CSV file.
+        The report with the specified options rendered in the desired format.
     """
 
     # SECURITY: check report_id vs company owner!!!
     report_id = request.GET.get('id', 0)
-    values = request.GET.getlist('values', None)
+    values = request.GET.getlist('values')
     order_by = request.GET.get('order_by')
+    order_direction = request.GET.get('direction', 'ascending')
     report_presentation_id = request.GET.get('report_presentation_id')
 
     report = get_object_or_404(DynamicReport, pk=report_id)
@@ -639,8 +679,20 @@ def download_dynamic_report(request):
         report.order_by = order_by
         report.save()
 
-    values = report_configuration.get_header()
-    records = [report_configuration.format_record(r) for r in report.python]
+    if len(values) == 0:
+        values = report_configuration.get_header()
+
+    records = [
+        report_configuration.format_record(r, values)
+        for r in report.python
+    ]
+
+    sorted_records = records
+    if order_by:
+        reverse = False
+        if order_direction == 'descending':
+            reverse = True
+        sorted_records = sort_records(records, order_by, reverse)
 
     presentation_driver = (
         report_presentation.presentation_type.presentation_type)
@@ -652,7 +704,7 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = disposition
 
     output = StringIO()
-    presentation.write_presentation(values, records, output)
+    presentation.write_presentation(values, sorted_records, output)
     response.write(output.getvalue())
 
     return response

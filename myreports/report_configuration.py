@@ -19,11 +19,33 @@ class ReportConfiguration(object):
         """Return a list of column names which will appear in the report."""
         return [c.column for c in self.columns]
 
-    def format_record(self, raw_data):
+    def format_record(self, raw_data, values):
         """Return a flat fully formatted dictionary of report data."""
+        if len(values) == 0:
+            columns = self.columns
+        else:
+            columns = [
+                c
+                for c in [
+                    self.find_column(v)
+                    for v in values
+                ]
+                if c is not None
+            ]
+
         return dict(
             (c.column, c.extract_formatted(raw_data))
-            for c in self.columns)
+            for c in columns)
+
+    def find_column(self, column_name):
+        """Find a particular column by name.
+
+        returns None if the column is not found.
+        """
+        for column in self.columns:
+            if column.column == column_name:
+                return column
+        return None
 
 
 @dict_identity
