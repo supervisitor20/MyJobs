@@ -86,7 +86,7 @@ class TestReportConfig(TestCase):
     def test_records(self):
         """Test that records are formatted properly."""
         self.maxDiff = 10000
-        rec = self.contacts_config.format_record(self.test_data[0])
+        rec = self.contacts_config.format_record(self.test_data[0], [])
         self.assertEqual({
             'name': 'john adams',
             'partner': 'aaa',
@@ -97,7 +97,7 @@ class TestReportConfig(TestCase):
             'locations': "Indianapolis, IN, Chicago, IL",
             'tags': 'east',
             }, rec)
-        rec = self.contacts_config.format_record(self.test_data[1])
+        rec = self.contacts_config.format_record(self.test_data[1], [])
         self.assertEqual({
             'name': 'Sue Baxter',
             'partner': 'bbb',
@@ -107,6 +107,28 @@ class TestReportConfig(TestCase):
             'notes': '',
             'locations': 'Los Angeles, CA',
             'tags': 'west',
+            }, rec)
+
+    def test_formatting_limit_columns(self):
+        """Test that records contain only desired columns."""
+        self.maxDiff = 10000
+        rec = self.contacts_config.format_record(
+            self.test_data[0],
+            ['partner', 'name'])
+        self.assertEqual({
+            'name': 'john adams',
+            'partner': 'aaa',
+            }, rec)
+
+    def test_formatting_ignores_invalid_columns(self):
+        """Test that records contain only desired and valid columns."""
+        self.maxDiff = 10000
+        rec = self.contacts_config.format_record(
+            self.test_data[0],
+            ['partner', 'name', 'ZZZZZ'])
+        self.assertEqual({
+            'name': 'john adams',
+            'partner': 'aaa',
             }, rec)
 
 

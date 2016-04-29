@@ -3,13 +3,15 @@
 import csv
 import json
 from cStringIO import StringIO
+from unittest import TestCase
 
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import ContactRecordFactory, TagFactory
 from mypartners.models import ContactRecord
 from myreports.tests.test_views import MyReportsTestCase
 from myreports import helpers
-from myreports.helpers import determine_user_type
+from myreports.helpers import (
+    determine_user_type, compare_records, sort_records)
 
 
 class TestHelpers(MyReportsTestCase):
@@ -156,3 +158,29 @@ class TestUserType(MyReportsTestCase):
         """Handle details of determining and checking user_type."""
         self.assertEqual(expected,
                          determine_user_type(user))
+
+
+class TestSorting(TestCase):
+    """Test dynamic reports sorting utilities."""
+    def test_compare(self):
+        """Compare dynamic report records by different fields."""
+        a = {'d': 1, 'e': 2}
+        b = {'d': 2, 'e': 1}
+
+        self.assertEqual(-1, compare_records('d')(a, b))
+        self.assertEqual(0, compare_records('d')(a, a))
+        self.assertEqual(1, compare_records('d')(b, a))
+
+        self.assertEqual(1, compare_records('e')(a, b))
+        self.assertEqual(0, compare_records('e')(a, a))
+        self.assertEqual(-1, compare_records('e')(b, a))
+
+    def test_sort(self):
+        """Sort dynamic records by different fields."""
+        a = {'d': 1, 'e': 2}
+        b = {'d': 2, 'e': 1}
+
+        self.assertEqual([a, a, b], sort_records([a, a, b], 'd', False))
+        self.assertEqual([b, a, a], sort_records([a, a, b], 'd', True))
+        self.assertEqual([b, a, a], sort_records([a, a, b], 'e', False))
+        self.assertEqual([a, a, b], sort_records([a, a, b], 'e', True))
