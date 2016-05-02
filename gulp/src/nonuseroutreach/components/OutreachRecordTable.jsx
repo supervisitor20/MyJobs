@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import _ from 'lodash-compat';
 
 export class OutreachRecordTable extends Component {
 
@@ -13,28 +12,56 @@ export class OutreachRecordTable extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      products: [{
-        id: 1,
-        name: "Item name 1",
-        price: 100
-        },{
-        id: 2,
-        name: "Item name 2",
-        price: 100
-      }]
+      tableHeight: 0,
+      tableWidth: 0,
+      records: this.getRecords()
+    };
+  }
+
+  getRecords() {
+    console.log('')
+    let list_records = []
+    for (let i = 0; i < 100; i++) {
+    list_records.push({
+          date: '01/01/2016',
+          inbox: 'testinbox@test.com',
+          from: 'outreachdude@test.com',
+          body: i,
+          state: 'Reviewed'
+        });
     }
+    return list_records;
   }
 
   render() {
+    const isIE = /*@cc_on!@*/false || !!document.documentMode;
     return (
-      <BootstrapTable data={this.state.products} striped={false} hover={true}
-                      pagination={true} search={true}>
-        <TableHeaderColumn dataField="id" isKey={true} dataAlign="center"
-                           dataSort={true}>Product ID</TableHeaderColumn>
-        <TableHeaderColumn dataField="name" dataSort={true}>Product
-          Name</TableHeaderColumn>
-        <TableHeaderColumn dataField="price" >Product
-          Price</TableHeaderColumn>
+      <BootstrapTable data={this.state.records}
+                      striped={false}
+                      hover={true}
+                      search={true}
+                      pagination={!isIE}>
+        <TableHeaderColumn dataField="date"
+                           dataAlign="center"
+                           dataSort={true}
+                           isKey={true}>Date
+        </TableHeaderColumn>
+        <TableHeaderColumn dataField="inbox"
+                           dataAlign="center"
+                           dataSort={true}>Inbox
+        </TableHeaderColumn>
+        <TableHeaderColumn dataField="from"
+                           dataAlign="center"
+                           dataSort={true}>From
+        </TableHeaderColumn>
+        <TableHeaderColumn dataField="body"
+                           dataAlign="center"
+                           dataSort={true}>Body
+        </TableHeaderColumn>
+        <TableHeaderColumn dataField="state"
+                           dataAlign="center"
+                           dataSort={true}>Action State
+        </TableHeaderColumn>
       </BootstrapTable>
     );
   }
