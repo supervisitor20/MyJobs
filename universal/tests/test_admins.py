@@ -6,7 +6,6 @@ from django.db.models import get_app, get_models
 from myjobs.models import User
 from myjobs.tests.setup import MyJobsBase
 from seo.tests.setup import DirectSEOBase
-from redirect.tests.setup import RedirectBase
 
 
 def admin_test(self):
@@ -55,8 +54,4 @@ class SEOAdminTests(DirectSEOBase):
 
 
 class MyJobsAdminTests(MyJobsBase):
-    test_admin_add_and_list = admin_test
-
-
-class RedirectAdminTests(RedirectBase):
     test_admin_add_and_list = admin_test
