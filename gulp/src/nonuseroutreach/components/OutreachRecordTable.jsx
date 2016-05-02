@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+var ReactDOM = require('react-dom');
 import {Table, Column, Cell} from 'fixed-data-table';
 import _ from 'lodash-compat';
 
@@ -56,17 +57,15 @@ export class OutreachRecordTable extends Component {
 
   _update() {
     const win = window;
-    const widthOffset = win.innerWidth > 980 ? win.innerWidth / 2.5 : win.innerWidth / 3
-    console.log("update called");
-
     this.setState({
-      tableWidth: win.innerWidth - widthOffset,
+      tableWidth: ReactDOM.findDOMNode(this._container_div).getBoundingClientRect().width || 10,
       tableHeight: win.innerHeight - 200,
     });
   }
 
   render() {
     return (
+      <div ref={(c) => this._container_div = c}>
       <Table
         rowsCount={this.state.records.length}
         rowHeight={50}
@@ -120,6 +119,7 @@ export class OutreachRecordTable extends Component {
           width={150}
         />
       </Table>
+      </div>
     );
   }
 }
