@@ -22,6 +22,7 @@ handler500 = "myjobs.views.error_500"
 
 urlpatterns = patterns(
     '',
+    url(r'^ajax/', include('automation.urls')),
     url('', include('myjobs.urls')),
     url(r'^candidates/', include('mydashboard.urls')),
     url(r'^profile/', include('myprofile.urls')),
