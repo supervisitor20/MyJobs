@@ -114,7 +114,13 @@ export default class SetUpReport extends Component {
     } = this.props.location.query;
     const {reportFinder} = this.props;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
-    const filter = JSON.parse(filterJson);
+    let filter;
+    try {
+      filter = JSON.parse(filterJson);
+    } catch (e) {
+      // filter is corrupt somehow. Treat it as empty.
+      filter = [];
+    }
 
     reportFinder.buildReportConfiguration(
       reportingType,
@@ -180,7 +186,13 @@ export default class SetUpReport extends Component {
       dataTypes,
     } = this.state;
 
-    const filter = JSON.parse(filterJson);
+    let filter;
+    try {
+      filter = JSON.parse(filterJson);
+    } catch (e) {
+      // filter is corrupt somehow. Don't try to render anything.
+      filter = undefined;
+    }
 
     if (loading) {
       return <Loading/>;
