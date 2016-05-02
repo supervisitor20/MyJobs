@@ -13,6 +13,7 @@ from mypartners.models import Contact, ADDITION, CHANGE
 from registration.models import Invitation
 from mypartners.helpers import log_change, tag_get_or_create
 from universal.forms import RequestForm
+from universal.helpers import autofocus_input
 
 
 class HorizontalRadioRenderer(RadioSelect.renderer):
@@ -38,6 +39,7 @@ class SavedSearchForm(BaseUserForm):
                             'initial': initial.text_only if initial else False,
                             'required': False}
         self.fields["text_only"] = BooleanField(**text_only_kwargs)
+        autofocus_input(self, 'url')
 
     feed = URLField(widget=HiddenInput())
     notes = CharField(label=_("Notes and Comments"),
@@ -199,6 +201,7 @@ class PartnerSavedSearchForm(RequestForm):
         if initial:
             feed_args["initial"] = initial.feed
         self.fields["feed"] = URLField(**feed_args)
+        autofocus_input(self, 'url')
 
     class Meta:
         model = PartnerSavedSearch
@@ -297,7 +300,8 @@ class PartnerSavedSearchForm(RequestForm):
         contact = Contact.objects.filter(partner=partner,
                                          user=instance.user).first()
         log_change(instance, self, instance.created_by, partner,
-                   contact.email, action_type=is_new_or_change)
+                   contact.email, action_type=is_new_or_change,
+                   impersonator=self.request.impersonator)
 
         return instance
 

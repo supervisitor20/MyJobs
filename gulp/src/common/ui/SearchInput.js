@@ -131,7 +131,7 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder} = this.props;
+    const {id, theme, placeholder, autofocus} = this.props;
     const {value, items, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
@@ -155,7 +155,8 @@ export class SearchInput extends Component {
           aria-autocomplete="list"
           aria-owns={suggestId}
           aria-expanded={showItems}
-          aria-activedescendant={activeId}/>
+          aria-activedescendant={activeId}
+          autoFocus={autofocus} />
         {showItems ?
           <ul
             id={this.suggestId()}
@@ -255,4 +256,5 @@ SearchInput.propTypes = {
    * itemActive: Applied to li selected via keyboard. (hover is used for mouse)
    */
   theme: PropTypes.object,
+  autofocus: PropTypes.string,
 };

@@ -7,8 +7,9 @@ from django.core import mail
 from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
                                          SeoSiteFactory)
 from myjobs.models import User
-from myblocks.models import LoginBlock
-from postajob.helpers import enable_posting, enable_marketplace
+from myblocks.models import LoginBlock, raw_base_template
+from postajob.helpers import (enable_posting, enable_marketplace,
+                              create_login_block)
 from postajob.models import (CompanyProfile, Invoice, Job, JobLocation,
                              OfflineProduct, OfflinePurchase, Package,
                              Product, ProductGrouping, ProductOrder,
@@ -1055,3 +1056,19 @@ class ModelTests(MyJobsBase):
         self.assertIn(site, package.sites.all())
         self.assertTrue(LoginBlock.objects.filter(
             name="Marketplace Company Login Block").exists())
+
+    def test_create_login_block(self):
+        """
+        Ensures that a login block is createed with the correct associations
+        and a valid template.
+
+        """
+        company = CompanyFactory(name='Marketplace Company')
+        site = SeoSite.objects.create(domain='somewhereelse.jobs')
+
+        template = raw_base_template(LoginBlock)
+        response = self.client.get("/login", follow=True)
+        login_block = create_login_block(company, site)
+
+        # validate that the correct template was assigned to the login block
+        self.assertEqual(login_block.template, template)

@@ -122,7 +122,7 @@ class Select extends React.Component {
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input" onClick={selectAction}>
           <div className="select-element-chosen-container">
-            <span className="select-element-chosen">{value}</span>
+            <span title={value} className="select-element-chosen">{value}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>

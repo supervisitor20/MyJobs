@@ -610,15 +610,14 @@ def filter_sqs(sqs, filters):
             else:
                 sqs = sqs.narrow('moc_exact:("%s")' % _clean(t))
         elif f == 'company_slug':
-            company = BusinessUnit.objects.filter(title_slug=filters[f])
-
-            if not company:
-                logging.error("No BusinessUnit found for title_slug %s" %
-                              filters[f])
-                sqs = sqs.narrow("company:(%s)" % filters[f])
-            else:
-                sqs = sqs.narrow('buid:(%s)' % ' OR '.join([str(c.id) for c
-                                                            in company]))
+            """
+            the company slab is the URL and company named, joined by ::
+            company_slab can be filtered with the slug in order to
+            accurately narrow search results. The trailing / prevents
+            wildcard (*) from pulling in jobs from slugs containing other
+            slugs (slug verizon-store being inside verizon-store-california)
+            """
+            sqs = sqs.narrow('company_slab_exact:%s/*' % filters[f])
         else:
             t = filters[f]
             sqs = sqs.narrow("title_slug:(%s)" % _clean(t))
@@ -629,7 +628,7 @@ def get_featured_jobs(*args, **kwargs):
     """
     Uses get_jobs to return a SearchQuerySet of featured jobs
     Passes arguments onto get_jobs, and overwrites custom_facets
-    with site featured facets if they exist
+    with site featured facets if they exist.
 
     """
     if settings.FEATURED_FACET:
@@ -793,6 +792,7 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
 
     num_items = site_config.num_filter_items_to_show
     widgets = []
+
     for _type in types:
         w = FacetListWidget(request, site_config, _type[0],
                             facet_counts['%s_slab' % _type[0]][0:num_items*2],

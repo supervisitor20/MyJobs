@@ -10,7 +10,9 @@ from mypartners.models import ContactRecord, Partner
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         PartnerFactory, LocationFactory,
                                         TagFactory)
-from myreports.models import Report, ReportPresentation, PresentationType
+from myreports.models import (
+    Report, ReportPresentation, PresentationType, ReportTypeDataTypes,
+    DynamicReport)
 from myreports.tests.setup import MyReportsTestCase
 
 
@@ -411,63 +413,132 @@ class TestReportsApi(MyReportsTestCase):
                     state="IL"),
                 ])
 
-    def test_reporting_types_api_fail_get(self):
-        """Try an invalid method on reporting types."""
-        resp = self.client.get(reverse('reporting_types_api'))
-        self.assertEquals(405, resp.status_code)
+    def test_select_data_type_api(self):
+        """Test that we get useful report setup menu choices."""
+        self.maxDiff = 10000
+        resp = self.client.post(
+            reverse('select_data_type_api'),
+            data={
+                'reporting_type': 'prm',
+                'report_type': None,
+                'data_type': None,
+            })
+        data = json.loads(resp.content)
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['communication_records/unaggregated'])
+        expected = {
+            u'reporting_types': [
+                {u'value': u'compliance', u'display': u'Compliance Reports'},
+                {u'value': u'prm', u'display': u'PRM Reports'},
+            ],
+            u'selected_reporting_type': u'prm',
+            u'report_types': [
+                {
+                    u'value': u'communication-records',
+                    u'display': u'Communication Records Report',
+                },
+                {u'value': u'contacts', u'display': u'Contacts Report'},
+                {u'value': u'partners', u'display': u'Partners Report'},
+            ],
+            u'selected_report_type': u'communication-records',
+            u'data_types': [
+                {u'value': u'unaggregated', u'display': u'Unaggregated'},
+            ],
+            u'selected_data_type': u'unaggregated',
+            u'report_data_id': report_data.pk,
+        }
+        self.assertEquals(expected, data)
 
-    def test_reporting_types_api(self):
-        """Test that we get only active reporting types."""
-        resp = self.client.post(reverse('reporting_types_api'))
-        data = json.loads(resp.content)['reporting_type']
-        self.assertEquals(1, len(data))
-        self.assertEquals('PRM', data['1']['name'])
-        self.assertEquals('PRM Reports', data['1']['description'])
+    def test_select_data_type_api_dead_end(self):
+        """Test that we get useful report setup menu choices."""
+        self.maxDiff = 10000
+        resp = self.client.post(
+            reverse('select_data_type_api'),
+            data={
+                'reporting_type': 'compliance',
+                'report_type': None,
+                'data_type': None,
+            })
+        data = json.loads(resp.content)
+        expected = {
+            u'reporting_types': [
+                {u'value': u'compliance', u'display': u'Compliance Reports'},
+                {u'value': u'prm', u'display': u'PRM Reports'},
+            ],
+            u'selected_reporting_type': u'compliance',
+            u'report_types': [
+                {u'value': u'screenshots', u'display': u'Screenshots Report'},
+                {u'value': u'state', u'display': u'State Report'},
+            ],
+            u'selected_report_type': u'screenshots',
+            u'data_types': [],
+            u'selected_data_type': None,
+            u'report_data_id': None,
+        }
+        self.assertEquals(expected, data)
 
-    def test_report_types_api_fail_get(self):
-        """Try an invalid method on report types."""
-        resp = self.client.get(reverse('report_types_api'))
-        self.assertEquals(405, resp.status_code)
+    def test_export_options_api(self):
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
 
-    def test_report_types_api(self):
-        """Test that we get only active report types."""
-        resp = self.client.post(reverse('report_types_api'),
-                                data={'reporting_type_id': '1'})
-        data = json.loads(resp.content)['report_type']
-        self.assertEquals(3, len(data))
-        self.assertEquals("Partners", data['1']['name'])
-        self.assertEquals("Partners Report", data['1']['description'])
-        self.assertEquals("Contacts", data['2']['name'])
-        self.assertEquals("Contacts Report", data['2']['description'])
-        self.assertEquals("Communication Records", data['3']['name'])
-        self.assertEquals("Communication Records Report",
-                          data['3']['description'])
+        report = DynamicReport.objects.create(
+            name='The Report',
+            owner=self.company,
+            report_data=report_data,
+            filters={})
 
-    def test_data_types_api(self):
-        """Test that we get only active data types."""
-        resp = self.client.post(reverse('data_types_api'),
-                                data={'report_type_id': '2'})
-        data = json.loads(resp.content)['data_type']
-        self.assertEquals(1, len(data))
-        self.assertEquals("unaggregated", data['3']['name'])
-        self.assertEquals("Unaggregated", data['3']['description'])
+        csv = (
+            self.dynamic_models['report_type/presentation_type']
+            ['contacts/csv'])
+        xlsx = (
+            self.dynamic_models['report_type/presentation_type']
+            ['contacts/xlsx'])
 
-    def test_presentation_api(self):
-        """Test that we get only active presentation types."""
-        resp = self.client.post(reverse('presentation_types_api'),
-                                data={'report_type_id': '2',
-                                      'data_type_id': '3'})
-        data = json.loads(resp.content)['report_presentation']
-        names = set(v['name'] for v in data.values())
-        expected_names = set(["Contact CSV", "Contact Excel Spreadsheet"])
-        self.assertEquals(expected_names, names)
+        resp = self.client.get(
+            "%s?report_id=%d" % (reverse('export_options_api'), report.pk))
+        self.assertEquals(200, resp.status_code)
+
+        data = json.loads(resp.content)
+        self.assertEquals({
+            u'report_options': {
+                u'id': report.pk,
+                u'formats': [
+                    {u'value': csv.pk, u'display': u'Contact CSV'},
+                    {
+                        u'value': xlsx.pk,
+                        u'display': u'Contact Excel Spreadsheet',
+                    },
+                ],
+            },
+        }, data)
+
+    def test_export_options_api_missing_report_param(self):
+        resp = self.client.get(reverse('export_options_api'))
+        self.assertEquals(400, resp.status_code)
+        data = json.loads(resp.content)
+        field_keys = {r['field'] for r in data}
+        self.assertIn('report_id', field_keys)
+
+    def test_export_options_api_missing_invalid_report_id(self):
+        resp = self.client.get(
+            "%s?report_id=%d" % (reverse('export_options_api'), -1))
+        self.assertEquals(400, resp.status_code)
+        data = json.loads(resp.content)
+        field_keys = {r['field'] for r in data}
+        self.assertIn('report_id', field_keys)
 
     def test_filters_api(self):
         """Test that we get descriptions of available filters."""
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['partners/unaggregated'])
         resp = self.client.post(reverse('filters_api'),
-                                data={'rp_id': '3'})
+                                data={'report_data_id': report_data.pk})
+
         result = json.loads(resp.content)
-        expected_keys = set(['filters', 'help'])
+        expected_keys = {'filters', 'help'}
         self.assertEquals(expected_keys, set(result.keys()))
 
     def test_help_api(self):
@@ -475,10 +546,13 @@ class TestReportsApi(MyReportsTestCase):
 
         We should get back suggestions based on existing input.
         """
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
         resp = self.client.post(
             reverse('help_api'),
             data={
-                'rp_id': 3,
+                'report_data_id': report_data.pk,
                 'filter': json.dumps({'locations': {'state': 'IL'}}),
                 'field': 'city',
                 'partial': 'i',
@@ -501,15 +575,55 @@ class TestDynamicReports(MyReportsTestCase):
         self.json_pass.is_active = True
         self.json_pass.save()
 
-    def find_report_presentation(
-            self, datasource, presentation_type, data_type='unaggregated'):
-        return ReportPresentation.objects.get(
+    def find_report_data(
+            self, datasource, data_type='unaggregated'):
+        return ReportTypeDataTypes.objects.get(
             is_active=True,
             configuration__is_active=True,
+            report_type__datasource=datasource,
+            data_type__data_type=data_type)
+
+    def find_report_presentation(
+            self, report_data, presentation_type, data_type='unaggregated'):
+        return ReportPresentation.objects.get(
+            is_active=True,
             presentation_type__is_active=True,
-            report_data__report_type__datasource=datasource,
-            report_data__data_type__data_type=data_type,
+            report_data=report_data,
             presentation_type__presentation_type=presentation_type)
+
+    def test_list_dynamic_reports(self):
+        """Test that list dynamic reports api works."""
+        self.maxDiff = 10000
+        self.client.login_user(self.user)
+
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
+
+        reports = [
+            DynamicReport.objects.create(
+                name='The Report',
+                owner=self.company,
+                report_data=report_data,
+                filters='{"a": %d}' % i)
+            for i in range(0, 6)
+        ]
+        # This situation comes up in some ancient test data that may
+        # be present on developers' machines.
+        reports[3].report_data = None
+        reports[3].save()
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {
+                    u'id': reports[i].pk,
+                    u'name': u'The Report',
+                    u'report_type': u'contacts'
+                } for i in reversed(range(0, 6)) if i != 3
+            ]},
+            json.loads(resp.content))
 
     def test_dynamic_contacts_report(self):
         """Create some test data, run, list, and download a contacts report."""
@@ -522,14 +636,12 @@ class TestDynamicReports(MyReportsTestCase):
                 name=u"name-%s \u2019" % i,
                 partner=partner)
 
-        report_presentation = self.find_report_presentation(
-            'contacts',
-            'json_pass')
+        report_data = self.find_report_data('contacts')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
             })
         self.assertEqual(200, resp.status_code)
@@ -539,12 +651,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
 
         response_data = json.loads(resp.content)
@@ -564,14 +687,12 @@ class TestDynamicReports(MyReportsTestCase):
                 owner=self.company,
                 name=u"partner-%s \u2019" % i)
 
-        report_presentation = self.find_report_presentation(
-            'partners',
-            'json_pass')
+        report_data = self.find_report_data('partners')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
             })
         self.assertEqual(200, resp.status_code)
@@ -581,12 +702,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         response_data = json.loads(resp.content)
         self.assertEquals(21, len(response_data['records']))
@@ -609,14 +741,12 @@ class TestDynamicReports(MyReportsTestCase):
                 contact=contact,
                 subject=u"subject-%s \u2019" % i)
 
-        report_presentation = self.find_report_presentation(
-            'comm_records',
-            'json_pass')
+        report_data = self.find_report_data('comm_records')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
             })
         self.assertEqual(200, resp.status_code)
@@ -626,12 +756,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'communication-records'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         response_data = json.loads(resp.content)
         self.assertEquals(20, len(response_data['records']))
@@ -653,14 +794,12 @@ class TestDynamicReports(MyReportsTestCase):
                 partner=partner,
                 locations=[location])
 
-        report_presentation = self.find_report_presentation(
-            'contacts',
-            'json_pass')
+        report_data = self.find_report_data('contacts')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
                 'filter': json.dumps({
                     'locations': {
@@ -671,8 +810,15 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         report_id = json.loads(resp.content)['id']
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         response_data = json.loads(resp.content)
         self.assertEquals(1, len(response_data['records']))
@@ -694,14 +840,12 @@ class TestDynamicReports(MyReportsTestCase):
                 owner=self.company,
                 name=u"partner-%s \u2019" % i)
 
-        report_presentation = self.find_report_presentation(
-            'partners',
-            'csv')
+        report_data = self.find_report_data('contacts')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
             })
         self.assertEqual(200, resp.status_code)
@@ -711,12 +855,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'csv')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         self.assertIn('The_Report.csv', resp['content-disposition'])
         self.assertIn('text/csv', resp['content-type'])
@@ -734,14 +889,12 @@ class TestDynamicReports(MyReportsTestCase):
                 owner=self.company,
                 name=u"partner-%s \u2019" % i)
 
-        report_presentation = self.find_report_presentation(
-            'partners',
-            'xlsx')
+        report_data = self.find_report_data('contacts')
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
             })
         self.assertEqual(200, resp.status_code)
@@ -751,25 +904,34 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'contacts'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'xlsx')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         self.assertIn('The_Report.xlsx', resp['content-disposition'])
         self.assertIn('application/vnd.', resp['content-type'])
 
     def test_missing_report_name(self):
         """Returns an error if the report name is missing."""
-        report_presentation = self.find_report_presentation(
-            'partners',
-            'json_pass')
+        report_data = self.find_report_data('partners')
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'filter': json.dumps({}),
             })
         self.assertEqual(400, resp.status_code)
@@ -793,15 +955,14 @@ class TestDynamicReports(MyReportsTestCase):
                 date_time=datetime(2015, 2, 4),
                 subject=u"subject-%s \u2019" % i)
 
-        report_presentation = self.find_report_presentation(
+        report_data = self.find_report_data(
             'partners',
-            'json_pass',
             data_type="count_comm_rec_per_month")
 
         resp = self.client.post(
             reverse('run_dynamic_report'),
             data={
-                'rp_id': report_presentation.pk,
+                'report_data_id': report_data.pk,
                 'name': 'The Report',
                 'filter': json.dumps({
                     'tags': [['this']],
@@ -814,12 +975,23 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(200, resp.status_code)
         self.assertEqual(
             {'reports': [
-                {'id': report_id, 'name': 'The Report'},
+                {
+                    'id': report_id,
+                    'name': 'The Report',
+                    'report_type': 'partners'
+                },
             ]},
             json.loads(resp.content))
 
-        resp = self.client.get(reverse('download_dynamic_report'),
-                               {'id': report_id})
+        report_presentation = self.find_report_presentation(
+            report_data,
+            'json_pass')
+
+        data = {
+            'id': report_id,
+            'report_presentation_id': report_presentation.pk,
+        }
+        resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         response_data = json.loads(resp.content)
         self.assertEquals(12, len(response_data['records']))
@@ -832,10 +1004,8 @@ class TestDynamicReports(MyReportsTestCase):
 
     def test_default_report_name(self):
         """Returns a nice timestampy default report name."""
-        report_presentation = self.find_report_presentation(
-            'partners',
-            'xlsx')
-        post_data = {'report_presentation_id': report_presentation.pk}
+        report_data = self.find_report_data('partners')
+        post_data = {'report_data_id': report_data.pk}
         resp = self.client.post(reverse('get_default_report_name'), post_data)
         self.assertEqual(200, resp.status_code)
         doc = json.loads(resp.content)
@@ -848,4 +1018,4 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertEqual(400, resp.status_code)
         doc = json.loads(resp.content)
         field_keys = {r['field'] for r in doc}
-        self.assertIn('report_presentation_id', field_keys)
+        self.assertIn('report_data_id', field_keys)

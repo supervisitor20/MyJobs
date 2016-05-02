@@ -1,7 +1,7 @@
 import React from 'react';
 import FilteredMultiSelect from 'react-filtered-multiselect';
 
-function Multiselect(props) {
+function MultiSelect(props) {
   const {selected, available, availableHeader, selectedHeader, onAdd, onRemove} = props;
 
   return (
@@ -43,7 +43,7 @@ function Multiselect(props) {
   );
 }
 
-Multiselect.propTypes = {
+MultiSelect.propTypes = {
   /**
    * Selected list items.
    */
@@ -80,4 +80,4 @@ Multiselect.propTypes = {
   onRemove: React.PropTypes.func.isRequired,
 };
 
-export default Multiselect;
+export default MultiSelect;

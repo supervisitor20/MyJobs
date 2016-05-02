@@ -815,7 +815,11 @@ class ContactLogEntry(models.Model):
     object_id = models.TextField('object id', blank=True, null=True)
     object_repr = models.CharField('object repr', max_length=200)
     partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
-    user = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey('myjobs.User', null=True,
+                             on_delete=models.SET_NULL)
+    impersonator = models.ForeignKey('myjobs.User', null=True,
+                                     related_name='impersonator',
+                                     on_delete=models.SET_NULL)
     successful = models.NullBooleanField(default=None)
 
     def get_edited_object(self):

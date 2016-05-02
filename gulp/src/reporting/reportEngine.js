@@ -9,49 +9,49 @@ import {mapValues, assign} from 'lodash-compat/object';
  *
  * Used to walk through the api needed to find a usable presentation type.
  *
- * Last call of the "walk" is buildReportConfiguration.
  */
 export class ReportFinder {
   constructor(api, configBuilder) {
     this.api = api;
     this.configBuilder = configBuilder;
     this.newReportSubscribers = {};
-  }
-
-  getReportingTypes() {
-    return this.api.getReportingTypes();
-  }
-
-  getReportTypes(reportingTypeId) {
-    return this.api.getReportTypes(reportingTypeId);
-  }
-
-  getDataTypes(reportTypeId) {
-    return this.api.getDataTypes(reportTypeId);
-  }
-
-  getPresentationTypes(reportTypeId, dataTypeId) {
-    return this.api.getPresentationTypes(reportTypeId, dataTypeId);
+    this.newMenuChoicesSubscribers = {};
   }
 
   /**
    * Get a report configuration which can be customized and later run.
    *
-   * TODO: change rpId to reportTypeDataType id.
-   * rpId: report presentation id
+   * reportingType: reporting type value
+   * reportType: report type value
+   * dataType: data type value
    * onNameChanged, onFilterChange, onErrorsChanged:
    *   see ReportConfiguration for definitions.
    */
-  async buildReportConfiguration(rpId, onNameChanged, onFilterChange,
-      onErrorsChanged) {
-    const filters = await this.api.getFilters(rpId);
-    const name = await this.api.getDefaultReportName(rpId);
-    return await this.configBuilder.build(
-      name.name, rpId, filters.filters,
-      reportId => this.noteNewReport(reportId),
-      onNameChanged,
-      onFilterChange,
-      onErrorsChanged);
+  async buildReportConfiguration(reportingType, reportType, dataType,
+      onNameChanged, onFilterChange, onErrorsChanged) {
+    const choices = await this.api.getSetUpMenuChoices(reportingType,
+        reportType, dataType);
+    const reportDataId = choices.report_data_id;
+    let reportConfiguration = null;
+    if (reportDataId) {
+      const filters = await this.api.getFilters(reportDataId);
+      const name = await this.api.getDefaultReportName(reportDataId);
+      reportConfiguration = this.configBuilder.build(
+        name.name, reportDataId, filters.filters,
+        reportId => this.noteNewReport(reportId),
+        onNameChanged,
+        onFilterChange,
+        onErrorsChanged);
+      reportConfiguration.runCallbacks();
+    }
+    this.noteNewMenuChoices(
+      choices.reporting_types,
+      choices.report_types,
+      choices.data_types,
+      choices.selected_reporting_type,
+      choices.selected_report_type,
+      choices.selected_data_type,
+      reportConfiguration);
   }
 
   /**
@@ -63,8 +63,53 @@ export class ReportFinder {
   }
 
   /**
+   * Get a set of report options for this report.
+   */
+  async getExportOptions(reportId) {
+    return await this.api.getExportOptions(reportId);
+  }
+
+  /**
+   * Submit a callback to be called any time menu choices change.
+   *
+   * callback params:
+   *    reportingTypeChoices: choices for the reportingType menu
+   *    reportTypeChoices: choices for the reportType menu
+   *    dataTypeChoices: choices for the dataType menu
+   *    reportingType: currently selected reportingType
+   *    reportType: currently selected reportType
+   *    dataType: currently selected dataType
+   *    reportConfiguration: new reportConfiguration based on selection
+   * returns a reference which can be used later to unsubscribe.
+   */
+  subscribeToMenuChoices(callback) {
+    this.newMenuChoicesSubscribers[callback] = callback;
+    return callback;
+  }
+
+  /**
+   * Remove a callback from the menu choices subscription.
+   */
+  unsubscribeToMenuChoices(ref) {
+    delete this.newMenuChoicesSubscribers[ref];
+  }
+
+  /**
+   * Let subscribers know that there are new menu choices.
+   */
+  noteNewMenuChoices(...args) {
+    for (const ref in this.newMenuChoicesSubscribers) {
+      if (this.newMenuChoicesSubscribers.hasOwnProperty(ref)) {
+        this.newMenuChoicesSubscribers[ref](...args);
+      }
+    }
+  }
+
+  /**
    * Submit a callback to be called any time there is a new report created.
    *
+   * callback params:
+   *    reportId: id of new report
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToReportList(callback) {
@@ -108,7 +153,7 @@ export class ReportFinder {
  * Use the run function to run and store the report in the api.
  *
  * name: Initial name of the report.
- * rpId: Report Presentation id. // TODO: switch to report type data type
+ * reportDataId: Report Data id. // TODO: switch to report type data type
  * filters: List of filters supported by this report.
  * api: Reporting API instance to use.
  * onNewReport: call back when a new report has been created.
@@ -117,10 +162,10 @@ export class ReportFinder {
  * onErrorsChanged: call back when the list of user errors changes.
  */
 export class ReportConfiguration {
-  constructor(name, rpId, filters, api,
+  constructor(name, reportDataId, filters, api,
       onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
     this.name = name;
-    this.rpId = rpId;
+    this.reportDataId = reportDataId;
     this.filters = filters;
     this.simpleFilter = {};
     this.multiFilter = {};
@@ -138,7 +183,7 @@ export class ReportConfiguration {
    */
   async getHints(field, partial) {
     return await this.api.getHelp(
-      this.rpId, this.getFilter(), field, partial);
+      this.reportDataId, this.getFilter(), field, partial);
   }
 
   callUpdateFilter() {
@@ -253,7 +298,7 @@ export class ReportConfiguration {
   async run() {
     try {
       const response = await this.api.runReport(
-        this.rpId,
+        this.reportDataId,
         this.name,
         this.getFilter());
       this.errors = {};
@@ -279,9 +324,9 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  async build(name, rpId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
+  build(name, reportDataId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
     return new ReportConfiguration(
-        name, rpId, filters, this.api, onNewReport, onNameChanged, onUpdateFilter,
-        onErrorsChanged);
+        name, reportDataId, filters, this.api, onNewReport, onNameChanged,
+        onUpdateFilter, onErrorsChanged);
   }
 }

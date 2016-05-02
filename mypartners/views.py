@@ -273,7 +273,7 @@ def save_item(request):
                 form = ContactForm(instance=item, auto_id=False,
                                    data=request.POST)
                 if form.is_valid():
-                    form.save(request.user, partner)
+                    form.save(request, partner)
                     return HttpResponse(status=200)
                 else:
                     return HttpResponse(json.dumps(form.errors))
@@ -294,7 +294,7 @@ def save_item(request):
         partner = get_object_or_404(company.partner_set.all(), id=partner_id)
         form = PartnerForm(instance=partner, auto_id=False, data=request.POST)
         if form.is_valid():
-            form.save(request.user, partner)
+            form.save(request, partner)
             return HttpResponse(status=200)
         else:
             return HttpResponse(json.dumps(form.errors))
@@ -322,7 +322,7 @@ def delete_prm_item(request):
     if content_id == ContentType.objects.get_for_model(Partner).id:
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
         log_change(partner, None, request.user, partner, partner.name,
-                   action_type=DELETION)
+                   action_type=DELETION, impersonator=request.impersonator)
         partner.archive()
         return HttpResponseRedirect(reverse('prm') + '?company=' +
                                     str(company.id))
@@ -341,7 +341,8 @@ def delete_prm_item(request):
                                'name',
                                '')
         log_change(contact_record, None, request.user, partner,
-                   contact_name, action_type=DELETION)
+                   contact_name, action_type=DELETION,
+                   impersonator=request.impersonator)
         contact_record.archive()
         return HttpResponseRedirect(reverse('partner_records')+'?company=' +
                                     str(company.id)+'&partner=' +
@@ -350,7 +351,8 @@ def delete_prm_item(request):
         saved_search = get_object_or_404(PartnerSavedSearch, id=item_id)
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
         log_change(saved_search, None, request.user, partner,
-                   saved_search.email, action_type=DELETION)
+                   saved_search.email, action_type=DELETION,
+                   impersonator=request.impersonator)
         saved_search.delete()
         return HttpResponseRedirect(reverse('partner_searches')+'?company=' +
                                     str(company.id)+'&partner=' +
@@ -359,7 +361,7 @@ def delete_prm_item(request):
         partner = get_object_or_404(Partner, id=partner_id, owner=company)
         contact = get_object_or_404(Contact, id=contact_id)
         log_change(contact, None, request.user, partner, contact.name,
-                   action_type=DELETION)
+                   action_type=DELETION, impersonator=request.impersonator)
         contact.archive()
         return HttpResponseRedirect(reverse('partner_details')+'?company=' +
                                     str(company.id)+'&partner=' +
@@ -794,7 +796,7 @@ def prm_edit_records(request):
         form = ContactRecordForm(request.POST, request.FILES,
                                  partner=partner, instance=instance)
         if form.is_valid():
-            form.save(user, partner)
+            form.save(request, partner)
             search_params = request.GET.copy()
             search_params.update({'id': form.instance.pk})
             return HttpResponseRedirect(reverse('record_view') + '?' +
@@ -1247,8 +1249,9 @@ def process_email(request):
                                                          partner=poss_partner)
                     change_msg = "Contact was created from email."
                     log_change(new_contact, None, admin_user,
-                               new_contact.partner,   new_contact.name,
-                               action_type=ADDITION, change_msg=change_msg)
+                               new_contact.partner, new_contact.name,
+                               action_type=ADDITION, change_msg=change_msg,
+                               impersonator=request.impersonator)
                     created_contacts.append(new_contact)
                 else:
                     unmatched_contacts.append(contact)
@@ -1306,7 +1309,8 @@ def process_email(request):
         except AttributeError:
             attachment_failures.append(record)
         log_change(record, None, admin_user, contact.partner, contact.name,
-                   action_type=ADDITION, change_msg=change_msg)
+                   action_type=ADDITION, change_msg=change_msg,
+                   impersonator=request.impersonator)
 
         created_records.append(record)
 
