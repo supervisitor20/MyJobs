@@ -461,6 +461,7 @@ def create_full_fixture():
         order=121,
         output_format="us_date",
         configuration=con_comm,
+        is_active=False,
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="length",
