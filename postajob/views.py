@@ -173,9 +173,6 @@ def purchasedjobs_overview(request, purchased_product, admin):
 @user_is_allowed()
 def purchasedmicrosite_admin_overview(request):
     company = settings.SITE.canonical_company
-    if 'MarketPlace' not in company.enabled_access:
-        raise Http404('%s does not have MarketPlace access.' % company)
-
     has_access = request.user.can(company, 'read product', 'read request',
                                   'read offline purchase',
                                   'read purchased product', 'read grouping',
