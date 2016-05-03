@@ -40,7 +40,8 @@ export class OutreachRecordTable extends Component {
                       striped={false}
                       hover={true}
                       search={true}
-                      pagination={!isIE}>
+                      pagination={!isIE}
+                      height={isIE ? "600px" : undefined}>
         <TableHeaderColumn dataField="date"
                            dataAlign="center"
                            dataSort={true}
