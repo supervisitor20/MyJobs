@@ -41,7 +41,9 @@ export class OutreachRecordTable extends Component {
                       hover={true}
                       search={true}
                       pagination={!isIE}
-                      height={isIE ? "600px" : undefined}>
+                      height={isIE ? "600px" : undefined}
+                      options={{paginationSize:3,
+                                noDataText: 'No records found'}}>
         <TableHeaderColumn dataField="date"
                            dataAlign="center"
                            dataSort={true}
