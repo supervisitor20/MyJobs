@@ -250,7 +250,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-8">
             <button
               className="button"
-              onClick={() => reportConfig.run()}>
+              onClick={e => {e.preventDefault(); reportConfig.run();}}>
               Run Report
             </button>
           </div>
