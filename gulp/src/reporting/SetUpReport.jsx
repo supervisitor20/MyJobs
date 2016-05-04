@@ -41,7 +41,7 @@ export default class SetUpReport extends Component {
       category: reportType,
       dataSet: dataType,
     } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType);
+    this.buildReportConfig(reportingType, reportType, dataType, []);
   }
 
   onCategoryChange(reportType) {
@@ -49,7 +49,7 @@ export default class SetUpReport extends Component {
       intention: reportingType,
       dataSet: dataType,
     } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType);
+    this.buildReportConfig(reportingType, reportType, dataType, []);
   }
 
   onDataSetChange(dataType) {
@@ -57,7 +57,7 @@ export default class SetUpReport extends Component {
       intention: reportingType,
       category: reportType,
     } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType);
+    this.buildReportConfig(reportingType, reportType, dataType, []);
   }
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
@@ -106,7 +106,8 @@ export default class SetUpReport extends Component {
     this.setState({loading: false});
   }
 
-  async buildReportConfig(reportingType, reportType, dataType) {
+  async buildReportConfig(reportingType, reportType, dataType,
+      overrideFilter) {
     const {
       reportDataId: reportDataIdRaw,
       filterJson,
@@ -115,11 +116,15 @@ export default class SetUpReport extends Component {
     const {reportFinder} = this.props;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
     let filter;
-    try {
-      filter = JSON.parse(filterJson);
-    } catch (e) {
-      // filter is corrupt somehow. Treat it as empty.
-      filter = [];
+    if (overrideFilter) {
+      filter = overrideFilter;
+    } else {
+      try {
+        filter = JSON.parse(filterJson);
+      } catch (e) {
+        // filter is corrupt somehow. Treat it as empty.
+        filter = [];
+      }
     }
 
     reportFinder.buildReportConfiguration(
