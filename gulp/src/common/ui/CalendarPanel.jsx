@@ -5,6 +5,9 @@ import Select from 'common/ui/Select';
 import classnames from 'classnames';
 import {getDisplayForValue} from '../array.js';
 
+/**
+ * Calendar popup. Used by DateField.jsx
+ */
 export default class CalendarPanel extends React.Component {
   renderDayHeader(name) {
     return (
@@ -106,7 +109,7 @@ CalendarPanel.propTypes = {
    */
   year: React.PropTypes.number.isRequired,
   /**
-   * Dynamic, see generateYearChoices() in Date.jsx
+   * Dynamic, see generateYearChoices() in DateField.jsx
    */
   yearChoices: React.PropTypes.arrayOf(
     React.PropTypes.shape({
