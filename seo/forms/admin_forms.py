@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.core.validators import EMPTY_VALUES
 from django.utils.decorators import method_decorator
 from django.utils.encoding import smart_text
-from django.utils.html import format_html 
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
@@ -86,13 +86,13 @@ class MyModelChoiceField(forms.ModelChoiceField):
 class TableWidget(forms.Widget):
     """
     Widget for displaying readonly data in an HTML table. TableWidget can be used with
-    the base forms.fields.Field type. 
- 
+    the base forms.fields.Field type.
+
     Inputs:
     :headings: Iterable of header cell data. ["cell1", "cell2", "cell3"]
     :rows: Iterable of rows of cell data [["row1-1", "row1-2"], ["row2-1, row2-2"]]
     """
-    
+
     # Django admin styles alternating rows using these class names
     row_class = cycle(["row1", "row2"])
 
@@ -649,7 +649,7 @@ class BusinessUnitForm(SeoSiteReverseForm):
         sites = SeoSite.objects.all()
         site_package_label = 'Show on these sites only'
         site_packages_widget = FSM(site_package_label,
-                                   reverse_lazy('site_fsm'), async=True)
+                                   reverse_lazy('site_admin_fsm'), async=True)
         self.fields['site_packages'] = forms.ModelMultipleChoiceField(
             queryset=sites, help_text='', label=site_package_label,
             required=False, widget=site_packages_widget)
@@ -707,7 +707,7 @@ class CompanyForm(SeoSiteReverseForm):
                                                 my_model=BusinessUnit,
                                                 required=False,
                                                 widget=job_source_ids_widget)
-    sites_widget = FSM('PRM Saved Search Sites', 
+    sites_widget = FSM('PRM Saved Search Sites',
                        reverse_lazy('site_admin_fsm'),
                        lazy=True)
     prm_saved_search_sites = MyModelMultipleChoiceField(

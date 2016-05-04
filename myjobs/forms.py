@@ -1,7 +1,7 @@
 import pytz
 
-from django.forms import (ModelForm, ChoiceField, Select,
-                          Form, CharField, PasswordInput)
+from django.forms import (ModelForm, ChoiceField, Select, Textarea,
+                          Form, CharField, PasswordInput, IntegerField, )
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
@@ -281,3 +281,17 @@ class CompanyAccessRequestApprovalForm(ModelForm):
                 "for this request. Please try again.")
 
         return code
+
+
+class AccessRequestForm(Form):
+    """
+    Form used by staff to request access to a user's account. The user is known
+    by the view so we only require a reason.
+    """
+    reason = CharField(label="What is the nature of this request?",
+                       required=True, widget=Textarea())
+
+    def clean_reason(self):
+        if not self.cleaned_data['reason']:
+            raise ValidationError('Reason is required')
+        return self.cleaned_data['reason']

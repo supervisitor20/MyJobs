@@ -12,7 +12,8 @@ from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import user_passes_test
 from django.db import IntegrityError
 from django.forms import Form, model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import (
+    HttpResponse, HttpResponseRedirect, HttpResponseForbidden)
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, redirect, render, Http404
@@ -21,21 +22,24 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from captcha.fields import ReCaptchaField
+from impersonate.decorators import allowed_user_required
+from impersonate.views import impersonate as impersonate_
 
 from universal.helpers import get_domain
 from universal.decorators import restrict_to_staff
 from myjobs.decorators import user_is_allowed, requires
 from myjobs.forms import (ChangePasswordForm, EditCommunicationForm,
-                          CompanyAccessRequestForm)
+                          CompanyAccessRequestForm, AccessRequestForm)
 from myjobs.helpers import expire_login, log_to_jira, get_title_template
 from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
-                           CompanyAccessRequest)
+                           CompanyAccessRequest, SecondPartyAccessRequest)
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from registration.models import Invitation
+from seo.models import SeoSite
 from tasks import (process_sendgrid_event, create_jira_ticket,
                    assign_ticket_to_request)
 from universal.helpers import get_company_or_404
@@ -520,6 +524,7 @@ def cas(request):
 def topbar(request):
     callback = request.REQUEST.get('callback')
     user = request.user
+    impersonating = request.REQUEST.get('impersonating')
 
     if not user or user.is_anonymous():
         # Ensure that old myguid cookies can be handled correctly
@@ -527,12 +532,12 @@ def topbar(request):
         try:
             user = User.objects.get(user_guid=guid)
         except User.DoesNotExist:
-           pass
+            pass
 
     if not user or user.is_anonymous():
         user = None
 
-    ctx = {'user': user}
+    ctx = {'user': user, 'impersonating': impersonating == u'true'}
 
     response = HttpResponse(content_type='text/javascript')
 
@@ -1129,6 +1134,7 @@ def api_create_user(request):
 
     Returns:
     :success:                   boolean
+
     """
     ctx = {'success': 'true'}
 
@@ -1156,9 +1162,7 @@ def api_create_user(request):
         # Does user already exist?
         if user:
             existing_roles = set(user.roles.filter(company=company))
-
-            # Update the user's roles, overwriting those for "company"
-            user.roles = user.roles.exclude(company=company) | new_roles
+            user.roles.add(*new_roles)
 
             ctx["message"] = "User already exists. Role invitation email sent."
         else:
@@ -1384,3 +1388,86 @@ def request_company_access(request):
 
     return render_to_response(
         'myjobs/request_company_access.html', ctx, RequestContext(request))
+
+
+@allowed_user_required
+def impersonate(request, uid, *args, **kwargs):
+    """
+    This view is hit by a staff user after a second party access request is
+    approved by the target. It starts the request and then redirects to "/"
+
+    """
+    account_owner = User.objects.filter(pk=uid).first()
+    if account_owner:
+        access_request = SecondPartyAccessRequest.objects.filter(
+            second_party=request.user,
+            account_owner=account_owner,
+            accepted=True,
+            session_started__isnull=True,
+            expired=False).first()
+        if access_request:
+            return impersonate_(request, uid=uid, *args, **kwargs)
+    return HttpResponseForbidden()
+
+
+@user_is_allowed()
+def process_access_request(request, access_id, accepted):
+    """
+    The target of a second party access request will hit this view to
+    approve or reject a given request.
+    """
+    access_request = SecondPartyAccessRequest.objects.filter(
+        account_owner=request.user, pk=access_id,
+        acted_on__isnull=True, expired=False).first()
+    if access_request:
+        context = {
+            'access_request': access_request,
+            'second_party_name': access_request.second_party.get_full_name(
+                default=access_request.second_party_email)}
+        if not (access_request.acted_on or access_request.expired):
+            context['new'] = True
+            access_request.accepted = accepted
+            access_request.acted_on = datetime.datetime.now()
+            access_request.save()
+            access_request.notify_acceptance()
+        return render_to_response('myjobs/approve_access_request.html',
+                                  context, RequestContext(request))
+    else:
+        return HttpResponseForbidden()
+
+
+@allowed_user_required
+def request_account_access(request, uid):
+    """
+    Allows a staff user to input the reason for requesting account access.
+    """
+    user = User.objects.get(pk=uid)
+    admin_view = 'admin:myjobs_user_changelist'
+    if user.is_staff or user.is_superuser:
+        # This is handled prettier in the action itself. The presence of this
+        # check here is to ensure one can't manually craft a post.
+        return redirect(admin_view)
+    if request.method == 'POST':
+        form = AccessRequestForm(request.POST)
+        if form.is_valid():
+            # Try to intelligently determine the site we're requesting access
+            # on. We may be somewhere without certain middleware (settings.SITE
+            # may not be populated) or running locally on runserver.
+            domains = [request.get_host()]
+            if ':' in domains[0]:
+                domains.append(domains[0].split(':')[0])
+            site = SeoSite.objects.filter(domain__in=domains).first()
+            if site is None:
+                site = SeoSite.objects.get(domain='secure.my.jobs')
+            SecondPartyAccessRequest.objects.create(
+                account_owner=user, second_party=request.user, site=site,
+                reason=form.cleaned_data['reason'])
+            return redirect(admin_view)
+    else:
+        form = AccessRequestForm()
+
+    return render_to_response('myjobs/access_request.html',
+                              {'form': form, 'uid': uid,
+                               'full_name': user.get_full_name(
+                                   default=user.email)},
+                              RequestContext(request))

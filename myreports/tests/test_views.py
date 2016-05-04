@@ -498,6 +498,12 @@ class TestReportsApi(MyReportsTestCase):
             self.dynamic_models['report_type/presentation_type']
             ['contacts/xlsx'])
 
+        # mess up order by pushing name to the end.
+        config_cols = report.report_data.configuration.configurationcolumn_set
+        name_col = config_cols.get(column_name='name')
+        name_col.order = 999999
+        name_col.save()
+
         resp = self.client.get(
             "%s?report_id=%d" % (reverse('export_options_api'), report.pk))
         self.assertEquals(200, resp.status_code)
@@ -515,14 +521,14 @@ class TestReportsApi(MyReportsTestCase):
                     },
                 ],
                 u'values': [
-                    {u'display': u'name', u'value': u'name'},
-                    {u'display': u'partner', u'value': u'partner'},
-                    {u'display': u'email', u'value': u'email'},
-                    {u'display': u'phone', u'value': u'phone'},
-                    {u'display': u'date', u'value': u'date'},
-                    {u'display': u'notes', u'value': u'notes'},
-                    {u'display': u'locations', u'value': u'locations'},
-                    {u'display': u'tags', u'value': u'tags'},
+                    {u'display': u'Date', u'value': u'date'},
+                    {u'display': u'Location', u'value': u'locations'},
+                    {u'display': u'Tags', u'value': u'tags'},
+                    {u'display': u'Partners', u'value': u'partner'},
+                    {u'display': u'Email', u'value': u'email'},
+                    {u'display': u'Phone', u'value': u'phone'},
+                    {u'display': u'Notes', u'value': u'notes'},
+                    {u'display': u'Name', u'value': u'name'},
                 ],
             },
         }, data)
@@ -603,6 +609,40 @@ class TestDynamicReports(MyReportsTestCase):
             presentation_type__is_active=True,
             report_data=report_data,
             presentation_type__presentation_type=presentation_type)
+
+    def test_list_dynamic_reports(self):
+        """Test that list dynamic reports api works."""
+        self.maxDiff = 10000
+        self.client.login_user(self.user)
+
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
+
+        reports = [
+            DynamicReport.objects.create(
+                name='The Report',
+                owner=self.company,
+                report_data=report_data,
+                filters='{"a": %d}' % i)
+            for i in range(0, 6)
+        ]
+        # This situation comes up in some ancient test data that may
+        # be present on developers' machines.
+        reports[3].report_data = None
+        reports[3].save()
+
+        resp = self.client.get(reverse('list_dynamic_reports'))
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(
+            {'reports': [
+                {
+                    u'id': reports[i].pk,
+                    u'name': u'The Report',
+                    u'report_type': u'contacts'
+                } for i in reversed(range(0, 6)) if i != 3
+            ]},
+            json.loads(resp.content))
 
     def test_dynamic_contacts_report(self):
         """Create some test data, run, list, and download a contacts report."""

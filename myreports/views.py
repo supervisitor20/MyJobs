@@ -505,9 +505,10 @@ def export_options_api(request):
 
     cols = (
         ConfigurationColumn.objects
-        .active_for_report_data(report.report_data))
+        .active_for_report_data(report.report_data)
+        .order_by('order'))
     values = [
-        {'value': c.column_name, 'display': c.column_name}
+        {'value': c.column_name, 'display': c.alias or c.column_name}
         for c in cols
     ]
 
@@ -624,10 +625,13 @@ def list_dynamic_reports(request):
     """Get a list of dynamic report runs for this user."""
     company = get_company_or_404(request)
 
+    # report_data == NULL should not happen in production data
+    # Checking for it here to catch a situtation that happened due to a
+    # migration before the first release.
     reports = (
         DynamicReport.objects
-        .filter(owner=company)
-        .order_by('-pk')[:10])
+        .filter(owner=company, report_data__isnull=False)
+        .order_by('-pk'))
 
     data = [{
         'id': r.id,

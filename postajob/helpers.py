@@ -1,6 +1,7 @@
-from myjobs.models import AppAccess
+from myjobs.models import AppAccess, Activity
 from postajob.models import SitePackage
-from myblocks.models import Page, Row, RowOrder, LoginBlock, BlockOrder
+from myblocks.models import (raw_base_template, Page, Row, RowOrder,
+                             LoginBlock, BlockOrder)
 
 def can_modify(user, company, kwargs, update_activity, create_activity):
     """
@@ -20,18 +21,50 @@ def can_modify(user, company, kwargs, update_activity, create_activity):
         A boolean representing whether or not they had permission to perform
         the particular set of actions.
 
+        If the company doesn't have appropriate access, raises an ``Http404``
+        exception.
+
     Example::
 
         if not can_modify(user, company, kwargs, "update job", "create job"):
             return MissingActivity()
 
-        retunr HttpResponse("Success")
+        return HttpResponse("Success")
 
     """
+
     if 'pk' in kwargs:
         return user.can(company, update_activity)
     else:
         return user.can(company, create_activity)
+
+
+def create_login_block(company, site):
+    """
+    Given a ``Company`` and a ``SeoSite`, creates a login block for that
+    company on that site.
+
+    Inputs:
+        :company: Who should own the login block
+        :site: The SeoSite the login block should appear on
+
+    Output:
+        The resulting ``LoginBlock`` instance.
+
+    """
+    page = Page.objects.create(
+        name="%s Login Page" % company.name, page_type=Page.LOGIN)
+    page.sites.add(site)
+    row = Row.objects.create()
+    row_order = RowOrder.objects.create(row=row, page=page, order=0)
+    template = raw_base_template(LoginBlock)
+    login_block = LoginBlock.objects.create(
+        name="%s Login Block" % company.name, offset=0, span=12,
+        template=template)
+    BlockOrder.objects.create(block=login_block, row=row, order=0)
+
+    return login_block
+
 
 def enable_posting(company, site):
     """
@@ -56,14 +89,7 @@ def enable_posting(company, site):
     company.app_access.add(AppAccess.objects.get(name='Posting'))
 
     # create a login block so that users can log in
-    page = Page.objects.create(
-        name="%s Login Page" % company.name, page_type=Page.LOGIN)
-    page.sites.add(site)
-    row = Row.objects.create()
-    row_order = RowOrder.objects.create(row=row, page=page, order=0)
-    login_block = LoginBlock.objects.create(
-        name="%s Login Block" % company.name, offset=0, span=12)
-    BlockOrder.objects.create(block=login_block, row=row, order=0)
+    create_login_block(company, site)
 
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(
@@ -97,14 +123,7 @@ def enable_marketplace(company, site):
     company.app_access.add(AppAccess.objects.get(name='MarketPlace'))
 
     # create a login block so that users can log in
-    page = Page.objects.create(
-        name="%s Login Page" % company.name, page_type=Page.LOGIN)
-    page.sites.add(site)
-    row = Row.objects.create()
-    row_order = RowOrder.objects.create(row=row, page=page, order=0)
-    login_block = LoginBlock.objects.create(
-        name="%s Login Block" % company.name, offset=0, span=12)
-    BlockOrder.objects.create(block=login_block, row=row, order=0)
+    create_login_block(company, site)
 
     # create a site package for the posted jobs to live on
     package, _ = SitePackage.objects.get_or_create(

@@ -41,7 +41,7 @@ export class ReportList extends Component {
           key={r.id}>
           {options.length > 0 ? <PopMenu options={options}/> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
-          {r.name}
+          <span className="menu-text">{r.name}</span>
         </li>
       );
     });
@@ -55,9 +55,11 @@ export class ReportList extends Component {
             href="#/set-up-report">
             Create a New Report
           </a>
-          <ul>
-            {reportLinks}
-          </ul>
+          <div className="report-list">
+            <ul>
+              {reportLinks}
+            </ul>
+          </div>
         </div>
       </div>
     );

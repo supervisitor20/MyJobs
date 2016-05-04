@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse, NoReverseMatch
 from seo.models import (Company, GoogleAnalytics, SeoSite,
                         Configuration, BusinessUnit)
 from myjobs.models import User, CompanyAccessRequest
-from redirect.models import CanonicalMicrosite
+from redirect.models import CanonicalMicrosite, DestinationManipulation
 from social_links.models import SocialLink
 
 register = template.Library()
@@ -32,7 +32,8 @@ def get_common_tasks(apps, request):
     # This is the order that models will appear in the custom group
     common_task_models = [Group, SeoSite, Configuration, BusinessUnit,
                           SocialLink, GoogleAnalytics, Company, User,
-                          CompanyAccessRequest, CanonicalMicrosite]
+                          CompanyAccessRequest, CanonicalMicrosite,
+                          DestinationManipulation]
     # model._meta.verbose_name_plural will be a unicode string (if we have set
     # the name) or a <django.utils.functional._proxy__ object ...>; calling a
     # string method on it gives us the actual name of the model

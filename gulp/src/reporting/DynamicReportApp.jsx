@@ -3,7 +3,6 @@ import {ReportList} from './ReportList';
 import {remove} from 'lodash-compat/array';
 import {map} from 'lodash-compat/collection';
 
-// Props for this component come directly from the store state. (see main.js).
 export class DynamicReportApp extends Component {
   constructor() {
     super();

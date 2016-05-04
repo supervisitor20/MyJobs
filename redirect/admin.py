@@ -1,7 +1,12 @@
+import unicodecsv as csv
+from cStringIO import StringIO
 from django.conf import settings
 from django.contrib import admin
 from django.db.models import Q
+from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+
+from ajax_select import make_ajax_form
 
 from redirect.models import (CanonicalMicrosite, CompanyEmail,
     CustomExcludedViewSource, DestinationManipulation, EmailRedirectLog,
@@ -149,6 +154,9 @@ class CustomExcludedViewSourceAdmin(admin.ModelAdmin):
 
 
 class DestinationManipulationAdmin(admin.ModelAdmin):
+    form = make_ajax_form(DestinationManipulation, {
+        'view_source': 'view_sources'})
+    actions = ['export_as_csv']
     list_filter = ['action_type',
                    ('action', MultiSearchFilter),
                    BlankValue1ListFilter,
@@ -157,6 +165,45 @@ class DestinationManipulationAdmin(admin.ModelAdmin):
     search_fields = ['=buid', '=view_source']
     list_display = ['buid', 'get_view_source_name', 'action_type',
                     'action', 'value_1', 'value_2']
+
+    def export_as_csv(self, request, queryset):
+        """Gives the ability to save the queryset as a csv"""
+
+        query = request.GET.get('q')
+        # Older versions of Django are broken with respect to the 
+        # "Select all x destination manipulations" link in that regardless of 
+        # if it is chosen or not, you will always only get at most 100 records.
+        # Thus, we manually run the filter and return all results if this
+        # option is present.
+        select_all = request.POST.get('select_across', '0') == '1'
+        if query and select_all:
+            result = queryset.filter(Q(buid=query) | Q(view_source=query))
+        else:
+            result = queryset
+
+        fields = ("BUID", "View Source", "Action Type", "Action", "Value 1",
+                  "Value 2")
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(fields)
+
+        for item in result:
+            writer.writerow([
+                item.buid,
+                item.view_source,
+                item.action_type,
+                item.action,
+                item.value_1,
+                item.value_2])
+
+        disposition = ("attachment; filename=destination_manipulations.csv")
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = disposition
+        response.write(output.getvalue())
+
+        return response
+    export_as_csv.short_description = "Save selected as CSV"
+
 
 class EmailRedirectLogAdmin(admin.ModelAdmin):
     list_display = ['buid', 'from_addr', 'to_addr', 'sent']

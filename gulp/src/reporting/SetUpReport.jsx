@@ -35,7 +35,6 @@ export default class SetUpReport extends Component {
     const {reportFinder} = this.props;
     reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
   }
-
   onIntentionChange(reportingType) {
     const {
       category: reportType,

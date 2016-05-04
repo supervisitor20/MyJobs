@@ -10,8 +10,6 @@ from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
 
-import seo.lookups
-
 admin.autodiscover()
 
 # API Resources
@@ -24,6 +22,7 @@ handler500 = "myjobs.views.error_500"
 
 urlpatterns = patterns(
     '',
+    url(r'^ajax/', include('automation.urls')),
     url('', include('myjobs.urls')),
     url(r'^candidates/', include('mydashboard.urls')),
     url(r'^profile/', include('myprofile.urls')),

@@ -102,6 +102,7 @@ MIDDLEWARE_CLASSES = (
     'middleware.CompactP3PMiddleware',
     'middleware.TimezoneMiddleware',
     'redirect.middleware.ExcludedViewSourceMiddleware',
+    'middleware.ImpersonateTimeoutMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -305,6 +306,7 @@ INSTALLED_APPS = (
     'compressor',
     'corsheaders',
     'ajax_select',
+    'impersonate',
 )
 
 # Captcha SSL
@@ -575,6 +577,8 @@ SAVED_SEARCH_DIGEST = 13
 SAVED_SEARCH_DISABLED = 14
 SAVED_SEARCH_INITIAL = 15
 SAVED_SEARCH_UPDATED = 16
+REMOTE_ACCESS_REQUEST = 17
+REMOTE_ACCESS_RESPONSE = 18
 
 EMAIL_FORMATS = {
     ACTIVATION: {
@@ -635,6 +639,14 @@ EMAIL_FORMATS = {
         'address': u'{company_name} Saved Search <savedsearch@{domain}>',
         'subject': u'{company_name} Saved Search Updated - {label}',
     },
+    REMOTE_ACCESS_REQUEST: {
+        'address': u'access@{domain}',
+        'subject': u'{subject}',
+    },
+    REMOTE_ACCESS_RESPONSE: {
+        'address': u'access@{domain}',
+        'subject': u'{subject}',
+    }
 }
 
 MEMOIZE = True
@@ -669,3 +681,11 @@ ENV_URL_PREFIXES = ['qc', 'staging']
 
 # See template tag js_bundle for details.
 WEBPACK_DEV_SERVER_BASE_URL = None
+
+AJAX_LOOKUP_CHANNELS = {
+    'companies': ('seo.lookups', 'CompaniesLookup'),
+    'sites': ('seo.lookups', 'SitesLookup'),
+    'view_sources': ('redirect.lookups', 'ViewSourcesLookup'),
+}
+
+IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'

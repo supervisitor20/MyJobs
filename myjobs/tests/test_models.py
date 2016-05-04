@@ -6,22 +6,24 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.db.models import Q
+from django.http import Http404
 from django.utils.http import urlquote
 
 import pytz
 
 from setup import MyJobsBase
-from myjobs.models import User, Role
+from myjobs.models import User, Role, SecondPartyAccessRequest
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import (UserFactory, AppAccessFactory,
                                     ActivityFactory, RoleFactory,
                                     CompanyAccessRequestFactory)
-from seo.tests.factories import CompanyUserFactory
+from mymessages.models import Message
 from myprofile.models import SecondaryEmail, Name, Telephone
 from mysearches.models import PartnerSavedSearch
-from myreports.models import Report
-from seo.tests.factories import CompanyFactory
 from mysearches.tests.factories import PartnerSavedSearchFactory
+from myreports.models import Report
+from seo.models import SeoSite
+from seo.tests.factories import CompanyFactory
 
 
 class UserManagerTests(MyJobsBase):
@@ -228,9 +230,9 @@ class TestActivities(MyJobsBase):
         # existing role should not have new activity
         self.assertNotIn(new_activity, self.role.activities.all())
 
-    def test_can_method(self):
+    def test_can_method_with_app_access(self):
         """
-        `User.can` should return False when a user isn't associated with the
+        ``User.can`` should return False when a user isn't associated with the
         correct activities and True when they are.
         """
 
@@ -248,6 +250,20 @@ class TestActivities(MyJobsBase):
 
         self.assertFalse(user.can(
             self.company, activities[0], "eat a burrito"))
+
+    def test_can_method_without_app_access(self):
+        """
+        ``User.can`` should raise an Http404 when the company doesn't have
+        sufficient app-level access.
+
+        """
+        self.role.activities = self.activities
+        activities = self.role.activities.values_list('name', flat=True)
+        self.user.roles = [self.role]
+        self.company.app_access.clear()
+
+        with self.assertRaises(Http404):
+            self.user.can(self.company, activities[0])
 
     def test_send_invite_method(self):
         """
@@ -297,3 +313,64 @@ class TestActivities(MyJobsBase):
 
         self.assertTrue(access_request.expired)
 
+
+class RemoteAccessRequestModelTests(MyJobsBase):
+    def setUp(self):
+        super(RemoteAccessRequestModelTests, self).setUp()
+        self.password = '5UuYquA@'
+        self.client = TestClient()
+        self.client.login(email=self.user.email, password=self.password)
+
+        self.account_owner = UserFactory(email='accounts@my.jobs',
+                                         password=self.password)
+        self.impersonate_url = reverse('impersonate-start', kwargs={
+            'uid': self.account_owner.pk})
+        self.site = SeoSite.objects.first()
+
+    def test_create_request_sends_messages(self):
+        """
+        The requesting of remote access should send both a My.jobs message
+        and an email to the account owner.
+        """
+        msg = "User had %s messages, expected %s"
+        mail.outbox = []
+        spar = SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner, second_party=self.user,
+            site=self.site, reason='just cuz')
+        self.assertEqual(len(mail.outbox), 1)
+
+        # We're logged in as the requesting user at this point and should
+        # not have any messages.
+        response = self.client.get(reverse('home'))
+        self.assertEqual(len(response.context['new_messages']), 0,
+                         msg=msg % (len(response.context['new_messages']), 0))
+
+        response = self.client.get(reverse('impersonate-approve',
+                                           kwargs={'access_id': spar.id}))
+        self.assertEqual(response.status_code, 403,
+                         msg=("Unauthorized approval of a request should not "
+                              "happen but did"))
+
+        # Log out then log in as the account owner.
+        self.client.get(reverse('auth_logout'))
+        self.client.login(email=self.account_owner.email,
+                          password=self.password)
+        response = self.client.get(reverse('home'))
+
+        # We should now have one My.jobs message.
+        messages = response.context['new_messages']
+        self.assertEqual(len(messages), 1,
+                         msg=msg % (len(response.context['new_messages']), 1))
+        message = messages[0]
+        email = mail.outbox[0]
+        self.assertEqual(message.message.body, email.body,
+                         msg="Message and email bodies were not identical")
+        for text in ['>Allow<', '>Deny<', spar.reason,
+                     self.user.get_full_name(default=self.user.email)]:
+            self.assertTrue(text in email.body,
+                            msg="%s not in email body" % text)
+        response = self.client.get(reverse('impersonate-approve',
+                                           kwargs={'access_id': spar.id}))
+        spar = SecondPartyAccessRequest.objects.get(pk=spar.pk)
+        self.assertEqual(spar.accepted, True,
+                         msg="Acceptance status was not updated")

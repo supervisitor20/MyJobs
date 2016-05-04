@@ -62,11 +62,11 @@ class ColumnConfiguration(object):
     def __init__(self, column, format,
                  filter_interface=None, filter_display=None, help=False):
         self.column = column
-        self.format = COLUMN_FORMATS[format]
+        self.format = COLUMN_FORMATS.get(format, '')
         self.filter_interface = filter_interface
         self.filter_display = filter_display
         self.help = help
 
     def extract_formatted(self, data):
         """Return a fully formatted value."""
-        return self.format.format(data[self.column])
+        return self.format.format(data.get(self.column, ''))

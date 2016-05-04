@@ -317,6 +317,16 @@ describe('ReportConfiguration', () => {
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'bbb', {});
   }));
 
+  it('clears the running report if the run fails', promiseTest(async () => {
+    spyOn(fakeApi, 'runReport').and.throwError('error');
+
+    await config.run();
+
+    expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'defaultName', {});
+    expect(fakeComponent.newReportNote).toHaveBeenCalled();
+    expect(fakeComponent.newRunningReportNote).toHaveBeenCalled();
+  }));
+
   it('notes name errors from api', promiseTest(async() => {
     fakeApi.runReport = () => {
       const error = new Error();

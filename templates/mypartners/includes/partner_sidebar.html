@@ -3,7 +3,7 @@
     <div class="partner-filters">
         <h2 class="top">Filter Partners</h2>
         <label>Keywords:</label>
-        <input id="lib-keywords" type="text" placeholder="Keywords" {% if request.GET.keywords %}value="{{request.GET.keywords}}"{% endif %} />
+        <input id="lib-keywords" type="text" placeholder="Keywords" autofocus="autofocus" {% if request.GET.keywords %}value="{{request.GET.keywords}}"{% endif %} />
         <label>State:</label>
         {% include "includes/state_dropdown.html" %}
         <label>City:</label>

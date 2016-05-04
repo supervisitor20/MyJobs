@@ -254,7 +254,7 @@ class Role extends React.Component {
             <div className="product-card-full no-highlight">
               <div className="row no-gutter">
                   <label htmlFor="id_role_name" className="col-sm-3 control-label">Role Name* </label>
-                  <input id="id_role_name" className="col-sm-5" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange} autoFocus="autofocus"/>
+                  <input id="id_role_name" className="col-sm-5" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange} autoFocus/>
                   <HelpText message={roleNameHelp} styleName="col-sm-4" />
               </div>
 

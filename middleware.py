@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import operator
 import pytz
 
@@ -9,6 +10,9 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.shortcuts import redirect
 
+from impersonate.middleware import ImpersonateMiddleware
+
+from myjobs.models import User, SecondPartyAccessRequest
 from postajob.models import SitePackage
 from seo.models import SeoSite, SeoSiteRedirect, SeoSiteFacet
 import version
@@ -300,3 +304,37 @@ class RedirectOverrideMiddleware(object):
 
         if choice:
             return redirect(choice.new_path, permanent=True)
+
+
+class ImpersonateTimeoutMiddleware(ImpersonateMiddleware):
+    """
+    Wraps ImpersonateMiddleware with a check for non-expired access requests
+    """
+    def process_request(self, request):
+        request.user.is_impersonate = False
+        request.impersonator = None
+
+        # This conditional is nearly identical to the one in
+        # ImpersonateMiddleware. We had to add the request.path check as
+        # we would otherwise be in a redirect loop.
+        if (request.user.is_authenticated()
+                and '_impersonate' in request.session
+                and request.path != reverse('impersonate-stop')):
+            user_id = request.session['_impersonate']
+            if isinstance(user_id, User):
+                user_id = user_id.id
+
+            # We should only allow impersonation if there is an active
+            # SecondPartyAccessRequest that has been in use for less than
+            # two hours.
+            now = datetime.now()
+            started = now - timedelta(hours=2)
+            access_request = SecondPartyAccessRequest.objects.filter(
+                second_party=request.user, account_owner__id=user_id,
+                session_started__range=(started, now),
+                session_finished__isnull=True)
+            if access_request:
+                return super(ImpersonateTimeoutMiddleware,
+                             self).process_request(request)
+            else:
+                return redirect(reverse('impersonate-stop'))

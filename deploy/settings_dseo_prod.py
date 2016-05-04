@@ -42,8 +42,10 @@ CACHES = {
         # the cache for multiple deployments per day.
         'VERSION': str(datetime.date.fromtimestamp(os.path.getmtime(__file__))),
         'LOCATION': [
-            'dseo-mc-cluster.qksjst.0003.use1.cache.amazonaws.com:11211',
-            'dseo-mc-cluster.qksjst.0004.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0003.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0004.use1.cache.amazonaws.com:11211'
         ]
     },
     'sessions': {
@@ -53,6 +55,8 @@ CACHES = {
             'dseomj-mc-cluster.qksjst.0002.use1.cache.amazonaws.com:11211',
             'dseomj-mc-cluster.qksjst.0003.use1.cache.amazonaws.com:11211',
             'dseomj-mc-cluster.qksjst.0004.use1.cache.amazonaws.com:11211',
+            'dseomj-mc-cluster.qksjst.0005.use1.cache.amazonaws.com:11211',
+            'dseomj-mc-cluster.qksjst.0006.use1.cache.amazonaws.com:11211',
         ]
     },
     'blocks': {
