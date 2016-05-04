@@ -2,9 +2,10 @@ from datetime import datetime
 
 from unittest import TestCase
 
-from myreports.column_formats import (
-    StringFormatter, JoinFormatter, StrftimeFormatter,
-    MultiFieldDescend, SingleFieldDescend)
+from myreports.column_formats import (StringFormatter, JoinFormatter,
+                                      StrftimeFormatter, MultiFieldDescend,
+                                      CommunicationTypeFormatter,
+                                      SingleFieldDescend)
 
 
 class NoopFormatter(object):
@@ -46,6 +47,18 @@ class TestFormatters(TestCase):
         """Test that non string values are converted to strings."""
         self.assertEqual("3", StringFormatter().format(3))
         self.assertEqual("False", StringFormatter().format(False))
+
+    def test_comm_type_list_formatter(self):
+        """
+        Formatting a known comm record type should return the human-readible
+        version of that type. If it's unknown, it should pass through.
+
+        """
+        self.assertEqual(
+            "Partner Saved Search Email",
+            CommunicationTypeFormatter().format('pssemail'))
+
+        self.assertEqual("bacon", CommunicationTypeFormatter().format('bacon'))
 
     def test_unicode(self):
         """Test that unicode values pass through without damage."""
