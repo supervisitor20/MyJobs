@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
-import {forEach, map} from 'lodash-compat/collection';
+import {forEach} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -277,15 +277,11 @@ export default class SetUpReport extends Component {
                 availableHeader="Available"
                 selectedHeader="Selected"
                 getHints={v => reportConfig.getHints(col.filter, v)}
-                selected={
-                  map(reportConfig.currentFilter[col.filter] || [],
-                    v => ({value: v.key, display: v.display}))}
+                selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
-                  reportConfig.addToMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}
+                  reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}/>
+                  reportConfig.removeFromMultifilter(col.filter, v))}/>
 
             </FieldWrapper>
             );

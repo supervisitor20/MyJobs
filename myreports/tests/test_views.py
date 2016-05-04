@@ -573,8 +573,8 @@ class TestReportsApi(MyReportsTestCase):
         self.assertEquals(200, resp.status_code)
         result = json.loads(resp.content)
         expected_result = [
-            {'display': 'Chicago', 'key': 'Chicago'},
-            {'display': 'Champaign', 'key': 'Champaign'},
+            {'display': 'Chicago', 'value': 'Chicago'},
+            {'display': 'Champaign', 'value': 'Champaign'},
         ]
         self.assertEqual(expected_result, result)
 

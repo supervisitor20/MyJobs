@@ -5,7 +5,7 @@ import {SearchInput} from 'common/ui/SearchInput';
 export class WizardFilterSearchDropdown extends Component {
   onSearchSelect(value) {
     const {updateFilter} = this.props;
-    updateFilter(value.key);
+    updateFilter(value.value);
   }
 
   async getHints(input) {

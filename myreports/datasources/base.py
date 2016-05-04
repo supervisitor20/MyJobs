@@ -62,7 +62,7 @@ class DataSource:
         partial: the input given by the user so far.
 
         returns: list of dictionaries in the form:
-            { key: 'key', display: 'Display String', ...}
+            { value: 'value', display: 'Display String', ...}
 
         This is used to list of possible completions for given user input in
         a form useful to filter building UI.

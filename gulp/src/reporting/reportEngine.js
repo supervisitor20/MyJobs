@@ -245,7 +245,7 @@ export class ReportConfiguration {
     if (!(field in this.currentFilter)) {
       this.currentFilter[field] = [];
     }
-    if (this.currentFilter[field].findIndex(i => i.key === obj.key) === -1) {
+    if (this.currentFilter[field].findIndex(i => i.value === obj.value) === -1) {
       this.currentFilter[field].push(obj);
     }
     this.callUpdateFilter();
@@ -256,7 +256,7 @@ export class ReportConfiguration {
    * Get a previously set value for a multiple valued "or" filter.
    */
   removeFromMultifilter(field, obj) {
-    remove(this.currentFilter[field], i => i.key === obj.key);
+    remove(this.currentFilter[field], i => i.value === obj.value);
     this.callUpdateFilter();
   }
 
@@ -278,7 +278,8 @@ export class ReportConfiguration {
    * Remove a value to a "and/or" filter. i.e. tags
    */
   removeFromAndOrFilter(field, index, obj) {
-    const found = this.currentFilter[field][index].findIndex(i => i.key === obj.key);
+    const found = (
+        this.currentFilter[field][index].findIndex(i => i.value === obj.value));
     if (found !== -1) {
       this.currentFilter[field][index].splice(found, 1);
       if (this.currentFilter[field][index].length < 1) {
@@ -296,9 +297,9 @@ export class ReportConfiguration {
       if (isString(item) || isPlainObject(item)) {
         return item;
       } else if (isArray(item) && isPlainObject(item[0])) {
-        return map(item, o => o.key);
+        return map(item, o => o.value);
       } else if (isArray(item) && isArray(item[0])) {
-        return map(item, inner => map(inner, o => o.key));
+        return map(item, inner => map(inner, o => o.value));
       }
       warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
     });

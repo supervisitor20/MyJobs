@@ -13,12 +13,12 @@ export class WizardFilterCityState extends Component {
 
       // Update parent
       const newFilter = {...this.state};
-      newFilter[field] = value.key;
+      newFilter[field] = value.value;
       updateFilter(newFilter);
 
       // Set internal state
       const newState = {};
-      newState[field] = value.key;
+      newState[field] = value.value;
       this.setState(newState);
     }
 

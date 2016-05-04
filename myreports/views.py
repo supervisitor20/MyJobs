@@ -561,7 +561,7 @@ def help_api(request):
     field: Name of field to get help for
     partial: Data entered so far
 
-    response: [{'key': data, 'display': data to display}]
+    response: [{'value': data, 'display': data to display}]
     """
     company = get_company_or_404(request)
     request_data = request.POST
