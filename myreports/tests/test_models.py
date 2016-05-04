@@ -271,7 +271,7 @@ class TestReportConfiguration(MyReportsTestCase):
             columns=[
                 ColumnConfiguration(
                     column='date',
-                    format='us_datetime',
+                    format='us_date',
                     filter_interface='date_range',
                     filter_display='Date'),
                 ColumnConfiguration(
