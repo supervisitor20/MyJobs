@@ -8,7 +8,7 @@ import moment from 'moment';
  * DateField.jsx is a textbox with a calendar button. The button launches the
  * popup calendar CalendarPanel.jsx.
  *
- * To use in an app, pas in onChange as a callback. Detect which element (e.g.
+ * To use in an app, pass in onChange as a callback. Detect which element (e.g.
  * day, month, year) was changed by checking event.target.type. For example,
  * if the user selects a day then event.target.type === 'calendar-day'.
  *
