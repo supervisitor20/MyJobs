@@ -1,5 +1,12 @@
 import React from 'react';
 
+/**
+ * To use this component in an app, you'll need to handle a callback which
+ * passes this event:
+ *
+ * event.target.name = checkbox
+ */
+
 function CheckBox(props) {
   const {name, onChange, required, initial, isHidden, autoFocus} = props;
   return (
@@ -44,14 +51,14 @@ CheckBox.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
 };
 
 CheckBox.defaultProps = {
   initial: false,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default CheckBox;

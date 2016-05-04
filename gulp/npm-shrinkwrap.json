@@ -224,6 +224,9 @@
     "bytes": {
       "version": "2.2.0"
     },
+    "calendar-base": {
+      "version": "0.2.1"
+    },
     "camelcase": {
       "version": "1.2.1"
     },
@@ -1446,6 +1449,9 @@
     },
     "react-filtered-multiselect": {
       "version": "0.4.2"
+    },
+    "react-onclickout": {
+      "version": "2.0.4"
     },
     "react-overlays": {
       "version": "0.5.4",
