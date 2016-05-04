@@ -122,7 +122,7 @@ export default class SetUpReport extends Component {
         filter = JSON.parse(filterJson);
       } catch (e) {
         // filter is corrupt somehow. Treat it as empty.
-        filter = [];
+        filter = {};
       }
     }
 
