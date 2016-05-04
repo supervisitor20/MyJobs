@@ -243,12 +243,13 @@ export default class SetUpReport extends Component {
           );
           break;
         case 'city_state':
+          const values = reportConfig.currentFilter[col.filter] || {};
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
                 id={col.filter}
-                cityValue={reportConfig.currentFilter[col.filter].city || ''}
-                stateValue={reportConfig.currentFilter[col.filter].state || ''}
+                cityValue={values.city || ''}
+                stateValue={values.state || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={(f, v) =>
                   reportConfig.getHints(f, v)}/>
