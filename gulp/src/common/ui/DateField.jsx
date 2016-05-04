@@ -23,9 +23,10 @@ class DateField extends React.Component {
     let day;
     const value = this.props.value;
     if (value) {
-      year = parseInt(value.substring(0, 5), 10);
-      month = parseInt(value.substring(5, 7), 10);
-      day = parseInt(value.substring(8, 10), 10);
+      const momentObject = moment(value, 'YYYY-MM-DD');
+      day = momentObject.date();
+      month = momentObject.month() + 1;
+      year = momentObject.year();
     }
     this.state = {
       year: year,
@@ -89,9 +90,12 @@ class DateField extends React.Component {
       isHidden,
       value,
       placeholder} = this.props;
-    const year = parseInt(value.substring(0, 5), 10);
-    const month = parseInt(value.substring(5, 7), 10);
-    const day = parseInt(value.substring(8, 10), 10);
+
+    const momentObject = moment(value, 'YYYY-MM-DD');
+    const day = momentObject.date();
+    const month = momentObject.month() + 1;
+    const year = momentObject.year();
+
     let calendar;
     if (this.state.displayCalendar) {
       calendar = (<div className="input-group datepicker-dropdown dropdown-menu">
