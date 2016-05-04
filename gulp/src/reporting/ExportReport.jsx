@@ -26,7 +26,6 @@ export default class ExportReport extends Component {
   }
 
   onReorder(event, item, index, newIndex) {
-    console.log('onReorder', item, index, newIndex);
     const {fieldsSelected} = this.state;
     const newFieldsSelected = [...fieldsSelected];
     const removed = newFieldsSelected.splice(index, 1);
