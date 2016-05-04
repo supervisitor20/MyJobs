@@ -27,14 +27,16 @@ export default class ExportReport extends Component {
 
   onReorder(event, item, index, newIndex) {
     const {fieldsSelected} = this.state;
-    const removed = fieldsSelected.splice(index, 1);
-    fieldsSelected.splice(newIndex, 0, ...removed);
-    this.setState({fieldsSelected});
+    const newFieldsSelected = [...fieldsSelected];
+    const removed = newFieldsSelected.splice(index, 1);
+    newFieldsSelected.splice(newIndex, 0, ...removed);
+    this.setState({fieldsSelected: newFieldsSelected});
   }
 
   onCheck(e) {
     const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
+    const newFieldsSelected = [...fieldsSelected];
 
     // If unchecking, set select all to false.
     if (!checked) {
@@ -42,22 +44,30 @@ export default class ExportReport extends Component {
     }
 
     // Find field, set checked status.
-    const field = find(fieldsSelected, item => item.value === e.target.id);
+    const field = find(newFieldsSelected, item => item.value === e.target.id);
     if (field) {
       field.checked = checked;
     }
 
-    const newSortBy = this.findBestSortByValue(fieldsSelected, oldSortBy);
+    const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
 
-    this.setState({fieldsSelected, sortBy: newSortBy});
+    this.setState({
+      fieldsSelected: newFieldsSelected,
+      sortBy: newSortBy,
+    });
   }
 
   onCheckAll(e) {
     const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
-    forEach(fieldsSelected, (item)=> {item.checked = checked;});
-    const newSortBy = this.findBestSortByValue(fieldsSelected, oldSortBy);
-    this.setState({selectAll: checked, fieldsSelected, sortBy: newSortBy});
+    const newFieldsSelected = [...fieldsSelected];
+    forEach(newFieldsSelected, (item)=> {item.checked = checked;});
+    const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
+    this.setState({
+      selectAll: checked,
+      fieldsSelected: newFieldsSelected,
+      sortBy: newSortBy,
+    });
   }
 
   findBestSortByValue(fieldsSelected, sortBy) {
@@ -147,6 +157,9 @@ export default class ExportReport extends Component {
       return <Loading/>;
     }
 
+    // Note that we pass in a copy of fieldsSelected to protect ourselves
+    // from some side effects of mutation done by Reorder on the array
+    // passed through its list property.
     return (
       <div id="export-page">
         <div className="row">
@@ -188,7 +201,7 @@ export default class ExportReport extends Component {
                   selectedKey="value"
                   lock="horizontal"
                   holdTime=""
-                  list={fieldsSelected}
+                  list={[...fieldsSelected]}
                   template={SortableField}
                   listClass="my-list"
                   itemClass="list-item"
