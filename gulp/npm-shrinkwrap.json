@@ -2380,6 +2380,9 @@
       "from": "react-onclickout@>=2.0.4 <3.0.0",
       "resolved": "https://registry.npmjs.org/react-onclickout/-/react-onclickout-2.0.4.tgz"
     },
+    "react-onclickout": {
+      "version": "2.0.4"
+    },
     "react-overlays": {
       "version": "0.5.4",
       "from": "react-overlays@0.5.4",

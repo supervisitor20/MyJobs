@@ -631,7 +631,7 @@ def list_dynamic_reports(request):
     reports = (
         DynamicReport.objects
         .filter(owner=company, report_data__isnull=False)
-        .order_by('-pk')[:10])
+        .order_by('-pk'))
 
     data = [{
         'id': r.id,

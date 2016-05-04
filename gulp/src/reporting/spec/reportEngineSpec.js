@@ -43,16 +43,28 @@ describe('ReportFinder', () => {
 
   describe('subscriptions', () => {
     let newId = null;
-    const ref = finder.subscribeToReportList((id) => { newId = id; });
+    let newRunningReport = null;
+    const ref = finder.subscribeToNewReports(
+      (id, r) => {
+        newId = id;
+        newRunningReport = r;
+      },
+      r => {newRunningReport = r;});
 
     it('can inform subscribers of new reports', () => {
-      finder.noteNewReport(22);
+      finder.noteNewReport(22, 23);
       expect(newId).toEqual(22);
+      expect(newRunningReport).toEqual(23);
+    });
+
+    it('can inform subscribers of running reports', () => {
+      finder.noteNewRunningReport(24);
+      expect(newRunningReport).toEqual(24);
     });
 
     it('can unsubscribe', () => {
       finder.noteNewReport(22);
-      finder.unsubscribeToReportList(ref);
+      finder.unsubscribeToNewReports(ref);
       finder.noteNewReport(33);
       expect(newId).toEqual(22);
     });
@@ -67,6 +79,7 @@ describe('ReportConfiguration', () => {
 
   class FakeComponent {
     newReportNote() {}
+    newRunningReportNote() {}
     onNameChanged() {}
     onUpdateFilter() {}
     onErrorsChanged() {}
@@ -77,13 +90,15 @@ describe('ReportConfiguration', () => {
 
     fakeComponent = new FakeComponent();
     spyOn(fakeComponent, 'newReportNote').and.callThrough();
+    spyOn(fakeComponent, 'newRunningReportNote').and.callThrough();
     spyOn(fakeComponent, 'onNameChanged').and.callThrough();
     spyOn(fakeComponent, 'onUpdateFilter').and.callThrough();
     spyOn(fakeComponent, 'onErrorsChanged').and.callThrough();
 
     config = new ReportConfiguration(
       'defaultName', 2, {}, fakeApi,
-      id => fakeComponent.newReportNote(id),
+      (id, report) => fakeComponent.newReportNote(id, report),
+      report => fakeComponent.newRunningReportNote(report),
       name => {fakeComponent.onNameChanged(name)},
       f => {fakeComponent.onUpdateFilter(f)},
       errors => {fakeComponent.onErrorsChanged(errors)});
@@ -241,6 +256,7 @@ describe('ReportConfiguration', () => {
 
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'defaultName', {});
     expect(fakeComponent.newReportNote).toHaveBeenCalled();
+    expect(fakeComponent.newRunningReportNote).toHaveBeenCalled();
   }));
 
   it('can change the name of the report', promiseTest(async() => {
@@ -251,6 +267,16 @@ describe('ReportConfiguration', () => {
     await config.run();
 
     expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'bbb', {});
+  }));
+
+  it('clears the running report if the run fails', promiseTest(async () => {
+    spyOn(fakeApi, 'runReport').and.throwError('error');
+
+    await config.run();
+
+    expect(fakeApi.runReport).toHaveBeenCalledWith(2, 'defaultName', {});
+    expect(fakeComponent.newReportNote).toHaveBeenCalled();
+    expect(fakeComponent.newRunningReportNote).toHaveBeenCalled();
   }));
 
   it('notes name errors from api', promiseTest(async() => {
