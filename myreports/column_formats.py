@@ -94,6 +94,7 @@ COLUMN_FORMATS = {
     'text': StringFormatter(),
     'comma_sep': JoinFormatter(", ", StringFormatter()),
     'us_date': StrftimeFormatter("%m/%02d/%Y"),
+    'us_datetime': StrftimeFormatter("%m/%02d/%Y %I:%M:%S %p"),
     'city_state_list':
         JoinFormatter(
             ", ",
