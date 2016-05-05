@@ -22,7 +22,7 @@ export class ReportList extends Component {
   handleCreateNewReport(e) {
     const {history, onClearReportConfiguration} = this.props;
     e.preventDefault();
-    history.pushState(null, "/set-up-report", {});
+    history.pushState(null, '/set-up-report', {});
     setTimeout(() => onClearReportConfiguration());
   }
 
