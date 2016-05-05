@@ -1,73 +1,57 @@
-import React, {Component} from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import React, {Component, PropTypes} from 'react';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 export class OutreachRecordTable extends Component {
-
-  // It's a data format example.
-  //priceFormatter(cell, row){
-  //  return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
-  //}
-  //dataFormat={this.priceFormatter}
 
   constructor(props) {
     super(props);
     this.state = {
       tableHeight: 0,
       tableWidth: 0,
-      records: this.getRecords()
+      records: [],
     };
+    this.getRecords();
   }
 
-  getRecords() {
-    console.log('')
-    let list_records = []
-    for (let i = 0; i < 100; i++) {
-    list_records.push({
-          date: '01/01/2016',
-          inbox: 'testinbox@test.com',
-          from: 'outreachdude@test.com',
-          body: i,
-          state: 'Reviewed'
-        });
-    }
-    return list_records;
+  async getRecords() {
+    const records = await this.props.recordsManager.getExistingOutreachRecords();
+    this.setState({
+      records: records,
+    });
   }
 
   render() {
-    const isIE = /*@cc_on!@*/false || !!document.documentMode;
+    const isIE = /* @cc_on!@ */false || !!document.documentMode;
     return (
       <BootstrapTable data={this.state.records}
-                      striped={false}
-                      hover={true}
-                      search={true}
+                      hover
+                      search
                       pagination={!isIE}
-                      height={isIE ? "600px" : undefined}
-                      options={{paginationSize:3,
+                      height={isIE ? '600px' : undefined}
+                      options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
-        <TableHeaderColumn dataField="date"
+        <TableHeaderColumn dataField="date_added"
                            dataAlign="center"
-                           dataSort={true}
-                           isKey={true}>Date
+                           dataSort
+                           isKey>Date
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="inbox"
+        <TableHeaderColumn dataField="outreach_email"
                            dataAlign="center"
-                           dataSort={true}>Inbox
+                           dataSort>Inbox
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="from"
+        <TableHeaderColumn dataField="from_email"
                            dataAlign="center"
-                           dataSort={true}>From
+                           dataSort>From
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="body"
+        <TableHeaderColumn dataField="current_workflow_state"
                            dataAlign="center"
-                           dataSort={true}>Body
-        </TableHeaderColumn>
-        <TableHeaderColumn dataField="state"
-                           dataAlign="center"
-                           dataSort={true}>Action State
+                           dataSort>Action State
         </TableHeaderColumn>
       </BootstrapTable>
     );
   }
 }
 
-OutreachRecordTable.propTypes = {};
+OutreachRecordTable.propTypes = {
+  recordsManager: PropTypes.object.isRequired,
+};

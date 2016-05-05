@@ -7,7 +7,7 @@ export function OutreachRecordPage(props) {
     <div>
         <div className="row">
           <div className="col-sm-12">
-            <OutreachRecordTable />
+            <OutreachRecordTable {...props} />
           </div>
         </div>
     </div>
