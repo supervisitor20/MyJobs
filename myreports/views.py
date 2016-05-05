@@ -704,7 +704,9 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = disposition
 
     output = StringIO()
-    presentation.write_presentation(values, sorted_records, output)
+    columns = [
+        c.alias for c in report_configuration.columns if c.column in values]
+    presentation.write_presentation(columns, sorted_records, output)
     response.write(output.getvalue())
 
     return response

@@ -34,7 +34,7 @@ class ReportConfiguration(object):
             ]
 
         return dict(
-            (c.column, c.extract_formatted(raw_data))
+            (c.alias, c.extract_formatted(raw_data))
             for c in columns)
 
     def find_column(self, column_name):
@@ -59,9 +59,10 @@ class ColumnConfiguration(object):
     filter_display: name to display alongside the filter_interface
     help: boolean, is help available for this column?
     """
-    def __init__(self, column, format,
+    def __init__(self, column, alias, format,
                  filter_interface=None, filter_display=None, help=False):
         self.column = column
+        self.alias = alias
         self.format = COLUMN_FORMATS.get(format, '')
         self.filter_interface = filter_interface
         self.filter_display = filter_display
