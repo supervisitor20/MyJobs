@@ -513,7 +513,7 @@ def create_full_fixture():
         alias='Date',
         order=105,
         configuration=con_comm_count,
-        output_format="us_date",
+        output_format="us_datetime",
         filter_interface_type='date_range',
         filter_interface_display='Date',
         multi_value_expansion=False)
