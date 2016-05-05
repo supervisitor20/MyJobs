@@ -83,7 +83,7 @@ def single_field_descend_formatter(field, inner):
 # Dictionary of codes used in the db to name useful formatters.
 COLUMN_FORMATTERS = {
     'text': string_formatter,
-    'comma_sep': join_formatter(", ", string_formatter),
+    'comma_sep': join_formatter(', ', string_formatter),
     'us_date': strftime_formatter('%s/%02d/%Y'),
     'city_state_list': join_formatter(
         ', ',

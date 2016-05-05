@@ -1,7 +1,7 @@
 """Reprsent a report configuration for data formatting and user interface."""
 from universal.helpers import dict_identity
 
-from myreports.column_formats import COLUMN_FORMATTERS
+from myreports.column_formatters import COLUMN_FORMATTERS
 
 
 @dict_identity
