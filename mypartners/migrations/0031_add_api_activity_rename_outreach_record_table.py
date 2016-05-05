@@ -3,7 +3,7 @@ from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-
+from myjobs.models import Activity, AppAccess
 
 class Migration(SchemaMigration):
 
@@ -58,6 +58,15 @@ class Migration(SchemaMigration):
         ))
         db.create_unique(m2m_table_name, ['outreachrecord_id', 'contactrecord_id'])
 
+        ###
+        #Create activity for new API
+        ###
+
+        nuo = AppAccess.objects.get(name='NUO')
+        Activity.objects.create(
+            app_access=nuo,
+            name="read outreach records",
+            description="Read outreach records")
 
     def backwards(self, orm):
         # Adding model 'NonUserOutreach'
@@ -110,6 +119,15 @@ class Migration(SchemaMigration):
         # Removing M2M table for field communication_records on 'OutreachRecord'
         db.delete_table(db.shorten_name(u'mypartners_outreachrecord_communication_records'))
 
+        ###
+        #Delete activity for new API
+        ###
+
+        nuo = AppAccess.objects.get(name='NUO')
+        Activity.objects.get(
+            app_access=nuo,
+            name="read outreach records",
+            description="Read outreach records").delete()
 
     models = {
         u'auth.group': {
