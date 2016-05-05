@@ -1435,7 +1435,6 @@ def api_get_nuo_records_list(request):
             current_workflow_state = record.current_workflow_state.state,
         )
         json_res.append(json_obj)
-    # import ipdb; ipdb.set_trace()
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 @requires('read tag')
