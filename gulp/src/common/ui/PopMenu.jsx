@@ -21,10 +21,8 @@ export default class PopMenu extends Component {
     const {options} = this.props;
     const dropdownItems = options.map((item, index)=> {
       return (
-        <li key={index}>
-          <a href="#" onClick={e => this.handleItemClick(item, e)}>
-            {item.display}
-          </a>
+        <li key={index} onClick={e => this.handleItemClick(item, e)}>
+          {item.display}
         </li>
       );
     });

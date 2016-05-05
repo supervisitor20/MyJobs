@@ -205,7 +205,7 @@ export default class ExportReport extends Component {
                   list={[...fieldsSelected]}
                   template={SortableField}
                   listClass="my-list"
-                  itemClass="list-item"
+                  itemClass="list-item-draggable"
                   callback={(...args) => this.onReorder(...args)}
                   selected={this.state.selected}
                   disableReorder={false}

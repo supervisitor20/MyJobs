@@ -2194,6 +2194,10 @@ h3.bottom-bordered {
     border-radius: 3px;
 }
 
+.reporting.sidebar ul li .pop-menu ul li {
+    cursor: pointer;
+}
+
 .reporting.sidebar li.active {
     background-color: #C6D6EA;
 }
@@ -3667,7 +3671,7 @@ legend.fieldset-border {
   text-align: center;
 }
 
-.list-item {
+.list-item, .list-item-draggable {
   border-radius: 3px;
   margin-bottom: 5px;
   padding: 0 5px;
@@ -3681,12 +3685,12 @@ legend.fieldset-border {
   user-select: none;           /* non-prefixed version, currently */
 }
 
-.list-item label {
+.list-item label, .list-item-draggable label {
   cursor: pointer;
   width: 100%;
 }
 
-.list-item .reorder-icon {
+.list-item .reorder-icon, .list-item-draggable .reorder-icon {
     display: none;
     vertical-align: bottom;
     float: right;
@@ -3695,24 +3699,24 @@ legend.fieldset-border {
     fill: #808284;
 }
 
-.list-item:hover {
+.list-item-draggable:hover {
   background-color: #C6D6EA;
 }
 
-.list-item:hover .reorder-icon {
+.list-item-draggable:hover .reorder-icon {
     display: inline-block;
 }
 
-.list-item.dragged {
+.list-item-draggable.dragged {
   background-color: #EEE;
   opacity: 0.7;
 }
 
-.list-item.placeholder {
+.list-item-draggable.placeholder {
   background-color: #CCC;
 }
 
-.list-item.placeholder .sortable-report-field {
+.list-item-draggable.placeholder .sortable-report-field {
   visibility: hidden;
 }
 /* End Export Page Styles */
