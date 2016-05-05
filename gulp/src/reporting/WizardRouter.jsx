@@ -17,7 +17,7 @@ export class WizardRouter extends Component {
     return (
       <Router createElement={(c, p) => this.createElement(c, p)}>
         <Route path="/" component={DynamicReportApp}>
-          <IndexRedirect to="set-up-report" query={{filterJson: '{}'}}/>
+          <IndexRedirect to="set-up-report"/>
           <Route
             path="set-up-report"
             component={SetUpReport}/>
