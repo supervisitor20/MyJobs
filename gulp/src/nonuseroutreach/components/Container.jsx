@@ -40,7 +40,7 @@ export class Container extends Component {
         </div>
 
         <div className="row">
-          <Content page={page} recordsManager={recordsManager} />
+          <Content page={page} inboxManager={this.props.inboxManager} recordsManager={recordsManager} />
           <Menu changePage={(p, t) => this.changePage(p, t)} tips={tips} />
         </div>
         <div className="clearfix"></div>
