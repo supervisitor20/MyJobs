@@ -30,7 +30,6 @@ export default class SetUpReport extends Component {
         (...choices) => this.onMenuChanged(...choices));
     this.clearReportRef = reportFinder.subscribeToClearReportConfiguration(
       () => this.loadData());
-    console.log('componentDidMount about to force loadData');
     reportFinder.noteClearReportConfiguration();
   }
 
@@ -66,7 +65,6 @@ export default class SetUpReport extends Component {
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
       reportConfig) {
-    console.log('onMenuChanged', reportingTypes, reportTypes, dataTypes);
     this.setState({
       reportingTypes,
       reportTypes,
@@ -102,7 +100,6 @@ export default class SetUpReport extends Component {
   }
 
   async loadData() {
-    console.log('loadData');
     const {
       intention: reportingType,
       category: reportType,
