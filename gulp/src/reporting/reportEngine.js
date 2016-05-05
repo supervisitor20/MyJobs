@@ -38,7 +38,8 @@ export class ReportFinder {
       const name = await this.api.getDefaultReportName(reportDataId);
       reportConfiguration = this.configBuilder.build(
         name.name, reportDataId, filters.filters,
-        reportId => this.noteNewReport(reportId),
+        (reportId, report) => this.noteNewReport(reportId, report),
+        report => this.noteNewRunningReport(report),
         onNameChanged,
         onFilterChange,
         onErrorsChanged);
@@ -106,31 +107,53 @@ export class ReportFinder {
   }
 
   /**
-   * Submit a callback to be called any time there is a new report created.
+   * Submit callbacks for changes to the report list.
    *
-   * callback params:
-   *    reportId: id of new report
+   * newReportCallback: called when creating a new report completes
+   * runningReportCallback: called when the user starts running a report
+   * newReportCallback params:
+   *    reportId: id of new report. If the run fails this will be null.
+   *    runningReport: if this was a running report from earlier,
+   *      this is the same object
+   * runningReportCallback params:
+   *    runningReport: info about the running report
+   *        {name: 'report name'}
    * returns a reference which can be used later to unsubscribe.
    */
-  subscribeToReportList(callback) {
-    this.newReportSubscribers[callback] = callback;
-    return callback;
+  subscribeToNewReports(newReportCallback, runningReportCallback) {
+    const callbacks = {
+      newReportCallback,
+      runningReportCallback,
+    };
+    this.newReportSubscribers[callbacks] = callbacks;
+    return callbacks;
   }
 
   /**
    * Remove a callback from the new reports subscription.
    */
-  unsubscribeToReportList(ref) {
+  unsubscribeToNewReports(ref) {
     delete this.newReportSubscribers[ref];
   }
 
   /**
    * Let subscribers know that there is a new report.
    */
-  noteNewReport(reportId) {
+  noteNewReport(reportId, runningReport) {
     for (const ref in this.newReportSubscribers) {
       if (this.newReportSubscribers.hasOwnProperty(ref)) {
-        this.newReportSubscribers[ref](reportId);
+        this.newReportSubscribers[ref].newReportCallback(reportId, runningReport);
+      }
+    }
+  }
+
+  /**
+   * Let subscribers know that there is a new report.
+   */
+  noteNewRunningReport(runningReport) {
+    for (const ref in this.newReportSubscribers) {
+      if (this.newReportSubscribers.hasOwnProperty(ref)) {
+        this.newReportSubscribers[ref].runningReportCallback(runningReport);
       }
     }
   }
@@ -153,7 +176,7 @@ export class ReportFinder {
  * Use the run function to run and store the report in the api.
  *
  * name: Initial name of the report.
- * reportDataId: Report Data id. // TODO: switch to report type data type
+ * reportDataId: Report Data id.
  * filters: List of filters supported by this report.
  * api: Reporting API instance to use.
  * onNewReport: call back when a new report has been created.
@@ -163,7 +186,8 @@ export class ReportFinder {
  */
 export class ReportConfiguration {
   constructor(name, reportDataId, filters, api,
-      onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
+      onNewReport, onNewRunningReport, onNameChanged, onUpdateFilter,
+      onErrorsChanged) {
     this.name = name;
     this.reportDataId = reportDataId;
     this.filters = filters;
@@ -173,6 +197,7 @@ export class ReportConfiguration {
     this.errors = {};
     this.api = api;
     this.onNewReport = onNewReport;
+    this.onNewRunningReport = onNewRunningReport;
     this.onNameChanged = onNameChanged;
     this.onUpdateFilter = onUpdateFilter;
     this.onErrorsChanged = onErrorsChanged;
@@ -296,19 +321,24 @@ export class ReportConfiguration {
    * Run the report.
    */
   async run() {
+    const runningReport = {
+      name: this.name,
+    };
     try {
+      this.onNewRunningReport(runningReport);
       const response = await this.api.runReport(
         this.reportDataId,
         this.name,
         this.getFilter());
       this.errors = {};
-      this.onNewReport(response.id);
+      this.onNewReport(response.id, runningReport);
     } catch (exc) {
       if (exc.data) {
         const grouped = groupBy(exc.data, 'field');
         const fixed = mapValues(grouped, values => map(values, v => v.message));
         this.errors = fixed;
       }
+      this.onNewReport(null, runningReport);
     }
     this.onErrorsChanged(this.errors);
   }
@@ -324,9 +354,10 @@ export class ReportConfigurationBuilder {
     this.api = api;
   }
 
-  build(name, reportDataId, filters, onNewReport, onNameChanged, onUpdateFilter, onErrorsChanged) {
+  build(name, reportDataId, filters, onNewReport, onNewRunningReport,
+      onNameChanged, onUpdateFilter, onErrorsChanged) {
     return new ReportConfiguration(
-        name, reportDataId, filters, this.api, onNewReport, onNameChanged,
-        onUpdateFilter, onErrorsChanged);
+        name, reportDataId, filters, this.api, onNewReport, onNewRunningReport,
+        onNameChanged, onUpdateFilter, onErrorsChanged);
   }
 }
