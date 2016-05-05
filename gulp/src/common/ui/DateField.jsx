@@ -23,7 +23,7 @@ class DateField extends React.Component {
     let day;
     const value = this.props.value;
     if (value) {
-      const momentObject = moment(value, 'YYYY-MM-DD');
+      const momentObject = moment(value, 'YYYY/MM/DD');
       day = momentObject.date();
       month = momentObject.month() + 1;
       year = momentObject.year();
@@ -90,7 +90,7 @@ class DateField extends React.Component {
       value,
       placeholder} = this.props;
 
-    const momentObject = moment(value, 'YYYY-MM-DD');
+    const momentObject = moment(value, 'YYYY/MM/DD');
     const day = momentObject.date();
     const month = momentObject.month() + 1;
     const year = momentObject.year();
@@ -113,7 +113,7 @@ class DateField extends React.Component {
 
     let error;
     // Date value must match ISO 8601 format
-    if (moment(value, 'YYYY-MM-DD', true).isValid() === false) {
+    if (moment(value, 'YYYY/MM/DD', true).isValid() === false) {
       error = (
         <div className="error-text">Date formatting error</div>
       );

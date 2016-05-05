@@ -9,6 +9,7 @@ import {getDisplayForValue} from '../common/array.js';
 import param from 'jquery-param';
 
 import React from 'react';
+import moment from 'moment';
 import {getCsrf} from 'common/cookie';
 
 import {render} from 'react-dom';
@@ -88,7 +89,6 @@ class Module extends React.Component {
     }
 
     formContents[fieldID] = value;
-
     this.setState({
       formContents: formContents,
     });
@@ -112,10 +112,28 @@ class Module extends React.Component {
   handleCancel() {
     window.location.assign('/profile/view/');
   }
+  processFormContents(formContents) {
+    for (const formItem in formContents) {
+      // Dates must be of form YYYY-MM-DD before POSTing
+      const valueIsDate = moment(formContents[formItem], 'YYYY/MM/DD', true).isValid();
+      if (valueIsDate === true) {
+        let dateValue = formContents[formItem];
+        dateValue = dateValue.replace(/\//g, '-');
+        formContents[formItem] = dateValue;
+      }
+      // Inspect other form field types here
+    }
+    return formContents;
+  }
   async handleSave() {
     const {formContents} = this.state;
     const myJobsApi = new MyJobsApi(getCsrf());
-    const apiResponse = await myJobsApi.post('/profile/api', formContents);
+
+    // We display dates seperated by slashes (i.e. YYYY/MM/DD), but
+    // django-remote-forms expects them seperated by dashes (i.e. YYYY-MM-DD)
+    const processedFormContents = this.processFormContents(formContents);
+
+    const apiResponse = await myJobsApi.post('/profile/api', processedFormContents);
 
     if (apiResponse.errors) {
       this.setState({
@@ -183,7 +201,7 @@ class Module extends React.Component {
             // month and day must both be two characters
             month = now.getMonth() < 10 ? '0' + now.getMonth() : now.getMonth();
             day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
-            formContents[profileUnitName] = year + '-' + month + '-' + day;
+            formContents[profileUnitName] = year + '/' + month + '/' + day;
           }
           return wrap(
             <DateField
@@ -243,6 +261,10 @@ class Module extends React.Component {
         // https://github.com/facebook/react/issues/2166
         if (!apiResponse.data[item]) {
           formContents[item] = '';
+        } if (moment(apiResponse.data[item], 'YYYY-MM-DD', true).isValid()) {
+          // django-remote-forms needs dates to be of form YYYY-MM-DD but
+          // we display them to the user as YYYY/MM/DD
+          formContents[item] = apiResponse.data[item].replace(/-/g, '/');
         } else {
           formContents[item] = apiResponse.data[item];
         }
