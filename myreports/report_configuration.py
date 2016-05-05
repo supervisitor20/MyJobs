@@ -1,7 +1,7 @@
 """Reprsent a report configuration for data formatting and user interface."""
 from universal.helpers import dict_identity
 
-from myreports.column_formats import COLUMN_FORMATS
+from myreports.column_formats import COLUMN_FORMATTERS
 
 
 @dict_identity
@@ -53,20 +53,20 @@ class ColumnConfiguration(object):
     """Represent the complete configuration for a single column.
 
     column: column name in the report
-    format: formatter code to use for the value. see COLUMN_FORMATS
+    format: formatter code to use for the value. see COLUMN_FORMATTERS
     filter_interface: code to describe the kind user interface for filtering
         can be None if this column does not support this.
     filter_display: name to display alongside the filter_interface
     help: boolean, is help available for this column?
     """
-    def __init__(self, column, format,
+    def __init__(self, column, formatter,
                  filter_interface=None, filter_display=None, help=False):
         self.column = column
-        self.format = COLUMN_FORMATS.get(format, '')
+        self.formatter = COLUMN_FORMATTERS.get(formatter, '')
         self.filter_interface = filter_interface
         self.filter_display = filter_display
         self.help = help
 
     def extract_formatted(self, data):
         """Return a fully formatted value."""
-        return self.format.format(data.get(self.column, ''))
+        return self.formatter(data.get(self.column, ''))

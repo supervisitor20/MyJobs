@@ -252,7 +252,7 @@ class Configuration(models.Model):
         return ReportConfiguration([
             ColumnConfiguration(
                 column=cm.column_name,
-                format=cm.output_format,
+                formatter=cm.output_format,
                 filter_interface=cm.filter_interface_type,
                 filter_display=cm.filter_interface_display,
                 help=cm.has_help)

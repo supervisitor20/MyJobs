@@ -1,107 +1,96 @@
 """Format utilities for translating from saved report json to text."""
 from collections import Iterable, Mapping
-from universal.helpers import dict_identity
 
 
-@dict_identity
-class StringFormatter(object):
+def string_formatter(value):
     """Take the given (usually text) value and format it as unicode text."""
-    def format(self, value):
-        if value is not None:
-            return unicode(value)
-        else:
-            return ''
+    if value is None:
+        return ''
+
+    return unicode(value)
 
 
-@dict_identity
-class JoinFormatter(object):
-    """Format an iterable value by joining it.
+def join_formatter(between, inner_formatter=None):
+    """
+    Format an iterable value by joining it.
 
     between: a string to place between the items.
     inner_formatter: how to format the items themselves.
-    """
-    def __init__(self, between, inner_formatter=None):
-        self.between = between
-        if inner_formatter is None:
-            self.inner_formatter = StringFormatter()
-        else:
-            self.inner_formatter = inner_formatter
 
-    def format(self, values):
+    """
+    inner_formatter = inner_formatter or string_formatter
+
+    def formatter(values):
         if isinstance(values, Iterable) and not isinstance(values, basestring):
-            return self.between.join(
-                self.inner_formatter.format(v) for v in values)
+            return between.join(inner_formatter(v) for v in values)
         else:
             # Fail somewhat gracefully if we set things up wrong.
-            return StringFormatter().format(values)
+            return inner_formatter(values)
+
+    return formatter
 
 
-@dict_identity
-class StrftimeFormatter(object):
-    """Format a value which supports strftime.
+def strftime_formatter(strftime_format):
+    """
+    Format a value which supports strftime.
 
     strftime_format: format to use, i.e. %Y-%m-%d
+
     """
-    def __init__(self, strftime_format):
-        self.strftime_format = strftime_format
 
-    def format(self, value):
-        if value is not None:
-            return value.strftime(self.strftime_format)
-        else:
+    def formatter(value):
+        if value is None:
             return ''
+        else:
+            return value.strftime(strftime_format)
+
+    return formatter
 
 
-@dict_identity
-class MultiFieldDescend(object):
-    """Format a value which supports __getitem__.
+def multi_field_descend_formatter(fields, inner):
+    """
+    Format a value which supports __getitem__.
 
     fields: ordered list of keys we are interested in
     inner: formatter used to format the items themselves.
-    """
-    def __init__(self, fields, inner):
-        self.fields = fields
-        self.inner = inner
 
-    def format(self, value):
+    """
+    def formatter(value):
         if value is None:
             return []
         elif isinstance(value, Mapping):
-            return self.inner.format(
-                [value.get(f, None) for f in self.fields])
+            return inner(value.get(f, None) for f in fields)
         else:
-            return self.inner.format([value])
+            return inner([value])
+
+    return formatter
 
 
-@dict_identity
-class SingleFieldDescend(object):
-    """Format a single item from a value which supports __getitem__.
-    """
-    def __init__(self, field, inner):
-        self.field = field
-        self.inner = inner
+def single_field_descend_formatter(field, inner):
+    """Format a single item from a value which supports __getitem__."""
 
-    def format(self, value):
+    def formatter(value):
         if value is None:
             return ''
         elif isinstance(value, Mapping):
-            return value.get(self.field, None)
+            return value.get(field, None)
         else:
-            return self.inner.format(value)
+            return inner.format(value)
 
-"""Dictionary of codes used in the db to name useful formatters."""
-COLUMN_FORMATS = {
-    'text': StringFormatter(),
-    'comma_sep': JoinFormatter(", ", StringFormatter()),
-    'us_date': StrftimeFormatter("%m/%02d/%Y"),
-    'city_state_list':
-        JoinFormatter(
-            ", ",
-            MultiFieldDescend(
-                ['city', 'state'],
-                JoinFormatter(", ", StringFormatter()))),
-    'tags_list':
-        JoinFormatter(
-            ", ",
-            SingleFieldDescend('name', StringFormatter())),
+    return formatter
+
+
+# Dictionary of codes used in the db to name useful formatters.
+COLUMN_FORMATTERS = {
+    'text': string_formatter,
+    'comma_sep': join_formatter(", ", string_formatter),
+    'us_date': strftime_formatter('%s/%02d/%Y'),
+    'city_state_list': join_formatter(
+        ', ',
+        multi_field_descend_formatter(
+            ['city', 'state'],
+            join_formatter(', ', string_formatter))),
+    'tags_list': join_formatter(
+        ', ', single_field_descend_formatter(
+            'name', string_formatter)),
 }
