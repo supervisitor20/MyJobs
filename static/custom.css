@@ -3685,6 +3685,10 @@ legend.fieldset-border {
   user-select: none;           /* non-prefixed version, currently */
 }
 
+.list-item {
+  background-color: transparent;
+}
+
 .list-item label, .list-item-draggable label {
   cursor: pointer;
   width: 100%;
