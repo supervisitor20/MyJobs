@@ -3437,6 +3437,8 @@ fieldset:nth-child(n+2) {
 }
 
 .row .col-md-8 input[type='checkbox'] {
+  /*ie doesn't know what initial is so we feed it auto*/
+  width: auto;
   width: initial;
 }
 
@@ -3670,6 +3672,7 @@ legend.fieldset-border {
   margin-bottom: 5px;
   padding: 0 5px;
   cursor: pointer;
+  background-color: #E7E7E7;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none;   /* Chrome/Safari/Opera */
   -khtml-user-select: none;    /* Konqueror */
@@ -3683,8 +3686,21 @@ legend.fieldset-border {
   width: 100%;
 }
 
+.list-item .reorder-icon {
+    display: none;
+    vertical-align: bottom;
+    float: right;
+    height: 20px;
+    width: 20px;
+    fill: #808284;
+}
+
 .list-item:hover {
   background-color: #C6D6EA;
+}
+
+.list-item:hover .reorder-icon {
+    display: inline-block;
 }
 
 .list-item.dragged {

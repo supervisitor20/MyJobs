@@ -1,3 +1,4 @@
+/* global staticUrl */
 import React, {Component, PropTypes} from 'react';
 import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
