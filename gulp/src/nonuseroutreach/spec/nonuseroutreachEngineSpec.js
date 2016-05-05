@@ -1,9 +1,14 @@
-import {InboxManagement} from '../nonuseroutreachEngine';
+import {InboxManagement, OutreachRecordManagement} from '../nonuseroutreachEngine';
 
 import {promiseTest} from '../../common/spec';
 
 const fakeApi = {
   getExistingInboxes: () => ([{pk: 1, fields: {email: 'thistest'}}]),
+  getExistingOutreachRecords: () => ([{outreach_email: 'thistest',
+                                       date_added:'04/18/2012',
+                                       from_email:'test@test.com',
+                                       email_body:'Test',
+                                       current_workflow_state:'Reviewed'}]),
   deleteInbox: (id) => ({status: 'success'}),
   createNewInbox: (email) => ({pk: 1, email: 'thistest'}),
   updateInbox: (id, email) => ({status: 'success'}),
@@ -40,4 +45,14 @@ describe('Inbox Manager', () => {
     expect(inboxManager.validateEmailInput('popeyes.').success).toEqual(false);
     expect(inboxManager.validateEmailInput('popeyes').success).toEqual(true);
   });
+});
+
+describe('Records Manager', () => {
+  const recordsManager = new OutreachRecordManagement(fakeApi);
+
+  it('can get existing records list', promiseTest(async () => {
+    const records = await recordsManager.getExistingInboxes();
+    expect(records[0].outreach_email).toEqual('thistest');
+    expect(records[0].from_email).toEqual('test@test.com');
+  }));
 });

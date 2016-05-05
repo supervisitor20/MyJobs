@@ -43,7 +43,7 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location, OutreachEmailAddress, NonUserOutreach)
+                               Location, OutreachEmailAddress, OutreachRecord)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1425,7 +1425,7 @@ def api_get_nuo_records_list(request):
     """
     company = get_company_or_404(request)
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
-    records = NonUserOutreach.objects.filter(outreach_email__in=outreach_emails)
+    records = OutreachRecord.objects.filter(outreach_email__in=outreach_emails)
     json_res = []
     for record in records:
         json_obj = dict(
