@@ -28,13 +28,18 @@ export default class SetUpReport extends Component {
     const {reportFinder} = this.props;
     this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
-    this.loadData();
+    this.clearReportRef = reportFinder.subscribeToClearReportConfiguration(
+      () => this.loadData());
+    console.log('componentDidMount about to force loadData');
+    reportFinder.noteClearReportConfiguration();
   }
 
   componentWillUnmount() {
     const {reportFinder} = this.props;
     reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
+    reportFinder.unsubscribeToClearReportConfiguration(this.clearReportRef);
   }
+
   onIntentionChange(reportingType) {
     const {
       category: reportType,
@@ -61,6 +66,7 @@ export default class SetUpReport extends Component {
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
       reportConfig) {
+    console.log('onMenuChanged', reportingTypes, reportTypes, dataTypes);
     this.setState({
       reportingTypes,
       reportTypes,
@@ -96,6 +102,7 @@ export default class SetUpReport extends Component {
   }
 
   async loadData() {
+    console.log('loadData');
     const {
       intention: reportingType,
       category: reportType,
