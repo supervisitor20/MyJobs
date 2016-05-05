@@ -20,10 +20,9 @@ export class ReportList extends Component {
   }
 
   handleCreateNewReport(e) {
-    const {history, onClearReportConfiguration} = this.props;
+    const {history} = this.props;
     e.preventDefault();
-    history.pushState(null, '/set-up-report', {});
-    setTimeout(() => onClearReportConfiguration());
+    history.pushState(null, '/');
   }
 
   render() {
@@ -84,5 +83,4 @@ ReportList.propTypes = {
     }),
   ).isRequired,
   highlightId: PropTypes.number,
-  onClearReportConfiguration: PropTypes.func.isRequired,
 };

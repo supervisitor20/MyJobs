@@ -170,36 +170,6 @@ export class ReportFinder {
       }
     }
   }
-
-  // We have three of these now. Redux please...
-  /**
-   * Submit callbacks for notifications that it's time to start a blank new
-   * ReportConfiguration.
-   *
-   * returns a reference which can be used later to unsubscribe
-   */
-  subscribeToClearReportConfiguration(callback) {
-    this.clearReportConfigurationSubscribers[callback] = callback;
-    return callback;
-  }
-
-  /**
-   * Remove a callback from the report configuration subscriptions.
-   */
-  unsubscribeToClearReportConfiguration(ref) {
-    delete this.clearReportConfigurationSubscribers[ref];
-  }
-
-  /**
-   * Let subscribers know that it is time to clear the report configuration.
-   */
-  noteClearReportConfiguration() {
-    for (const ref in this.clearReportConfigurationSubscribers) {
-      if (this.clearReportConfigurationSubscribers.hasOwnProperty(ref)) {
-        this.clearReportConfigurationSubscribers[ref]();
-      }
-    }
-  }
 }
 
 /**

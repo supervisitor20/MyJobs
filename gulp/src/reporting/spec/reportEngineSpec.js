@@ -106,25 +106,6 @@ describe('ReportFinder', () => {
       expect(newId).toEqual(22);
     });
   });
-
-  describe('clear report subscriptions', () => {
-    let clear;
-    const ref = finder.subscribeToClearReportConfiguration(
-      () => {clear = true;});
-
-    beforeEach(() => {clear= false;});
-
-    it('can inform subscribers of a clear report action', () => {
-      finder.noteClearReportConfiguration();
-      expect(clear).toBe(true);
-    });
-
-    it('can unsubscribe', () => {
-      finder.unsubscribeToClearReportConfiguration(ref);
-      finder.noteClearReportConfiguration();
-      expect(clear).toBe(false);
-    });
-  });
 });
 
 describe('ReportConfiguration', () => {

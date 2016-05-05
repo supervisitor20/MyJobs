@@ -30,15 +30,12 @@ export default class SetUpReport extends Component {
     const {reportFinder} = this.props;
     this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
-    this.clearReportRef = reportFinder.subscribeToClearReportConfiguration(
-      () => this.loadData());
-    reportFinder.noteClearReportConfiguration();
+    this.loadData();
   }
 
   componentWillUnmount() {
     const {reportFinder} = this.props;
     reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
-    reportFinder.unsubscribeToClearReportConfiguration(this.clearReportRef);
   }
 
   onIntentionChange(reportingType) {
@@ -76,7 +73,7 @@ export default class SetUpReport extends Component {
   }
 
   onFilterUpdate(filter) {
-    this.setState({filter})
+    this.setState({filter});
   }
 
   onErrorsChanged(errors) {
