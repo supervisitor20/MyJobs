@@ -4,7 +4,7 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus, onSelect, className} = props;
+  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus, onFocus, className} = props;
   return (
     <span className="react-component">
       <input
@@ -20,7 +20,7 @@ function TextField(props) {
         placeholder={placeholder}
         onChange={onChange}
         autoFocus={autoFocus}
-        onSelect={onSelect}
+        onFocus={onFocus}
         />
     </span>
   );
@@ -65,7 +65,7 @@ TextField.propTypes = {
   /**
    * What happens if you click this field?
    */
-  onSelect: React.PropTypes.func,
+  onFocus: React.PropTypes.func,
   /**
    * Classes
    */
@@ -79,7 +79,7 @@ TextField.defaultProps = {
   isHidden: false,
   required: false,
   autoFocus: '',
-  onSelect: null,
+  onFocus: null,
   className: '',
 };
 

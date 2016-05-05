@@ -35,7 +35,6 @@ class DateField extends React.Component {
       displayCalendar: false,
       dateInvalid: false,
     };
-    this.closeCalendar = this.closeCalendar.bind(this);
   }
   onDaySelect(day) {
     const {onChange} = this.props;
@@ -106,7 +105,7 @@ class DateField extends React.Component {
                       onYearChange={y => this.onYearSelect(y)}
                       onMonthChange={m => this.onMonthSelect(m)}
                       onSelect={d => this.onDaySelect(d)}
-                      closeCalendar={this.closeCalendar}
+                      closeCalendar={() => this.closeCalendar()}
                       yearChoices={this.generateYearChoices(50)}
                       />
                   </div>);
@@ -133,7 +132,7 @@ class DateField extends React.Component {
             value={value}
             placeholder={placeholder}
             onChange={onChange}
-            onSelect={e => this.toggleCalendar(e, this)}
+            onFocus={e => this.toggleCalendar(e, this)}
           />
         </div>
         {error}
