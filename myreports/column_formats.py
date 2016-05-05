@@ -75,7 +75,7 @@ def single_field_descend_formatter(field, inner):
         elif isinstance(value, Mapping):
             return value.get(field, None)
         else:
-            return inner.format(value)
+            return inner(value)
 
     return formatter
 
