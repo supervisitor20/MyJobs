@@ -482,6 +482,7 @@ def export_options_api(request):
             },
         }
     """
+    company = get_company_or_404(request)
     validator = ApiValidator()
 
     report_id = request.GET.get('report_id')
@@ -491,7 +492,8 @@ def export_options_api(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    report_list = list(DynamicReport.objects.filter(id=report_id))
+    report_list = list(DynamicReport.objects.filter(
+        id=report_id, owner=company))
     if len(report_list) < 1:
         validator.note_field_error('report_id', 'Unknown report id.')
 
@@ -543,7 +545,7 @@ def filters_api(request):
 
     datasource = report_data.report_type.datasource
 
-    report_configuration = (report_data.configuration.build_configuration())
+    report_configuration = report_data.configuration.build_configuration()
 
     driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
@@ -662,14 +664,15 @@ def download_dynamic_report(request):
         The report with the specified options rendered in the desired format.
     """
 
-    # SECURITY: check report_id vs company owner!!!
+    company = get_company_or_404(request)
     report_id = request.GET.get('id', 0)
     values = request.GET.getlist('values')
     order_by = request.GET.get('order_by')
     order_direction = request.GET.get('direction', 'ascending')
     report_presentation_id = request.GET.get('report_presentation_id')
 
-    report = get_object_or_404(DynamicReport, pk=report_id)
+    report = get_object_or_404(
+        DynamicReport.objects.filter(owner=company), pk=report_id)
     report_presentation = (
         ReportPresentation.objects.get(id=report_presentation_id))
     config = report.report_data.configuration
@@ -714,7 +717,6 @@ def download_dynamic_report(request):
 @require_http_methods(['POST'])
 def get_default_report_name(request):
     validator = ApiValidator()
-    get_company_or_404(request)
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
     report_data_id = request.POST.get('report_data_id')
