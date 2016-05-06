@@ -1,8 +1,8 @@
 import React, {Component, PropTypes} from 'react';
 import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
+import Sortable from 'react-sortablejs';
 import Select from 'common/ui/Select';
-import Reorder from 'react-reorder';
 import {map, filter, forEach, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
@@ -25,12 +25,12 @@ export default class ExportReport extends Component {
     this.loadData();
   }
 
-  onReorder(event, item, index, newIndex) {
-    const {fieldsSelected} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
-    const removed = newFieldsSelected.splice(index, 1);
-    newFieldsSelected.splice(newIndex, 0, ...removed);
-    this.setState({fieldsSelected: newFieldsSelected});
+  onReorder(order) {
+    this.setState({
+      fieldsSelected: map(order, value =>
+        find(this.state.fieldsSelected, field => field.value === value)
+      ),
+    });
   }
 
   onCheck(e) {
@@ -196,20 +196,31 @@ export default class ExportReport extends Component {
                     item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
                     sharedProps={{onChange: e => this.onCheckAll(e)}}/>
                 </div>
-                <Reorder
-                  itemKey="value"
-                  selectedKey="value"
-                  lock="horizontal"
-                  holdTime=""
-                  list={[...fieldsSelected]}
-                  template={SortableField}
-                  listClass="my-list"
-                  itemClass="list-item"
-                  callback={(...args) => this.onReorder(...args)}
-                  selected={this.state.selected}
-                  disableReorder={false}
-                  sharedProps={{onChange: e => this.onCheck(e, this)}}
-                />
+                <Sortable
+                  options={{
+                    ghostClass: 'placeholder',
+                    delay: 'ontouchstart' in window ? 150 : 0,
+                  }}
+                  onChange={ order => this.onReorder(order)}
+                >
+                  {fieldsSelected.map( field => {
+                    return (
+                      <div className="list-item" data-id={field.value}>
+                        <SortableField
+                          item={{
+                            display: field.display,
+                            value: field.value,
+                            checked: field.checked,
+                          }}
+                          sharedProps={{
+                            onChange: e => this.onCheck(e, this),
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </Sortable>
+                <span className="list-item">Old Component</span>
               </div>
           </div>
           : ''}
