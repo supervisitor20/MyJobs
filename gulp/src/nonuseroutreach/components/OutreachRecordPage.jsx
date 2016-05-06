@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import {OutreachRecordTable} from './OutreachRecordTable';
 
 // outreach record table view
@@ -14,4 +14,6 @@ export function OutreachRecordPage(props) {
   );
 }
 
-OutreachRecordPage.propTypes = {}
+OutreachRecordPage.propTypes = {
+  recordsManager: PropTypes.object.isRequired,
+};
