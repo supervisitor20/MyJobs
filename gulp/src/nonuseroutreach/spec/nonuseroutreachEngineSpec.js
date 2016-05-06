@@ -51,7 +51,7 @@ describe('Records Manager', () => {
   const recordsManager = new OutreachRecordManagement(fakeApi);
 
   it('can get existing records list', promiseTest(async () => {
-    const records = await recordsManager.getExistingInboxes();
+    const records = await recordsManager.getExistingOutreachRecords();
     expect(records[0].outreach_email).toEqual('thistest');
     expect(records[0].from_email).toEqual('test@test.com');
   }));
