@@ -191,18 +191,6 @@ class Module extends React.Component {
               />
           );
         case 'date':
-          let year;
-          let month;
-          let day;
-          // If date value is empty use today's date
-          if ((!formContents[profileUnitName]) || (formContents[profileUnitName] === '')) {
-            const now = new Date();
-            year = now.getFullYear();
-            // month and day must both be two characters
-            month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
-            day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
-            formContents[profileUnitName] = month + '/' + day + '/' + year;
-          }
           return wrap(
             <DateField
               name={profileUnitName}
@@ -253,25 +241,50 @@ class Module extends React.Component {
     };
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
     // Update state
+
+
+
+
+
+
+
     for (const item in apiResponse.data) {
       if (apiResponse.data.hasOwnProperty(item)) {
-        // django-remote-forms returns empty fields as null, which won't be
-        // caught by React's defaultProps (it only catches undefined). Therefore
-        // convert null fields to empty strings:
-        // https://github.com/facebook/react/issues/2166
-        if (!apiResponse.data[item]) {
-          formContents[item] = '';
-        } if (moment(apiResponse.data[item], 'YYYY-MM-DD', true).isValid()) {
-          // django-remote-forms needs dates to be of form YYYY-MM-DD but
-          // we display them to the user as MM/DD/YYYY
-          const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD');
-          // month and day must both be two characters
-          const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
-          const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
-          const year = momentObject.year();
-          formContents[item] = month + '/' + day + '/' + year;
-        } else {
-          formContents[item] = apiResponse.data[item];
+        // Is it a date?
+        if (apiResponse.fields[item].widget.input_type === 'date') {
+          let year;
+          let month;
+          let day;
+          // If date value is empty use today's date
+          if ((!formContents[item]) || (formContents[item] === '')) {
+            const now = new Date();
+            year = now.getFullYear();
+            // month and day must both be two characters
+            month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
+            day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+            formContents[item] = month + '/' + day + '/' + year;
+          } else {
+            // Otherwise transform it
+            // django-remote-forms needs dates to be of form YYYY-MM-DD but
+            // we display them to the user as MM/DD/YYYY
+            const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD');
+            // month and day must both be two characters
+            const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+            const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+            const year = momentObject.year();
+            formContents[item] = month + '/' + day + '/' + year;
+          }
+        }
+        else {
+          // django-remote-forms returns empty fields as null, which won't be
+          // caught by React's defaultProps (it only catches undefined). Therefore
+          // convert null fields to empty strings:
+          // https://github.com/facebook/react/issues/2166
+          if (!apiResponse.data[item]) {
+            formContents[item] = '';
+          } else {
+            formContents[item] = apiResponse.data[item];
+          }
         }
       }
     }
