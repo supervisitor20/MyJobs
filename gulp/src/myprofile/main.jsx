@@ -62,27 +62,23 @@ class Module extends React.Component {
     if (event.target.type === 'checkbox') {
       value = event.target.checked;
     } else if (event.target.type === 'calendar-month') {
-      let month = event.target.value;
-      // month must be two characters
-      month = (month < 10) ? '0' + month : month;
       const existingDate = formContents[fieldID];
-      const beforeMonth = existingDate.substring(0, 5);
-      const afterMonth = existingDate.substring(7, 10);
-      const updatedDate = beforeMonth + month + afterMonth;
+      const afterMonth = existingDate.substring(2, 10);
+      const newMonth = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      const updatedDate = newMonth + afterMonth;
       value = updatedDate;
     } else if (event.target.type === 'calendar-day') {
-      let day = event.target.value;
-      // day must be two characters
-      day = (day < 10) ? '0' + day : day;
       const existingDate = formContents[fieldID];
-      const beforeDay = existingDate.substring(0, 8);
-      const updatedDate = beforeDay + day;
+      const beforeDay = existingDate.substring(0, 3);
+      const afterDay = existingDate.substring(5, 10);
+      const newDay = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      const updatedDate = beforeDay + newDay + afterDay;
       value = updatedDate;
     } else if (event.target.type === 'calendar-year') {
-      const year = event.target.value;
+      const newYear = event.target.value;
       const existingDate = formContents[fieldID];
-      const afterYear = existingDate.substring(4, 10);
-      const updatedDate = year + afterYear;
+      const beforeYear = existingDate.substring(0, 6);
+      const updatedDate = beforeYear + newYear;
       value = updatedDate;
     } else {
       value = event.target.value;
@@ -115,12 +111,15 @@ class Module extends React.Component {
   processFormContents(formContents) {
     for (const formItem in formContents) {
       if (formContents.hasOwnProperty(formItem)) {
-        // Dates must be of form YYYY-MM-DD before POSTing
-        const valueIsDate = moment(formContents[formItem], 'YYYY/MM/DD', true).isValid();
-        if (valueIsDate === true) {
-          let dateValue = formContents[formItem];
-          dateValue = dateValue.replace(/\//g, '-');
-          formContents[formItem] = dateValue;
+        // User sees dates of form MM/DD/YYYY but dates must be
+        // of form YYYY-MM-DD before POSTing
+        const momentObject = moment(formContents[formItem], 'MM/DD/YYYY', true);
+        if (momentObject.isValid()) {
+          // month and day must both be two characters
+          const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+          const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+          const year = momentObject.year();
+          formContents[formItem] = year + '-' + month + '-' + day;
         }
         // Inspect other form field types here
       }
@@ -130,7 +129,6 @@ class Module extends React.Component {
   async handleSave() {
     const {formContents} = this.state;
     const myJobsApi = new MyJobsApi(getCsrf());
-
     // We display dates seperated by slashes (i.e. YYYY/MM/DD), but
     // django-remote-forms expects them seperated by dashes (i.e. YYYY-MM-DD)
     const processedFormContents = this.processFormContents(formContents);
@@ -197,13 +195,13 @@ class Module extends React.Component {
           let month;
           let day;
           // If date value is empty use today's date
-          if (formContents[profileUnitName] === '') {
+          if ((!formContents[profileUnitName]) || (formContents[profileUnitName] === '')) {
             const now = new Date();
             year = now.getFullYear();
             // month and day must both be two characters
-            month = now.getMonth() < 10 ? '0' + now.getMonth() : now.getMonth();
+            month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
             day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
-            formContents[profileUnitName] = year + '/' + month + '/' + day;
+            formContents[profileUnitName] = month + '/' + day + '/' + year;
           }
           return wrap(
             <DateField
@@ -265,8 +263,13 @@ class Module extends React.Component {
           formContents[item] = '';
         } if (moment(apiResponse.data[item], 'YYYY-MM-DD', true).isValid()) {
           // django-remote-forms needs dates to be of form YYYY-MM-DD but
-          // we display them to the user as YYYY/MM/DD
-          formContents[item] = apiResponse.data[item].replace(/-/g, '/');
+          // we display them to the user as MM/DD/YYYY
+          const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD');
+          // month and day must both be two characters
+          const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+          const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+          const year = momentObject.year();
+          formContents[item] = month + '/' + day + '/' + year;
         } else {
           formContents[item] = apiResponse.data[item];
         }

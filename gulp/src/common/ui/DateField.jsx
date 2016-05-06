@@ -23,9 +23,9 @@ class DateField extends React.Component {
     let day;
     const value = this.props.value;
     if (value) {
-      const momentObject = moment(value, 'YYYY/MM/DD');
+      const momentObject = moment(value, 'YYYY-MM-DD');
       day = momentObject.date();
-      month = momentObject.month() + 1;
+      month = momentObject.month();
       year = momentObject.year();
     }
     this.state = {
@@ -90,9 +90,9 @@ class DateField extends React.Component {
       value,
       placeholder} = this.props;
 
-    const momentObject = moment(value, 'YYYY/MM/DD');
+    const momentObject = moment(value, 'MM/DD/YYYY');
     const day = momentObject.date();
-    const month = momentObject.month() + 1;
+    const month = momentObject.month();
     const year = momentObject.year();
 
     let calendar;
@@ -100,7 +100,7 @@ class DateField extends React.Component {
       calendar = (<div className="input-group datepicker-dropdown dropdown-menu">
                     <CalendarPanel
                       year={year}
-                      month={month - 1}
+                      month={month}
                       day={day}
                       onYearChange={y => this.onYearSelect(y)}
                       onMonthChange={m => this.onMonthSelect(m)}
@@ -112,8 +112,8 @@ class DateField extends React.Component {
     }
 
     let error;
-    // Date value must match ISO 8601 format
-    if (moment(value, 'YYYY/MM/DD', true).isValid() === false) {
+    // Date value must match our custom format (not ISO 8601)
+    if (moment(value, 'MM/DD/YYYY', true).isValid() === false) {
       error = (
         <div className="error-text">Date formatting error</div>
       );
