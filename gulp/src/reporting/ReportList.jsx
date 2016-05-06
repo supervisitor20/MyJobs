@@ -23,16 +23,18 @@ export class ReportList extends Component {
       reportName: report.name,
       reportType: report.report_type,
     };
+    this.closeAllPopups();
     history.pushState(null, href, query);
   }
 
   handleExportReport(report) {
     const {history} = this.props;
     const href = '/export/' + report.id;
+    this.closeAllPopups();
     history.pushState(null, href);
   }
 
-  closeAll() {
+  closeAllPopups() {
     this.setState({isMenuActive: false, currentlyActive: ''});
   }
 
@@ -63,7 +65,7 @@ export class ReportList extends Component {
           className={highlightId === r.id ? 'active' : ''}
           key={r.id}
           id={numberedID}>
-          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAll={(e) => this.closeAll(e)} /> : ''}
+          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAll={(e) => this.closeAllPopups(e)} /> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
           <span className="menu-text">{r.name}</span>
         </li>

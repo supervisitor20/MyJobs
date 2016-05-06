@@ -9,7 +9,7 @@ export default class PopMenu extends Component {
   }
 
   menuContents() {
-    const {options, isMenuActive, closeAll} = this.props;
+    const {options, isMenuActive, closeAllPopups} = this.props;
     const dropdownItems = options.map((item, index)=> {
       return (
         <li key={index} onClick={e => this.handleItemClick(item, e)}>
@@ -19,7 +19,7 @@ export default class PopMenu extends Component {
     });
     if (isMenuActive === true) {
       return (
-        <ClickOutCompat onClickOut={() => closeAll()}>
+        <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
             <ul>
               {dropdownItems}
@@ -54,5 +54,5 @@ PopMenu.propTypes = {
   ),
   isMenuActive: PropTypes.bool.isRequired,
   toggleMenu: PropTypes.func.isRequired,
-  closeAll: PropTypes.func,
+  closeAllPopups: PropTypes.func,
 };
