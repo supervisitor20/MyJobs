@@ -113,15 +113,17 @@ class Module extends React.Component {
     window.location.assign('/profile/view/');
   }
   processFormContents(formContents) {
-    for (const formItem in formContents) {
-      // Dates must be of form YYYY-MM-DD before POSTing
-      const valueIsDate = moment(formContents[formItem], 'YYYY/MM/DD', true).isValid();
-      if (valueIsDate === true) {
-        let dateValue = formContents[formItem];
-        dateValue = dateValue.replace(/\//g, '-');
-        formContents[formItem] = dateValue;
+    if (formContents.hasOwnProperty(formItem)) {
+      for (const formItem in formContents) {
+        // Dates must be of form YYYY-MM-DD before POSTing
+        const valueIsDate = moment(formContents[formItem], 'YYYY/MM/DD', true).isValid();
+        if (valueIsDate === true) {
+          let dateValue = formContents[formItem];
+          dateValue = dateValue.replace(/\//g, '-');
+          formContents[formItem] = dateValue;
+        }
+        // Inspect other form field types here
       }
-      // Inspect other form field types here
     }
     return formContents;
   }
