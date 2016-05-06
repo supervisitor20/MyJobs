@@ -3,6 +3,19 @@ import {map} from 'lodash-compat';
 import PopMenu from 'common/ui/PopMenu';
 
 export class ReportList extends Component {
+  constructor() {
+    super();
+    this.state = {
+      isMenuActive: false,
+      currentlyActive: '',
+    };
+  }
+
+  toggleMenu(e) {
+    const {isMenuActive} = this.state;
+    this.setState({isMenuActive: !isMenuActive, currentlyActive: e.target.parentNode.parentNode.id});
+  }
+
   handlePreviewReport(report) {
     const {history} = this.props;
     const href = '/preview/' + report.id;
@@ -19,10 +32,20 @@ export class ReportList extends Component {
     history.pushState(null, href);
   }
 
+  closeAll() {
+    this.setState({isMenuActive: false, currentlyActive: ''});
+  }
+
   render() {
     const {reports, highlightId} = this.props;
+    const {currentlyActive} = this.state;
     const reportLinks = map(reports, r => {
       const options = [];
+      const numberedID = 'listentry' + r.id;
+      let isThisMenuActive = false;
+      if (numberedID === currentlyActive) {
+        isThisMenuActive = true;
+      }
       if (r.report_type && r.id) {
         options.push({
           display: 'Preview',
@@ -38,8 +61,9 @@ export class ReportList extends Component {
       return (
         <li
           className={highlightId === r.id ? 'active' : ''}
-          key={r.id}>
-          {options.length > 0 ? <PopMenu options={options}/> : ''}
+          key={r.id}
+          id={numberedID}>
+          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAll={(e) => this.closeAll(e)} /> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
           <span className="menu-text">{r.name}</span>
         </li>

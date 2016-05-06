@@ -2203,7 +2203,7 @@ h3.bottom-bordered {
 }
 
 .reporting.sidebar ul li .menu-text {
-    display: block;
+    display: inline-block;
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
@@ -2221,7 +2221,7 @@ h3.bottom-bordered {
   height: 16px;
   width: 16px;
   margin-right: 5px;
-  vertical-align: text-bottom;
+  vertical-align: top;
 }
 
 .pop-menu:before {
@@ -3521,6 +3521,10 @@ height: 33px;
     vertical-align: baseline;
     line-height: inherit;
     height: auto;
+}
+
+.button:hover, .button a:hover {
+  text-decoration: none;
 }
 
 .actions.row .col-md-8 .button.wide,
