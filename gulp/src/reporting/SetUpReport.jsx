@@ -2,6 +2,7 @@ import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {forEach} from 'lodash-compat/collection';
+import {isEqual} from 'lodash-compat/lang';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -27,40 +28,47 @@ export default class SetUpReport extends Component {
   }
 
   componentDidMount() {
-    const {reportFinder} = this.props;
+    const {reportFinder, history} = this.props;
     this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
     this.loadData();
+    this.historyUnlisten = (
+      history.listen((something, loc) => this.handleHistory(something, loc)));
   }
 
   componentWillUnmount() {
     const {reportFinder} = this.props;
+    this.historyUnlisten();
     reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
   }
 
-  onIntentionChange(reportingType) {
-    const {
-      category: reportType,
-      dataSet: dataType,
-    } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType, {});
+  onIntentionChange(intention) {
+    const {history} = this.props;
+    const {category, dataSet} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onCategoryChange(reportType) {
-    const {
-      intention: reportingType,
-      dataSet: dataType,
-    } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType, {});
+  onCategoryChange(category) {
+    const {history} = this.props;
+    const {intention, dataSet} = this.props.location.query;
+    console.log('onCategoryChange', intention, category, dataSet);
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onDataSetChange(dataType) {
-    const {
-      intention: reportingType,
-      category: reportType,
-    } = this.props.location.query;
-    this.buildReportConfig(reportingType, reportType, dataType, {});
+  onDataSetChange(dataSet) {
+    const {history} = this.props;
+    const {intention, category} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
+
+  handleHistory(something, loc) {
+    const lastComponent = loc.components[loc.components.length - 1];
+    console.log('handleHistory', lastComponent === SetUpReport, loc);
+    if (lastComponent === SetUpReport) {
+      this.loadData();
+    }
+  };
+
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
       reportConfig) {

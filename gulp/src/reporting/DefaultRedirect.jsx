@@ -4,8 +4,9 @@ import {Loading} from 'common/ui/Loading';
 export default class DefaultRedirect extends Component {
   componentDidMount() {
     const {reportFinder} = this.props;
+    const {intention, category, dataSet} = this.props.location.query;
     reportFinder.buildReportConfiguration(
-      '', '', '', null, {}, null,
+      intention, category, dataSet, null, {}, null,
       () => {},
       () => {},
       () => {},
@@ -33,4 +34,11 @@ export default class DefaultRedirect extends Component {
 DefaultRedirect.propTypes = {
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
+  location: PropTypes.shape({
+    query: PropTypes.shape({
+      intention: PropTypes.string,
+      category: PropTypes.string,
+      dataSet: PropTypes.string,
+    }),
+  }),
 };
