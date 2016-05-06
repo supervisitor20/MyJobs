@@ -115,7 +115,7 @@ class DateField extends React.Component {
     // Date value must match our custom format (not ISO 8601)
     if (moment(value, 'MM/DD/YYYY', true).isValid() === false) {
       error = (
-        <div className="error-text">Date formatting error</div>
+        <div className="error-text">MM/DD/YYYY</div>
       );
     }
 
