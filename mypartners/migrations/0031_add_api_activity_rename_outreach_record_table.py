@@ -65,8 +65,8 @@ class Migration(SchemaMigration):
         nuo = AppAccess.objects.get(name='NUO')
         Activity.objects.create(
             app_access=nuo,
-            name="read outreach records",
-            description="Read outreach records")
+            name="read outreach record",
+            description="View existing outreach records")
 
     def backwards(self, orm):
         # Adding model 'NonUserOutreach'
@@ -124,7 +124,7 @@ class Migration(SchemaMigration):
         ###
 
         nuo = AppAccess.objects.get(name='NUO')
-        Activity.objects.get(
+        Activity.objects.filter(
             app_access=nuo,
             name="read outreach record",
             description="View existing outreach records").delete()
