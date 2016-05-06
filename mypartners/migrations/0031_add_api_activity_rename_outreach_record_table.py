@@ -126,8 +126,8 @@ class Migration(SchemaMigration):
         nuo = AppAccess.objects.get(name='NUO')
         Activity.objects.get(
             app_access=nuo,
-            name="read outreach records",
-            description="Read outreach records").delete()
+            name="read outreach record",
+            description="View existing outreach records").delete()
 
     models = {
         u'auth.group': {

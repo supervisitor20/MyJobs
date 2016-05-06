@@ -1414,7 +1414,7 @@ def api_update_nuo_inbox(request):
 
 
 @restrict_to_staff()
-@requires("read outreach records")
+@requires("read outreach record")
 def api_get_nuo_records_list(request):
     """
     GET /prm/api/nonuseroutreach/records/list

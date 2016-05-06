@@ -115,7 +115,7 @@ class MyJobsBase(TestCase):
                 "update partner", "update role", "update tag", "update user",
                 "read outreach email address", "create outreach email address",
                 "delete outreach email address",
-                "update outreach email address", "read outreach records"]]
+                "update outreach email address", "read outreach record"]]
 
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
