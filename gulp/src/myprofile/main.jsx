@@ -63,27 +63,31 @@ class Module extends React.Component {
       value = event.target.checked;
     } else if (event.target.type === 'calendar-month') {
       const existingDate = formContents[fieldID];
-      const afterMonth = existingDate.substring(2, 10);
+      // month must be 2 chars
       const newMonth = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      // If user mangled date string, reset it so we can use substring
+      const afterMonth = existingDate.substring(2, 10);
       const updatedDate = newMonth + afterMonth;
       value = updatedDate;
     } else if (event.target.type === 'calendar-day') {
       const existingDate = formContents[fieldID];
+      // day must be 2 chars
+      const newDay = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      // If user mangled date string, reset it so we can use substring
       const beforeDay = existingDate.substring(0, 3);
       const afterDay = existingDate.substring(5, 10);
-      const newDay = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
-      const updatedDate = beforeDay + newDay + afterDay;
-      value = updatedDate;
+      value = beforeDay + newDay + afterDay;
     } else if (event.target.type === 'calendar-year') {
-      const newYear = event.target.value;
       const existingDate = formContents[fieldID];
+      const newYear = event.target.value;
+      // If user mangled date string, reset it so we can use substring
       const beforeYear = existingDate.substring(0, 6);
-      const updatedDate = beforeYear + newYear;
-      value = updatedDate;
+      value = beforeYear + newYear;
+    } else if (event.target.type === 'calendar-year') {
+      value = event.target.value;
     } else {
       value = event.target.value;
     }
-
     formContents[fieldID] = value;
     this.setState({
       formContents: formContents,
@@ -241,13 +245,6 @@ class Module extends React.Component {
     };
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
     // Update state
-
-
-
-
-
-
-
     for (const item in apiResponse.data) {
       if (apiResponse.data.hasOwnProperty(item)) {
         // Is it a date?
@@ -264,18 +261,17 @@ class Module extends React.Component {
             day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
             formContents[item] = month + '/' + day + '/' + year;
           } else {
-            // Otherwise transform it
-            // django-remote-forms needs dates to be of form YYYY-MM-DD but
-            // we display them to the user as MM/DD/YYYY
-            const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD');
+            // Otherwise transform date value (django-remote-forms needs dates
+            // to be of form YYYY-MM-DD but we display them to the user
+            // as MM/DD/YYYY
+            const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD', true);
             // month and day must both be two characters
-            const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
-            const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
-            const year = momentObject.year();
+            month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+            day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+            year = momentObject.year();
             formContents[item] = month + '/' + day + '/' + year;
           }
-        }
-        else {
+        } else {
           // django-remote-forms returns empty fields as null, which won't be
           // caught by React's defaultProps (it only catches undefined). Therefore
           // convert null fields to empty strings:

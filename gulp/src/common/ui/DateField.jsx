@@ -37,17 +37,30 @@ class DateField extends React.Component {
     };
   }
   onDaySelect(day) {
-    const {onChange} = this.props;
+    this.updateDay(day);
+    this.closeCalendar();
+  }
+  updateDay(day) {
+    const {onChange, value} = this.props;
+
+    if (!moment(value, 'MM/DD/YYYY', true).isValid()) {
+      this.resetDateToNow();
+    }
+
     const fakeEvent = {};
     fakeEvent.target = {};
     fakeEvent.target.name = this.props.name;
     fakeEvent.target.type = 'calendar-day';
     fakeEvent.target.value = day.day;
     onChange(fakeEvent);
-    this.closeCalendar();
   }
-  onMonthSelect(month) {
-    const {onChange} = this.props;
+  updateMonth(month) {
+    const {onChange, value} = this.props;
+
+    if (!moment(value, 'MM/DD/YYYY', true).isValid()) {
+      this.resetDateToNow();
+    }
+
     const fakeEvent = {};
     fakeEvent.target = {};
     fakeEvent.target.name = this.props.name;
@@ -55,8 +68,13 @@ class DateField extends React.Component {
     fakeEvent.target.value = month;
     onChange(fakeEvent);
   }
-  onYearSelect(year) {
-    const {onChange} = this.props;
+  updateYear(year) {
+    const {onChange, value} = this.props;
+
+    if (!moment(value, 'MM/DD/YYYY', true).isValid()) {
+      this.resetDateToNow();
+    }
+
     const fakeEvent = {};
     fakeEvent.target = {};
     fakeEvent.target.name = this.props.name;
@@ -77,8 +95,41 @@ class DateField extends React.Component {
   closeCalendar() {
     this.setState({displayCalendar: false});
   }
+  resetDateToNow() {
+    let year;
+    let month;
+    let day;
+
+    const {onChange} = this.props;
+    const now = new Date();
+    month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
+    day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+    year = now.getFullYear();
+
+    const newDate = month + '/' + day + '/' + year;
+
+    const fakeEvent = {};
+    fakeEvent.target = {};
+    fakeEvent.target.name = this.props.name;
+    fakeEvent.target.type = 'entire-date';
+    fakeEvent.target.value = newDate;
+    onChange(fakeEvent);
+  }
+  openCalendar() {
+    const {value} = this.props;
+    // Check if date is valid
+    // If not, replace with what it was on page load (what was passed in or today's date
+    if (!moment(value, 'MM/DD/YYYY', true).isValid()) {
+      this.resetDateToNow();
+    }
+    this.setState({displayCalendar: true});
+  }
   toggleCalendar() {
-    this.setState({displayCalendar: !this.state.displayCalendar});
+    if (this.state.displayCalendar) {
+      this.closeCalendar();
+    } else {
+      this.openCalendar();
+    }
   }
   render() {
     const {
@@ -90,10 +141,25 @@ class DateField extends React.Component {
       value,
       placeholder} = this.props;
 
-    const momentObject = moment(value, 'MM/DD/YYYY');
-    const day = momentObject.date();
-    const month = momentObject.month();
-    const year = momentObject.year();
+    let momentObject = moment(value, 'MM/DD/YYYY');
+    let day;
+    let month;
+    let year;
+    let error;
+    // Date value must match our custom format (not ISO 8601)
+    if (moment(value, 'MM/DD/YYYY', true).isValid()) {
+      momentObject = moment(value, 'MM/DD/YYYY');
+      day = momentObject.date();
+      month = momentObject.month();
+      year = momentObject.year();
+    } else {
+      error = (
+        <div className="error-text">MM/DD/YYYY</div>
+      );
+      day = 0;
+      month = 1;
+      year = 2000;
+    }
 
     let calendar;
     if (this.state.displayCalendar) {
@@ -102,21 +168,13 @@ class DateField extends React.Component {
                       year={year}
                       month={month}
                       day={day}
-                      onYearChange={y => this.onYearSelect(y)}
-                      onMonthChange={m => this.onMonthSelect(m)}
+                      onYearChange={y => this.updateYear(y)}
+                      onMonthChange={m => this.updateMonth(m)}
                       onSelect={d => this.onDaySelect(d)}
                       closeCalendar={() => this.closeCalendar()}
                       yearChoices={this.generateYearChoices(50)}
                       />
                   </div>);
-    }
-
-    let error;
-    // Date value must match our custom format (not ISO 8601)
-    if (moment(value, 'MM/DD/YYYY', true).isValid() === false) {
-      error = (
-        <div className="error-text">MM/DD/YYYY</div>
-      );
     }
 
     return (
