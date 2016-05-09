@@ -692,7 +692,7 @@ class TestDynamicReports(MyReportsTestCase):
         response_data = json.loads(resp.content)
         self.assertEquals(10, len(response_data['records']))
 
-        first_found_name = response_data['records'][0]['name']
+        first_found_name = response_data['records'][0]['Name']
         expected_name = u'name-0 \u2019'
         self.assertEqual(expected_name, first_found_name)
 
@@ -742,7 +742,7 @@ class TestDynamicReports(MyReportsTestCase):
         response_data = json.loads(resp.content)
         self.assertEquals(21, len(response_data['records']))
 
-        last_found_name = response_data['records'][-1]['name']
+        last_found_name = response_data['records'][-1]['Name']
         expected_name = u'partner-19 \u2019'
         self.assertEqual(expected_name, last_found_name)
 
@@ -796,7 +796,7 @@ class TestDynamicReports(MyReportsTestCase):
         response_data = json.loads(resp.content)
         self.assertEquals(20, len(response_data['records']))
 
-        last_subject = response_data['records'][-1]['subject']
+        last_subject = response_data['records'][-1]['Subject']
         expected_subject = u'subject-19 \u2019'
         self.assertEqual(expected_subject, last_subject)
 
@@ -842,7 +842,7 @@ class TestDynamicReports(MyReportsTestCase):
         response_data = json.loads(resp.content)
         self.assertEquals(1, len(response_data['records']))
 
-        found_name = response_data['records'][0]['name']
+        found_name = response_data['records'][0]['Name']
         expected_name = u'name-2'
         self.assertEqual(expected_name, found_name)
 
@@ -945,7 +945,7 @@ class TestDynamicReports(MyReportsTestCase):
         self.assertIn('text/csv', resp['content-type'])
 
         lines = resp.content.splitlines()
-        self.assertEquals('uri,name', lines[0])
+        self.assertEquals('URL,Name', lines[0])
         self.assertEquals('somewhere,partner-0 \xe2\x80\x99', lines[2])
 
     def test_dynamic_partners_report_sort(self):
@@ -991,14 +991,14 @@ class TestDynamicReports(MyReportsTestCase):
             'id': report_id,
             'report_presentation_id': report_presentation.pk,
             'direction': 'descending',
-            'order_by': 'name',
+            'order_by': 'Name',
         }
         resp = self.client.get(reverse('download_dynamic_report'), data)
         self.assertEquals(200, resp.status_code)
         response_data = json.loads(resp.content)
         self.assertEquals(21, len(response_data['records']))
 
-        found_name = response_data['records'][0]['name']
+        found_name = response_data['records'][0]['Name']
         expected_name = u'partner-9 \u2019'
         self.assertEqual(expected_name, found_name)
 
@@ -1122,11 +1122,11 @@ class TestDynamicReports(MyReportsTestCase):
         response_data = json.loads(resp.content)
         self.assertEquals(12, len(response_data['records']))
         january = response_data['records'][0]
-        self.assertEqual('1', january['month'])
-        self.assertEqual('0', january['comm_rec_count'])
+        self.assertEqual('1', january['Month'])
+        self.assertEqual('0', january['Communication Record Count'])
         february = response_data['records'][1]
-        self.assertEqual('2', february['month'])
-        self.assertEqual('20', february['comm_rec_count'])
+        self.assertEqual('2', february['Month'])
+        self.assertEqual('20', february['Communication Record Count'])
 
     def test_default_report_name(self):
         """Returns a nice timestampy default report name."""
