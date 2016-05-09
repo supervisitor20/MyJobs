@@ -231,6 +231,11 @@ export class ReportConfiguration {
       this.reportDataId, this.getFilter(), field, partial);
   }
 
+  async getHintsWithFilter(field, filter, partial) {
+    return await this.api.getHelp(
+      this.reportDataId, filter, field, partial);
+  }
+
   callUpdateFilter() {
     this.onUpdateFilter(this.currentFilter);
   }

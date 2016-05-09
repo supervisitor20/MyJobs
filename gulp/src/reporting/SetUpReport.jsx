@@ -263,6 +263,9 @@ export default class SetUpReport extends Component {
             );
           break;
         case 'search_multiselect':
+          // getHintsWithFilter is an ugly hack to work around the fact that we
+          // are using a two pane multiselect here. Really we want a tag select
+          // here. Tag select should not need getHintsWithFilter.
           rows.push(
             <FieldWrapper
               key={col.filter}
@@ -271,7 +274,8 @@ export default class SetUpReport extends Component {
               <MultiSelectFilter
                 availableHeader="Available"
                 selectedHeader="Selected"
-                getHints={v => reportConfig.getHints(col.filter, v)}
+                getHints={v =>
+                  reportConfig.getHintsWithFilter(col.filter, {}, v)}
                 selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter, v))}
