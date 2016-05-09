@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from 'react';
-import {Router, Route, IndexRedirect} from 'react-router';
+import {Router, Route, IndexRoute} from 'react-router';
 import {DynamicReportApp} from 'reporting/DynamicReportApp';
+import DefaultRedirect from 'reporting/DefaultRedirect';
 import SetUpReport from 'reporting/SetUpReport';
 import ExportReport from 'reporting/ExportReport';
 import OldPreviewEmbedPage from 'reporting/OldPreviewEmbedPage';
@@ -17,7 +18,7 @@ export class WizardRouter extends Component {
     return (
       <Router createElement={(c, p) => this.createElement(c, p)}>
         <Route path="/" component={DynamicReportApp}>
-          <IndexRedirect to="set-up-report"/>
+          <IndexRoute component={DefaultRedirect}/>
           <Route
             path="set-up-report"
             component={SetUpReport}/>

@@ -1,5 +1,4 @@
 import React, {PropTypes, Component} from 'react';
-import {map} from 'lodash-compat/collection';
 import MultiSelect from 'common/ui/MultiSelect';
 
 export default class MultiSelectFilter extends Component {
@@ -17,12 +16,7 @@ export default class MultiSelectFilter extends Component {
   async getHints() {
     const {getHints} = this.props;
     const available = await getHints();
-    const fixedAvailable =
-      map(available, tag =>
-        ({...tag, value: tag.key, display: tag.display}));
-    this.setState({
-      available: fixedAvailable,
-    });
+    this.setState({available});
   }
 
   render() {

@@ -19,6 +19,12 @@ export class ReportList extends Component {
     history.pushState(null, href);
   }
 
+  handleCreateNewReport(e) {
+    const {history} = this.props;
+    e.preventDefault();
+    history.pushState(null, '/');
+  }
+
   render() {
     const {reports, highlightId} = this.props;
     const reportLinks = map(reports, r => {
@@ -50,11 +56,11 @@ export class ReportList extends Component {
       <div>
         <div className="sidebar reporting">
           <h2 className="top">Saved Reports</h2>
-          <a
+          <button
             className="button primary wide"
-            href="#/set-up-report">
+            onClick={e => this.handleCreateNewReport(e)}>
             Create a New Report
-          </a>
+          </button>
           <div className="report-list">
             <ul>
               {reportLinks}
