@@ -305,7 +305,8 @@ def get_menus(context):
             },
             {
                 "id": "reports-tab",
-                "href": url("reports/view/overview"),
+                "href": url("reports/view/" + (
+                    "dynamicoverview" if user.is_superuser else "overview")),
                 "label": "Reports",
             }
         ]
