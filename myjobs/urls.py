@@ -28,6 +28,8 @@ impersonate_patterns = patterns(
         {'accepted': True}, name='impersonate-approve'),
     url(r'^impersonate/(?P<access_id>\d+)/reject/$', 'process_access_request',
         {'accepted': False}, name='impersonate-reject'),
+    url(r'^impersonate/(?P<uid>\d+)/request/$', 'request_account_access',
+        name='request-account-access'),
 )
 
 urlpatterns = patterns(

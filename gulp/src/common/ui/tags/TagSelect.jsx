@@ -58,6 +58,7 @@ export default class TagSelect extends Component {
 
   handleRemove(tag) {
     const {onRemove} = this.props;
+    this.setHighlight(tag.value, false);
     onRemove(tag);
   }
 

@@ -1,6 +1,10 @@
 """Format utilities for translating from saved report json to text."""
 from collections import Iterable, Mapping
 from universal.helpers import dict_identity
+from mypartners.models import CONTACT_TYPE_CHOICES
+
+
+COMMUNICATION_TYPES = dict(CONTACT_TYPE_CHOICES)
 
 
 @dict_identity
@@ -74,6 +78,17 @@ class MultiFieldDescend(object):
 
 
 @dict_identity
+class CommunicationTypeFormatter(object):
+    """
+    Format communication type by using the choice list commonly found on
+    forms."
+
+    """
+    def format(self, value):
+        return COMMUNICATION_TYPES.get(value, value)
+
+
+@dict_identity
 class SingleFieldDescend(object):
     """Format a single item from a value which supports __getitem__.
     """
@@ -94,6 +109,7 @@ COLUMN_FORMATS = {
     'text': StringFormatter(),
     'comma_sep': JoinFormatter(", ", StringFormatter()),
     'us_date': StrftimeFormatter("%m/%02d/%Y"),
+    'us_datetime': StrftimeFormatter("%m/%02d/%Y %I:%M:%S %p"),
     'city_state_list':
         JoinFormatter(
             ", ",
@@ -104,4 +120,6 @@ COLUMN_FORMATS = {
         JoinFormatter(
             ", ",
             SingleFieldDescend('name', StringFormatter())),
+    'comm_types_list':
+        CommunicationTypeFormatter(),
 }

@@ -1,12 +1,11 @@
 from functools import wraps
 
 from django.contrib.auth import logout
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, AppAccess
+from myjobs.models import User, Activity
 from universal.helpers import (get_company_or_404, get_company, every)
 
 
@@ -118,7 +117,6 @@ class MissingActivity(HttpResponseForbidden):
     """
 
 
-# TODO: See if I can rewrite requires in terms of User.can
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
@@ -245,9 +243,8 @@ def requires(*activities, **callbacks):
             company = get_company_or_404(request)
 
             # the app_access we need, determined by the activities passed in
-            required_access = filter(bool, AppAccess.objects.filter(
-                activity__name__in=activities).values_list(
-                    'name', flat=True).distinct())
+            required_access = Activity.objects.filter(
+                name__in=activities).required_access
 
             # company should have at least the access required by the view
             has_access = set(required_access).issubset(company.enabled_access)

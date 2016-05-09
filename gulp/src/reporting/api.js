@@ -35,9 +35,8 @@ class Api {
   }
 
   async getExportOptions(reportId) {
-    const response = await this.getFromReportingApi(
+    return await this.getFromReportingApi(
       '/reports/api/export_options_api?report_id=' + reportId);
-    return response.report_options;
   }
 
   async getDefaultReportName(reportDataId) {

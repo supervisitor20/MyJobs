@@ -1447,6 +1447,9 @@
     "react-filtered-multiselect": {
       "version": "0.4.2"
     },
+    "react-onclickout": {
+      "version": "2.0.4"
+    },
     "react-overlays": {
       "version": "0.5.4",
       "dependencies": {
@@ -1457,6 +1460,9 @@
     },
     "react-prop-types": {
       "version": "0.3.0"
+    },
+    "react-reorder": {
+      "version": "2.0.0"
     },
     "react-router": {
       "version": "1.0.3"

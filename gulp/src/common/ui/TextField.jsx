@@ -56,9 +56,9 @@ TextField.propTypes = {
    */
   required: React.PropTypes.bool,
   /**
-   * autofocus this field
+   * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.string,
+  autoFocus: React.PropTypes.bool,
 };
 
 TextField.defaultProps = {
