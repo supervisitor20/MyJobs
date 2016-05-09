@@ -2208,6 +2208,7 @@ h3.bottom-bordered {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .reporting.sidebar ul li:hover {
