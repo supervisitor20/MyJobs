@@ -29,6 +29,7 @@ class Api {
       '/reports/api/report_info?report_id=' + reportId);
     return response.report_details;
   }
+
   async getSetUpMenuChoices(reportingType, reportType, dataType) {
     const formData = {
       reporting_type: reportingType,
