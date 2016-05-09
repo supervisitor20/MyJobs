@@ -4,7 +4,7 @@
 {% gz as gz %}
 {% block site-title %}
     {% with name_obj=user.get_full_name %}
-        <title>{% if name_obj %}{{ name_obj }} on{% else %}&nbsp;{% endif %} My.jobs</title>
+        <title>{% if name_obj %}{{ name_obj }} on{% else %}&nbsp;{% endif %}My.jobs{% if react %}(React){% endif %}</title>
         <meta name="title" content="{% if name_obj %}{{ name_obj }} on{% else %}&nbsp;{% endif %} My.jobs">
     {% endwith %}
 {% endblock %}
