@@ -1,6 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {map} from 'lodash-compat';
 import PopMenu from 'common/ui/PopMenu';
+import classnames from 'classnames';
 
 export class ReportList extends Component {
   constructor() {
@@ -62,10 +63,13 @@ export class ReportList extends Component {
       }
       return (
         <li
-          className={highlightId === r.id ? 'active' : ''}
+          className={classnames(
+            highlightId === r.id ? 'active' : '',
+            numberedID === currentlyActive ? 'active-parent' : '',
+          )}
           key={r.id}
           id={numberedID}>
-          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAll={(e) => this.closeAllPopups(e)} /> : ''}
+          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAllPopups={(e) => this.closeAllPopups(e)} /> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
           <span className="menu-text">{r.name}</span>
         </li>
