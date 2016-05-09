@@ -359,7 +359,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'city': "zz"}),
             "angel")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -369,14 +369,14 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'state': "zz"}),
             "i")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_tags(self.company, PartnersFilter(), "E")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -392,7 +392,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "ex")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'http://www.example.com/'}, actual)
 
     def test_help_data_source(self):
@@ -402,7 +402,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "z")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'zap'}, actual)
 
     def test_order(self):
@@ -435,5 +435,10 @@ class TestPartnersFilterCloning(TestCase):
         expected_with_state = PartnersFilter(
                 tags=['C'],
                 locations={'state': 'B'})
+        expected_with_city_state_only = PartnersFilter(
+                locations={'city': 'A', 'state': 'B'})
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
+        self.assertEqual(
+            expected_with_city_state_only,
+            filter.clone_without_tags())

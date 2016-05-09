@@ -936,7 +936,7 @@ class OutreachWorkflowState(models.Model):
         return self.state
 
 
-class NonUserOutreach(models.Model):
+class OutreachRecord(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     outreach_email = models.ForeignKey("OutreachEmailAddress")
     from_email = models.EmailField(

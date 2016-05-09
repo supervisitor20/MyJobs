@@ -5,10 +5,11 @@ import classnames from 'classnames';
 /**
  * Dropdown search box which empties itself after selecting an item.
  */
-export class SearchInput extends React.Component {
-  constructor() {
+export class SearchInput extends Component {
+  constructor(props) {
     super();
-    this.state = this.getDefaultState('');
+    const {value} = props;
+    this.state = this.getDefaultState(value);
   }
 
   onInputChange(event) {
@@ -131,7 +132,7 @@ export class SearchInput extends React.Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus} = this.props;
+    const {id, theme, placeholder, autofocus, value: propValue} = this.props;
     const {value, items, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
@@ -150,7 +151,7 @@ export class SearchInput extends React.Component {
           onChange={e => this.onInputChange(e)}
           onBlur={e => this.onInputBlur(e)}
           onKeyDown={e => this.onInputKeyDown(e)}
-          value={value}
+          value={showItems ? value : propValue}
           type="search"
           aria-autocomplete="list"
           aria-owns={suggestId}
@@ -244,6 +245,11 @@ SearchInput.propTypes = {
    * Callback: the user has left the search input.
    */
   onBlur: React.PropTypes.func,
+
+  /**
+   * Value for this control.
+   */
+  value: PropTypes.string.isRequired,
 
   /**
    * classes for various components

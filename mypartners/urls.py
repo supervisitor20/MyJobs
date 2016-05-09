@@ -4,6 +4,7 @@ from django.views.generic import RedirectView
 urlpatterns = patterns('mypartners.views',
     url(r'^$', RedirectView.as_view(url='/prm/view/')),
     url(r'^api/nonuseroutreach/inbox/list$', 'api_get_nuo_inbox_list', name='api_get_nuo_inbox_list'),
+    url(r'^api/nonuseroutreach/records/list$', 'api_get_nuo_records_list', name='api_get_nuo_records_list'),
     url(r'^api/nonuseroutreach/inbox/add', 'api_add_nuo_inbox',
         name='api_add_nuo_inbox'),
     url(r'^api/nonuseroutreach/inbox/delete', 'api_delete_nuo_inbox',

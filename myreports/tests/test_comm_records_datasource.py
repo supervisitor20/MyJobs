@@ -297,7 +297,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'city': "zz"}),
             "angel")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -307,14 +307,14 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'state': "zz"}),
             "i")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = CommRecordsDataSource()
         recs = ds.help_tags(self.company, CommRecordsFilter(), "E")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -328,7 +328,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Phone'}, actual)
 
     def test_help_partner(self):
@@ -336,7 +336,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_partner(self.company, CommRecordsFilter(), "A")
         self.assertEqual(
-            [{'key': self.partner_a.pk, 'display': self.partner_a.name}],
+            [{'value': self.partner_a.pk, 'display': self.partner_a.name}],
             recs)
 
     def test_help_contact(self):
@@ -344,7 +344,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_contact(self.company, CommRecordsFilter(), "U")
         self.assertEqual(
-            [{'key': self.sue.pk, 'display': self.sue.name}],
+            [{'value': self.sue.pk, 'display': self.sue.name}],
             recs)
 
     def test_order(self):
@@ -381,5 +381,10 @@ class TestCommRecordsFilterCloning(TestCase):
         expected_with_state = CommRecordsFilter(
                 tags=['C'],
                 locations={'state': 'B'})
+        expected_with_city_state_only = CommRecordsFilter(
+                locations={'city': 'A', 'state': 'B'})
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
+        self.assertEqual(
+            expected_with_city_state_only,
+            filter.clone_without_tags())
