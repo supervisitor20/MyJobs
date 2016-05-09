@@ -24,13 +24,13 @@ class SortableField extends Component {
           onMouseDown={e => {e.stopPropagation();}}
           checked={item.checked}/>
         {item.display}
+        </label>
         <SvgIcon
           png={staticUrl + 'icons.drag-vertical.png'}
           svg={staticUrl + 'icons.svg'}
           svgID="drag-vertical"
           iconClass="reorder-icon"
         />
-        </label>
       </div>
     );
   }

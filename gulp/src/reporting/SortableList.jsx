@@ -20,7 +20,7 @@ export default class SortableList extends React.Component {
       >
         {items.map( field => {
           return (
-            <div className="list-item" data-id={field.value}>
+            <div className="list-item-draggable" data-id={field.value}>
               <SortableField
                 item={{
                   display: field.display,
