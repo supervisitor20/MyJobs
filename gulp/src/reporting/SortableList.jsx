@@ -8,7 +8,7 @@ export default class SortableList extends React.Component {
   }
 
   render() {
-    const {items, onReorder, sharedProps} = this.props;
+    const {items, onReorder, onChange} = this.props;
     return (
       <Sortable
         className="my-list"
@@ -27,7 +27,7 @@ export default class SortableList extends React.Component {
                   value: field.value,
                   checked: field.checked,
                 }}
-                sharedProps={sharedProps}
+                onChange={onChange}
               />
             </div>
           );
@@ -38,9 +38,18 @@ export default class SortableList extends React.Component {
 }
 
 SortableList.propTypes = {
+  /**
+    * Array of objects to be selected from. Each should have a 'value' and
+    * 'display' key, with `String` values.
+    */
   items: React.PropTypes.array.required,
+  /** This callback is triggered when an item in the sortable list is moved,
+    * and is passed the array of `data-id`s for all elements within the
+    * component.
+    */
   onReorder: React.PropTypes.func.isRequired,
-  sharedProps: React.PropTypes.shape({
-    onChange: React.PropTypes.func.isRequired,
-  }),
+  /* This is the callback assigned to each `SortableField` within this
+   * component, and is triggered when input value is toggled.
+   */
+  onChange: React.PropTypes.func.isRequired,
 };

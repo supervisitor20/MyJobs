@@ -3,7 +3,7 @@ import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
 import SortableList from './SortableList';
 import Select from 'common/ui/Select';
-import {map, filter, forEach, find} from 'lodash-compat/collection';
+import {map, filter, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
 import {isIE8} from 'common/browserSpecific';
@@ -34,35 +34,34 @@ export default class ExportReport extends Component {
   }
 
   onCheck(e) {
-    const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
+    // update the clicked item without mutating the state directly
+    const newFieldsSelected = map(fieldsSelected, field => {
+      return field.value === e.target.id ? {
+        ...field,
+        checked: e.target.checked,
+      } : field;
+    });
 
-    // If unchecking, set select all to false.
-    if (!checked) {
-      this.setState({selectAll: false});
-    }
-
-    // Find field, set checked status.
-    const field = find(newFieldsSelected, item => item.value === e.target.id);
-    if (field) {
-      field.checked = checked;
-    }
-
+    const sortableFields = filter(newFieldsSelected, f => f.checked === true);
     const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
 
     this.setState({
       fieldsSelected: newFieldsSelected,
       sortBy: newSortBy,
+      selectAll: sortableFields.length === newFieldsSelected.length,
     });
   }
 
   onCheckAll(e) {
     const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
-    forEach(newFieldsSelected, (item)=> {item.checked = checked;});
+    const newFieldsSelected = map(fieldsSelected, field => {
+      return {...field, checked: checked};
+    });
+
     const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
+
     this.setState({
       selectAll: checked,
       fieldsSelected: newFieldsSelected,
@@ -194,11 +193,11 @@ export default class ExportReport extends Component {
                 <div className="list-item">
                   <SortableField
                     item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
-                    sharedProps={{onChange: e => this.onCheckAll(e)}}/>
+                    onChange={ e => this.onCheckAll(e)}/>
                 </div>
                 <SortableList
                   items={fieldsSelected}
-                  sharedProps={{onChange: e => this.onCheck(e, this)}}
+                  onChange={ e => this.onCheck(e, this)}
                   onReorder={ order => this.onReorder(order)}
                 />
               </div>
