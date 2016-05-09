@@ -3701,7 +3701,7 @@ legend.fieldset-border {
 
 .list-item .reorder-icon, .list-item-draggable .reorder-icon {
     display: none;
-    vertical-align: bottom;
+    margin-top: 4px;
     float: right;
     height: 20px;
     width: 20px;
