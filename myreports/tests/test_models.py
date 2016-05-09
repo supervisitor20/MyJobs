@@ -183,7 +183,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(1, len(choices['data_types']))
         self.assertEquals(
             choices['data_types'][0],
             choices['selected_data_type'])
@@ -205,7 +205,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(1, len(choices['data_types']))
         self.assertEquals(
             choices['data_types'][1],
             choices['selected_data_type'])
@@ -262,7 +262,7 @@ class TestReportConfiguration(MyReportsTestCase):
     def test_build_config(self):
         """
         Test building a report configuration from the DB.
-        
+
         Here, we expect that an appropriate format should be selected for each
         of the columns configured *except* when that column is marked as
         ``filter_only```. For those columns, we expect format to be ``''``.
