@@ -17,6 +17,12 @@ from django.db.models import Q
 CONTACT_TYPES = dict(CONTACT_TYPE_CHOICES)
 
 
+def contact_type_help_entry(contact_type):
+    value = contact_type.lower()
+    display = CONTACT_TYPES[value]
+    return {'value': value, 'display': display}
+
+
 class CommRecordsDataSource(DataSource):
     def run(self, data_type, company, filter_spec, order):
         return dispatch_run_by_data_type(
@@ -114,10 +120,8 @@ class CommRecordsDataSource(DataSource):
             .filter(contact_type__icontains=partial)
             .values('contact_type').distinct())
         return [
-            {
-                'value': c['contact_type'],
-                'display': CONTACT_TYPES[c['contact_type'].lower()],
-            } for c in contact_types_qs]
+            contact_type_help_entry(c['contact_type'])
+            for c in contact_types_qs]
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
@@ -211,11 +215,10 @@ class CommRecordsDataSource(DataSource):
             ]
 
         if filter_spec.communication_type:
-            known_type = filter_spec.communication_type
-            types = (
-                self.help_communication_type(company, empty, known_type))
-            if types:
-                adorned[u'communication_type'] = types[0]['value']
+            adorned[u'communication_type'] = [
+                contact_type_help_entry(c)
+                for c in filter_spec.communication_type
+            ]
 
         return adorned
 

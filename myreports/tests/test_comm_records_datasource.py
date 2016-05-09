@@ -329,7 +329,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
         actual = {r['value'] for r in recs}
-        self.assertEqual({'Phone'}, actual)
+        self.assertEqual({'phone'}, actual)
 
     def test_help_partner(self):
         """Check partner help works at all."""
@@ -363,10 +363,11 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_adorn_filter(self):
+        self.maxDiff = 10000
         filter_spec = CommRecordsFilter(
             locations={'city': 'Chicago', 'state': 'IL'},
             tags=[['east'], ['west']],
-            communication_type='Email',
+            communication_type=['Email'],
             partner=[str(self.partner_a.pk)],
             contact=[str(self.sue.pk)])
         expected = {
@@ -396,7 +397,7 @@ class TestCommRecordsDataSource(MyJobsBase):
                     }
                 ],
             ],
-            u'communication_type': 'Email',
+            u'communication_type': [{'value': u'email', 'display': u'Email'}],
         }
 
         ds = CommRecordsDataSource()
