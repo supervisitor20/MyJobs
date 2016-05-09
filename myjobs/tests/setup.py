@@ -55,14 +55,9 @@ class TestClient(Client):
         path = path or self.path
         data = data or self.data
 
-        try:
-            return super(TestClient, self).post(
-                path, data=data, content_type=content_type,
-                secure=secure, **extra)
-        except TypeError:
-            raise Exception("Calls to TestClient's methods require that "
-                            "either path be passed explicit, or the "
-                            "path be specified in the constructor")
+        return super(TestClient, self).post(
+            path, data=data, content_type=content_type,
+            secure=secure, **extra)
 
     def login_user(self, user):
         if 'django.contrib.sessions' not in settings.INSTALLED_APPS:
