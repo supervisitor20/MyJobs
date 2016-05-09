@@ -118,7 +118,7 @@ def view_records(request, app="mypartners", model="contactrecord"):
 
             records = records.order_by(*order_by)
 
-        ctx = serialize('json', records, use_natural_keys=True, values=values)
+        ctx = serialize('json', records, values=values)
 
         response = HttpResponse(
             ctx, content_type='application/json; charset=utf-8')
