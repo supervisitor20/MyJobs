@@ -74,7 +74,7 @@ class DataSource:
 
     @abstractmethod
     def adorn_filter(self, company, filter_spec):
-        """Get a version of the filter help added where available.
+        """Get a version of the filter with help added where available.
 
         company: company model object for this run.
         filter_spec: an instance of the companion filter type for this class.
