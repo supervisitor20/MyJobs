@@ -305,7 +305,7 @@ def get_menus(context):
                 },
                 {
                     "id": "reactive-profiles",
-                    "href": url("profile/view/preview"),
+                    "href": url("profile/view/react"),
                     "label": "React-Based Profile Units",
                 }
             ],

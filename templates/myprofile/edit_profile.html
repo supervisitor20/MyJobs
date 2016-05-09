@@ -31,7 +31,7 @@
 
             {% for module in profile_config.values %}
 
-            {% with module.0|custom_template as c_template %}
+            {% with c_template=module.0|custom_template react=react %}
                 {% include "myprofile/profile_section.html" %}
             {% endwith %}
 
@@ -48,7 +48,11 @@
                 <table class="table table-bordered tables-striped">
                 {% for module in unit_names %}
                 <tr class="profile-section" {% if module.items %}style="display:none;"{% endif %}><td>
+                    {% if react %}
+                    <a id="{{module}}-new-section" href="{% url 'edit_summary' %}#/new?module={{module}}">
+                    {% else %}
                     <a id="{{module}}-new-section" href="{% url 'handle_form' %}?module={{module}}&id=new">
+                    {% endif %}
                         {{ module }}
                     </a>
                 </td></tr>
