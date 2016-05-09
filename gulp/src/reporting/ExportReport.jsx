@@ -225,7 +225,9 @@ export default class ExportReport extends Component {
         <div className="row actions text-center">
           <div className="col-md-offset-4 col-md-8 col-xs-12">
             <a
-              className="button primary"
+              className={
+                sortableFields.length > 0 ? 'button primary' : 'btn disabled'
+              }
               href={this.buildExportHref()}>Export</a>
           </div>
         </div>
