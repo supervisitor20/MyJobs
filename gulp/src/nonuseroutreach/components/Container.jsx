@@ -26,6 +26,7 @@ export class Container extends Component {
 
   render() {
     const {page, tips} = this.state;
+    const {recordsManager} = this.props;
     return (
       <div>
         <div className="row">
@@ -39,7 +40,7 @@ export class Container extends Component {
         </div>
 
         <div className="row">
-          <Content page={page} inboxManager={this.props.inboxManager} />
+          <Content page={page} inboxManager={this.props.inboxManager} recordsManager={recordsManager} />
           <Menu changePage={(p, t) => this.changePage(p, t)} tips={tips} />
         </div>
         <div className="clearfix"></div>
@@ -50,4 +51,5 @@ export class Container extends Component {
 
 Container.propTypes = {
   inboxManager: PropTypes.object.isRequired,
+  recordsManager: PropTypes.object.isRequired,
 };

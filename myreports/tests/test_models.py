@@ -271,49 +271,59 @@ class TestReportConfiguration(MyReportsTestCase):
             columns=[
                 ColumnConfiguration(
                     column='date',
-                    format='us_date',
+                    alias='Date',
+                    format='us_datetime',
                     filter_interface='date_range',
                     filter_display='Date'),
                 ColumnConfiguration(
                     column='',
+                    alias='Contact Location',
                     format=None,
                     help=True,
                     filter_interface=u'city_state',
                     filter_display=u'Contact Location'),
                 ColumnConfiguration(
                     column='locations',
+                    alias='Location',
                     format='city_state_list',
                     filter_interface='city_state',
                     filter_display='Location',
                     help=True),
                 ColumnConfiguration(
                     column='tags',
+                    alias='Tags',
                     format='tags_list',
                     filter_interface='tags',
                     filter_display='Tags',
                     help=True),
                 ColumnConfiguration(
                     column='partner',
+                    alias='Partners',
                     format='text',
                     filter_interface='search_multiselect',
                     filter_display='Partners',
                     help=True),
                 ColumnConfiguration(
                     column='name',
+                    alias='Name',
                     format='text'),
                 ColumnConfiguration(
                     column='email',
+                    alias='Email',
                     format='text'),
                 ColumnConfiguration(
                     column='phone',
+                    alias='Phone',
                     format='text'),
                 ColumnConfiguration(
                     column='notes',
+                    alias='Notes',
                     format='text'),
             ])
         config_model = self.dynamic_models['configuration']['contacts']
         # Add a filter_only column.
         ConfigurationColumnFactory.create(
+            alias='Contact Location',
             filter_interface_type='city_state',
             filter_interface_display='Contact Location',
             filter_only=True,

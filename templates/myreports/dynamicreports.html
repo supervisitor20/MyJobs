@@ -21,7 +21,7 @@
     <script type="text/javascript" src="{% static "reporting.js" %}"></script>
 
 {% if wp_base_url %}
-  <script src="{{wp_base_url}}/reporting.js"/></script>
+  <script src="{{wp_base_url}}/reporting.js"></script>
 {% else %}
   {% compress js %}
       <script src="{% static "bundle/vendor.js" %}"></script>

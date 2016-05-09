@@ -211,7 +211,7 @@ def create_full_fixture():
         alias='Date',
         order=100,
         configuration=con_con,
-        output_format="us_date",
+        output_format="us_datetime",
         filter_interface_type='date_range',
         filter_interface_display='Date',
         multi_value_expansion=False)
@@ -285,7 +285,7 @@ def create_full_fixture():
         alias="Date",
         order=100,
         configuration=con_part,
-        output_format="us_date",
+        output_format="us_datetime",
         filter_interface_type='date_range',
         filter_interface_display='Date',
         multi_value_expansion=False)
@@ -347,7 +347,7 @@ def create_full_fixture():
         alias="Date",
         order=107,
         configuration=con_comm,
-        output_format="us_date",
+        output_format="us_datetime",
         filter_interface_type='date_range',
         filter_interface_display='Date',
         multi_value_expansion=False)
@@ -378,7 +378,7 @@ def create_full_fixture():
         filter_interface_type='search_multiselect',
         filter_interface_display='Communication Type',
         configuration=con_comm,
-        output_format="text",
+        output_format="comm_types_list",
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="partner",
@@ -459,7 +459,7 @@ def create_full_fixture():
     ConfigurationColumnFactory.create(
         column_name="last_action_time",
         order=121,
-        output_format="us_date",
+        output_format="us_datetime",
         configuration=con_comm,
         is_active=False,
         multi_value_expansion=False)
@@ -513,7 +513,7 @@ def create_full_fixture():
         alias='Date',
         order=105,
         configuration=con_comm_count,
-        output_format="us_date",
+        output_format="us_datetime",
         filter_interface_type='date_range',
         filter_interface_display='Date',
         multi_value_expansion=False)
