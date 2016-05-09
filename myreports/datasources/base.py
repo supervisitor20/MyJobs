@@ -72,7 +72,7 @@ class DataSource:
         """
         raise NotImplementedError("Missing help method on this instance.")
 
-#    @abstractmethod
+    @abstractmethod
     def adorn_filter(self, company, filter_spec):
         """Get a version of the filter help added where available.
 
