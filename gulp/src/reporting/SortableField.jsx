@@ -6,7 +6,7 @@ class SortableField extends Component {
   }
 
   render() {
-    const {sharedProps, item} = this.props;
+    const {onChange, item} = this.props;
     // Using a raw input since we need special event handling.
     // The stop in onMouseDown prevents the event from reaching the reorder
     // widget and being a candidate for the beginning of a drag operation.
@@ -18,7 +18,7 @@ class SortableField extends Component {
           name={item.value}
           id={item.value}
           className=""
-          onChange={sharedProps.onChange}
+          onChange={onChange}
           onMouseDown={e => {e.stopPropagation();}}
           checked={item.checked}/>
         {item.display}</label>
@@ -47,14 +47,9 @@ SortableField.propTypes = {
     checked: PropTypes.bool.isRequired,
   }),
   /**
-   * Properties shared by all children of React Reorder.
+   * Used to signal a check/uncheck event.
    */
-  sharedProps: PropTypes.shape({
-    /**
-     * Used to signal a check/uncheck event.
-     */
-    onChange: PropTypes.func.isRequired,
-  }),
+  onChange: PropTypes.func.isRequired,
 };
 
 export default SortableField;
