@@ -379,7 +379,7 @@ def create_full_fixture():
         filter_interface_type='search_multiselect',
         filter_interface_display='Communication Type',
         configuration=con_comm,
-        output_format="text",
+        output_format="comm_types_list",
         multi_value_expansion=False)
     ConfigurationColumnFactory.create(
         column_name="partner",

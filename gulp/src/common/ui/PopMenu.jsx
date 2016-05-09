@@ -1,15 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import ClickOutCompat from 'common/ui/ClickOutCompat';
 
-
 export default class PopMenu extends Component {
-  constructor() {
-    super();
-    this.state = {
-      isMenuActive: false,
-    };
-  }
-
   handleItemClick(item, e) {
     e.preventDefault();
     item.onSelect();
@@ -17,20 +9,17 @@ export default class PopMenu extends Component {
   }
 
   menuContents() {
-    const {isMenuActive} = this.state;
-    const {options} = this.props;
+    const {options, isMenuActive, closeAllPopups} = this.props;
     const dropdownItems = options.map((item, index)=> {
       return (
-        <li key={index}>
-          <a href="#" onClick={e => this.handleItemClick(item, e)}>
-            {item.display}
-          </a>
+        <li key={index} onClick={e => this.handleItemClick(item, e)}>
+          {item.display}
         </li>
       );
     });
     if (isMenuActive === true) {
       return (
-        <ClickOutCompat onClickOut={() => this.setState({isMenuActive: false})}>
+        <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
             <ul>
               {dropdownItems}
@@ -41,16 +30,12 @@ export default class PopMenu extends Component {
     }
   }
 
-  toggleMenu() {
-    const {isMenuActive} = this.state;
-    this.setState({isMenuActive: !isMenuActive});
-  }
-
   render() {
+    const {toggleMenu} = this.props;
     return (
       <div style={{position: 'relative'}}>
         <span
-          onClick={() => this.toggleMenu()}
+          onClick={(e) => toggleMenu(e)}
           className="menuEllipses">
           &hellip;
         </span>
@@ -67,4 +52,7 @@ PopMenu.propTypes = {
       onSelect: PropTypes.func.isRequired,
     })
   ),
+  isMenuActive: PropTypes.bool.isRequired,
+  toggleMenu: PropTypes.func.isRequired,
+  closeAllPopups: PropTypes.func,
 };

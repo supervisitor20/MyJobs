@@ -27,18 +27,21 @@ export class WizardFilterCityState extends Component {
 
     updateField(field, value) {
       const {updateFilter} = this.props;
+      const {currentLocation} = this.state;
 
       // Update parent
-      const {currentLocation} = this.state;
-      currentLocation[field] = value;
-      updateFilter(currentLocation);
+      const newFilter = {...currentLocation};
+      newFilter[field] = value;
+      updateFilter(newFilter);
 
       // Set internal state
-      this.setState(...this.state, currentLocation);
+      const newState = {...this.state};
+      newState.currentLocation[field] = value;
+      this.setState(newState);
     }
 
     render() {
-      const {id, getHints} = this.props;
+      const {id, getHints, cityValue, stateValue} = this.props;
 
       return (
         <span>
@@ -46,17 +49,16 @@ export class WizardFilterCityState extends Component {
             onChange={e =>
               this.updateField('state', e.target.value)}
             name=""
-            value={
-              getDisplayForValue(
-                this.state.states, this.state.currentLocation.state)}
+            value={getDisplayForValue(this.state.states, stateValue)}
             choices={this.state.states}
           />
           <SearchInput
             id={id + '-city'}
+            value={cityValue}
             callSelectWhenEmpty
             placeholder="city"
             onSelect={v =>
-              this.updateField('city', v.key)}
+              this.updateField('city', v.value)}
             getHints={v =>
               getHints('city', v)}
           />
@@ -68,6 +70,8 @@ export class WizardFilterCityState extends Component {
 
 WizardFilterCityState.propTypes = {
   id: PropTypes.string.isRequired,
+  cityValue: PropTypes.string.isRequired,
+  stateValue: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,
   getHints: PropTypes.func.isRequired,
 };

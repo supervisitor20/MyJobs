@@ -47,7 +47,7 @@ class ContactsDataSource(DataSource):
             .filter(contacts__in=contacts_qs)
             .filter(city__icontains=partial))
         city_qs = locations_qs.values('city').distinct()
-        return [{'key': c['city'], 'display': c['city']} for c in city_qs]
+        return [{'value': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
@@ -58,7 +58,7 @@ class ContactsDataSource(DataSource):
             .filter(contacts__in=contacts_qs)
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
-        return [{'key': s['state'], 'display': s['state']} for s in state_qs]
+        return [{'value': s['state'], 'display': s['state']} for s in state_qs]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
@@ -71,7 +71,7 @@ class ContactsDataSource(DataSource):
             .values('name', 'hex_color').distinct())
         return [
             {
-                'key': t['name'],
+                'value': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
@@ -84,7 +84,7 @@ class ContactsDataSource(DataSource):
             .filter(contact__in=contacts_qs)
             .filter(name__icontains=partial)
             .values('name', 'pk').distinct())
-        return [{'key': t['pk'], 'display':t['name']} for t in partners_qs]
+        return [{'value': t['pk'], 'display':t['name']} for t in partners_qs]
 
     def extract_record(self, record):
         """Translate from a query set record to a dictionary."""
@@ -156,6 +156,13 @@ class ContactsFilter(DataSourceFilter):
             if 'state' in locations:
                 del new_locations['state']
             new_root['locations'] = new_locations
+        return ContactsFilter(**new_root)
+
+    def clone_without_tags(self):
+        """Tag help works better without tags filtering each other right now.
+        """
+        new_root = dict(self.__dict__)
+        del new_root['tags']
         return ContactsFilter(**new_root)
 
     def filter_query_set(self, qs):

@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
-import {forEach, map} from 'lodash-compat/collection';
+import {forEach} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -17,52 +17,53 @@ export default class SetUpReport extends Component {
   constructor() {
     super();
     this.state = {
-      reportName: '',
       loading: true,
-      reportingType: '',
+      filter: {},
+      reportName: null,
       reportingTypes: [],
-      reportType: '',
       reportTypes: [],
-      dataType: '',
       dataTypes: [],
     };
   }
 
   componentDidMount() {
-    const {reportFinder} = this.props;
+    const {reportFinder, history} = this.props;
     this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
-    this.loadData();
+    this.historyUnlisten = (
+      history.listen((something, loc) => this.handleHistory(something, loc)));
   }
 
   componentWillUnmount() {
     const {reportFinder} = this.props;
+    this.historyUnlisten();
     reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
   }
-  onIntentionChange(reportingType) {
-    const {reportType, dataType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+
+  onIntentionChange(intention) {
+    const {history} = this.props;
+    const {category, dataSet} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onCategoryChange(reportType) {
-    const {reportingType, dataType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+  onCategoryChange(category) {
+    const {history} = this.props;
+    const {intention, dataSet} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onDataSetChange(dataType) {
-    const {reportingType, reportType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+  onDataSetChange(dataSet) {
+    const {history} = this.props;
+    const {intention, category} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
-      reportingType, reportType, dataType, reportConfig) {
+      reportConfig) {
     this.setState({
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
       reportConfig,
     });
   }
@@ -80,20 +81,61 @@ export default class SetUpReport extends Component {
     this.setState({reportName});
   }
 
+  handleHistory(something, loc) {
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === SetUpReport) {
+      this.loadData();
+    }
+  }
+
   async loadData() {
-    await this.buildReportConfig();
+    const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
+    await this.buildReportConfig(reportingType, reportType, dataType, {});
     this.setState({loading: false});
   }
 
-  async buildReportConfig(reportingType, reportType, dataType) {
+  async buildReportConfig(reportingType, reportType, dataType, overrideFilter) {
+    const {
+      reportDataId: reportDataIdRaw,
+    } = this.props.location.query;
     const {reportFinder} = this.props;
+    const {filter, reportName} = this.state;
+    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
+    let newFilter;
+    if (overrideFilter) {
+      newFilter = overrideFilter;
+    } else {
+      newFilter = filter;
+    }
+
     reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
       dataType,
+      reportDataId,
+      newFilter,
+      reportName,
       n => this.onReportNameChanged(n),
       f => this.onFilterUpdate(f),
-      errors => this.onErrorsChanged(errors));
+      errors => this.onErrorsChanged(errors),
+      (...args) => this.handleNewReportDataId(...args));
+  }
+
+  handleNewReportDataId(newReportDataId, reportingType, reportType, dataType) {
+    const {history} = this.props;
+
+    const href = '/set-up-report';
+    const query = {
+      reportDataId: newReportDataId,
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    };
+    history.pushState(null, href, query);
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
@@ -117,17 +159,19 @@ export default class SetUpReport extends Component {
 
   render() {
     const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
+    const {
       loading,
+      filter,
       reportConfig,
       reportName,
       reportNameError,
-      filter,
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
     } = this.state;
 
     if (loading) {
@@ -135,7 +179,7 @@ export default class SetUpReport extends Component {
     }
 
     const rows = [];
-    if (reportConfig && filter) {
+    if (reportConfig) {
       const errorTexts = reportNameError ? [reportNameError] : [];
       rows.push(
         <FieldWrapper
@@ -166,6 +210,7 @@ export default class SetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterSearchDropdown
                 id={col.filter}
+                value={reportConfig.currentFilter[col.filter] || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={v =>
                   reportConfig.getHints(col.filter, v)}/>
@@ -173,10 +218,13 @@ export default class SetUpReport extends Component {
           );
           break;
         case 'city_state':
+          const values = reportConfig.currentFilter[col.filter] || {};
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
                 id={col.filter}
+                cityValue={values.city || ''}
+                stateValue={values.state || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={(f, v) =>
                   reportConfig.getHints(f, v)}/>
@@ -210,15 +258,11 @@ export default class SetUpReport extends Component {
                 availableHeader="Available"
                 selectedHeader="Selected"
                 getHints={v => reportConfig.getHints(col.filter, v)}
-                selected={
-                  map(reportConfig.multiFilter[col.filter] || [],
-                    v => ({value: v.key, display: v.display}))}
+                selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
-                  reportConfig.addToMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}
+                  reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}/>
+                  reportConfig.removeFromMultifilter(col.filter, v))}/>
 
             </FieldWrapper>
             );
@@ -233,15 +277,15 @@ export default class SetUpReport extends Component {
       <form>
         <DataTypeSelectBar
           intentionChoices={reportingTypes}
-          intentionValue={reportingType}
+          intentionValue={reportingType || ''}
           onIntentionChange={v => this.onIntentionChange(v)}
 
           categoryChoices={reportTypes}
-          categoryValue={reportType}
+          categoryValue={reportType || ''}
           onCategoryChange={v => this.onCategoryChange(v)}
 
           dataSetChoices={dataTypes}
-          dataSetValue={dataType}
+          dataSetValue={dataType || ''}
           onDataSetChange={v => this.onDataSetChange(v)}
           />
         {rows}
@@ -261,5 +305,14 @@ export default class SetUpReport extends Component {
 }
 
 SetUpReport.propTypes = {
+  history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
+  location: PropTypes.shape({
+    query: PropTypes.shape({
+      intention: PropTypes.string,
+      category: PropTypes.string,
+      dataSet: PropTypes.string,
+      reportDataId: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
 };

@@ -141,7 +141,7 @@ class PartnersDataSource(DataSource):
             .filter(contacts__partner__in=partners_qs)
             .filter(city__icontains=partial))
         city_qs = locations_qs.values('city').distinct()
-        return [{'key': c['city'], 'display': c['city']} for c in city_qs]
+        return [{'value': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
@@ -152,7 +152,7 @@ class PartnersDataSource(DataSource):
             .filter(contacts__partner__in=partners_qs)
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
-        return [{'key': c['state'], 'display': c['state']} for c in state_qs]
+        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
@@ -165,7 +165,7 @@ class PartnersDataSource(DataSource):
             .values('name', 'hex_color').distinct())
         return [
             {
-                'key': t['name'],
+                'value': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
@@ -178,7 +178,7 @@ class PartnersDataSource(DataSource):
             partners_qs
             .filter(uri__icontains=partial)
             .values('uri').distinct())
-        return [{'key': c['uri'], 'display': c['uri']} for c in uris_qs]
+        return [{'value': c['uri'], 'display': c['uri']} for c in uris_qs]
 
     def help_data_source(self, company, filter_spec, partial):
         """Get help for the data_source field."""
@@ -189,7 +189,7 @@ class PartnersDataSource(DataSource):
             .filter(data_source__icontains=partial)
             .values('data_source').distinct())
         return [
-            {'key': c['data_source'], 'display': c['data_source']}
+            {'value': c['data_source'], 'display': c['data_source']}
             for c in data_sources_qs
         ]
 
@@ -236,6 +236,13 @@ class PartnersFilter(DataSourceFilter):
             if 'state' in locations:
                 del new_locations['state']
             new_root['locations'] = new_locations
+        return PartnersFilter(**new_root)
+
+    def clone_without_tags(self):
+        """Tag help works better without tags filtering each other right now.
+        """
+        new_root = dict(self.__dict__)
+        del new_root['tags']
         return PartnersFilter(**new_root)
 
     def filter_partners(self, company):

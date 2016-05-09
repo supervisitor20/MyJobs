@@ -1,6 +1,7 @@
 import factory
 from factory import fuzzy
 import string
+import pytz
 
 from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
@@ -117,3 +118,19 @@ class OutreachEmailAddressFactory(factory.django.DjangoModelFactory):
 
     company = factory.SubFactory(CompanyFactory)
     email = fuzzy.FuzzyText()
+
+class OutreachWorkflowStateFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "mypartners.OutreachWorkflowState"
+
+    state = fuzzy.FuzzyText()
+
+class OutreachRecordFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "mypartners.OutreachRecord"
+
+    date_added = fuzzy.FuzzyDateTime(datetime.now(tz=pytz.utc))
+    outreach_email = factory.SubFactory(OutreachEmailAddressFactory)
+    from_email = fuzzy.FuzzyText()
+    email_body = fuzzy.FuzzyText()
+    current_workflow_state = factory.SubFactory(OutreachWorkflowStateFactory)
