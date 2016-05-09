@@ -32,8 +32,11 @@
         {% compress js %}
             <script type="text/javascript" src="{% static "utils.js" %}"></script>
             <script type="text/javascript" src="{% static "custom.166-06.js" %}"></script>
+            <script type="text/javascript" src="{% static "svg4everybody.min.js" %}"></script>
         {% endcompress %}
-
+        <script>
+            svg4everybody();
+        </script>
     </head>
     <body>
         {% block topbar %}
@@ -131,6 +134,7 @@
         </footer>
         <script>
             var companyName = "{{ company.name }}";
+            var staticUrl = "{% static "" %}";
         </script>
         <!--[if IE]>
             <script type="text/javascript" src="{{ STATIC_URL }}es5-shim.min.js"></script>

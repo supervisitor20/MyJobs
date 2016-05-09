@@ -1,4 +1,6 @@
+/* global staticUrl */
 import React, {Component, PropTypes} from 'react';
+import SvgIcon from 'common/ui/SvgIcon';
 
 class SortableField extends Component {
   constructor(props) {
@@ -21,7 +23,14 @@ class SortableField extends Component {
           onChange={onChange}
           onMouseDown={e => {e.stopPropagation();}}
           checked={item.checked}/>
-        {item.display}</label>
+        {item.display}
+        </label>
+        <SvgIcon
+          png={staticUrl + 'icons.drag-vertical.png'}
+          svg={staticUrl + 'icons.svg'}
+          svgID="drag-vertical"
+          iconClass="reorder-icon"
+        />
       </div>
     );
   }
