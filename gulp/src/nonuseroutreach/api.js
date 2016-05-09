@@ -15,6 +15,10 @@ class Api {
     return await this.getFromNuoApi('/prm/api/nonuseroutreach/inbox/list');
   }
 
+  async getExistingOutreachRecords() {
+    return await this.getFromNuoApi('/prm/api/nonuseroutreach/records/list');
+  }
+
   async createNewInbox(email) {
     const promise = this.postToNuoApi('/prm/api/nonuseroutreach/inbox/add', {
       email: email,

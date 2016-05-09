@@ -73,7 +73,7 @@ class CommRecordsDataSource(DataSource):
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(city__icontains=partial))
         city_qs = locations_qs.values('city').distinct()
-        return [{'key': c['city'], 'display': c['city']} for c in city_qs]
+        return [{'value': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
@@ -85,11 +85,13 @@ class CommRecordsDataSource(DataSource):
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
-        return [{'key': c['state'], 'display': c['state']} for c in state_qs]
+        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        comm_records_qs = self.filtered_query_set(company, filter_spec)
+        modified_filter_spec = filter_spec.clone_without_tags()
+        comm_records_qs = self.filtered_query_set(
+            company, modified_filter_spec)
 
         tags_qs = (
             Tag.objects
@@ -98,7 +100,7 @@ class CommRecordsDataSource(DataSource):
             .values('name', 'hex_color').distinct())
         return [
             {
-                'key': t['name'],
+                'value': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
@@ -113,7 +115,7 @@ class CommRecordsDataSource(DataSource):
             .values('contact_type').distinct())
         return [
             {
-                'key': c['contact_type'],
+                'value': c['contact_type'],
                 'display': CONTACT_TYPES[c['contact_type'].lower()],
             } for c in contact_types_qs]
 
@@ -127,7 +129,7 @@ class CommRecordsDataSource(DataSource):
             .values('pk', 'name').distinct())
         return [
             {
-                'key': c['pk'],
+                'value': c['pk'],
                 'display': c['name'],
             } for c in partner_qs]
 
@@ -141,7 +143,7 @@ class CommRecordsDataSource(DataSource):
             .values('pk', 'name').distinct())
         return [
             {
-                'key': c['pk'],
+                'value': c['pk'],
                 'display': c['name'],
             } for c in contact_qs]
 
@@ -201,6 +203,13 @@ class CommRecordsFilter(DataSourceFilter):
             if 'state' in locations:
                 del new_locations['state']
             new_root['locations'] = new_locations
+        return CommRecordsFilter(**new_root)
+
+    def clone_without_tags(self):
+        """Tag help works better without tags filtering each other right now.
+        """
+        new_root = dict(self.__dict__)
+        del new_root['tags']
         return CommRecordsFilter(**new_root)
 
     def filter_query_set(self, qs):
