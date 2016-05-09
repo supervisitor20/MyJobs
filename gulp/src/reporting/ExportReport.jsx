@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
-import Sortable from 'react-sortablejs';
+import SortableList from './SortableList';
 import Select from 'common/ui/Select';
 import {map, filter, forEach, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
@@ -196,31 +196,11 @@ export default class ExportReport extends Component {
                     item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
                     sharedProps={{onChange: e => this.onCheckAll(e)}}/>
                 </div>
-                <Sortable
-                  options={{
-                    ghostClass: 'placeholder',
-                    delay: 'ontouchstart' in window ? 150 : 0,
-                  }}
-                  onChange={ order => this.onReorder(order)}
-                >
-                  {fieldsSelected.map( field => {
-                    return (
-                      <div className="list-item" data-id={field.value}>
-                        <SortableField
-                          item={{
-                            display: field.display,
-                            value: field.value,
-                            checked: field.checked,
-                          }}
-                          sharedProps={{
-                            onChange: e => this.onCheck(e, this),
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </Sortable>
-                <span className="list-item">Old Component</span>
+                <SortableList
+                  items={fieldsSelected}
+                  sharedProps={{onChange: e => this.onCheck(e, this)}}
+                  onReorder={ order => this.onReorder(order)}
+                />
               </div>
           </div>
           : ''}
