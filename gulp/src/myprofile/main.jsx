@@ -89,7 +89,7 @@ class Module extends React.Component {
     window.location.assign('/profile/view/');
   }
   handleCancel() {
-    window.location.assign('/profile/view/');
+    window.location.assign('/profile/view/react');
   }
   async handleSave() {
     const {formContents} = this.state;
@@ -245,7 +245,7 @@ class Module extends React.Component {
                 Delete
               </a>
               <a
-                href="/profile/view/"
+                href="/profile/view/react"
                 className="button"
                 onClick={e => this.handleCancel(e, this)}>
                 Cancel

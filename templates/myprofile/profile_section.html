@@ -5,10 +5,16 @@
     <div class="wrapper-header">
         <h4>{{ module.0.get_verbose }}</h4>
     </div>
-    {% include c_template %}
+    {% with react=react %}
+      {% include c_template %}
+    {% endwith %}
     {% if not module.0.get_verbose == "Summary" %}
     <div class="wrapper-footer">
-        <a class="pull-right" href="{% url 'handle_form' %}?module={{ module.0.get_verbose.title }}">Add {{ module.0.get_verbose }}</a>
+        {% if react %}
+          <a class="pull-right" href="{% url 'edit_summary' %}#/new?module={{ module.0.get_verbose.title }}">Add {{ module.0.get_verbose }}</a>
+        {% else %}
+          <a class="pull-right" href="{% url 'handle_form' %}?module={{ module.0.get_verbose.title }}">Add {{ module.0.get_verbose }}</a>
+        {% endif %}
         <div class="clearfix"></div>
     </div>
     {% endif %}
