@@ -95,7 +95,7 @@ export default class ExportReport extends Component {
     const options = await reportFinder.getExportOptions(reportId);
 
     const fields = options.report_options.values;
-    const sortBy = get(fields, '[0].value');
+    const sortBy = get(fields, '[0].display');
     const fieldsSelected = map(fields, o =>
       ({...o, checked: true}));
 
