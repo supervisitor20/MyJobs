@@ -182,7 +182,7 @@ ghpages: html
 	git checkout quality-control; \
 	cd .. && \
 	touch doc/build/html/.nojekyll && \
-	git add doc/build/html/.nojekyll && \
+	git add doc/build/html/ && \
 	git commit -am "Added .nojekyll" && \
 	git subtree split --prefix doc/build/html -b gh-pages && \
 	git push origin -f gh-pages:gh-pages && \
