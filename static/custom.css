@@ -3697,7 +3697,6 @@ legend.fieldset-border {
 
 .list-item label, .list-item-draggable label {
   cursor: pointer;
-  width: 100%;
 }
 
 .list-item .reorder-icon, .list-item-draggable .reorder-icon {

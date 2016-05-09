@@ -2,9 +2,9 @@
 import React, {Component, PropTypes} from 'react';
 import {Loading} from 'common/ui/Loading';
 import SortableField from './SortableField';
+import SortableList from './SortableList';
 import Select from 'common/ui/Select';
-import Reorder from 'react-reorder';
-import {map, filter, forEach, find} from 'lodash-compat/collection';
+import {map, filter, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
 import {isIE8} from 'common/browserSpecific';
@@ -26,44 +26,43 @@ export default class ExportReport extends Component {
     this.loadData();
   }
 
-  onReorder(event, item, index, newIndex) {
-    const {fieldsSelected} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
-    const removed = newFieldsSelected.splice(index, 1);
-    newFieldsSelected.splice(newIndex, 0, ...removed);
-    this.setState({fieldsSelected: newFieldsSelected});
+  onReorder(order) {
+    this.setState({
+      fieldsSelected: map(order, value =>
+        find(this.state.fieldsSelected, field => field.value === value)
+      ),
+    });
   }
 
   onCheck(e) {
-    const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
+    // update the clicked item without mutating the state directly
+    const newFieldsSelected = map(fieldsSelected, field => {
+      return field.value === e.target.id ? {
+        ...field,
+        checked: e.target.checked,
+      } : field;
+    });
 
-    // If unchecking, set select all to false.
-    if (!checked) {
-      this.setState({selectAll: false});
-    }
-
-    // Find field, set checked status.
-    const field = find(newFieldsSelected, item => item.value === e.target.id);
-    if (field) {
-      field.checked = checked;
-    }
-
+    const sortableFields = filter(newFieldsSelected, f => f.checked === true);
     const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
 
     this.setState({
       fieldsSelected: newFieldsSelected,
       sortBy: newSortBy,
+      selectAll: sortableFields.length === newFieldsSelected.length,
     });
   }
 
   onCheckAll(e) {
     const checked = e.target.checked;
     const {fieldsSelected, sortBy: oldSortBy} = this.state;
-    const newFieldsSelected = [...fieldsSelected];
-    forEach(newFieldsSelected, (item)=> {item.checked = checked;});
+    const newFieldsSelected = map(fieldsSelected, field => {
+      return {...field, checked: checked};
+    });
+
     const newSortBy = this.findBestSortByValue(newFieldsSelected, oldSortBy);
+
     this.setState({
       selectAll: checked,
       fieldsSelected: newFieldsSelected,
@@ -195,21 +194,12 @@ export default class ExportReport extends Component {
                 <div className="list-item">
                   <SortableField
                     item={{display: 'Select All', value: 'selectAll', checked: selectAll}}
-                    sharedProps={{onChange: e => this.onCheckAll(e)}}/>
+                    onChange={ e => this.onCheckAll(e)}/>
                 </div>
-                <Reorder
-                  itemKey="value"
-                  selectedKey="value"
-                  lock="horizontal"
-                  holdTime=""
-                  list={[...fieldsSelected]}
-                  template={SortableField}
-                  listClass="my-list"
-                  itemClass="list-item-draggable"
-                  callback={(...args) => this.onReorder(...args)}
-                  selected={this.state.selected}
-                  disableReorder={false}
-                  sharedProps={{onChange: e => this.onCheck(e, this)}}
+                <SortableList
+                  items={fieldsSelected}
+                  onChange={ e => this.onCheck(e, this)}
+                  onReorder={ order => this.onReorder(order)}
                 />
               </div>
           </div>
@@ -235,7 +225,9 @@ export default class ExportReport extends Component {
         <div className="row actions text-center">
           <div className="col-md-offset-4 col-md-8 col-xs-12">
             <a
-              className="button primary"
+              className={
+                sortableFields.length > 0 ? 'button primary' : 'btn disabled'
+              }
               href={this.buildExportHref()}>Export</a>
           </div>
         </div>
