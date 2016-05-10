@@ -204,7 +204,7 @@ export default class SetUpReport extends Component {
           <TextField
             value={reportName}
             name=""
-            autoFocus
+            autoFocus="autofocus"
             onChange={v => reportConfig.changeReportName(v.target.value)}/>
         </FieldWrapper>
       );
