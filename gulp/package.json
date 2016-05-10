@@ -40,7 +40,6 @@
     "react-dom": "^0.14.3",
     "react-filtered-multiselect": "^0.4.2",
     "react-onclickout": "^2.0.4",
-    "react-reorder": "^2.0.0",
     "react-router": "^1.0.0",
     "react-sortablejs": "^1.0.0",
     "sortablejs": "^1.4.2",
