@@ -154,7 +154,7 @@ class DateField extends React.Component {
       year = momentObject.year();
     } else {
       error = (
-        <div className="error-text">MM/DD/YYYY</div>
+        <div className="error-text">Date error. Must be of format: MM/DD/YYYY</div>
       );
       day = 0;
       month = 1;
