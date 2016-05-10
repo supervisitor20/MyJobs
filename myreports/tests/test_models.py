@@ -183,7 +183,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(1, len(choices['data_types']))
         self.assertEquals(
             choices['data_types'][0],
             choices['selected_data_type'])
@@ -205,10 +205,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
-        self.assertEquals(
-            choices['data_types'][1],
-            choices['selected_data_type'])
+        self.assertEquals(1, len(choices['data_types']))
 
     def test_build_choices_wrong_report_type(self):
         choices = ReportTypeDataTypes.objects.build_choices(

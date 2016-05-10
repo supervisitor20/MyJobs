@@ -702,6 +702,9 @@
       "from": "ee-first@1.1.1",
       "resolved": "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz"
     },
+    "element-class": {
+      "version": "0.2.2"
+    },
     "end-of-stream": {
       "version": "0.1.5",
       "from": "end-of-stream@0.1.5",
@@ -2365,6 +2368,9 @@
       "from": "react-bootstrap@0.28.2",
       "resolved": "https://registry.npmjs.org/react-bootstrap/-/react-bootstrap-0.28.2.tgz"
     },
+    "react-bootstrap-table": {
+      "version": "2.2.0"
+    },
     "react-dom": {
       "version": "0.14.3",
       "from": "react-dom@0.14.3",
@@ -2400,15 +2406,16 @@
       "from": "react-prop-types@0.3.0",
       "resolved": "https://registry.npmjs.org/react-prop-types/-/react-prop-types-0.3.0.tgz"
     },
-    "react-reorder": {
-      "version": "2.0.0",
-      "from": "react-reorder@2.0.0",
-      "resolved": "https://registry.npmjs.org/react-reorder/-/react-reorder-2.0.0.tgz"
-    },
     "react-router": {
       "version": "1.0.3",
       "from": "react-router@1.0.3",
       "resolved": "https://registry.npmjs.org/react-router/-/react-router-1.0.3.tgz"
+    },
+    "react-sortablejs": {
+      "version": "1.0.0"
+    },
+    "react-toastr": {
+      "version": "2.6.1"
     },
     "read-json-sync": {
       "version": "1.1.1",
@@ -2676,6 +2683,9 @@
           "resolved": "https://registry.npmjs.org/faye-websocket/-/faye-websocket-0.7.3.tgz"
         }
       }
+    },
+    "sortablejs": {
+      "version": "1.4.2"
     },
     "source-list-map": {
       "version": "0.1.5",

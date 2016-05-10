@@ -110,7 +110,7 @@ class Module extends React.Component {
     window.location.assign('/profile/view/');
   }
   handleCancel() {
-    window.location.assign('/profile/view/');
+    window.location.assign('/profile/view/react');
   }
   processFormContents(formContents) {
     for (const formItem in formContents) {
@@ -313,7 +313,7 @@ class Module extends React.Component {
                 Delete
               </a>
               <a
-                href="/profile/view/"
+                href="/profile/view/react"
                 className="button"
                 onClick={e => this.handleCancel(e, this)}>
                 Cancel

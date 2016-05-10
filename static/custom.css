@@ -2194,16 +2194,21 @@ h3.bottom-bordered {
     border-radius: 3px;
 }
 
+.reporting.sidebar ul li .pop-menu ul li {
+    cursor: pointer;
+}
+
 .reporting.sidebar li.active {
     background-color: #C6D6EA;
 }
 
 .reporting.sidebar ul li .menu-text {
-    display: block;
+    display: inline-block;
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .reporting.sidebar ul li:hover {
@@ -2217,7 +2222,7 @@ h3.bottom-bordered {
   height: 16px;
   width: 16px;
   margin-right: 5px;
-  vertical-align: text-bottom;
+  vertical-align: top;
 }
 
 .pop-menu:before {
@@ -2250,7 +2255,7 @@ h3.bottom-bordered {
     box-shadow: 0 3px 3px rgba(0, 0, 0, 0.2);
     position: absolute;
     margin: 0;
-    top: 2.5em;
+    top: 2em;
     width: 200px;
     z-index: 99999;
     border-radius: 6px;
@@ -2279,6 +2284,7 @@ h3.bottom-bordered {
     cursor: pointer;
 }
 
+.reporting.sidebar ul li.active-parent .menuEllipses,
 .reporting.sidebar ul li:hover .menuEllipses {
     display: block;
 }
@@ -3437,6 +3443,8 @@ fieldset:nth-child(n+2) {
 }
 
 .row .col-md-8 input[type='checkbox'] {
+  /*ie doesn't know what initial is so we feed it auto*/
+  width: auto;
   width: initial;
 }
 
@@ -3515,6 +3523,10 @@ height: 33px;
     vertical-align: baseline;
     line-height: inherit;
     height: auto;
+}
+
+.button:hover, .button a:hover {
+  text-decoration: none;
 }
 
 .actions.row .col-md-8 .button.wide,
@@ -3665,11 +3677,12 @@ legend.fieldset-border {
   text-align: center;
 }
 
-.list-item {
+.list-item, .list-item-draggable {
   border-radius: 3px;
   margin-bottom: 5px;
   padding: 0 5px;
   cursor: pointer;
+  background-color: #E7E7E7;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none;   /* Chrome/Safari/Opera */
   -khtml-user-select: none;    /* Konqueror */
@@ -3678,25 +3691,41 @@ legend.fieldset-border {
   user-select: none;           /* non-prefixed version, currently */
 }
 
-.list-item label {
-  cursor: pointer;
-  width: 100%;
+.list-item {
+  background-color: transparent;
 }
 
-.list-item:hover {
+.list-item label, .list-item-draggable label {
+  cursor: pointer;
+}
+
+.list-item .reorder-icon, .list-item-draggable .reorder-icon {
+    display: none;
+    margin-top: 4px;
+    float: right;
+    height: 20px;
+    width: 20px;
+    fill: #808284;
+}
+
+.list-item-draggable:hover {
   background-color: #C6D6EA;
 }
 
-.list-item.dragged {
+.list-item-draggable:hover .reorder-icon {
+    display: inline-block;
+}
+
+.list-item-draggable.dragged {
   background-color: #EEE;
   opacity: 0.7;
 }
 
-.list-item.placeholder {
+.list-item-draggable.placeholder {
   background-color: #CCC;
 }
 
-.list-item.placeholder .sortable-report-field {
+.list-item-draggable.placeholder .sortable-report-field {
   visibility: hidden;
 }
 /* End Export Page Styles */

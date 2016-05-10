@@ -174,6 +174,7 @@ def create_full_fixture():
         data_type="unaggregated",
         description="Unaggregated")
     dt_count_comm_per_month_per_partner = DataTypeFactory.create(
+        is_active=False,
         data_type="count_comm_rec_per_month",
         description="Number of Communication Records per Month per Partner")
 
