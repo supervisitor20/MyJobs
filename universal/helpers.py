@@ -510,3 +510,8 @@ def autofocus_input(form, field_name=None):
         # field attribute which we can use to set autofocus.
         field = visible_fields[0].field
     field.widget.attrs.update({'autofocus': 'autofocus'})
+
+
+def extract_value(obj, *attrs, **kwargs):
+    default = kwargs.get('default', None)
+    return reduce(lambda acc, x: getattr(acc, x, default), attrs)

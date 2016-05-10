@@ -9,7 +9,7 @@ from myreports.datasources.util import (
     filter_date_range, extract_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
-from universal.helpers import dict_identity
+from universal.helpers import dict_identity, extract_value
 from mypartners.models import CONTACT_TYPE_CHOICES
 
 from django.db.models import Q
@@ -36,12 +36,12 @@ class CommRecordsDataSource(DataSource):
 
     def extract_record(self, record):
         return {
-            'contact': record.contact.name,
+            'contact': extract_value(record, 'contact', 'name'),
             'contact_email': record.contact_email,
             'contact_phone': record.contact_phone,
             'communication_type': record.contact_type,
             'created_on': record.created_on,
-            'created_by': self.extract_user_email(record.created_by),
+            'created_by': extract_value(record, 'created_by', 'email'),
             'date_time': record.date_time,
             'job_applications': record.job_applications,
             'job_hires': record.job_hires,
@@ -51,16 +51,10 @@ class CommRecordsDataSource(DataSource):
             'length': record.length,
             'location': record.location,
             'notes': record.notes,
-            'partner': record.partner.name,
+            'partner': extract_value(record, 'partner', 'name'),
             'subject': record.subject,
             'tags': extract_tags(record.tags.all()),
         }
-
-    def extract_user_email(self, user):
-        if user:
-            return user.email
-        else:
-            return None
 
     def filter_type(self):
         return CommRecordsFilter
