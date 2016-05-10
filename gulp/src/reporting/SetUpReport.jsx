@@ -95,7 +95,7 @@ export default class SetUpReport extends Component {
       dataSet: dataType,
     } = this.props.location.query;
     const locationState = (this.props.location || {}).state || {};
-    const {filter: filterFromHistory} = locationState;
+    const {filter: filterFromHistory, name} = locationState;
 
     const filter = filterFromHistory || {};
 
