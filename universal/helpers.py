@@ -513,5 +513,44 @@ def autofocus_input(form, field_name=None):
 
 
 def extract_value(obj, *attrs, **kwargs):
+    """
+    Traverse a value following named attributes.
+
+    Inputs:
+        :obj: The object to traverse for attributes.
+        :attrs: Each positional argument is assumed to be the name of an
+        attribute to access on the attribute which preceded it, or the object
+        passed in if no attribute preceded it.
+        :kwargs: The only recognized keyword argument is ``default``, which is
+        the value returned if, after traversal, no matching attribute is found.
+        If not specified, default is assumed to be ``None``.
+
+    Output:
+        Returns the value of the final attribute requested or default when such
+        an attribute doesn't exist.
+
+    Examples:
+        >>> class Foo(object):
+        ...    x = 7
+        ...    y = 3
+
+
+        >>> class Bar(object):
+        ...    foo = Foo()
+        ...    x = 9
+        ...    y = 4
+
+        >>> foo = Foo()
+        >>> bar = Bar()
+        >>> print extract_value(foo, 'x')
+        7
+        extract_value(foo, 'z')
+        None
+        extract_value(bar, 'foo', 'y')
+        3
+        extract_value(bar, 'y', 'q', default=8)
+        8
+
+    """
     default = kwargs.get('default', None)
     return reduce(lambda acc, x: getattr(acc, x, default), attrs, obj)
