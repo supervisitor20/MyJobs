@@ -90,7 +90,7 @@ export default class SetUpReport extends Component {
 
   scrollToTop() {
     const scrollLoop = setInterval(() => {
-      if (document.body.scrollTop <= 100) {
+      if (document.body.scrollTop <= 0) {
         clearInterval(scrollLoop);
       }
       document.body.scrollTop = document.body.scrollTop + ((0 - document.body.scrollTop) / 250 * 10);
