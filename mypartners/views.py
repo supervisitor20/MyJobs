@@ -243,7 +243,7 @@ def save_init_partner_form(request):
         return HttpResponse(json.dumps(form.errors))
 
 
-#@requires('update partner')
+@requires('update partner')
 def save_item(request):
     """
     Generic save for Partner and Contact Forms.
