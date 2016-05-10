@@ -46,9 +46,12 @@ class TestPartnersDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
-        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
-        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
+        self.east_tag = TagFactory.create(
+            company=self.company, name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(
+            company=self.company, name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(
+            company=self.company, name='bad', hex_color="cccccc")
 
         self.partner_a.tags.add(self.east_tag)
         self.partner_b.tags.add(self.west_tag)
@@ -470,10 +473,5 @@ class TestPartnersFilterCloning(TestCase):
         expected_with_state = PartnersFilter(
                 tags=['C'],
                 locations={'state': 'B'})
-        expected_with_city_state_only = PartnersFilter(
-                locations={'city': 'A', 'state': 'B'})
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
-        self.assertEqual(
-            expected_with_city_state_only,
-            filter.clone_without_tags())
