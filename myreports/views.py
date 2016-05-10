@@ -613,7 +613,6 @@ def run_dynamic_report(request):
         owner=company)
 
     report.regenerate()
-    report.save()
 
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',

@@ -144,5 +144,4 @@ ReportList.propTypes = {
     }),
   ).isRequired,
   highlightId: PropTypes.number,
-  reportFinder: PropTypes.object.isRequired,
 };

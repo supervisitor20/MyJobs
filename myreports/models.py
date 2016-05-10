@@ -382,3 +382,4 @@ class DynamicReport(models.Model):
 
         self.results.save('%s-%s.json' % (self.name, self.pk), results)
         self._results = contents
+        self.save()
