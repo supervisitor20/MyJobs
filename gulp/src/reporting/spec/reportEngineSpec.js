@@ -106,6 +106,28 @@ describe('ReportFinder', () => {
       expect(newId).toEqual(22);
     });
   });
+
+  describe('filter change subscriptions', () => {
+    let filterChanged;
+
+    const ref = finder.subscribeToFilterChanges(
+      () => {filterChanged = true;});
+
+    beforeEach(() => {
+      filterChanged = false;
+    });
+
+    it('can inform subscribers of filter changes', () => {
+      finder.noteFilterChanges();
+      expect(filterChanged).toBe(true);
+    });
+
+    it('can unsubscribe', () => {
+      finder.unsubscribeToFilterChanges(ref);
+      finder.noteFilterChanges();
+      expect(filterChanged).toBe(false);
+    });
+  });
 });
 
 describe('ReportConfiguration', () => {

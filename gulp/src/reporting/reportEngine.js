@@ -18,6 +18,7 @@ export class ReportFinder {
     this.configBuilder = configBuilder;
     this.newReportSubscribers = {};
     this.newMenuChoicesSubscribers = {};
+    this.filterChangesSubscribers = {};
   }
 
   /**
@@ -184,6 +185,35 @@ export class ReportFinder {
    */
   async refreshReport(reportId) {
     return await this.api.refreshReport(reportId);
+  }
+
+  /**
+   * Submit a callback to be called any time a filter changes
+   *
+   * callback params: none
+   * returns a reference which can be used later to unsubscribe.
+   */
+  subscribeToFilterChanges(callback) {
+    this.filterChangesSubscribers[callback] = callback;
+    return callback;
+  }
+
+  /**
+   * Remove a callback from the filter changes subscription.
+   */
+  unsubscribeToFilterChanges(ref) {
+    delete this.filterChangesSubscribers[ref];
+  }
+
+  /**
+   * Let subscribers know that a filter has changed.
+   */
+  noteFilterChanges() {
+    for (const ref in this.filterChangesSubscribers) {
+      if (this.filterChangesSubscribers.hasOwnProperty(ref)) {
+        this.filterChangesSubscribers[ref]();
+      }
+    }
   }
 }
 
