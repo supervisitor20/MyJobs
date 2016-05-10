@@ -195,7 +195,7 @@ SearchInput.defaultProps = {
     root: 'dropdown',
     rootOpen: 'open',
     input: '',
-    suggestions: 'dropdown-menu',
+    suggestions: 'select-element-menu-container',
     item: '',
     itemActive: 'active',
   },
