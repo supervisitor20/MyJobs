@@ -178,6 +178,13 @@ export class ReportFinder {
       }
     }
   }
+
+  /**
+   * Refresh a given report.
+   */
+  async refreshReport(reportId) {
+    return await this.api.refreshReport(reportId);
+  }
 }
 
 /**

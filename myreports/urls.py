@@ -30,5 +30,7 @@ urlpatterns = patterns(
     url(r'^api/default_report_name$', 'get_default_report_name',
         name='get_default_report_name'),
     url(r'^api/old_report_preview$', 'old_report_preview',
-        name='old_report_preview')
+        name='old_report_preview'),
+    url(r'^api/refresh_report$', 'refresh_report',
+        name='refresh_report'),
 )
