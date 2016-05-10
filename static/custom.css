@@ -3523,6 +3523,10 @@ height: 33px;
     vertical-align: baseline;
     line-height: inherit;
     height: auto;
+    -moz-transition: all .2s ease-in;
+    -o-transition: all .2s ease-in;
+    -webkit-transition: all .2s ease-in;
+    transition: all .2s ease-in;
 }
 
 .button:hover, .button a:hover {
@@ -3543,12 +3547,18 @@ height: 33px;
 .actions.row .col-md-8 .button:hover,
 .col-md-4 .button:hover {
     color: #444545;
+    background-color: #f4f4f4;
 }
 
 .actions.row .col-md-8 .button.primary,
 .col-md-4 .button.primary {
     background-color: #444545;
     color: #fff;
+}
+
+.actions.row .col-md-8 .button.primary:hover,
+.col-md-4 .button.primary:hover {
+    background-color: #6a6c6c;
 }
 
 .row .col-md-8 .card-wrapper {
