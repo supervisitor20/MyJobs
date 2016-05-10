@@ -4,20 +4,21 @@
 
 import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills.js';
+import {getDisplayForValue} from '../common/array.js';
+
 import param from 'jquery-param';
 
 import React from 'react';
+import moment from 'moment';
 import {getCsrf} from 'common/cookie';
 
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
 
-import {find} from 'lodash-compat/collection';
-
 import TextField from '../common/ui/TextField';
 import CheckBox from '../common/ui/CheckBox';
 import Textarea from '../common/ui/Textarea';
-import Datetime from '../common/ui/Datetime';
+import DateField from '../common/ui/DateField';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
 
@@ -60,14 +61,34 @@ class Module extends React.Component {
     let value;
     if (event.target.type === 'checkbox') {
       value = event.target.checked;
-    } else if (event.target.type === 'select-one') {
+    } else if (event.target.type === 'calendar-month') {
+      const existingDate = formContents[fieldID];
+      // month must be 2 chars
+      const newMonth = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      // If user mangled date string, reset it so we can use substring
+      const afterMonth = existingDate.substring(2, 10);
+      const updatedDate = newMonth + afterMonth;
+      value = updatedDate;
+    } else if (event.target.type === 'calendar-day') {
+      const existingDate = formContents[fieldID];
+      // day must be 2 chars
+      const newDay = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
+      // If user mangled date string, reset it so we can use substring
+      const beforeDay = existingDate.substring(0, 3);
+      const afterDay = existingDate.substring(5, 10);
+      value = beforeDay + newDay + afterDay;
+    } else if (event.target.type === 'calendar-year') {
+      const existingDate = formContents[fieldID];
+      const newYear = event.target.value;
+      // If user mangled date string, reset it so we can use substring
+      const beforeYear = existingDate.substring(0, 6);
+      value = beforeYear + newYear;
+    } else if (event.target.type === 'calendar-year') {
       value = event.target.value;
     } else {
       value = event.target.value;
     }
-
     formContents[fieldID] = value;
-
     this.setState({
       formContents: formContents,
     });
@@ -91,10 +112,32 @@ class Module extends React.Component {
   handleCancel() {
     window.location.assign('/profile/view/react');
   }
+  processFormContents(formContents) {
+    for (const formItem in formContents) {
+      if (formContents.hasOwnProperty(formItem)) {
+        // User sees dates of form MM/DD/YYYY but dates must be
+        // of form YYYY-MM-DD before POSTing
+        const momentObject = moment(formContents[formItem], 'MM/DD/YYYY', true);
+        if (momentObject.isValid()) {
+          // month and day must both be two characters
+          const month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+          const day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+          const year = momentObject.year();
+          formContents[formItem] = year + '-' + month + '-' + day;
+        }
+        // Inspect other form field types here
+      }
+    }
+    return formContents;
+  }
   async handleSave() {
     const {formContents} = this.state;
     const myJobsApi = new MyJobsApi(getCsrf());
-    const apiResponse = await myJobsApi.post('/profile/api', formContents);
+    // We display dates seperated by slashes (i.e. YYYY/MM/DD), but
+    // django-remote-forms expects them seperated by dashes (i.e. YYYY-MM-DD)
+    const processedFormContents = this.processFormContents(formContents);
+
+    const apiResponse = await myJobsApi.post('/profile/api', processedFormContents);
 
     if (apiResponse.errors) {
       this.setState({
@@ -119,12 +162,11 @@ class Module extends React.Component {
               errors={apiResponse.errors[profileUnitName]}
               required={profileUnit.required}
               key={index}>
-
               {child}
-
             </FieldWrapper>
           );
         }
+
         switch (profileUnit.widget.input_type) {
         case 'text':
           return wrap(
@@ -154,11 +196,11 @@ class Module extends React.Component {
           );
         case 'date':
           return wrap(
-            <Datetime
+            <DateField
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
               required={profileUnit.required}
-              initial={profileUnit.initial}
+              value={formContents[profileUnitName]}
               maxLength={profileUnit.widget.maxlength}
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
@@ -167,16 +209,11 @@ class Module extends React.Component {
           );
         case 'select':
           const selected = formContents[profileUnitName];
-          const value = find(profileUnit.choices, c => c.value === selected);
-          let display = null;
-          if (value) {
-            display = value.display;
-          }
           return wrap(
             <Select
               name={profileUnitName}
               onChange={e => this.onChange(e, this)}
-              value={display}
+              value={getDisplayForValue(profileUnit.choices, selected)}
               choices={profileUnit.choices}
               />
           );
@@ -206,16 +243,47 @@ class Module extends React.Component {
       id: formContents.id,
       module: formContents.module,
     };
-
     const apiResponse = await myJobsApi.get('/profile/api?' + param(formData));
-
     // Update state
     for (const item in apiResponse.data) {
       if (apiResponse.data.hasOwnProperty(item)) {
-        formContents[item] = apiResponse.data[item];
+        // Is it a date?
+        if (apiResponse.fields[item].widget.input_type === 'date') {
+          let year;
+          let month;
+          let day;
+          // If date value is empty use today's date
+          if ((!formContents[item]) || (formContents[item] === '')) {
+            const now = new Date();
+            year = now.getFullYear();
+            // month and day must both be two characters
+            month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
+            day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+            formContents[item] = month + '/' + day + '/' + year;
+          } else {
+            // Otherwise transform date value (django-remote-forms needs dates
+            // to be of form YYYY-MM-DD but we display them to the user
+            // as MM/DD/YYYY
+            const momentObject = moment(apiResponse.data[item], 'YYYY-MM-DD', true);
+            // month and day must both be two characters
+            month = (momentObject.month() + 1) < 10 ? '0' + (momentObject.month() + 1) : (momentObject.month() + 1);
+            day = momentObject.date() < 10 ? '0' + momentObject.date() : momentObject.date();
+            year = momentObject.year();
+            formContents[item] = month + '/' + day + '/' + year;
+          }
+        } else {
+          // django-remote-forms returns empty fields as null, which won't be
+          // caught by React's defaultProps (it only catches undefined). Therefore
+          // convert null fields to empty strings:
+          // https://github.com/facebook/react/issues/2166
+          if (!apiResponse.data[item]) {
+            formContents[item] = '';
+          } else {
+            formContents[item] = apiResponse.data[item];
+          }
+        }
       }
     }
-
     this.setState({
       apiResponse: apiResponse,
       formContents: formContents,
