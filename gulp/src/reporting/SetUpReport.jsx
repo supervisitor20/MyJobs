@@ -88,6 +88,15 @@ export default class SetUpReport extends Component {
     }
   }
 
+  scrollToTop() {
+    const scrollLoop = setInterval(() => {
+      if (document.body.scrollTop <= 0) {
+        clearInterval(scrollLoop);
+      }
+      document.body.scrollTop = document.body.scrollTop + ((0 - document.body.scrollTop) / 250 * 10);
+    }, 10);
+  }
+
   async loadData() {
     const {
       intention: reportingType,
@@ -312,7 +321,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-8">
             <button
               className="button"
-              onClick={e => {e.preventDefault(); reportConfig.run();}}>
+              onClick={e => {e.preventDefault(); this.scrollToTop(); reportConfig.run();}}>
               Run Report
             </button>
           </div>
