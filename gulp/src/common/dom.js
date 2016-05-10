@@ -3,7 +3,7 @@
  * `increment` pixels until the viewport is at `position`.
  */
 export const scrollUp = (increment = 250, position = 0) => {
-  // Chrome recognizes document.body, but FireFox recognizes
+  // Chrome recognizes document.body, but Firefox recognizes
   // document.documentElement. Both return 0 on each browser, which is why I
   // can't simply define an alias to use for both.
   const scrollTop = document.documentElement.scrollTop ||
