@@ -17,9 +17,9 @@ export class ReportList extends Component {
     this.setState({isMenuActive: !isMenuActive, currentlyActive: e.target.parentNode.parentNode.id});
   }
 
-  handleRegenerateReport(report) {
+  handleRefreshReport(report) {
     const {reportFinder} = this.props;
-    reportFinder.regenerateReport(report.id);
+    reportFinder.refreshReport(report.id);
   }
 
   handlePreviewReport(report) {
@@ -72,7 +72,7 @@ export class ReportList extends Component {
           onSelect: () => {this.handleExportReport(r);},
         }, {
           display: 'Refresh',
-          onSelect: () => {this.handleRegenerateReport(r);},
+          onSelect: () => {this.handleRefreshReport(r);},
         });
       }
       return (

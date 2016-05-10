@@ -82,12 +82,12 @@ class Api {
       formData);
   }
 
-  async regenerateReport(reportId) {
+  async refreshReport(reportId) {
     const formData = {
       report_id: reportId,
     };
     return await this.postToReportingApi(
-      '/reports/api/regenerate_report',
+      '/reports/api/refresh_report',
       formData);
   }
 }

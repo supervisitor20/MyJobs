@@ -172,10 +172,10 @@ export class ReportFinder {
   }
 
   /**
-   * Regenerate a given report.
+   * Refresh a given report.
    */
-  async regenerateReport(reportId) {
-    return await this.api.regenerateReport(reportId);
+  async refreshReport(reportId) {
+    return await this.api.refreshReport(reportId);
   }
 }
 

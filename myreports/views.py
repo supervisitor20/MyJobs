@@ -769,7 +769,7 @@ def old_report_preview(request):
 
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['POST'])
-def regenerate_report(request):
+def refresh_report(request):
     company = get_company_or_404(request)
     report_id = request.POST['report_id']
     report = get_object_or_404(DynamicReport, owner=company, pk=report_id)
