@@ -20,6 +20,7 @@ export class ReportList extends Component {
   handleRefreshReport(report) {
     const {reportFinder} = this.props;
     reportFinder.refreshReport(report.id);
+    this.closeAllPopups();
   }
 
   handlePreviewReport(report) {
