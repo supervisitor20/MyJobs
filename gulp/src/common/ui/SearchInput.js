@@ -1,4 +1,4 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import classnames from 'classnames';
 
 
@@ -207,29 +207,29 @@ SearchInput.propTypes = {
    *
    * Intended to support wai-aria.
    */
-  id: PropTypes.string.isRequired,
+  id: React.PropTypes.string.isRequired,
 
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onSelect: PropTypes.func.isRequired,
+  onSelect: React.PropTypes.func.isRequired,
 
   /**
    * Empty input contents after selecting an item.
    */
-  emptyOnSelect: PropTypes.bool,
+  emptyOnSelect: React.PropTypes.bool,
 
   /**
    * If the select field is empty, call onSelect anyway.
    */
-  callSelectWhenEmpty: PropTypes.bool,
+  callSelectWhenEmpty: React.PropTypes.bool,
 
   /**
    * Placeholder text for the input control
    */
-  placeholder: PropTypes.string,
+  placeholder: React.PropTypes.string,
 
   /**
    * Callback: the user has changed the input. Need hints.
@@ -239,12 +239,12 @@ SearchInput.propTypes = {
    * Return a promise of hints in this form:
    * [ {key: "key", display: "Display Value"} ]
    */
-  getHints: PropTypes.func.isRequired,
+  getHints: React.PropTypes.func.isRequired,
 
   /**
    * Callback: the user has left the search input.
    */
-  onBlur: PropTypes.func,
+  onBlur: React.PropTypes.func,
 
   /**
    * Value for this control.
@@ -261,9 +261,9 @@ SearchInput.propTypes = {
    * item: Applied to the li containing a single suggestions.
    * itemActive: Applied to li selected via keyboard. (hover is used for mouse)
    */
-  theme: PropTypes.object,
+  theme: React.PropTypes.object,
   /**
    * Should this bad boy focus, all auto like?
    */
-  autofocus: PropTypes.bool,
+  autofocus: React.PropTypes.string,
 };

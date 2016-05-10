@@ -24,6 +24,12 @@ class Api {
     return response.reports;
   }
 
+  async getReportInfo(reportId) {
+    const response = await this.getFromReportingApi(
+      '/reports/api/report_info?report_id=' + reportId);
+    return response.report_details;
+  }
+
   async getSetUpMenuChoices(reportingType, reportType, dataType) {
     const formData = {
       reporting_type: reportingType,

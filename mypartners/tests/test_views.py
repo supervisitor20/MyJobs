@@ -145,6 +145,20 @@ class MyPartnerViewsTests(MyPartnersTestCase):
 
         self.assertEqual(len(soup.select('div.product-card')), 10)
 
+    def test_contact_form(self):
+        response = self.client.post(
+            reverse('save_item'), {
+                'name': 'John',
+                'email': 'john@example.com',
+                'phone': '555-5555',
+                'company_id': self.company.id,
+                'partner_id': self.partner.id,
+                'partner': self.partner.id,
+                'ct': ContentType.objects.get_for_model(Contact).pk,
+            })
+
+        self.assertEqual(response.status_code, 200)
+
     def count_active_rows(self, url, count, type_='class_',
                           selector='card-wrapper'):
         """

@@ -18,7 +18,6 @@ export class ReportFinder {
     this.configBuilder = configBuilder;
     this.newReportSubscribers = {};
     this.newMenuChoicesSubscribers = {};
-    this.clearReportConfigurationSubscribers = {};
   }
 
   /**
@@ -74,6 +73,15 @@ export class ReportFinder {
    */
   async getReportList() {
     return await this.api.listReports();
+  }
+
+  /**
+   * Retrieve detailed info about a single report
+   *
+   * reportId: id for this report
+   */
+  async getReportInfo(reportId) {
+    return await this.api.getReportInfo(reportId);
   }
 
   /**
@@ -228,6 +236,17 @@ export class ReportConfiguration {
   async getHints(field, partial) {
     return await this.api.getHelp(
       this.reportDataId, this.getFilter(), field, partial);
+  }
+
+  /**
+   * See `getHints`. Same as that but override the filter used.
+   *
+   * Ugly hack to make two pane selects work ok. Remove this when we stop
+   * using two pane selects for reporting filters.
+   */
+  async getHintsWithFilter(field, filter, partial) {
+    return await this.api.getHelp(
+      this.reportDataId, filter, field, partial);
   }
 
   callUpdateFilter() {
