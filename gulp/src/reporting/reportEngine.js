@@ -170,6 +170,13 @@ export class ReportFinder {
       }
     }
   }
+
+  /**
+   * Regenerate a given report.
+   */
+  async regenerateReport(reportId) {
+    return await this.api.regenerateReport(reportId);
+  }
 }
 
 /**

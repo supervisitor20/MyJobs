@@ -765,3 +765,14 @@ def old_report_preview(request):
     elif report_type in ['contacts', 'partners']:
         return HttpResponse(content_type='application/json',
                             content=report.json)
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def regenerate_report(request):
+    company = get_company_or_404(request)
+    report_id = request.POST['report_id']
+    report = get_object_or_404(DynamicReport, owner=company, pk=report_id)
+    report.regenerate()
+    return HttpResponse(content_type='application/json',
+                        content='{}')

@@ -81,6 +81,15 @@ class Api {
       '/reports/api/run_report',
       formData);
   }
+
+  async regenerateReport(reportId) {
+    const formData = {
+      report_id: reportId,
+    };
+    return await this.postToReportingApi(
+      '/reports/api/regenerate_report',
+      formData);
+  }
 }
 
 export {Api as default};

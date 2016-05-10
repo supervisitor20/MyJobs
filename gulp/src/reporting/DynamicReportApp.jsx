@@ -50,7 +50,7 @@ export class DynamicReportApp extends Component {
   render() {
     const {completedReportList, runningReportList} = this.state;
     const {reportId} = this.props.params;
-    const {history} = this.props;
+    const {history, reportFinder} = this.props;
 
     const reportList = map(runningReportList,
         r => ({...r, isRunning: true})).concat(
@@ -76,7 +76,8 @@ export class DynamicReportApp extends Component {
             <ReportList
               history={history}
               reports={reportList}
-              highlightId={Number.parseInt(reportId, 10)}/>
+              highlightId={Number.parseInt(reportId, 10)}
+              reportFinder={reportFinder}/>
           </div>
         </div>
       </div>

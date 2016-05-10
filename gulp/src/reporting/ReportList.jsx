@@ -17,6 +17,11 @@ export class ReportList extends Component {
     this.setState({isMenuActive: !isMenuActive, currentlyActive: e.target.parentNode.parentNode.id});
   }
 
+  handleRegenerateReport(report) {
+    const {reportFinder} = this.props;
+    reportFinder.regenerateReport(report.id);
+  }
+
   handlePreviewReport(report) {
     const {history} = this.props;
     const href = '/preview/' + report.id;
@@ -65,6 +70,9 @@ export class ReportList extends Component {
         options.push({
           display: 'Export',
           onSelect: () => {this.handleExportReport(r);},
+        }, {
+          display: 'Refresh',
+          onSelect: () => {this.handleRegenerateReport(r);},
         });
       }
       return (
@@ -113,4 +121,5 @@ ReportList.propTypes = {
     }),
   ).isRequired,
   highlightId: PropTypes.number,
+  reportFinder: PropTypes.object.isRequired,
 };
