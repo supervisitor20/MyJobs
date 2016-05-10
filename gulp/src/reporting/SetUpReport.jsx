@@ -1,6 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
+import {scrollUp} from 'common/dom';
 import {forEach} from 'lodash-compat/collection';
 
 import classnames from 'classnames';
@@ -86,15 +87,6 @@ export default class SetUpReport extends Component {
     if (lastComponent === SetUpReport) {
       this.loadData();
     }
-  }
-
-  scrollToTop() {
-    const scrollLoop = setInterval(() => {
-      if (document.body.scrollTop <= 0) {
-        clearInterval(scrollLoop);
-      }
-      document.body.scrollTop = document.body.scrollTop + ((0 - document.body.scrollTop) / 250 * 10);
-    }, 10);
   }
 
   async loadData() {
@@ -321,7 +313,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-8">
             <button
               className="button"
-              onClick={e => {e.preventDefault(); this.scrollToTop(); reportConfig.run();}}>
+              onClick={e => {e.preventDefault(); scrollUp(); reportConfig.run();}}>
               Run Report
             </button>
           </div>
