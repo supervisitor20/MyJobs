@@ -514,4 +514,4 @@ def autofocus_input(form, field_name=None):
 
 def extract_value(obj, *attrs, **kwargs):
     default = kwargs.get('default', None)
-    return reduce(lambda acc, x: getattr(acc, x, default), attrs)
+    return reduce(lambda acc, x: getattr(acc, x, default), attrs, obj)
