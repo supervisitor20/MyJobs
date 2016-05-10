@@ -41,6 +41,23 @@ export class ReportList extends Component {
     history.pushState(null, '/');
   }
 
+  async handleCloneReport(report) {
+    const {history, reportFinder} = this.props;
+    const reportInfo = await reportFinder.getReportInfo(report.id);
+    const href = '/set-up-report';
+    const query = {
+      reportDataId: reportInfo.report_data_id,
+      intention: reportInfo.reporting_type,
+      category: reportInfo.report_type,
+      dataSet: reportInfo.data_type,
+    };
+    const newReportState = {
+      ...reportInfo,
+      name: 'Copy of ' + reportInfo.name,
+    };
+    history.pushState(newReportState, href, query);
+  }
+
   closeAllPopups() {
     this.setState({isMenuActive: false, currentlyActive: ''});
   }
@@ -65,6 +82,10 @@ export class ReportList extends Component {
         options.push({
           display: 'Export',
           onSelect: () => {this.handleExportReport(r);},
+        });
+        options.push({
+          display: 'Clone',
+          onSelect: () => {this.handleCloneReport(r);},
         });
       }
       return (
@@ -104,6 +125,7 @@ export class ReportList extends Component {
 
 ReportList.propTypes = {
   history: PropTypes.object.isRequired,
+  reportFinder: PropTypes.object.isRequired,
   reports: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number,

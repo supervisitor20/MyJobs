@@ -17,6 +17,12 @@ from django.db.models import Q
 CONTACT_TYPES = dict(CONTACT_TYPE_CHOICES)
 
 
+def contact_type_help_entry(contact_type):
+    value = contact_type.lower()
+    display = CONTACT_TYPES[value]
+    return {'value': value, 'display': display}
+
+
 class CommRecordsDataSource(DataSource):
     def run(self, data_type, company, filter_spec, order):
         return dispatch_run_by_data_type(
@@ -114,10 +120,8 @@ class CommRecordsDataSource(DataSource):
             .filter(contact_type__icontains=partial)
             .values('contact_type').distinct())
         return [
-            {
-                'value': c['contact_type'],
-                'display': CONTACT_TYPES[c['contact_type'].lower()],
-            } for c in contact_types_qs]
+            contact_type_help_entry(c['contact_type'])
+            for c in contact_types_qs]
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
@@ -157,6 +161,66 @@ class CommRecordsDataSource(DataSource):
             .filter(archived_on__isnull=True))
         qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
+
+    def adorn_filter(self, company, filter_spec):
+        adorned = {}
+        empty = CommRecordsFilter()
+
+        if filter_spec.locations:
+            adorned[u'locations'] = {}
+            known_city = filter_spec.locations.get('city', None)
+            if known_city:
+                cities = self.help_city(company, empty, known_city)
+                if cities:
+                    adorned[u'locations'][u'city'] = cities[0]['value']
+            known_state = filter_spec.locations.get('state', None)
+            if known_state:
+                states = self.help_state(company, empty, known_state)
+                if states:
+                    adorned[u'locations'][u'state'] = states[0]['value']
+
+        if filter_spec.tags:
+            adorned[u'tags'] = []
+            for known_or_tags in filter_spec.tags:
+                or_group = []
+
+                for known_tag in known_or_tags:
+                    tags = self.help_tags(company, empty, known_tag)
+                    if tags:
+                        or_group.append(tags[0])
+
+                if or_group:
+                    adorned[u'tags'].append(or_group)
+
+        if filter_spec.partner:
+            partners_qs = (
+                Partner.objects
+                .filter(owner=company)
+                .filter(pk__in=filter_spec.partner)
+                .values('name', 'pk').distinct())
+            adorned[u'partner'] = [
+                {'value': p['pk'], 'display': p['name']}
+                for p in partners_qs
+            ]
+
+        if filter_spec.contact:
+            contacts_qs = (
+                Contact.objects
+                .filter(partner__owner=company)
+                .filter(pk__in=filter_spec.contact)
+                .values('name', 'pk').distinct())
+            adorned[u'contact'] = [
+                {'value': p['pk'], 'display': p['name']}
+                for p in contacts_qs
+            ]
+
+        if filter_spec.communication_type:
+            adorned[u'communication_type'] = [
+                contact_type_help_entry(c)
+                for c in filter_spec.communication_type
+            ]
+
+        return adorned
 
 
 @dict_identity

@@ -645,6 +645,55 @@ def list_dynamic_reports(request):
                         content=json.dumps({'reports': data}))
 
 
+@restrict_to_staff()
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['GET'])
+def get_dynamic_report_info(request):
+    company = get_company_or_404(request)
+    validator = ApiValidator()
+    report_id = request.GET.get('report_id')
+    if report_id is None:
+        validator.note_field_error('report_id', 'Missing report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report_list = list(DynamicReport.objects.filter(id=report_id))
+    if len(report_list) < 1:
+        validator.note_field_error('report_id', 'Unknown report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report = report_list[0]
+
+    # Guessing here. Many to many makes this ambiguous.
+    reporting_type = (
+        report.report_data.report_type.reportingtype_set.all()[0]
+        .reporting_type)
+    report_type = (
+        report.report_data.report_type.report_type)
+    data_type = (
+        report.report_data.data_type.data_type)
+
+    driver = ds_json_drivers[report.report_data.report_type.datasource]
+    adorned_filter = driver.adorn_filter(company, report.filters)
+
+    response = {
+        'report_details': {
+            'id': report.pk,
+            'report_data_id': report.report_data.pk,
+            'reporting_type': reporting_type,
+            'report_type': report_type,
+            'data_type': data_type,
+            'name': report.name,
+            'filter': adorned_filter,
+        }
+    }
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(response))
+
+
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def download_dynamic_report(request):

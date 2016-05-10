@@ -401,7 +401,7 @@ class TestRegenerate(MyReportsTestCase):
 class TestReportsApi(MyReportsTestCase):
     def setUp(self):
         super(TestReportsApi, self).setUp()
-        ContactFactory.create(
+        contact = ContactFactory.create(
             name="a", email="a@example.com",
             partner=self.partner,
             locations=[
@@ -412,6 +412,10 @@ class TestReportsApi(MyReportsTestCase):
                     city="Champaign",
                     state="IL"),
                 ])
+
+        contact.tags.add(TagFactory.create(name="Disability"))
+        contact.tags.add(TagFactory.create(name="Veteran"))
+        contact.tags.add(TagFactory.create(name="Senior"))
 
     def test_select_data_type_api(self):
         """Test that we get useful report setup menu choices."""
@@ -477,6 +481,64 @@ class TestReportsApi(MyReportsTestCase):
             u'report_data_id': None,
         }
         self.assertEquals(expected, data)
+
+    def test_report_details_api(self):
+        self.maxDiff = 10000
+        report_data = (
+            self.dynamic_models['report_type/data_type']
+            ['contacts/unaggregated'])
+
+        input_filter = json.dumps({
+            'locations': {
+                'city': 'Chicago',
+            },
+            'tags': [['Veteran'], ['Disability']],
+        })
+
+        report = DynamicReport.objects.create(
+            name='The Report',
+            owner=self.company,
+            report_data=report_data,
+            filters=input_filter)
+
+        resp = self.client.get(
+            "%s?report_id=%d" % (
+                reverse('get_dynamic_report_info'), report.pk))
+        self.assertEquals(200, resp.status_code)
+
+        expected_filter = {
+            u'locations': {
+                u'city': u'Chicago',
+            },
+            u'tags': [
+                [
+                    {
+                        u'value': u'Veteran',
+                        u'display': u'Veteran',
+                        u'hexColor': u'd4d4d4',
+                    }
+                ],
+                [
+                    {
+                        u'value': u'Disability',
+                        u'display': u'Disability',
+                        u'hexColor': u'd4d4d4',
+                    }
+                ],
+            ],
+        }
+
+        data = json.loads(resp.content)
+        self.assertEquals({
+            u'report_details': {
+                u'id': report.pk,
+                u'reporting_type': u'prm',
+                u'report_type': u'contacts',
+                u'data_type': u'unaggregated',
+                u'report_data_id': report_data.pk,
+                u'filter': expected_filter,
+                u'name': u'The Report',
+            }}, data)
 
     def test_export_options_api(self):
         self.maxDiff = 10000
