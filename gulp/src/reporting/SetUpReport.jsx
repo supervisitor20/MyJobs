@@ -70,7 +70,9 @@ export default class SetUpReport extends Component {
   }
 
   onFilterUpdate(filter) {
+    const {reportFinder} = this.props;
     this.setState({filter});
+    reportFinder.noteFilterChanges();
   }
 
   onErrorsChanged(errors) {
@@ -173,6 +175,7 @@ export default class SetUpReport extends Component {
   }
 
   render() {
+    const {reportFinder} = this.props;
     const {
       intention: reportingType,
       category: reportType,
@@ -264,9 +267,13 @@ export default class SetUpReport extends Component {
             );
           break;
         case 'search_multiselect':
-          // getHintsWithFilter is an ugly hack to work around the fact that we
-          // are using a two pane multiselect here. Really we want a tag select
-          // here. Tag select should not need getHintsWithFilter.
+          // Hack. MultiSelect filter will subscribe to filter updates if we
+          // pass reportFinder.
+          let passReportFinder;
+          if (col.filter === 'contact' || col.filter === 'partner') {
+            passReportFinder = reportFinder;
+          }
+
           rows.push(
             <FieldWrapper
               key={col.filter}
@@ -276,12 +283,13 @@ export default class SetUpReport extends Component {
                 availableHeader="Available"
                 selectedHeader="Selected"
                 getHints={v =>
-                  reportConfig.getHintsWithFilter(col.filter, {}, v)}
+                  reportConfig.getHints(col.filter, v)}
                 selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter, v))}/>
+                  reportConfig.removeFromMultifilter(col.filter, v))}
+                reportFinder={passReportFinder}/>
 
             </FieldWrapper>
             );

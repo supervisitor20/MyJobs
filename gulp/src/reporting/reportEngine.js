@@ -268,17 +268,6 @@ export class ReportConfiguration {
       this.reportDataId, this.getFilter(), field, partial);
   }
 
-  /**
-   * See `getHints`. Same as that but override the filter used.
-   *
-   * Ugly hack to make two pane selects work ok. Remove this when we stop
-   * using two pane selects for reporting filters.
-   */
-  async getHintsWithFilter(field, filter, partial) {
-    return await this.api.getHelp(
-      this.reportDataId, filter, field, partial);
-  }
-
   callUpdateFilter() {
     this.onUpdateFilter(this.currentFilter);
   }

@@ -7,16 +7,37 @@ export default class MultiSelectFilter extends Component {
     this.state = {
       available: [],
     };
+    this.mounted = false;
   }
 
   componentDidMount() {
+    const {reportFinder} = this.props;
+    // This is used to reload the available list anytime the filter changes.
+    this.mounted = true;
+    if (reportFinder) {
+      this.filterChangesRef = reportFinder.subscribeToFilterChanges(
+          () => this.getHints());
+    }
     this.getHints();
+  }
+
+  componentWillUnmount() {
+    this.mounted = true;
+    if (this.filterChangesRef) {
+      const {reportFinder} = this.props;
+      reportFinder.unsubscribeToFilterChanges(this.filterChangesRef);
+    }
   }
 
   async getHints() {
     const {getHints} = this.props;
-    const available = await getHints();
-    this.setState({available});
+    if (this.mounted) {
+      const available = await getHints();
+      // gotta check again. Save me redux.
+      if (this.mounted) {
+        this.setState({available});
+      }
+    }
   }
 
   render() {
@@ -71,4 +92,8 @@ MultiSelectFilter.propTypes = {
    * Function fired when an item is selected from the right side
    */
   onRemove: React.PropTypes.func.isRequired,
+  /**
+   * Used for hack to refresh available list.
+   */
+  reportFinder: React.PropTypes.object,
 };
