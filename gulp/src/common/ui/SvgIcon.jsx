@@ -1,5 +1,5 @@
 import React, {PropTypes} from 'react';
-import {isIE8} from 'common/browserSpecific.js';
+import {isIE8} from 'common/dom';
 
 function SvgIcon(props) {
   const {png, svg, svgID, iconClass} = props;

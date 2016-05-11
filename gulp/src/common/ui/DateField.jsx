@@ -36,6 +36,15 @@ class DateField extends React.Component {
       dateInvalid: false,
     };
   }
+  onInputBlur() {
+    const {mouseInCalendar} = this.state;
+    if (!mouseInCalendar) {
+      this.closeCalendar();
+    }
+  }
+  onMouseInCalendar(value) {
+    this.setState({mouseInCalendar: value});
+  }
   onDaySelect(day) {
     this.updateDay(day);
     this.closeCalendar();
@@ -160,10 +169,11 @@ class DateField extends React.Component {
       month = 1;
       year = 2000;
     }
-
     let calendar;
     if (this.state.displayCalendar) {
-      calendar = (<div className="input-group datepicker-dropdown dropdown-menu">
+      calendar = (<div className="input-group datepicker-dropdown dropdown-menu"
+                    onMouseEnter={() => this.onMouseInCalendar(true)}
+                    onMouseLeave={() => this.onMouseInCalendar(false)}>
                     <CalendarPanel
                       year={year}
                       month={month}
@@ -191,6 +201,7 @@ class DateField extends React.Component {
             placeholder={placeholder}
             onChange={onChange}
             onFocus={e => this.toggleCalendar(e, this)}
+            onBlur={e => this.onInputBlur(e)}
           />
         </div>
         {error}
