@@ -274,7 +274,7 @@ class CommRecordsFilter(DataSourceFilter):
         qs = filter_date_range(self.date_time, 'date_time', qs)
 
         if self.communication_type:
-            qs = qs.filter(contact_type=self.communication_type)
+            qs = qs.filter(contact_type__in=self.communication_type)
 
         if self.tags:
             or_qs = []
