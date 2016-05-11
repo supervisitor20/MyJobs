@@ -7,7 +7,7 @@ import Select from 'common/ui/Select';
 import {map, filter, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
-import {isIE8} from 'common/browserSpecific';
+import {isIE8} from 'common/dom';
 
 export default class ExportReport extends Component {
   constructor() {

@@ -312,7 +312,7 @@ function Field(options) {
     helpText: '',
     errors: [],
     isFilter: true,
-    autofocus: false
+    autofocus: ''
   }));
 
   this.key = this.key || options.id;
@@ -1316,7 +1316,7 @@ function createReport(type) {
                                           label: "City",
                                           id: "city",
                                           key: "locations.city.icontains",
-                                          autofocus: true
+                                          autofocus: 'autofocus'
                                         }),
                                     new TagField({
                                       label: "Tags",
@@ -1360,7 +1360,7 @@ function createReport(type) {
                                       label: "City",
                                       id: "city",
                                       key: "contact.locations.city.icontains",
-                                      autofocus: true
+                                      autofocus: 'autofocus'
                                     }),
                                     new TextField({
                                       label: "URL",
@@ -1435,7 +1435,7 @@ function createReport(type) {
                                             label: "City",
                                             id: "city",
                                             key: "contact.locations.city.icontains",
-                                            autofocus: true
+                                            autofocus: 'autofocus'
                                           }),
                                           new CheckList({
                                             label: "Communication Types",

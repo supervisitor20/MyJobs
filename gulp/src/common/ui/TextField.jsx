@@ -4,22 +4,26 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus} = props;
+  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus, onFocus, className, onBlur} = props;
   return (
-    <input
-      type="text"
-      autoComplete="off"
-      id={name}
-      name={name}
-      className=""
-      maxLength={maxLength}
-      required={required}
-      hidden={isHidden}
-      value={value}
-      placeholder={placeholder}
-      onChange={onChange}
-      autoFocus={autoFocus}
-      />
+    <span className="react-component">
+      <input
+        type="text"
+        autoComplete="off"
+        id={name}
+        name={name}
+        className={className}
+        maxLength={maxLength}
+        required={required}
+        hidden={isHidden}
+        value={value}
+        placeholder={placeholder}
+        onChange={onChange}
+        autoFocus={autoFocus}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        />
+    </span>
   );
 }
 
@@ -58,7 +62,19 @@ TextField.propTypes = {
   /**
    * Should this bad boy focus, all auto like?
    */
-  autoFocus: React.PropTypes.bool,
+  autoFocus: React.PropTypes.string,
+  /**
+   * What happens if you click this field?
+   */
+  onFocus: React.PropTypes.func,
+  /**
+   * What happens onBlur?
+   */
+  onBlur: React.PropTypes.func,
+  /**
+   * Classes
+   */
+  className: React.PropTypes.string,
 };
 
 TextField.defaultProps = {
@@ -67,7 +83,10 @@ TextField.defaultProps = {
   maxLength: null,
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
+  onFocus: null,
+  onBlur: null,
+  className: '',
 };
 
 export default TextField;

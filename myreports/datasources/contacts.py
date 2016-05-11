@@ -8,7 +8,7 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
-from universal.helpers import dict_identity
+from universal.helpers import dict_identity, extract_value
 
 from django.db.models import Q
 
@@ -90,7 +90,7 @@ class ContactsDataSource(DataSource):
         """Translate from a query set record to a dictionary."""
         return {
             'name': record.name,
-            'partner': record.partner.name,
+            'partner': extract_value(record, 'partner', 'name'),
             'email': record.email,
             'phone': record.phone,
             'notes': record.notes,
