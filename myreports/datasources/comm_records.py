@@ -1,5 +1,9 @@
 """CommRecords DataSource"""
+from HTMLParser import HTMLParser
 from operator import __or__
+
+from django.db.models import Q
+from django.utils.html import strip_tags
 
 from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
@@ -12,7 +16,6 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 from universal.helpers import dict_identity, extract_value
 from mypartners.models import CONTACT_TYPE_CHOICES
 
-from django.db.models import Q
 
 CONTACT_TYPES = dict(CONTACT_TYPE_CHOICES)
 
@@ -50,11 +53,21 @@ class CommRecordsDataSource(DataSource):
             'last_action_time': record.last_action_time,
             'length': record.length,
             'location': record.location,
-            'notes': record.notes,
+            'notes': self.normalize_html(record.notes),
             'partner': extract_value(record, 'partner', 'name'),
             'subject': record.subject,
             'tags': extract_tags(record.tags.all()),
         }
+
+    def normalize_html(self, html):
+        """Strip HTML Tags and normalize gratuitous newlines."""
+
+        parser = HTMLParser()
+        results = parser.unescape(
+            '\n'.join(' '.join(line.split())
+            for line in strip_tags(html).splitlines() if line))
+
+        return '\n'.join(filter(bool, results.split('\n\n')))
 
     def filter_type(self):
         return CommRecordsFilter
