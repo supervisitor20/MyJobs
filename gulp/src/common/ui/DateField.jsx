@@ -38,14 +38,11 @@ class DateField extends React.Component {
   }
   onInputBlur() {
     const {mouseInCalendar} = this.state;
-    console.log("input blurred. mouseInCalendar:", mouseInCalendar);
     if (!mouseInCalendar) {
-      console.log("closing calendar");
       this.closeCalendar();
     }
   }
   onMouseInCalendar(value) {
-    console.log("mouse in?", value);
     this.setState({mouseInCalendar: value});
   }
   onDaySelect(day) {
