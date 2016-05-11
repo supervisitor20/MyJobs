@@ -156,8 +156,7 @@ class PartnersDataSource(DataSource):
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        partners_qs = filter_spec.filter_partners(company)
-
+        partners_qs = PartnersFilter().filter_partners(company)
         tags_qs = (
             Tag.objects
             .filter(partner__in=partners_qs)
@@ -280,13 +279,6 @@ class PartnersFilter(DataSourceFilter):
             if 'state' in locations:
                 del new_locations['state']
             new_root['locations'] = new_locations
-        return PartnersFilter(**new_root)
-
-    def clone_without_tags(self):
-        """Tag help works better without tags filtering each other right now.
-        """
-        new_root = dict(self.__dict__)
-        del new_root['tags']
         return PartnersFilter(**new_root)
 
     def filter_partners(self, company):

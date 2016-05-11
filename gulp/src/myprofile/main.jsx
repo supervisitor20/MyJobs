@@ -253,7 +253,7 @@ class Module extends React.Component {
           let month;
           let day;
           // If date value is empty use today's date
-          if ((!formContents[item]) || (formContents[item] === '')) {
+          if ((!apiResponse.data[item]) || (apiResponse.data[item] === '')) {
             const now = new Date();
             year = now.getFullYear();
             // month and day must both be two characters
