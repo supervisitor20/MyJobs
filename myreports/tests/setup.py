@@ -345,7 +345,7 @@ def create_full_fixture():
 
     ConfigurationColumnFactory.create(
         column_name="date_time",
-        alias="Date",
+        alias="Date of Communication",
         order=107,
         configuration=con_comm,
         output_format="us_datetime",
