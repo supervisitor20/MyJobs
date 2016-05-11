@@ -7,7 +7,6 @@ function MultiSelect(props) {
   // The system for filtering out selected items in FilteredMultiSelect is not
   // reliable.
   const selectedValues = indexBy(selected, 'value');
-  console.log('MultiSelect', selectedValues, selected);
   const filteredAvailable =
     lodashFilter(available, a => !selectedValues[a.value]);
 
