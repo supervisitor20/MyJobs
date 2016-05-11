@@ -156,7 +156,7 @@ class PartnersDataSource(DataSource):
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        partners_qs = self.filtered_query_set(company, PartnersFilter())
+        partners_qs = PartnersFilter().filter_partners(company)
         tags_qs = (
             Tag.objects
             .filter(partner__in=partners_qs)
