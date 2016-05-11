@@ -6,8 +6,8 @@ export const scrollUp = (increment = 250, position = 0) => {
   // Chrome recognizes document.body, but Firefox recognizes
   // document.documentElement. Both return 0 on each browser, which is why I
   // can't simply define an alias to use for both.
-  const scrollTop = document.documentElement.scrollTop ||
-                    document.body.scrollTop;
+  let scrollTop = document.documentElement.scrollTop ||
+                  document.body.scrollTop;
   const scrollInterval = ((0 - scrollTop) / increment) * 10;
 
   const scrollLoop = setInterval(() => {
@@ -17,6 +17,7 @@ export const scrollUp = (increment = 250, position = 0) => {
 
     document.documentElement.scrollTop += scrollInterval;
     document.body.scrollTop += scrollInterval;
+    scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   }, 10);
 };
 
