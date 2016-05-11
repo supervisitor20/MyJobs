@@ -1,10 +1,34 @@
 import warning from 'warning';
-import {map, groupBy} from 'lodash-compat/collection';
+import {map, groupBy, forEach} from 'lodash-compat/collection';
 import {remove} from 'lodash-compat/array';
 import {mapValues} from 'lodash-compat/object';
 import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
 
 // This is the business logic of the myreports client.
+
+let nextSubscriptionId = 0;
+function generateSubscriptionId() {
+  nextSubscriptionId += 1;
+  return nextSubscriptionId;
+}
+
+export class Subscription {
+  constructor() {
+    this.callbacks = {};
+  }
+
+  note(...args) {
+    forEach(this.callbacks, v => {v(...args);});
+  }
+
+  subscribe(callback) {
+    const ref = generateSubscriptionId();
+    this.callbacks[ref] = callback;
+    return () => {
+      delete this.callbacks[ref];
+    };
+  }
+}
 
 /**
  * Root of the client.
@@ -16,9 +40,10 @@ export class ReportFinder {
   constructor(api, configBuilder) {
     this.api = api;
     this.configBuilder = configBuilder;
-    this.newReportSubscribers = {};
-    this.newMenuChoicesSubscribers = {};
-    this.filterChangesSubscribers = {};
+    this.newReportSubscriptions = new Subscription();
+    this.runningReportSubscriptions = new Subscription();
+    this.newMenuChoicesSubscriptions = new Subscription();
+    this.filterChangesSubscriptions = new Subscription();
   }
 
   /**
@@ -106,26 +131,14 @@ export class ReportFinder {
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToMenuChoices(callback) {
-    this.newMenuChoicesSubscribers[callback] = callback;
-    return callback;
-  }
-
-  /**
-   * Remove a callback from the menu choices subscription.
-   */
-  unsubscribeToMenuChoices(ref) {
-    delete this.newMenuChoicesSubscribers[ref];
+    return this.newMenuChoicesSubscriptions.subscribe(callback);
   }
 
   /**
    * Let subscribers know that there are new menu choices.
    */
   noteNewMenuChoices(...args) {
-    for (const ref in this.newMenuChoicesSubscribers) {
-      if (this.newMenuChoicesSubscribers.hasOwnProperty(ref)) {
-        this.newMenuChoicesSubscribers[ref](...args);
-      }
-    }
+    return this.newMenuChoicesSubscriptions.note(...args);
   }
 
   /**
@@ -143,41 +156,28 @@ export class ReportFinder {
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToNewReports(newReportCallback, runningReportCallback) {
-    const callbacks = {
-      newReportCallback,
-      runningReportCallback,
+    const unsubscribeNew = this.newReportSubscriptions.subscribe(
+        newReportCallback);
+    const unsubscribeRunning = this.runningReportSubscriptions.subscribe(
+        runningReportCallback);
+    return () => {
+      unsubscribeNew();
+      unsubscribeRunning();
     };
-    this.newReportSubscribers[callbacks] = callbacks;
-    return callbacks;
-  }
-
-  /**
-   * Remove a callback from the new reports subscription.
-   */
-  unsubscribeToNewReports(ref) {
-    delete this.newReportSubscribers[ref];
   }
 
   /**
    * Let subscribers know that there is a new report.
    */
   noteNewReport(reportId, runningReport) {
-    for (const ref in this.newReportSubscribers) {
-      if (this.newReportSubscribers.hasOwnProperty(ref)) {
-        this.newReportSubscribers[ref].newReportCallback(reportId, runningReport);
-      }
-    }
+    this.newReportSubscriptions.note(reportId, runningReport);
   }
 
   /**
-   * Let subscribers know that there is a new report.
+   * Let subscribers know that there is a running report.
    */
   noteNewRunningReport(runningReport) {
-    for (const ref in this.newReportSubscribers) {
-      if (this.newReportSubscribers.hasOwnProperty(ref)) {
-        this.newReportSubscribers[ref].runningReportCallback(runningReport);
-      }
-    }
+    this.runningReportSubscriptions.note(runningReport);
   }
 
   /**
@@ -194,26 +194,14 @@ export class ReportFinder {
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToFilterChanges(callback) {
-    this.filterChangesSubscribers[callback] = callback;
-    return callback;
-  }
-
-  /**
-   * Remove a callback from the filter changes subscription.
-   */
-  unsubscribeToFilterChanges(ref) {
-    delete this.filterChangesSubscribers[ref];
+    return this.filterChangesSubscriptions.subscribe(callback);
   }
 
   /**
    * Let subscribers know that a filter has changed.
    */
   noteFilterChanges() {
-    for (const ref in this.filterChangesSubscribers) {
-      if (this.filterChangesSubscribers.hasOwnProperty(ref)) {
-        this.filterChangesSubscribers[ref]();
-      }
-    }
+    this.filterChangesSubscriptions.note();
   }
 }
 
@@ -303,6 +291,9 @@ export class ReportConfiguration {
    */
   removeFromMultifilter(field, obj) {
     remove(this.currentFilter[field], i => i.value === obj.value);
+    if (this.currentFilter[field].length < 1) {
+      delete this.currentFilter[field];
+    }
     this.callUpdateFilter();
   }
 
@@ -331,6 +322,9 @@ export class ReportConfiguration {
       if (this.currentFilter[field][index].length < 1) {
         this.currentFilter[field].splice(index, 1);
       }
+    }
+    if (this.currentFilter[field].length < 1) {
+      delete this.currentFilter[field];
     }
     this.callUpdateFilter();
   }

@@ -15,7 +15,7 @@ export default class MultiSelectFilter extends Component {
     // This is used to reload the available list anytime the filter changes.
     this.mounted = true;
     if (reportFinder) {
-      this.filterChangesRef = reportFinder.subscribeToFilterChanges(
+      this.unsubscribeToFilterChanges = reportFinder.subscribeToFilterChanges(
           () => this.getHints());
     }
     this.getHints();
@@ -24,8 +24,7 @@ export default class MultiSelectFilter extends Component {
   componentWillUnmount() {
     this.mounted = true;
     if (this.filterChangesRef) {
-      const {reportFinder} = this.props;
-      reportFinder.unsubscribeToFilterChanges(this.filterChangesRef);
+      this.unsubscribeToFilterChanges();
     }
   }
 

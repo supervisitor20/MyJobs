@@ -3,6 +3,7 @@ import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
 import {forEach} from 'lodash-compat/collection';
+import {debounce} from 'lodash-compat/function';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -29,16 +30,25 @@ export default class SetUpReport extends Component {
 
   componentDidMount() {
     const {reportFinder, history} = this.props;
-    this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
+    this.unsubscribeToMenuChoices = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
     this.historyUnlisten = (
       history.listen((something, loc) => this.handleHistory(something, loc)));
+    // Further hackery. Wait for things to settle out so we don't pound
+    // the help api and ultimately confuse ourselves. Otherwise two pane select
+    // triggers this a lot when mass select/deselects happen.
+    this.noteFilterChanges = debounce(
+      () => reportFinder.noteFilterChanges(),
+      300,
+      {
+        leading: false,
+        trailing: true,
+      });
   }
 
   componentWillUnmount() {
-    const {reportFinder} = this.props;
     this.historyUnlisten();
-    reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
+    this.unsubscribeToMenuChoices();
   }
 
   onIntentionChange(intention) {
@@ -70,9 +80,8 @@ export default class SetUpReport extends Component {
   }
 
   onFilterUpdate(filter) {
-    const {reportFinder} = this.props;
     this.setState({filter});
-    reportFinder.noteFilterChanges();
+    this.noteFilterChanges();
   }
 
   onErrorsChanged(errors) {
