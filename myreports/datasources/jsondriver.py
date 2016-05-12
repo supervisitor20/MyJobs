@@ -64,7 +64,7 @@ class DataSourceJsonDriver(object):
             elif key_type == 'date_range':
                 date_strings = filter_spec.get(key, None)
                 dates = [
-                    (datetime.strptime(d, "%Y-%m-%d") if d else None)
+                    (datetime.strptime(d, "%m/%d/%Y") if d else None)
                     for d in date_strings]
 
                 kwargs[key] = dates

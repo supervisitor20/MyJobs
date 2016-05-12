@@ -346,6 +346,9 @@ export class ReportConfiguration {
         return map(item, o => o.value);
       } else if (isArray(item) && isArray(item[0])) {
         return map(item, inner => map(inner, o => o.value));
+      } else if (isArray(item) && item.length === 2 &&
+          typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
+        return item;
       }
       warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
     });

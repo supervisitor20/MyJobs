@@ -218,7 +218,7 @@ class TestDataSourceJsonDriver(TestCase):
 
     def test_date_filters(self):
         """Test that date filters are built properly."""
-        spec = '{"date": ["2015-09-01", "2015-09-30"]}'
+        spec = '{"date": ["09/01/2015", "09/30/2015"]}'
         result = self.driver.build_filter(spec)
         expected = PartnersFilter(
             date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
