@@ -134,7 +134,7 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus, value: propValue} = this.props;
+    const {id, theme, placeholder, autofocus} = this.props;
     const {value, items, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
