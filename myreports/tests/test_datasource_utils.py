@@ -224,6 +224,11 @@ class TestDataSourceJsonDriver(TestCase):
             date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
         self.assertEquals(expected, result)
 
+    def test_filterlike_serialize(self):
+        result = self.driver.serialize_filterlike([{'a': 'b'}, {'c': datetime(2016, 1, 2)}])
+        expected = '[{"a": "b"}, {"c": "01/02/2016"}]'
+        self.assertEquals(expected, result)
+
 
 class SomeDataSource(DataSource):
     def filter_type(self):

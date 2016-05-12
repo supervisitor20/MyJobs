@@ -76,6 +76,10 @@ class DataSourceJsonDriver(object):
 
         return filter_type(**kwargs)
 
+    def serialize_filterlike(self, filterlike):
+        """Serialize raw python data to JSON. Including datetime, etc."""
+        return json.dumps(filterlike, cls=CustomEncoder)
+
     def encode_filter_interface(self, report_configuration):
         """Describe the filter_interface in python primitives.
 
@@ -104,3 +108,9 @@ class DataSourceJsonDriver(object):
             'filter': column_config.column,
             'display': column_config.filter_display
         }
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%m/%d/%Y')

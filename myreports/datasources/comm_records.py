@@ -171,6 +171,9 @@ class CommRecordsDataSource(DataSource):
         adorned = {}
         empty = CommRecordsFilter()
 
+        if filter_spec.date_time:
+            adorned[u'date_time'] = filter_spec.date_time
+
         if filter_spec.locations:
             adorned[u'locations'] = {}
             known_city = filter_spec.locations.get('city', None)

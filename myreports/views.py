@@ -690,7 +690,7 @@ def get_dynamic_report_info(request):
         }
     }
     return HttpResponse(content_type='application/json',
-                        content=json.dumps(response))
+                        content=driver.serialize_filterlike(response))
 
 
 @requires('read partner', 'read contact', 'read communication record')

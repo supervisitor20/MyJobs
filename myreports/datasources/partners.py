@@ -196,6 +196,9 @@ class PartnersDataSource(DataSource):
         adorned = {}
         empty = PartnersFilter()
 
+        if filter_spec.date:
+            adorned[u'date'] = filter_spec.date
+
         if filter_spec.locations:
             adorned[u'locations'] = {}
             known_city = filter_spec.locations.get('city', None)
