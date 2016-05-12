@@ -105,6 +105,7 @@ export default class ExportReport extends Component {
       loading: false,
       recordCount: options.count,
       reportId: options.report_options.id,
+      name: options.report_options.name,
       fieldsSelected,
       formatId,
       formats,
@@ -145,6 +146,7 @@ export default class ExportReport extends Component {
       sortDirection,
       fieldsSelected,
       selectAll,
+      name,
     } = this.state;
 
     const sortDirectionChoices = [
@@ -156,12 +158,12 @@ export default class ExportReport extends Component {
     if (loading) {
       return <Loading/>;
     }
-
     // Note that we pass in a copy of fieldsSelected to protect ourselves
     // from some side effects of mutation done by Reorder on the array
     // passed through its list property.
     return (
       <div id="export-page">
+        <h2>{name}</h2>
         <div className="row">
           <div className="col-md-4 col-xs-12">
             <label>Sort By:</label>
