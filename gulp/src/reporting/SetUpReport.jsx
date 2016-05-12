@@ -79,7 +79,8 @@ export default class SetUpReport extends Component {
   }
 
   onReportNameChanged(reportName) {
-    this.setState({reportName});
+    const {maxNameLength} = this.props;
+    this.setState({reportName: reportName.substring(0, maxNameLength)});
   }
 
   handleHistory(something, loc) {
@@ -178,6 +179,7 @@ export default class SetUpReport extends Component {
       category: reportType,
       dataSet: dataType,
     } = this.props.location.query;
+    const {maxNameLength} = this.props;
     const {
       loading,
       filter,
@@ -206,7 +208,8 @@ export default class SetUpReport extends Component {
             value={reportName}
             name=""
             autoFocus
-            onChange={v => reportConfig.changeReportName(v.target.value)}/>
+            onChange={v => reportConfig.changeReportName(v.target.value)}
+            maxLength={maxNameLength}/>
         </FieldWrapper>
       );
       reportConfig.filters.forEach(col => {
@@ -338,4 +341,9 @@ SetUpReport.propTypes = {
       reportDataId: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  maxNameLength: PropTypes.number,
+};
+
+SetUpReport.defaultProps = {
+  maxNameLength: 24,
 };
