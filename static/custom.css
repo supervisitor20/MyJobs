@@ -3460,7 +3460,7 @@ fieldset:nth-child(n+2) {
 }
 
 .row .col-md-8 ul {
-    margin: 0;
+    margin: 0 0 0 20px;
 }
 
 .row .col-md-8 ul li label {

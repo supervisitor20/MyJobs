@@ -164,6 +164,12 @@ export default class ExportReport extends Component {
     return (
       <div id="export-page">
         <h2>{name}</h2>
+        <p>Please specify which fields you would like included, as well as their order and sorting.</p>
+        <ul>
+          <li>Drag the field names to the order you would like.</li>
+          <li>Use the check boxes to include or exclude that column.</li>
+          <li>Use the drop-down to determine which column to sort by and whether that column should be sorted in ascending or descending order.</li>
+        </ul>
         <div className="row">
           <div className="col-md-4 col-xs-12">
             <label>Sort By:</label>
