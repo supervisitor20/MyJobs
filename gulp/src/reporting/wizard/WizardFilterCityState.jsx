@@ -8,15 +8,16 @@ export class WizardFilterCityState extends Component {
     constructor(props) {
       super(props);
       this.state = {
-        // list of states to choose from
-        states: [],
+        // list of regions to choose from (states was a bit confusing
+        // considering this.state)
+        regions: [],
         // currently selected city and state, used to filter results
         currentLocation: {
           city: props.cityValue || '',
           state: props.stateValue || '',
         },
       };
-      this.updateStates();
+      this.updateregions();
     }
 
     updateField(field, value) {
@@ -33,32 +34,32 @@ export class WizardFilterCityState extends Component {
       newState.currentLocation[field] = value;
       this.setState(newState);
 
-      this.updateStates();
+      this.updateregions();
     }
 
-    async updateStates() {
+    async updateregions() {
       const {getHints} = this.props;
       const {currentLocation} = this.state;
-      const newStates = await getHints('state');
+      const newregions = await getHints('state');
       this.setState({
-        states: [
+        regions: [
           {
             display: 'Select a State',
             value: '',
           },
-          ...newStates,
+          ...newregions,
         ],
         currentLocation: {
           ...currentLocation,
-          state: newStates.length === 1 ?
-                 newStates[0].value : '',
+          state: newregions.length === 1 ?
+                 newregions[0].value : '',
         },
       });
     }
 
     render() {
       const {id, getHints} = this.props;
-      const {currentLocation, states} = this.state;
+      const {currentLocation, regions} = this.state;
 
       return (
         <span>
@@ -66,8 +67,8 @@ export class WizardFilterCityState extends Component {
             onChange={e =>
               this.updateField('state', e.target.value)}
             name=""
-            value={getDisplayForValue(states, currentLocation.state)}
-            choices={this.state.states}
+            value={getDisplayForValue(regions, currentLocation.state)}
+            choices={this.state.regions}
           />
           <SearchInput
             id={id + '-city'}
@@ -86,9 +87,14 @@ export class WizardFilterCityState extends Component {
 }
 
 WizardFilterCityState.propTypes = {
+  // unique id to use for this React component
   id: PropTypes.string.isRequired,
+  // Starting City Value
   cityValue: PropTypes.string.isRequired,
+  // Starting State Value
   stateValue: PropTypes.string.isRequired,
+  // callback used to update the filter used to narrow city and region choices
   updateFilter: PropTypes.func.isRequired,
+  // callback used to get valid optoins for cities and regions
   getHints: PropTypes.func.isRequired,
 };
