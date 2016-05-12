@@ -17,6 +17,8 @@ export class SearchInput extends Component {
     this.setState({value});
     if (value) {
       this.search(value);
+    } else {
+      this.clear('');
     }
   }
 
@@ -57,7 +59,7 @@ export class SearchInput extends Component {
   }
 
   onInputKeyDown(event) {
-    const {items, keySelectedIndex} = this.state;
+    const {items, keySelectedIndex, value} = this.state;
     if (items.length) {
       let newIndex = keySelectedIndex;
       let killEvent = false;
@@ -79,12 +81,12 @@ export class SearchInput extends Component {
       } else if (event.key === 'Enter') {
         killEvent = true;
         if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
-          this.onSelect(keySelectedIndex);
+          this.onSelect(event, keySelectedIndex);
           return;
         }
       } else if (event.key === 'Escape') {
         killEvent = true;
-        this.clear('');
+        this.clear(value);
       }
       if (killEvent) {
         event.preventDefault();
@@ -132,7 +134,7 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus, value: propValue} = this.props;
+    const {id, theme, placeholder, autofocus} = this.props;
     const {value, items, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
@@ -151,7 +153,7 @@ export class SearchInput extends Component {
           onChange={e => this.onInputChange(e)}
           onBlur={e => this.onInputBlur(e)}
           onKeyDown={e => this.onInputKeyDown(e)}
-          value={showItems ? value : propValue}
+          value={value}
           type="search"
           aria-autocomplete="list"
           aria-owns={suggestId}
