@@ -50,9 +50,9 @@ export class WizardFilterCityState extends Component {
         ],
         currentLocation: {
           ...currentLocation,
-          state: newStates.length === 1 ? 
-                 newStates[0].value : "",
-        }
+          state: newStates.length === 1 ?
+                 newStates[0].value : '',
+        },
       });
     }
 
