@@ -1,5 +1,9 @@
 """CommRecords DataSource"""
+from HTMLParser import HTMLParser
 from operator import __or__
+
+from django.db.models import Q
+from django.utils.html import strip_tags
 
 from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
@@ -12,7 +16,6 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 from universal.helpers import dict_identity, extract_value
 from mypartners.models import CONTACT_TYPE_CHOICES
 
-from django.db.models import Q
 
 CONTACT_TYPES = dict(CONTACT_TYPE_CHOICES)
 
@@ -50,11 +53,21 @@ class CommRecordsDataSource(DataSource):
             'last_action_time': record.last_action_time,
             'length': record.length,
             'location': record.location,
-            'notes': record.notes,
+            'notes': self.normalize_html(record.notes),
             'partner': extract_value(record, 'partner', 'name'),
             'subject': record.subject,
             'tags': extract_tags(record.tags.all()),
         }
+
+    def normalize_html(self, html):
+        """Strip HTML Tags and normalize gratuitous newlines."""
+
+        parser = HTMLParser()
+        results = parser.unescape(
+            '\n'.join(' '.join(line.split())
+            for line in strip_tags(html).splitlines() if line))
+
+        return '\n'.join(filter(bool, results.split('\n\n')))
 
     def filter_type(self):
         return CommRecordsFilter
@@ -89,9 +102,7 @@ class CommRecordsDataSource(DataSource):
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        modified_filter_spec = filter_spec.clone_without_tags()
-        comm_records_qs = self.filtered_query_set(
-            company, modified_filter_spec)
+        comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
 
         tags_qs = (
             Tag.objects
@@ -107,19 +118,15 @@ class CommRecordsDataSource(DataSource):
 
     def help_communication_type(self, company, filter_spec, partial):
         """Get help for the communication type field."""
-        comm_records_qs = self.filtered_query_set(company, filter_spec)
-
-        contact_types_qs = (
-            comm_records_qs
-            .filter(contact_type__icontains=partial)
-            .values('contact_type').distinct())
         return [
-            contact_type_help_entry(c['contact_type'])
-            for c in contact_types_qs]
+            contact_type_help_entry(c[0])
+            for c in CONTACT_TYPE_CHOICES]
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        comm_records_qs = self.filtered_query_set(company, filter_spec)
+        modified_filter_spec = filter_spec.clone_without_partner()
+        comm_records_qs = self.filtered_query_set(
+            company, modified_filter_spec)
         partner_qs = (
             Partner.objects
             .filter(name__icontains=partial)
@@ -133,7 +140,9 @@ class CommRecordsDataSource(DataSource):
 
     def help_contact(self, company, filter_spec, partial):
         """Get help for the contact field."""
-        comm_records_qs = self.filtered_query_set(company, filter_spec)
+        modified_filter_spec = filter_spec.clone_without_contact()
+        comm_records_qs = self.filtered_query_set(
+            company, modified_filter_spec)
         contact_qs = (
             Contact.objects
             .filter(name__icontains=partial)
@@ -270,11 +279,23 @@ class CommRecordsFilter(DataSourceFilter):
         del new_root['tags']
         return CommRecordsFilter(**new_root)
 
+    def clone_without_contact(self):
+        """Contact help needs to not self filter."""
+        new_root = dict(self.__dict__)
+        del new_root['contact']
+        return CommRecordsFilter(**new_root)
+
+    def clone_without_partner(self):
+        """Partner help needs to not self filter."""
+        new_root = dict(self.__dict__)
+        del new_root['partner']
+        return CommRecordsFilter(**new_root)
+
     def filter_query_set(self, qs):
         qs = filter_date_range(self.date_time, 'date_time', qs)
 
         if self.communication_type:
-            qs = qs.filter(contact_type=self.communication_type)
+            qs = qs.filter(contact_type__in=self.communication_type)
 
         if self.tags:
             or_qs = []

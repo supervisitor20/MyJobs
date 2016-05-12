@@ -7,7 +7,7 @@ import Select from 'common/ui/Select';
 import {map, filter, find} from 'lodash-compat/collection';
 import {get} from 'lodash-compat/object';
 import {getDisplayForValue} from 'common/array';
-import {isIE8} from 'common/browserSpecific';
+import {isIE8} from 'common/dom';
 
 export default class ExportReport extends Component {
   constructor() {
@@ -94,7 +94,7 @@ export default class ExportReport extends Component {
     const options = await reportFinder.getExportOptions(reportId);
 
     const fields = options.report_options.values;
-    const sortBy = get(fields, '[0].display');
+    const sortBy = get(fields, '[0].value');
     const fieldsSelected = map(fields, o =>
       ({...o, checked: true}));
 
@@ -121,7 +121,7 @@ export default class ExportReport extends Component {
       fieldsSelected,
     } = this.state;
     const baseUri = '/reports/view/dynamicdownload';
-
+    const orderBy = {...find(fieldsSelected, f => f.value === sortBy)}.display;
     const values = map(
         filter(fieldsSelected, f => f.checked),
         f => `&values=${f.value}`).join('');
@@ -130,7 +130,7 @@ export default class ExportReport extends Component {
       baseUri
       + `?id=${reportId}`
       + `&report_presentation_id=${formatId}`
-      + `&order_by=${sortBy}`
+      + `&order_by=${orderBy}`
       + `&direction=${sortDirection}`
       + values);
   }

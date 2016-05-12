@@ -1,8 +1,14 @@
 import React from 'react';
 import FilteredMultiSelect from 'react-filtered-multiselect';
+import {filter as lodashFilter, indexBy} from 'lodash-compat/collection';
 
 function MultiSelect(props) {
   const {selected, available, availableHeader, selectedHeader, onAdd, onRemove} = props;
+  // The system for filtering out selected items in FilteredMultiSelect is not
+  // reliable.
+  const selectedValues = indexBy(selected, 'value');
+  const filteredAvailable =
+    lodashFilter(available, a => !selectedValues[a.value]);
 
   return (
       <div className="row">
@@ -17,8 +23,7 @@ function MultiSelect(props) {
               buttonActive: 'button primary',
             }}
             onChange={v => onAdd(v)}
-            options={available}
-            selectedOptions={selected}
+            options={filteredAvailable}
             textProp="display"
             valueProp="value"
           />
