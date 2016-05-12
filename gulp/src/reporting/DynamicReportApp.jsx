@@ -72,7 +72,7 @@ export class DynamicReportApp extends Component {
           <div className="col-xs-12 col-md-8">
             {this.props.children}
           </div>
-          <div className="col-xs-6 col-md-4">
+          <div className="col-xs-12 col-md-4">
             <ReportList
               history={history}
               reportFinder={reportFinder}
