@@ -2,27 +2,21 @@ import React, {PropTypes, Component} from 'react';
 import Select from 'common/ui/Select';
 import {SearchInput} from 'common/ui/SearchInput';
 import {getDisplayForValue} from 'common/array';
-import {states} from 'common/states';
 
 
 export class WizardFilterCityState extends Component {
-    constructor() {
-      super();
+    constructor(props) {
+      super(props);
       this.state = {
         // list of states to choose from
-        states: [
-          {
-            display: 'Select a State',
-            value: '',
-          },
-          ...states,
-        ],
+        states: [],
         // currently selected city and state, used to filter results
         currentLocation: {
-          city: '',
-          state: '',
+          city: props.cityValue || '',
+          state: props.stateValue || '',
         },
       };
+      this.updateStates();
     }
 
     updateField(field, value) {
@@ -38,10 +32,33 @@ export class WizardFilterCityState extends Component {
       const newState = {...this.state};
       newState.currentLocation[field] = value;
       this.setState(newState);
+
+      this.updateStates();
+    }
+
+    async updateStates() {
+      const {getHints} = this.props;
+      const {currentLocation} = this.state;
+      const newStates = await getHints('state');
+      this.setState({
+        states: [
+          {
+            display: 'Select a State',
+            value: '',
+          },
+          ...newStates,
+        ],
+        currentLocation: {
+          ...currentLocation,
+          state: newStates.length === 1 ? 
+                 newStates[0].value : "",
+        }
+      });
     }
 
     render() {
-      const {id, getHints, cityValue, stateValue} = this.props;
+      const {id, getHints} = this.props;
+      const {currentLocation, states} = this.state;
 
       return (
         <span>
@@ -49,12 +66,12 @@ export class WizardFilterCityState extends Component {
             onChange={e =>
               this.updateField('state', e.target.value)}
             name=""
-            value={getDisplayForValue(this.state.states, stateValue)}
+            value={getDisplayForValue(states, currentLocation.state)}
             choices={this.state.states}
           />
           <SearchInput
             id={id + '-city'}
-            value={cityValue}
+            value={currentLocation.city}
             callSelectWhenEmpty
             placeholder="city"
             onSelect={v =>
