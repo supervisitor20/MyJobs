@@ -212,11 +212,33 @@ export default class SetUpReport extends Component {
       reportConfig.filters.forEach(col => {
         switch (col.interface_type) {
         case 'date_range':
+          let begin;
+          let end;
+          if(!reportConfig.currentFilter[col.filter]){
+            // Default is today
+            const now = new Date();
+            const year = now.getFullYear();
+            // month and day must both be two characters
+            const month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
+            const day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+            const today = month + '/' + day + '/' + year;
+
+            begin = today;
+            end = today;
+          } else {
+            begin = reportConfig.currentFilter[col.filter][0];
+            end = reportConfig.currentFilter[col.filter][1];
+          }
+
+
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterDateRange
                 id={col.filter}
-                updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
+                updateFilter={v => reportConfig.setFilter(col.filter, v)}
+                begin={begin}
+                end={end}
+                />
             </FieldWrapper>
           );
           break;
