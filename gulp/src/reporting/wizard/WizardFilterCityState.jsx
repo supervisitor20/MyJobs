@@ -39,14 +39,14 @@ export class WizardFilterCityState extends Component {
 
     async updateRegions() {
       const {getHints} = this.props;
-      const newregions = await getHints('state');
+      const newRegions = await getHints('state');
       this.setState({
         regions: [
           {
             display: 'Select a State',
             value: '',
           },
-          ...newregions,
+          ...newRegions,
         ],
       });
     }
