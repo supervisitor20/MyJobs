@@ -39,11 +39,11 @@ export class WizardFilterDateRange extends Component {
         const newState = {...this.state};
 
         if (field === 'begin') {
-          newState['begin'] = finalValue;
-          newState['end'] = this.props.end;
+          newState.begin = finalValue;
+          newState.end = this.props.end;
         } else if (field === 'end') {
-          newState['begin'] = this.props.begin;
-          newState['end'] = finalValue;
+          newState.begin = this.props.begin;
+          newState.end = finalValue;
         }
         this.setState(newState);
         updateFilter([newState.begin, newState.end]);
@@ -56,7 +56,7 @@ export class WizardFilterDateRange extends Component {
       const beginDateObject = moment(this.props.begin, 'MM/DD/YYYY');
       const endDateObject = moment(this.props.end, 'MM/DD/YYYY');
       if (endDateObject.isBefore(beginDateObject)) {
-        error = "End date must be the same or after begin date";
+        error = 'End date must be the same or after begin date';
       }
 
       return (

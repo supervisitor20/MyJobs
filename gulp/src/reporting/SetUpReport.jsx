@@ -214,7 +214,7 @@ export default class SetUpReport extends Component {
         case 'date_range':
           let begin;
           let end;
-          if(!reportConfig.currentFilter[col.filter]){
+          if (!reportConfig.currentFilter[col.filter]) {
             // Default is today
             const now = new Date();
             const year = now.getFullYear();

@@ -169,7 +169,7 @@ class DateField extends React.Component {
       month = momentObject.month();
       year = momentObject.year();
     } else {
-      errorMessage = "Date error. Must be of format: MM/DD/YYYY";
+      errorMessage = 'Date error. Must be of format: MM/DD/YYYY';
       day = 0;
       month = 1;
       year = 2000;
@@ -178,10 +178,10 @@ class DateField extends React.Component {
     let errorComponent;
     if (error) {
       errorComponent = (
-        <div className="error-text">{error}</div>
+        <div className="error-text">{errorMessage}</div>
       );
     }
-    
+
     let calendar;
     if (this.state.displayCalendar) {
       calendar = (<div className="input-group datepicker-dropdown dropdown-menu"
