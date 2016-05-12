@@ -42,7 +42,7 @@ SortableList.propTypes = {
     * Array of objects to be selected from. Each should have a 'value' and
     * 'display' key, with `String` values.
     */
-  items: React.PropTypes.array.required,
+  items: React.PropTypes.array.isRequired,
   /** This callback is triggered when an item in the sortable list is moved,
     * and is passed the array of `data-id`s for all elements within the
     * component.
