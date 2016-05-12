@@ -44,9 +44,12 @@ class TestCommRecordsDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
-        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
-        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
+        self.east_tag = TagFactory.create(
+            company=self.company, name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(
+            company=self.company, name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(
+            company=self.company, name='bad', hex_color="cccccc")
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(
@@ -262,7 +265,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(communication_type='Email'),
+            CommRecordsFilter(communication_type=['email']),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
@@ -329,7 +332,8 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
         actual = {r['value'] for r in recs}
-        self.assertEqual({'phone'}, actual)
+        expected = {'phone', 'job', 'meetingorevent', 'email', 'pssemail'}
+        self.assertEqual(expected, actual)
 
     def test_help_partner(self):
         """Check partner help works at all."""
@@ -423,10 +427,25 @@ class TestCommRecordsFilterCloning(TestCase):
         expected_with_state = CommRecordsFilter(
                 tags=['C'],
                 locations={'state': 'B'})
-        expected_with_city_state_only = CommRecordsFilter(
-                locations={'city': 'A', 'state': 'B'})
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
+
+    def test_clone_without_contacts(self):
+        filter = CommRecordsFilter(
+                contact=[1, 2, 3],
+                locations={'city': 'A', 'state': 'B'})
+        expected_filter = CommRecordsFilter(
+                locations={'city': 'A', 'state': 'B'})
         self.assertEqual(
-            expected_with_city_state_only,
-            filter.clone_without_tags())
+            expected_filter,
+            filter.clone_without_contact())
+
+    def test_clone_without_partners(self):
+        filter = CommRecordsFilter(
+                partner=[1, 2, 3],
+                locations={'city': 'A', 'state': 'B'})
+        expected_filter = CommRecordsFilter(
+                locations={'city': 'A', 'state': 'B'})
+        self.assertEqual(
+            expected_filter,
+            filter.clone_without_partner())

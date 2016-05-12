@@ -613,7 +613,6 @@ def run_dynamic_report(request):
         owner=company)
 
     report.regenerate()
-    report.save()
 
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
@@ -756,9 +755,11 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = disposition
 
     output = StringIO()
-    columns = [
-        c.alias for c in report_configuration.columns if c.column in values]
-    presentation.write_presentation(columns, sorted_records, output)
+    values = [
+        c.alias for value in values for c in report_configuration.columns
+        if c.column == value
+    ]
+    presentation.write_presentation(values, sorted_records, output)
     response.write(output.getvalue())
 
     return response
@@ -814,3 +815,14 @@ def old_report_preview(request):
     elif report_type in ['contacts', 'partners']:
         return HttpResponse(content_type='application/json',
                             content=report.json)
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def refresh_report(request):
+    company = get_company_or_404(request)
+    report_id = request.POST['report_id']
+    report = get_object_or_404(DynamicReport, owner=company, pk=report_id)
+    report.regenerate()
+    return HttpResponse(content_type='application/json',
+                        content='{}')

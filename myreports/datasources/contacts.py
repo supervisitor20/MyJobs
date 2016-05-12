@@ -8,7 +8,7 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
-from universal.helpers import dict_identity
+from universal.helpers import dict_identity, extract_value
 
 from django.db.models import Q
 
@@ -62,8 +62,7 @@ class ContactsDataSource(DataSource):
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        contacts_qs = self.filtered_query_set(company, filter_spec)
-
+        contacts_qs = self.filtered_query_set(company, ContactsFilter())
         tags_qs = (
             Tag.objects
             .filter(contact__in=contacts_qs)
@@ -78,7 +77,8 @@ class ContactsDataSource(DataSource):
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        contacts_qs = self.filtered_query_set(company, filter_spec)
+        modified_filter_spec = filter_spec.clone_without_partner()
+        contacts_qs = self.filtered_query_set(company, modified_filter_spec)
         partners_qs = (
             Partner.objects
             .filter(contact__in=contacts_qs)
@@ -90,7 +90,7 @@ class ContactsDataSource(DataSource):
         """Translate from a query set record to a dictionary."""
         return {
             'name': record.name,
-            'partner': record.partner.name,
+            'partner': extract_value(record, 'partner', 'name'),
             'email': record.email,
             'phone': record.phone,
             'notes': record.notes,
@@ -201,11 +201,10 @@ class ContactsFilter(DataSourceFilter):
             new_root['locations'] = new_locations
         return ContactsFilter(**new_root)
 
-    def clone_without_tags(self):
-        """Tag help works better without tags filtering each other right now.
-        """
+    def clone_without_partner(self):
+        """Partner help should not self filter."""
         new_root = dict(self.__dict__)
-        del new_root['tags']
+        del new_root['partner']
         return ContactsFilter(**new_root)
 
     def filter_query_set(self, qs):
