@@ -274,6 +274,9 @@ export class ReportConfiguration {
 
   /**
    * Set a value for a multiple valued "or" filter.
+   *
+   * field: field to filter, i.e. contact
+   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
    */
   addToMultifilter(field, obj) {
     if (!(field in this.currentFilter)) {
@@ -288,6 +291,9 @@ export class ReportConfiguration {
 
   /**
    * Get a previously set value for a multiple valued "or" filter.
+   *
+   * field: field to filter, i.e. contact
+   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
    */
   removeFromMultifilter(field, obj) {
     remove(this.currentFilter[field], i => i.value === obj.value);

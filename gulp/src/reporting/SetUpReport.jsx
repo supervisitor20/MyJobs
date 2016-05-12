@@ -282,6 +282,10 @@ export default class SetUpReport extends Component {
           if (col.filter === 'contact' || col.filter === 'partner') {
             passReportFinder = reportFinder;
           }
+          let removeSelected;
+          if (col.filter === 'contact') {
+            removeSelected = true;
+          }
 
           rows.push(
             <FieldWrapper
@@ -298,7 +302,8 @@ export default class SetUpReport extends Component {
                   reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
                   reportConfig.removeFromMultifilter(col.filter, v))}
-                reportFinder={passReportFinder}/>
+                reportFinder={passReportFinder}
+                removeSelected={removeSelected}/>
 
             </FieldWrapper>
             );

@@ -124,7 +124,9 @@ class CommRecordsDataSource(DataSource):
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        modified_filter_spec = filter_spec.clone_without_partner()
+        # Don't let this help be dependent on filtered contacts.
+        modified_filter_spec = (
+            filter_spec.clone_without_contact().clone_without_partner())
         comm_records_qs = self.filtered_query_set(
             company, modified_filter_spec)
         partner_qs = (
