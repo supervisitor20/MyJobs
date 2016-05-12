@@ -62,7 +62,7 @@ export class WizardFilterCityState extends Component {
               this.updateField('state', e.target.value)}
             name=""
             value={getDisplayForValue(regions, currentLocation.state)}
-            choices={this.state.regions}
+            choices={regions}
           />
           <SearchInput
             id={id + '-city'}
