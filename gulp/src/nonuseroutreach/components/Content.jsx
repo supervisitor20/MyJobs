@@ -23,7 +23,7 @@ export function Content(props) {
     pageComponent = '';
   }
   return (
-    <div className="col-xs-8">
+    <div className="col-xs-12 col-md-8">
         {pageComponent}
     </div>
   );

@@ -107,7 +107,7 @@ class Module extends React.Component {
     };
 
     await myJobsApi.get('/profile/view/delete?' + param(formData));
-    window.location.assign('/profile/view/');
+    window.location.assign('/profile/view/react');
   }
   handleCancel() {
     window.location.assign('/profile/view/react');
@@ -144,7 +144,7 @@ class Module extends React.Component {
         apiResponse: apiResponse,
       });
     } else {
-      window.location.assign('/profile/view/');
+      window.location.assign('/profile/view/react');
     }
   }
   processForm(apiResponse) {
