@@ -60,20 +60,23 @@ export class WizardFilterDateRange extends Component {
       }
 
       return (
-        <span>
-          <DateField
-            onChange={e => this.updateField(e, 'begin')}
-            placeholder="begin date"
-            value={this.props.begin}
-            />
-
-          <DateField
-            onChange={e => this.updateField(e, 'end')}
-            placeholder="end date"
-            value={this.props.end}
-            error={error}
-            />
-        </span>
+        <div className="row">
+          <div className="col-xs-12 col-md-6">
+            <DateField
+              onChange={e => this.updateField(e, 'begin')}
+              placeholder="begin date"
+              value={this.props.begin}
+              />
+          </div>
+          <div className="col-xs-12 col-md-6">
+            <DateField
+              onChange={e => this.updateField(e, 'end')}
+              placeholder="end date"
+              value={this.props.end}
+              error={error}
+              />
+          </div>
+        </div>
       );
     }
 }

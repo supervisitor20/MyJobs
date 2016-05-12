@@ -231,7 +231,7 @@ export default class SetUpReport extends Component {
           }
 
           rows.push(
-            <FieldWrapper key={col.filter} label={col.display}>
+            <FieldWrapper key={col.filter} label="Date range">
               <WizardFilterDateRange
                 id={col.filter}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
