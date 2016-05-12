@@ -23,7 +23,13 @@ export default class ExportReport extends Component {
   }
 
   componentDidMount() {
-    this.loadData();
+    const {history} = this.props;
+    this.historyUnlisten = (
+      history.listen((something, loc) => this.handleHistory(something, loc)));
+  }
+
+  componentWillUnmount() {
+    this.historyUnlisten();
   }
 
   onReorder(order) {
@@ -68,6 +74,13 @@ export default class ExportReport extends Component {
       fieldsSelected: newFieldsSelected,
       sortBy: newSortBy,
     });
+  }
+
+  handleHistory(something, loc) {
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === ExportReport) {
+      this.loadData();
+    }
   }
 
   findBestSortByValue(fieldsSelected, sortBy) {
@@ -245,6 +258,7 @@ export default class ExportReport extends Component {
 }
 
 ExportReport.propTypes = {
+  history: PropTypes.object.isRequired,
   routeParams: PropTypes.shape({
     reportId: PropTypes.string.isRequired,
   }).isRequired,
