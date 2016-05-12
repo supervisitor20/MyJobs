@@ -8,6 +8,8 @@ from django.utils.html import strip_tags
 from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
 
+from postajob.location_data import states
+
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
     filter_date_range, extract_tags)
@@ -97,8 +99,11 @@ class CommRecordsDataSource(DataSource):
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct()
-        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
+        state_qs = locations_qs.values('state').distinct().order_by('state')
+        return [{
+            'value': c['state'],
+            'display': states[c['state']]
+        } for c in state_qs if c['state']]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
