@@ -176,7 +176,7 @@ class DateField extends React.Component {
     }
 
     let errorComponent;
-    if (error) {
+    if (errorMessage) {
       errorComponent = (
         <div className="error-text">{errorMessage}</div>
       );
