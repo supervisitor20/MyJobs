@@ -17,7 +17,7 @@ export class WizardFilterCityState extends Component {
           state: props.stateValue || '',
         },
       };
-      this.updateregions();
+      this.updateRegions();
     }
 
     updateField(field, value) {
@@ -34,12 +34,11 @@ export class WizardFilterCityState extends Component {
       newState.currentLocation[field] = value;
       this.setState(newState);
 
-      this.updateregions();
+      this.updateRegions();
     }
 
-    async updateregions() {
+    async updateRegions() {
       const {getHints} = this.props;
-      const {currentLocation} = this.state;
       const newregions = await getHints('state');
       this.setState({
         regions: [
@@ -49,11 +48,6 @@ export class WizardFilterCityState extends Component {
           },
           ...newregions,
         ],
-        currentLocation: {
-          ...currentLocation,
-          state: newregions.length === 1 ?
-                 newregions[0].value : '',
-        },
       });
     }
 
