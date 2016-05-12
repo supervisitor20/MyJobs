@@ -1,5 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import DateField from '../../common/ui/DateField';
+import moment from 'moment';
 
 // TODO rip this out into a generalized begin/end dual Datefield
 export class WizardFilterDateRange extends Component {
@@ -50,6 +51,14 @@ export class WizardFilterDateRange extends Component {
     }
 
     render() {
+      // End date should be after begin date
+      let error;
+      const beginDateObject = moment(this.props.begin, 'MM/DD/YYYY');
+      const endDateObject = moment(this.props.end, 'MM/DD/YYYY');
+      if (endDateObject.isBefore(beginDateObject)) {
+        error = "End date must be the same or after begin date";
+      }
+
       return (
         <span>
           <DateField
@@ -62,6 +71,7 @@ export class WizardFilterDateRange extends Component {
             onChange={e => this.updateField(e, 'end')}
             placeholder="end date"
             value={this.props.end}
+            error={error}
             />
         </span>
       );

@@ -223,13 +223,12 @@ export default class SetUpReport extends Component {
             const day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
             const today = month + '/' + day + '/' + year;
 
-            begin = today;
+            begin = '01/01/2014';
             end = today;
           } else {
             begin = reportConfig.currentFilter[col.filter][0];
             end = reportConfig.currentFilter[col.filter][1];
           }
-
 
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
