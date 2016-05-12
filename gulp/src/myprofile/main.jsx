@@ -107,7 +107,7 @@ class Module extends React.Component {
     };
 
     await myJobsApi.get('/profile/view/delete?' + param(formData));
-    window.location.assign('/profile/view/');
+    window.location.assign('/profile/view/react');
   }
   handleCancel() {
     window.location.assign('/profile/view/react');
@@ -144,7 +144,7 @@ class Module extends React.Component {
         apiResponse: apiResponse,
       });
     } else {
-      window.location.assign('/profile/view/');
+      window.location.assign('/profile/view/react');
     }
   }
   processForm(apiResponse) {
@@ -253,7 +253,7 @@ class Module extends React.Component {
           let month;
           let day;
           // If date value is empty use today's date
-          if ((!formContents[item]) || (formContents[item] === '')) {
+          if ((!apiResponse.data[item]) || (apiResponse.data[item] === '')) {
             const now = new Date();
             year = now.getFullYear();
             // month and day must both be two characters
