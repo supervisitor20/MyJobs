@@ -2125,6 +2125,10 @@ h3.bottom-bordered {
     table-layout: fixed;
 }
 
+#old-report-preview .table-striped.report-table tr th {
+    font-size: .8em;
+}
+
 #old-report-preview .table-striped.report-table tr th,
 #old-report-preview .table-striped.report-table tr td {
     overflow-wrap: break-word;
