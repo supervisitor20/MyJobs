@@ -1,10 +1,59 @@
 import {
+  Subscription,
   ReportFinder,
   ReportConfiguration,
 } from '../reportEngine';
 
 import {promiseTest} from '../../common/spec';
 
+
+describe('Subscription', () => {
+  let i;
+  let j;
+  let subscription;
+  beforeEach(() => {
+    i = 0;
+    j = 0;
+    subscription = new Subscription();
+  });
+
+  it('does nothing when called with no subscribers', () => {
+    subscription.note(4);
+    expect(i).toBe(0);
+    expect(j).toBe(0);
+  });
+
+  it('can handle multiple subscribers', () => {
+    subscription.subscribe(n => {i = n;});
+    subscription.subscribe(n => {j = n;});
+    subscription.note(4);
+    expect(i).toBe(4);
+    expect(j).toBe(4);
+  });
+
+  it('can handle multiple subscribers with similar callback identity', () => {
+    function bumpI(n) {
+      i += n;
+    }
+    subscription.subscribe(bumpI);
+    subscription.subscribe(bumpI);
+    subscription.note(4);
+    expect(i).toBe(8);
+  });
+
+  it('can unsubscribe', () => {
+    function bumpI(n) {
+      i += n;
+    }
+    const unsubscribe = subscription.subscribe(bumpI);
+    subscription.subscribe(bumpI);
+    subscription.note(4);
+    expect(i).toBe(8);
+    unsubscribe();
+    subscription.note(5);
+    expect(i).toBe(13);
+  });
+});
 
 class FakeBuilder {
   build(name, rpId, filters) {
@@ -81,7 +130,7 @@ describe('ReportFinder', () => {
   describe('new report subscriptions', () => {
     let newId = null;
     let newRunningReport = null;
-    const ref = finder.subscribeToNewReports(
+    const unsubscribe = finder.subscribeToNewReports(
       (id, r) => {
         newId = id;
         newRunningReport = r;
@@ -101,9 +150,25 @@ describe('ReportFinder', () => {
 
     it('can unsubscribe', () => {
       finder.noteNewReport(22);
-      finder.unsubscribeToNewReports(ref);
+      unsubscribe();
       finder.noteNewReport(33);
       expect(newId).toEqual(22);
+    });
+  });
+
+  describe('filter change subscriptions', () => {
+    let filterChanged;
+
+    finder.subscribeToFilterChanges(
+      () => {filterChanged = true;});
+
+    beforeEach(() => {
+      filterChanged = false;
+    });
+
+    it('can inform subscribers of filter changes', () => {
+      finder.noteFilterChanges();
+      expect(filterChanged).toBe(true);
     });
   });
 });
@@ -227,6 +292,9 @@ describe('ReportConfiguration', () => {
     expect(fakeComponent.onUpdateFilter).toHaveBeenCalledWith({
       'tag': [{value: 'blue', display: 'Blue'}],
     });
+    config.removeFromMultifilter('tag', {value: 'blue'});
+    expect(config.getFilter()).toEqual({});
+    expect(fakeComponent.onUpdateFilter).toHaveBeenCalledWith({});
   });
 
   it('can remember and/or filters', () => {
@@ -260,6 +328,9 @@ describe('ReportConfiguration', () => {
     expect(config.getFilter()).toEqual({
       tag: [['blue']],
     });
+    config.removeFromAndOrFilter('tag', 0, {value: 'blue'});
+    expect(fakeComponent.onUpdateFilter).toHaveBeenCalledWith({});
+    expect(config.getFilter()).toEqual({});
   });
 
   it('removes empty tag lists on demand for and/or filters', () => {
