@@ -47,6 +47,9 @@ Textarea.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
   autoFocus: React.PropTypes.string,
 };
 
@@ -55,7 +58,7 @@ Textarea.defaultProps = {
   initial: '',
   isHidden: false,
   required: false,
-  autoFocus: false,
+  autoFocus: '',
 };
 
 export default Textarea;

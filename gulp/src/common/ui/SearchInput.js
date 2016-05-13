@@ -1,4 +1,4 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import classnames from 'classnames';
 
 
@@ -6,9 +6,10 @@ import classnames from 'classnames';
  * Dropdown search box which empties itself after selecting an item.
  */
 export class SearchInput extends Component {
-  constructor() {
+  constructor(props) {
     super();
-    this.state = this.getDefaultState('');
+    const {value} = props;
+    this.state = this.getDefaultState(value);
   }
 
   onInputChange(event) {
@@ -16,6 +17,8 @@ export class SearchInput extends Component {
     this.setState({value});
     if (value) {
       this.search(value);
+    } else {
+      this.clear('');
     }
   }
 
@@ -56,7 +59,7 @@ export class SearchInput extends Component {
   }
 
   onInputKeyDown(event) {
-    const {items, keySelectedIndex} = this.state;
+    const {items, keySelectedIndex, value} = this.state;
     if (items.length) {
       let newIndex = keySelectedIndex;
       let killEvent = false;
@@ -78,12 +81,12 @@ export class SearchInput extends Component {
       } else if (event.key === 'Enter') {
         killEvent = true;
         if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
-          this.onSelect(keySelectedIndex);
+          this.onSelect(event, keySelectedIndex);
           return;
         }
       } else if (event.key === 'Escape') {
         killEvent = true;
-        this.clear('');
+        this.clear(value);
       }
       if (killEvent) {
         event.preventDefault();
@@ -194,7 +197,7 @@ SearchInput.defaultProps = {
     root: 'dropdown',
     rootOpen: 'open',
     input: '',
-    suggestions: 'dropdown-menu',
+    suggestions: 'select-element-menu-container',
     item: '',
     itemActive: 'active',
   },
@@ -206,29 +209,29 @@ SearchInput.propTypes = {
    *
    * Intended to support wai-aria.
    */
-  id: PropTypes.string.isRequired,
+  id: React.PropTypes.string.isRequired,
 
   /**
    * Callback: the user has selected an item.
    *
    * obj: the object selected by the user.
    */
-  onSelect: PropTypes.func.isRequired,
+  onSelect: React.PropTypes.func.isRequired,
 
   /**
    * Empty input contents after selecting an item.
    */
-  emptyOnSelect: PropTypes.bool,
+  emptyOnSelect: React.PropTypes.bool,
 
   /**
    * If the select field is empty, call onSelect anyway.
    */
-  callSelectWhenEmpty: PropTypes.bool,
+  callSelectWhenEmpty: React.PropTypes.bool,
 
   /**
    * Placeholder text for the input control
    */
-  placeholder: PropTypes.string,
+  placeholder: React.PropTypes.string,
 
   /**
    * Callback: the user has changed the input. Need hints.
@@ -238,12 +241,17 @@ SearchInput.propTypes = {
    * Return a promise of hints in this form:
    * [ {key: "key", display: "Display Value"} ]
    */
-  getHints: PropTypes.func.isRequired,
+  getHints: React.PropTypes.func.isRequired,
 
   /**
    * Callback: the user has left the search input.
    */
-  onBlur: PropTypes.func,
+  onBlur: React.PropTypes.func,
+
+  /**
+   * Value for this control.
+   */
+  value: PropTypes.string.isRequired,
 
   /**
    * classes for various components
@@ -255,6 +263,9 @@ SearchInput.propTypes = {
    * item: Applied to the li containing a single suggestions.
    * itemActive: Applied to li selected via keyboard. (hover is used for mouse)
    */
-  theme: PropTypes.object,
-  autofocus: PropTypes.string,
+  theme: React.PropTypes.object,
+  /**
+   * Should this bad boy focus, all auto like?
+   */
+  autofocus: React.PropTypes.string,
 };

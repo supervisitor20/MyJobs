@@ -1,7 +1,9 @@
 import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
-import {forEach, map} from 'lodash-compat/collection';
+import {scrollUp} from 'common/dom';
+import {forEach} from 'lodash-compat/collection';
+import {debounce} from 'lodash-compat/function';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -17,58 +19,69 @@ export default class SetUpReport extends Component {
   constructor() {
     super();
     this.state = {
-      reportName: '',
       loading: true,
-      reportingType: '',
+      filter: {},
+      reportName: null,
       reportingTypes: [],
-      reportType: '',
       reportTypes: [],
-      dataType: '',
       dataTypes: [],
     };
   }
 
   componentDidMount() {
-    const {reportFinder} = this.props;
-    this.menuCallbackRef = reportFinder.subscribeToMenuChoices(
+    const {reportFinder, history} = this.props;
+    this.unsubscribeToMenuChoices = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
-    this.loadData();
+    this.historyUnlisten = (
+      history.listen((something, loc) => this.handleHistory(something, loc)));
+    // Further hackery. Wait for things to settle out so we don't pound
+    // the help api and ultimately confuse ourselves. Otherwise two pane select
+    // triggers this a lot when mass select/deselects happen.
+    this.noteFilterChanges = debounce(
+      () => reportFinder.noteFilterChanges(),
+      300,
+      {
+        leading: false,
+        trailing: true,
+      });
   }
 
   componentWillUnmount() {
-    const {reportFinder} = this.props;
-    reportFinder.unsubscribeToMenuChoices(this.menuCallbackRef);
-  }
-  onIntentionChange(reportingType) {
-    const {reportType, dataType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+    this.historyUnlisten();
+    this.unsubscribeToMenuChoices();
   }
 
-  onCategoryChange(reportType) {
-    const {reportingType, dataType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+  onIntentionChange(intention) {
+    const {history} = this.props;
+    const {category, dataSet} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onDataSetChange(dataType) {
-    const {reportingType, reportType} = this.state;
-    this.buildReportConfig(reportingType, reportType, dataType);
+  onCategoryChange(category) {
+    const {history} = this.props;
+    const {intention, dataSet} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
+  }
+
+  onDataSetChange(dataSet) {
+    const {history} = this.props;
+    const {intention, category} = this.props.location.query;
+    history.pushState(null, '/', {intention, category, dataSet});
   }
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
-      reportingType, reportType, dataType, reportConfig) {
+      reportConfig) {
     this.setState({
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
       reportConfig,
     });
   }
 
   onFilterUpdate(filter) {
     this.setState({filter});
+    this.noteFilterChanges();
   }
 
   onErrorsChanged(errors) {
@@ -77,23 +90,79 @@ export default class SetUpReport extends Component {
   }
 
   onReportNameChanged(reportName) {
-    this.setState({reportName});
+    const {maxNameLength} = this.props;
+    this.setState({reportName: reportName.substring(0, maxNameLength)});
+  }
+
+  handleHistory(something, loc) {
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === SetUpReport) {
+      this.loadData();
+    }
   }
 
   async loadData() {
-    await this.buildReportConfig();
+    const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
+    const locationState = (this.props.location || {}).state || {};
+    const {filter: filterFromHistory, name} = locationState;
+
+    const filter = filterFromHistory || {};
+
+    await this.buildReportConfig(
+      reportingType, reportType, dataType, name, filter);
     this.setState({loading: false});
   }
 
-  async buildReportConfig(reportingType, reportType, dataType) {
+  async buildReportConfig(reportingType, reportType, dataType, overrideName,
+      overrideFilter) {
+    const {
+      reportDataId: reportDataIdRaw,
+    } = this.props.location.query;
     const {reportFinder} = this.props;
+    const {filter, reportName} = this.state;
+    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
+    let newFilter;
+    if (overrideFilter) {
+      newFilter = overrideFilter;
+    } else {
+      newFilter = filter;
+    }
+
+    let newName;
+    if (overrideName) {
+      newName = overrideName;
+    } else {
+      newName = reportName;
+    }
+
     reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
       dataType,
+      reportDataId,
+      newFilter,
+      newName,
       n => this.onReportNameChanged(n),
       f => this.onFilterUpdate(f),
-      errors => this.onErrorsChanged(errors));
+      errors => this.onErrorsChanged(errors),
+      (...args) => this.handleNewReportDataId(...args));
+  }
+
+  handleNewReportDataId(newReportDataId, reportingType, reportType, dataType) {
+    const {history} = this.props;
+
+    const href = '/set-up-report';
+    const query = {
+      reportDataId: newReportDataId,
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    };
+    history.pushState(null, href, query);
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {
@@ -116,18 +185,22 @@ export default class SetUpReport extends Component {
   }
 
   render() {
+    const {reportFinder} = this.props;
+    const {
+      intention: reportingType,
+      category: reportType,
+      dataSet: dataType,
+    } = this.props.location.query;
+    const {maxNameLength} = this.props;
     const {
       loading,
+      filter,
       reportConfig,
       reportName,
       reportNameError,
-      filter,
       reportingTypes,
       reportTypes,
       dataTypes,
-      reportingType,
-      reportType,
-      dataType,
     } = this.state;
 
     if (loading) {
@@ -135,7 +208,7 @@ export default class SetUpReport extends Component {
     }
 
     const rows = [];
-    if (reportConfig && filter) {
+    if (reportConfig) {
       const errorTexts = reportNameError ? [reportNameError] : [];
       rows.push(
         <FieldWrapper
@@ -146,18 +219,40 @@ export default class SetUpReport extends Component {
           <TextField
             value={reportName}
             name=""
-            autoFocus
-            onChange={v => reportConfig.changeReportName(v.target.value)}/>
+            autoFocus="autofocus"
+            onChange={v => reportConfig.changeReportName(v.target.value)}
+            maxLength={maxNameLength}/>
         </FieldWrapper>
       );
       reportConfig.filters.forEach(col => {
         switch (col.interface_type) {
         case 'date_range':
+          let begin;
+          let end;
+          if (!reportConfig.currentFilter[col.filter]) {
+            // Default is today
+            const now = new Date();
+            const year = now.getFullYear();
+            // month and day must both be two characters
+            const month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
+            const day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
+            const today = month + '/' + day + '/' + year;
+
+            begin = '01/01/2014';
+            end = today;
+          } else {
+            begin = reportConfig.currentFilter[col.filter][0];
+            end = reportConfig.currentFilter[col.filter][1];
+          }
+
           rows.push(
-            <FieldWrapper key={col.filter} label={col.display}>
+            <FieldWrapper key={col.filter} label="Date range">
               <WizardFilterDateRange
                 id={col.filter}
-                updateFilter={v => reportConfig.setFilter(col.filter, v)}/>
+                updateFilter={v => reportConfig.setFilter(col.filter, v)}
+                begin={begin}
+                end={end}
+                />
             </FieldWrapper>
           );
           break;
@@ -166,6 +261,7 @@ export default class SetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterSearchDropdown
                 id={col.filter}
+                value={reportConfig.currentFilter[col.filter] || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={v =>
                   reportConfig.getHints(col.filter, v)}/>
@@ -173,10 +269,13 @@ export default class SetUpReport extends Component {
           );
           break;
         case 'city_state':
+          const values = reportConfig.currentFilter[col.filter] || {};
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
                 id={col.filter}
+                cityValue={values.city || ''}
+                stateValue={values.state || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={(f, v) =>
                   reportConfig.getHints(f, v)}/>
@@ -201,6 +300,17 @@ export default class SetUpReport extends Component {
             );
           break;
         case 'search_multiselect':
+          // Hack. MultiSelect filter will subscribe to filter updates if we
+          // pass reportFinder.
+          let passReportFinder;
+          if (col.filter === 'contact' || col.filter === 'partner') {
+            passReportFinder = reportFinder;
+          }
+          let removeSelected;
+          if (col.filter === 'contact') {
+            removeSelected = true;
+          }
+
           rows.push(
             <FieldWrapper
               key={col.filter}
@@ -209,16 +319,15 @@ export default class SetUpReport extends Component {
               <MultiSelectFilter
                 availableHeader="Available"
                 selectedHeader="Selected"
-                getHints={v => reportConfig.getHints(col.filter, v)}
-                selected={
-                  map(reportConfig.multiFilter[col.filter] || [],
-                    v => ({value: v.key, display: v.display}))}
+                getHints={v =>
+                  reportConfig.getHints(col.filter, v)}
+                selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
-                  reportConfig.addToMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}
+                  reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter,
-                    {key: v.value, display: v.display}))}/>
+                  reportConfig.removeFromMultifilter(col.filter, v))}
+                reportFinder={passReportFinder}
+                removeSelected={removeSelected}/>
 
             </FieldWrapper>
             );
@@ -233,15 +342,15 @@ export default class SetUpReport extends Component {
       <form>
         <DataTypeSelectBar
           intentionChoices={reportingTypes}
-          intentionValue={reportingType}
+          intentionValue={reportingType || ''}
           onIntentionChange={v => this.onIntentionChange(v)}
 
           categoryChoices={reportTypes}
-          categoryValue={reportType}
+          categoryValue={reportType || ''}
           onCategoryChange={v => this.onCategoryChange(v)}
 
           dataSetChoices={dataTypes}
-          dataSetValue={dataType}
+          dataSetValue={dataType || ''}
           onDataSetChange={v => this.onDataSetChange(v)}
           />
         {rows}
@@ -249,8 +358,8 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-4"></div>
           <div className="col-xs-12 col-md-8">
             <button
-              className="button"
-              onClick={() => reportConfig.run()}>
+              className="button primary"
+              onClick={e => {e.preventDefault(); scrollUp(); reportConfig.run();}}>
               Run Report
             </button>
           </div>
@@ -261,5 +370,23 @@ export default class SetUpReport extends Component {
 }
 
 SetUpReport.propTypes = {
+  history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      filter: PropTypes.object.isRequired,
+    }),
+    query: PropTypes.shape({
+      intention: PropTypes.string,
+      category: PropTypes.string,
+      dataSet: PropTypes.string,
+      reportDataId: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
+  maxNameLength: PropTypes.number,
+};
+
+SetUpReport.defaultProps = {
+  maxNameLength: 24,
 };

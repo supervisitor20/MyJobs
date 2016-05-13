@@ -1,38 +1,60 @@
 import React, {PropTypes, Component} from 'react';
 import {ReportList} from './ReportList';
+import {remove} from 'lodash-compat/array';
+import {map} from 'lodash-compat/collection';
 
-// Props for this component come directly from the store state. (see main.js).
 export class DynamicReportApp extends Component {
   constructor() {
     super();
-    this.state = {reportList: []};
+    this.state = {
+      completedReportList: [],
+      runningReportList: [],
+    };
   }
 
   componentDidMount() {
     const {reportFinder} = this.props;
-    this.callbackRef =
-      reportFinder.subscribeToReportList(() => this.refreshReportList());
-    this.refreshReportList();
+    this.unsubscribeToNewReports =
+      reportFinder.subscribeToNewReports(
+          (reportId, runningReport) =>
+            this.handleNewReport(reportId, runningReport),
+          runningReport => this.handleRunningReport(runningReport));
+    this.handleNewReport(null, null);
   }
 
   componentWillUnmount() {
-    const {reportFinder} = this.props;
-    reportFinder.unsubscribeToReportList(this.callbackRef);
+    this.unsubscribeToNewReports();
   }
 
-  async refreshReportList() {
+  async handleNewReport(reportId, runningReport) {
     const {reportFinder} = this.props;
-    const reportList = await reportFinder.getReportList();
+    const {runningReportList} = this.state;
+    const completedReportList = await reportFinder.getReportList();
+
+    remove(runningReportList, i => i === runningReport);
 
     this.setState({
       ...this.state,
-      reportList: reportList,
+      runningReportList,
+      completedReportList,
     });
   }
 
+  async handleRunningReport(runningReport) {
+    const {runningReportList} = this.state;
+    runningReportList.unshift(runningReport);
+    this.setState({runningReportList});
+  }
+
   render() {
-    const {reportList} = this.state;
+    const {completedReportList, runningReportList} = this.state;
     const {reportId} = this.props.params;
+    const {history, reportFinder} = this.props;
+
+    const reportList = map(runningReportList,
+        r => ({...r, isRunning: true})).concat(
+        map(completedReportList,
+          r => ({...r, isRunning: false})));
 
     return (
       <div>
@@ -49,10 +71,13 @@ export class DynamicReportApp extends Component {
           <div className="col-xs-12 col-md-8">
             {this.props.children}
           </div>
-          <div className="col-xs-6 col-md-4">
+          <div className="col-xs-12 col-md-4">
             <ReportList
+              history={history}
+              reportFinder={reportFinder}
               reports={reportList}
-              highlightId={Number.parseInt(reportId, 10)}/>
+              highlightId={Number.parseInt(reportId, 10)}
+              reportFinder={reportFinder}/>
           </div>
         </div>
       </div>
@@ -61,6 +86,7 @@ export class DynamicReportApp extends Component {
 }
 
 DynamicReportApp.propTypes = {
+  history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
   children: PropTypes.node,
   params: PropTypes.shape({

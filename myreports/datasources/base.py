@@ -62,7 +62,7 @@ class DataSource:
         partial: the input given by the user so far.
 
         returns: list of dictionaries in the form:
-            { key: 'key', display: 'Display String', ...}
+            { value: 'value', display: 'Display String', ...}
 
         This is used to list of possible completions for given user input in
         a form useful to filter building UI.
@@ -71,6 +71,23 @@ class DataSource:
         value as part of filter_spec when running the query.
         """
         raise NotImplementedError("Missing help method on this instance.")
+
+    @abstractmethod
+    def adorn_filter(self, company, filter_spec):
+        """Get a version of the filter with help added where available.
+
+        company: company model object for this run.
+        filter_spec: an instance of the companion filter type for this class.
+
+        returns:
+            an object shaped like filter_spec
+            values on fields with help available will be replaced with help
+            i.e.
+                {..., 'primary_contact': 4}
+                might be replaced with:
+                {..., 'primary_contact': {'value': 4, 'display': 'Brian Cox'}}
+        """
+        raise NotImplementedError("Missing adorn_filter method.")
 
 
 class DataSourceFilter:

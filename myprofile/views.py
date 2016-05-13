@@ -23,7 +23,7 @@ def edit_summary(request):
 
 @user_is_allowed()
 @user_passes_test(User.objects.not_disabled)
-def edit_profile(request):
+def edit_profile(request, react=False):
     """
     Main profile view that the user first sees. Ultimately generates the
     following in data_dict:
@@ -59,6 +59,7 @@ def edit_profile(request):
     data_dict = {'profile_config': profile_config,
                  'unit_names': empty_display_names,
                  'user': user,
+                 'react': react,
                  'view_name': 'My Profile'}
 
     return render_to_response('myprofile/edit_profile.html', data_dict,
@@ -78,6 +79,8 @@ def handle_form(request):
     item_id = request.REQUEST.get('id', 'new')
     module = request.REQUEST.get('module')
     module = module.replace(" ", "")
+    # used later to determine if we should be using react-based forms or not
+    react = False
 
     ctx = {}
     ctx["success"] = True

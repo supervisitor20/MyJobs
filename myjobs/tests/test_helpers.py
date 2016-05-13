@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.test_views import TestClient
+from universal.helpers import extract_value
 
 
 class MyJobsHelpersTests(MyJobsBase):
@@ -61,3 +62,29 @@ class MyJobsHelpersTests(MyJobsBase):
         # Session expiration should be two weeks from now - comparing number
         # of days should be good enough
         self.assertEqual(session.expire_date.toordinal(), weeks.toordinal())
+
+    def test_extract_value(self):
+        """Tests that the proper values are extracted from an object."""
+
+        class Foo(object):
+            value = 'foo'
+
+
+        class Bar(object):
+            value = 'bar'
+            foo = Foo()
+
+        foo = Foo()
+        bar = Bar()
+
+        # single-level object traversal
+        self.assertEqual(extract_value(foo, 'value'), 'foo')
+        self.assertEqual(extract_value(foo, 'bar'), None)
+
+        # default values
+        self.assertEqual(extract_value(foo, 'bar', default='bar'), 'bar')
+        self.assertEqual(extract_value(foo, 'value', default='bar'), 'foo')
+
+        # multiple-level object traversal
+        self.assertEqual(extract_value(bar, 'foo', 'value'), 'foo')
+        self.assertEqual(extract_value(bar, 'foo', 'buz'), None)

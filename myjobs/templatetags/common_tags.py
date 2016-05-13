@@ -287,6 +287,29 @@ def get_menus(context):
             }
         ] + message_submenus
     }
+    beta_menu = {}
+    if user.is_superuser and 'apps.directemployers.org' in user.email:
+        beta_menu.update({
+            "label": "Beta",
+            "id": "beta-menu",
+            "submenus": [
+                {
+                    "id": "dynamic-reports-tab",
+                    "href": url("reports/view/dynamicoverview"),
+                    "label": "Dynamic Reports",
+                },
+                {
+                    "id": "nonuseroutreach",
+                    "href": url("prm/view/nonuseroutreach"),
+                    "label": "Non-User Outreach",
+                },
+                {
+                    "id": "reactive-profiles",
+                    "href": url("profile/view/react"),
+                    "label": "React-Based Profile Units",
+                }
+            ],
+        })
 
     employer_menu = {
         "label": "Employers",
@@ -296,7 +319,7 @@ def get_menus(context):
         ]
     } if user.roles.exists() else {}
 
-    if employer_menu and user.can(company, "read partner"):
+    if employer_menu and user.can(company, "read partner", check_access=False):
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
@@ -310,7 +333,7 @@ def get_menus(context):
             }
         ]
 
-    if employer_menu and user.can(company, "read role"):
+    if employer_menu and user.can(company, "read role", check_access=False):
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",
@@ -362,4 +385,5 @@ def get_menus(context):
         )
 
     # only return menus we've populated
-    return [menu for menu in message_menu, employer_menu, profile_menu if menu]
+    return [menu for menu in
+            beta_menu, message_menu, employer_menu, profile_menu if menu]

@@ -44,9 +44,12 @@ class TestCommRecordsDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
-        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
-        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
+        self.east_tag = TagFactory.create(
+            company=self.company, name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(
+            company=self.company, name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(
+            company=self.company, name='bad', hex_color="cccccc")
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(
@@ -262,7 +265,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(communication_type='Email'),
+            CommRecordsFilter(communication_type=['email']),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
@@ -297,7 +300,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'city': "zz"}),
             "angel")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -307,14 +310,14 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.company,
             CommRecordsFilter(locations={'state': "zz"}),
             "i")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = CommRecordsDataSource()
         recs = ds.help_tags(self.company, CommRecordsFilter(), "E")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -328,15 +331,16 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
-        actual = {r['key'] for r in recs}
-        self.assertEqual({'Phone'}, actual)
+        actual = {r['value'] for r in recs}
+        expected = {'phone', 'job', 'meetingorevent', 'email', 'pssemail'}
+        self.assertEqual(expected, actual)
 
     def test_help_partner(self):
         """Check partner help works at all."""
         ds = CommRecordsDataSource()
         recs = ds.help_partner(self.company, CommRecordsFilter(), "A")
         self.assertEqual(
-            [{'key': self.partner_a.pk, 'display': self.partner_a.name}],
+            [{'value': self.partner_a.pk, 'display': self.partner_a.name}],
             recs)
 
     def test_help_contact(self):
@@ -344,7 +348,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_contact(self.company, CommRecordsFilter(), "U")
         self.assertEqual(
-            [{'key': self.sue.pk, 'display': self.sue.name}],
+            [{'value': self.sue.pk, 'display': self.sue.name}],
             recs)
 
     def test_order(self):
@@ -361,6 +365,48 @@ class TestCommRecordsDataSource(MyJobsBase):
             self.record_1.subject,
         ]
         self.assertEqual(expected, subjects)
+
+    def test_adorn_filter(self):
+        self.maxDiff = 10000
+        filter_spec = CommRecordsFilter(
+            locations={'city': 'Chicago', 'state': 'IL'},
+            tags=[['east'], ['west']],
+            communication_type=['Email'],
+            partner=[str(self.partner_a.pk)],
+            contact=[str(self.sue.pk)])
+        expected = {
+            u'partner': [
+                {u'value': self.partner_a.pk, 'display': u'aaa'},
+            ],
+            u'contact': [
+                {u'value': self.sue.pk, 'display': u'Sue Baxter'},
+            ],
+            u'locations': {
+                u'city': u'Chicago',
+                u'state': u'IL',
+            },
+            u'tags': [
+                [
+                    {
+                        'value': u'east',
+                        'display': u'east',
+                        'hexColor': u'aaaaaa',
+                    }
+                ],
+                [
+                    {
+                        'value': u'west',
+                        'display': u'west',
+                        'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+            u'communication_type': [{'value': u'email', 'display': u'Email'}],
+        }
+
+        ds = CommRecordsDataSource()
+        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        self.assertEqual(expected, adorned_filter)
 
 
 class TestCommRecordsFilterCloning(TestCase):
@@ -383,3 +429,23 @@ class TestCommRecordsFilterCloning(TestCase):
                 locations={'state': 'B'})
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
+
+    def test_clone_without_contacts(self):
+        filter = CommRecordsFilter(
+                contact=[1, 2, 3],
+                locations={'city': 'A', 'state': 'B'})
+        expected_filter = CommRecordsFilter(
+                locations={'city': 'A', 'state': 'B'})
+        self.assertEqual(
+            expected_filter,
+            filter.clone_without_contact())
+
+    def test_clone_without_partners(self):
+        filter = CommRecordsFilter(
+                partner=[1, 2, 3],
+                locations={'city': 'A', 'state': 'B'})
+        expected_filter = CommRecordsFilter(
+                locations={'city': 'A', 'state': 'B'})
+        self.assertEqual(
+            expected_filter,
+            filter.clone_without_partner())

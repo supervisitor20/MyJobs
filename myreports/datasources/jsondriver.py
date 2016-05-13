@@ -33,6 +33,19 @@ class DataSourceJsonDriver(object):
         filter_obj = self.build_filter(filter_spec)
         return self.ds.help(company, filter_obj, field, partial)
 
+    def adorn_filter(self, company, filter_spec):
+        """Get a version of the filter help added where available.
+
+        company: company model object for this run.
+        filter_spec: string with json object for the current user filter.
+
+        returns:
+            a json object shaped like filter_spec
+            values on fields with help available will be replaced with help
+        """
+        filter_obj = self.build_filter(filter_spec)
+        return self.ds.adorn_filter(company, filter_obj)
+
     def build_order(self, order_spec):
         """Build a list of order_by fields from the given order_spec."""
         return json.loads(order_spec)

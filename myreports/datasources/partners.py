@@ -141,7 +141,7 @@ class PartnersDataSource(DataSource):
             .filter(contacts__partner__in=partners_qs)
             .filter(city__icontains=partial))
         city_qs = locations_qs.values('city').distinct()
-        return [{'key': c['city'], 'display': c['city']} for c in city_qs]
+        return [{'value': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
@@ -152,12 +152,11 @@ class PartnersDataSource(DataSource):
             .filter(contacts__partner__in=partners_qs)
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
-        return [{'key': c['state'], 'display': c['state']} for c in state_qs]
+        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        partners_qs = filter_spec.filter_partners(company)
-
+        partners_qs = PartnersFilter().filter_partners(company)
         tags_qs = (
             Tag.objects
             .filter(partner__in=partners_qs)
@@ -165,7 +164,7 @@ class PartnersDataSource(DataSource):
             .values('name', 'hex_color').distinct())
         return [
             {
-                'key': t['name'],
+                'value': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
@@ -178,7 +177,7 @@ class PartnersDataSource(DataSource):
             partners_qs
             .filter(uri__icontains=partial)
             .values('uri').distinct())
-        return [{'key': c['uri'], 'display': c['uri']} for c in uris_qs]
+        return [{'value': c['uri'], 'display': c['uri']} for c in uris_qs]
 
     def help_data_source(self, company, filter_spec, partial):
         """Get help for the data_source field."""
@@ -189,9 +188,53 @@ class PartnersDataSource(DataSource):
             .filter(data_source__icontains=partial)
             .values('data_source').distinct())
         return [
-            {'key': c['data_source'], 'display': c['data_source']}
+            {'value': c['data_source'], 'display': c['data_source']}
             for c in data_sources_qs
         ]
+
+    def adorn_filter(self, company, filter_spec):
+        adorned = {}
+        empty = PartnersFilter()
+
+        if filter_spec.locations:
+            adorned[u'locations'] = {}
+            known_city = filter_spec.locations.get('city', None)
+            if known_city:
+                cities = self.help_city(company, empty, known_city)
+                if cities:
+                    adorned[u'locations'][u'city'] = cities[0]['value']
+            known_state = filter_spec.locations.get('state', None)
+            if known_state:
+                states = self.help_state(company, empty, known_state)
+                if states:
+                    adorned[u'locations'][u'state'] = states[0]['value']
+
+        if filter_spec.tags:
+            adorned[u'tags'] = []
+            for known_or_tags in filter_spec.tags:
+                or_group = []
+
+                for known_tag in known_or_tags:
+                    tags = self.help_tags(company, empty, known_tag)
+                    if tags:
+                        or_group.append(tags[0])
+
+                if or_group:
+                    adorned[u'tags'].append(or_group)
+
+        if filter_spec.data_source:
+            known_source = filter_spec.data_source
+            sources = self.help_data_source(company, empty, known_source)
+            if sources:
+                adorned[u'data_source'] = sources[0]['value']
+
+        if filter_spec.uri:
+            known_uri = filter_spec.uri
+            uris = self.help_uri(company, empty, known_uri)
+            if uris:
+                adorned[u'uri'] = uris[0]['value']
+
+        return adorned
 
 
 @dict_identity

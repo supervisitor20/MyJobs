@@ -1,5 +1,3 @@
-from django.db import transaction
-
 import xlrd
 
 from redirect.models import DestinationManipulation
@@ -159,21 +157,12 @@ def add_source_codes(buids, codes):
             action='sourcecodetag', value_1=manipulation_info[1]))
     DestinationManipulation.objects.bulk_create(new_list)
 
-    # Committing manually after all of this is supposed to be faster than
-    # after each individual operation. Found originally at the first link,
-    # new 1.6 functionality at the second. This still does one query per update
-    # http://voorloopnul.com/blog/doing-bulk-update-and-bulk-create-with-django-orm/
-    # https://docs.djangoproject.com/en/1.6/topics/db/transactions/#id5
-    transaction.set_autocommit(False)
-    try:
-        for existing_info in existing:
-            manipulation_info = code_dict[existing_info[1]]
-            DestinationManipulation.objects.filter(
-                buid=existing_info[0], view_source=manipulation_info[0],
-                action='sourcecodetag').update(
-                    value_1=manipulation_info[1])
-    finally:
-        transaction.set_autocommit(True)
+    for existing_info in existing:
+        manipulation_info = code_dict[existing_info[1]]
+        DestinationManipulation.objects.filter(
+            buid=existing_info[0], view_source=manipulation_info[0],
+            action='sourcecodetag').update(
+                value_1=manipulation_info[1])
 
     return stats
 

@@ -8,7 +8,7 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
-from universal.helpers import dict_identity
+from universal.helpers import dict_identity, extract_value
 
 from django.db.models import Q
 
@@ -47,7 +47,7 @@ class ContactsDataSource(DataSource):
             .filter(contacts__in=contacts_qs)
             .filter(city__icontains=partial))
         city_qs = locations_qs.values('city').distinct()
-        return [{'key': c['city'], 'display': c['city']} for c in city_qs]
+        return [{'value': c['city'], 'display': c['city']} for c in city_qs]
 
     def help_state(self, company, filter_spec, partial):
         """Get help for the state field."""
@@ -58,12 +58,11 @@ class ContactsDataSource(DataSource):
             .filter(contacts__in=contacts_qs)
             .filter(state__icontains=partial))
         state_qs = locations_qs.values('state').distinct()
-        return [{'key': s['state'], 'display': s['state']} for s in state_qs]
+        return [{'value': s['state'], 'display': s['state']} for s in state_qs]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
-        contacts_qs = self.filtered_query_set(company, filter_spec)
-
+        contacts_qs = self.filtered_query_set(company, ContactsFilter())
         tags_qs = (
             Tag.objects
             .filter(contact__in=contacts_qs)
@@ -71,26 +70,27 @@ class ContactsDataSource(DataSource):
             .values('name', 'hex_color').distinct())
         return [
             {
-                'key': t['name'],
+                'value': t['name'],
                 'display': t['name'],
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        contacts_qs = self.filtered_query_set(company, filter_spec)
+        modified_filter_spec = filter_spec.clone_without_partner()
+        contacts_qs = self.filtered_query_set(company, modified_filter_spec)
         partners_qs = (
             Partner.objects
             .filter(contact__in=contacts_qs)
             .filter(name__icontains=partial)
             .values('name', 'pk').distinct())
-        return [{'key': t['pk'], 'display':t['name']} for t in partners_qs]
+        return [{'value': t['pk'], 'display':t['name']} for t in partners_qs]
 
     def extract_record(self, record):
         """Translate from a query set record to a dictionary."""
         return {
             'name': record.name,
-            'partner': record.partner.name,
+            'partner': extract_value(record, 'partner', 'name'),
             'email': record.email,
             'phone': record.phone,
             'notes': record.notes,
@@ -113,6 +113,49 @@ class ContactsDataSource(DataSource):
             .filter(archived_on__isnull=True))
         qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
+
+    def adorn_filter(self, company, filter_spec):
+        adorned = {}
+        empty = ContactsFilter()
+
+        if filter_spec.locations:
+            adorned[u'locations'] = {}
+            known_city = filter_spec.locations.get('city', None)
+            if known_city:
+                cities = self.help_city(company, empty, known_city)
+                if cities:
+                    adorned[u'locations'][u'city'] = cities[0]['value']
+            known_state = filter_spec.locations.get('state', None)
+            if known_state:
+                states = self.help_state(company, empty, known_state)
+                if states:
+                    adorned[u'locations'][u'state'] = states[0]['value']
+
+        if filter_spec.tags:
+            adorned[u'tags'] = []
+            for known_or_tags in filter_spec.tags:
+                or_group = []
+
+                for known_tag in known_or_tags:
+                    tags = self.help_tags(company, empty, known_tag)
+                    if tags:
+                        or_group.append(tags[0])
+
+                if or_group:
+                    adorned[u'tags'].append(or_group)
+
+        if filter_spec.partner:
+            partners_qs = (
+                Partner.objects
+                .filter(owner=company)
+                .filter(pk__in=filter_spec.partner)
+                .values('name', 'pk').distinct())
+            adorned[u'partner'] = [
+                {'value': p['pk'], 'display': p['name']}
+                for p in partners_qs
+            ]
+
+        return adorned
 
 
 @dict_identity
@@ -156,6 +199,12 @@ class ContactsFilter(DataSourceFilter):
             if 'state' in locations:
                 del new_locations['state']
             new_root['locations'] = new_locations
+        return ContactsFilter(**new_root)
+
+    def clone_without_partner(self):
+        """Partner help should not self filter."""
+        new_root = dict(self.__dict__)
+        del new_root['partner']
         return ContactsFilter(**new_root)
 
     def filter_query_set(self, qs):

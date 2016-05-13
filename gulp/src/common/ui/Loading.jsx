@@ -1,8 +1,8 @@
 /* global spinnerImg */
-import React, {Component} from 'react';
+import React from 'react';
 
 
-export class Loading extends Component {
+export class Loading extends React.Component {
   componentWillMount() {
     this.setState({
       show: false,

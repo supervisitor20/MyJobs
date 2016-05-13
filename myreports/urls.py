@@ -23,10 +23,14 @@ urlpatterns = patterns(
     url(r'^api/filters$', 'filters_api', name='filters_api'),
     url(r'^api/list_reports$', 'list_dynamic_reports',
         name='list_dynamic_reports'),
+    url(r'^api/report_info$', 'get_dynamic_report_info',
+        name='get_dynamic_report_info'),
     url(r'^api/run_report$', 'run_dynamic_report', name='run_dynamic_report'),
     url(r'^api/help$', 'help_api', name='help_api'),
     url(r'^api/default_report_name$', 'get_default_report_name',
         name='get_default_report_name'),
     url(r'^api/old_report_preview$', 'old_report_preview',
-        name='old_report_preview')
+        name='old_report_preview'),
+    url(r'^api/refresh_report$', 'refresh_report',
+        name='refresh_report'),
 )

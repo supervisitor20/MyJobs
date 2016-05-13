@@ -24,6 +24,12 @@ class Api {
     return response.reports;
   }
 
+  async getReportInfo(reportId) {
+    const response = await this.getFromReportingApi(
+      '/reports/api/report_info?report_id=' + reportId);
+    return response.report_details;
+  }
+
   async getSetUpMenuChoices(reportingType, reportType, dataType) {
     const formData = {
       reporting_type: reportingType,
@@ -35,9 +41,8 @@ class Api {
   }
 
   async getExportOptions(reportId) {
-    const response = await this.getFromReportingApi(
+    return await this.getFromReportingApi(
       '/reports/api/export_options_api?report_id=' + reportId);
-    return response.report_options;
   }
 
   async getDefaultReportName(reportDataId) {
@@ -80,6 +85,15 @@ class Api {
     };
     return await this.postToReportingApi(
       '/reports/api/run_report',
+      formData);
+  }
+
+  async refreshReport(reportId) {
+    const formData = {
+      report_id: reportId,
+    };
+    return await this.postToReportingApi(
+      '/reports/api/refresh_report',
       formData);
   }
 }
