@@ -51,38 +51,6 @@ class MyProfileViewsTests(MyJobsBase):
         resp = self.client.get(link)
         self.assertEqual(resp.status_code, 200)
 
-    def test_handle_form_get_new(self):
-        """
-        Invoking the handle_form view without an id parameter returns an
-        empty form with the correct form id
-        """
-
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Name'})
-        self.assertTemplateUsed(resp, 'myprofile/profile_form.html')
-        soup = BeautifulSoup(resp.content)
-        self.assertEquals(soup.form.attrs['id'], 'profile-unit-form')
-        with self.assertRaises(KeyError):
-            soup.find('input', id='id_name-given_name').attrs['value']
-
-    def test_handle_form_get_existing(self):
-        """
-        Invoking the handle_form view with and id paraemeter returns
-        a form filled out with the corresponding profile/ID combination
-        """
-
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Name', 'id': self.name.id})
-        self.assertTemplateUsed(resp, 'myprofile/profile_form.html')
-        soup = BeautifulSoup(resp.content)
-        self.assertEquals(soup.form.attrs['id'], 'profile-unit-form')
-        self.assertEquals(soup.find('input', id='id_name-given_name')
-                          .attrs['value'], 'Alice')
-        self.assertEquals(soup.find('input', id='id_name-family_name')
-                          .attrs['value'], 'Smith')
-        self.assertEquals(soup.find('input', id='id_name-primary')
-                          .attrs['checked'], 'checked')
-
     def test_handle_form_post_new_valid(self):
         """
         Invoking the handle_form view as a POST request for a new item
