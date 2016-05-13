@@ -9,6 +9,7 @@ export class ReportList extends Component {
     this.state = {
       isMenuActive: false,
       currentlyActive: '',
+      reportsRefreshing: [],
     };
   }
 
@@ -19,7 +20,16 @@ export class ReportList extends Component {
 
   handleRefreshReport(report) {
     const {reportFinder} = this.props;
-    reportFinder.refreshReport(report.id);
+    const {reportsRefreshing} = this.state;
+    const removeReport = () => {
+      reportsRefreshing.splice(reportsRefreshing.indexOf(report.id), 1);
+      this.setState({reportsRefreshing: reportsRefreshing});
+    };
+    if (reportsRefreshing.indexOf(report.id) === -1) {
+      reportsRefreshing.push(report.id);
+      this.setState({reportsRefreshing: reportsRefreshing});
+      reportFinder.refreshReport(report.id).then(removeReport, removeReport);
+    }
     this.closeAllPopups();
   }
 
@@ -105,7 +115,11 @@ export class ReportList extends Component {
           )}
           key={r.id}
           id={numberedID}>
-          {options.length > 0 ? <PopMenu options={options} isMenuActive={isThisMenuActive} toggleMenu={(e) => this.toggleMenu(e)} closeAllPopups={(e) => this.closeAllPopups(e)} /> : ''}
+          {options.length > 0 ? <PopMenu options={options}
+                                         isMenuActive={isThisMenuActive}
+                                         isMenuPending={ this.state.reportsRefreshing.indexOf(r.id) === -1 ? false : true }
+                                         toggleMenu={(e) => this.toggleMenu(e)}
+                                         closeAllPopups={(e) => this.closeAllPopups(e)} /> : ''}
           {r.isRunning ? <span className="report-loader"></span> : ''}
           <span className="menu-text">{r.name}</span>
         </li>
@@ -126,6 +140,12 @@ export class ReportList extends Component {
               {reportLinks}
             </ul>
           </div>
+          <h2>Reporting Version</h2>
+          <button
+            className="button primary wide"
+            onClick={() => window.location.assign('/reports/view/overview')}>
+            Switch to Classic Reporting
+          </button>
         </div>
       </div>
     );

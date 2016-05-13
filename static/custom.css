@@ -2229,6 +2229,12 @@ h3.bottom-bordered {
   vertical-align: top;
 }
 
+.reporting.sidebar .report-loader.list-loader {
+  display: block;
+  float: right;
+  margin-top:3px;
+}
+
 .pop-menu:before {
     content: "";
     position: absolute;
@@ -5010,8 +5016,8 @@ a.btn.pull-right {
 /* React Datepicker */
 
 .datepicker-input {
-  background-image: url('/files/svg/calendar.png');
-  background-image: url('/files/svg/calendar.svg'), none;
+  background-image: url('./svg/calendar.png');
+  background-image: url('./svg/calendar.svg'), none;
   background-repeat: no-repeat;
   background-position: 98% 50%;
 }

@@ -294,11 +294,6 @@ def get_menus(context):
             "id": "beta-menu",
             "submenus": [
                 {
-                    "id": "dynamic-reports-tab",
-                    "href": url("reports/view/dynamicoverview"),
-                    "label": "Dynamic Reports",
-                },
-                {
                     "id": "nonuseroutreach",
                     "href": url("prm/view/nonuseroutreach"),
                     "label": "Non-User Outreach",
@@ -321,12 +316,18 @@ def get_menus(context):
                 "href": url("prm/view"),
                 "label": "PRM"
             },
-            {
-                "id": "reports-tab",
-                "href": url("reports/view/overview"),
-                "label": "Reports",
-            }
         ]
+
+        version_urls = {
+            'dynamic': url("reports/view/dynamicoverview"),
+            'classic': url("reports/view/overview"),
+        }
+        reporting_version = request.COOKIES.get('reporting_version', 'dynamic')
+        employer_menu["submenus"].append({
+            "id": "reports-tab",
+            "href": version_urls.get(reporting_version, "beta"),
+            "label": "Reports",
+        })
 
     if employer_menu and user.can(company, "read role", check_access=False):
         employer_menu["submenus"].append(
