@@ -2229,6 +2229,12 @@ h3.bottom-bordered {
   vertical-align: top;
 }
 
+.reporting.sidebar .report-loader.list-loader {
+  display: block;
+  float: right;
+  margin-top:3px;
+}
+
 .pop-menu:before {
     content: "";
     position: absolute;
