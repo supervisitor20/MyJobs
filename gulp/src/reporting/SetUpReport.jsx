@@ -1,4 +1,5 @@
 import React, {PropTypes, Component} from 'react';
+import NativeListener from 'react-native-listener';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
@@ -99,6 +100,13 @@ export default class SetUpReport extends Component {
     if (lastComponent === SetUpReport) {
       this.loadData();
     }
+  }
+
+  handleRunReport(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    scrollUp();
+    this.state.reportConfig.run();
   }
 
   async loadData() {
@@ -357,11 +365,9 @@ export default class SetUpReport extends Component {
         <div className="row actions text-center">
           <div className="col-xs-12 col-md-4"></div>
           <div className="col-xs-12 col-md-8">
-            <button
-              className="button primary"
-              onClick={e => {e.preventDefault(); scrollUp(); reportConfig.run();}}>
-              Run Report
-            </button>
+            <NativeListener onClick={e => this.handleRunReport(e)}>
+              <button className="button primary">Run Report</button>
+            </NativeListener>
           </div>
         </div>
       </form>
