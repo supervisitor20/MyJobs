@@ -11,7 +11,7 @@ export class WizardFilterDateRange extends Component {
     updateField(event, field) {
       let finalValue;
       const today = moment().format('MM/DD/YYYY');
-      const rawExistingDate = (field === 'begin') ? this.props.begin : this.props.end;
+      const rawExistingDate = this.props[field];
       const existingDate = rawExistingDate ? rawExistingDate : today;
       if (event.target.type === 'calendar-month') {
         // month must be 2 chars
