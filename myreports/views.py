@@ -479,6 +479,7 @@ def export_options_api(request):
                         'display': user visible title of column,
                     },
                 ],
+                'name': string containing the report name.
             },
         }
     """
@@ -523,6 +524,7 @@ def export_options_api(request):
                 for rp in rps
             ],
             'values': values,
+            'name': report.name,
         },
     }
     return HttpResponse(content_type='application/json',
