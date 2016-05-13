@@ -31,7 +31,7 @@ export default class PopMenu extends Component {
 
   render() {
     const {toggleMenu, isMenuPending} = this.props;
-    if (isMenuPending){
+    if (isMenuPending) {
       return (
         <div style={{position: 'relative'}}>
           <span className="report-loader list-loader">

@@ -22,12 +22,12 @@ export class ReportList extends Component {
     const {reportFinder} = this.props;
     const {reportsRefreshing} = this.state;
     const removeReport = () => {
-          reportsRefreshing.splice(reportsRefreshing.indexOf(report.id), 1);
-          this.setState({reportsRefreshing: reportsRefreshing});
-        };
-    if (reportsRefreshing.indexOf(report.id) === -1){
+      reportsRefreshing.splice(reportsRefreshing.indexOf(report.id), 1);
+      this.setState({reportsRefreshing: reportsRefreshing});
+    };
+    if (reportsRefreshing.indexOf(report.id) === -1) {
       reportsRefreshing.push(report.id);
-      this.setState({reportsRefreshing: reportsRefreshing})
+      this.setState({reportsRefreshing: reportsRefreshing});
       reportFinder.refreshReport(report.id).then(removeReport, removeReport);
     }
     this.closeAllPopups();
