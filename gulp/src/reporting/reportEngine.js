@@ -77,8 +77,14 @@ export class ReportFinder {
       } else {
         name = await this.api.getDefaultReportName(reportDataId);
       }
+      let initialFilter;
+      if (currentFilter) {
+        initialFilter = currentFilter;
+      } else {
+        initialFilter = filters.default_filter;
+      }
       reportConfiguration = this.configBuilder.build(
-        name.name, reportDataId, filters.filters, currentFilter,
+        name.name, reportDataId, filters.filters, initialFilter,
         (reportId, report) => this.noteNewReport(reportId, report),
         report => this.noteNewRunningReport(report),
         onNameChanged,

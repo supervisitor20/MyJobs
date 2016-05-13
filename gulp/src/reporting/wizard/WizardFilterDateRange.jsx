@@ -10,8 +10,10 @@ export class WizardFilterDateRange extends Component {
 
     updateField(event, field) {
       let finalValue;
+      const today = moment().format('MM/DD/YYYY');
+      const rawExistingDate = (field === 'begin') ? this.props.begin : this.props.end;
+      const existingDate = rawExistingDate ? rawExistingDate : today;
       if (event.target.type === 'calendar-month') {
-        const existingDate = (field === 'begin') ? this.props.begin : this.props.end;
         // month must be 2 chars
         const newMonth = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
         // If user mangled date string, reset it so we can use substring
@@ -19,7 +21,6 @@ export class WizardFilterDateRange extends Component {
         const updatedDate = newMonth + afterMonth;
         finalValue = updatedDate;
       } else if (event.target.type === 'calendar-day') {
-        const existingDate = (field === 'begin') ? this.props.begin : this.props.end;
         // day must be 2 chars
         const newDay = (event.target.value < 10) ? '0' + event.target.value : event.target.value;
         // If user mangled date string, reset it so we can use substring
@@ -27,7 +28,6 @@ export class WizardFilterDateRange extends Component {
         const afterDay = existingDate.substring(5, 10);
         finalValue = beforeDay + newDay + afterDay;
       } else if (event.target.type === 'calendar-year') {
-        const existingDate = (field === 'begin') ? this.props.begin : this.props.end;
         const newYear = event.target.value;
         // If user mangled date string, reset it so we can use substring
         const beforeYear = existingDate.substring(0, 6);
