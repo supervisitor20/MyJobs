@@ -39,12 +39,12 @@ class TestOverview(MyReportsTestCase):
     def test_dynamic_report_version(self):
         """
         Visiting 'dynamicoverview' should set the reporting_version cookie to
-        'beta'.
+        'dynamic'.
 
         """
         response = self.client.get(reverse('overview'))
         self.assertEqual(
-            response.cookies['reporting_version'].value, 'beta')
+            response.cookies['reporting_version'].value, 'dynamic')
 
 
 

@@ -324,13 +324,13 @@ def get_menus(context):
         ]
 
         version_urls = {
-            'beta': url("reports/view/dynamicoverview"),
+            'dynamic': url("reports/view/dynamicoverview"),
             'classic': url("reports/view/overview"),
         }
-        reporting_version = request.COOKIES.get('reporting_version', 'beta')
+        reporting_version = request.COOKIES.get('reporting_version', 'dynamic')
         employer_menu["submenus"].append({
             "id": "reports-tab",
-            "href": version_urls[reporting_version],
+            "href": version_urls.get(reporting_version, "beta"),
             "label": "Reports",
         })
 

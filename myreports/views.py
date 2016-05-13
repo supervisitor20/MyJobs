@@ -375,7 +375,7 @@ def dynamicoverview(request):
     company = get_company_or_404(request)
     ctx = {"company": company}
     response = HttpResponse()
-    response.set_cookie('reporting_version', 'beta')
+    response.set_cookie('reporting_version', 'dynamic')
     html = render_to_response('myreports/dynamicreports.html', ctx,
                               RequestContext(request))
     response.content = html
