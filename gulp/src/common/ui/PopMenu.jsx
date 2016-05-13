@@ -16,7 +16,7 @@ export default class PopMenu extends Component {
         </li>
       );
     });
-    if (isMenuActive === true & isMenuPending === false) {
+    if (isMenuActive && !isMenuPending) {
       return (
         <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
@@ -29,24 +29,27 @@ export default class PopMenu extends Component {
     }
   }
 
-  render() {
+  renderMenuSpan() {
     const {toggleMenu, isMenuPending} = this.props;
     if (isMenuPending) {
       return (
-        <div style={{position: 'relative'}}>
-          <span className="report-loader list-loader">
-          </span>
-          {this.menuContents()}
-        </div>
+        <span className="report-loader list-loader">
+        </span>
       );
     }
     return (
+      <span
+        onClick={(e) => toggleMenu(e)}
+        className="menuEllipses">
+        &hellip;
+      </span>
+      );
+  }
+
+  render() {
+    return (
       <div style={{position: 'relative'}}>
-        <span
-          onClick={(e) => toggleMenu(e)}
-          className="menuEllipses">
-          &hellip;
-        </span>
+        {this.renderMenuSpan()}
         {this.menuContents()}
       </div>
     );
