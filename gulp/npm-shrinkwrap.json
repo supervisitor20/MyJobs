@@ -1447,6 +1447,9 @@
     "react": {
       "version": "0.14.3"
     },
+    "react-addons-update": {
+      "version": "0.14.3"
+    },
     "react-bootstrap": {
       "version": "0.28.2"
     },
