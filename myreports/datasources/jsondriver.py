@@ -126,3 +126,4 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.strftime('%m/%d/%Y')
+        return json.JSONEncoder.default(self, obj)
