@@ -358,7 +358,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-4"></div>
           <div className="col-xs-12 col-md-8">
             <button
-              className="button"
+              className="button primary"
               onClick={e => {e.preventDefault(); scrollUp(); reportConfig.run();}}>
               Run Report
             </button>
