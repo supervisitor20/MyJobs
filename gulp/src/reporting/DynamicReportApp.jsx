@@ -62,7 +62,7 @@ export class DynamicReportApp extends Component {
           <div className="col-sm-12">
             <div className="breadcrumbs">
               <span>
-                Dynamic Reporting
+                Dynamic Reporting (beta)
               </span>
             </div>
           </div>
