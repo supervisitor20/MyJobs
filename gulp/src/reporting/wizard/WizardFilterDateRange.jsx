@@ -66,6 +66,7 @@ export class WizardFilterDateRange extends Component {
               onChange={e => this.updateField(e, 'begin')}
               placeholder="begin date"
               value={this.props.begin}
+              name="datefrom"
               />
           </div>
           <div className="col-xs-12 col-md-6">
@@ -74,6 +75,7 @@ export class WizardFilterDateRange extends Component {
               placeholder="end date"
               value={this.props.end}
               error={error}
+              name="dateto"
               />
           </div>
         </div>
