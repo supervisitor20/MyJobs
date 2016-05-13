@@ -42,7 +42,7 @@ class TestOverview(MyReportsTestCase):
         'dynamic'.
 
         """
-        response = self.client.get(reverse('overview'))
+        response = self.client.get(reverse('dynamicoverview'))
         self.assertEqual(
             response.cookies['reporting_version'].value, 'dynamic')
 
