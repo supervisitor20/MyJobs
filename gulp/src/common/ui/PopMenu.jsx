@@ -16,7 +16,7 @@ export default class PopMenu extends Component {
         </li>
       );
     });
-    if (isMenuActive === true & !isMenuPending) {
+    if (isMenuActive === true & isMenuPending === false) {
       return (
         <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
