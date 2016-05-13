@@ -20,15 +20,16 @@ export class ReportList extends Component {
 
   handleRefreshReport(report) {
     const {reportFinder} = this.props;
-    if (this.state.reportsRefreshing.indexOf(report.id) === -1){
-      this.state.reportsRefreshing.push(report.id)
-      reportFinder.refreshReport(report.id).then(() => {
-          this.state.reportsRefreshing.splice(
-          this.state.reportsRefreshing.indexOf(report.id), 1);
-        }
-      );
+    const {reportsRefreshing} = this.state;
+    const removeReport = () => {
+          reportsRefreshing.splice(reportsRefreshing.indexOf(report.id), 1);
+          this.setState({reportsRefreshing: reportsRefreshing});
+        };
+    if (reportsRefreshing.indexOf(report.id) === -1){
+      reportsRefreshing.push(report.id);
+      this.setState({reportsRefreshing: reportsRefreshing})
+      reportFinder.refreshReport(report.id).then(removeReport, removeReport);
     }
-
     this.closeAllPopups();
   }
 

@@ -31,11 +31,20 @@ export default class PopMenu extends Component {
 
   render() {
     const {toggleMenu, isMenuPending} = this.props;
+    if (isMenuPending){
+      return (
+        <div style={{position: 'relative'}}>
+          <span className="report-loader list-loader">
+          </span>
+          {this.menuContents()}
+        </div>
+      );
+    }
     return (
       <div style={{position: 'relative'}}>
         <span
           onClick={(e) => toggleMenu(e)}
-          className={isMenuPending ? "menuPending" : "menuEllipses"}>
+          className="menuEllipses">
           &hellip;
         </span>
         {this.menuContents()}
@@ -52,6 +61,7 @@ PopMenu.propTypes = {
     })
   ),
   isMenuActive: PropTypes.bool.isRequired,
+  isMenuPending: PropTypes.bool,
   toggleMenu: PropTypes.func.isRequired,
   closeAllPopups: PropTypes.func,
 };
