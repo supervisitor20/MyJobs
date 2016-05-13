@@ -239,6 +239,12 @@ class PartnersDataSource(DataSource):
 
         return adorned
 
+    def get_default_filter(self, data_type, company):
+        filter_spec = PartnersFilter(
+            date=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
+        return adorned
+
 
 @dict_identity
 class PartnersFilter(DataSourceFilter):

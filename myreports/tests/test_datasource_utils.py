@@ -117,6 +117,9 @@ class MockDataSource(DataSource):
     def adorn_filter(self, company, filter_spec):
         pass
 
+    def get_default_filter(self, data_type, company):
+        pass
+
 
 class TestDataSourceJsonDriver(TestCase):
     def setUp(self):
@@ -126,6 +129,7 @@ class TestDataSourceJsonDriver(TestCase):
 
     def test_encode_filter_interface(self):
         """Test that filter interface is serialized properly."""
+        self.maxDiff = 10000
         report_config = ReportConfiguration([
             ColumnConfiguration(
                 column='name',
@@ -249,6 +253,9 @@ class SomeDataSource(DataSource):
         return partial + ' zz'
 
     def adorn_filter(self, company, filter_spec):
+        pass
+
+    def get_default_filter(self, data_type, company):
         pass
 
 

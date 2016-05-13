@@ -1,6 +1,7 @@
 """CommRecords DataSource"""
 from HTMLParser import HTMLParser
 from operator import __or__
+from datetime import datetime
 
 from django.db.models import Q
 from django.utils.html import strip_tags
@@ -65,7 +66,7 @@ class CommRecordsDataSource(DataSource):
         parser = HTMLParser()
         results = parser.unescape(
             '\n'.join(' '.join(line.split())
-            for line in strip_tags(html).splitlines() if line))
+                      for line in strip_tags(html).splitlines() if line))
 
         return '\n'.join(filter(bool, results.split('\n\n')))
 
@@ -228,6 +229,12 @@ class CommRecordsDataSource(DataSource):
                 for c in filter_spec.communication_type
             ]
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = CommRecordsFilter(
+            date_time=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 

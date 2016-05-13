@@ -89,6 +89,18 @@ class DataSource:
         """
         raise NotImplementedError("Missing adorn_filter method.")
 
+    @abstractmethod
+    def get_default_filter(self, data_type, company):
+        """Get a filter object for this datasource with defaults populated.
+
+        data_type: data_type variant to run; i.e. unaggregated, per_year
+        company: reference to the company for the logged in user
+
+        returns:
+            an opaque filter object
+        """
+        raise NotImplementedError("Missing get_default_filter method.")
+
 
 class DataSourceFilter:
     """A filter on a query for an DataSource, populated with values.

@@ -46,6 +46,18 @@ class DataSourceJsonDriver(object):
         filter_obj = self.build_filter(filter_spec)
         return self.ds.adorn_filter(company, filter_obj)
 
+    def get_default_filter(self, data_type, company):
+        """Get a filter object with default values prepopulated.
+
+        data_type: name of query variant, i.e. unaggregated, per_year
+        company: company model object for this run.
+
+        returns:
+            an adorned filter with default values
+            see adorn_filter
+        """
+        return self.ds.get_default_filter(data_type, company)
+
     def build_order(self, order_spec):
         """Build a list of order_by fields from the given order_spec."""
         return json.loads(order_spec)
@@ -106,7 +118,7 @@ class DataSourceJsonDriver(object):
         return {
             'interface_type': column_config.filter_interface,
             'filter': column_config.column,
-            'display': column_config.filter_display
+            'display': column_config.filter_display,
         }
 
 

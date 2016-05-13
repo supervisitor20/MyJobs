@@ -1,5 +1,6 @@
 """Contacts DataSource"""
 from operator import __or__
+from datetime import datetime
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
@@ -158,6 +159,12 @@ class ContactsDataSource(DataSource):
                 for p in partners_qs
             ]
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = ContactsFilter(
+            date=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 
