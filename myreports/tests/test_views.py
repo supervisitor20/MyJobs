@@ -592,6 +592,7 @@ class TestReportsApi(MyReportsTestCase):
                     {u'display': u'Notes', u'value': u'notes'},
                     {u'display': u'Name', u'value': u'name'},
                 ],
+                u'name': 'The Report',
             },
         }, data)
 
