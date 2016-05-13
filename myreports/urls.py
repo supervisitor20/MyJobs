@@ -3,7 +3,7 @@ from myreports.views import ReportView
 
 urlpatterns = patterns(
     'myreports.views',
-    url(r'^view/overview$', 'overview', name='overview'),
+    url(r'^view/overview/$', 'overview', name='overview'),
     url(r'^view/archive$', 'report_archive', name='report_archive'),
     url(r'view/(?P<app>\w+)/(?P<model>\w+)$', ReportView.as_view(),
         name='reports'),
