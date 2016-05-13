@@ -5,11 +5,10 @@ export default class PopMenu extends Component {
   handleItemClick(item, e) {
     e.preventDefault();
     item.onSelect();
-    this.setState({isMenuActive: false});
   }
 
   menuContents() {
-    const {options, isMenuActive, closeAllPopups} = this.props;
+    const {options, isMenuActive, closeAllPopups, isMenuPending} = this.props;
     const dropdownItems = options.map((item, index)=> {
       return (
         <li key={index} onClick={e => this.handleItemClick(item, e)}>
@@ -17,7 +16,7 @@ export default class PopMenu extends Component {
         </li>
       );
     });
-    if (isMenuActive === true) {
+    if (isMenuActive === true & !isMenuPending) {
       return (
         <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
@@ -31,12 +30,12 @@ export default class PopMenu extends Component {
   }
 
   render() {
-    const {toggleMenu} = this.props;
+    const {toggleMenu, isMenuPending} = this.props;
     return (
       <div style={{position: 'relative'}}>
         <span
           onClick={(e) => toggleMenu(e)}
-          className="menuEllipses">
+          className={isMenuPending ? "menuPending" : "menuEllipses"}>
           &hellip;
         </span>
         {this.menuContents()}
