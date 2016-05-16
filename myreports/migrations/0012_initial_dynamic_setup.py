@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
+# from south.utils import datetime_utils as datetime
+# from south.db import db
 from south.v2 import DataMigration
 # from django.db import models
 
@@ -9,13 +9,17 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
-        # Note: Don't use "from appname.models import ModelName". 
+        # Note: Don't use "from appname.models import ModelName".
         # Use orm.ModelName to refer to models in this application,
         # and orm['appname.ModelName'] for models in other applications.
 
         orm["myreports.UserType"].objects.all().delete()
-        ut_emp = orm["myreports.UserType"].objects.create(user_type="EMPLOYER", is_active=True)
-        ut_staff = orm["myreports.UserType"].objects.create(user_type="STAFF", is_active=True)
+        ut_emp = orm["myreports.UserType"].objects.create(
+            user_type="EMPLOYER",
+            is_active=True)
+        orm["myreports.UserType"].objects.create(
+            user_type="STAFF",
+            is_active=True)
 
         orm["myreports.ReportingType"].objects.all().delete()
         rit_prm = orm["myreports.ReportingType"].objects.create(
@@ -349,18 +353,19 @@ class Migration(DataMigration):
             configuration=con_comm,
             multi_value_expansion=False, is_active=True)
 
-
         orm["myreports.ReportTypeDataTypes"].objects.all().delete()
         rtdt_con_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_con, data_type=dt_unagg, configuration=con_con, is_active=True)
+            report_type=rt_con, data_type=dt_unagg, configuration=con_con,
+            is_active=True)
         rtdt_part_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
             report_type=rt_partners, data_type=dt_unagg,
             configuration=con_part, is_active=True)
         rtdt_comm_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_comm, data_type=dt_unagg, configuration=con_comm, is_active=True)
+            report_type=rt_comm, data_type=dt_unagg, configuration=con_comm,
+            is_active=True)
 
         orm["myreports.ReportPresentation"].objects.all().delete()
-        rtpt_con = orm["myreports.ReportPresentation"].objects.create(
+        orm["myreports.ReportPresentation"].objects.create(
             presentation_type=pre_csv,
             display_name="Contact CSV",
             report_data=rtdt_con_unagg, is_active=True)
@@ -372,7 +377,7 @@ class Migration(DataMigration):
             presentation_type=pre_csv,
             display_name="Communication Record CSV",
             report_data=rtdt_comm_unagg, is_active=True)
-        rtpt_xlsx = orm["myreports.ReportPresentation"].objects.create(
+        orm["myreports.ReportPresentation"].objects.create(
             presentation_type=pre_xlsx,
             display_name="Contact Excel Spreadsheet",
             report_data=rtdt_con_unagg, is_active=True)
