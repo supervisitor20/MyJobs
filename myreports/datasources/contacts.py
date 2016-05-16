@@ -11,6 +11,8 @@ from mypartners.models import Contact, Location, Tag, Partner, Status
 
 from universal.helpers import dict_identity, extract_value
 
+from postajob.location_data import states
+
 from django.db.models import Q
 
 
@@ -58,8 +60,11 @@ class ContactsDataSource(DataSource):
             Location.objects
             .filter(contacts__in=contacts_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct()
-        return [{'value': s['state'], 'display': s['state']} for s in state_qs]
+        state_qs = locations_qs.values('state').order_by('state').distinct()
+        return [{
+            'value': s['state'],
+            'display': states[s['state']]
+        } for s in state_qs if s['state']]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""

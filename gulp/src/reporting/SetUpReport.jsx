@@ -103,6 +103,15 @@ export default class SetUpReport extends Component {
     }
   }
 
+  handleRunReport(e) {
+    e.preventDefault();
+
+    this.state.reportConfig.run();
+    this.props.history.pushState(null, '/');
+
+    scrollUp();
+  }
+
   async loadData() {
     const {
       intention: reportingType,
@@ -340,7 +349,7 @@ export default class SetUpReport extends Component {
           <div className="col-xs-12 col-md-8">
             <button
               className="button primary"
-              onClick={ e => {e.preventDefault(); scrollUp(); reportConfig.run();}}>
+              onClick={ e => this.handleRunReport(e)}>
               Run Report
             </button>
           </div>
