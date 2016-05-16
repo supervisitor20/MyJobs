@@ -2227,7 +2227,7 @@ h3.bottom-bordered {
 
 .reporting.sidebar .report-loader.list-loader {
   display: block;
-  float: right;
+  float: left;
   margin-top:3px;
 }
 
