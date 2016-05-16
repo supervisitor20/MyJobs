@@ -46,9 +46,12 @@ class TestPartnersDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
-        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
-        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
+        self.east_tag = TagFactory.create(
+            company=self.company, name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(
+            company=self.company, name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(
+            company=self.company, name='bad', hex_color="cccccc")
 
         self.partner_a.tags.add(self.east_tag)
         self.partner_b.tags.add(self.west_tag)
@@ -359,7 +362,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'city': "zz"}),
             "angel")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -369,14 +372,14 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(locations={'state': "zz"}),
             "i")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = PartnersDataSource()
         recs = ds.help_tags(self.company, PartnersFilter(), "E")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -392,7 +395,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "ex")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'http://www.example.com/'}, actual)
 
     def test_help_data_source(self):
@@ -402,7 +405,7 @@ class TestPartnersDataSource(MyJobsBase):
             self.company,
             PartnersFilter(),
             "z")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'zap'}, actual)
 
     def test_order(self):
@@ -415,6 +418,41 @@ class TestPartnersDataSource(MyJobsBase):
         names = [r['name'] for r in recs]
         expected = [self.partner_b.name, self.partner_a.name]
         self.assertEqual(expected, names)
+
+    def test_adorn_filter(self):
+        filter_spec = PartnersFilter(
+            locations={'city': 'Chicago', 'state': 'IL'},
+            tags=[['east'], ['west']],
+            data_source='zap',
+            uri='http://www.example.com/')
+        expected = {
+            u'locations': {
+                u'city': u'Chicago',
+                u'state': u'IL',
+            },
+            u'tags': [
+                [
+                    {
+                        'value': u'east',
+                        'display': u'east',
+                        'hexColor': u'aaaaaa',
+                    }
+                ],
+                [
+                    {
+                        'value': u'west',
+                        'display': u'west',
+                        'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+            u'data_source': u'zap',
+            u'uri': u'http://www.example.com/',
+        }
+
+        ds = PartnersDataSource()
+        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        self.assertEqual(expected, adorned_filter)
 
 
 class TestPartnersFilterCloning(TestCase):

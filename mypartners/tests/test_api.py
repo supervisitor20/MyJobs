@@ -1,52 +1,63 @@
 import json
 
 from django.core.urlresolvers import reverse
-from django.conf import settings
 
 from mypartners.tests.test_views import MyPartnersTestCase
-from mypartners.tests.factories import OutreachEmailAddressFactory
-from myjobs.tests.factories import UserFactory, ActivityFactory
+from mypartners.tests.factories import (OutreachEmailAddressFactory,
+                                        OutreachRecordFactory)
+from myjobs.tests.factories import UserFactory
 from mypartners.models import OutreachEmailAddress
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
     """
-        Tests related to the non user outreach single page app. These APIs provide data to the React-based
-        application.
+        Tests related to the non user outreach single page app. These APIs
+        provide data to the React-based application.
     """
 
     def setUp(self):
         super(NonUserOutreachTestCase, self).setUp()
         self.inbox = OutreachEmailAddressFactory(company=self.company)
         self.other_company_inbox = OutreachEmailAddressFactory()
+        self.outreach_record = OutreachRecordFactory(outreach_email =
+                                                     self.inbox)
+        self.other_record = OutreachRecordFactory(outreach_email =
+                                                  self.other_company_inbox)
         self.role.activities.add(*self.activities)
 
     def test_inbox_list_api(self):
         """
-            Verify that the inbox list API will properly return any inboxes for the current company.
+            Verify that the inbox list API will properly return any inboxes
+            for the current company.
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        self.assertEqual(response.status_code, 200, msg="expected status 200, got %s, may be roles or perms issue" %
+        self.assertEqual(response.status_code, 200, msg="expected status 200, "
+                                                        "got %s, may be roles "
+                                                        "or perms issue" %
                          response.status_code)
         response_json = json.loads(response.content)
 
-        self.assertEqual(len(response_json), 1, msg="assert only user's company's inbox returned")
+        self.assertEqual(len(response_json), 1, msg="assert only user's "
+                                                    "company's inbox returned")
 
         return_msg = "error loading inbox api, expected {0}, got {1}"
         self.assertEqual(response_json[0]["pk"], self.inbox.pk,
                          msg=return_msg.format(response_json[0]["pk"], self.inbox.pk))
         self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email,
-                         msg=return_msg.format(response_json[0]["fields"]["email"], self.inbox.email))
+                         msg=return_msg.format(response_json[0]["fields"]["email"],
+                                               self.inbox.email))
 
     def test_non_staff_cannot_use_view(self):
         """
-            Temporary test. Ensure user cannot access this view if they are not staff. Remove when launching
-            NonUserOutreach module.
+            Temporary test. Ensure user cannot access this view if they are not
+            staff. Remove when launching NonUserOutreach module.
         """
         non_staff_user = UserFactory(is_staff=False, email="testuser@test.com")
         self.client.login_user(non_staff_user)
         response = self.client.get(reverse('api_get_nuo_inbox_list'), follow=False)
-        self.assertEqual(response.status_code, 404, msg="ensure NUO inboxes returns 404 for non staff users")
+        self.assertEqual(response.status_code, 404, msg="ensure NUO inboxes "
+                                                        "returns 404 for non "
+                                                        "staff users")
 
     def test_user_requires_prm_access(self):
         """
@@ -54,13 +65,17 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        self.assertEqual(response.status_code, 200, msg="assert view loaded properly for prm access user")
+        self.assertEqual(response.status_code, 200, msg="assert view loaded "
+                                                        "properly for prm "
+                                                        "access user")
 
         non_company_user = UserFactory(email="testuser@test.com")
         self.client.login_user(non_company_user)
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
-        self.assertEqual(response.status_code, 404, msg="assert NUO inboxes returns 404 for a user that is not"
-                                                        " a company user for a member company")
+        self.assertEqual(response.status_code,
+                         404,
+                         msg="assert NUO inboxes returns 404 for a user that "
+                             "is not a company user for a member company")
 
     def test_add_new_inbox(self):
         """Tests that a user can create a new outreach inbox."""
@@ -97,3 +112,27 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         self.assertEqual(OutreachEmailAddress.objects.get(pk=inbox.pk).email,
                          'newemail')
 
+    def test_records_list_api(self):
+        """
+            Verify that the outreach records list API will properly return any
+            records for the current company.
+        """
+        response = self.client.get(reverse('api_get_nuo_records_list'))
+        self.assertEqual(response.status_code, 200, msg="expected status 200, "
+                                                        "got %s, may be roles "
+                                                        "or perms issue" %
+                         response.status_code)
+        response_json = json.loads(response.content)
+
+        self.assertEqual(len(response_json), 1, msg="assert only user's "
+                                                    "company's record returned")
+
+        return_msg = "error loading records api, expected {0}, got {1}"
+        self.assertEqual(response_json[0]["from_email"],
+                         self.outreach_record.from_email,
+                         msg=return_msg.format(response_json[0]["from_email"],
+                                               self.outreach_record.from_email))
+        self.assertEqual(response_json[0]["outreach_email"],
+                         self.inbox.email + "@my.jobs",
+                         msg=return_msg.format(response_json[0]["outreach_email"],
+                                               self.inbox.email + "@my.jobs"))

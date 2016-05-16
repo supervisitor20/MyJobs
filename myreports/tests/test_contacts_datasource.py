@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from unittest import TestCase
+
 from myreports.datasources.contacts import (
     ContactsDataSource, ContactsFilter)
 
@@ -38,9 +40,12 @@ class TestContactsDataSource(MyJobsBase):
         # An archived parther. Associated data should be filtered out.
         self.partner_archived = PartnerFactory(owner=self.company)
 
-        self.east_tag = TagFactory.create(name='east', hex_color="aaaaaa")
-        self.west_tag = TagFactory.create(name='west', hex_color="bbbbbb")
-        self.bad_tag = TagFactory.create(name='bad', hex_color="cccccc")
+        self.east_tag = TagFactory.create(
+            company=self.company, name='east', hex_color="aaaaaa")
+        self.west_tag = TagFactory.create(
+            company=self.company, name='west', hex_color="bbbbbb")
+        self.bad_tag = TagFactory.create(
+            company=self.company, name='bad', hex_color="cccccc")
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(
@@ -331,7 +336,7 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(locations={'city': "zz"}),
             "angel")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
@@ -341,14 +346,14 @@ class TestContactsDataSource(MyJobsBase):
             self.company,
             ContactsFilter(locations={'state': "zz"}),
             "i")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
         """Check tags help works at all."""
         ds = ContactsDataSource()
         recs = ds.help_tags(self.company, ContactsFilter(), "E")
-        actual = {r['key'] for r in recs}
+        actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
@@ -362,7 +367,7 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.help_partner(self.company, ContactsFilter(), "A")
         self.assertEqual(
-            [{'key': self.partner_a.pk, 'display': 'aaa'}],
+            [{'value': self.partner_a.pk, 'display': 'aaa'}],
             recs)
 
     def test_order(self):
@@ -375,3 +380,70 @@ class TestContactsDataSource(MyJobsBase):
         names = [r['name'] for r in recs]
         expected = [self.sue.name, self.john.name]
         self.assertEqual(expected, names)
+
+    def test_adorn_filter(self):
+        filter_spec = ContactsFilter(
+            locations={'city': 'Chicago', 'state': 'IL'},
+            tags=[['east'], ['west']],
+            partner=[str(self.partner_a.pk)])
+        expected = {
+            u'partner': [
+                {u'value': self.partner_a.pk, 'display': u'aaa'},
+            ],
+            u'locations': {
+                u'city': u'Chicago',
+                u'state': u'IL',
+            },
+            u'tags': [
+                [
+                    {
+                        'value': u'east',
+                        'display': u'east',
+                        'hexColor': u'aaaaaa',
+                    }
+                ],
+                [
+                    {
+                        'value': u'west',
+                        'display': u'west',
+                        'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+        }
+
+        ds = ContactsDataSource()
+        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        self.assertEqual(expected, adorned_filter)
+
+
+class TestContactsFilterCloning(TestCase):
+    def test_clone_without_empty(self):
+        """Cloning empty filters shouldn't crash."""
+        filter = ContactsFilter()
+        self.assertEqual(ContactsFilter(), filter.clone_without_city())
+        self.assertEqual(ContactsFilter(), filter.clone_without_state())
+
+    def test_clone_without_full(self):
+        """Cloning should remove certain fields."""
+        filter = ContactsFilter(
+                tags=['C'],
+                locations={'city': 'A', 'state': 'B'})
+        expected_with_city = ContactsFilter(
+                tags=['C'],
+                locations={'city': 'A'})
+        expected_with_state = ContactsFilter(
+                tags=['C'],
+                locations={'state': 'B'})
+        self.assertEqual(expected_with_state, filter.clone_without_city())
+        self.assertEqual(expected_with_city, filter.clone_without_state())
+
+    def test_clone_without_partners(self):
+        filter = ContactsFilter(
+                partner=[1, 2, 3],
+                locations={'city': 'A', 'state': 'B'})
+        expected_without_partners = ContactsFilter(
+                locations={'city': 'A', 'state': 'B'})
+        self.assertEqual(
+            expected_without_partners,
+            filter.clone_without_partner())

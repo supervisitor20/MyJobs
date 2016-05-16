@@ -36,21 +36,11 @@ export class SelectByNameOrTag extends Component {
     const {getItemHints, getTagHints} = this.props;
     if (getItemHints) {
       const availableItemHints = await getItemHints();
-      const fixedAvailableItemHints =
-        map(availableItemHints, value =>
-            ({value: value.key, display: value.display}));
-      this.setState({
-        availableItemHints: fixedAvailableItemHints,
-      });
+      this.setState({availableItemHints});
     }
     if (getTagHints) {
       const availableTagHints = await getTagHints();
-      const fixedAvailableTagHints =
-        map(availableTagHints, tag =>
-            ({...tag, value: tag.key, display: tag.display}));
-      this.setState({
-        availableTagHints: fixedAvailableTagHints,
-      });
+      this.setState({availableTagHints});
     }
   }
 

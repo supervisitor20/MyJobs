@@ -54,3 +54,13 @@ export class InboxManagement {
     return result;
   }
 }
+
+export class OutreachRecordManagement {
+  constructor(api) {
+    this.api = api;
+  }
+
+  async getExistingOutreachRecords() {
+    return this.api.getExistingOutreachRecords();
+  }
+}

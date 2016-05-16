@@ -252,6 +252,7 @@ class Configuration(models.Model):
         return ReportConfiguration([
             ColumnConfiguration(
                 column=cm.column_name,
+                alias=cm.alias,
                 format=cm.output_format,
                 filter_interface=cm.filter_interface_type,
                 filter_display=cm.filter_interface_display,
@@ -381,3 +382,4 @@ class DynamicReport(models.Model):
 
         self.results.save('%s-%s.json' % (self.name, self.pk), results)
         self._results = contents
+        self.save()

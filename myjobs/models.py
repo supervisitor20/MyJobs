@@ -5,10 +5,11 @@ import urllib
 import uuid
 
 from django.core.urlresolvers import reverse
-from django.db.models import Q, F
+from django.db.models import Q
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
+from django.http import Http404
 from django.utils.crypto import get_random_string
 
 from impersonate.signals import session_begin, session_end
@@ -650,9 +651,14 @@ class User(AbstractBaseUser, PermissionsMixin):
                       False. By default, `universal.helpers.every` is used,
                       which only returns two if the two iterables contain the
                       same elements.
+            :check_access: A boolean that signifies whether app-level access
+                           should be checked. Defaults to True.
 
         Output:
             A boolean signifying whether the provided actions may be performed.
+
+            If the company doesn't have sufficient app-level access, an
+            ``Http404`` exception is raised.
 
         Example:
 
@@ -685,16 +691,19 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
         compare = kwargs.get('compare', every)
+        check_access = kwargs.get('check_access', True)
 
-        required_access = filter(bool, AppAccess.objects.filter(
-            activity__name__in=activity_names).values_list(
-                'name', flat=True).distinct())
+        required_access = Activity.objects.filter(
+            name__in=activity_names).required_access
+
+        if check_access and not set(required_access).issubset(
+                company.enabled_access):
+            raise Http404(
+                "%s doesn't have sufficient app-level access." % company)
 
         # Company must have correct access and user must have correct
         # activities
-        return all([
-            set(required_access).issubset(company.enabled_access),
-            compare(activity_names, self.get_activities(company))])
+        return compare(activity_names, self.get_activities(company))
 
     def send_invite(self, email, company, role_name=None):
         """
@@ -852,6 +861,41 @@ class AppAccess(models.Model):
         return self.name
 
 
+class ActivityQuerySet(models.query.QuerySet):
+    """Defines a ``required_access`` convenience property."""
+
+    @property
+    def required_access(self):
+        """
+        Returns a list of ``AppAccess`` names required by the activities in
+        the queryset.
+
+        """
+        return self.values_list('app_access__name', flat=True).distinct()
+
+
+class ActivityManager(models.Manager):
+    """
+    Proxy for ActivityQuerySet which allows chaining.
+
+    Example:
+
+        Activity.objects.filter(name__icontains='create').required_access
+
+    """
+    def __init__(self):
+        super(ActivityManager, self).__init__()
+        self._query_set = ActivityQuerySet
+
+    def get_query_set(self):
+        qs = self._query_set(self.model, using=self._db)
+        return qs
+
+    @property
+    def required_access(self):
+        return self.get_query_set().required_access
+
+
 class Activity(models.Model):
     """
     An activity represents an individual task that can be performed by a
@@ -860,6 +904,8 @@ class Activity(models.Model):
     """
     class Meta:
         verbose_name_plural = "Activities"
+
+    objects = ActivityManager()
 
     name = models.CharField(max_length=50, unique=True)
     display_name = models.CharField(max_length=50, blank=True)
@@ -1040,6 +1086,10 @@ class SecondPartyAccessRequest(models.Model):
     # request was created on.
     site = models.ForeignKey('seo.SeoSite')
 
+    @property
+    def protocol(self):
+        return '' if self.site.domain.startswith('http') else 'http://'
+
     def save(self, *args, **kwargs):
         new = False
         if not self.pk:
@@ -1050,23 +1100,22 @@ class SecondPartyAccessRequest(models.Model):
         super(SecondPartyAccessRequest, self).save(*args, **kwargs)
 
         if new:
-            # Should this be a post-save?
             second_party = self.second_party.get_full_name(
                 default=self.second_party_email)
             message_body = ('{second_party} has requested the ability to '
                             'remotely access your account and provided the '
                             'following reason:<br /><br />'
                             '"{reason}"<br /><br />Would you like to '
-                            '<a href="{domain}{allow}">Allow</a> or '
-                            '<a href="{domain}{reject}">Deny</a> this '
-                            'request?'.format(
+                            '<a href="{protocol}{domain}{allow}">Allow</a> or '
+                            '<a href="{protocol}{domain}{reject}">Deny</a> '
+                            'this request?'.format(
                                 second_party=second_party,
                                 allow=reverse('impersonate-approve',
                                               kwargs={'access_id': self.pk}),
                                 reject=reverse('impersonate-reject',
                                                kwargs={'access_id': self.pk}),
                                 domain=self.site.domain,
-                                reason=self.reason))
+                                reason=self.reason, protocol=self.protocol))
 
             message_kwargs = {'users': [self.account_owner],
                               'expires': False,
@@ -1086,7 +1135,6 @@ class SecondPartyAccessRequest(models.Model):
         Notifies the second party of the account owner's acceptance of their
         request, whether positive or negative.
         """
-        # Should this be a post-save?
         if self.acted_on:
             message_body = ('{owner} has {approved} your remote access '
                             'request.'.format(
@@ -1097,12 +1145,14 @@ class SecondPartyAccessRequest(models.Model):
                                     else "rejected")))
             if self.accepted:
                 message_body += ('<br /><br />Start using it '
-                                 '<a href="{domain}{url}">here.</a>'.format(
+                                 '<a href="{protocol}{domain}{url}">'
+                                 'here.</a>'.format(
                                      url=reverse(
                                          'impersonate-start',
                                          kwargs={
                                              'uid': self.account_owner.pk}),
-                                     domain=self.site.domain))
+                                     domain=self.site.domain,
+                                     protocol=self.protocol))
 
             message_kwargs = {'users': [self.second_party], 'expires': False,
                               'body': message_body, 'system': True}

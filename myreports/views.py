@@ -11,10 +11,11 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
-from myreports.helpers import humanize, serialize
+from myreports.helpers import humanize, serialize, sort_records
 from myjobs.decorators import requires
 from myreports.models import (
-    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes)
+    Report, ReportPresentation, DynamicReport, ReportTypeDataTypes,
+    ConfigurationColumn)
 from myreports.presentation import presentation_drivers
 from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
@@ -456,6 +457,33 @@ def select_data_type_api(request):
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def export_options_api(request):
+    """Get options and defaults, etc. needed to drive a UI for downloads.
+
+    Parameters:
+        :report_id: Id of the report to download
+
+    Outputs an object shaped like this:
+        {
+            'count': number of records in the report,
+            'report_options': {
+                'id': the report id,
+                'formats': [
+                    {
+                        'value': format key,
+                        'display': user visible title for format,
+                    },
+                ],
+                'values': [
+                    {
+                        'value': key describing an available column,
+                        'display': user visible title of column,
+                    },
+                ],
+                'name': string containing the report name.
+            },
+        }
+    """
+    company = get_company_or_404(request)
     validator = ApiValidator()
 
     report_id = request.GET.get('report_id')
@@ -465,7 +493,8 @@ def export_options_api(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    report_list = list(DynamicReport.objects.filter(id=report_id))
+    report_list = list(DynamicReport.objects.filter(
+        id=report_id, owner=company))
     if len(report_list) < 1:
         validator.note_field_error('report_id', 'Unknown report id.')
 
@@ -473,16 +502,29 @@ def export_options_api(request):
         return validator.build_error_response()
 
     report = report_list[0]
+    count = len(report.python)
     rps = (ReportPresentation.objects
            .active_for_report_type_data_type(report.report_data))
 
+    cols = (
+        ConfigurationColumn.objects
+        .active_for_report_data(report.report_data)
+        .order_by('order'))
+    values = [
+        {'value': c.column_name, 'display': c.alias or c.column_name}
+        for c in cols
+    ]
+
     data = {
+        'count': count,
         'report_options': {
             'id': report.id,
             'formats': [
                 {'value': rp.id, 'display': rp.display_name}
                 for rp in rps
             ],
+            'values': values,
+            'name': report.name,
         },
     }
     return HttpResponse(content_type='application/json',
@@ -505,7 +547,7 @@ def filters_api(request):
 
     datasource = report_data.report_type.datasource
 
-    report_configuration = (report_data.configuration.build_configuration())
+    report_configuration = report_data.configuration.build_configuration()
 
     driver = ds_json_drivers[datasource]
     result = driver.encode_filter_interface(report_configuration)
@@ -524,7 +566,7 @@ def help_api(request):
     field: Name of field to get help for
     partial: Data entered so far
 
-    response: [{'key': data, 'display': data to display}]
+    response: [{'value': data, 'display': data to display}]
     """
     company = get_company_or_404(request)
     request_data = request.POST
@@ -573,7 +615,6 @@ def run_dynamic_report(request):
         owner=company)
 
     report.regenerate()
-    report.save()
 
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
@@ -593,7 +634,7 @@ def list_dynamic_reports(request):
     reports = (
         DynamicReport.objects
         .filter(owner=company, report_data__isnull=False)
-        .order_by('-pk')[:10])
+        .order_by('-pk'))
 
     data = [{
         'id': r.id,
@@ -605,31 +646,83 @@ def list_dynamic_reports(request):
                         content=json.dumps({'reports': data}))
 
 
+@restrict_to_staff()
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['GET'])
+def get_dynamic_report_info(request):
+    company = get_company_or_404(request)
+    validator = ApiValidator()
+    report_id = request.GET.get('report_id')
+    if report_id is None:
+        validator.note_field_error('report_id', 'Missing report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report_list = list(DynamicReport.objects.filter(id=report_id))
+    if len(report_list) < 1:
+        validator.note_field_error('report_id', 'Unknown report id.')
+
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    report = report_list[0]
+
+    # Guessing here. Many to many makes this ambiguous.
+    reporting_type = (
+        report.report_data.report_type.reportingtype_set.all()[0]
+        .reporting_type)
+    report_type = (
+        report.report_data.report_type.report_type)
+    data_type = (
+        report.report_data.data_type.data_type)
+
+    driver = ds_json_drivers[report.report_data.report_type.datasource]
+    adorned_filter = driver.adorn_filter(company, report.filters)
+
+    response = {
+        'report_details': {
+            'id': report.pk,
+            'report_data_id': report.report_data.pk,
+            'reporting_type': reporting_type,
+            'report_type': report_type,
+            'data_type': data_type,
+            'name': report.name,
+            'filter': adorned_filter,
+        }
+    }
+    return HttpResponse(content_type='application/json',
+                        content=json.dumps(response))
+
+
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def download_dynamic_report(request):
     """
-    Download dynamic report as CSV.
+    Download dynamic report in some format.
 
     Query String Parameters:
-        :id: ID of the report to download
-        :values: Fields to include in the resulting CSV, as well as the order
+        :id: ID of the report to export
+        :values: Fields to include in the data, as well as the order
                  in which to include them.
-        :order_by: The sort order for the resulting CSV.
+        :order_by: The the field to sort the records by
+        :direction: 'ascending' or 'decescending', for sort order
         :report_presentation_id: id of report presentation to use for file
                                  format.
 
     Outputs:
-        The report with the specified options rendered as a CSV file.
+        The report with the specified options rendered in the desired format.
     """
 
-    # SECURITY: check report_id vs company owner!!!
+    company = get_company_or_404(request)
     report_id = request.GET.get('id', 0)
-    values = request.GET.getlist('values', None)
+    values = request.GET.getlist('values')
     order_by = request.GET.get('order_by')
+    order_direction = request.GET.get('direction', 'ascending')
     report_presentation_id = request.GET.get('report_presentation_id')
 
-    report = get_object_or_404(DynamicReport, pk=report_id)
+    report = get_object_or_404(
+        DynamicReport.objects.filter(owner=company), pk=report_id)
     report_presentation = (
         ReportPresentation.objects.get(id=report_presentation_id))
     config = report.report_data.configuration
@@ -639,8 +732,20 @@ def download_dynamic_report(request):
         report.order_by = order_by
         report.save()
 
-    values = report_configuration.get_header()
-    records = [report_configuration.format_record(r) for r in report.python]
+    if len(values) == 0:
+        values = report_configuration.get_header()
+
+    records = [
+        report_configuration.format_record(r, values)
+        for r in report.python
+    ]
+
+    sorted_records = records
+    if order_by:
+        reverse = False
+        if order_direction == 'descending':
+            reverse = True
+        sorted_records = sort_records(records, order_by, reverse)
 
     presentation_driver = (
         report_presentation.presentation_type.presentation_type)
@@ -652,7 +757,11 @@ def download_dynamic_report(request):
     response['Content-Disposition'] = disposition
 
     output = StringIO()
-    presentation.write_presentation(values, records, output)
+    values = [
+        c.alias for value in values for c in report_configuration.columns
+        if c.column == value
+    ]
+    presentation.write_presentation(values, sorted_records, output)
     response.write(output.getvalue())
 
     return response
@@ -662,7 +771,6 @@ def download_dynamic_report(request):
 @require_http_methods(['POST'])
 def get_default_report_name(request):
     validator = ApiValidator()
-    get_company_or_404(request)
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
     report_data_id = request.POST.get('report_data_id')
@@ -709,3 +817,14 @@ def old_report_preview(request):
     elif report_type in ['contacts', 'partners']:
         return HttpResponse(content_type='application/json',
                             content=report.json)
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def refresh_report(request):
+    company = get_company_or_404(request)
+    report_id = request.POST['report_id']
+    report = get_object_or_404(DynamicReport, owner=company, pk=report_id)
+    report.regenerate()
+    return HttpResponse(content_type='application/json',
+                        content='{}')

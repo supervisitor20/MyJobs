@@ -2,7 +2,7 @@ import React, {PropTypes} from 'react';
 
 import {InboxManagementButton} from './InboxManagementButton';
 import {OverviewButton} from './OverviewButton';
-
+import {OutreachRecordButton} from './OutreachRecordButton';
 
 // navigation links
 export function Menu(props) {
@@ -15,11 +15,12 @@ export function Menu(props) {
     tipsHeader = <h2>Tips</h2>;
   }
   return (
-    <div className="col-xs-4">
+    <div className="col-xs-12 col-md-4">
       <div className="sidebar">
         <h2 className="top">Navigation</h2>
         <OverviewButton changePage={changePage} />
         <InboxManagementButton changePage={changePage} />
+        <OutreachRecordButton changePage={changePage} />
         {tipsHeader}
         {tipsComponent}
       </div>

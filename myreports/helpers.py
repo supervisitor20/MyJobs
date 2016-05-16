@@ -138,3 +138,24 @@ def determine_user_type(user):
 
     if user.is_staff:
         return 'STAFF'
+
+
+def compare_records(order_by):
+    """Compare two dynamic reporting records by the given field."""
+    def do_compare(a, b):
+        field_a = a.get(order_by)
+        field_b = b.get(order_by)
+        return cmp(field_a, field_b)
+    return do_compare
+
+
+def sort_records(records, order_by, reverse):
+    """Sort dynamic reporting records by the given field.
+
+    records: records to sort
+    order_by: name of field
+    reverse: True for ascending, False for desending
+
+    returns: a new set of records, sorted.
+    """
+    return sorted(records, compare_records(order_by), reverse=reverse)

@@ -1173,3 +1173,23 @@ class RemoteAccessRequestViewTests(MyJobsBase):
         access_request = SecondPartyAccessRequest.objects.get()
         self.assertTrue(access_request.session_started,
                         msg="Remote access object was not updated on use")
+
+    def test_requests_expire(self):
+        """
+        We should stop impersonation sessions once the two hour mark passes.
+        """
+        SecondPartyAccessRequest.objects.create(
+            account_owner=self.account_owner,
+            second_party=self.user, accepted=True, site=self.site)
+        response = self.client.get(self.impersonate_url, follow=True)
+        self.assertEqual(response.context['user'], self.account_owner,
+                         msg=("Using an accepted access request did not "
+                              "change the user used for this request"))
+
+        spa = SecondPartyAccessRequest.objects.get()
+        spa.session_started -= timedelta(hours=2, seconds=1)
+        spa.save()
+        response = self.client.get(reverse('home'), follow=True)
+        self.assertEqual(response.context['user'], self.user,
+                         msg=("Continuing use of an expired access request "
+                              "did not end the request"))

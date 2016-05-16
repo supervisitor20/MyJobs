@@ -1,5 +1,4 @@
 from datetime import timedelta
-from django.conf import global_settings
 
 PROJECT = 'redirect'
 
@@ -24,9 +23,16 @@ CACHES = {
     }
 }
 
-MIDDLEWARE_CLASSES = global_settings.MIDDLEWARE_CLASSES + (
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
     'redirect.middleware.ExcludedViewSourceMiddleware',
     'redirect.middleware.MyJobsRedirectMiddleware',
 )
 
-SESSION_SAVE_EVERY_REQUEST = False
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.request',
+)

@@ -43,7 +43,7 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location, OutreachEmailAddress)
+                               Location, OutreachEmailAddress, OutreachRecord)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1412,6 +1412,30 @@ def api_update_nuo_inbox(request):
     return HttpResponse(json.dumps(ctx),
                         content_type='application/json; charset=utf-8')
 
+
+@restrict_to_staff()
+@requires("read outreach record")
+def api_get_nuo_records_list(request):
+    """
+    GET /prm/api/nonuseroutreach/records/list
+
+    Retrieves all non user outreach records for a company. Returns json object
+    with all relevant information for each.
+
+    """
+    company = get_company_or_404(request)
+    outreach_emails = OutreachEmailAddress.objects.filter(company=company)
+    records = OutreachRecord.objects.filter(outreach_email__in=outreach_emails)
+    json_res = []
+    for record in records:
+        json_obj = dict(
+            date_added = record.date_added.strftime('%m-%d-%Y'),
+            outreach_email = record.outreach_email.email + '@my.jobs',
+            from_email = record.from_email,
+            current_workflow_state = record.current_workflow_state.state,
+        )
+        json_res.append(json_obj)
+    return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 @requires('read tag')
 def tag_names(request):

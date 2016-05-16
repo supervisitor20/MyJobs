@@ -183,7 +183,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
+        self.assertEquals(1, len(choices['data_types']))
         self.assertEquals(
             choices['data_types'][0],
             choices['selected_data_type'])
@@ -205,10 +205,7 @@ class TestActiveModels(MyReportsTestCase):
         self.assertEquals(
             choices['report_types'][2],
             choices['selected_report_type'])
-        self.assertEquals(2, len(choices['data_types']))
-        self.assertEquals(
-            choices['data_types'][1],
-            choices['selected_data_type'])
+        self.assertEquals(1, len(choices['data_types']))
 
     def test_build_choices_wrong_report_type(self):
         choices = ReportTypeDataTypes.objects.build_choices(
@@ -262,7 +259,7 @@ class TestReportConfiguration(MyReportsTestCase):
     def test_build_config(self):
         """
         Test building a report configuration from the DB.
-        
+
         Here, we expect that an appropriate format should be selected for each
         of the columns configured *except* when that column is marked as
         ``filter_only```. For those columns, we expect format to be ``''``.
@@ -270,50 +267,60 @@ class TestReportConfiguration(MyReportsTestCase):
         expected_config = ReportConfiguration(
             columns=[
                 ColumnConfiguration(
-                    column='name',
-                    format='text'),
+                    column='date',
+                    alias='Date',
+                    format='us_datetime',
+                    filter_interface='date_range',
+                    filter_display='Date'),
                 ColumnConfiguration(
                     column='',
+                    alias='Contact Location',
                     format=None,
                     help=True,
                     filter_interface=u'city_state',
                     filter_display=u'Contact Location'),
                 ColumnConfiguration(
-                    column='partner',
-                    format='text',
-                    filter_interface='search_multiselect',
-                    filter_display='Partners',
-                    help=True),
-                ColumnConfiguration(
-                    column='email',
-                    format='text'),
-                ColumnConfiguration(
-                    column='phone',
-                    format='text'),
-                ColumnConfiguration(
-                    column='date',
-                    format='us_date',
-                    filter_interface='date_range',
-                    filter_display='Date'),
-                ColumnConfiguration(
-                    column='notes',
-                    format='text'),
-                ColumnConfiguration(
                     column='locations',
+                    alias='Location',
                     format='city_state_list',
                     filter_interface='city_state',
                     filter_display='Location',
                     help=True),
                 ColumnConfiguration(
                     column='tags',
+                    alias='Tags',
                     format='tags_list',
                     filter_interface='tags',
                     filter_display='Tags',
                     help=True),
+                ColumnConfiguration(
+                    column='partner',
+                    alias='Partners',
+                    format='text',
+                    filter_interface='search_multiselect',
+                    filter_display='Partners',
+                    help=True),
+                ColumnConfiguration(
+                    column='name',
+                    alias='Name',
+                    format='text'),
+                ColumnConfiguration(
+                    column='email',
+                    alias='Email',
+                    format='text'),
+                ColumnConfiguration(
+                    column='phone',
+                    alias='Phone',
+                    format='text'),
+                ColumnConfiguration(
+                    column='notes',
+                    alias='Notes',
+                    format='text'),
             ])
         config_model = self.dynamic_models['configuration']['contacts']
         # Add a filter_only column.
         ConfigurationColumnFactory.create(
+            alias='Contact Location',
             filter_interface_type='city_state',
             filter_interface_display='Contact Location',
             filter_only=True,

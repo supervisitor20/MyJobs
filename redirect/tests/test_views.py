@@ -7,7 +7,6 @@ import re
 from urllib import unquote
 import urlparse
 import uuid
-import unicodecsv as csv
 
 from jira.client import JIRA
 import markdown
@@ -1298,52 +1297,3 @@ class RedirectViewTests(RedirectBase):
         self.assertEqual(response['Location'],
                          'http://my.jobs' + path.replace('%2B', '+'))
         self.assertEqual(response.status_code, 301)
-
-    def test_export_as_csv_admin_action(self):
-        """
-        Tests the ability to export the list of destination manipulations as a
-        CSV.
-
-        """
-        email = 'test@directemployers.org'
-        password = 'password'
-        UserFactory(
-            email=email, password=password, is_staff=True, is_superuser=True)
-        # only superusers are allowed to use Django amin
-        self.client.login(username=email, password=password)
-
-        manipulations = [DestinationManipulationFactory(view_source=i)
-                         for i in range(200, 210)]
-        # this is the format we expect results to be in if deserializing CSV
-        # into a list of dicts
-        formatted_manipulations = [{
-            u'View Source': unicode(m.view_source),
-            u'BUID': unicode(m.buid),
-            u'Action Type': unicode(m.action_type),
-            u'Value 1': unicode(m.value_1),
-            u'Value 2': unicode(m.value_2),
-            u'Action': unicode(m.action)
-        } for m in manipulations]
-
-        args = {
-            'action': 'export_as_csv',
-            '_selected_action': [
-                unicode(m.pk) for m in manipulations[:5]
-            ]
-        }
-        changelist_url = reverse(
-            "admin:redirect_destinationmanipulation_changelist")
-
-        # asking to export as csv when selected items should serialize only
-        # those items
-        response = self.client.post(changelist_url, args)
-        reader = csv.DictReader(response.content.split('\r\n'))
-        self.assertItemsEqual(list(reader), formatted_manipulations[:5])
-
-        args['select_across'] = '1'
-
-        # choosing "select all" should export all records in the queryset,
-        # regardless of the list of selected items passed
-        response = self.client.post(changelist_url, args)
-        reader = csv.DictReader(response.content.split('\r\n'))
-        self.assertItemsEqual(list(reader), formatted_manipulations)

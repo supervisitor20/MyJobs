@@ -114,6 +114,9 @@ class MockDataSource(DataSource):
         self.calls.append(['run', data_source, company, filter, order])
         return 'aaa'
 
+    def adorn_filter(self, company, filter_spec):
+        pass
+
 
 class TestDataSourceJsonDriver(TestCase):
     def setUp(self):
@@ -239,6 +242,9 @@ class SomeDataSource(DataSource):
 
     def help_name(self, company, filter_spec, partial):
         return partial + ' zz'
+
+    def adorn_filter(self, company, filter_spec):
+        pass
 
 
 class TestDispatch(TestCase):

@@ -181,7 +181,7 @@ Report.prototype = {
             start_date: formatDate(start_date),
             end_date: formatDate(end_date)
           };
-        } 
+        }
       } else {
         defaultVal = steelToe(json).get(field.key);
 
@@ -192,7 +192,7 @@ Report.prototype = {
             return item.toString();
           });
         }
-      } 
+      }
 
       if (typeof defaultVal !== 'undefined') {
         field.defaultVal = defaultVal;
@@ -312,7 +312,7 @@ function Field(options) {
     helpText: '',
     errors: [],
     isFilter: true,
-    autofocus: false
+    autofocus: ''
   }));
 
   this.key = this.key || options.id;
@@ -1289,46 +1289,46 @@ function createReport(type) {
     contact: function() {
       return new Report("contact", [new TextField({
                                           isFilter: false,
-                                          label: "Report Name", 
-                                          id: "report_name", 
-                                          required: true, 
+                                          label: "Report Name",
+                                          id: "report_name",
+                                          required: true,
                                           defaultVal: reportNameDateFormat(new Date())
                                         }),
                                     new DateField({
-                                          label: "Select Date", 
-                                          id: "date", 
+                                          label: "Select Date",
+                                          id: "date",
                                           key: {
-                                            start_date: "contactrecord.date_time.gte", 
+                                            start_date: "contactrecord.date_time.gte",
                                             end_date: "contactrecord.date_time.lte"
-                                          }, 
-                                          required: true, 
+                                          },
+                                          required: true,
                                           defaultVal: {
-                                            start_date: "01/01/2014", 
+                                            start_date: "01/01/2014",
                                             end_date: dateFieldFormat(yesterday)
                                           }
                                         }),
                                     new StateField({
-                                          label: "State", 
+                                          label: "State",
                                           id: "state",
                                           key: "locations.state.icontains"
                                         }),
                                     new TextField({
-                                          label: "City", 
+                                          label: "City",
                                           id: "city",
                                           key: "locations.city.icontains",
-                                          autofocus: "autofocus"
+                                          autofocus: 'autofocus'
                                         }),
                                     new TagField({
-                                      label: "Tags", 
-                                      id: "tags", 
-                                      key: "tags.name.in", 
+                                      label: "Tags",
+                                      id: "tags",
+                                      key: "tags.name.in",
                                       helpText: "Use commas for multiple tags."
                                     }),
                                     new FilteredList({
-                                      label: "Partners", 
-                                      id: "partner", 
+                                      label: "Partners",
+                                      id: "partner",
                                       key: "partner.in",
-                                      required: true, 
+                                      required: true,
                                       dependencies: {
                                         date: {
                                           start_date: 'contactrecord.date_time.gte',
@@ -1346,116 +1346,116 @@ function createReport(type) {
     partner: function() {
       return new Report("partner", [new TextField({
                                       isFilter: false,
-                                      label: "Report Name", 
-                                      id: "report_name", 
-                                      required: true, 
+                                      label: "Report Name",
+                                      id: "report_name",
+                                      required: true,
                                       defaultVal: reportNameDateFormat(new Date())
                                     }),
                                     new StateField({
-                                      label: "State", 
+                                      label: "State",
                                       id: "state",
                                       key: "contact.locations.state.icontains"
                                     }),
                                     new TextField({
-                                      label: "City", 
+                                      label: "City",
                                       id: "city",
                                       key: "contact.locations.city.icontains",
-                                      autofocus: "autofocus"
+                                      autofocus: 'autofocus'
                                     }),
                                     new TextField({
-                                      label: "URL", 
+                                      label: "URL",
                                       id: "uri",
                                       key: "uri.icontains"
                                     }),
                                     new TextField({
-                                      label: "Source", 
+                                      label: "Source",
                                       id: "data_source",
                                       key: "data_source.icontains"
                                     }),
                                     new TagField({
-                                      label: "Tags", 
-                                      id: "tags", 
-                                      key: "tags.name.in", 
+                                      label: "Tags",
+                                      id: "tags",
+                                      key: "tags.name.in",
                                       helpText: "Use commas for multiple tags."
                                     })
                                   ]);
     },
     contactrecord: function() {
       var CommunicationTypeChoices = [new CheckBox({
-                                  label: "Email", 
-                                  name: "communication_type", 
+                                  label: "Email",
+                                  name: "communication_type",
                                   defaultVal: "email"
                                 }),
                                 new CheckBox({
-                                  label: "Phone Call", 
-                                  name: "communication_type", 
+                                  label: "Phone Call",
+                                  name: "communication_type",
                                   defaultVal: "phone"
                                 }),
                                 new CheckBox({
-                                  label: "Meeting or Event", 
-                                  name: "communication_type", 
+                                  label: "Meeting or Event",
+                                  name: "communication_type",
                                   defaultVal: "meetingorevent"
                                 }),
                                 new CheckBox({
-                                  label: "Job Followup", 
-                                  name: "communication_type", 
+                                  label: "Job Followup",
+                                  name: "communication_type",
                                   defaultVal: "job"
                                 }),
                                 new CheckBox({
-                                  label: "Saved Search Email", 
-                                  name: "communication_type", 
+                                  label: "Saved Search Email",
+                                  name: "communication_type",
                                   defaultVal: "pssemail"
                                 })];
 
       return new Report("contactrecord", [new TextField({
                                             isFilter: false,
-                                            label: "Report Name", 
-                                            id: "report_name", 
-                                            required: true, 
+                                            label: "Report Name",
+                                            id: "report_name",
+                                            required: true,
                                             defaultVal: reportNameDateFormat(new Date())}),
                                           new DateField({
-                                            label: "Select Date", 
-                                            id: "date", 
+                                            label: "Select Date",
+                                            id: "date",
                                             key: {
-                                              start_date: "date_time.gte", 
+                                              start_date: "date_time.gte",
                                               end_date: "date_time.lte"
-                                            }, 
-                                            required: true, 
+                                            },
+                                            required: true,
                                             defaultVal: {
-                                              start_date: "01/01/2014", 
+                                              start_date: "01/01/2014",
                                               end_date: dateFieldFormat(yesterday)
                                             }
                                           }),
                                           new StateField({
-                                            label: "State", 
-                                            id: "state", 
+                                            label: "State",
+                                            id: "state",
                                             key: "contact.locations.state.icontains"
                                           }),
                                           new TextField({
-                                            label: "City", 
-                                            id: "city", 
+                                            label: "City",
+                                            id: "city",
                                             key: "contact.locations.city.icontains",
-                                            autofocus: "autofocus"
+                                            autofocus: 'autofocus'
                                           }),
                                           new CheckList({
-                                            label: "Communication Types", 
-                                            id: "communication_type", 
+                                            label: "Communication Types",
+                                            id: "communication_type",
                                             key: "contact_type.in",
-                                            required: true, 
-                                            defaultVal: "all", 
+                                            required: true,
+                                            defaultVal: "all",
                                             choices: CommunicationTypeChoices
                                           }),
                                           new TagField({
-                                            label: "Tags", 
-                                            id: "tags", 
-                                            key: "tags.name.in", 
+                                            label: "Tags",
+                                            id: "tags",
+                                            key: "tags.name.in",
                                             helpText: "Use commas for multiple tags."
                                           }),
                                           new FilteredList({
-                                            label: "Partners", 
-                                            id: "partner", 
+                                            label: "Partners",
+                                            id: "partner",
                                             key: "partner.in",
-                                            required: true, 
+                                            required: true,
                                             dependencies: {
                                               date: {
                                                 start_date: 'contactrecord.date_time.gte',
@@ -1470,10 +1470,10 @@ function createReport(type) {
                                             order_by: "name"
                                           }),
                                           new FilteredList({
-                                            label: "Contacts", 
-                                            id: "contact", 
+                                            label: "Contacts",
+                                            id: "contact",
                                             key: "contact.in",
-                                            required: true, 
+                                            required: true,
                                             dependencies: {
                                               date: {
                                                 start_date: 'contactrecord.date_time.gte',
@@ -1773,9 +1773,9 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
               contactContainer,
               i;
 
-          $mainContainer.html('').append("<div class='span12'><h2>" + reportName + "</h2></div>" +
-                                         "<div class='span6'><h4>Communication Activity</h4><div id='d-chart'></div>" +
-                                         "</div><div class='span6'><h4>Referral Activity</h4><div id='b-chart'></div></div>");
+          $mainContainer.html('').append("<div class='span12 col-sm-12'><h2>" + reportName + "</h2></div>" +
+                                         "<div class='span6 col-sm-12'><h4>Communication Activity</h4><div id='d-chart'></div>" +
+                                         "</div><div class='span6 col-sm-12'><h4>Referral Activity</h4><div id='b-chart'></div></div>");
 
           for (pKey in pChartInfo) {
             if (pChartInfo.hasOwnProperty(pKey)) {
@@ -1860,12 +1860,14 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
               commRecords = contact.records;
 
               // create container
-              div = $('<div class="span4 panel top-contacts"></div>');
-              div.append('<div class="name">' + name + '</div><div>' + email + '</div><div class="top-three-box-container">' +
+              div = $('<div class="span4 col-md-4 col-sm-12 top-contacts"></div>');
+              div.append('<div class="panel">' +
+                         '<div class="name">' + name + '</div><div class="email">' + email + '</div><div class="top-three-box-container">' +
                          '<div class="report-box small"><div class="big-num">' + commRecords +
                          '</div><div class="reports-record-type">Communication Records</div></div>' +
                          '<div class="report-box small"><div class="big-num">' + cReferrals +
-                         '</div><div class="reports-record-type">Referral Records</div></div></div>');
+                         '</div><div class="reports-record-type">Referral Records</div></div></div>' +
+                         '</div>');
 
               // add the rendered html as a string.
               html += div.prop("outerHTML");
@@ -1876,7 +1878,7 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
           // Don't generate a table if cLength = 0
           if (contacts.length) {
             restRow = $('<div class="row"></div>').append(function() {
-              var div = $('<div class="span12"></div>'),
+              var div = $('<div class="span12 col-sm-12"></div>'),
                   table = $('<table class="table table-striped report-table"><thead><tr><th>Name</th>' +
                             '<th>Email</th><th>Partner</th><th>Communication Records</th><th>Referral Records</th>' +
                             '</tr></thead></table>'),
@@ -1894,7 +1896,7 @@ function renderGraphs(report_id, reportName, callback, overrideUrl) {
                     name = $td.data("name"),
                     email = $td.data("email"),
                     partner = $td.data("partner");
-                
+
                 window.open("/prm/view/records?partner=" + partner + "&contact=" + name + "&keywords=" + email, "_blank");
               });
 
@@ -1930,7 +1932,7 @@ function renderViewPartner(id, name, overrideUrl) {
     url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/partner"),
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
+      var $span = $('<div class="span12 col-sm-12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Name</th><th>Primary Contact</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
@@ -1957,7 +1959,7 @@ function renderViewContact(id, name, overrideUrl) {
     url: url + (overrideUrl ? overrideUrl : "/reports/view/mypartners/contact"),
     data: data,
     success: function(data) {
-      var $span = $('<div class="span12"><h2>' + name + '</h2></div>'),
+      var $span = $('<div class="span12 col-sm-12"><h2>' + name + '</h2></div>'),
           $table = $('<table class="table table-striped report-table"><thead><tr>' +
                      '<th>Partner</th><th>Name</th><th>Phone</th><th>Email</th><th>State(s)</th></tr></thead></table>'),
           $tbody = $('<tbody></tbody>'),
