@@ -384,6 +384,9 @@ class Migration(DataMigration):
 
     def backwards(self, orm):
         "Write your backwards methods here."
+        raise RuntimeError(
+            "Cannot reverse this migration. " +
+            "This migration could delete or invalidate customer data.")
 
     models = {
         u'auth.group': {
