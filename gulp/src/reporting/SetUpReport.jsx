@@ -21,7 +21,7 @@ export default class SetUpReport extends Component {
     super();
     this.state = {
       loading: true,
-      filter: {},
+      filter: null,
       reportName: null,
       reportingTypes: [],
       reportTypes: [],
@@ -31,6 +31,7 @@ export default class SetUpReport extends Component {
 
   componentDidMount() {
     const {reportFinder, history} = this.props;
+    this.mounted = true;
     this.unsubscribeToMenuChoices = reportFinder.subscribeToMenuChoices(
         (...choices) => this.onMenuChanged(...choices));
     this.historyUnlisten = (
@@ -50,6 +51,7 @@ export default class SetUpReport extends Component {
   componentWillUnmount() {
     this.historyUnlisten();
     this.unsubscribeToMenuChoices();
+    this.mounted = false;
   }
 
   onIntentionChange(intention) {
@@ -116,29 +118,20 @@ export default class SetUpReport extends Component {
       dataSet: dataType,
     } = this.props.location.query;
     const locationState = (this.props.location || {}).state || {};
-    const {filter: filterFromHistory, name} = locationState;
-
-    const filter = filterFromHistory || {};
+    const {filter, name} = locationState;
 
     await this.buildReportConfig(
       reportingType, reportType, dataType, name, filter);
-    this.setState({loading: false});
   }
 
   async buildReportConfig(reportingType, reportType, dataType, overrideName,
-      overrideFilter) {
+      newFilter) {
     const {
       reportDataId: reportDataIdRaw,
     } = this.props.location.query;
     const {reportFinder} = this.props;
-    const {filter, reportName} = this.state;
+    const {reportName} = this.state;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
-    let newFilter;
-    if (overrideFilter) {
-      newFilter = overrideFilter;
-    } else {
-      newFilter = filter;
-    }
 
     let newName;
     if (overrideName) {
@@ -147,7 +140,8 @@ export default class SetUpReport extends Component {
       newName = reportName;
     }
 
-    reportFinder.buildReportConfiguration(
+    this.setState({loading: true});
+    await reportFinder.buildReportConfiguration(
       reportingType,
       reportType,
       dataType,
@@ -158,6 +152,9 @@ export default class SetUpReport extends Component {
       f => this.onFilterUpdate(f),
       errors => this.onErrorsChanged(errors),
       (...args) => this.handleNewReportDataId(...args));
+    if (this.mounted) {
+      this.setState({loading: false});
+    }
   }
 
   handleNewReportDataId(newReportDataId, reportingType, reportType, dataType) {
@@ -202,7 +199,6 @@ export default class SetUpReport extends Component {
     const {maxNameLength} = this.props;
     const {
       loading,
-      filter,
       reportConfig,
       reportName,
       reportNameError,
@@ -235,23 +231,8 @@ export default class SetUpReport extends Component {
       reportConfig.filters.forEach(col => {
         switch (col.interface_type) {
         case 'date_range':
-          let begin;
-          let end;
-          if (!reportConfig.currentFilter[col.filter]) {
-            // Default is today
-            const now = new Date();
-            const year = now.getFullYear();
-            // month and day must both be two characters
-            const month = (now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1);
-            const day = now.getDate() < 10 ? '0' + now.getDate() : now.getDate();
-            const today = month + '/' + day + '/' + year;
-
-            begin = '01/01/2014';
-            end = today;
-          } else {
-            begin = reportConfig.currentFilter[col.filter][0];
-            end = reportConfig.currentFilter[col.filter][1];
-          }
+          const begin = (reportConfig.currentFilter[col.filter] || [])[0];
+          const end = (reportConfig.currentFilter[col.filter] || [])[1];
 
           rows.push(
             <FieldWrapper key={col.filter} label="Date range">
@@ -298,7 +279,7 @@ export default class SetUpReport extends Component {
 
               <TagAndFilter
                 getHints={v => reportConfig.getHints(col.filter, v)}
-                selected={filter[col.filter] || []}
+                selected={reportConfig.currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
                   reportConfig.addToAndOrFilter(col.filter, i, t)}
                 onRemove={(i, t) =>

@@ -553,6 +553,7 @@ def filters_api(request):
 
     response: See ContactsJsonDriver.encode_filter_interface()
     """
+    company = get_company_or_404(request)
     request_data = request.POST
     report_data_id = request_data['report_data_id']
     report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
@@ -562,10 +563,13 @@ def filters_api(request):
     report_configuration = report_data.configuration.build_configuration()
 
     driver = ds_json_drivers[datasource]
+    data_type_name = report_data.data_type.data_type
     result = driver.encode_filter_interface(report_configuration)
+    default_filter = driver.get_default_filter(data_type_name, company)
+    result['default_filter'] = default_filter
 
     return HttpResponse(content_type='application/json',
-                        content=json.dumps(result))
+                        content=driver.serialize_filterlike(result))
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -704,7 +708,7 @@ def get_dynamic_report_info(request):
         }
     }
     return HttpResponse(content_type='application/json',
-                        content=json.dumps(response))
+                        content=driver.serialize_filterlike(response))
 
 
 @requires('read partner', 'read contact', 'read communication record')
