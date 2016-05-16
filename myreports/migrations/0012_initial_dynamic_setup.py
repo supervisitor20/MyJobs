@@ -316,14 +316,6 @@ class Migration(DataMigration):
             output_format="text",
             configuration=con_comm,
             multi_value_expansion=False, is_active=True)
-        # Leaving this.
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="last_action_time",
-            order=121,
-            output_format="us_datetime",
-            configuration=con_comm,
-            is_active=False,
-            multi_value_expansion=False)
         orm["myreports.ConfigurationColumn"].objects.create(
             column_name="length",
             alias="Length",
