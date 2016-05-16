@@ -55,7 +55,7 @@ class Migration(DataMigration):
 
         orm["myreports.PresentationType"].objects.all().delete()
         pre_csv = orm["myreports.PresentationType"].objects.create(
-            presentation_type="csv", description="Unformatted CSV", is_active=True)
+            presentation_type="csv", description="CSV", is_active=True)
         pre_xlsx = orm["myreports.PresentationType"].objects.create(
             presentation_type="xlsx", description="Excel xlsx", is_active=True)
 
