@@ -42,7 +42,6 @@
     "react-bootstrap-table": "^2.2.0",
     "react-dom": "^0.14.3",
     "react-filtered-multiselect": "^0.4.2",
-    "react-native-listener": "^1.0.1",
     "react-onclickout": "^2.0.4",
     "react-router": "^1.0.0",
     "react-sortablejs": "^1.0.0",
