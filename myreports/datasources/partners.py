@@ -196,6 +196,9 @@ class PartnersDataSource(DataSource):
         adorned = {}
         empty = PartnersFilter()
 
+        if filter_spec.date:
+            adorned[u'date'] = filter_spec.date
+
         if filter_spec.locations:
             adorned[u'locations'] = {}
             known_city = filter_spec.locations.get('city', None)
@@ -234,6 +237,12 @@ class PartnersDataSource(DataSource):
             if uris:
                 adorned[u'uri'] = uris[0]['value']
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = PartnersFilter(
+            date=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 

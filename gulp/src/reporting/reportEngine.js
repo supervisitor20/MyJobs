@@ -77,8 +77,14 @@ export class ReportFinder {
       } else {
         name = await this.api.getDefaultReportName(reportDataId);
       }
+      let initialFilter;
+      if (currentFilter) {
+        initialFilter = currentFilter;
+      } else {
+        initialFilter = filters.default_filter;
+      }
       reportConfiguration = this.configBuilder.build(
-        name.name, reportDataId, filters.filters, currentFilter,
+        name.name, reportDataId, filters.filters, initialFilter,
         (reportId, report) => this.noteNewReport(reportId, report),
         report => this.noteNewRunningReport(report),
         onNameChanged,
@@ -346,6 +352,9 @@ export class ReportConfiguration {
         return map(item, o => o.value);
       } else if (isArray(item) && isArray(item[0])) {
         return map(item, inner => map(inner, o => o.value));
+      } else if (isArray(item) && item.length === 2 &&
+          typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
+        return item;
       }
       warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
     });

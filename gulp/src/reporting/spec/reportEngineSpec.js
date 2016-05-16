@@ -240,6 +240,12 @@ describe('ReportConfiguration', () => {
     expect(config.getFilter()).toEqual({'locations': {city: 'Indianapolis'}});
   });
 
+  it('can set simple filters to date range values', () => {
+    config.setFilter('date_range', ['2016-01-01', '2016-01-02']);
+    expect(config.getFilter()).toEqual(
+      {'date_range': ['2016-01-01', '2016-01-02']});
+  });
+
   it('treats null filter values as removal', () => {
     config.setFilter('city', 'Indianapolis');
     config.setFilter('city', null);
