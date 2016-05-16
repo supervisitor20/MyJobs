@@ -14,8 +14,6 @@ class Migration(DataMigration):
         # and orm['appname.ModelName'] for models in other applications.
 
         orm["myreports.UserType"].objects.all().delete()
-        ut_emp_dead = orm["myreports.UserType"].objects.create(
-            user_type="EMPLOYER", is_active=False)
         ut_emp = orm["myreports.UserType"].objects.create(user_type="EMPLOYER", is_active=True)
         ut_staff = orm["myreports.UserType"].objects.create(user_type="STAFF", is_active=True)
 
@@ -23,34 +21,10 @@ class Migration(DataMigration):
         rit_prm = orm["myreports.ReportingType"].objects.create(
             reporting_type="prm",
             description="PRM Reports", is_active=True)
-        rit_comp = orm["myreports.ReportingType"].objects.create(
-            reporting_type="compliance",
-            description="Compliance Reports", is_active=True)
-        rit_dead = orm["myreports.ReportingType"].objects.create(
-            reporting_type="Dead",
-            description="Dead Reports",
-            is_active=False)
-        rit_maybe_dead = orm["myreports.ReportingType"].objects.create(
-            reporting_type="Maybe Dead",
-            description="Maybe Dead Reports",
-            is_active=False)
-        rit_wrong = orm["myreports.ReportingType"].objects.create(
-            reporting_type="Wrong UT",
-            description="Wrong UserType", is_active=True)
 
         orm["myreports.UserReportingTypes"].objects.all().delete()
         orm["myreports.UserReportingTypes"].objects.create(
             user_type=ut_emp, reporting_type=rit_prm, is_active=True)
-        orm["myreports.UserReportingTypes"].objects.create(
-            user_type=ut_emp, reporting_type=rit_comp, is_active=True)
-        orm["myreports.UserReportingTypes"].objects.create(
-            user_type=ut_emp, reporting_type=rit_dead, is_active=True)
-        orm["myreports.UserReportingTypes"].objects.create(
-            user_type=ut_emp, reporting_type=rit_maybe_dead, is_active=False)
-        orm["myreports.UserReportingTypes"].objects.create(
-            user_type=ut_emp_dead, reporting_type=rit_wrong, is_active=True)
-        orm["myreports.UserReportingTypes"].objects.create(
-            user_type=ut_staff, reporting_type=rit_comp, is_active=True)
 
         orm["myreports.ReportType"].objects.all().delete()
         rt_partners = orm["myreports.ReportType"].objects.create(
@@ -65,19 +39,6 @@ class Migration(DataMigration):
             report_type="communication-records",
             description="Communication Records Report",
             datasource="comm_records", is_active=True)
-        rt_state = orm["myreports.ReportType"].objects.create(
-            report_type="state",
-            description="State Report", is_active=True)
-        rt_screen = orm["myreports.ReportType"].objects.create(
-            report_type="screenshots",
-            description="Screenshots Report", is_active=True)
-        rt_dead = orm["myreports.ReportType"].objects.create(
-            report_type="Dead",
-            description="Dead Report",
-            is_active=False)
-        rt_maybe_dead = orm["myreports.ReportType"].objects.create(
-            report_type="Maybe Dead",
-            description="Maybe Dead Report", is_active=True)
 
         orm["myreports.ReportingTypeReportTypes"].objects.all().delete()
         orm["myreports.ReportingTypeReportTypes"].objects.create(
@@ -86,64 +47,25 @@ class Migration(DataMigration):
             report_type=rt_con, reporting_type=rit_prm, is_active=True)
         orm["myreports.ReportingTypeReportTypes"].objects.create(
             report_type=rt_comm, reporting_type=rit_prm, is_active=True)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_dead, reporting_type=rit_prm, is_active=True)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_maybe_dead, reporting_type=rit_prm,
-            is_active=False)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_state, reporting_type=rit_comp, is_active=True)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_screen, reporting_type=rit_comp, is_active=True)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_dead, reporting_type=rit_comp, is_active=True)
-        orm["myreports.ReportingTypeReportTypes"].objects.create(
-            report_type=rt_maybe_dead, reporting_type=rit_prm,
-            is_active=False)
 
         orm["myreports.DataType"].objects.all().delete()
-        dt_dead = orm["myreports.DataType"].objects.create(
-            data_type="",
-            description="Dead",
-            is_active=False)
-        dt_maybe_dead = orm["myreports.DataType"].objects.create(
-            data_type="",
-            description="Maybe Dead", is_active=True)
         dt_unagg = orm["myreports.DataType"].objects.create(
             data_type="unaggregated",
             description="Unaggregated", is_active=True)
-        dt_count_comm_per_month_per_partner = orm["myreports.DataType"].objects.create(
-            is_active=False,
-            data_type="count_comm_rec_per_month",
-            description="Number of Communication Records per Month per Partner")
 
         orm["myreports.PresentationType"].objects.all().delete()
-        pre_dead = orm["myreports.PresentationType"].objects.create(
-            description="Inactive", is_active=False)
-        pre_maybe_dead = orm["myreports.PresentationType"].objects.create(
-            description="Maybe Inactive", is_active=True)
         pre_csv = orm["myreports.PresentationType"].objects.create(
             presentation_type="csv", description="Unformatted CSV", is_active=True)
         pre_xlsx = orm["myreports.PresentationType"].objects.create(
             presentation_type="xlsx", description="Excel xlsx", is_active=True)
-        pre_json = orm["myreports.PresentationType"].objects.create(
-            is_active=False,
-            presentation_type="json_pass",
-            description="JSON Passthrough")
 
         orm["myreports.Configuration"].objects.all().delete()
-        con_dead = orm["myreports.Configuration"].objects.create(
-            name="Inactive", is_active=False)
-        orm["myreports.Configuration"].objects.create(
-            name="Maybe Inactive", is_active=True)
         con_con = orm["myreports.Configuration"].objects.create(
             name="Contact Basic Report", is_active=True)
         con_part = orm["myreports.Configuration"].objects.create(
             name="Partner Basic Report", is_active=True)
         con_comm = orm["myreports.Configuration"].objects.create(
             name="Communication Records Basic Report", is_active=True)
-        con_comm_count = orm["myreports.Configuration"].objects.create(
-            name="Partners Comm Record Count Per Month Report", is_active=True)
 
         orm["myreports.ConfigurationColumn"].objects.all().delete()
         orm["myreports.ConfigurationColumn"].objects.create(
@@ -185,12 +107,6 @@ class Migration(DataMigration):
             configuration=con_con,
             multi_value_expansion=False,
             has_help=True, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="dead",
-            output_format="text",
-            configuration=con_con,
-            multi_value_expansion=False,
-            is_active=False)
         orm["myreports.ConfigurationColumn"].objects.create(
             column_name="name",
             alias="Name",
@@ -396,6 +312,7 @@ class Migration(DataMigration):
             output_format="text",
             configuration=con_comm,
             multi_value_expansion=False, is_active=True)
+        # Leaving this.
         orm["myreports.ConfigurationColumn"].objects.create(
             column_name="last_action_time",
             order=121,
@@ -432,88 +349,8 @@ class Migration(DataMigration):
             configuration=con_comm,
             multi_value_expansion=False, is_active=True)
 
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="data_source",
-            alias='Source',
-            order=103,
-            output_format="text",
-            filter_interface_type='search_select',
-            filter_interface_display='Source',
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="name",
-            alias="Name",
-            order=104,
-            output_format="text",
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="date",
-            alias='Date',
-            order=105,
-            configuration=con_comm_count,
-            output_format="us_datetime",
-            filter_interface_type='date_range',
-            filter_interface_display='Date',
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="primary_contact",
-            alias="Primary Contact",
-            order=106,
-            output_format="text",
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="tags",
-            alias='Tags',
-            order=107,
-            output_format="tags_list",
-            filter_interface_type='tags',
-            filter_interface_display='Tags',
-            configuration=con_comm_count,
-            multi_value_expansion=False,
-            has_help=True, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="uri",
-            alias='URL',
-            order=108,
-            output_format="text",
-            filter_interface_type='search_select',
-            filter_interface_display='URL',
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="year",
-            alias='Year',
-            order=109,
-            output_format="text",
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="month",
-            alias='Month',
-            order=110,
-            output_format="text",
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
-        orm["myreports.ConfigurationColumn"].objects.create(
-            column_name="comm_rec_count",
-            alias='Communication Record Count',
-            order=111,
-            output_format="text",
-            configuration=con_comm_count,
-            multi_value_expansion=False, is_active=True)
 
         orm["myreports.ReportTypeDataTypes"].objects.all().delete()
-        orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_con, data_type=dt_dead,  configuration=con_con, is_active=True)
-        orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_con, data_type=dt_maybe_dead, is_active=False,
-            configuration=con_con)
-        orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_con, data_type=dt_maybe_dead, is_active=False,
-            configuration=con_dead)
         rtdt_con_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
             report_type=rt_con, data_type=dt_unagg, configuration=con_con, is_active=True)
         rtdt_part_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
@@ -521,21 +358,8 @@ class Migration(DataMigration):
             configuration=con_part, is_active=True)
         rtdt_comm_unagg = orm["myreports.ReportTypeDataTypes"].objects.create(
             report_type=rt_comm, data_type=dt_unagg, configuration=con_comm, is_active=True)
-        rtdt_comm_count_pmpp = orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_partners, configuration=con_comm_count,
-            data_type=dt_count_comm_per_month_per_partner, is_active=True)
-        orm["myreports.ReportTypeDataTypes"].objects.create(
-            report_type=rt_con, data_type=dt_unagg, is_active=False,
-            configuration=con_dead)
 
         orm["myreports.ReportPresentation"].objects.all().delete()
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_maybe_dead,
-            display_name="Dead", report_data=rtdt_con_unagg, is_active=False)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_dead,
-            display_name="Dead Presentation",
-            report_data=rtdt_con_unagg, is_active=True)
         rtpt_con = orm["myreports.ReportPresentation"].objects.create(
             presentation_type=pre_csv,
             display_name="Contact CSV",
@@ -560,30 +384,6 @@ class Migration(DataMigration):
             presentation_type=pre_xlsx,
             display_name="Communication Record Excel Spreadsheet",
             report_data=rtdt_comm_unagg, is_active=True)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_json,
-            display_name="Partner JSON Passthrough",
-            report_data=rtdt_part_unagg, is_active=True)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_json,
-            display_name="Contact JSON Passthrough",
-            report_data=rtdt_con_unagg, is_active=True)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_json,
-            display_name="Communication Record JSON Passthrough",
-            report_data=rtdt_comm_unagg, is_active=True)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_csv,
-            display_name="Communication Record Count CSV",
-            report_data=rtdt_comm_count_pmpp, is_active=True)
-        orm["myreports.ReportPresentation"].objects.create(
-            presentation_type=pre_json,
-            display_name="Communication Record Count JSON Passthrough",
-            report_data=rtdt_comm_count_pmpp, is_active=True)
-
-        compliance = orm['myreports.ReportingType'].objects.get(reporting_type="compliance")
-        compliance.is_active = False
-        compliance.save()
 
     def backwards(self, orm):
         "Write your backwards methods here."
