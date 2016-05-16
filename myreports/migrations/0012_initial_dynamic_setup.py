@@ -325,7 +325,7 @@ class Migration(DataMigration):
             multi_value_expansion=False, is_active=True)
         orm["myreports.ConfigurationColumn"].objects.create(
             column_name="location",
-            alias="Location",
+            alias="Meeting Location",
             order=123,
             output_format="text",
             configuration=con_comm,
