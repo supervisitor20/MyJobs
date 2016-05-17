@@ -26,14 +26,6 @@ $(window).ready(function() {
         }
     });
 
-    $("#pop-menu").mouseleave(function(){
-        $("#back-btn-li").addClass("no-show");
-        $(".nav-item").removeClass("no-show");
-        $(".sub-nav-item").addClass("no-show");
-
-        $("#nav").removeClass("active");
-    });
-
     $(".nav-item").click(function(e) {
       $("#mobile-company-select").removeClass("no-show");
       $("#back-btn-li").removeClass("no-show");

@@ -2,10 +2,11 @@ from functools import wraps
 
 from django.contrib.auth import logout
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 
-from myjobs.models import User, Activity
+from myjobs.models import (User, Activity, MissingActivity,
+                           MissingAppLevelAccess)
 from universal.helpers import (get_company_or_404, get_company, every)
 
 
@@ -107,16 +108,6 @@ Expected "access_callback" and/or "activity_callback".
 """
 
 
-class MissingActivity(HttpResponseForbidden):
-    """
-    MissingActivity is raised when a company user access a view but that
-    user hasn't been assigned roles which include the required activities. It
-    is no different than an HttpResponseForbidden, other than it's name, which
-    we can use to assert that the correct response type was returned without
-    leaking information to the user.
-    """
-
-
 def requires(*activities, **callbacks):
     """
     Protects a view by activity and app access, optionally invoking callbacks.
@@ -216,7 +207,8 @@ def requires(*activities, **callbacks):
 
         """
         company = get_company(request)
-        raise Http404("%s doesn't have sufficient app-level access." % (
+        raise MissingAppLevelAccess(
+            "%s doesn't have sufficient app-level access." % (
             company.name))
 
     access_callback = callbacks.get(

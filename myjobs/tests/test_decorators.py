@@ -7,7 +7,8 @@ from django.http import HttpResponse, Http404
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
-from myjobs.decorators import requires, MissingActivity
+from myjobs.decorators import requires
+from myjobs.models import MissingActivity, MissingAppAccess
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
@@ -52,7 +53,7 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.company.app_access.clear()
-        with self.assertRaises(Http404) as cm:
+        with self.assertRaises(MissingAppAccess) as cm:
             response = requires(self.activity.name)(dummy_view)(self.request)
 
         self.assertEqual(
