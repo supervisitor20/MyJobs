@@ -4,6 +4,8 @@ from datetime import datetime
 
 from mypartners.models import Contact, Partner, Status, Location, Tag
 
+from postajob.location_data import states
+
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
     filter_date_range, extract_tags)
@@ -151,8 +153,11 @@ class PartnersDataSource(DataSource):
             Location.objects
             .filter(contacts__partner__in=partners_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct()
-        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
+        state_qs = locations_qs.values('state').order_by('state').distinct()
+        return [{
+            'value': c['state'],
+            'display': states[c['state']]
+        } for c in state_qs if c['state']]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
