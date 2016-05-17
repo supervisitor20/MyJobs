@@ -5,7 +5,6 @@ export default class PopMenu extends Component {
   handleItemClick(item, e) {
     e.preventDefault();
     item.onSelect();
-    this.setState({isMenuActive: false});
   }
 
   menuContents() {
