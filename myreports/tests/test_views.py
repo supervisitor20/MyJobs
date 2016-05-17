@@ -26,6 +26,27 @@ class TestOverview(MyReportsTestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_classic_report_version(self):
+        """
+        Visiting 'overview' should set the reporting_version cookie to
+        'classic'.
+
+        """
+        response = self.client.get(reverse('overview'))
+        self.assertEqual(
+            response.cookies['reporting_version'].value, 'classic')
+
+    def test_dynamic_report_version(self):
+        """
+        Visiting 'dynamicoverview' should set the reporting_version cookie to
+        'dynamic'.
+
+        """
+        response = self.client.get(reverse('dynamicoverview'))
+        self.assertEqual(
+            response.cookies['reporting_version'].value, 'dynamic')
+
+
 
 class TestViewRecords(MyReportsTestCase):
     """
@@ -592,6 +613,7 @@ class TestReportsApi(MyReportsTestCase):
                     {u'display': u'Notes', u'value': u'notes'},
                     {u'display': u'Name', u'value': u'name'},
                 ],
+                u'name': 'The Report',
             },
         }, data)
 
@@ -619,7 +641,7 @@ class TestReportsApi(MyReportsTestCase):
                                 data={'report_data_id': report_data.pk})
 
         result = json.loads(resp.content)
-        expected_keys = {'filters', 'help'}
+        expected_keys = {'filters', 'help', 'default_filter'}
         self.assertEquals(expected_keys, set(result.keys()))
 
     def test_help_api(self):

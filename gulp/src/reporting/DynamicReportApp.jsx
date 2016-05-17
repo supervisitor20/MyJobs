@@ -14,7 +14,7 @@ export class DynamicReportApp extends Component {
 
   componentDidMount() {
     const {reportFinder} = this.props;
-    this.callbackRef =
+    this.unsubscribeToNewReports =
       reportFinder.subscribeToNewReports(
           (reportId, runningReport) =>
             this.handleNewReport(reportId, runningReport),
@@ -23,8 +23,7 @@ export class DynamicReportApp extends Component {
   }
 
   componentWillUnmount() {
-    const {reportFinder} = this.props;
-    reportFinder.unsubscribeToReportList(this.callbackRef);
+    this.unsubscribeToNewReports();
   }
 
   async handleNewReport(reportId, runningReport) {
@@ -72,7 +71,7 @@ export class DynamicReportApp extends Component {
           <div className="col-xs-12 col-md-8">
             {this.props.children}
           </div>
-          <div className="col-xs-6 col-md-4">
+          <div className="col-xs-12 col-md-4">
             <ReportList
               history={history}
               reportFinder={reportFinder}

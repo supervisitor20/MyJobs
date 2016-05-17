@@ -148,13 +148,20 @@ class DateField extends React.Component {
       maxLength,
       isHidden,
       value,
-      placeholder} = this.props;
+      placeholder,
+      error} = this.props;
 
     let momentObject = moment(value, 'MM/DD/YYYY');
     let day;
     let month;
     let year;
-    let error;
+
+    // Handle error message
+    let errorMessage;
+    if (error) {
+      errorMessage = error;
+    }
+
     // Date value must match our custom format (not ISO 8601)
     if (moment(value, 'MM/DD/YYYY', true).isValid()) {
       momentObject = moment(value, 'MM/DD/YYYY');
@@ -162,13 +169,19 @@ class DateField extends React.Component {
       month = momentObject.month();
       year = momentObject.year();
     } else {
-      error = (
-        <div className="error-text">Date error. Must be of format: MM/DD/YYYY</div>
-      );
+      errorMessage = 'Date error. Must be of format: MM/DD/YYYY';
       day = 0;
       month = 1;
       year = 2000;
     }
+
+    let errorComponent;
+    if (errorMessage) {
+      errorComponent = (
+        <div className="error-text">{errorMessage}</div>
+      );
+    }
+
     let calendar;
     if (this.state.displayCalendar) {
       calendar = (<div className="input-group datepicker-dropdown dropdown-menu"
@@ -204,7 +217,7 @@ class DateField extends React.Component {
             onBlur={e => this.onInputBlur(e)}
           />
         </div>
-        {error}
+        {errorComponent}
         {calendar}
       </ClickOutHandler>
     );
@@ -247,6 +260,10 @@ DateField.propTypes = {
    * Should this bad boy focus, all auto like?
    */
   autoFocus: React.PropTypes.string,
+  /**
+   * Validation error
+   */
+  error: React.PropTypes.string,
 };
 
 DateField.defaultProps = {
@@ -256,6 +273,7 @@ DateField.defaultProps = {
   isHidden: false,
   required: false,
   autoFocus: '',
+  error: null,
 };
 
 export default DateField;

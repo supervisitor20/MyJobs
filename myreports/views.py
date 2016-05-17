@@ -28,10 +28,14 @@ from myreports.datasources import ds_json_drivers
 from cStringIO import StringIO
 
 
+@require_http_methods(['GET'])
 @requires('read partner', 'read contact', 'read communication record')
 def overview(request):
     """The Reports app landing page."""
     company = get_company_or_404(request)
+
+    # used to remember version of reporting user last visited
+    reporting_cookie = ('reporting_version', 'classic')
 
     success = 'success' in request.POST
     reports = Report.objects.filter(owner=company).order_by("-created_on")
@@ -50,13 +54,18 @@ def overview(request):
 
     if request.is_ajax():
         response = HttpResponse()
+        response.set_cookie(*reporting_cookie)
         html = render_to_response('myreports/includes/report_overview.html',
                                   ctx, RequestContext(request)).content
         response.content = html
         return response
 
-    return render_to_response('myreports/reports.html', ctx,
+    response = HttpResponse()
+    html = render_to_response('myreports/reports.html', ctx,
                               RequestContext(request))
+    response.content = html
+    response.set_cookie(*reporting_cookie)
+    return response
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -359,15 +368,18 @@ def download_report(request):
     return response
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def dynamicoverview(request):
     """The Dynamic Reports page."""
     company = get_company_or_404(request)
     ctx = {"company": company}
-    return render_to_response('myreports/dynamicreports.html', ctx,
+    response = HttpResponse()
+    response.set_cookie('reporting_version', 'dynamic')
+    html = render_to_response('myreports/dynamicreports.html', ctx,
                               RequestContext(request))
+    response.content = html
+    return response
 
 
 @restrict_to_staff()
@@ -479,6 +491,7 @@ def export_options_api(request):
                         'display': user visible title of column,
                     },
                 ],
+                'name': string containing the report name.
             },
         }
     """
@@ -523,6 +536,7 @@ def export_options_api(request):
                 for rp in rps
             ],
             'values': values,
+            'name': report.name,
         },
     }
     return HttpResponse(content_type='application/json',
@@ -539,6 +553,7 @@ def filters_api(request):
 
     response: See ContactsJsonDriver.encode_filter_interface()
     """
+    company = get_company_or_404(request)
     request_data = request.POST
     report_data_id = request_data['report_data_id']
     report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
@@ -548,10 +563,13 @@ def filters_api(request):
     report_configuration = report_data.configuration.build_configuration()
 
     driver = ds_json_drivers[datasource]
+    data_type_name = report_data.data_type.data_type
     result = driver.encode_filter_interface(report_configuration)
+    default_filter = driver.get_default_filter(data_type_name, company)
+    result['default_filter'] = default_filter
 
     return HttpResponse(content_type='application/json',
-                        content=json.dumps(result))
+                        content=driver.serialize_filterlike(result))
 
 
 @requires('read partner', 'read contact', 'read communication record')
@@ -690,7 +708,7 @@ def get_dynamic_report_info(request):
         }
     }
     return HttpResponse(content_type='application/json',
-                        content=json.dumps(response))
+                        content=driver.serialize_filterlike(response))
 
 
 @requires('read partner', 'read contact', 'read communication record')

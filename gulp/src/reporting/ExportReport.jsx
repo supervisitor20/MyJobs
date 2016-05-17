@@ -23,7 +23,13 @@ export default class ExportReport extends Component {
   }
 
   componentDidMount() {
-    this.loadData();
+    const {history} = this.props;
+    this.historyUnlisten = (
+      history.listen((something, loc) => this.handleHistory(something, loc)));
+  }
+
+  componentWillUnmount() {
+    this.historyUnlisten();
   }
 
   onReorder(order) {
@@ -70,6 +76,13 @@ export default class ExportReport extends Component {
     });
   }
 
+  handleHistory(something, loc) {
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === ExportReport) {
+      this.loadData();
+    }
+  }
+
   findBestSortByValue(fieldsSelected, sortBy) {
     const field = find(fieldsSelected, item => item.value === sortBy);
     if (field && field.checked) {
@@ -105,6 +118,7 @@ export default class ExportReport extends Component {
       loading: false,
       recordCount: options.count,
       reportId: options.report_options.id,
+      name: options.report_options.name,
       fieldsSelected,
       formatId,
       formats,
@@ -145,6 +159,7 @@ export default class ExportReport extends Component {
       sortDirection,
       fieldsSelected,
       selectAll,
+      name,
     } = this.state;
 
     const sortDirectionChoices = [
@@ -156,12 +171,18 @@ export default class ExportReport extends Component {
     if (loading) {
       return <Loading/>;
     }
-
     // Note that we pass in a copy of fieldsSelected to protect ourselves
     // from some side effects of mutation done by Reorder on the array
     // passed through its list property.
     return (
       <div id="export-page">
+        <h2>{name}</h2>
+        <p>Please specify which fields you would like included, as well as their order and sorting.</p>
+        <ul>
+          <li>Drag the field names to the order you would like.</li>
+          <li>Use the check boxes to include or exclude that column.</li>
+          <li>Use the drop-down to determine which column to sort by and whether that column should be sorted in ascending or descending order.</li>
+        </ul>
         <div className="row">
           <div className="col-md-4 col-xs-12">
             <label>Sort By:</label>
@@ -237,6 +258,7 @@ export default class ExportReport extends Component {
 }
 
 ExportReport.propTypes = {
+  history: PropTypes.object.isRequired,
   routeParams: PropTypes.shape({
     reportId: PropTypes.string.isRequired,
   }).isRequired,

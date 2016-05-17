@@ -20,7 +20,10 @@ export default class SortableList extends React.Component {
       >
         {items.map( field => {
           return (
-            <div className="list-item-draggable" data-id={field.value}>
+            <div
+              key={field.value}
+              className="list-item-draggable"
+              data-id={field.value}>
               <SortableField
                 item={{
                   display: field.display,
@@ -42,7 +45,7 @@ SortableList.propTypes = {
     * Array of objects to be selected from. Each should have a 'value' and
     * 'display' key, with `String` values.
     */
-  items: React.PropTypes.array.required,
+  items: React.PropTypes.array.isRequired,
   /** This callback is triggered when an item in the sortable list is moved,
     * and is passed the array of `data-id`s for all elements within the
     * component.

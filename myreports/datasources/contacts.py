@@ -1,5 +1,6 @@
 """Contacts DataSource"""
 from operator import __or__
+from datetime import datetime
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
@@ -9,6 +10,8 @@ from myreports.datasources.base import DataSource, DataSourceFilter
 from mypartners.models import Contact, Location, Tag, Partner, Status
 
 from universal.helpers import dict_identity, extract_value
+
+from postajob.location_data import states
 
 from django.db.models import Q
 
@@ -57,8 +60,11 @@ class ContactsDataSource(DataSource):
             Location.objects
             .filter(contacts__in=contacts_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct()
-        return [{'value': s['state'], 'display': s['state']} for s in state_qs]
+        state_qs = locations_qs.values('state').order_by('state').distinct()
+        return [{
+            'value': s['state'],
+            'display': states[s['state']]
+        } for s in state_qs if s['state']]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
@@ -118,6 +124,9 @@ class ContactsDataSource(DataSource):
         adorned = {}
         empty = ContactsFilter()
 
+        if filter_spec.date:
+            adorned[u'date'] = filter_spec.date
+
         if filter_spec.locations:
             adorned[u'locations'] = {}
             known_city = filter_spec.locations.get('city', None)
@@ -155,6 +164,12 @@ class ContactsDataSource(DataSource):
                 for p in partners_qs
             ]
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = ContactsFilter(
+            date=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 

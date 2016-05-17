@@ -1,12 +1,15 @@
 """CommRecords DataSource"""
 from HTMLParser import HTMLParser
 from operator import __or__
+from datetime import datetime
 
 from django.db.models import Q
 from django.utils.html import strip_tags
 
 from mypartners.models import (
     Contact, Status, Location, Tag, ContactRecord, Partner)
+
+from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
@@ -65,7 +68,7 @@ class CommRecordsDataSource(DataSource):
         parser = HTMLParser()
         results = parser.unescape(
             '\n'.join(' '.join(line.split())
-            for line in strip_tags(html).splitlines() if line))
+                      for line in strip_tags(html).splitlines() if line))
 
         return '\n'.join(filter(bool, results.split('\n\n')))
 
@@ -97,8 +100,11 @@ class CommRecordsDataSource(DataSource):
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct()
-        return [{'value': c['state'], 'display': c['state']} for c in state_qs]
+        state_qs = locations_qs.values('state').order_by('state').distinct()
+        return [{
+            'value': c['state'],
+            'display': states[c['state']]
+        } for c in state_qs if c['state']]
 
     def help_tags(self, company, filter_spec, partial):
         """Get help for the tags field."""
@@ -124,7 +130,9 @@ class CommRecordsDataSource(DataSource):
 
     def help_partner(self, company, filter_spec, partial):
         """Get help for the partner field."""
-        modified_filter_spec = filter_spec.clone_without_partner()
+        # Don't let this help be dependent on filtered contacts.
+        modified_filter_spec = (
+            filter_spec.clone_without_contact().clone_without_partner())
         comm_records_qs = self.filtered_query_set(
             company, modified_filter_spec)
         partner_qs = (
@@ -168,6 +176,9 @@ class CommRecordsDataSource(DataSource):
     def adorn_filter(self, company, filter_spec):
         adorned = {}
         empty = CommRecordsFilter()
+
+        if filter_spec.date_time:
+            adorned[u'date_time'] = filter_spec.date_time
 
         if filter_spec.locations:
             adorned[u'locations'] = {}
@@ -223,6 +234,12 @@ class CommRecordsDataSource(DataSource):
                 for c in filter_spec.communication_type
             ]
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = CommRecordsFilter(
+            date_time=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 

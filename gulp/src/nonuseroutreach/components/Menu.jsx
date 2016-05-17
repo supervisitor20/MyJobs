@@ -15,7 +15,7 @@ export function Menu(props) {
     tipsHeader = <h2>Tips</h2>;
   }
   return (
-    <div className="col-xs-4">
+    <div className="col-xs-12 col-md-4">
       <div className="sidebar">
         <h2 className="top">Navigation</h2>
         <OverviewButton changePage={changePage} />

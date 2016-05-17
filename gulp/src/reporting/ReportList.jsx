@@ -139,6 +139,12 @@ export class ReportList extends Component {
               {reportLinks}
             </ul>
           </div>
+          <h2>Reporting Version</h2>
+          <button
+            className="button primary wide"
+            onClick={() => window.location.assign('/reports/view/overview')}>
+            Switch to Classic Reporting
+          </button>
         </div>
       </div>
     );

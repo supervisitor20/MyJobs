@@ -1,10 +1,34 @@
 import warning from 'warning';
-import {map, groupBy} from 'lodash-compat/collection';
+import {map, groupBy, forEach} from 'lodash-compat/collection';
 import {remove} from 'lodash-compat/array';
 import {mapValues} from 'lodash-compat/object';
 import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
 
 // This is the business logic of the myreports client.
+
+let nextSubscriptionId = 0;
+function generateSubscriptionId() {
+  nextSubscriptionId += 1;
+  return nextSubscriptionId;
+}
+
+export class Subscription {
+  constructor() {
+    this.callbacks = {};
+  }
+
+  note(...args) {
+    forEach(this.callbacks, v => {v(...args);});
+  }
+
+  subscribe(callback) {
+    const ref = generateSubscriptionId();
+    this.callbacks[ref] = callback;
+    return () => {
+      delete this.callbacks[ref];
+    };
+  }
+}
 
 /**
  * Root of the client.
@@ -16,8 +40,10 @@ export class ReportFinder {
   constructor(api, configBuilder) {
     this.api = api;
     this.configBuilder = configBuilder;
-    this.newReportSubscribers = {};
-    this.newMenuChoicesSubscribers = {};
+    this.newReportSubscriptions = new Subscription();
+    this.runningReportSubscriptions = new Subscription();
+    this.newMenuChoicesSubscriptions = new Subscription();
+    this.filterChangesSubscriptions = new Subscription();
   }
 
   /**
@@ -51,8 +77,14 @@ export class ReportFinder {
       } else {
         name = await this.api.getDefaultReportName(reportDataId);
       }
+      let initialFilter;
+      if (currentFilter) {
+        initialFilter = currentFilter;
+      } else {
+        initialFilter = filters.default_filter;
+      }
       reportConfiguration = this.configBuilder.build(
-        name.name, reportDataId, filters.filters, currentFilter,
+        name.name, reportDataId, filters.filters, initialFilter,
         (reportId, report) => this.noteNewReport(reportId, report),
         report => this.noteNewRunningReport(report),
         onNameChanged,
@@ -105,26 +137,14 @@ export class ReportFinder {
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToMenuChoices(callback) {
-    this.newMenuChoicesSubscribers[callback] = callback;
-    return callback;
-  }
-
-  /**
-   * Remove a callback from the menu choices subscription.
-   */
-  unsubscribeToMenuChoices(ref) {
-    delete this.newMenuChoicesSubscribers[ref];
+    return this.newMenuChoicesSubscriptions.subscribe(callback);
   }
 
   /**
    * Let subscribers know that there are new menu choices.
    */
   noteNewMenuChoices(...args) {
-    for (const ref in this.newMenuChoicesSubscribers) {
-      if (this.newMenuChoicesSubscribers.hasOwnProperty(ref)) {
-        this.newMenuChoicesSubscribers[ref](...args);
-      }
-    }
+    return this.newMenuChoicesSubscriptions.note(...args);
   }
 
   /**
@@ -142,41 +162,28 @@ export class ReportFinder {
    * returns a reference which can be used later to unsubscribe.
    */
   subscribeToNewReports(newReportCallback, runningReportCallback) {
-    const callbacks = {
-      newReportCallback,
-      runningReportCallback,
+    const unsubscribeNew = this.newReportSubscriptions.subscribe(
+        newReportCallback);
+    const unsubscribeRunning = this.runningReportSubscriptions.subscribe(
+        runningReportCallback);
+    return () => {
+      unsubscribeNew();
+      unsubscribeRunning();
     };
-    this.newReportSubscribers[callbacks] = callbacks;
-    return callbacks;
-  }
-
-  /**
-   * Remove a callback from the new reports subscription.
-   */
-  unsubscribeToNewReports(ref) {
-    delete this.newReportSubscribers[ref];
   }
 
   /**
    * Let subscribers know that there is a new report.
    */
   noteNewReport(reportId, runningReport) {
-    for (const ref in this.newReportSubscribers) {
-      if (this.newReportSubscribers.hasOwnProperty(ref)) {
-        this.newReportSubscribers[ref].newReportCallback(reportId, runningReport);
-      }
-    }
+    this.newReportSubscriptions.note(reportId, runningReport);
   }
 
   /**
-   * Let subscribers know that there is a new report.
+   * Let subscribers know that there is a running report.
    */
   noteNewRunningReport(runningReport) {
-    for (const ref in this.newReportSubscribers) {
-      if (this.newReportSubscribers.hasOwnProperty(ref)) {
-        this.newReportSubscribers[ref].runningReportCallback(runningReport);
-      }
-    }
+    this.runningReportSubscriptions.note(runningReport);
   }
 
   /**
@@ -184,6 +191,23 @@ export class ReportFinder {
    */
   async refreshReport(reportId) {
     return await this.api.refreshReport(reportId);
+  }
+
+  /**
+   * Submit a callback to be called any time a filter changes
+   *
+   * callback params: none
+   * returns a reference which can be used later to unsubscribe.
+   */
+  subscribeToFilterChanges(callback) {
+    return this.filterChangesSubscriptions.subscribe(callback);
+  }
+
+  /**
+   * Let subscribers know that a filter has changed.
+   */
+  noteFilterChanges() {
+    this.filterChangesSubscriptions.note();
   }
 }
 
@@ -238,17 +262,6 @@ export class ReportConfiguration {
       this.reportDataId, this.getFilter(), field, partial);
   }
 
-  /**
-   * See `getHints`. Same as that but override the filter used.
-   *
-   * Ugly hack to make two pane selects work ok. Remove this when we stop
-   * using two pane selects for reporting filters.
-   */
-  async getHintsWithFilter(field, filter, partial) {
-    return await this.api.getHelp(
-      this.reportDataId, filter, field, partial);
-  }
-
   callUpdateFilter() {
     this.onUpdateFilter(this.currentFilter);
   }
@@ -267,6 +280,9 @@ export class ReportConfiguration {
 
   /**
    * Set a value for a multiple valued "or" filter.
+   *
+   * field: field to filter, i.e. contact
+   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
    */
   addToMultifilter(field, obj) {
     if (!(field in this.currentFilter)) {
@@ -281,9 +297,15 @@ export class ReportConfiguration {
 
   /**
    * Get a previously set value for a multiple valued "or" filter.
+   *
+   * field: field to filter, i.e. contact
+   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
    */
   removeFromMultifilter(field, obj) {
     remove(this.currentFilter[field], i => i.value === obj.value);
+    if (this.currentFilter[field].length < 1) {
+      delete this.currentFilter[field];
+    }
     this.callUpdateFilter();
   }
 
@@ -313,6 +335,9 @@ export class ReportConfiguration {
         this.currentFilter[field].splice(index, 1);
       }
     }
+    if (this.currentFilter[field].length < 1) {
+      delete this.currentFilter[field];
+    }
     this.callUpdateFilter();
   }
 
@@ -327,6 +352,9 @@ export class ReportConfiguration {
         return map(item, o => o.value);
       } else if (isArray(item) && isArray(item[0])) {
         return map(item, inner => map(inner, o => o.value));
+      } else if (isArray(item) && item.length === 2 &&
+          typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
+        return item;
       }
       warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
     });

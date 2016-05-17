@@ -2125,6 +2125,10 @@ h3.bottom-bordered {
     table-layout: fixed;
 }
 
+#old-report-preview .table-striped.report-table tr th {
+    font-size: .8em;
+}
+
 #old-report-preview .table-striped.report-table tr th,
 #old-report-preview .table-striped.report-table tr td {
     overflow-wrap: break-word;
@@ -3523,6 +3527,10 @@ height: 33px;
     vertical-align: baseline;
     line-height: inherit;
     height: auto;
+    -moz-transition: all .2s ease-in;
+    -o-transition: all .2s ease-in;
+    -webkit-transition: all .2s ease-in;
+    transition: all .2s ease-in;
 }
 
 .button:hover, .button a:hover {
@@ -3543,12 +3551,18 @@ height: 33px;
 .actions.row .col-md-8 .button:hover,
 .col-md-4 .button:hover {
     color: #444545;
+    background-color: #f4f4f4;
 }
 
 .actions.row .col-md-8 .button.primary,
 .col-md-4 .button.primary {
     background-color: #444545;
     color: #fff;
+}
+
+.actions.row .col-md-8 .button.primary:hover,
+.col-md-4 .button.primary:hover {
+    background-color: #6a6c6c;
 }
 
 .row .col-md-8 .card-wrapper {
@@ -3637,15 +3651,18 @@ height: 33px;
   max-height: 230px;
   overflow-y: auto;
 }
+ul.select-element-menu-container,
 .select-element-menu-container ul {
   list-style-type: none;
   padding: 0;
   margin:0;
 }
+ul.select-element-menu-container li,
 .select-element-menu-container ul li {
   cursor: pointer;
   padding: 6px;
 }
+ul.select-element-menu-container li.active,
 .select-element-menu-container ul li.active {
   background-color: #C6D6EA;
 }
@@ -3675,6 +3692,14 @@ legend.fieldset-border {
 /* Export Page Styles */
 #export-page #record-count {
   text-align: center;
+}
+
+#export-page ul {
+    margin: 0 0 0 20px;
+}
+
+#export-page ul li {
+    color: inherit;
 }
 
 .list-item, .list-item-draggable {
@@ -4985,8 +5010,8 @@ a.btn.pull-right {
 /* React Datepicker */
 
 .datepicker-input {
-  background-image: url('/files/svg/calendar.png');
-  background-image: url('/files/svg/calendar.svg'), none;
+  background-image: url('./svg/calendar.png');
+  background-image: url('./svg/calendar.svg'), none;
   background-repeat: no-repeat;
   background-position: 98% 50%;
 }
