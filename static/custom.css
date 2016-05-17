@@ -2226,13 +2226,8 @@ h3.bottom-bordered {
   height: 16px;
   width: 16px;
   margin-right: 5px;
-  vertical-align: top;
-}
-
-.reporting.sidebar .report-loader.list-loader {
-  display: block;
-  float: right;
   margin-top:3px;
+  vertical-align: top;
 }
 
 .pop-menu:before {
