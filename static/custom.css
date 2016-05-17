@@ -4995,7 +4995,8 @@ a.btn.pull-right {
     font-size: 2em !important;
   }
   .topbar-new #nav ul#pop-menu li.sub-nav-item a,
-  .topbar-new #nav ul#pop-menu li.nav-item a {
+  .topbar-new #nav ul#pop-menu li.nav-item a,
+  .topbar-new #nav ul#pop-menu li#mobile-company-select a {
     height: 45px;
   }
 }
