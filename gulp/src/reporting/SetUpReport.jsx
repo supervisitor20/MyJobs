@@ -190,6 +190,7 @@ export default class SetUpReport extends Component {
   }
 
   render() {
+    const {reportFinder} = this.props;
     const {
       intention: reportingType,
       category: reportType,
@@ -288,6 +289,12 @@ export default class SetUpReport extends Component {
             );
           break;
         case 'search_multiselect':
+          // Hack. MultiSelect filter will subscribe to filter updates if we
+          // pass reportFinder.
+          let passReportFinder;
+          if (col.filter === 'contact' || col.filter === 'partner') {
+            passReportFinder = reportFinder;
+          }
           rows.push(
             <FieldWrapper
               key={col.filter}
@@ -299,6 +306,7 @@ export default class SetUpReport extends Component {
                 selected={reportConfig.currentFilter[col.filter] || []}
                 onAdd = {v => reportConfig.addToMultifilter(col.filter, v)}
                 onRemove = {v => reportConfig.removeFromMultifilter(col.filter, v)}
+                reportFinder={passReportFinder}
               />
 
             </FieldWrapper>

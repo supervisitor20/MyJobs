@@ -138,6 +138,10 @@ export default class TagSelect extends Component {
   }
 }
 
+TagSelect.defaultProps = {
+  available: [{value: '', display: '', hexColor: ''}],
+};
+
 TagSelect.propTypes = {
   /**
    * List of selected tags.

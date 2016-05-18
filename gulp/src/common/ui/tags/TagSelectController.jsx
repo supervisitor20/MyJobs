@@ -8,7 +8,13 @@ export default class TagSelectController extends Component {
   }
 
   componentDidMount() {
+    const {reportFinder} = this.props;
+    // This is used to reload the available list anytime the filter changes.
     this.mounted = true;
+    if (reportFinder) {
+      this.unsubscribeToFilterChanges = reportFinder.subscribeToFilterChanges(
+          () => this.getHints());
+    }
     this.getHints();
   }
 
@@ -71,4 +77,8 @@ TagSelectController.propTypes = {
    * Function fired when an item is selected from the right side
    */
   onRemove: React.PropTypes.func.isRequired,
+  /**
+   * Used for hack to refresh available list.
+   */
+  reportFinder: React.PropTypes.object,
 };
