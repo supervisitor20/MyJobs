@@ -33,3 +33,5 @@ run ln -s /var/log /log
 
 volume /MyJobs
 volume /deployment
+
+env DEVSERVER_HTTPS=1
