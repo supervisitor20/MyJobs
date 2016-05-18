@@ -3,10 +3,6 @@ var path = require('path');
 
 module.exports = {
   devServer: {
-    hot: true,
-    progress: true,
-    inline: true,
-    stats: 'errors-only',
     host: process.env.DEVSERVER_HOST || "0.0.0.0",
     port: process.env.DEVSERVER_PORT || "8080",
     config: "webpack.dev.config.js",
