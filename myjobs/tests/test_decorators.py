@@ -7,7 +7,8 @@ from django.http import HttpResponse, Http404
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import (AppAccessFactory, UserFactory,
                                     ActivityFactory, RoleFactory)
-from myjobs.decorators import requires, MissingActivity
+from myjobs.decorators import requires
+from myjobs.models import MissingActivity, MissingAppLevelAccess
 from seo.tests.factories import CompanyFactory, CompanyUserFactory
 
 
@@ -52,7 +53,7 @@ class DecoratorTests(MyJobsBase):
         """
 
         self.company.app_access.clear()
-        with self.assertRaises(Http404) as cm:
+        with self.assertRaises(MissingAppLevelAccess) as cm:
             response = requires(self.activity.name)(dummy_view)(self.request)
 
         self.assertEqual(
@@ -63,8 +64,8 @@ class DecoratorTests(MyJobsBase):
     def test_access_callback(self):
         """
         When app access is sufficient and a callback is supplied, the response
-        of that callback should be returned rather than a `MissingAppAccess`
-        response.
+        of that callback should be returned rather than a
+        `MissingAppLevelAccess` response.
         """
 
         self.company.app_access.clear()
