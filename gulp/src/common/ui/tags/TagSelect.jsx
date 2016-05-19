@@ -49,6 +49,12 @@ export default class TagSelect extends Component {
     }
   }
 
+  selectAll() {
+    this.props.available.forEach((v) => {
+      this.handleAdd(v);
+    });
+  }
+
   handleAdd(tag) {
     const {onChoose} = this.props;
     this.setState({partial: ''});
@@ -121,11 +127,18 @@ export default class TagSelect extends Component {
         {selectDropped ? (
           <div className="tag-select-menu-container">
             <div className="tag-select-menu">
-              <TextField
-                name="name"
-                value={partial}
-                onChange={e => this.handleFilterChange(e.target.value)}
-                placeholder={searchPlaceholder} />
+              <div className="row">
+                <div className="col-xs-12 col-md-9">
+                  <TextField
+                    name="name"
+                    value={partial}
+                    onChange={e => this.handleFilterChange(e.target.value)}
+                    placeholder={searchPlaceholder} />
+                </div>
+                <div className="col-xs-12 col-md-3">
+                  <div className="button" onClick={() => this.selectAll()}>Select All</div>
+                </div>
+              </div>
               {map(filteredAvailable, t => this.renderTag(
                   t,
                   () => this.handleAdd(t),

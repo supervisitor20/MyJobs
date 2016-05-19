@@ -3256,6 +3256,8 @@ em.pendingText {
   min-height: 33px;
   padding: 3px;
   margin: 0;
+  max-height: 250px;
+  overflow: auto;
 }
 
 .tag-select-placeholder {
@@ -3296,6 +3298,17 @@ em.pendingText {
 
 .tag-select-menu-container {
   position: relative;
+}
+
+/*.tag-select-menu-container .tag-select-menu input {
+  width: 70%!important;
+  float: left;
+  margin-right: 5px;
+}
+*/
+
+.tag-select-menu-container .tag-select-menu .button {
+  width: 100%;
 }
 
 .tag-select-menu {
@@ -3548,6 +3561,7 @@ height: 33px;
     -o-transition: all .2s ease-in;
     -webkit-transition: all .2s ease-in;
     transition: all .2s ease-in;
+    cursor: pointer;
 }
 
 .button:hover, .button a:hover {
