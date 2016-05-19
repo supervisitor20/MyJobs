@@ -49,6 +49,7 @@ export default class TagSelectController extends Component {
         available={available}
         onChoose = {onAdd}
         onRemove = {onRemove}
+        placeholder = 'Type to filter options'
         />
     );
   }

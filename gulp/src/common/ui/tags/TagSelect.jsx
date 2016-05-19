@@ -89,7 +89,7 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {available, selected} = this.props;
+    const {available, selected, placeholder} = this.props;
     const {selectDropped, partial} = this.state;
     const filteredAvailable =
       filter(available, at =>
@@ -125,7 +125,7 @@ export default class TagSelect extends Component {
                 name="name"
                 value={partial}
                 onChange={e => this.handleFilterChange(e.target.value)}
-                placeholder="Type to filter tags"/>
+                placeholder={placeholder} />
               {map(filteredAvailable, t => this.renderTag(
                   t,
                   () => this.handleAdd(t),
@@ -140,6 +140,7 @@ export default class TagSelect extends Component {
 
 TagSelect.defaultProps = {
   available: [{value: '', display: '', hexColor: ''}],
+  placeholder: 'Type to filter tags',
 };
 
 TagSelect.propTypes = {
@@ -171,4 +172,8 @@ TagSelect.propTypes = {
    * Function called when a selected tag is removed.
    */
   onRemove: PropTypes.func.isRequired,
+  /**
+   * placeholder text for tag search bar
+   */
+  placeholder: PropTypes.string,
 };
