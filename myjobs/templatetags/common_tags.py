@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from myjobs import version
+from myjobs.models import MissingAppLevelAccess
 from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
@@ -309,7 +310,12 @@ def get_menus(context):
         ]
     } if user.roles.exists() else {}
 
-    if employer_menu and user.can(company, "read partner", check_access=False):
+    try:
+        can_read_partner = user.can(company, "read partner")
+    except MissingAppLevelAccess:
+        can_read_partner = False
+
+    if employer_menu and can_read_partner:
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
@@ -329,7 +335,12 @@ def get_menus(context):
             "label": "Reports",
         })
 
-    if employer_menu and user.can(company, "read role", check_access=False):
+    try:
+        can_read_role = user.can(company, "read role")
+    except MissingAppLevelAccess:
+        can_read_role = False
+
+    if employer_menu and can_read_role:
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",

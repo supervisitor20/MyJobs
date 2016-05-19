@@ -8,7 +8,7 @@ export default class PopMenu extends Component {
   }
 
   menuContents() {
-    const {options, isMenuActive, closeAllPopups, isMenuPending} = this.props;
+    const {options, isMenuActive, closeAllPopups} = this.props;
     const dropdownItems = options.map((item, index)=> {
       return (
         <li key={index} onClick={e => this.handleItemClick(item, e)}>
@@ -16,7 +16,7 @@ export default class PopMenu extends Component {
         </li>
       );
     });
-    if (isMenuActive && !isMenuPending) {
+    if (isMenuActive === true) {
       return (
         <ClickOutCompat onClickOut={() => closeAllPopups()}>
           <div ref="menu" data-context="true" className="pop-menu">
@@ -29,27 +29,15 @@ export default class PopMenu extends Component {
     }
   }
 
-  renderMenuSpan() {
-    const {toggleMenu, isMenuPending} = this.props;
-    if (isMenuPending) {
-      return (
-        <span className="report-loader list-loader">
-        </span>
-      );
-    }
-    return (
-      <span
-        onClick={(e) => toggleMenu(e)}
-        className="menuEllipses">
-        &hellip;
-      </span>
-      );
-  }
-
   render() {
+    const {toggleMenu} = this.props;
     return (
       <div style={{position: 'relative'}}>
-        {this.renderMenuSpan()}
+        <span
+          onClick={(e) => toggleMenu(e)}
+          className="menuEllipses">
+          &hellip;
+        </span>
         {this.menuContents()}
       </div>
     );
@@ -64,7 +52,6 @@ PopMenu.propTypes = {
     })
   ),
   isMenuActive: PropTypes.bool.isRequired,
-  isMenuPending: PropTypes.bool,
   toggleMenu: PropTypes.func.isRequired,
   closeAllPopups: PropTypes.func,
 };

@@ -117,10 +117,9 @@ export class ReportList extends Component {
           id={numberedID}>
           {options.length > 0 ? <PopMenu options={options}
                                          isMenuActive={isThisMenuActive}
-                                         isMenuPending={ this.state.reportsRefreshing.indexOf(r.id) === -1 ? false : true }
                                          toggleMenu={(e) => this.toggleMenu(e)}
                                          closeAllPopups={(e) => this.closeAllPopups(e)} /> : ''}
-          {r.isRunning ? <span className="report-loader"></span> : ''}
+          {(r.isRunning || this.state.reportsRefreshing.indexOf(r.id) > -1) ? <span className="report-loader"></span> : ''}
           <span className="menu-text">{r.name}</span>
         </li>
       );

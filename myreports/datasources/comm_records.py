@@ -100,7 +100,7 @@ class CommRecordsDataSource(DataSource):
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct().order_by('state')
+        state_qs = locations_qs.values('state').order_by('state').distinct()
         return [{
             'value': c['state'],
             'display': states[c['state']]
