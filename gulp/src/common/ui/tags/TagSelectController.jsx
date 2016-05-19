@@ -4,7 +4,9 @@ import TagSelect from 'common/ui/tags/TagSelect';
 export default class TagSelectController extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      available: [],
+    };
   }
 
   componentDidMount() {
@@ -37,19 +39,27 @@ export default class TagSelectController extends Component {
   }
 
   render() {
+    const {placeholder, searchPlaceholder, showCounter} = this.props;
     const {
       selected,
       onAdd,
       onRemove,
     } = this.props;
     const {available} = this.state;
+
+    let htmlPlaceholder = (<span><span> {placeholder} </span><span className="counter"><span className="report-loader"></span></span></span>);
+    if (available.length !== 0) {
+      htmlPlaceholder = (<span><span> {placeholder} </span><span className="counter">[ {available.length} available ]</span></span>);
+    }
     return (
       <TagSelect
         selected={selected}
         available={available}
         onChoose = {onAdd}
         onRemove = {onRemove}
-        placeholder = 'Type to filter options'
+        searchPlaceholder = {searchPlaceholder}
+        placeholder = {(showCounter ? htmlPlaceholder : placeholder )}
+        // placeholder = {htmlPlaceholder}
         />
     );
   }
@@ -82,4 +92,16 @@ TagSelectController.propTypes = {
    * Used for hack to refresh available list.
    */
   reportFinder: React.PropTypes.object,
+  /**
+   * placeholder text for tag search bar
+   */
+  searchPlaceholder: PropTypes.string,
+  /**
+   * placeholder text for select input
+   */
+  placeholder: PropTypes.string,
+  /**
+   * Whether or not to show the counter of results
+   */
+  showCounter: PropTypes.bool,
 };

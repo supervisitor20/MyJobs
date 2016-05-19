@@ -3265,6 +3265,22 @@ em.pendingText {
   padding: 5px;
 }
 
+.tag-select-placeholder .counter {
+    float: right;
+    font-size: .8em;
+}
+
+.tag-select-placeholder .counter .report-loader {
+  display: inline-block;
+  background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_ms/files/images/ajax-loader.gif');
+  background-size: 16px 16px;
+  height: 16px;
+  width: 16px;
+  margin-right: 5px;
+  margin-top:3px;
+  vertical-align: top;
+}
+
 .tag-select-input-element {
   position: relative;
 }
@@ -3514,7 +3530,7 @@ height: 33px;
     resize: vertical;
 }
 
-.actions.row .col-md-8 .button,
+.col-md-8 .button,
 .col-md-4 .button {
     background-color: #E7E7E7;
     border-radius: 3px;
@@ -3538,30 +3554,30 @@ height: 33px;
   text-decoration: none;
 }
 
-.actions.row .col-md-8 .button.wide,
+.col-md-8 .button.wide,
 .col-md-4 .button.wide {
     width: 100%;
     text-align: center;
 }
 
-.actions.row .col-md-8 .button:not(:last-child),
+.col-md-8 .button:not(:last-child),
 .col-md-4 .button:not(:last-child) {
     margin-right: 10px;
 }
 
-.actions.row .col-md-8 .button:hover,
+.col-md-8 .button:hover,
 .col-md-4 .button:hover {
     color: #444545;
     background-color: #f4f4f4;
 }
 
-.actions.row .col-md-8 .button.primary,
+.col-md-8 .button.primary,
 .col-md-4 .button.primary {
     background-color: #444545;
     color: #fff;
 }
 
-.actions.row .col-md-8 .button.primary:hover,
+.col-md-8 .button.primary:hover,
 .col-md-4 .button.primary:hover {
     background-color: #6a6c6c;
 }

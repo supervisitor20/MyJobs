@@ -301,12 +301,15 @@ export default class SetUpReport extends Component {
               label={col.display}>
 
               <TagSelectController
-                getHints={v =>
+                getHints = {v =>
                   reportConfig.getHints(col.filter, v)}
-                selected={reportConfig.currentFilter[col.filter] || []}
+                selected = {reportConfig.currentFilter[col.filter] || []}
                 onAdd = {v => reportConfig.addToMultifilter(col.filter, v)}
                 onRemove = {v => reportConfig.removeFromMultifilter(col.filter, v)}
-                reportFinder={passReportFinder}
+                reportFinder = {passReportFinder}
+                placeholder = {'Filter by ' + col.display}
+                searchPlaceholder = "Filter these choices"
+                showCounter
               />
 
             </FieldWrapper>

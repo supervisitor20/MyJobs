@@ -89,7 +89,7 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {available, selected, placeholder} = this.props;
+    const {available, selected, placeholder, searchPlaceholder} = this.props;
     const {selectDropped, partial} = this.state;
     const filteredAvailable =
       filter(available, at =>
@@ -106,11 +106,11 @@ export default class TagSelect extends Component {
         <div
           className="tag-select-chosen-tags"
           onClick={() => this.toggleSelectMenu()}>
-          {selected
+          {(selected.length !== 0)
             ? ''
             : (
               <span className="tag-select-placeholder">
-                Select tags
+                {placeholder}
               </span>
               )}
           {map(selected, t => this.renderTag(
@@ -125,7 +125,7 @@ export default class TagSelect extends Component {
                 name="name"
                 value={partial}
                 onChange={e => this.handleFilterChange(e.target.value)}
-                placeholder={placeholder} />
+                placeholder={searchPlaceholder} />
               {map(filteredAvailable, t => this.renderTag(
                   t,
                   () => this.handleAdd(t),
@@ -140,7 +140,8 @@ export default class TagSelect extends Component {
 
 TagSelect.defaultProps = {
   available: [{value: '', display: '', hexColor: ''}],
-  placeholder: 'Type to filter tags',
+  searchPlaceholder: 'Type to filter',
+  placeholder: 'Not specified',
 };
 
 TagSelect.propTypes = {
@@ -175,5 +176,9 @@ TagSelect.propTypes = {
   /**
    * placeholder text for tag search bar
    */
-  placeholder: PropTypes.string,
+  searchPlaceholder: PropTypes.string,
+  /**
+   * placeholder text for select input
+   */
+  placeholder: PropTypes.any,
 };
