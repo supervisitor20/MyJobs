@@ -3,6 +3,7 @@ import {map, groupBy, filter as lodashFilter} from 'lodash-compat/collection';
 import {findIndex} from 'lodash-compat/array';
 import {omit} from 'lodash-compat/object';
 import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
+import {is500Error, is400Error, errorData} from '../common/myjobs-api';
 
 /**
  * report filter state format: {
@@ -215,14 +216,24 @@ export const setReportNameAction = createAction('SET_REPORT_NAME');
 export const startRunningReportAction = createAction('START_RUNNING_REPORT');
 export const removeRunningReportAction = createAction('REMOVE_RUNNING_REPORT');
 export const newReportAction = createAction('NEW_REPORT');
+export const errorAction = createAction('ERROR', (message, data) =>
+  ({message, data}));
 
 export function doRunReport(idGen, runReport, reportDataId, name, filter) {
   return async (dispatch, getState) => {
     const runningReportId = idGen.nextId();
-    dispatch(startRunningReportAction(runningReportId));
-    const response = await runReport(reportDataId, name, filter);
-    dispatch(removeRunningReportAction(runningReportId));
-    dispatch(newReportAction(response.id));
-    // on error: note failed report
+    try {
+      dispatch(startRunningReportAction(runningReportId));
+      const response = await runReport(reportDataId, name, filter);
+      dispatch(removeRunningReportAction(runningReportId));
+      dispatch(newReportAction(response.id));
+    } catch (exc) {
+      dispatch(removeRunningReportAction(runningReportId));
+      if (is400Error(exc)) {
+        dispatch(errorAction(exc.message, errorData(exc)));
+      } else {
+        dispatch(errorAction(exc.message));
+      }
+    }
   }
 }

@@ -11,6 +11,7 @@ import {
   startRunningReportAction,
   removeRunningReportAction,
   newReportAction,
+  errorAction,
 } from '../reportEngine2';
 
 import {promiseTest} from '../../common/spec';
@@ -351,6 +352,40 @@ describe('doRunReport', () => {
   }));
 
   it('handles api failures', promiseTest(async () => {
-    fail();
+    function fakeRunReport(...args) {
+      const error = new Error("API Error");
+      error.data = {some: 'data'};
+      error.response = {
+        status: 400,
+      };
+      throw error;
+    };
+    await doRunReport(
+      idGen,
+      fakeRunReport)(
+      dispatch,
+      getState);
+    expect(actions).toStrictlyEqual([
+      startRunningReportAction(1),
+      removeRunningReportAction(1),
+      errorAction("API Error", {some: 'data'}),
+    ]);
+  }));
+
+  it('handles arbitrary failures', promiseTest(async () => {
+    function fakeRunReport(...args) {
+      const error = new Error("Some Error");
+      throw error;
+    };
+    await doRunReport(
+      idGen,
+      fakeRunReport)(
+      dispatch,
+      getState);
+    expect(actions).toStrictlyEqual([
+      startRunningReportAction(1),
+      removeRunningReportAction(1),
+      errorAction("Some Error"),
+    ]);
   }));
 });
