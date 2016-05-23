@@ -2226,6 +2226,7 @@ h3.bottom-bordered {
   height: 16px;
   width: 16px;
   margin-right: 5px;
+  margin-top:3px;
   vertical-align: top;
 }
 
@@ -4988,8 +4989,10 @@ a.btn.pull-right {
     height: 33px !important;
     font-size: 2em !important;
   }
-  .topbar-new #nav ul#pop-menu li a {
-    height: 45px !important;
+  .topbar-new #nav ul#pop-menu li.sub-nav-item a,
+  .topbar-new #nav ul#pop-menu li.nav-item a,
+  .topbar-new #nav ul#pop-menu li#mobile-company-select a {
+    height: 45px;
   }
 }
 @media(min-width:992px){

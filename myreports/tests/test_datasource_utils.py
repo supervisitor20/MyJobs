@@ -117,6 +117,9 @@ class MockDataSource(DataSource):
     def adorn_filter(self, company, filter_spec):
         pass
 
+    def get_default_filter(self, data_type, company):
+        pass
+
 
 class TestDataSourceJsonDriver(TestCase):
     def setUp(self):
@@ -126,6 +129,7 @@ class TestDataSourceJsonDriver(TestCase):
 
     def test_encode_filter_interface(self):
         """Test that filter interface is serialized properly."""
+        self.maxDiff = 10000
         report_config = ReportConfiguration([
             ColumnConfiguration(
                 column='name',
@@ -218,10 +222,15 @@ class TestDataSourceJsonDriver(TestCase):
 
     def test_date_filters(self):
         """Test that date filters are built properly."""
-        spec = '{"date": ["2015-09-01", "2015-09-30"]}'
+        spec = '{"date": ["09/01/2015", "09/30/2015"]}'
         result = self.driver.build_filter(spec)
         expected = PartnersFilter(
             date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
+        self.assertEquals(expected, result)
+
+    def test_filterlike_serialize(self):
+        result = self.driver.serialize_filterlike([{'a': 'b'}, {'c': datetime(2016, 1, 2)}])
+        expected = '[{"a": "b"}, {"c": "01/02/2016"}]'
         self.assertEquals(expected, result)
 
 
@@ -244,6 +253,9 @@ class SomeDataSource(DataSource):
         return partial + ' zz'
 
     def adorn_filter(self, company, filter_spec):
+        pass
+
+    def get_default_filter(self, data_type, company):
         pass
 
 

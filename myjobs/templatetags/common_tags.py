@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from myjobs import version
+from myjobs.models import MissingAppLevelAccess
 from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
@@ -294,11 +295,6 @@ def get_menus(context):
             "id": "beta-menu",
             "submenus": [
                 {
-                    "id": "dynamic-reports-tab",
-                    "href": url("reports/view/dynamicoverview"),
-                    "label": "Dynamic Reports",
-                },
-                {
                     "id": "nonuseroutreach",
                     "href": url("prm/view/nonuseroutreach"),
                     "label": "Non-User Outreach",
@@ -319,21 +315,37 @@ def get_menus(context):
         ]
     } if user.roles.exists() else {}
 
-    if employer_menu and user.can(company, "read partner", check_access=False):
+    try:
+        can_read_partner = user.can(company, "read partner")
+    except MissingAppLevelAccess:
+        can_read_partner = False
+
+    if employer_menu and can_read_partner:
         employer_menu["submenus"] += [
             {
                 "id": "partner-tab",
                 "href": url("prm/view"),
                 "label": "PRM"
             },
-            {
-                "id": "reports-tab",
-                "href": url("reports/view/overview"),
-                "label": "Reports",
-            }
         ]
 
-    if employer_menu and user.can(company, "read role", check_access=False):
+        version_urls = {
+            'dynamic': url("reports/view/dynamicoverview"),
+            'classic': url("reports/view/overview"),
+        }
+        reporting_version = request.COOKIES.get('reporting_version', 'dynamic')
+        employer_menu["submenus"].append({
+            "id": "reports-tab",
+            "href": version_urls.get(reporting_version, "beta"),
+            "label": "Reports",
+        })
+
+    try:
+        can_read_role = user.can(company, "read role")
+    except MissingAppLevelAccess:
+        can_read_role = False
+
+    if employer_menu and can_read_role:
         employer_menu["submenus"].append(
             {
                 "id": "manage-users-tab",

@@ -26,10 +26,10 @@ export default class MultiSelectFilter extends Component {
   }
 
   componentWillUnmount() {
-    this.mounted = true;
     if (this.filterChangesRef) {
       this.unsubscribeToFilterChanges();
     }
+    this.mounted = false;
   }
 
   async getHints() {

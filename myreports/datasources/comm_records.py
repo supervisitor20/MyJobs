@@ -1,6 +1,7 @@
 """CommRecords DataSource"""
 from HTMLParser import HTMLParser
 from operator import __or__
+from datetime import datetime
 
 from django.db.models import Q
 from django.utils.html import strip_tags
@@ -67,7 +68,7 @@ class CommRecordsDataSource(DataSource):
         parser = HTMLParser()
         results = parser.unescape(
             '\n'.join(' '.join(line.split())
-            for line in strip_tags(html).splitlines() if line))
+                      for line in strip_tags(html).splitlines() if line))
 
         return '\n'.join(filter(bool, results.split('\n\n')))
 
@@ -99,7 +100,7 @@ class CommRecordsDataSource(DataSource):
             Location.objects
             .filter(contacts__contactrecord__in=comm_records_qs)
             .filter(state__icontains=partial))
-        state_qs = locations_qs.values('state').distinct().order_by('state')
+        state_qs = locations_qs.values('state').order_by('state').distinct()
         return [{
             'value': c['state'],
             'display': states[c['state']]
@@ -176,6 +177,9 @@ class CommRecordsDataSource(DataSource):
         adorned = {}
         empty = CommRecordsFilter()
 
+        if filter_spec.date_time:
+            adorned[u'date_time'] = filter_spec.date_time
+
         if filter_spec.locations:
             adorned[u'locations'] = {}
             known_city = filter_spec.locations.get('city', None)
@@ -230,6 +234,12 @@ class CommRecordsDataSource(DataSource):
                 for c in filter_spec.communication_type
             ]
 
+        return adorned
+
+    def get_default_filter(self, data_type, company):
+        filter_spec = CommRecordsFilter(
+            date_time=[datetime(2014, 1, 1), datetime.now()])
+        adorned = self.adorn_filter(company, filter_spec)
         return adorned
 
 

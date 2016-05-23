@@ -454,6 +454,20 @@ class TestPartnersDataSource(MyJobsBase):
         adorned_filter = ds.adorn_filter(self.company, filter_spec)
         self.assertEqual(expected, adorned_filter)
 
+    def test_default_filter(self):
+        """should produce a populated filter object."""
+        ds = PartnersDataSource()
+        default_filter = ds.get_default_filter(None, self.company)
+        self.assertEquals(
+            datetime.now().year,
+            default_filter['date'][1].year)
+        # Take out value dated today. Too hard to run through assertEquals.
+        default_filter['date'][1] = None
+        expected = {
+            'date': [datetime(2014, 1, 1), None],
+        }
+        self.assertEquals(expected, default_filter)
+
 
 class TestPartnersFilterCloning(TestCase):
     def test_clone_without_empty(self):
