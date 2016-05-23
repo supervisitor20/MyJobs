@@ -782,6 +782,7 @@ def get_default_report_name(request):
     # We don't actually need this but it seems like it will be important
     # if we ever start picking meaningful names.
     report_data_id = request.POST.get('report_data_id')
+    report_data_id = None
     if not report_data_id:
         validator.note_field_error(
             "report_data_id",
