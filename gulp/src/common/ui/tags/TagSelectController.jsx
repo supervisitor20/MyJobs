@@ -59,7 +59,6 @@ export default class TagSelectController extends Component {
         onRemove = {onRemove}
         searchPlaceholder = {searchPlaceholder}
         placeholder = {(showCounter ? htmlPlaceholder : placeholder )}
-        // placeholder = {htmlPlaceholder}
         />
     );
   }
@@ -95,13 +94,15 @@ TagSelectController.propTypes = {
   /**
    * placeholder text for tag search bar
    */
-  searchPlaceholder: PropTypes.string,
+  searchPlaceholder: React.PropTypes.string,
   /**
    * placeholder text for select input
    */
-  placeholder: PropTypes.string,
+  placeholder: React.PropTypes.string,
   /**
    * Whether or not to show the counter of results
    */
-  showCounter: PropTypes.bool,
+  showCounter: React.PropTypes.bool,
+  counterDisplay: React.PropTypes.func,
+  counterName: React.PropTypes.string,
 };

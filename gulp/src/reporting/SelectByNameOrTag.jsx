@@ -1,7 +1,6 @@
 import React, {Component, PropTypes} from 'react';
-import Multiselect from 'common/ui/MultiSelect';
+import TagSelect from 'common/ui/tags/TagSelect';
 import Select from 'common/ui/Select';
-import {map} from 'lodash-compat/collection';
 import {getDisplayForValue} from 'common/array';
 import TagAnd from 'common/ui/tags/TagAnd';
 
@@ -29,23 +28,40 @@ export class SelectByNameOrTag extends Component {
   }
 
   componentDidMount() {
+    const {reportFinder} = this.props;
+    // This is used to reload the available list anytime the filter changes.
+    this.mounted = true;
+    if (reportFinder) {
+      this.unsubscribeToFilterChanges = reportFinder.subscribeToFilterChanges(
+          () => this.getHints());
+    }
     this.getHints();
+  }
+
+  componentWillUnmount() {
+    if (this.filterChangesRef) {
+      this.unsubscribeToFilterChanges();
+    }
+    this.mounted = false;
   }
 
   async getHints() {
     const {getItemHints, getTagHints} = this.props;
     if (getItemHints) {
-      const availableItemHints = await getItemHints();
-      this.setState({availableItemHints});
+      if (this.mounted) {
+        const availableItemHints = await getItemHints();
+        this.setState({availableItemHints});
+      }
     }
     if (getTagHints) {
-      const availableTagHints = await getTagHints();
-      this.setState({availableTagHints});
+      if (this.mounted) {
+        const availableTagHints = await getTagHints();
+        this.setState({availableTagHints});
+      }
     }
   }
 
   changeHandler(event) {
-    console.log('changeHandler', event);
     const {choices} = this.state;
     const value = event.target.value;
     const display = getDisplayForValue(choices, value);
@@ -63,6 +79,8 @@ export class SelectByNameOrTag extends Component {
       onSelectTagRemove,
       selectedTags,
       selectedItems,
+      searchPlaceholder,
+      placeholder,
     } = this.props;
     const {
       availableItemHints,
@@ -72,22 +90,22 @@ export class SelectByNameOrTag extends Component {
     switch (value) {
     case 1:
       return (
-        <Multiselect
-          available={availableItemHints}
+        <TagSelect
           selected={selectedItems}
-          availableHeader="Available"
-          selectedHeader="Selected"
-          onAdd={v => onSelectItemAdd(v)}
-          onRemove={v => onSelectItemRemove(v)}
-          />
+          available={availableItemHints}
+          onChoose = {onSelectItemAdd}
+          onRemove = {onSelectItemRemove}
+          searchPlaceholder = {searchPlaceholder}
+          placeholder = {placeholder }
+        />
       );
     case 2:
       return (
         <TagAnd
-          availableTags={availableTagHints}
-          selectedTags={selectedTags}
-          onChooseTag={onSelectTagAdd}
-          onRemoveTag={onSelectTagRemove}
+          available={availableTagHints}
+          selected={selectedTags}
+          onChoose={onSelectTagAdd}
+          onRemove={onSelectTagRemove}
           />
       );
     default:
@@ -96,9 +114,16 @@ export class SelectByNameOrTag extends Component {
   }
 
   render() {
-    const {choices, value, choice} = this.state;
+    const {
+      choices,
+      value,
+      choice,
+      availableItemHints,
+      availableTagHints,
+    } = this.state;
     return (
       <div>
+        <span>{availableItemHints.length}</span>
         <Select
           name=""
           onChange={v => this.changeHandler(v)}
@@ -148,7 +173,7 @@ SelectByNameOrTag.propTypes = {
       PropTypes.shape({
         value: PropTypes.any.isRequired,
         display: PropTypes.string.isRequired,
-        hexColor: PropTypes.string.isRequired,
+        hexColor: PropTypes.string,
       })
     )
   ).isRequired,
@@ -162,4 +187,23 @@ SelectByNameOrTag.propTypes = {
    * Function to remove tags when deselected
    */
   onSelectTagRemove: PropTypes.func.isRequired,
+
+  /**
+   * Used for hack to refresh available list.
+   */
+  reportFinder: React.PropTypes.object,
+  /**
+   * placeholder text for tag search bar
+   */
+  searchPlaceholder: React.PropTypes.string,
+  /**
+   * placeholder text for select input
+   */
+  placeholder: React.PropTypes.string,
+  /**
+   * Whether or not to show the counter of results
+   */
+  showCounter: React.PropTypes.bool,
+  counterDisplay: React.PropTypes.func,
+  counterName: React.PropTypes.string,
 };

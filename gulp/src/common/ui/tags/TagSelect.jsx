@@ -129,14 +129,14 @@ export default class TagSelect extends Component {
           <div className="tag-select-menu-container">
             <div className="tag-select-menu">
               <div className="row">
-                <div className="col-xs-12 col-md-9">
+                <div className="col-xs-12 col-md-8">
                   <TextField
                     name="name"
                     value={partial}
                     onChange={e => this.handleFilterChange(e.target.value)}
                     placeholder={searchPlaceholder} />
                 </div>
-                <div className="col-xs-12 col-md-3">
+                <div className="col-xs-12 col-md-4">
                   <div className="button" onClick={() => this.selectAll()}>Select All</div>
                 </div>
               </div>

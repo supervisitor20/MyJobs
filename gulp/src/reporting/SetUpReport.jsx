@@ -12,7 +12,7 @@ import FieldWrapper from 'common/ui/FieldWrapper';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
-import TagSelectController from 'common/ui/tags/TagSelectController';
+import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
 
 export default class SetUpReport extends Component {
   constructor() {
@@ -24,6 +24,7 @@ export default class SetUpReport extends Component {
       reportingTypes: [],
       reportTypes: [],
       dataTypes: [],
+      fieldCounts: {},
     };
   }
 
@@ -93,6 +94,13 @@ export default class SetUpReport extends Component {
   onReportNameChanged(reportName) {
     const {maxNameLength} = this.props;
     this.setState({reportName: reportName.substring(0, maxNameLength)});
+  }
+
+  showCounters(name, count) {
+    const {fieldCounts} = this.state;
+    fieldCounts[name] = count;
+    console.log(name, count);
+    console.log(fieldCounts);
   }
 
   handleHistory(something, loc) {
@@ -205,6 +213,7 @@ export default class SetUpReport extends Component {
       reportingTypes,
       reportTypes,
       dataTypes,
+      // fieldCounts,
     } = this.state;
 
     if (loading) {
@@ -300,16 +309,24 @@ export default class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <TagSelectController
-                getHints = {v =>
+              <SelectByNameOrTag
+                getItemHints = {v =>
                   reportConfig.getHints(col.filter, v)}
-                selected = {reportConfig.currentFilter[col.filter] || []}
-                onAdd = {v => reportConfig.addToMultifilter(col.filter, v)}
-                onRemove = {v => reportConfig.removeFromMultifilter(col.filter, v)}
+                selectedItems = {reportConfig.currentFilter[col.filter] || []}
+                onSelectItemAdd = {v => reportConfig.addToMultifilter(col.filter, v)}
+                onSelectItemRemove = {v => reportConfig.removeFromMultifilter(col.filter, v)}
                 reportFinder = {passReportFinder}
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
+                counterDisplay = {(n, v) => this.showCounters(n, v)}
+                counterName = {col.filter}
                 showCounter
+                getTagHints = {v => reportConfig.getHints(col.filter, v)}
+                selectedTags = {reportConfig.currentFilter[col.filter] || []}
+                onSelectTagAdd = {(i, t) =>
+                  reportConfig.addToAndOrFilter(col.filter, i, t)}
+                onSelectTagRemove = {(i, t) =>
+                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}
               />
 
             </FieldWrapper>

@@ -3562,6 +3562,7 @@ height: 33px;
     -webkit-transition: all .2s ease-in;
     transition: all .2s ease-in;
     cursor: pointer;
+    text-align: center;
 }
 
 .button:hover, .button a:hover {
