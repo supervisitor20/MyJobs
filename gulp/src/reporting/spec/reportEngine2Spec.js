@@ -6,11 +6,11 @@ import {
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
   setReportNameAction,
-} from '../filter-actions';
+} from '../report-state-actions';
 
 import {
   reportStateReducer,
-} from '../filter-reducer';
+} from '../report-state-reducer';
 
 import {
   startRunningReportAction,
@@ -31,6 +31,11 @@ import {promiseTest} from '../../common/spec';
 import IdGenerator from '../../common/idGenerator';
 
 describe('reportStateReducer', () => {
+  it('has a default state', () => {
+    const result = reportStateReducer(undefined, {});
+    expect(result).toEqual({});
+  });
+
   describe('startNewReportAction', () => {
     const action = startNewReportAction({
       defaultFilter: {1: 2},

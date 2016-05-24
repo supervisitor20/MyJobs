@@ -1,6 +1,26 @@
 import {handleActions} from 'redux-actions';
-import {map, groupBy, filter as lodashFilter} from 'lodash-compat/collection';
+import {map, filter as lodashFilter} from 'lodash-compat/collection';
 import {omit} from 'lodash-compat/object';
+
+
+function addOrReplaceByValue(items, item) {
+  // Filter out the old thing, place the new one at the end.
+  return [...lodashFilter(items, i => i.value !== item.value), item];
+}
+
+function replaceItemAtIndex(items, atIndex, newItem) {
+  // Create a new array if the old one apparently didn't exist.
+  if (!items) {
+    return [newItem];
+  }
+  // If this is an unknown index, put the item at the end.
+  if (!(atIndex in items)) {
+    return [...items, newItem];
+  }
+  // Otherwise, replace the matching index.
+  return map(items, (item, index) =>
+    index === atIndex ? newItem : item);
+}
 
 /**
  * report filter state format: {
@@ -66,7 +86,7 @@ export const reportStateReducer = handleActions({
         ...state.currentFilter,
         [field]: item,
       },
-    }
+    };
   },
 
   'ADD_TO_OR_FILTER': (state, action) => {
@@ -96,9 +116,9 @@ export const reportStateReducer = handleActions({
 
     // If the group is empty, return the filter without this key.
     const newFilter = newOrFilter.length > 0 ? {
-        ...currentFilter,
-        [field]: newOrFilter,
-      } : omit(currentFilter, (_, k) => k === field);
+      ...currentFilter,
+      [field]: newOrFilter,
+    } : omit(currentFilter, (_, k) => k === field);
 
     return {
       ...state,
@@ -150,9 +170,9 @@ export const reportStateReducer = handleActions({
 
     // If the group is empty, return the filter without this key.
     const newFilter = andGroup.length > 0 ? {
-        ...currentFilter,
-        [field]: andGroup,
-      } : omit(currentFilter, (_, k) => k === field);
+      ...currentFilter,
+      [field]: andGroup,
+    } : omit(currentFilter, (_, k) => k === field);
 
     return {
       ...state,
@@ -164,24 +184,4 @@ export const reportStateReducer = handleActions({
     const reportName = action.payload;
     return {...state, reportName};
   },
-});
-
-function addOrReplaceByValue(items, item) {
-  // Filter out the old thing, place the new one at the end.
-  return [...lodashFilter(items, i => i.value !== item.value), item];
-}
-
-function replaceItemAtIndex(items, atIndex, newItem) {
-  // Create a new array if the old one apparently didn't exist.
-  if(!items) {
-    return [newItem];
-  }
-  // If this is an unknown index, put the item at the end.
-  if(!(atIndex in items)) {
-    return [...items, newItem];
-  }
-  // Otherwise, replace the matching index.
-  return map(items, (item, index) =>
-    index === atIndex ? newItem : item);
-}
-
+}, {});

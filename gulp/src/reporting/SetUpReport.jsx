@@ -1,4 +1,5 @@
 import React, {PropTypes, Component} from 'react';
+import {connect} from 'react-redux';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
@@ -15,7 +16,7 @@ import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
-export default class SetUpReport extends Component {
+class SetUpReport extends Component {
   constructor() {
     super();
     this.state = {
@@ -380,3 +381,6 @@ SetUpReport.propTypes = {
 SetUpReport.defaultProps = {
   maxNameLength: 24,
 };
+
+//export default connect(s => s)(SetUpReport);
+export default SetUpReport;
