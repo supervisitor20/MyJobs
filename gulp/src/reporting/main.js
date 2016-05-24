@@ -25,9 +25,8 @@ const reducer = combineReducers({
   reportState: reportStateReducer,
 });
 
-const store = createStore(reducer, {
-  reportState: {},
-});
+const store = createStore(reducer, undefined,
+  window.devToolsExtension ? window.devToolsExtension() : f => f);
 
 ReactDOM.render(
   <Provider store={store}>

@@ -2,6 +2,7 @@ import {handleActions} from 'redux-actions';
 import {map, filter as lodashFilter} from 'lodash-compat/collection';
 import {omit} from 'lodash-compat/object';
 
+const maxNameLength = 24;
 
 function addOrReplaceByValue(items, item) {
   // Filter out the old thing, place the new one at the end.
@@ -182,6 +183,11 @@ export const reportStateReducer = handleActions({
 
   'SET_REPORT_NAME': (state, action) => {
     const reportName = action.payload;
-    return {...state, reportName};
+    const cappedReportName = reportName.substring(0, maxNameLength);
+    return {...state, reportName: cappedReportName};
   },
-}, {});
+}, {
+  currentFilter: {},
+  filterInterface: [],
+  reportName: '',
+});

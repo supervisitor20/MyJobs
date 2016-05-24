@@ -5,6 +5,15 @@ import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
 import {forEach} from 'lodash-compat/collection';
 import {debounce} from 'lodash-compat/function';
+import {
+  startNewReportAction,
+  setSimpleFilterAction,
+  addToOrFilterAction,
+  removeFromOrFilterAction,
+  addToAndOrFilterAction,
+  removeFromAndOrFilterAction,
+  setReportNameAction,
+} from './report-state-actions';
 
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
@@ -16,13 +25,14 @@ import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
-class SetUpReport extends Component {
+let SetUpReport;
+
+class RawSetUpReport extends Component {
   constructor() {
     super();
     this.state = {
       loading: true,
       filter: null,
-      reportName: null,
       reportingTypes: [],
       reportTypes: [],
       dataTypes: [],
@@ -74,6 +84,14 @@ class SetUpReport extends Component {
 
   onMenuChanged(reportingTypes, reportTypes, dataTypes,
       reportConfig) {
+    const {dispatch, reportName} = this.props;
+    dispatch(startNewReportAction({
+      defaultFilter: reportConfig.currentFilter,
+      help: reportConfig.help,
+      filters: reportConfig.filters,
+    }));
+    dispatch(setReportNameAction(reportName));
+
     this.setState({
       reportingTypes,
       reportTypes,
@@ -93,8 +111,8 @@ class SetUpReport extends Component {
   }
 
   onReportNameChanged(reportName) {
-    const {maxNameLength} = this.props;
-    this.setState({reportName: reportName.substring(0, maxNameLength)});
+    const {dispatch} = this.props;
+    dispatch(setReportNameAction(reportName));
   }
 
   handleHistory(something, loc) {
@@ -131,7 +149,7 @@ class SetUpReport extends Component {
     const {
       reportDataId: reportDataIdRaw,
     } = this.props.location.query;
-    const {reportFinder} = this.props;
+    const {reportFinder, dispatch} = this.props;
     const {reportName} = this.state;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
 
@@ -150,10 +168,11 @@ class SetUpReport extends Component {
       reportDataId,
       newFilter,
       newName,
-      n => this.onReportNameChanged(n),
+      n => dispatch(setReportNameAction(n)),
       f => this.onFilterUpdate(f),
       errors => this.onErrorsChanged(errors),
       (...args) => this.handleNewReportDataId(...args));
+
     if (this.mounted) {
       this.setState({loading: false});
     }
@@ -192,7 +211,13 @@ class SetUpReport extends Component {
   }
 
   render() {
-    const {reportFinder} = this.props;
+    const {
+      dispatch,
+      reportFinder,
+      currentFilter,
+      filterInterface,
+      reportName,
+    } = this.props;
     const {
       intention: reportingType,
       category: reportType,
@@ -202,7 +227,6 @@ class SetUpReport extends Component {
     const {
       loading,
       reportConfig,
-      reportName,
       reportNameError,
       reportingTypes,
       reportTypes,
@@ -214,7 +238,7 @@ class SetUpReport extends Component {
     }
 
     const rows = [];
-    if (reportConfig) {
+    if (filterInterface.length > 0) {
       const errorTexts = reportNameError ? [reportNameError] : [];
       rows.push(
         <FieldWrapper
@@ -226,15 +250,15 @@ class SetUpReport extends Component {
             value={reportName}
             name=""
             autoFocus="autofocus"
-            onChange={v => reportConfig.changeReportName(v.target.value)}
+            onChange={v => dispatch(setReportNameAction(v.target.value))}
             maxLength={maxNameLength}/>
         </FieldWrapper>
       );
-      reportConfig.filters.forEach(col => {
+      filterInterface.forEach(col => {
         switch (col.interface_type) {
         case 'date_range':
-          const begin = (reportConfig.currentFilter[col.filter] || [])[0];
-          const end = (reportConfig.currentFilter[col.filter] || [])[1];
+          const begin = (currentFilter[col.filter] || [])[0];
+          const end = (currentFilter[col.filter] || [])[1];
 
           rows.push(
             <FieldWrapper key={col.filter} label="Date range">
@@ -252,7 +276,7 @@ class SetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterSearchDropdown
                 id={col.filter}
-                value={reportConfig.currentFilter[col.filter] || ''}
+                value={currentFilter[col.filter] || ''}
                 updateFilter={v => reportConfig.setFilter(col.filter, v)}
                 getHints={v =>
                   reportConfig.getHints(col.filter, v)}/>
@@ -260,7 +284,7 @@ class SetUpReport extends Component {
           );
           break;
         case 'city_state':
-          const values = reportConfig.currentFilter[col.filter] || {};
+          const values = currentFilter[col.filter] || {};
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
@@ -281,7 +305,7 @@ class SetUpReport extends Component {
 
               <TagAndFilter
                 getHints={v => reportConfig.getHints(col.filter, v)}
-                selected={reportConfig.currentFilter[col.filter] || []}
+                selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
                   reportConfig.addToAndOrFilter(col.filter, i, t)}
                 onRemove={(i, t) =>
@@ -312,7 +336,7 @@ class SetUpReport extends Component {
                 selectedHeader="Selected"
                 getHints={v =>
                   reportConfig.getHints(col.filter, v)}
-                selected={reportConfig.currentFilter[col.filter] || []}
+                selected={currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
                   reportConfig.addToMultifilter(col.filter, v))}
                 onRemove = {vs => forEach(vs, v =>
@@ -360,9 +384,18 @@ class SetUpReport extends Component {
   }
 }
 
-SetUpReport.propTypes = {
+RawSetUpReport.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
+  reportName: PropTypes.string.isRequired,
+  currentFilter: PropTypes.object.isRequired,
+  filterInterface: PropTypes.arrayOf(
+    PropTypes.shape({
+      filter: PropTypes.string.isRequired,
+      interface_type: PropTypes.string.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired).isRequired,
   location: PropTypes.shape({
     state: PropTypes.shape({
       name: PropTypes.string.isRequired,
@@ -378,9 +411,13 @@ SetUpReport.propTypes = {
   maxNameLength: PropTypes.number,
 };
 
-SetUpReport.defaultProps = {
+RawSetUpReport.defaultProps = {
   maxNameLength: 24,
 };
 
-//export default connect(s => s)(SetUpReport);
+SetUpReport = connect(s => ({
+  currentFilter: s.reportState.currentFilter,
+  filterInterface: s.reportState.filterInterface,
+  reportName: s.reportState.reportName,
+}))(RawSetUpReport);
 export default SetUpReport;

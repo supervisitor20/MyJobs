@@ -10,6 +10,12 @@ function createItemAction(name) {
 
 /**
  * User wants to start a new report.
+ *
+ * payload is an object shaped like {
+ *   defaultFilter: start of currentFilter
+ *   help: see report-action-reducer
+ *   filters: see report-action-reducer
+ * }
  */
 export const startNewReportAction = createAction('START_NEW_REPORT');
 
@@ -76,5 +82,3 @@ export const addToDateRangeFilterAction = setSimpleFilterAction;
  * payload is the new report name
  */
 export const setReportNameAction = createAction('SET_REPORT_NAME');
-
-

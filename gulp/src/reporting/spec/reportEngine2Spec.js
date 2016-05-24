@@ -31,9 +31,17 @@ import {promiseTest} from '../../common/spec';
 import IdGenerator from '../../common/idGenerator';
 
 describe('reportStateReducer', () => {
-  it('has a default state', () => {
+  describe('default state', () => {
     const result = reportStateReducer(undefined, {});
-    expect(result).toEqual({});
+    it('has a current filter', () => {
+      expect(result.currentFilter).toEqual({});
+    });
+    it('has a filter interface', () => {
+      expect(result.filterInterface).toEqual([]);
+    });
+    it('has a name', () => {
+      expect(result.reportName).toEqual('');
+    });
   });
 
   describe('startNewReportAction', () => {
@@ -325,6 +333,12 @@ describe('reportStateReducer', () => {
     const action = setReportNameAction("Contacts 2016");
     const result = reportStateReducer({}, action);
     expect(result.reportName).toEqual("Contacts 2016");
+  });
+
+  it('caps the report name at 24 characters', () => {
+    const action = setReportNameAction("123456789012345678901234567890");
+    const result = reportStateReducer({}, action);
+    expect(result.reportName).toEqual("123456789012345678901234");
   });
 });
 
