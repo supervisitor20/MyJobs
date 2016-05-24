@@ -53,6 +53,7 @@ export default class TagSelect extends Component {
     this.props.available.forEach((v) => {
       this.handleAdd(v);
     });
+    this.closeSelectMenu();
   }
 
   handleAdd(tag) {
