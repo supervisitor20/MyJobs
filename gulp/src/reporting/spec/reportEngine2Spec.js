@@ -1,5 +1,4 @@
 import {
-  reportStateReducer,
   startNewReportAction,
   setSimpleFilterAction,
   addToOrFilterAction,
@@ -7,12 +6,26 @@ import {
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
   setReportNameAction,
-  doRunReport,
+} from '../filter-actions';
+
+import {
+  reportStateReducer,
+} from '../filter-reducer';
+
+import {
   startRunningReportAction,
   removeRunningReportAction,
+  completedReportsAction,
   newReportAction,
+} from '../report-list-actions';
+
+import {
+  doRunReport,
+} from '../compound-actions';
+
+import {
   errorAction,
-} from '../reportEngine2';
+} from '../error-actions';
 
 import {promiseTest} from '../../common/spec';
 import IdGenerator from '../../common/idGenerator';
@@ -20,7 +33,7 @@ import IdGenerator from '../../common/idGenerator';
 describe('reportStateReducer', () => {
   describe('startNewReportAction', () => {
     const action = startNewReportAction({
-      default_filter: {1: 2},
+      defaultFilter: {1: 2},
       help: {3: 4},
       filters: {5: 6},
     });
@@ -310,15 +323,24 @@ describe('reportStateReducer', () => {
   });
 });
 
+
+class FakeApi {
+  runReport(reportDataId, name, filter) {}
+  listReports() {}
+}
+
+
 describe('doRunReport', () => {
   let actions;
   let state;
   let idGen;
+  let api;
 
   beforeEach(() => {
     actions = [];
     state = {};
     idGen = new IdGenerator();
+    api = new FakeApi();
   });
 
   function dispatch(action) {
@@ -330,42 +352,43 @@ describe('doRunReport', () => {
   }
 
   it('handles the happy path', promiseTest(async () => {
-    const foundArgs = [];
-    function fakeRunReport(...args) {
-      foundArgs.push(args);
-      return Promise.resolve({id: 99});
-    };
+    spyOn(api, 'runReport').and.returnValue(Promise.resolve({id: 99}));
+    spyOn(api, 'listReports').and.returnValue(Promise.resolve({
+      reports: [
+        {id: 3, name: 'c', report_type: 3},
+        {id: 4, name: 'd', report_type: 4},
+      ],
+    }));
     await doRunReport(
       idGen,
-      fakeRunReport,
+      api,
       2,
       'a',
       {1: 2})(
       dispatch,
       getState);
-    expect(foundArgs).toEqual([[2, 'a', {1: 2}]]);
+    expect(api.runReport).toHaveBeenCalledWith(2, 'a', {1: 2});
+    expect(api.listReports).toHaveBeenCalled();
     expect(actions).toEqual([
       startRunningReportAction(1),
-      removeRunningReportAction(1),
       newReportAction(99),
+      completedReportsAction([
+        {id: 3, name: 'c', report_type: 3},
+        {id: 4, name: 'd', report_type: 4},
+      ]),
+      removeRunningReportAction(1),
     ]);
   }));
 
   it('handles api failures', promiseTest(async () => {
-    function fakeRunReport(...args) {
-      const error = new Error("API Error");
-      error.data = {some: 'data'};
-      error.response = {
-        status: 400,
-      };
-      throw error;
+    const error = new Error("API Error");
+    error.data = {some: 'data'};
+    error.response = {
+      status: 400,
     };
-    await doRunReport(
-      idGen,
-      fakeRunReport)(
-      dispatch,
-      getState);
-    expect(actions).toStrictlyEqual([
+    spyOn(api, 'runReport').and.throwError(error);
+    await doRunReport(idGen, api)(dispatch, getState);
+    expect(actions).toEqual([
       startRunningReportAction(1),
       removeRunningReportAction(1),
       errorAction("API Error", {some: 'data'}),
@@ -373,16 +396,10 @@ describe('doRunReport', () => {
   }));
 
   it('handles arbitrary failures', promiseTest(async () => {
-    function fakeRunReport(...args) {
-      const error = new Error("Some Error");
-      throw error;
-    };
-    await doRunReport(
-      idGen,
-      fakeRunReport)(
-      dispatch,
-      getState);
-    expect(actions).toStrictlyEqual([
+    const error = new Error("Some Error");
+    spyOn(api, 'runReport').and.throwError(error);
+    await doRunReport(idGen, api)(dispatch, getState);
+    expect(actions).toEqual([
       startRunningReportAction(1),
       removeRunningReportAction(1),
       errorAction("Some Error"),

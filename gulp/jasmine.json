@@ -4,8 +4,5 @@
   "spec_files": [
     "**/spec/*.js"
   ],
-  "random": false,
-  "helpers": [
-    "helpers/*.js"
-  ]
+  "random": false
 }

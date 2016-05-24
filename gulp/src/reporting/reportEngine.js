@@ -75,11 +75,7 @@ export class ReportFinder {
       if (currentName) {
         name = {name: currentName};
       } else {
-        try {
         name = await this.api.getDefaultReportName(reportDataId);
-        } catch(exc) {
-          debugger;
-        }
       }
       let initialFilter;
       if (currentFilter) {

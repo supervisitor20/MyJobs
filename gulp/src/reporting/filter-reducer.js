@@ -1,9 +1,6 @@
-import {handleActions, createAction} from 'redux-actions';
+import {handleActions} from 'redux-actions';
 import {map, groupBy, filter as lodashFilter} from 'lodash-compat/collection';
-import {findIndex} from 'lodash-compat/array';
 import {omit} from 'lodash-compat/object';
-import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
-import {is500Error, is400Error, errorData} from '../common/myjobs-api';
 
 /**
  * report filter state format: {
@@ -49,7 +46,7 @@ import {is500Error, is400Error, errorData} from '../common/myjobs-api';
 export const reportStateReducer = handleActions({
   'START_NEW_REPORT': (state, action) => {
     const {
-      default_filter: currentFilter,
+      defaultFilter: currentFilter,
       help,
       filters: filterInterface,
     } = action.payload;
@@ -188,52 +185,3 @@ function replaceItemAtIndex(items, atIndex, newItem) {
     index === atIndex ? newItem : item);
 }
 
-function createItemAction(name) {
-  return createAction(name, (field, item) => ({field, item}));
-}
-
-export const startNewReportAction = createAction('START_NEW_REPORT');
-
-export const setSimpleFilterAction = createItemAction('SET_SIMPLE_FILTER');
-export const addToOrFilterAction = createItemAction('ADD_TO_OR_FILTER');
-export const removeFromOrFilterAction =
-  createItemAction('REMOVE_FROM_OR_FILTER');
-
-export const addToAndOrFilterAction =
-  createAction(
-    'ADD_TO_AND_OR_FILTER',
-    (field, index, item) => ({field, index, item}));
-
-export const removeFromAndOrFilterAction =
-  createAction(
-    'REMOVE_FROM_AND_OR_FILTER',
-    (field, index, item) => ({field, index, item}));
-
-export const addToDateRangeFilterAction = setSimpleFilterAction;
-
-export const setReportNameAction = createAction('SET_REPORT_NAME');
-
-export const startRunningReportAction = createAction('START_RUNNING_REPORT');
-export const removeRunningReportAction = createAction('REMOVE_RUNNING_REPORT');
-export const newReportAction = createAction('NEW_REPORT');
-export const errorAction = createAction('ERROR', (message, data) =>
-  ({message, data}));
-
-export function doRunReport(idGen, runReport, reportDataId, name, filter) {
-  return async (dispatch, getState) => {
-    const runningReportId = idGen.nextId();
-    try {
-      dispatch(startRunningReportAction(runningReportId));
-      const response = await runReport(reportDataId, name, filter);
-      dispatch(removeRunningReportAction(runningReportId));
-      dispatch(newReportAction(response.id));
-    } catch (exc) {
-      dispatch(removeRunningReportAction(runningReportId));
-      if (is400Error(exc)) {
-        dispatch(errorAction(exc.message, errorData(exc)));
-      } else {
-        dispatch(errorAction(exc.message));
-      }
-    }
-  }
-}
