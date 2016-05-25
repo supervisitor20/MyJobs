@@ -15,7 +15,8 @@ export class SelectByNameOrTag extends Component {
     const choices = [
       {display: 'No filter', value: 0},
       {display: 'Filter by name', value: 1},
-      {display: 'Filter by tag', value: 2},
+      // re-enable when tags can be integrated
+      // {display: 'Filter by tag', value: 2},
     ];
 
     this.state = {
@@ -24,6 +25,7 @@ export class SelectByNameOrTag extends Component {
       availableTagHints: [],
       choice: 0,
       choices,
+      loading: false,
     };
   }
 
@@ -49,8 +51,9 @@ export class SelectByNameOrTag extends Component {
     const {getItemHints, getTagHints} = this.props;
     if (getItemHints) {
       if (this.mounted) {
+        this.setState({loading: true});
         const availableItemHints = await getItemHints();
-        this.setState({availableItemHints});
+        this.setState({availableItemHints, loading: false});
       }
     }
     if (getTagHints) {
@@ -65,10 +68,33 @@ export class SelectByNameOrTag extends Component {
     const {choices} = this.state;
     const value = event.target.value;
     const display = getDisplayForValue(choices, value);
+    this.resetFilter();
     this.setState({
       choice: value,
       value: display,
     });
+  }
+
+  resetFilter() {
+    const {
+      onSelectItemRemove,
+      selectedItems,
+    } = this.props;
+    const {
+      choice,
+    } = this.state;
+    switch (choice) {
+    case 1:
+      [...selectedItems].forEach((v) => {
+        onSelectItemRemove(v);
+      });
+      break;
+    case 2:
+      // address this later when tags are enabled
+      break;
+    default:
+      return;
+    }
   }
 
   renderControl(value) {
@@ -119,15 +145,30 @@ export class SelectByNameOrTag extends Component {
       value,
       choice,
       availableItemHints,
-      availableTagHints,
+      loading,
     } = this.state;
+    let valueAndCount = (
+      <span>
+        <span className="counter">
+          <span className="report-loader"></span>
+        </span>
+        {value}
+      </span>);
+    if (!loading) {
+      valueAndCount = (
+      <span>
+        <span className="counter">
+          {'(' + availableItemHints.length + ' available)'}
+        </span>
+        {value}
+      </span>);
+    }
     return (
       <div>
-        <span>{availableItemHints.length}</span>
         <Select
           name=""
           onChange={v => this.changeHandler(v)}
-          value={value}
+          value={valueAndCount}
           choices = {choices}/>
         <div className="select-control-chosen">
           {this.renderControl(choice)}
@@ -204,6 +245,4 @@ SelectByNameOrTag.propTypes = {
    * Whether or not to show the counter of results
    */
   showCounter: React.PropTypes.bool,
-  counterDisplay: React.PropTypes.func,
-  counterName: React.PropTypes.string,
 };

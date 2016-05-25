@@ -47,9 +47,19 @@ export default class TagSelectController extends Component {
     } = this.props;
     const {available} = this.state;
 
-    let htmlPlaceholder = (<span><span> {placeholder} </span><span className="counter"><span className="report-loader"></span></span></span>);
+    let htmlPlaceholder = (
+      <span>
+        <span>{placeholder}</span>
+        <span className="counter">
+          <span className="report-loader"></span>
+        </span>
+      </span>);
     if (available.length !== 0) {
-      htmlPlaceholder = (<span><span> {placeholder} </span><span className="counter">[ {available.length} available ]</span></span>);
+      htmlPlaceholder = (
+        <span>
+          <span>{placeholder}</span>
+          <span className="counter">[ {available.length} available ]</span>
+        </span>);
     }
     return (
       <TagSelect
@@ -103,6 +113,4 @@ TagSelectController.propTypes = {
    * Whether or not to show the counter of results
    */
   showCounter: React.PropTypes.bool,
-  counterDisplay: React.PropTypes.func,
-  counterName: React.PropTypes.string,
 };

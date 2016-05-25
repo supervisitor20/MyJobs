@@ -96,13 +96,6 @@ export default class SetUpReport extends Component {
     this.setState({reportName: reportName.substring(0, maxNameLength)});
   }
 
-  showCounters(name, count) {
-    const {fieldCounts} = this.state;
-    fieldCounts[name] = count;
-    console.log(name, count);
-    console.log(fieldCounts);
-  }
-
   handleHistory(something, loc) {
     const lastComponent = loc.components[loc.components.length - 1];
     if (lastComponent === SetUpReport) {
@@ -318,15 +311,13 @@ export default class SetUpReport extends Component {
                 reportFinder = {passReportFinder}
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
-                counterDisplay = {(n, v) => this.showCounters(n, v)}
-                counterName = {col.filter}
-                showCounter
                 getTagHints = {v => reportConfig.getHints(col.filter, v)}
                 selectedTags = {reportConfig.currentFilter[col.filter] || []}
                 onSelectTagAdd = {(i, t) =>
                   reportConfig.addToAndOrFilter(col.filter, i, t)}
                 onSelectTagRemove = {(i, t) =>
                   reportConfig.removeFromAndOrFilter(col.filter, i, t)}
+                showCounter
               />
 
             </FieldWrapper>

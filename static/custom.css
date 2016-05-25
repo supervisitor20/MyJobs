@@ -3267,11 +3267,13 @@ em.pendingText {
   padding: 5px;
 }
 
+.select-element-chosen-container .counter,
 .tag-select-placeholder .counter {
     float: right;
     font-size: .8em;
 }
 
+.select-element-chosen-container .counter .report-loader,
 .tag-select-placeholder .counter .report-loader {
   display: inline-block;
   background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_ms/files/images/ajax-loader.gif');
@@ -3300,15 +3302,18 @@ em.pendingText {
   position: relative;
 }
 
-/*.tag-select-menu-container .tag-select-menu input {
-  width: 70%!important;
-  float: left;
-  margin-right: 5px;
+.tag-select-menu-container  [class*='col-'] {
+    padding-right:3px;
+    padding-left:3px;
 }
-*/
+
+.tag-select-menu-container .row:nth-child(n+2) {
+    margin-top: 10px;
+}
 
 .tag-select-menu-container .tag-select-menu .button {
   width: 100%;
+  margin: 0px;
 }
 
 .tag-select-menu {
@@ -3367,6 +3372,7 @@ em.pendingText {
   color: #fff;
   font: 14px/100% arial, sans-serif;
   position: absolute;
+  top: 0px;
   right: 5px;
   text-decoration: none;
   line-height: 18px;
@@ -3646,7 +3652,7 @@ height: 33px;
   text-overflow: ellipsis;
 }
 .select-element-arrow {
-  height: 33px;
+  height: 30px;
   position: absolute;
   top: 1px;
   right: 0;

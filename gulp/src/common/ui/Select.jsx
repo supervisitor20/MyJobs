@@ -135,7 +135,7 @@ class Select extends React.Component {
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
         <div className="select-element-input" onClick={selectAction}>
           <div className="select-element-chosen-container">
-            <span title={value} className="select-element-chosen">{value}</span>
+            <span className="select-element-chosen">{value}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>
@@ -146,6 +146,10 @@ class Select extends React.Component {
     );
   }
 }
+
+Select.defaultProps = {
+  value: '',
+};
 
 Select.propTypes = {
   /**
@@ -162,7 +166,10 @@ Select.propTypes = {
   /**
    * Value shown as the selected value in the control.
    */
-  value: React.PropTypes.string.isRequired,
+  value: React.PropTypes.oneOfType([
+    React.PropTypes.string,
+    React.PropTypes.element,
+  ]),
   /**
    * Array of objects, each an item in the select component
    */
@@ -176,10 +183,6 @@ Select.propTypes = {
    * Array of strings, each a possible error produced by Django
    */
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
-};
-
-Select.defaultProps = {
-  value: '',
 };
 
 export default Select;
