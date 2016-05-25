@@ -92,14 +92,18 @@ class Select extends React.Component {
     this.closeSelectMenu();
   }
   render() {
-    const {choices, name, value} = this.props;
+    const {choices, name, value, disable} = this.props;
     const {keySelectedIndex, selectDropped} = this.state;
 
     let selectAction;
     let dropdown;
     let dropdownItems = [];
     if (selectDropped) {
-      selectAction = this.closeSelectMenu;
+      if (disable === true) {
+        selectAction = null;
+      } else {
+        selectAction = this.closeSelectMenu;
+      }
       dropdownItems = choices.map((item, index)=> {
         let active = '';
         if (index === keySelectedIndex) {
@@ -127,7 +131,11 @@ class Select extends React.Component {
       </div>
       );
     } else {
-      selectAction = this.openSelectMenu;
+      if (disable === true) {
+        selectAction = null;
+      } else {
+        selectAction = this.openSelectMenu;
+      }
       dropdown = '';
     }
 
@@ -183,6 +191,10 @@ Select.propTypes = {
    * Array of strings, each a possible error produced by Django
    */
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
+  /**
+   * Ability to disable the select control
+   */
+  disable: React.PropTypes.bool,
 };
 
 export default Select;

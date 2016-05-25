@@ -169,7 +169,9 @@ export class SelectByNameOrTag extends Component {
           name=""
           onChange={v => this.changeHandler(v)}
           value={valueAndCount}
-          choices = {choices}/>
+          choices = {choices}
+          disable = {loading ? true : false}
+        />
         <div className="select-control-chosen">
           {this.renderControl(choice)}
         </div>
