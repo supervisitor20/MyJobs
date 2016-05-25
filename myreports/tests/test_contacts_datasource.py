@@ -277,12 +277,48 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_empty_things(self):
-        """Empty filters should not filter, just like missing filters."""
+        """None filters should not filter, just like missing filters."""
+        ds = ContactsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            ContactsFilter(
+                partner=None,
+                tags=None,
+                locations={'city': '', 'state': ''}),
+            [])
+        names = {r['name'] for r in recs}
+        expected = {self.john.name, self.sue.name}
+        self.assertEqual(expected, names)
+
+    def test_filter_with_empty_partner_list(self):
+        """
+        Empty partner list should cause no results to return
+        This indicates that the member selected to filter by partner,
+        but selected no partners
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
                 partner=[],
+                locations={'city': '', 'state': ''}),
+            [])
+        names = {r['name'] for r in recs}
+        expected = {self.john.name, self.sue.name}
+        self.assertEqual(expected, names)
+
+    def test_filter_with_empty_tag_list(self):
+        """
+        Empty tag list should cause only items without tags to return.
+        This indicates that the member selected to filter by tags, but
+        selected no tags to filter by.
+
+        """
+        ds = ContactsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            ContactsFilter(
                 tags=[],
                 locations={'city': '', 'state': ''}),
             [])

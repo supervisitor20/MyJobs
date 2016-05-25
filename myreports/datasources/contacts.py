@@ -229,7 +229,7 @@ class ContactsFilter(DataSourceFilter):
         """
         qs = filter_date_range(self.date, 'last_action_time', qs)
 
-        if self.tags:
+        if self.tags is not None:
             or_qs = []
             for tag_ors in self.tags:
                 or_qs.append(
@@ -238,8 +238,11 @@ class ContactsFilter(DataSourceFilter):
                         map(lambda t: Q(tags__name__iexact=t), tag_ors)))
             for or_q in or_qs:
                 qs = qs.filter(or_q)
+            if len(self.tags) == 0:
+                # if an empty tags list was received, return only untagged items
+                qs.filter(tags=None)
 
-        if self.partner:
+        if self.partner is not None:
             qs = qs.filter(partner__pk__in=self.partner)
 
         if self.locations is not None:
