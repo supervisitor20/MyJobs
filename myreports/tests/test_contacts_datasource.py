@@ -83,6 +83,24 @@ class TestContactsDataSource(MyJobsBase):
                 state="CA"))
         self.sue.tags.add(self.west_tag)
 
+        self.billy_user = UserFactory(email="billy@user.com")
+        self.billy = ContactFactory(
+            partner=self.partner_b,
+            name='Billy Tagless',
+            user=self.sue_user,
+            email="billy@user.com",
+            last_action_time='2015-09-30 13:23')
+        self.sue.locations.add(
+            LocationFactory.create(
+                address_line_one="456",
+                city="La Croix",
+                state="CO"))
+        self.sue.locations.add(
+            LocationFactory.create(
+                address_line_one="789",
+                city="La Croix",
+                state="Co"))
+
         # Poision data. Should never show up.
         self.archived_partner_user = (
             UserFactory(email="archived_partner@user.com"))
@@ -206,7 +224,7 @@ class TestContactsDataSource(MyJobsBase):
                 date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.sue.name}
+        expected = {self.sue.name, self.billy.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_date_before(self):
@@ -218,7 +236,7 @@ class TestContactsDataSource(MyJobsBase):
                 date=[None, datetime(2015, 9, 30)]),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.sue.name}
+        expected = {self.sue.name, self.billy.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_date_after(self):
@@ -304,9 +322,8 @@ class TestContactsDataSource(MyJobsBase):
                 partner=[],
                 locations={'city': '', 'state': ''}),
             [])
-        names = {r['name'] for r in recs}
-        expected = {self.john.name, self.sue.name}
-        self.assertEqual(expected, names)
+
+        self.assertEqual(len(recs), 0)
 
     def test_filter_with_empty_tag_list(self):
         """
@@ -323,7 +340,7 @@ class TestContactsDataSource(MyJobsBase):
                 locations={'city': '', 'state': ''}),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.john.name, self.sue.name}
+        expected = {self.billy.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_state(self):

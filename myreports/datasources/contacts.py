@@ -240,7 +240,7 @@ class ContactsFilter(DataSourceFilter):
                 qs = qs.filter(or_q)
             if len(self.tags) == 0:
                 # if an empty tags list was received, return only untagged items
-                qs.filter(tags=None)
+                qs = qs.filter(tags=None)
 
         if self.partner is not None:
             qs = qs.filter(partner__pk__in=self.partner)
