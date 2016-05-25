@@ -158,10 +158,9 @@ def handle_form(request):
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()
-        if request.META.get('HTTP_ACCEPT') == 'application/json':
-            remote_form = RemoteForm(form_instance)
-            return HttpResponse(content_type='application/json',
-                                content=json.dumps(remote_form.as_dict()))
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(content_type='application/json',
+                            content=json.dumps(remote_form.as_dict()))
 
 
 @user_passes_test(User.objects.not_disabled)
