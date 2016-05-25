@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.db.models.loading import get_model
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.utils.crypto import get_random_string
 
 from impersonate.signals import session_begin, session_end
@@ -230,6 +230,29 @@ class CustomUserManager(BaseUserManager):
         :is_member: Boolean representing the user's membership status
         """
         return not user.is_anonymous() and user.roles.exists()
+
+
+class MissingActivity(HttpResponseForbidden):
+    """
+    MissingActivity is raised when a company user access a view but that
+    user hasn't been assigned roles which include the required activities. It
+    is no different than an HttpResponseForbidden, other than its name, which
+    we can use to assert that the correct response type was returned without
+    leaking information to the user.
+
+    """
+
+
+class MissingAppLevelAccess(Http404):
+    """
+    MissingAppLevelAccess is raised when a view is accessed for a company who
+    doesn't have appropriate app-level access for that view. It is no different
+    than an Http404 other than its name, which we can used to assert that the
+    correct response time was returned without leaking information to the user.
+
+    """
+
+
 
 
 # New in Django 1.5. This is now the default auth user table.
@@ -698,7 +721,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         if check_access and not set(required_access).issubset(
                 company.enabled_access):
-            raise Http404(
+            raise MissingAppLevelAccess(
                 "%s doesn't have sufficient app-level access." % company)
 
         # Company must have correct access and user must have correct

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean-shrinkwrap": "babel-node clean-shrinkwrap.js",
-    "devserver": "webpack-dev-server -d --progress --config=webpack.dev.config.js --host=0.0.0.0 --https --inline"
+    "devserver": "webpack-dev-server -d --progress --config=webpack.dev.config.js --inline"
   },
   "author": "DirectEmployers Association",
   "license": "(GPL-2.0 OR GPL-3.0 OR MIT)",
@@ -21,6 +21,7 @@
     "babel-runtime": "^5.8.25",
     "calendar-base": "^0.2.1",
     "classnames": "^2.2.1",
+    "es3ify-loader": "^0.2.0",
     "es6-promise": "^3.0.2",
     "eslint": "^1.10.2",
     "eslint-config-airbnb": "^1.0.0",

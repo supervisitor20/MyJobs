@@ -2,6 +2,12 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
+  devServer: {
+    host: process.env.DEVSERVER_HOST || "0.0.0.0",
+    port: process.env.DEVSERVER_PORT || "8080",
+    config: "webpack.dev.config.js",
+    https: process.env.DEVSERVER_HTTPS ? true : false,
+  },
   entry: {
     reporting: './src/reporting/main',
     manageusers: './src/manageusers/main',
@@ -30,6 +36,13 @@ module.exports = {
         test: /\.jsx?$/,
         exclude: /node_modules/,
         loader: 'eslint-loader',
+      },
+    ],
+    // ie8 catchall. Some imported react components need this.
+    postLoaders: [
+      {
+        test: /\.js$/,
+        loaders: ['es3ify'],
       },
     ],
   },
