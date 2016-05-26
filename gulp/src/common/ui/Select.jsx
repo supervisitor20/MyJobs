@@ -145,7 +145,7 @@ class Select extends React.Component {
         <div className={
           classnames(
             'select-element-input',
-            {'disabled': disable})} 
+            {'disabled': disable})}
           onClick={selectAction}>
           <div className="select-element-chosen-container">
             <span className="select-element-chosen">{value}</span>
