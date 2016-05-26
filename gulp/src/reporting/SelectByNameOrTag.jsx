@@ -206,7 +206,7 @@ SelectByNameOrTag.propTypes = {
    */
   onSelectItemRemove: PropTypes.func.isRequired,
 
-  getTagHints: PropTypes.func.isRequired,
+  getTagHints: PropTypes.func,
 
   /**
    * Currently selected tags
@@ -219,17 +219,17 @@ SelectByNameOrTag.propTypes = {
         hexColor: PropTypes.string,
       })
     )
-  ).isRequired,
+  ),
 
   /**
    * Function to add tags when selected
    */
-  onSelectTagAdd: PropTypes.func.isRequired,
+  onSelectTagAdd: PropTypes.func,
 
   /**
    * Function to remove tags when deselected
    */
-  onSelectTagRemove: PropTypes.func.isRequired,
+  onSelectTagRemove: PropTypes.func,
 
   /**
    * Used for hack to refresh available list.

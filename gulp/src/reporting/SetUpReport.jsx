@@ -311,12 +311,6 @@ export default class SetUpReport extends Component {
                 reportFinder = {passReportFinder}
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
-                getTagHints = {v => reportConfig.getHints(col.filter, v)}
-                selectedTags = {reportConfig.currentFilter[col.filter] || []}
-                onSelectTagAdd = {(i, t) =>
-                  reportConfig.addToAndOrFilter(col.filter, i, t)}
-                onSelectTagRemove = {(i, t) =>
-                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}
                 showCounter
               />
 
