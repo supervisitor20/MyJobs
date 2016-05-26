@@ -24,6 +24,8 @@ import {
 import {
   doRunReport,
   doGetHelp,
+  getFilterValuesOnly,
+  doUpdateFilterWithDependencies,
 } from '../compound-actions';
 
 import {
@@ -32,6 +34,10 @@ import {
 
 import {promiseTest} from '../../common/spec';
 import IdGenerator from '../../common/idGenerator';
+
+import createReduxStore from '../../common/create-redux-store';
+import {combineReducers} from 'redux';
+
 
 describe('reportStateReducer', () => {
   describe('default state', () => {
@@ -470,8 +476,11 @@ describe('doGetHints', () => {
       {value: 3, display: 'Red'},
       {value: 4, display: 'Blue'},
     ]));
-    await doGetHelp(9, {}, 'labels', 'z')(dispatch, getState, {api});
-    expect(api.getHelp).toHaveBeenCalledWith(9, {}, 'labels', 'z');
+    const filter = {
+      a: [{value: 1}],
+    }
+    await doGetHelp(9, filter, 'labels', 'z')(dispatch, getState, {api});
+    expect(api.getHelp).toHaveBeenCalledWith(9, {a: [1]}, 'labels', 'z');
     expect(actions).toEqual([
       clearHintsAction('labels'),
       receiveHintsAction('labels', [
@@ -489,5 +498,114 @@ describe('doGetHints', () => {
       clearHintsAction('labels'),
       errorAction("Some Error"),
     ]);
+  }));
+});
+
+
+describe('getFilterValuesOnly', () => {
+  it('returns strings and plain objects unchanged', () => {
+    const filter = {a: 'b', c: {d: 'e'}};
+    expect(getFilterValuesOnly(filter)).toEqual(filter);
+  });
+
+  it('returns date ranges unchanged', () => {
+    const filter = {a: ['11/11/1111', '12/22/2222']};
+    expect(getFilterValuesOnly(filter)).toEqual(filter);
+  });
+
+  it('returns or filters stripped down to their values', () => {
+    const filter = {a: [{value: 1}]};
+    expect(getFilterValuesOnly(filter)).toEqual({a: [1]});
+  });
+
+  it('returns and/or filters stripped down to their values', () => {
+    const filter = {a: [[{value: 1}]]};
+    expect(getFilterValuesOnly(filter)).toEqual({a: [[1]]});
+  });
+});
+
+
+describe('doUpdateFilterWithDependencies end to end', () => {
+  let actions;
+  let idGen;
+  let api;
+  let store;
+  let newReportState;
+  let oldReportState;
+
+  const defaultState = {
+    reportState: {
+      filterInterface: [
+        {filter: 'locations'},
+        {filter: 'contact'},
+        {filter: 'partner'},
+      ],
+
+      currentFilter: {
+        'locations': {city: 'Indy', state: 'IN'},
+        'contact': [
+          {value: 3},
+          {value: 4},
+        ],
+        'partner': [
+          {value: 5},
+          {value: 6},
+        ],
+      },
+    },
+  };
+
+  beforeEach(promiseTest(async () => {
+    actions = [];
+    idGen = new IdGenerator();
+    api = new FakeApi();
+
+    spyOn(api, 'getHelp').and.callFake((_r, _f, field) => {
+      switch(field) {
+        case 'state':
+          return Promise.resolve([{value: 'CA'}]);
+        case 'partner':
+          return Promise.resolve([{value: 5}]);
+        case 'contact':
+          return Promise.resolve([{value: 3}]);
+      }
+    });
+
+    store = createReduxStore(
+      combineReducers({reportState: reportStateReducer}),
+      defaultState,
+      {api, idGen});
+
+    await doUpdateFilterWithDependencies(
+      setSimpleFilterAction('locations', {city: 'Indy2', state: 'IN'}),
+      defaultState.reportState.filterInterface,
+      0)(
+      (...args) => store.dispatch(...args),
+      (...args) => store.getState(...args),
+      {api, idGen});
+
+    newReportState = store.getState().reportState;
+    oldReportState = defaultState.reportState;
+  }));
+
+  it('has the expected hints', promiseTest(async () => {
+    expect(newReportState.hints).toEqual({
+      state: [{value: 'CA'}],
+      partner: [{value: 5}],
+      contact: [{value: 3}],
+    });
+  }));
+
+  it('has the expected filterInterface', promiseTest(async () => {
+    expect(newReportState.filterInterface)
+      .toEqual(oldReportState.filterInterface);
+  }));
+
+  it('has the expected currentFilter', promiseTest(async () => {
+    expect(newReportState.currentFilter).toEqual({
+      ...oldReportState.currentFilter,
+      locations: {city: 'Indy2', state: 'IN'},
+      contact: [{value: 3}],
+    });
   }));
 });

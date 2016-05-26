@@ -291,7 +291,7 @@ class RawSetUpReport extends Component {
                 id={col.filter}
                 value={currentFilter[col.filter] || ''}
                 updateFilter={v =>
-                  this.dispatch(
+                  this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
                 getHints={v => getHints(col.filter, v)}
                 hints={hints[col.filter]}/>
@@ -304,8 +304,7 @@ class RawSetUpReport extends Component {
             <FieldWrapper key={col.filter} label={col.display}>
               <WizardFilterCityState
                 id={col.filter}
-                cityValue={values.city || ''}
-                stateValue={values.state || ''}
+                values={values}
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
@@ -325,7 +324,7 @@ class RawSetUpReport extends Component {
                 available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
-                  this.dispatch(
+                  this.dispatchFilterAction(
                     addToAndOrFilterAction(col.filter, i, t))}
                 onRemove={(i, t) =>
                   this.dispatchFilterAction(
@@ -335,36 +334,21 @@ class RawSetUpReport extends Component {
             );
           break;
         case 'search_multiselect':
-          // Hack. MultiSelect filter will subscribe to filter updates if we
-          // pass reportFinder.
-          let passReportFinder;
-          if (col.filter === 'contact' || col.filter === 'partner') {
-            passReportFinder = reportFinder;
-          }
-          let removeSelected;
-          if (col.filter === 'contact') {
-            removeSelected = true;
-          }
-
           rows.push(
             <FieldWrapper
               key={col.filter}
               label={col.display}>
 
               <MultiSelectFilter
-                availableHeader="Available"
-                selectedHeader="Selected"
-                getHints={v =>
-                  reportConfig.getHints(col.filter, v)}
+                getHints={v => getHints(col.filter, v)}
+                available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
-                  this.dispatch(
-                  addToOrFilterAction(col.filter, v)))}
+                  this.dispatchFilterAction(
+                    addToOrFilterAction(col.filter, v)))}
                 onRemove = {vs => forEach(vs, v =>
                   this.dispatchFilterAction(
-                  removeFromOrFilterAction(col.filter, v)))}
-                reportFinder={passReportFinder}
-                removeSelected={removeSelected}/>
+                    removeFromOrFilterAction(col.filter, v)))}/>
 
             </FieldWrapper>
             );

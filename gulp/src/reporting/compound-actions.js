@@ -1,4 +1,14 @@
-import {forEach, includes} from 'lodash-compat/collection';
+import warning from 'warning';
+import {mapValues} from 'lodash-compat/object';
+import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
+import {
+  indexBy,
+  map,
+  forEach,
+  includes,
+  find,
+  filter as lodashFilter,
+} from 'lodash-compat/collection';
 
 import {
   startRunningReportAction,
@@ -9,11 +19,39 @@ import {
 import {
   receiveHintsAction,
   clearHintsAction,
+  removeFromOrFilterAction,
 } from './report-state-actions';
 
 import {errorAction} from './error-actions';
 import {is400Error, errorData} from '../common/myjobs-api';
 
+
+/**
+  * Build a filter suitable for sending to the run method of the api.
+  *
+  * Run and hints methods want any objects like {value: x, ...}
+  * transformed down to just x.
+  */
+export function getFilterValuesOnly(currentFilter) {
+  // FUTURE: add filterType to specify the type of filter data required
+  //  i.e. "date_range", "or", "and_or", "string", etc.
+  //  This will make this function need to do less guessing.
+  const result = mapValues(currentFilter, item => {
+    if (isString(item) || isPlainObject(item)) {
+      return item;
+    } else if (isArray(item) && isPlainObject(item[0])) {
+      return map(item, o => o.value);
+    } else if (isArray(item) && isArray(item[0])) {
+      return map(item, inner => map(inner, o => o.value));
+    } else if (isArray(item) && item.length === 2 &&
+        // Looks like a date range.
+        typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
+      return item;
+    }
+    warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
+  });
+  return result;
+}
 
 /**
  * User ran a report.
@@ -62,10 +100,7 @@ export function doGetHelp(reportDataId, currentFilter, fieldName, partial) {
       // FUTURE: add some loading indicator actions.
       dispatch(clearHintsAction(fieldName));
       const hints = await api.getHelp(
-        reportDataId, currentFilter, fieldName, partial);
-      if (fieldName === 'state') {
-        console.log('doGetHelp state', hints);
-      }
+        reportDataId, getFilterValuesOnly(currentFilter), fieldName, partial);
       dispatch(receiveHintsAction(fieldName, hints));
     } catch (exc) {
       dispatch(errorAction(exc.message));
@@ -84,21 +119,38 @@ export function doGetHelp(reportDataId, currentFilter, fieldName, partial) {
  */
 export function doUpdateFilterWithDependencies(
   action, filterInterface, reportDataId) {
-  return async (dispatch, getState) => {
+  return async (dispatch, getState, {api}) => {
     // first do the change
     dispatch(action);
-    const newFilter = getState().reportState.currentFilter;
-    // handle any of our known dependencies
-    // FUTURE: stuff this in the database somehow.
-    forEach(filterInterface, (item) => {
-      if (item.filter === 'locations') {
-        // FUTURE: locations hints should come via locations hint field.
-        console.log('doUpdateFilterWithDependencies', 'get state hints');
-        dispatch(doGetHelp(reportDataId, newFilter, 'state', ''));
-      }
-      if (includes(['contact', 'partner'], item.filter)) {
-        dispatch(doGetHelp(reportDataId, newFilter, item.filter, ''));
-      }
-    });
+
+    function latestFilter() {
+      return getState().reportState.currentFilter;
+    }
+    // get the filter that resulted from the change
+
+    // FUTURE: declare all of this in the database somehow.
+    if (find(filterInterface, i => i.filter === 'partner')) {
+      await doGetHelp(reportDataId, latestFilter(), 'partner', '')(
+        dispatch, getState, {api});
+    }
+    if (find(filterInterface, i => i.filter === 'contact')) {
+      const hints = await doGetHelp(
+        reportDataId, latestFilter(), 'contact', '')(
+        dispatch, getState, {api});
+      // Ugly hack: remove elements from the contact filter if they are
+      // not in hints.
+      const availableValues = indexBy(
+        getState().reportState.hints.contact,
+        'value');
+      const selected = latestFilter().contact;
+      const missingSelected =
+        lodashFilter(selected, s => !availableValues[s.value]);
+      forEach(missingSelected, s =>
+        dispatch(removeFromOrFilterAction('contact', s)));
+    }
+    if (find(filterInterface, i => i.filter === 'locations')) {
+      await doGetHelp(reportDataId, latestFilter(), 'state', '')(
+        dispatch, getState, {api});
+    }
   };
 }

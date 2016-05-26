@@ -2,14 +2,13 @@ import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills';
 import {MyJobsApi} from '../common/myjobs-api';
 import IdGenerator from '../common/idGenerator';
+import createReduxStore from '../common/create-redux-store';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from '../common/cookie';
 import {WizardRouter} from './WizardRouter';
-import {combineReducers, createStore, applyMiddleware, compose} from 'redux';
+import {combineReducers} from 'redux';
 import {reportStateReducer} from './report-state-reducer';
-import thunkMiddleware from 'redux-thunk';
-import promiseMiddleware from 'redux-promise';
 import {Provider} from 'react-redux';
 
 import React from 'react';
@@ -34,11 +33,7 @@ const thunkExtra = {
   idGen,
 };
 
-const store = createStore(reducer, undefined,
-  compose(
-    applyMiddleware(thunkMiddleware.withExtraArgument(thunkExtra)),
-    applyMiddleware(promiseMiddleware),
-    window.devToolsExtension ? window.devToolsExtension() : f => f));
+const store = createReduxStore(reducer, undefined, thunkExtra);
 
 ReactDOM.render(
   <Provider store={store}>
