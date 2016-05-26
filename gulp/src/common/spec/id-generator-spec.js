@@ -1,4 +1,4 @@
-import IdGenerator from '../idGenerator';
+import IdGenerator from '../id-generator';
 
 describe('IdGenerator', () => {
   it('generates a series of numbers', () => {

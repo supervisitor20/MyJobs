@@ -19,6 +19,4 @@ export default function createReduxStore(reducer, defaultState, thunkExtra) {
     applyMiddleware(thunkMiddleware.withExtraArgument(thunkExtra)),
     applyMiddleware(promiseMiddleware),
     devToolsMiddleware));
-    // redux devtools
-    //window.devToolsExtension ? window.devToolsExtension() : f => f));
 }

@@ -1,7 +1,7 @@
 import 'babel/polyfill';
 import {installPolyfills} from '../common/polyfills';
 import {MyJobsApi} from '../common/myjobs-api';
-import IdGenerator from '../common/idGenerator';
+import IdGenerator from '../common/id-generator';
 import createReduxStore from '../common/create-redux-store';
 import Api from './api';
 import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';

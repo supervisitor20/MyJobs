@@ -30,14 +30,13 @@ import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
-let SetUpReport = 2;
+let SetUpReport;
 
 class RawSetUpReport extends Component {
   constructor() {
     super();
     this.state = {
       loading: true,
-      filter: null,
       reportingTypes: [],
       reportTypes: [],
       dataTypes: [],
@@ -149,8 +148,7 @@ class RawSetUpReport extends Component {
     const {
       reportDataId: reportDataIdRaw,
     } = this.props.location.query;
-    const {reportFinder, dispatch} = this.props;
-    const {reportName} = this.state;
+    const {reportFinder, reportName, dispatch} = this.props;
     const reportDataId = Number.parseInt(reportDataIdRaw, 10);
 
     let newName;
@@ -220,7 +218,6 @@ class RawSetUpReport extends Component {
   render() {
     const {
       dispatch,
-      reportFinder,
       currentFilter,
       filterInterface,
       reportName,
@@ -234,7 +231,6 @@ class RawSetUpReport extends Component {
     } = this.props.location.query;
     const {
       loading,
-      reportConfig,
       reportNameError,
       reportingTypes,
       reportTypes,

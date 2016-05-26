@@ -262,85 +262,6 @@ export class ReportConfiguration {
       this.reportDataId, this.getFilter(), field, partial);
   }
 
-  callUpdateFilter() {
-    this.onUpdateFilter(this.currentFilter);
-  }
-
-  /**
-   * Set a value for a single valued filter.
-   */
-  setFilter(field, value) {
-    if (value === undefined || value === null || value === '') {
-      delete this.currentFilter[field];
-    } else {
-      this.currentFilter[field] = value;
-    }
-    this.callUpdateFilter();
-  }
-
-  /**
-   * Set a value for a multiple valued "or" filter.
-   *
-   * field: field to filter, i.e. contact
-   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
-   */
-  addToMultifilter(field, obj) {
-    if (!(field in this.currentFilter)) {
-      this.currentFilter[field] = [];
-    }
-    if (this.currentFilter[field].findIndex(i => i.value === obj.value) === -1) {
-      this.currentFilter[field].push(obj);
-    }
-    this.callUpdateFilter();
-  }
-
-
-  /**
-   * Get a previously set value for a multiple valued "or" filter.
-   *
-   * field: field to filter, i.e. contact
-   * obj: object to add to "or" filter; i.e. {value: 3, display: "Pam"}
-   */
-  removeFromMultifilter(field, obj) {
-    remove(this.currentFilter[field], i => i.value === obj.value);
-    if (this.currentFilter[field].length < 1) {
-      delete this.currentFilter[field];
-    }
-    this.callUpdateFilter();
-  }
-
-  /**
-   * Add a value to a "and/or" filter. i.e. tags
-   */
-  addToAndOrFilter(field, index, obj) {
-    if (!(field in this.currentFilter)) {
-      this.currentFilter[field] = [];
-    }
-    if (!(index in this.currentFilter[field])) {
-      this.currentFilter[field][index] = [];
-    }
-    this.currentFilter[field][index].push(obj);
-    this.callUpdateFilter();
-  }
-
-  /**
-   * Remove a value to a "and/or" filter. i.e. tags
-   */
-  removeFromAndOrFilter(field, index, obj) {
-    const found = (
-        this.currentFilter[field][index].findIndex(i => i.value === obj.value));
-    if (found !== -1) {
-      this.currentFilter[field][index].splice(found, 1);
-      if (this.currentFilter[field][index].length < 1) {
-        this.currentFilter[field].splice(index, 1);
-      }
-    }
-    if (this.currentFilter[field].length < 1) {
-      delete this.currentFilter[field];
-    }
-    this.callUpdateFilter();
-  }
-
   /**
    * Build a filter suitable for sending to the run method of the api.
    */
@@ -377,7 +298,6 @@ export class ReportConfiguration {
   runCallbacks() {
     this.onErrorsChanged(this.errors);
     this.onNameChanged(this.name);
-    this.callUpdateFilter();
   }
 
   /**

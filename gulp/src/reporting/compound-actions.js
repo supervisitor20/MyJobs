@@ -5,7 +5,6 @@ import {
   indexBy,
   map,
   forEach,
-  includes,
   find,
   filter as lodashFilter,
 } from 'lodash-compat/collection';
@@ -119,7 +118,7 @@ export function doGetHelp(reportDataId, currentFilter, fieldName, partial) {
  */
 export function doUpdateFilterWithDependencies(
   action, filterInterface, reportDataId) {
-  return async (dispatch, getState, {api}) => {
+  return async (dispatch, getState) => {
     // first do the change
     dispatch(action);
 
@@ -130,13 +129,10 @@ export function doUpdateFilterWithDependencies(
 
     // FUTURE: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {
-      await doGetHelp(reportDataId, latestFilter(), 'partner', '')(
-        dispatch, getState, {api});
+      await dispatch(doGetHelp(reportDataId, latestFilter(), 'partner', ''));
     }
     if (find(filterInterface, i => i.filter === 'contact')) {
-      const hints = await doGetHelp(
-        reportDataId, latestFilter(), 'contact', '')(
-        dispatch, getState, {api});
+      await dispatch(doGetHelp(reportDataId, latestFilter(), 'contact', ''));
       // Ugly hack: remove elements from the contact filter if they are
       // not in hints.
       const availableValues = indexBy(
@@ -149,8 +145,7 @@ export function doUpdateFilterWithDependencies(
         dispatch(removeFromOrFilterAction('contact', s)));
     }
     if (find(filterInterface, i => i.filter === 'locations')) {
-      await doGetHelp(reportDataId, latestFilter(), 'state', '')(
-        dispatch, getState, {api});
+      await dispatch(doGetHelp(reportDataId, latestFilter(), 'state', ''));
     }
   };
 }
