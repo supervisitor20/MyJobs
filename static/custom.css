@@ -3642,6 +3642,13 @@ height: 33px;
     line-height: 33px;
     margin: 0;
 }
+.select-element-input.disabled {
+    border: 1px solid #c3c3c3;
+    color: #999;
+}
+.select-element-input.disabled .select-element-arrow b {
+  border-color: #c3c3c3 transparent transparent transparent;
+}
 .select-element-chosen {
   padding: 4px 20px 4px 4px;
   display: block;

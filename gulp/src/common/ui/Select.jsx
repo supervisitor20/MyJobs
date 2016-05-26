@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 /**
  * Custom select box (i.e. not standard HTML form element) with keyboard support
@@ -141,7 +142,11 @@ class Select extends React.Component {
 
     return (
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
-        <div className="select-element-input" onClick={selectAction}>
+        <div className={
+          classnames(
+            'select-element-input',
+            {'disabled': disable})} 
+          onClick={selectAction}>
           <div className="select-element-chosen-container">
             <span className="select-element-chosen">{value}</span>
             <span className="select-element-arrow">
