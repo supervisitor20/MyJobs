@@ -8,15 +8,15 @@ export class WizardFilterCityState extends Component {
     constructor(props) {
       super(props);
       this.state = {
-        // list of regions to choose from (states was a bit confusing
-        // considering this.state)
-        regions: [],
         // currently selected city and state, used to filter results
         currentLocation: {
           city: props.cityValue || '',
           state: props.stateValue || '',
         },
       };
+    }
+
+    componentDidMount() {
       this.updateRegions();
     }
 
@@ -25,35 +25,41 @@ export class WizardFilterCityState extends Component {
       const {currentLocation} = this.state;
 
       // Update parent
-      const newFilter = {...currentLocation};
-      newFilter[field] = value;
+      const newFilter = {
+        ...currentLocation,
+        [field]: value,
+      };
       updateFilter(newFilter);
 
       // Set internal state
-      const newState = {...this.state};
-      newState.currentLocation[field] = value;
+      const newState = {
+        currentLocation: {
+          ...this.state.currentLocation,
+          [field]: value,
+        },
+      };
       this.setState(newState);
 
-      this.updateRegions();
+      //this.updateRegions();
     }
 
     async updateRegions() {
       const {getHints} = this.props;
-      const newRegions = await getHints('state');
-      this.setState({
-        regions: [
-          {
-            display: 'Select a State',
-            value: '',
-          },
-          ...newRegions,
-        ],
-      });
+      getHints('state');
     }
 
     render() {
-      const {id, getHints} = this.props;
-      const {currentLocation, regions} = this.state;
+      const {id, getHints, hints} = this.props;
+      const {currentLocation} = this.state;
+
+      const stateHints = hints.state || [];
+      const regionsWithBlank = [
+        {
+          display: 'Select a State',
+          value: '',
+        },
+        ...stateHints,
+      ];
 
       return (
         <span>
@@ -61,8 +67,8 @@ export class WizardFilterCityState extends Component {
             onChange={e =>
               this.updateField('state', e.target.value)}
             name=""
-            value={getDisplayForValue(regions, currentLocation.state)}
-            choices={regions}
+            value={getDisplayForValue(regionsWithBlank, currentLocation.state)}
+            choices={regionsWithBlank}
           />
           <SearchInput
             id={id + '-city'}
@@ -73,6 +79,7 @@ export class WizardFilterCityState extends Component {
               this.updateField('city', v.value)}
             getHints={v =>
               getHints('city', v)}
+            hints={hints.city}
           />
         </span>
       );
@@ -91,4 +98,6 @@ WizardFilterCityState.propTypes = {
   updateFilter: PropTypes.func.isRequired,
   // callback used to get valid optoins for cities and regions
   getHints: PropTypes.func.isRequired,
+  // known hints
+  hints: PropTypes.object,
 };

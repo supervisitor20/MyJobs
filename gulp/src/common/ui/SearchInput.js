@@ -46,9 +46,8 @@ export class SearchInput extends Component {
 
   onSelect(e, index) {
     e.preventDefault();
-    const {onSelect: selectCb} = this.props;
-    const {items} = this.state;
-    const selected = items[index];
+    const {hints, onSelect: selectCb} = this.props;
+    const selected = hints[index];
     selectCb(selected);
     const {emptyOnSelect} = this.props;
     if (emptyOnSelect) {
@@ -59,11 +58,12 @@ export class SearchInput extends Component {
   }
 
   onInputKeyDown(event) {
-    const {items, keySelectedIndex, value} = this.state;
-    if (items.length) {
+    const {hints} = this.props;
+    const {keySelectedIndex, value} = this.state;
+    if (hints && hints.length) {
       let newIndex = keySelectedIndex;
       let killEvent = false;
-      const lastIndex = items.length - 1;
+      const lastIndex = hints.length - 1;
       if (event.key === 'ArrowDown') {
         killEvent = true;
         if (keySelectedIndex < 0 || keySelectedIndex >= lastIndex) {
@@ -101,14 +101,14 @@ export class SearchInput extends Component {
       value,
       mouseInMenu: false,
       keySelectedIndex: -1,
-      items: [],
+      dropped: false,
     };
   }
 
   async search(value) {
     const {getHints} = this.props;
-    const items = await getHints(value);
-    this.setState({items});
+    this.setState({dropped: true});
+    await getHints(value);
   }
 
   focus() {
@@ -134,18 +134,18 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus} = this.props;
-    const {value, items, keySelectedIndex} = this.state;
+    const {id, theme, placeholder, autofocus, hints} = this.props;
+    const {dropped, value, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
-    const showItems = Boolean(items.length);
+    const showItems = Boolean(dropped && hints && hints.length);
     const activeId = this.itemId(keySelectedIndex);
 
     return (
       <div
         className={classnames(
           theme.root,
-          {[theme.rootOpen]: items})}>
+          {[theme.rootOpen]: hints})}>
         <input
           className={theme.input}
           ref="input"
@@ -166,19 +166,19 @@ export class SearchInput extends Component {
             className={theme.suggestions}
             onMouseEnter={() => this.onMouseInMenu(true)}
             onMouseLeave={() => this.onMouseInMenu(false)}>
-            {items.map((item, index) =>
+            {hints.map((hint, index) =>
               <li
                 id={this.itemId(index)}
-                key={item.key}
+                key={hint.value}
                 className={classnames(
-                  theme.item,
+                  theme.hint,
                   {
                     [theme.itemActive]: index === keySelectedIndex,
                   })}>
                 <a
                   href="#"
                   onClick={e => this.onSelect(e, index)}>
-                  {item.display}
+                  {hint.display}
                 </a>
               </li>
             )}
@@ -242,6 +242,12 @@ SearchInput.propTypes = {
    * [ {key: "key", display: "Display Value"} ]
    */
   getHints: React.PropTypes.func.isRequired,
+
+  hints: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired),
 
   /**
    * Callback: the user has left the search input.

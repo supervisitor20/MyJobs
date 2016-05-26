@@ -10,18 +10,12 @@ export default class TagAndFilter extends Component {
   }
 
   componentDidMount() {
-    this.getHints();
-  }
-
-  async getHints() {
     const {getHints} = this.props;
-    const available = await getHints();
-    this.setState({available});
+    getHints();
   }
 
   render() {
-    const {selected, onChoose, onRemove} = this.props;
-    const {available} = this.state;
+    const {available, selected, onChoose, onRemove} = this.props;
 
     return (
       <TagAnd
@@ -35,6 +29,13 @@ export default class TagAndFilter extends Component {
 
 TagAndFilter.propTypes = {
   getHints: PropTypes.func.isRequired,
+  available: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+      hexColor: PropTypes.string.isRequired,
+    })
+  ).isRequired,
   selected: PropTypes.arrayOf(
     PropTypes.arrayOf(
       PropTypes.shape({

@@ -42,6 +42,11 @@ function replaceItemAtIndex(items, atIndex, newItem) {
  *    key: see filter in filterInterface
  *    boolean: true if help is available
  *
+ *  hints[key] = [{value: filter value, display user sees this}]
+ *    last loaded hints available to the user for a field
+ *    key: which field this applies to
+ *    value: what to show the user and what it represents
+ *
  *  currentFilter[key] = filterData
  *    items selected by the user, with display data
  *    key: see filter in filterInterface
@@ -70,12 +75,15 @@ export const reportStateReducer = handleActions({
       defaultFilter: currentFilter,
       help,
       filters: filterInterface,
+      name: reportName,
     } = action.payload;
     return {
       currentFilter,
       help,
+      reportName,
       filterInterface,
       errors: {},
+      hints: {},
     };
   },
 
@@ -186,8 +194,28 @@ export const reportStateReducer = handleActions({
     const cappedReportName = reportName.substring(0, maxNameLength);
     return {...state, reportName: cappedReportName};
   },
+
+  'RECEIVE_HINTS': (state, action) => {
+    const {field, hints} = action.payload;
+    return {
+      ...state,
+      hints: {
+        ...state.hints,
+        [field]: hints,
+      },
+    };
+  },
+
+  'CLEAR_HINTS': (state, action) => {
+    const field = action.payload;
+    return {
+      ...state,
+      hints: omit(state.hints, (_, k) => k === field),
+    };
+  },
 }, {
   currentFilter: {},
   filterInterface: [],
   reportName: '',
+  hints: {},
 });

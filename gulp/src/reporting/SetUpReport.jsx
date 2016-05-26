@@ -15,6 +15,11 @@ import {
   setReportNameAction,
 } from './report-state-actions';
 
+import {
+  doGetHelp,
+  doUpdateFilterWithDependencies,
+} from './compound-actions';
+
 import classnames from 'classnames';
 import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
 import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
@@ -25,7 +30,7 @@ import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
-let SetUpReport;
+let SetUpReport = 2;
 
 class RawSetUpReport extends Component {
   constructor() {
@@ -89,8 +94,8 @@ class RawSetUpReport extends Component {
       defaultFilter: reportConfig.currentFilter,
       help: reportConfig.help,
       filters: reportConfig.filters,
+      name: reportName,
     }));
-    dispatch(setReportNameAction(reportName));
 
     this.setState({
       reportingTypes,
@@ -108,11 +113,6 @@ class RawSetUpReport extends Component {
   onErrorsChanged(errors) {
     const reportNameError = errors.name;
     this.setState({reportNameError});
-  }
-
-  onReportNameChanged(reportName) {
-    const {dispatch} = this.props;
-    dispatch(setReportNameAction(reportName));
   }
 
   handleHistory(something, loc) {
@@ -191,6 +191,13 @@ class RawSetUpReport extends Component {
     history.pushState(null, href, query);
   }
 
+  dispatchFilterAction(action) {
+    const {dispatch, filterInterface} = this.props;
+    const {reportDataId} = this.props.location.query;
+    dispatch(doUpdateFilterWithDependencies(
+        action, filterInterface, reportDataId));
+  }
+
   renderRow(displayName, key, content, buttonRow, textCenter) {
     return (
       <div key={key} className={
@@ -217,13 +224,14 @@ class RawSetUpReport extends Component {
       currentFilter,
       filterInterface,
       reportName,
+      hints,
     } = this.props;
     const {
       intention: reportingType,
       category: reportType,
       dataSet: dataType,
+      reportDataId,
     } = this.props.location.query;
-    const {maxNameLength} = this.props;
     const {
       loading,
       reportConfig,
@@ -250,11 +258,14 @@ class RawSetUpReport extends Component {
             value={reportName}
             name=""
             autoFocus="autofocus"
-            onChange={v => dispatch(setReportNameAction(v.target.value))}
-            maxLength={maxNameLength}/>
+            onChange={v => dispatch(setReportNameAction(v.target.value))}/>
         </FieldWrapper>
       );
       filterInterface.forEach(col => {
+        function getHints(field, value) {
+          dispatch(doGetHelp(reportDataId, currentFilter, field, value));
+        }
+
         switch (col.interface_type) {
         case 'date_range':
           const begin = (currentFilter[col.filter] || [])[0];
@@ -264,7 +275,9 @@ class RawSetUpReport extends Component {
             <FieldWrapper key={col.filter} label="Date range">
               <WizardFilterDateRange
                 id={col.filter}
-                updateFilter={v => reportConfig.setFilter(col.filter, v)}
+                updateFilter={v =>
+                  this.dispatchFilterAction(
+                    setSimpleFilterAction(col.filter, v))}
                 begin={begin}
                 end={end}
                 />
@@ -277,9 +290,11 @@ class RawSetUpReport extends Component {
               <WizardFilterSearchDropdown
                 id={col.filter}
                 value={currentFilter[col.filter] || ''}
-                updateFilter={v => reportConfig.setFilter(col.filter, v)}
-                getHints={v =>
-                  reportConfig.getHints(col.filter, v)}/>
+                updateFilter={v =>
+                  this.dispatch(
+                    setSimpleFilterAction(col.filter, v))}
+                getHints={v => getHints(col.filter, v)}
+                hints={hints[col.filter]}/>
             </FieldWrapper>
           );
           break;
@@ -291,9 +306,11 @@ class RawSetUpReport extends Component {
                 id={col.filter}
                 cityValue={values.city || ''}
                 stateValue={values.state || ''}
-                updateFilter={v => reportConfig.setFilter(col.filter, v)}
-                getHints={(f, v) =>
-                  reportConfig.getHints(f, v)}/>
+                updateFilter={v =>
+                  this.dispatchFilterAction(
+                    setSimpleFilterAction(col.filter, v))}
+                getHints={(f, v) => getHints(f, v)}
+                hints={hints}/>
             </FieldWrapper>
           );
           break;
@@ -304,12 +321,15 @@ class RawSetUpReport extends Component {
               label={col.display}>
 
               <TagAndFilter
-                getHints={v => reportConfig.getHints(col.filter, v)}
+                getHints={v => getHints(col.filter, v)}
+                available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
-                  reportConfig.addToAndOrFilter(col.filter, i, t)}
+                  this.dispatch(
+                    addToAndOrFilterAction(col.filter, i, t))}
                 onRemove={(i, t) =>
-                  reportConfig.removeFromAndOrFilter(col.filter, i, t)}/>
+                  this.dispatchFilterAction(
+                    removeFromAndOrFilterAction(col.filter, i, t))}/>
 
             </FieldWrapper>
             );
@@ -338,9 +358,11 @@ class RawSetUpReport extends Component {
                   reportConfig.getHints(col.filter, v)}
                 selected={currentFilter[col.filter] || []}
                 onAdd = {vs => forEach(vs, v =>
-                  reportConfig.addToMultifilter(col.filter, v))}
+                  this.dispatch(
+                  addToOrFilterAction(col.filter, v)))}
                 onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter, v))}
+                  this.dispatchFilterAction(
+                  removeFromOrFilterAction(col.filter, v)))}
                 reportFinder={passReportFinder}
                 removeSelected={removeSelected}/>
 
@@ -388,7 +410,8 @@ RawSetUpReport.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
-  reportName: PropTypes.string.isRequired,
+  reportName: PropTypes.string,
+  hints: PropTypes.object.isRequired,
   currentFilter: PropTypes.object.isRequired,
   filterInterface: PropTypes.arrayOf(
     PropTypes.shape({
@@ -408,16 +431,12 @@ RawSetUpReport.propTypes = {
       reportDataId: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  maxNameLength: PropTypes.number,
-};
-
-RawSetUpReport.defaultProps = {
-  maxNameLength: 24,
 };
 
 SetUpReport = connect(s => ({
   currentFilter: s.reportState.currentFilter,
   filterInterface: s.reportState.filterInterface,
   reportName: s.reportState.reportName,
+  hints: s.reportState.hints,
 }))(RawSetUpReport);
 export default SetUpReport;

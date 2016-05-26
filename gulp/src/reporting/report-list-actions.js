@@ -28,4 +28,3 @@ export const newReportAction = createAction('NEW_REPORT');
  *   {id: database id, name: report name, report_data_id: report data id}
  */
 export const completedReportsAction = createAction('COMPLETED_REPORTS_LIST');
-

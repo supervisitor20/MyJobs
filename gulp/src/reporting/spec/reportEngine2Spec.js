@@ -6,6 +6,8 @@ import {
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
   setReportNameAction,
+  receiveHintsAction,
+  clearHintsAction,
 } from '../report-state-actions';
 
 import {
@@ -21,6 +23,7 @@ import {
 
 import {
   doRunReport,
+  doGetHelp,
 } from '../compound-actions';
 
 import {
@@ -42,6 +45,9 @@ describe('reportStateReducer', () => {
     it('has a name', () => {
       expect(result.reportName).toEqual('');
     });
+    it('has hints', () => {
+      expect(result.hints).toEqual({});
+    });
   });
 
   describe('startNewReportAction', () => {
@@ -49,6 +55,7 @@ describe('reportStateReducer', () => {
       defaultFilter: {1: 2},
       help: {3: 4},
       filters: {5: 6},
+      name: 'zz',
     });
     const result = reportStateReducer(null, action);
     it('puts data where it goes', () => {
@@ -57,6 +64,8 @@ describe('reportStateReducer', () => {
         help: {3: 4},
         currentFilter: {1: 2},
         errors: {},
+        hints: {},
+        reportName: 'zz',
       });
     });
   });
@@ -340,24 +349,41 @@ describe('reportStateReducer', () => {
     const result = reportStateReducer({}, action);
     expect(result.reportName).toEqual("123456789012345678901234");
   });
+
+  it('can receive hints', () => {
+    const action = receiveHintsAction("city", [{value: 3, display: "Indy"}]);
+    const result = reportStateReducer({
+      hints: {},
+    }, action);
+    expect(result.hints).toEqual({city: [{value: 3, display: "Indy"}]});
+  });
+
+  it('can clear hints', () => {
+    const action = clearHintsAction("city");
+    const result= reportStateReducer({
+      hints: {
+        city: [1, 2, 3],
+      },
+    }, action);
+    expect(result.hints).toEqual({});
+  });
 });
 
 
 class FakeApi {
   runReport(reportDataId, name, filter) {}
   listReports() {}
+  getHelp() {}
 }
 
 
 describe('doRunReport', () => {
   let actions;
-  let state;
   let idGen;
   let api;
 
   beforeEach(() => {
     actions = [];
-    state = {};
     idGen = new IdGenerator();
     api = new FakeApi();
   });
@@ -367,7 +393,7 @@ describe('doRunReport', () => {
   }
 
   function getState() {
-    return state;
+    return {};
   }
 
   it('handles the happy path', promiseTest(async () => {
@@ -378,14 +404,7 @@ describe('doRunReport', () => {
         {id: 4, name: 'd', report_type: 4},
       ],
     }));
-    await doRunReport(
-      idGen,
-      api,
-      2,
-      'a',
-      {1: 2})(
-      dispatch,
-      getState);
+    await doRunReport(2, 'a', {1: 2})(dispatch, getState, {idGen, api});
     expect(api.runReport).toHaveBeenCalledWith(2, 'a', {1: 2});
     expect(api.listReports).toHaveBeenCalled();
     expect(actions).toEqual([
@@ -406,7 +425,7 @@ describe('doRunReport', () => {
       status: 400,
     };
     spyOn(api, 'runReport').and.throwError(error);
-    await doRunReport(idGen, api)(dispatch, getState);
+    await doRunReport()(dispatch, getState, {idGen, api});
     expect(actions).toEqual([
       startRunningReportAction(1),
       removeRunningReportAction(1),
@@ -417,10 +436,57 @@ describe('doRunReport', () => {
   it('handles arbitrary failures', promiseTest(async () => {
     const error = new Error("Some Error");
     spyOn(api, 'runReport').and.throwError(error);
-    await doRunReport(idGen, api)(dispatch, getState);
+    await doRunReport()(dispatch, getState, {idGen, api});
     expect(actions).toEqual([
       startRunningReportAction(1),
       removeRunningReportAction(1),
+      errorAction("Some Error"),
+    ]);
+  }));
+});
+
+
+describe('doGetHints', () => {
+  let actions;
+  let idGen;
+  let api;
+
+  beforeEach(() => {
+    actions = [];
+    idGen = new IdGenerator();
+    api = new FakeApi();
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {};
+  }
+
+  it('handles the happy path', promiseTest(async () => {
+    spyOn(api, 'getHelp').and.returnValue(Promise.resolve([
+      {value: 3, display: 'Red'},
+      {value: 4, display: 'Blue'},
+    ]));
+    await doGetHelp(9, {}, 'labels', 'z')(dispatch, getState, {api});
+    expect(api.getHelp).toHaveBeenCalledWith(9, {}, 'labels', 'z');
+    expect(actions).toEqual([
+      clearHintsAction('labels'),
+      receiveHintsAction('labels', [
+        {value: 3, display: 'Red'},
+        {value: 4, display: 'Blue'},
+      ]),
+    ]);
+  }));
+
+  it('handles arbitrary failures', promiseTest(async () => {
+    const error = new Error("Some Error");
+    spyOn(api, 'getHelp').and.throwError(error);
+    await doGetHelp(9, {}, 'labels')(dispatch, getState, {api});
+    expect(actions).toEqual([
+      clearHintsAction('labels'),
       errorAction("Some Error"),
     ]);
   }));

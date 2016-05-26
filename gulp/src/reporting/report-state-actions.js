@@ -15,6 +15,7 @@ function createItemAction(name) {
  *   defaultFilter: start of currentFilter
  *   help: see report-action-reducer
  *   filters: see report-action-reducer
+ *   name: starting name for this report
  * }
  */
 export const startNewReportAction = createAction('START_NEW_REPORT');
@@ -82,3 +83,21 @@ export const addToDateRangeFilterAction = setSimpleFilterAction;
  * payload is the new report name
  */
 export const setReportNameAction = createAction('SET_REPORT_NAME');
+
+/**
+ * Api returned new hints.
+ *
+ * field: which filter field to operate on.
+ * hints: may vary by filter type but is usually: [
+ *   {value: some value, display: show to user, ...}
+ * ]
+ */
+export const receiveHintsAction = createAction('RECEIVE_HINTS',
+  (field, hints) => ({field, hints}));
+
+/**
+ * Need to clear all the known hints for a field.
+ *
+ * payload: string, which filter field to operate on.
+ */
+export const clearHintsAction = createAction('CLEAR_HINTS');
