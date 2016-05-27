@@ -138,7 +138,7 @@ Keep trying until ``docker ps`` shows no running machines.
 Load Data into MySQL and Solr
 =============================
 
-``dk background`` At this point possibly only MySql and the reveser proxy will 
+``dk background`` At this point possibly only MySql and the reverse proxy will 
 stay running.
 
 ``dk maint mysql:5.5`` Start an interactive container based on MySQL
