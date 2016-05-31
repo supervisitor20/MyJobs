@@ -314,15 +314,21 @@ class CommRecordsFilter(DataSourceFilter):
         if self.communication_type:
             qs = qs.filter(contact_type__in=self.communication_type)
 
+        list_empty = True
         if self.tags:
             or_qs = []
             for tag_ors in self.tags:
-                or_qs.append(
-                    reduce(
-                        __or__,
-                        map(lambda t: Q(tags__name__iexact=t), tag_ors)))
+                if tag_ors:
+                    list_empty = False
+                    or_qs.append(
+                        reduce(
+                            __or__,
+                            map(lambda t: Q(tags__name__iexact=t), tag_ors)))
             for or_q in or_qs:
                 qs = qs.filter(or_q)
+            if list_empty:
+                # if an empty tags list was received, return only untagged items
+                qs = qs.filter(tags=None)
 
         if self.locations is not None:
             contact_qs = Contact.objects.all()
@@ -338,10 +344,10 @@ class CommRecordsFilter(DataSourceFilter):
             contact_qs.distinct()
             qs = qs.filter(contact=contact_qs)
 
-        if self.partner:
+        if self.partner is not None:
             qs = qs.filter(partner__pk__in=self.partner)
 
-        if self.contact:
+        if self.contact is not None:
             qs = qs.filter(contact__pk__in=self.contact)
 
         return qs

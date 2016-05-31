@@ -83,24 +83,6 @@ class TestContactsDataSource(MyJobsBase):
                 state="CA"))
         self.sue.tags.add(self.west_tag)
 
-        self.billy_user = UserFactory(email="billy@user.com")
-        self.billy = ContactFactory(
-            partner=self.partner_b,
-            name='Billy Tagless',
-            user=self.sue_user,
-            email="billy@user.com",
-            last_action_time='2015-09-30 13:23')
-        self.sue.locations.add(
-            LocationFactory.create(
-                address_line_one="456",
-                city="La Croix",
-                state="CO"))
-        self.sue.locations.add(
-            LocationFactory.create(
-                address_line_one="789",
-                city="La Croix",
-                state="Co"))
-
         # Poision data. Should never show up.
         self.archived_partner_user = (
             UserFactory(email="archived_partner@user.com"))
@@ -208,7 +190,10 @@ class TestContactsDataSource(MyJobsBase):
         self.archived_contact.archive()
 
     def test_run_unfiltered(self):
-        """Make sure we only get data for this user."""
+        """
+        Make sure we only get data for this user.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(self.company, ContactsFilter(), [])
         names = {r['name'] for r in recs}
@@ -216,7 +201,10 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_date_range(self):
-        """Should show only contact with last_action_time in range."""
+        """
+        Should show only contact with last_action_time in range.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -224,11 +212,14 @@ class TestContactsDataSource(MyJobsBase):
                 date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.sue.name, self.billy.name}
+        expected = {self.sue.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_date_before(self):
-        """Should show only contact with last_action_time before date."""
+        """
+        Should show only contact with last_action_time before date.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -236,11 +227,14 @@ class TestContactsDataSource(MyJobsBase):
                 date=[None, datetime(2015, 9, 30)]),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.sue.name, self.billy.name}
+        expected = {self.sue.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_date_after(self):
-        """Should show only contact with last_action_time after date."""
+        """
+        Should show only contact with last_action_time after date.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -252,7 +246,10 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags(self):
-        """Should show only contact with correct tags."""
+        """
+        Should show only contact with correct tags.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -263,7 +260,10 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_or(self):
-        """Show only contact with correct tags in 'or' configuration."""
+        """
+        Show only contact with correct tags in 'or' configuration.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -274,7 +274,10 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_tags_and(self):
-        """Show only contact with correct tags in 'and' configuration."""
+        """
+        Show only contact with correct tags in 'and' configuration.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -295,7 +298,10 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_filter_by_empty_things(self):
-        """None filters should not filter, just like missing filters."""
+        """
+        None filters should not filter, just like missing filters.
+
+        """
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -332,6 +338,7 @@ class TestContactsDataSource(MyJobsBase):
         selected no tags to filter by.
 
         """
+        self.sue.tags.clear()
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -340,7 +347,7 @@ class TestContactsDataSource(MyJobsBase):
                 locations={'city': '', 'state': ''}),
             [])
         names = {r['name'] for r in recs}
-        expected = {self.billy.name}
+        expected = {self.sue.name}
         self.assertEqual(expected, names)
 
     def test_filter_by_state(self):
