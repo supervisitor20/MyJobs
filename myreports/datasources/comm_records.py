@@ -314,8 +314,8 @@ class CommRecordsFilter(DataSourceFilter):
         if self.communication_type:
             qs = qs.filter(contact_type__in=self.communication_type)
 
-        list_empty = True
-        if self.tags:
+        if self.tags is not None:
+            list_empty = True
             or_qs = []
             for tag_ors in self.tags:
                 if tag_ors:

@@ -230,15 +230,18 @@ class ContactsFilter(DataSourceFilter):
         qs = filter_date_range(self.date, 'last_action_time', qs)
 
         if self.tags is not None:
+            list_empty = True
             or_qs = []
             for tag_ors in self.tags:
-                or_qs.append(
-                    reduce(
-                        __or__,
-                        map(lambda t: Q(tags__name__iexact=t), tag_ors)))
+                if tag_ors:
+                    list_empty = False
+                    or_qs.append(
+                        reduce(
+                            __or__,
+                            map(lambda t: Q(tags__name__iexact=t), tag_ors)))
             for or_q in or_qs:
                 qs = qs.filter(or_q)
-            if len(self.tags) == 0:
+            if list_empty:
                 # if an empty tags list was received, return only untagged items
                 qs = qs.filter(tags=None)
 

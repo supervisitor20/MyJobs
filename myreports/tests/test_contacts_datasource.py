@@ -343,7 +343,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                tags=[],
+                tags=[[]],
                 locations={'city': '', 'state': ''}),
             [])
         names = {r['name'] for r in recs}
