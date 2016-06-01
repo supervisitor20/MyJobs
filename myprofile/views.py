@@ -23,7 +23,7 @@ def edit_summary(request):
 
 @user_is_allowed()
 @user_passes_test(User.objects.not_disabled)
-def edit_profile(request, react=False):
+def edit_profile(request):
     """
     Main profile view that the user first sees. Ultimately generates the
     following in data_dict:
@@ -59,7 +59,6 @@ def edit_profile(request, react=False):
     data_dict = {'profile_config': profile_config,
                  'unit_names': empty_display_names,
                  'user': user,
-                 'react': react,
                  'view_name': 'My Profile'}
 
     return render_to_response('myprofile/edit_profile.html', data_dict,
@@ -79,8 +78,6 @@ def handle_form(request):
     item_id = request.REQUEST.get('id', 'new')
     module = request.REQUEST.get('module')
     module = module.replace(" ", "")
-    # used later to determine if we should be using react-based forms or not
-    react = False
 
     ctx = {}
     ctx["success"] = True
@@ -132,13 +129,6 @@ def handle_form(request):
             if request.META.get('HTTP_ACCEPT') == 'application/json':
                 return HttpResponse(content_type='application/json',
                                     content=json.dumps(ctx))
-            elif request.is_ajax():
-                suggestions = ProfileUnits.suggestions(request.user)
-                return render_to_response('myprofile/suggestions.html',
-                                          {'suggestions': suggestions[:3],
-                                           'model_name': model_name,
-                                           'module': {'item': instance}},
-                                          RequestContext(request))
             else:
                 return HttpResponseRedirect(reverse('view_profile'))
         else:
@@ -148,10 +138,6 @@ def handle_form(request):
                                     content=json.dumps(remote_form.as_dict()))
             elif request.is_ajax():
                 return HttpResponse(json.dumps(form_instance.errors), status=400)
-            else:
-                return render_to_response('myprofile/profile_form.html',
-                                          data_dict,
-                                          RequestContext(request))
     else:
         if item_id == 'new':
             form_instance = form(user=request.user, auto_id=False)
@@ -172,14 +158,9 @@ def handle_form(request):
         model = form_instance._meta.model
         data_dict['form'] = form_instance
         data_dict['verbose'] = model._meta.verbose_name.title()
-        if request.META.get('HTTP_ACCEPT') == 'application/json':
-            remote_form = RemoteForm(form_instance)
-            return HttpResponse(content_type='application/json',
-                                content=json.dumps(remote_form.as_dict()))
-        else:
-            return render_to_response('myprofile/profile_form.html',
-                                      data_dict,
-                                      RequestContext(request))
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(content_type='application/json',
+                            content=json.dumps(remote_form.as_dict()))
 
 
 @user_passes_test(User.objects.not_disabled)

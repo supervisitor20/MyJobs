@@ -298,11 +298,6 @@ def get_menus(context):
                     "id": "nonuseroutreach",
                     "href": url("prm/view/nonuseroutreach"),
                     "label": "Non-User Outreach",
-                },
-                {
-                    "id": "reactive-profiles",
-                    "href": url("profile/view/react"),
-                    "label": "React-Based Profile Units",
                 }
             ],
         })
