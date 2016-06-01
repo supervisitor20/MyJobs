@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Router, Route, IndexRoute} from 'react-router';
-import {DynamicReportApp} from 'reporting/DynamicReportApp';
+import DynamicReportApp from 'reporting/DynamicReportApp';
 import DefaultRedirect from 'reporting/DefaultRedirect';
 import SetUpReport from 'reporting/SetUpReport';
 import ExportReport from 'reporting/ExportReport';

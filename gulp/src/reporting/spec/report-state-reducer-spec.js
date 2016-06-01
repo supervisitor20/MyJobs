@@ -1,6 +1,4 @@
-import {
-  reportStateReducer,
-} from '../report-state-reducer';
+import reportStateReducer from '../report-state-reducer';
 
 import {
   startNewReportAction,

@@ -1,6 +1,5 @@
 import warning from 'warning';
 import {map, groupBy, forEach} from 'lodash-compat/collection';
-import {remove} from 'lodash-compat/array';
 import {mapValues} from 'lodash-compat/object';
 import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
 
@@ -40,10 +39,7 @@ export class ReportFinder {
   constructor(api, configBuilder) {
     this.api = api;
     this.configBuilder = configBuilder;
-    this.newReportSubscriptions = new Subscription();
-    this.runningReportSubscriptions = new Subscription();
     this.newMenuChoicesSubscriptions = new Subscription();
-    this.filterChangesSubscriptions = new Subscription();
   }
 
   /**
@@ -100,14 +96,6 @@ export class ReportFinder {
   }
 
   /**
-   * Retrieve a list of reports by this user
-   * TODO: Handle searching, etc.
-   */
-  async getReportList() {
-    return await this.api.listReports();
-  }
-
-  /**
    * Retrieve detailed info about a single report
    *
    * reportId: id for this report
@@ -147,68 +135,6 @@ export class ReportFinder {
     return this.newMenuChoicesSubscriptions.note(...args);
   }
 
-  /**
-   * Submit callbacks for changes to the report list.
-   *
-   * newReportCallback: called when creating a new report completes
-   * runningReportCallback: called when the user starts running a report
-   * newReportCallback params:
-   *    reportId: id of new report. If the run fails this will be null.
-   *    runningReport: if this was a running report from earlier,
-   *      this is the same object
-   * runningReportCallback params:
-   *    runningReport: info about the running report
-   *        {name: 'report name'}
-   * returns a reference which can be used later to unsubscribe.
-   */
-  subscribeToNewReports(newReportCallback, runningReportCallback) {
-    const unsubscribeNew = this.newReportSubscriptions.subscribe(
-        newReportCallback);
-    const unsubscribeRunning = this.runningReportSubscriptions.subscribe(
-        runningReportCallback);
-    return () => {
-      unsubscribeNew();
-      unsubscribeRunning();
-    };
-  }
-
-  /**
-   * Let subscribers know that there is a new report.
-   */
-  noteNewReport(reportId, runningReport) {
-    this.newReportSubscriptions.note(reportId, runningReport);
-  }
-
-  /**
-   * Let subscribers know that there is a running report.
-   */
-  noteNewRunningReport(runningReport) {
-    this.runningReportSubscriptions.note(runningReport);
-  }
-
-  /**
-   * Refresh a given report.
-   */
-  async refreshReport(reportId) {
-    return await this.api.refreshReport(reportId);
-  }
-
-  /**
-   * Submit a callback to be called any time a filter changes
-   *
-   * callback params: none
-   * returns a reference which can be used later to unsubscribe.
-   */
-  subscribeToFilterChanges(callback) {
-    return this.filterChangesSubscriptions.subscribe(callback);
-  }
-
-  /**
-   * Let subscribers know that a filter has changed.
-   */
-  noteFilterChanges() {
-    this.filterChangesSubscriptions.note();
-  }
 }
 
 /**
@@ -283,14 +209,6 @@ export class ReportConfiguration {
   }
 
   /**
-   * Change the name of the report.
-   */
-  changeReportName(name) {
-    this.name = name;
-    this.onNameChanged(name);
-  }
-
-  /**
    * Run callbacks to get all current stae.
    *
    * Useful at component initialization time.
@@ -298,32 +216,6 @@ export class ReportConfiguration {
   runCallbacks() {
     this.onErrorsChanged(this.errors);
     this.onNameChanged(this.name);
-  }
-
-  /**
-   * Run the report.
-   */
-  async run() {
-    const runningReport = {
-      name: this.name,
-    };
-    try {
-      this.onNewRunningReport(runningReport);
-      const response = await this.api.runReport(
-        this.reportDataId,
-        this.name,
-        this.getFilter());
-      this.errors = {};
-      this.onNewReport(response.id, runningReport);
-    } catch (exc) {
-      if (exc.data) {
-        const grouped = groupBy(exc.data, 'field');
-        const fixed = mapValues(grouped, values => map(values, v => v.message));
-        this.errors = fixed;
-      }
-      this.onNewReport(null, runningReport);
-    }
-    this.onErrorsChanged(this.errors);
   }
 }
 

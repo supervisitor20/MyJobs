@@ -11,9 +11,9 @@ import {
 
 import {
   startRunningReportAction,
+  startRefreshingReportAction,
   removeRunningReportAction,
-  completedReportsAction,
-  newReportAction,
+  replaceReportsListAction,
 } from './report-list-actions';
 import {
   receiveHintsAction,
@@ -21,16 +21,26 @@ import {
   removeFromOrFilterAction,
 } from './report-state-actions';
 
-import {errorAction} from './error-actions';
+import {errorAction, clearErrorsAction} from './error-actions';
 import {is400Error, errorData} from '../common/myjobs-api';
 
 
 /**
-  * Build a filter suitable for sending to the run method of the api.
-  *
-  * Run and hints methods want any objects like {value: x, ...}
-  * transformed down to just x.
-  */
+ * Do the initial setup for the app.
+ */
+export function doInitialLoad() {
+  return async (dispatch, getState, {api}) => {
+    const reportList = await api.listReports();
+    dispatch(replaceReportsListAction(reportList));
+  };
+}
+
+/**
+ * Build a filter suitable for sending to the run method of the api.
+ *
+ * Run and hints methods want any objects like {value: x, ...}
+ * transformed down to just x.
+ */
 export function getFilterValuesOnly(currentFilter) {
   // FUTURE: add filterType to specify the type of filter data required
   //  i.e. "date_range", "or", "and_or", "string", etc.
@@ -55,8 +65,6 @@ export function getFilterValuesOnly(currentFilter) {
 /**
  * User ran a report.
  *
- * idGen: a id generator, used for temporary ids of unfinished reports.
- * api: api instance, used to run report and get the report list.
  * reportDataId: thekind of report to run
  * name: name of the report
  * filter: filter to use for running this report.
@@ -65,13 +73,13 @@ export function doRunReport(reportDataId, name, filter) {
   return async (dispatch, _, {api, idGen}) => {
     const runningReportId = idGen.nextId();
     try {
-      dispatch(startRunningReportAction(runningReportId));
+      dispatch(clearErrorsAction());
+      dispatch(startRunningReportAction({order: runningReportId, name: name}));
       // Actually run report
-      const newReport = await api.runReport(reportDataId, name, filter);
-      dispatch(newReportAction(newReport.id));
+      await api.runReport(reportDataId, name, getFilterValuesOnly(filter));
       // Get a fresh report list.
       const reportList = await api.listReports();
-      dispatch(completedReportsAction(reportList.reports));
+      dispatch(replaceReportsListAction(reportList));
       dispatch(removeRunningReportAction(runningReportId));
     } catch (exc) {
       dispatch(removeRunningReportAction(runningReportId));
@@ -86,9 +94,29 @@ export function doRunReport(reportDataId, name, filter) {
 
 
 /**
+ * User refreshed a report.
+ *
+ * reportId: id of report to refresh
+ */
+export function doRefreshReport(reportId) {
+  return async (dispatch, _, {api}) => {
+    try {
+      dispatch(startRefreshingReportAction(reportId));
+      await api.refreshReport(reportId);
+      const reportList = await api.listReports();
+      dispatch(replaceReportsListAction(reportList));
+    } catch (exc) {
+      dispatch(errorAction(exc.message));
+    }
+  };
+}
+
+
+/**
  * User needs help with a filter field.
  *
- * api: api instance, used to call getHelp
+ * reportDataId: which kind of report is this?
+ * currentFilter: the filter the user constructed so far
  * fieldName: field the user is operating on
  * partial: input in the field so far. Can be a blank string which the api
  *   should interpret as "tell me about all possible options".

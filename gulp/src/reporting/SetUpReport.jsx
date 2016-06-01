@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
-import {forEach} from 'lodash-compat/collection';
+import {forEach, map} from 'lodash-compat/collection';
 import {debounce} from 'lodash-compat/function';
 import {
   startNewReportAction,
@@ -18,6 +18,7 @@ import {
 import {
   doGetHelp,
   doUpdateFilterWithDependencies,
+  doRunReport,
 } from './compound-actions';
 
 import classnames from 'classnames';
@@ -121,13 +122,23 @@ class RawSetUpReport extends Component {
     }
   }
 
-  handleRunReport(e) {
+  async handleRunReport(e) {
     e.preventDefault();
 
-    this.state.reportConfig.run();
-    this.props.history.pushState(null, '/');
+    const {
+      reportDataId: reportDataIdRaw,
+    } = this.props.location.query;
+    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
+    const {dispatch, reportName, currentFilter} = this.props;
 
     scrollUp();
+    await dispatch(doRunReport(reportDataId, reportName, currentFilter));
+    const {reportNameErrors} = this.props;
+    console.log('handleRunReport', reportNameErrors, this.props);
+    if (!reportNameErrors) {
+      console.log('handleRunReport PUSH');
+      this.props.history.pushState(null, '/');
+    }
   }
 
   async loadData() {
@@ -221,6 +232,7 @@ class RawSetUpReport extends Component {
       currentFilter,
       filterInterface,
       reportName,
+      reportNameErrors,
       hints,
     } = this.props;
     const {
@@ -231,7 +243,6 @@ class RawSetUpReport extends Component {
     } = this.props.location.query;
     const {
       loading,
-      reportNameError,
       reportingTypes,
       reportTypes,
       dataTypes,
@@ -243,7 +254,7 @@ class RawSetUpReport extends Component {
 
     const rows = [];
     if (filterInterface.length > 0) {
-      const errorTexts = reportNameError ? [reportNameError] : [];
+      const errorTexts = map(reportNameErrors, e => e.message);
       rows.push(
         <FieldWrapper
           key="reportName"
@@ -391,6 +402,7 @@ RawSetUpReport.propTypes = {
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
   reportName: PropTypes.string,
+  reportNameErrors: PropTypes.arrayOf(PropTypes.string.isRequired),
   hints: PropTypes.object.isRequired,
   currentFilter: PropTypes.object.isRequired,
   filterInterface: PropTypes.arrayOf(
@@ -418,5 +430,6 @@ SetUpReport = connect(s => ({
   filterInterface: s.reportState.filterInterface,
   reportName: s.reportState.reportName,
   hints: s.reportState.hints,
+  reportNameErrors: s.errors.currentErrors.name,
 }))(RawSetUpReport);
 export default SetUpReport;

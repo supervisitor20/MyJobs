@@ -1,15 +1,20 @@
 import React, {PropTypes, Component} from 'react';
+import {connect} from 'react-redux';
 import {map} from 'lodash-compat';
 import {setCookie} from 'common/cookie';
 import PopMenu from 'common/ui/PopMenu';
 import classnames from 'classnames';
 
-export class ReportList extends Component {
+import {
+  doRefreshReport,
+} from './compound-actions';
+
+
+class ReportList extends Component {
   constructor() {
     super();
     this.state = {
       currentlyActive: '',
-      reportsRefreshing: [],
     };
   }
 
@@ -23,23 +28,14 @@ export class ReportList extends Component {
   }
 
   handleRefreshReport(report) {
-    const {reportFinder} = this.props;
-    const {reportsRefreshing} = this.state;
-    const removeReport = () => {
-      reportsRefreshing.splice(reportsRefreshing.indexOf(report.id), 1);
-      this.setState({reportsRefreshing: reportsRefreshing});
-    };
-    if (reportsRefreshing.indexOf(report.id) === -1) {
-      reportsRefreshing.push(report.id);
-      this.setState({reportsRefreshing: reportsRefreshing});
-      reportFinder.refreshReport(report.id).then(removeReport, removeReport);
-    }
+    const {dispatch} = this.props;
+    dispatch(doRefreshReport(report.order));
     this.closeAllPopups();
   }
 
   handlePreviewReport(report) {
     const {history} = this.props;
-    const href = '/preview/' + report.id;
+    const href = '/preview/' + report.order;
     const query = {
       reportName: report.name,
       reportType: report.report_type,
@@ -50,7 +46,7 @@ export class ReportList extends Component {
 
   handleExportReport(report) {
     const {history} = this.props;
-    const href = '/export/' + report.id;
+    const href = '/export/' + report.order;
     this.closeAllPopups();
     history.pushState(null, href);
   }
@@ -130,7 +126,7 @@ export class ReportList extends Component {
               toggleMenu={(e) => this.clickMenu(e)}
               closeAllPopups={(e) => this.closeAllPopups(e)} />
               : ''}
-          {(r.isRunning || this.state.reportsRefreshing.indexOf(r.id) > -1) ?
+          {(r.isRunning || r.isRefreshing) ?
             <span className="report-loader"></span>
             : ''}
           <span className="menu-text">{r.name}</span>
@@ -165,11 +161,13 @@ export class ReportList extends Component {
 }
 
 ReportList.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
   reports: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number,
+      id: PropTypes.string.isRequired,
+      order: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       report_type: PropTypes.string,
       isRunning: PropTypes.bool.isRequired,
@@ -177,3 +175,8 @@ ReportList.propTypes = {
   ).isRequired,
   highlightId: PropTypes.number,
 };
+
+export default connect(s => ({
+  reports: s.reportList.reports,
+  highlightId: s.reportList.highlightId,
+}))(ReportList);

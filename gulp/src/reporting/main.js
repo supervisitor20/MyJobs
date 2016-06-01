@@ -8,7 +8,10 @@ import {ReportFinder, ReportConfigurationBuilder} from './reportEngine';
 import {getCsrf} from '../common/cookie';
 import {WizardRouter} from './WizardRouter';
 import {combineReducers} from 'redux';
-import {reportStateReducer} from './report-state-reducer';
+import reportStateReducer from './report-state-reducer';
+import reportListReducer from './report-list-reducer';
+import errorReducer from './error-reducer';
+import {doInitialLoad} from './compound-actions';
 import {Provider} from 'react-redux';
 
 import React from 'react';
@@ -26,6 +29,8 @@ const reportFinder = new ReportFinder(reportingApi, configBuilder);
 
 const reducer = combineReducers({
   reportState: reportStateReducer,
+  reportList: reportListReducer,
+  errors: errorReducer,
 });
 
 const thunkExtra = {
@@ -34,6 +39,7 @@ const thunkExtra = {
 };
 
 const store = createReduxStore(reducer, undefined, thunkExtra);
+store.dispatch(doInitialLoad());
 
 ReactDOM.render(
   <Provider store={store}>

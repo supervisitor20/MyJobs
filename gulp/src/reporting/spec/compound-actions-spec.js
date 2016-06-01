@@ -4,26 +4,27 @@ import {
   clearHintsAction,
 } from '../report-state-actions';
 
-import {
-  reportStateReducer,
-} from '../report-state-reducer';
+import reportStateReducer from '../report-state-reducer';
 
 import {
   startRunningReportAction,
+  startRefreshingReportAction,
   removeRunningReportAction,
-  completedReportsAction,
-  newReportAction,
+  replaceReportsListAction,
 } from '../report-list-actions';
 
 import {
   doRunReport,
+  doRefreshReport,
   doGetHelp,
+  doInitialLoad,
   getFilterValuesOnly,
   doUpdateFilterWithDependencies,
 } from '../compound-actions';
 
 import {
   errorAction,
+  clearErrorsAction,
 } from '../error-actions';
 
 import {promiseTest} from '../../common/spec';
@@ -33,12 +34,45 @@ import createReduxStore from '../../common/create-redux-store';
 import {combineReducers} from 'redux';
 
 
-
 class FakeApi {
-  runReport(reportDataId, name, filter) {}
+  runReport() {}
+  refreshReport() {}
   listReports() {}
   getHelp() {}
 }
+
+
+describe('doInitialLoad', () => {
+  let actions;
+  let api;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {};
+  }
+
+  it('loads the report list', promiseTest(async () => {
+    spyOn(api, 'listReports').and.returnValue(Promise.resolve([
+      {id: 3, name: 'c', report_type: 3},
+      {id: 4, name: 'd', report_type: 4},
+    ]));
+    await doInitialLoad()(dispatch, getState, {api});
+    expect(actions).toEqual([
+      replaceReportsListAction([
+        {id: 3, name: 'c', report_type: 3},
+        {id: 4, name: 'd', report_type: 4},
+      ]),
+    ]);
+  }));
+});
 
 
 describe('doRunReport', () => {
@@ -62,19 +96,21 @@ describe('doRunReport', () => {
 
   it('handles the happy path', promiseTest(async () => {
     spyOn(api, 'runReport').and.returnValue(Promise.resolve({id: 99}));
-    spyOn(api, 'listReports').and.returnValue(Promise.resolve({
-      reports: [
-        {id: 3, name: 'c', report_type: 3},
-        {id: 4, name: 'd', report_type: 4},
-      ],
-    }));
-    await doRunReport(2, 'a', {1: 2})(dispatch, getState, {idGen, api});
-    expect(api.runReport).toHaveBeenCalledWith(2, 'a', {1: 2});
+    spyOn(api, 'listReports').and.returnValue(Promise.resolve([
+      {id: 3, name: 'c', report_type: 3},
+      {id: 4, name: 'd', report_type: 4},
+    ]));
+    const filter = {
+      a: [{value: 1}],
+    };
+
+    await doRunReport(2, 'a', filter)(dispatch, getState, {idGen, api});
+    expect(api.runReport).toHaveBeenCalledWith(2, 'a', {a: [1]});
     expect(api.listReports).toHaveBeenCalled();
     expect(actions).toEqual([
-      startRunningReportAction(1),
-      newReportAction(99),
-      completedReportsAction([
+      clearErrorsAction(),
+      startRunningReportAction({order: 1, name: 'a'}),
+      replaceReportsListAction([
         {id: 3, name: 'c', report_type: 3},
         {id: 4, name: 'd', report_type: 4},
       ]),
@@ -89,9 +125,10 @@ describe('doRunReport', () => {
       status: 400,
     };
     spyOn(api, 'runReport').and.throwError(error);
-    await doRunReport()(dispatch, getState, {idGen, api});
+    await doRunReport(undefined, 'a')(dispatch, getState, {idGen, api});
     expect(actions).toEqual([
-      startRunningReportAction(1),
+      clearErrorsAction(),
+      startRunningReportAction({order: 1, name: 'a'}),
       removeRunningReportAction(1),
       errorAction("API Error", {some: 'data'}),
     ]);
@@ -100,10 +137,59 @@ describe('doRunReport', () => {
   it('handles arbitrary failures', promiseTest(async () => {
     const error = new Error("Some Error");
     spyOn(api, 'runReport').and.throwError(error);
-    await doRunReport()(dispatch, getState, {idGen, api});
+    await doRunReport(undefined, 'a')(dispatch, getState, {idGen, api});
     expect(actions).toEqual([
-      startRunningReportAction(1),
+      clearErrorsAction(),
+      startRunningReportAction({order: 1, name: 'a'}),
       removeRunningReportAction(1),
+      errorAction("Some Error"),
+    ]);
+  }));
+});
+
+
+describe('doRefreshReport', () => {
+  let actions;
+  let api;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {};
+  }
+
+  it('handles the happy path', promiseTest(async () => {
+    spyOn(api, 'refreshReport').and.returnValue(Promise.resolve({}));
+    spyOn(api, 'listReports').and.returnValue(Promise.resolve([
+      {id: 3, name: 'c', report_type: 3},
+      {id: 4, name: 'd', report_type: 4},
+    ]));
+
+    await doRefreshReport(2)(dispatch, getState, {api});
+    expect(api.refreshReport).toHaveBeenCalledWith(2);
+    expect(api.listReports).toHaveBeenCalled();
+    expect(actions).toEqual([
+      startRefreshingReportAction(2),
+      replaceReportsListAction([
+        {id: 3, name: 'c', report_type: 3},
+        {id: 4, name: 'd', report_type: 4},
+      ]),
+    ]);
+  }));
+
+  it('handles arbitrary failures', promiseTest(async () => {
+    const error = new Error("Some Error");
+    spyOn(api, 'refreshReport').and.throwError(error);
+    await doRefreshReport(2)(dispatch, getState, {api});
+    expect(actions).toEqual([
+      startRefreshingReportAction(2),
       errorAction("Some Error"),
     ]);
   }));

@@ -69,7 +69,7 @@ function replaceItemAtIndex(items, atIndex, newItem) {
  *
  * }
  */
-export const reportStateReducer = handleActions({
+export default handleActions({
   'START_NEW_REPORT': (state, action) => {
     const {
       defaultFilter: currentFilter,

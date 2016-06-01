@@ -1,60 +1,27 @@
 import React, {PropTypes, Component} from 'react';
-import {ReportList} from './ReportList';
-import {remove} from 'lodash-compat/array';
-import {map} from 'lodash-compat/collection';
+import {connect} from 'react-redux';
+import ReportList from './ReportList';
+import {highlightReportAction} from './report-list-actions';
 
-export class DynamicReportApp extends Component {
-  constructor() {
-    super();
-    this.state = {
-      completedReportList: [],
-      runningReportList: [],
-    };
-  }
-
+class DynamicReportApp extends Component {
   componentDidMount() {
-    const {reportFinder} = this.props;
-    this.unsubscribeToNewReports =
-      reportFinder.subscribeToNewReports(
-          (reportId, runningReport) =>
-            this.handleNewReport(reportId, runningReport),
-          runningReport => this.handleRunningReport(runningReport));
-    this.handleNewReport(null, null);
+    const {history} = this.props;
+    this.unsubscribeToHistory = history.listen(
+      (...args) => this.handleNewLocation(...args));
   }
 
   componentWillUnmount() {
-    this.unsubscribeToNewReports();
+    this.unsubscribeToHistory();
   }
 
-  async handleNewReport(reportId, runningReport) {
-    const {reportFinder} = this.props;
-    const {runningReportList} = this.state;
-    const completedReportList = await reportFinder.getReportList();
-
-    remove(runningReportList, i => i === runningReport);
-
-    this.setState({
-      ...this.state,
-      runningReportList,
-      completedReportList,
-    });
-  }
-
-  async handleRunningReport(runningReport) {
-    const {runningReportList} = this.state;
-    runningReportList.unshift(runningReport);
-    this.setState({runningReportList});
+  handleNewLocation(state, loc) {
+    const {dispatch} = this.props;
+    dispatch(highlightReportAction(Number.parseInt(loc.params.reportId, 10)));
   }
 
   render() {
-    const {completedReportList, runningReportList} = this.state;
     const {reportId} = this.props.params;
     const {history, reportFinder} = this.props;
-
-    const reportList = map(runningReportList,
-        r => ({...r, isRunning: true})).concat(
-        map(completedReportList,
-          r => ({...r, isRunning: false})));
 
     return (
       <div>
@@ -72,12 +39,7 @@ export class DynamicReportApp extends Component {
             {this.props.children}
           </div>
           <div className="col-xs-12 col-md-4">
-            <ReportList
-              history={history}
-              reportFinder={reportFinder}
-              reports={reportList}
-              highlightId={Number.parseInt(reportId, 10)}
-              reportFinder={reportFinder}/>
+            <ReportList history={history}/>
           </div>
         </div>
       </div>
@@ -87,9 +49,8 @@ export class DynamicReportApp extends Component {
 
 DynamicReportApp.propTypes = {
   history: PropTypes.object.isRequired,
-  reportFinder: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
   children: PropTypes.node,
-  params: PropTypes.shape({
-    reportId: PropTypes.any,
-  }).isRequired,
 };
+
+export default connect(() => ({}))(DynamicReportApp);

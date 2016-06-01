@@ -13,3 +13,11 @@ import {createAction} from 'redux-actions';
  */
 export const errorAction = createAction('ERROR', (message, data) =>
   ({message, data}));
+
+
+/**
+ * Reset error state back to no errors.
+ *
+ * no payload
+ */
+export const clearErrorsAction = createAction('CLEAR_ERRORS');
