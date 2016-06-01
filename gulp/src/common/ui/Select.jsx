@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 /**
  * Custom select box (i.e. not standard HTML form element) with keyboard support
@@ -92,14 +93,18 @@ class Select extends React.Component {
     this.closeSelectMenu();
   }
   render() {
-    const {choices, name, value} = this.props;
+    const {choices, name, value, disable} = this.props;
     const {keySelectedIndex, selectDropped} = this.state;
 
     let selectAction;
     let dropdown;
     let dropdownItems = [];
     if (selectDropped) {
-      selectAction = this.closeSelectMenu;
+      if (disable === true) {
+        selectAction = null;
+      } else {
+        selectAction = this.closeSelectMenu;
+      }
       dropdownItems = choices.map((item, index)=> {
         let active = '';
         if (index === keySelectedIndex) {
@@ -127,15 +132,23 @@ class Select extends React.Component {
       </div>
       );
     } else {
-      selectAction = this.openSelectMenu;
+      if (disable === true) {
+        selectAction = null;
+      } else {
+        selectAction = this.openSelectMenu;
+      }
       dropdown = '';
     }
 
     return (
       <div className="select-element-outer" tabIndex="0" onBlur={this.closeSelectMenu} onKeyDown={e => this.onInputKeyDown(e)}>
-        <div className="select-element-input" onClick={selectAction}>
+        <div className={
+          classnames(
+            'select-element-input',
+            {'disabled': disable})}
+          onClick={selectAction}>
           <div className="select-element-chosen-container">
-            <span title={value} className="select-element-chosen">{value}</span>
+            <span className="select-element-chosen">{value}</span>
             <span className="select-element-arrow">
               <b role="presentation"></b>
             </span>
@@ -146,6 +159,10 @@ class Select extends React.Component {
     );
   }
 }
+
+Select.defaultProps = {
+  value: '',
+};
 
 Select.propTypes = {
   /**
@@ -162,7 +179,10 @@ Select.propTypes = {
   /**
    * Value shown as the selected value in the control.
    */
-  value: React.PropTypes.string.isRequired,
+  value: React.PropTypes.oneOfType([
+    React.PropTypes.string,
+    React.PropTypes.element,
+  ]),
   /**
    * Array of objects, each an item in the select component
    */
@@ -176,10 +196,10 @@ Select.propTypes = {
    * Array of strings, each a possible error produced by Django
    */
   errors: React.PropTypes.arrayOf(React.PropTypes.string),
-};
-
-Select.defaultProps = {
-  value: '',
+  /**
+   * Ability to disable the select control
+   */
+  disable: React.PropTypes.bool,
 };
 
 export default Select;
