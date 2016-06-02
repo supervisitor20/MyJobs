@@ -131,7 +131,7 @@ class SetUpReport extends Component {
             onChange={v => dispatch(setReportNameAction(v.target.value))}/>
         </FieldWrapper>
       );
-      filterInterface.forEach(col => {
+      forEach(filterInterface, col => {
         function getHints(field, value) {
           dispatch(doGetHelp(reportDataId, currentFilter, field, value));
         }
@@ -195,10 +195,10 @@ class SetUpReport extends Component {
                 selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
                   this.dispatchFilterAction(
-                    addToAndOrFilterAction(col.filter, i, t))}
+                    addToAndOrFilterAction(col.filter, i, [t]))}
                 onRemove={(i, t) =>
                   this.dispatchFilterAction(
-                    removeFromAndOrFilterAction(col.filter, i, t))}/>
+                    removeFromAndOrFilterAction(col.filter, i, [t]))}/>
 
             </FieldWrapper>
             );
@@ -213,12 +213,12 @@ class SetUpReport extends Component {
                 getHints={v => getHints(col.filter, v)}
                 available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
-                onAdd = {vs => forEach(vs, v =>
+                onAdd = {vs =>
                   this.dispatchFilterAction(
-                    addToOrFilterAction(col.filter, v)))}
-                onRemove = {vs => forEach(vs, v =>
+                    addToOrFilterAction(col.filter, vs))}
+                onRemove = {vs =>
                   this.dispatchFilterAction(
-                    removeFromOrFilterAction(col.filter, v)))}/>
+                    removeFromOrFilterAction(col.filter, vs))}/>
 
             </FieldWrapper>
             );

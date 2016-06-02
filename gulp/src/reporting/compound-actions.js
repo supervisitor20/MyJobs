@@ -4,7 +4,6 @@ import {isArray, isPlainObject, isString} from 'lodash-compat/lang';
 import {
   indexBy,
   map,
-  forEach,
   find,
   filter as lodashFilter,
 } from 'lodash-compat/collection';
@@ -323,8 +322,7 @@ export function doUpdateFilterWithDependencies(
       const selected = latestFilter().contact;
       const missingSelected =
         lodashFilter(selected, s => !availableValues[s.value]);
-      forEach(missingSelected, s =>
-        dispatch(removeFromOrFilterAction('contact', s)));
+      dispatch(removeFromOrFilterAction('contact', missingSelected));
     }
     if (find(filterInterface, i => i.filter === 'locations')) {
       await dispatch(doGetHelp(reportDataId, latestFilter(), 'state', ''));

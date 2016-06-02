@@ -26,48 +26,56 @@ export const startNewReportAction = createAction('START_NEW_REPORT');
  * field: which filter field to operate on.
  * item: filter value
  */
-export const setSimpleFilterAction = createItemAction('SET_SIMPLE_FILTER');
+export const setSimpleFilterAction =
+  createItemAction(
+    'SET_SIMPLE_FILTER',
+    (field, item) => ({field, item}));
 
 /**
  * User added a value to an or filter.
  *
  * field: which filter field to operate on.
- * item: filter value
+ * items: filter value
  */
-export const addToOrFilterAction = createItemAction('ADD_TO_OR_FILTER');
+export const addToOrFilterAction =
+  createAction(
+    'ADD_TO_OR_FILTER',
+    (field, items) => ({field, items}));
 
 /**
  * User removed a value from an or filter.
  *
  * field: which filter field to operate on.
- * item: filter value
+ * items: [filter values to remove]
  */
 export const removeFromOrFilterAction =
-  createItemAction('REMOVE_FROM_OR_FILTER');
+  createAction(
+    'REMOVE_FROM_OR_FILTER',
+    (field, items) => ({field, items}));
 
 /**
  * User added a value to an and/or filter.
  *
  * field: which filter field to operate on.
  * index: which row of this field to operate on.
- * item: filter value
+ * items: filter value
  */
 export const addToAndOrFilterAction =
   createAction(
     'ADD_TO_AND_OR_FILTER',
-    (field, index, item) => ({field, index, item}));
+    (field, index, items) => ({field, index, items}));
 
 /**
  * User removed a value from an and/or filter.
  *
  * field: which filter field to operate on.
  * index: which row of this field to operate on.
- * item: filter value
+ * items: filter value
  */
 export const removeFromAndOrFilterAction =
   createAction(
     'REMOVE_FROM_AND_OR_FILTER',
-    (field, index, item) => ({field, index, item}));
+    (field, index, items) => ({field, index, items}));
 
 /**
  * User set a date range filter.

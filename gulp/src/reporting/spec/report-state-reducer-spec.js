@@ -58,7 +58,8 @@ describe('reportStateReducer', () => {
   });
 
   it('can add to an or filter', () => {
-    const action = addToOrFilterAction("contact", {value: 3, display: "Bob"});
+    const action = addToOrFilterAction(
+      "contact", [{value: 3, display: "Bob"}, {value: 5, display: "Rex"}]);
     const result = reportStateReducer({
       currentFilter: {
         "contact": [
@@ -70,12 +71,14 @@ describe('reportStateReducer', () => {
       "contact": [
         {value: 4, display: "Ann"},
         {value: 3, display: "Bob"},
+        {value: 5, display: "Rex"},
       ],
     });
   });
 
   it('can add to an or filter if that filter does not yet exist', () => {
-    const action = addToOrFilterAction("contact", {value: 3, display: "Bob"});
+    const action = addToOrFilterAction(
+      "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({currentFilter: {}}, action);
     expect(result.currentFilter).toEqual({
       "contact": [
@@ -85,7 +88,8 @@ describe('reportStateReducer', () => {
   });
 
   it('can overwrite a value by adding to an or filter', () => {
-    const action = addToOrFilterAction("contact", {value: 3, display: "Bob"});
+    const action = addToOrFilterAction(
+      "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
       currentFilter: {
         "contact": [
@@ -102,14 +106,15 @@ describe('reportStateReducer', () => {
     });
   });
 
-  it('can remove a value from an or filter', () => {
+  it('can remove values from an or filter', () => {
     const action = removeFromOrFilterAction(
-      "contact", {value: 3, display: "Bob"});
+      "contact", [{value: 3, display: "Bob"}, {value: 5, display: "Rex"}]);
     const result = reportStateReducer({
       currentFilter: {
         "contact": [
           {value: 3, display: "Bob"},
           {value: 4, display: "Ann"},
+          {value: 5, display: "Rex"},
         ],
       },
     }, action);
@@ -123,7 +128,7 @@ describe('reportStateReducer', () => {
   it('can leave an or filter untouched when removing ' +
       'an item that is not there.', () => {
     const action = removeFromOrFilterAction(
-      "contact", {value: 3, display: "Bob"});
+      "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
       currentFilter: {
         "contact": [
@@ -140,14 +145,14 @@ describe('reportStateReducer', () => {
 
   it('can ignore removing an item from a mising filter', () => {
     const action = removeFromOrFilterAction(
-      "contact", {value: 3, display: "Bob"});
+      "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({currentFilter: {}}, action);
     expect(result.currentFilter).toEqual({});
   });
 
   it('automatically deletes an empty or filter after remove', () => {
     const action = removeFromOrFilterAction(
-      "contact", {value: 3, display: "Bob"});
+      "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
       currentFilter: {
         "contact": [
@@ -160,7 +165,7 @@ describe('reportStateReducer', () => {
 
   it('can add an item to an and/or filter', () => {
     const action = addToAndOrFilterAction(
-      "tags", 0, {value: 3, display: "Test"});
+      "tags", 0, [{value: 3, display: "Test"}, {value: 2, display: "Test2"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [[]],
@@ -170,6 +175,7 @@ describe('reportStateReducer', () => {
       "tags": [
         [
           {value: 3, display: "Test"},
+          {value: 2, display: "Test2"},
         ],
       ],
     });
@@ -177,7 +183,7 @@ describe('reportStateReducer', () => {
 
   it('can add an item to an and/or filter if the filter did not exist', () => {
     const action = addToAndOrFilterAction(
-      "tags", 10, {value: 3, display: "Test"});
+      "tags", 10, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({currentFilter: {}}, action);
     expect(result.currentFilter).toEqual({
       "tags": [
@@ -190,7 +196,7 @@ describe('reportStateReducer', () => {
 
   it('can add an item to an and/or filter if the row did not exist', () => {
     const action = addToAndOrFilterAction(
-      "tags", 10, {value: 3, display: "Test"});
+      "tags", 10, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [
@@ -214,12 +220,13 @@ describe('reportStateReducer', () => {
 
   it('can remove an item from an and/or filter', () => {
     const action = removeFromAndOrFilterAction(
-      "tags", 0, {value: 3, display: "Test"});
+      "tags", 0, [{value: 3, display: "Test"}, {value:2, display: "Test2"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [
           [
             {value: 3, display: "Test"},
+            {value: 2, display: "Test2"},
             {value: 1, display: "Red"},
           ],
         ],
@@ -237,7 +244,7 @@ describe('reportStateReducer', () => {
   it('can leave an and/or filter untouched when removing ' +
       'an item that is not there.', () => {
     const action = removeFromAndOrFilterAction(
-      "tags", 0, {value: 3, display: "Test"});
+      "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [
@@ -259,7 +266,7 @@ describe('reportStateReducer', () => {
   it('can leave an and/or filter untouched when removing ' +
       'from a row that is not there.', () => {
     const action = removeFromAndOrFilterAction(
-      "tags", 10, {value: 3, display: "Test"});
+      "tags", 10, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [
@@ -280,7 +287,7 @@ describe('reportStateReducer', () => {
 
   it('automatically deletes an empty and/or row after remove', () => {
     const action = removeFromAndOrFilterAction(
-      "tags", 0, {value: 3, display: "Test"});
+      "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [
@@ -304,7 +311,7 @@ describe('reportStateReducer', () => {
 
   it('automatically deletes an empty and/or filter after remove', () => {
     const action = removeFromAndOrFilterAction(
-      "tags", 0, {value: 3, display: "Test"});
+      "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
       currentFilter: {
         "tags": [

@@ -1,12 +1,16 @@
 import {handleActions} from 'redux-actions';
-import {map, filter as lodashFilter} from 'lodash-compat/collection';
+import {map, filter as lodashFilter, contains} from 'lodash-compat/collection';
 import {omit} from 'lodash-compat/object';
 
 const maxNameLength = 24;
 
-function addOrReplaceByValue(items, item) {
+function addOrReplaceByValues(original, items) {
+  const removeValues = map(items, i => i.value);
   // Filter out the old thing, place the new one at the end.
-  return [...lodashFilter(items, i => i.value !== item.value), item];
+  return [
+    ...lodashFilter(original, i => !contains(removeValues, i.value)),
+    ...items,
+  ];
 }
 
 function replaceItemAtIndex(items, atIndex, newItem) {
@@ -99,11 +103,11 @@ export default handleActions({
   },
 
   'ADD_TO_OR_FILTER': (state, action) => {
-    const {field, item} = action.payload;
+    const {field, items} = action.payload;
     const {currentFilter} = state;
 
     const orFilter = currentFilter[field] || [];
-    const newOrFilter = addOrReplaceByValue(orFilter, item);
+    const newOrFilter = addOrReplaceByValues(orFilter, items);
     return {
       ...state,
       currentFilter: {
@@ -114,14 +118,16 @@ export default handleActions({
   },
 
   'REMOVE_FROM_OR_FILTER': (state, action) => {
-    const {field, item} = action.payload;
+    const {field, items} = action.payload;
     const {currentFilter} = state;
 
     if (!currentFilter.hasOwnProperty(field)) {
       return state;
     }
     const orFilter = currentFilter[field];
-    const newOrFilter = lodashFilter(orFilter, i => i.value !== item.value);
+    const removeValues = map(items, i => i.value);
+    const newOrFilter = lodashFilter(orFilter,
+      i => !contains(removeValues, i.value));
 
     // If the group is empty, return the filter without this key.
     const newFilter = newOrFilter.length > 0 ? {
@@ -136,15 +142,15 @@ export default handleActions({
   },
 
   'ADD_TO_AND_OR_FILTER': (state, action) => {
-    const {field, index, item} = action.payload;
+    const {field, index, items} = action.payload;
     const {currentFilter} = state;
 
     const newFilter = replaceItemAtIndex(
       currentFilter[field],
       index,
-      addOrReplaceByValue(
+      addOrReplaceByValues(
         (state.currentFilter[field] || [])[index],
-        item));
+        items));
 
     return {
       ...state,
@@ -156,7 +162,7 @@ export default handleActions({
   },
 
   'REMOVE_FROM_AND_OR_FILTER': (state, action) => {
-    const {field, index, item} = action.payload;
+    const {field, index, items} = action.payload;
     const {currentFilter} = state;
 
     const currentRow = (currentFilter[field] || [])[index] || [];
@@ -165,7 +171,9 @@ export default handleActions({
       return state;
     }
 
-    const newRow = lodashFilter(currentRow, i => i.value !== item.value);
+    const removeValues = map(items, i => i.value);
+    const newRow = lodashFilter(currentRow,
+      i => !contains(removeValues, i.value));
 
     let andGroup;
     if (newRow.length < 1) {
