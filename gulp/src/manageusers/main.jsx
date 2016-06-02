@@ -29,25 +29,31 @@ export class App extends React.Component {
     super(props);
     this.state = {
       rolesTableRows: [],
+      rolesAPIResults: null,
       tablesOfActivitiesByApp: [],
       usersTableRows: [],
+      currentUser: {},
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
+      callCurrentUserAPI: this.callCurrentUserAPI,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
     this.callUsersAPI = this.callUsersAPI.bind(this);
+    this.callCurrentUserAPI = this.callCurrentUserAPI.bind(this);
   }
   componentDidMount() {
     this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
+    this.callCurrentUserAPI()
   }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
       this.callActivitiesAPI();
       this.callRolesAPI();
       this.callUsersAPI();
+      this.callCurrentUserAPI();
     }
   }
   async callActivitiesAPI() {
@@ -97,6 +103,7 @@ export class App extends React.Component {
     // Get roles once, but reload if needed
     const results = await api.get('/manage-users/api/roles/');
     const rolesTableRows = [];
+
     _.forOwn(results, function buildListOfRows(role) {
       let editRoleLink;
       if (role.role_name !== 'Admin') {
@@ -119,6 +126,7 @@ export class App extends React.Component {
     });
     this.setState({
       rolesTableRows: rolesTableRows,
+      rolesAPIResults: results,
     });
   }
   async callUsersAPI() {
@@ -144,6 +152,13 @@ export class App extends React.Component {
     });
     this.setState({
       usersTableRows: usersTableRows,
+    });
+  }
+  async callCurrentUserAPI() {
+    // Get current logged in user information
+    const results = await api.get('/manage-users/api/current-user/');
+    this.setState({
+      currentUser: results,
     });
   }
   render() {
@@ -178,9 +193,11 @@ export class App extends React.Component {
                   tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
+                  currentUser: this.state.currentUser,
                   callRolesAPI: this.callRolesAPI,
                   callUsersAPI: this.callUsersAPI,
                   api: api,
+                  rolesAPIResults: this.state.rolesAPIResults,
                 })
               }
             </div>

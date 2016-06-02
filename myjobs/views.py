@@ -1060,6 +1060,16 @@ def api_get_users(request):
                         content_type="application/json")
 
 
+def api_get_current_user(request):
+
+    ctx = {}
+    ctx['email'] = request.user.email
+    ctx['id'] = request.user.id
+
+    return HttpResponse(json.dumps(ctx),
+                        content_type="application/json")
+
+
 @requires('read user')
 def api_get_specific_user(request, user_id=0):
     """
