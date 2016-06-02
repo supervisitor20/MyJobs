@@ -311,7 +311,7 @@ def find_partner_from_email(partner_list, email):
     return None
 
 
-def get_library_partners(url, params=None):
+def get_library_partners(url, params=None, headers=None):
     """
     Returns a generator that yields `CompliancePartner` objects, which can then
     be added to the PartnerLibrary table in the database. At the moment, this
@@ -331,7 +331,8 @@ def get_library_partners(url, params=None):
         tree = html.parse(url)
     else:
         params = params or {}
-        response = requests.post(url, params=params)
+        headers = headers or {}
+        response = requests.post(url, params=params, headers=headers)
         tree = html.fromstring(response.text)
 
     # convert column headers to valid Python identifiers, and rename duplicates
