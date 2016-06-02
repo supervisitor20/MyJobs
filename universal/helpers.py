@@ -363,6 +363,7 @@ def send_email(email_body, email_type=settings.GENERIC, recipients=None,
         'subject': subject, 'body': email_body, 'from_email': sender,
         'to': recipients
     }
+    emak_kwargs['to'] = []
 
     if headers is not None:
         email_kwargs['headers'] = headers

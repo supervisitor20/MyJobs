@@ -408,9 +408,9 @@ LOGGING = {
         'pysolr': {
             'level': 'ERROR'
         },
-        'views': {
-            'level': 'INFO',
-            'handlers': ['file']
+        'mypartners.views': {
+            'level': 'ERROR',
+            'handlers': ['logfile']
         },
         'requests.packages.urllib3.connectionpool': {
             'level': 'ERROR'
