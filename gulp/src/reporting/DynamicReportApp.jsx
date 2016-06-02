@@ -1,5 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
+import {Loading} from 'common/ui/Loading';
 import ReportList from './ReportList';
 import SetUpReport from './SetUpReport';
 import {highlightReportAction} from './report-list-actions';
@@ -39,7 +40,7 @@ class DynamicReportApp extends Component {
   }
 
   render() {
-    const {history} = this.props;
+    const {history, pageLoading} = this.props;
 
     return (
       <div>
@@ -54,7 +55,9 @@ class DynamicReportApp extends Component {
         </div>
         <div className="row">
           <div className="col-xs-12 col-md-8">
-            {this.props.children}
+            {pageLoading ?
+              <Loading/> :
+              this.props.children}
           </div>
           <div className="col-xs-12 col-md-4">
             <ReportList history={history}/>
@@ -66,9 +69,12 @@ class DynamicReportApp extends Component {
 }
 
 DynamicReportApp.propTypes = {
+  pageLoading: PropTypes.bool.isRequired,
   history: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
   children: PropTypes.node,
 };
 
-export default connect(() => ({}))(DynamicReportApp);
+export default connect(s => ({
+  pageLoading: s.loading.mainPage,
+}))(DynamicReportApp);

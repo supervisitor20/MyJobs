@@ -12,6 +12,7 @@ import dataSetMenuReducer from './dataset-menu-reducer';
 import reportStateReducer from './report-state-reducer';
 import reportListReducer from './report-list-reducer';
 import errorReducer from './error-reducer';
+import loadingReducer from 'common/loading-reducer';
 import {doInitialLoad} from './compound-actions';
 import {Provider} from 'react-redux';
 
@@ -31,6 +32,7 @@ const reducer = combineReducers({
   reportState: reportStateReducer,
   reportList: reportListReducer,
   errors: errorReducer,
+  loading: loadingReducer,
   dataSetMenu: dataSetMenuReducer,
 });
 

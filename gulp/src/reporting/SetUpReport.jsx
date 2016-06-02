@@ -1,7 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import warning from 'warning';
-import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
 import {debounce} from 'lodash-compat/function';
@@ -33,9 +32,6 @@ import TextField from 'common/ui/TextField';
 class SetUpReport extends Component {
   constructor() {
     super();
-    this.state = {
-      loading: false,
-    };
     this.dispatchFilterAction = debounce(
       action => this.rawDispatchFilterAction(action),
       300,
@@ -118,13 +114,6 @@ class SetUpReport extends Component {
     const {
       reportDataId,
     } = this.props.location.query;
-    const {
-      loading,
-    } = this.state;
-
-    if (loading) {
-      return <Loading/>;
-    }
 
     const rows = [];
     if (filterInterface.length > 0) {

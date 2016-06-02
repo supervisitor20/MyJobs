@@ -24,6 +24,12 @@ import {
 import {
   replaceDataSetMenu,
 } from './dataset-menu-actions';
+import {
+  markPageLoadingAction,
+  markFieldsLoadingAction,
+  markOtherLoadingAction,
+} from '../common/loading-actions';
+
 
 import {errorAction, clearErrorsAction} from './error-actions';
 import {is400Error, errorData} from '../common/myjobs-api';
@@ -142,6 +148,7 @@ export function doReportDataSelect(history, intention, category, dataSet,
       newReportDataId = reportDataId;
     } else {
       // We need to refresh the menu. Get some menu items.
+      dispatch(markOtherLoadingAction('dataSetMenu', true));
       const menu = await api.getSetUpMenuChoices(
         intention || '',
         category || '',
@@ -166,15 +173,24 @@ export function doReportDataSelect(history, intention, category, dataSet,
         categoryValue: menu.selected_report_type,
         dataSetValue: menu.selected_data_type,
       }));
+      dispatch(markOtherLoadingAction('dataSetMenu', false));
       newReportDataId = menu.report_data_id;
     }
 
     // If we haven't found a reportDataId stop. (Should never happen but
     // it's possible.)
     if (!newReportDataId) {
+      dispatch(startNewReportAction({
+        defaultFilter: {},
+        help: {},
+        filters: [],
+        name: '',
+      }));
+      dispatch(markPageLoadingAction(false));
       return;
     }
 
+    dispatch(markPageLoadingAction(true));
     // Get the interface for this report.
     const filterInfo = await api.getFilters(newReportDataId);
 
@@ -219,6 +235,7 @@ export function doReportDataSelect(history, intention, category, dataSet,
           doGetHelp(newReportDataId, finalDefaultFilter, fieldName, ''));
       }
     }));
+    dispatch(markPageLoadingAction(false));
   };
 }
 

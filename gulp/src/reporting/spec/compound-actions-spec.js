@@ -35,6 +35,12 @@ import {
 } from '../compound-actions';
 
 import {
+  markPageLoadingAction,
+  markFieldsLoadingAction,
+  markOtherLoadingAction,
+} from '../../common/loading-actions';
+
+import {
   errorAction,
   clearErrorsAction,
 } from '../error-actions';
@@ -216,6 +222,9 @@ describe('doReportDataSelect', () => {
       dataSet: 'unaggregated',
       reportDataId: 7,
     });
+    expect(actions).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
+    ]);
   }));
 
   it('handles the correct page happy path', promiseTest(async () => {
@@ -246,6 +255,7 @@ describe('doReportDataSelect', () => {
     expect(history.pushState).not.toHaveBeenCalled();
     // leave functions out of the comparison.
     expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
       replaceDataSetMenu({
         intentionChoices: [{value: 'prm', display: 'PRM'}],
         categoryChoices: [
@@ -259,6 +269,8 @@ describe('doReportDataSelect', () => {
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
       }),
+      markOtherLoadingAction('dataSetMenu', false),
+      markPageLoadingAction(true),
       startNewReportAction({
         defaultFilter: {
           date_time: ["01/01/2014", "06/01/2016"],
@@ -275,6 +287,7 @@ describe('doReportDataSelect', () => {
         ],
         name: 'thereportname',
       }),
+      markPageLoadingAction(false),
     ]);
   }));
 
@@ -308,6 +321,7 @@ describe('doReportDataSelect', () => {
     expect(history.pushState).not.toHaveBeenCalled();
     // leave functions out of the comparison.
     expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
       replaceDataSetMenu({
         intentionChoices: [{value: 'prm', display: 'PRM'}],
         categoryChoices: [
@@ -321,6 +335,8 @@ describe('doReportDataSelect', () => {
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
       }),
+      markOtherLoadingAction('dataSetMenu', false),
+      markPageLoadingAction(true),
       startNewReportAction({
         defaultFilter: {
           date_time: ["01/01/2014", "06/01/2016"],
@@ -337,6 +353,7 @@ describe('doReportDataSelect', () => {
         ],
         name: 'thereportname',
       }),
+      markPageLoadingAction(false),
     ]);
   }));
 
@@ -377,6 +394,7 @@ describe('doReportDataSelect', () => {
     expect(api.getFilters).not.toHaveBeenCalled();
     expect(api.getDefaultReportName).not.toHaveBeenCalled();
     expect(actions).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
       replaceDataSetMenu({
         intentionChoices: [{value: 'prm', display: 'PRM'}],
         categoryChoices: [
@@ -390,6 +408,14 @@ describe('doReportDataSelect', () => {
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
       }),
+      markOtherLoadingAction('dataSetMenu', false),
+      startNewReportAction({
+        defaultFilter: {},
+        help: {},
+        filters: [],
+        name: '',
+      }),
+      markPageLoadingAction(false),
     ]);
   }));
 });
