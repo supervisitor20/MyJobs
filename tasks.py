@@ -55,22 +55,20 @@ sys.path.insert(0, os.path.join(BASE_DIR, '../'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 FEED_FILE_PREFIX = "dseo_feed_"
 PARTNER_LIBRARY_SOURCES = {
-    # http://www.dol-esa.gov/errd/index.html
+    # https://ofccp.dol-esa.gov/errd/index.html
     'Employment Referral Resource Directory': {
-        'url': 'http://www.dol-esa.gov/errd/getexcel.jsp?op=1',
-        'params': {
-            'sel': 'ALL',
-            'subreg': 'Download'
+        'url': 'https://ofccp.dol-esa.gov/errd/directoryexcel.jsp',
+        'headers': {
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cookie': 'JSESSIONID=0000Rd90S0bik8ueBPRLXaoKFvy:18sto47c3'
         }
     },
     #  http://www.dol-esa.gov/errd/Resources.503VEVRAA.html
     'Disability and Veterans Community Resources Directory': {
-        'url': 'http://www.dol-esa.gov/errd/resourcequery.jsp',
-        'params': {
-            'returnformat': 'excel',
-            'formname': 'downloadreg',
-            'reg': 'ALL',
-            'subreg': 'Download'
+        'url': 'https://ofccp.dol-esa.gov/errd/resourceexcel.jsp',
+        'headers': {
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cookie': 'JSESSIONID=0000Rd90S0bik8ueBPRLXaoKFvy:18sto47c3'
         }
     }
 }
@@ -214,7 +212,9 @@ def update_partner_library():
         print "Parsing data for PartnerLibrary information..."
 
         added = skipped = 0
-        for partner in get_library_partners(data['url'], data['params']):
+        for partner in get_library_partners(data['url'],
+                                            data.get('params'),
+                                            data.get('headers')):
             # the second join + split take care of extra internal whitespace
             fullname = " ".join(" ".join([partner.first_name,
                                           partner.middle_name,
@@ -1132,4 +1132,4 @@ def requeue_failures(hours=8):
 def clean_import_records(days=31):
     days_ago = datetime.now() - timedelta(days=days)
     ImportRecord.objects.filter(date__lt=days_ago).delete()
-    
+
