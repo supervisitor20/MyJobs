@@ -1340,7 +1340,8 @@ def process_email(request):
         created_records.append(record)
 
     logger.info("created_contacts: %(contacts)",
-                extra={"contacts": ", ".join(created_contacts)})
+                extra={"contacts": ", ".join([
+                    contact.email for contact in created_contacts])})
     logger.info("unmatched_contacts: %(contacts)",
                 extra={"contacts": ", ".join(unmatched_contacts)})
     send_contact_record_email_response(created_records, created_contacts,
