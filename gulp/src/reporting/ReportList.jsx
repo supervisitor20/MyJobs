@@ -7,6 +7,8 @@ import classnames from 'classnames';
 
 import {
   doRefreshReport,
+  doSetUpForClone,
+  doReportDataSelect,
 } from './compound-actions';
 
 
@@ -52,9 +54,9 @@ class ReportList extends Component {
   }
 
   handleCreateNewReport(e) {
-    const {history} = this.props;
+    const {history, dispatch} = this.props;
     e.preventDefault();
-    history.pushState(null, '/');
+    dispatch(doReportDataSelect(history));
   }
 
   handleSwitchVersions() {
@@ -63,20 +65,9 @@ class ReportList extends Component {
   }
 
   async handleCloneReport(report) {
-    const {history, reportFinder} = this.props;
-    const reportInfo = await reportFinder.getReportInfo(report.id);
-    const href = '/set-up-report';
-    const query = {
-      reportDataId: reportInfo.report_data_id,
-      intention: reportInfo.reporting_type,
-      category: reportInfo.report_type,
-      dataSet: reportInfo.data_type,
-    };
-    const newReportState = {
-      ...reportInfo,
-      name: 'Copy of ' + reportInfo.name,
-    };
-    history.pushState(newReportState, href, query);
+    const {dispatch, history} = this.props;
+    this.closeAllPopups();
+    dispatch(doSetUpForClone(history, report.order));
   }
 
   closeAllPopups() {
@@ -163,7 +154,6 @@ class ReportList extends Component {
 ReportList.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
-  reportFinder: PropTypes.object.isRequired,
   reports: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,

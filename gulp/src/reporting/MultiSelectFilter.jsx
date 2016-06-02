@@ -1,31 +1,26 @@
-import React, {PropTypes, Component} from 'react';
+import React, {PropTypes} from 'react';
 import MultiSelect from 'common/ui/MultiSelect';
 
-export default class MultiSelectFilter extends Component {
-  componentDidMount() {
-    const {getHints} = this.props;
-    getHints();
-  }
 
-  render() {
-    const {
-      selected,
-      available,
-      onAdd,
-      onRemove,
-    } = this.props;
+export default function MultiSelectFilter(props) {
+  const {
+    selected,
+    available,
+    onAdd,
+    onRemove,
+  } = props;
 
-    return (
-      <MultiSelect
-        availableHeader="Available"
-        selectedHeader="Selected"
-        selected={selected}
-        available={available}
-        onAdd={onAdd}
-        onRemove={onRemove}/>
-    );
-  }
+  return (
+    <MultiSelect
+      availableHeader="Available"
+      selectedHeader="Selected"
+      selected={selected}
+      available={available}
+      onAdd={onAdd}
+      onRemove={onRemove}/>
+  );
 }
+
 
 MultiSelectFilter.propTypes = {
   /**

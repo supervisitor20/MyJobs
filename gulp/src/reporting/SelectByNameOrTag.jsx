@@ -28,10 +28,6 @@ export class SelectByNameOrTag extends Component {
     };
   }
 
-  componentDidMount() {
-    this.getHints();
-  }
-
   async getHints() {
     const {getItemHints, getTagHints} = this.props;
     if (getItemHints) {

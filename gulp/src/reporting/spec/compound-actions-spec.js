@@ -1,3 +1,5 @@
+import {zip} from 'lodash-compat/array';
+import {map, filter} from 'lodash-compat/collection';
 import {
   setSimpleFilterAction,
   receiveHintsAction,
@@ -7,6 +9,10 @@ import {
 import reportStateReducer from '../report-state-reducer';
 
 import {
+  startNewReportAction,
+} from '../report-state-actions';
+
+import {
   startRunningReportAction,
   startRefreshingReportAction,
   removeRunningReportAction,
@@ -14,12 +20,18 @@ import {
 } from '../report-list-actions';
 
 import {
+  replaceDataSetMenu,
+} from '../dataset-menu-actions';
+
+import {
   doRunReport,
   doRefreshReport,
   doGetHelp,
   doInitialLoad,
+  doReportDataSelect,
   getFilterValuesOnly,
   doUpdateFilterWithDependencies,
+  doSetUpForClone,
 } from '../compound-actions';
 
 import {
@@ -34,11 +46,42 @@ import createReduxStore from '../../common/create-redux-store';
 import {combineReducers} from 'redux';
 
 
+// This improves messages on failed equality tests a bit.
+const customMatchers = {
+  toEqualActionList: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        const actualTypes = map(actual, r => r.type);
+        const expectedTypes = map(expected, r => r.type);
+
+        // Types match
+        expect(actualTypes).toEqual(expectedTypes);
+
+        // elements match
+        for(const [a, e] of zip(actual, expected)) {
+          expect(a).toEqual(e);
+        };
+
+        return {pass: true};
+      },
+    };
+  },
+}
+
 class FakeApi {
+  getSetUpMenuChoices() {}
   runReport() {}
   refreshReport() {}
   listReports() {}
   getHelp() {}
+  getFilters() {}
+  getDefaultReportName() {}
+  getReportInfo() {}
+}
+
+
+class FakeHistory {
+  pushState() {}
 }
 
 
@@ -70,6 +113,283 @@ describe('doInitialLoad', () => {
         {id: 3, name: 'c', report_type: 3},
         {id: 4, name: 'd', report_type: 4},
       ]),
+    ]);
+  }));
+});
+
+
+describe('doSetUpForClone', () => {
+  let actions;
+  let api;
+  let history;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+    history = new FakeHistory();
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {};
+  }
+
+  it('handles the happy path', promiseTest(async () => {
+    spyOn(api, 'getReportInfo').and.returnValue(Promise.resolve({
+      report_data_id: 7,
+      reporting_type: 'prm',
+      report_type: 'contacts',
+      data_type: 'unaggregated',
+      name: 'thereportname',
+      filter: {
+        'locations': {city: 'Indy', state: 'IN'},
+      }
+
+    }));
+    spyOn(history, 'pushState');
+
+    await doSetUpForClone(history, 12)(dispatch, getState, {api});
+
+    expect(api.getReportInfo).toHaveBeenCalledWith(12);
+    expect(history.pushState).toHaveBeenCalledWith({
+      name: 'Copy of thereportname',
+      currentFilter: {
+        'locations': {city: 'Indy', state: 'IN'},
+      },
+    }, '/set-up-report', {
+      intention: 'prm',
+      category: 'contacts',
+      dataSet: 'unaggregated',
+      reportDataId: 7,
+    });
+  }));
+});
+
+describe('doReportDataSelect', () => {
+  let actions;
+  let api;
+  let history;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+    history = new FakeHistory();
+    jasmine.addMatchers(customMatchers);
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {dataSetMenu: {}};
+  }
+
+  function spyOnSetUpMenuChoicesSuccess(reportDataId) {
+    spyOn(api, 'getSetUpMenuChoices').and.returnValue(Promise.resolve({
+      report_data_id: reportDataId,
+      reporting_types: [{value: 'prm', display: 'PRM'}],
+      report_types: [
+        {value: 'partner', display: 'Partner'},
+        {value: 'contact', display: 'Contacts'},
+      ],
+      data_types: [
+        {value: 'unaggregated', display: 'Unaggregated'},
+      ],
+      selected_reporting_type: 'prm',
+      selected_report_type: 'contact',
+      selected_data_type: 'unaggregated',
+    }));
+  }
+
+  it('handles the initial happy path', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(7);
+    spyOn(history, 'pushState');
+    await doReportDataSelect(history)(dispatch, getState, {api});
+    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith('', '', '');
+    expect(history.pushState).toHaveBeenCalledWith(null, '/set-up-report', {
+      intention: 'prm',
+      category: 'contact',
+      dataSet: 'unaggregated',
+      reportDataId: 7,
+    });
+  }));
+
+  it('handles the correct page happy path', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(7);
+    spyOn(history, 'pushState');
+    spyOn(api, 'getFilters').and.returnValue(Promise.resolve({
+      default_filter: {
+        date_time: ["01/01/2014", "06/01/2016"],
+      },
+      help: {
+        tags: true,
+      },
+      filters: [
+        {
+          filter: "tags",
+          interface_type: "tags",
+          display: "Tags",
+        },
+      ]
+    }));
+    spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({
+      name: 'thereportname',
+    }));
+    await doReportDataSelect(history, 'prm', 'contact', 'unaggregated', 7)
+      (dispatch, getState, {api});
+    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith(
+      'prm', 'contact', 'unaggregated');
+    expect(history.pushState).not.toHaveBeenCalled();
+    // leave functions out of the comparison.
+    expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+      }),
+      startNewReportAction({
+        defaultFilter: {
+          date_time: ["01/01/2014", "06/01/2016"],
+        },
+        help: {
+          tags: true,
+        },
+        filters: [
+          {
+            filter: "tags",
+            interface_type: "tags",
+            display: "Tags",
+          },
+        ],
+        name: 'thereportname',
+      }),
+    ]);
+  }));
+
+  it('uses the given report filter', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(7);
+    spyOn(history, 'pushState');
+    spyOn(api, 'getFilters').and.returnValue(Promise.resolve({
+      default_filter: {},
+      help: {
+        tags: true,
+      },
+      filters: [
+        {
+          filter: "tags",
+          interface_type: "tags",
+          display: "Tags",
+        },
+      ]
+    }));
+    spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({
+      name: 'thereportname',
+    }));
+    const givenFilter = {
+      date_time: ["01/01/2014", "06/01/2016"],
+    };
+    await doReportDataSelect(
+      history, 'prm', 'contact', 'unaggregated', 7, givenFilter)
+      (dispatch, getState, {api});
+    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith(
+      'prm', 'contact', 'unaggregated');
+    expect(history.pushState).not.toHaveBeenCalled();
+    // leave functions out of the comparison.
+    expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+      }),
+      startNewReportAction({
+        defaultFilter: {
+          date_time: ["01/01/2014", "06/01/2016"],
+        },
+        help: {
+          tags: true,
+        },
+        filters: [
+          {
+            filter: "tags",
+            interface_type: "tags",
+            display: "Tags",
+          },
+        ],
+        name: 'thereportname',
+      }),
+    ]);
+  }));
+
+  it('skips calling setup menu if the choices match', promiseTest(async () => {
+    function getState() {
+      return {
+        dataSetMenu: {
+          intentionValue: 'prm',
+          categoryValue: 'contact',
+          dataSetValue: 'unaggregated',
+          reportDataId: 7,
+        },
+      };
+    }
+
+    spyOn(history, 'pushState');
+    spyOnSetUpMenuChoicesSuccess(null);
+    spyOn(api, 'getFilters').and.returnValue(Promise.resolve({}));
+    spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({}));
+
+    await doReportDataSelect(history, 'prm', 'contact', 'unaggregated', 7)
+      (dispatch, getState, {api});
+
+    expect(history.pushState).not.toHaveBeenCalled();
+    expect(api.getSetUpMenuChoices).not.toHaveBeenCalled();
+    expect(api.getFilters).toHaveBeenCalled();
+    expect(api.getDefaultReportName).toHaveBeenCalled();
+
+  }));
+
+  it('gives up when the menu hits a dead end', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(null);
+    spyOn(history, 'pushState');
+    spyOn(api, 'getFilters');
+    spyOn(api, 'getDefaultReportName');
+    await doReportDataSelect(history)(dispatch, getState, {api});
+    expect(history.pushState).not.toHaveBeenCalled();
+    expect(api.getFilters).not.toHaveBeenCalled();
+    expect(api.getDefaultReportName).not.toHaveBeenCalled();
+    expect(actions).toEqualActionList([
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+      }),
     ]);
   }));
 });

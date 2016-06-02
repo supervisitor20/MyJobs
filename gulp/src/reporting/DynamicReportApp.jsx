@@ -1,7 +1,10 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import ReportList from './ReportList';
+import SetUpReport from './SetUpReport';
 import {highlightReportAction} from './report-list-actions';
+import {doReportDataSelect} from './compound-actions';
+
 
 class DynamicReportApp extends Component {
   componentDidMount() {
@@ -14,14 +17,29 @@ class DynamicReportApp extends Component {
     this.unsubscribeToHistory();
   }
 
-  handleNewLocation(state, loc) {
-    const {dispatch} = this.props;
+  async handleNewLocation(_, loc) {
+    const {dispatch, history} = this.props;
+
     dispatch(highlightReportAction(Number.parseInt(loc.params.reportId, 10)));
+
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === SetUpReport) {
+      const {
+        intention,
+        category,
+        dataSet,
+        reportDataId: reportDataIdString,
+      } = loc.location.query || {};
+      const reportDataId = Number.parseInt(reportDataIdString, 10);
+      const {currentFilter, name} = loc.location.state || {};
+      await dispatch(
+        doReportDataSelect(history, intention, category, dataSet, reportDataId,
+          currentFilter, name));
+    }
   }
 
   render() {
-    const {reportId} = this.props.params;
-    const {history, reportFinder} = this.props;
+    const {history} = this.props;
 
     return (
       <div>

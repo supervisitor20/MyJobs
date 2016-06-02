@@ -3,7 +3,7 @@ import {groupBy} from 'lodash-compat/collection';
 import {assign} from 'lodash-compat/object';
 
 
-const defaultState = {currentErrors: {}}
+const defaultState = {currentErrors: {}};
 
 
 export default handleActions({
@@ -19,7 +19,7 @@ export default handleActions({
     };
   },
 
-  'CLEAR_ERRORS': (state, action) => {
+  'CLEAR_ERRORS': () => {
     return defaultState;
   },
 }, defaultState);

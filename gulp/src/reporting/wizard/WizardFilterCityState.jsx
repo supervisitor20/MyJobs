@@ -5,12 +5,6 @@ import {getDisplayForValue} from 'common/array';
 
 
 export class WizardFilterCityState extends Component {
-  componentDidMount() {
-    const {getHints} = this.props;
-    // Prepopulate state select.
-    getHints('state');
-  }
-
   updateField(field, value) {
     const {updateFilter, values} = this.props;
 

@@ -6,7 +6,6 @@ import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
 import {debounce} from 'lodash-compat/function';
 import {
-  startNewReportAction,
   setSimpleFilterAction,
   addToOrFilterAction,
   removeFromOrFilterAction,
@@ -31,42 +30,19 @@ import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
-let SetUpReport;
-
-class RawSetUpReport extends Component {
+class SetUpReport extends Component {
   constructor() {
     super();
     this.state = {
-      loading: true,
-      reportingTypes: [],
-      reportTypes: [],
-      dataTypes: [],
+      loading: false,
     };
-  }
-
-  componentDidMount() {
-    const {reportFinder, history} = this.props;
-    this.mounted = true;
-    this.unsubscribeToMenuChoices = reportFinder.subscribeToMenuChoices(
-        (...choices) => this.onMenuChanged(...choices));
-    this.historyUnlisten = (
-      history.listen((something, loc) => this.handleHistory(something, loc)));
-    // Further hackery. Wait for things to settle out so we don't pound
-    // the help api and ultimately confuse ourselves. Otherwise two pane select
-    // triggers this a lot when mass select/deselects happen.
-    this.noteFilterChanges = debounce(
-      () => reportFinder.noteFilterChanges(),
+    this.dispatchFilterAction = debounce(
+      action => this.rawDispatchFilterAction(action),
       300,
       {
         leading: false,
         trailing: true,
       });
-  }
-
-  componentWillUnmount() {
-    this.historyUnlisten();
-    this.unsubscribeToMenuChoices();
-    this.mounted = false;
   }
 
   onIntentionChange(intention) {
@@ -87,41 +63,6 @@ class RawSetUpReport extends Component {
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
-  onMenuChanged(reportingTypes, reportTypes, dataTypes,
-      reportConfig) {
-    const {dispatch, reportName} = this.props;
-    dispatch(startNewReportAction({
-      defaultFilter: reportConfig.currentFilter,
-      help: reportConfig.help,
-      filters: reportConfig.filters,
-      name: reportName,
-    }));
-
-    this.setState({
-      reportingTypes,
-      reportTypes,
-      dataTypes,
-      reportConfig,
-    });
-  }
-
-  onFilterUpdate(filter) {
-    this.setState({filter});
-    this.noteFilterChanges();
-  }
-
-  onErrorsChanged(errors) {
-    const reportNameError = errors.name;
-    this.setState({reportNameError});
-  }
-
-  handleHistory(something, loc) {
-    const lastComponent = loc.components[loc.components.length - 1];
-    if (lastComponent === SetUpReport) {
-      this.loadData();
-    }
-  }
-
   async handleRunReport(e) {
     e.preventDefault();
 
@@ -134,73 +75,12 @@ class RawSetUpReport extends Component {
     scrollUp();
     await dispatch(doRunReport(reportDataId, reportName, currentFilter));
     const {reportNameErrors} = this.props;
-    console.log('handleRunReport', reportNameErrors, this.props);
     if (!reportNameErrors) {
-      console.log('handleRunReport PUSH');
       this.props.history.pushState(null, '/');
     }
   }
 
-  async loadData() {
-    const {
-      intention: reportingType,
-      category: reportType,
-      dataSet: dataType,
-    } = this.props.location.query;
-    const locationState = (this.props.location || {}).state || {};
-    const {filter, name} = locationState;
-
-    await this.buildReportConfig(
-      reportingType, reportType, dataType, name, filter);
-  }
-
-  async buildReportConfig(reportingType, reportType, dataType, overrideName,
-      newFilter) {
-    const {
-      reportDataId: reportDataIdRaw,
-    } = this.props.location.query;
-    const {reportFinder, reportName, dispatch} = this.props;
-    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
-
-    let newName;
-    if (overrideName) {
-      newName = overrideName;
-    } else {
-      newName = reportName;
-    }
-
-    this.setState({loading: true});
-    await reportFinder.buildReportConfiguration(
-      reportingType,
-      reportType,
-      dataType,
-      reportDataId,
-      newFilter,
-      newName,
-      n => dispatch(setReportNameAction(n)),
-      f => this.onFilterUpdate(f),
-      errors => this.onErrorsChanged(errors),
-      (...args) => this.handleNewReportDataId(...args));
-
-    if (this.mounted) {
-      this.setState({loading: false});
-    }
-  }
-
-  handleNewReportDataId(newReportDataId, reportingType, reportType, dataType) {
-    const {history} = this.props;
-
-    const href = '/set-up-report';
-    const query = {
-      reportDataId: newReportDataId,
-      intention: reportingType,
-      category: reportType,
-      dataSet: dataType,
-    };
-    history.pushState(null, href, query);
-  }
-
-  dispatchFilterAction(action) {
+  rawDispatchFilterAction(action) {
     const {dispatch, filterInterface} = this.props;
     const {reportDataId} = this.props.location.query;
     dispatch(doUpdateFilterWithDependencies(
@@ -236,16 +116,10 @@ class RawSetUpReport extends Component {
       hints,
     } = this.props;
     const {
-      intention: reportingType,
-      category: reportType,
-      dataSet: dataType,
       reportDataId,
     } = this.props.location.query;
     const {
       loading,
-      reportingTypes,
-      reportTypes,
-      dataTypes,
     } = this.state;
 
     if (loading) {
@@ -369,16 +243,10 @@ class RawSetUpReport extends Component {
     return (
       <div>
         <DataTypeSelectBar
-          intentionChoices={reportingTypes}
-          intentionValue={reportingType || ''}
           onIntentionChange={v => this.onIntentionChange(v)}
 
-          categoryChoices={reportTypes}
-          categoryValue={reportType || ''}
           onCategoryChange={v => this.onCategoryChange(v)}
 
-          dataSetChoices={dataTypes}
-          dataSetValue={dataType || ''}
           onDataSetChange={v => this.onDataSetChange(v)}
           />
         {rows}
@@ -397,7 +265,7 @@ class RawSetUpReport extends Component {
   }
 }
 
-RawSetUpReport.propTypes = {
+SetUpReport.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   reportFinder: PropTypes.object.isRequired,
@@ -414,7 +282,7 @@ RawSetUpReport.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       name: PropTypes.string.isRequired,
-      filter: PropTypes.object.isRequired,
+      filter: PropTypes.object,
     }),
     query: PropTypes.shape({
       intention: PropTypes.string,
@@ -425,11 +293,10 @@ RawSetUpReport.propTypes = {
   }).isRequired,
 };
 
-SetUpReport = connect(s => ({
+export default connect(s => ({
   currentFilter: s.reportState.currentFilter,
   filterInterface: s.reportState.filterInterface,
   reportName: s.reportState.reportName,
   hints: s.reportState.hints,
   reportNameErrors: s.errors.currentErrors.name,
-}))(RawSetUpReport);
-export default SetUpReport;
+}))(SetUpReport);

@@ -1,30 +1,16 @@
-import React, {PropTypes, Component} from 'react';
+import React, {PropTypes} from 'react';
 import TagAnd from 'common/ui/tags/TagAnd';
 
-export default class TagAndFilter extends Component {
-  constructor() {
-    super();
-    this.state = {
-      available: [],
-    };
-  }
+export default function TagAndFilter(props) {
+  const {available, selected, onChoose, onRemove} = props;
 
-  componentDidMount() {
-    const {getHints} = this.props;
-    getHints();
-  }
-
-  render() {
-    const {available, selected, onChoose, onRemove} = this.props;
-
-    return (
-      <TagAnd
-        selected={selected}
-        available={available}
-        onChoose={onChoose}
-        onRemove={onRemove} />
-    );
-  }
+  return (
+    <TagAnd
+      selected={selected}
+      available={available}
+      onChoose={onChoose}
+      onRemove={onRemove} />
+  );
 }
 
 TagAndFilter.propTypes = {
