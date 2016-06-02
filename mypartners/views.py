@@ -3,6 +3,7 @@ from email.parser import HeaderParser
 from email.utils import getaddresses
 from itertools import chain
 import json
+import logging
 from lxml import etree
 import pytz
 import re
@@ -28,6 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
+import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
@@ -52,6 +54,8 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 new_partner_from_library,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
+
+logger = logging.getLogger(__name__)
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
@@ -1156,6 +1160,8 @@ def process_email(request):
 
     """
     if request.method != 'POST':
+        logger.warning("process_email: received %(method) request, returning "
+                       "early.", extra={"method": request.method})
         return HttpResponse(status=200)
 
     admin_email = request.REQUEST.get('from')
@@ -1164,6 +1170,8 @@ def process_email(request):
     subject = request.REQUEST.get('subject')
     email_text = request.REQUEST.get('text')
     if key != settings.EMAIL_KEY:
+        logger.warning("process_email: invalid email key provided, returning "
+                       "early.")
         return HttpResponse(status=200)
     if headers:
         parser = HeaderParser()
@@ -1179,6 +1187,8 @@ def process_email(request):
 
     to = request.REQUEST.get('to', '')
     cc = request.REQUEST.get('cc', '')
+    newrelic.agent.add_custom_parameter("to", to)
+    newrelic.agent.add_custom_parameter("cc", cc)
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
     admin_email = getaddresses([admin_email])[0][1]
     contact_emails = filter(None,
@@ -1214,6 +1224,13 @@ def process_email(request):
 
     admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
     if admin_user is None:
+        logger.warning("The email address %(email) could not be associated "
+                       "with a verified user.", extra={"email": admin_email})
+        logger.warning("POST data: %(post)",
+                       extra={"post": json.dumps(request.POST)})
+        newrelic.agent.add_custom_parameter("admin_email", admin_email)
+        newrelic.agent.add_custom_parameter("contact_emails",
+                                            ", ".join(contact_emails))
         return HttpResponse(status=200)
 
     # determine if the user is associated with more thanone company
@@ -1226,6 +1243,14 @@ def process_email(request):
                 "specific partner on a specific company with 100% certainty. " \
                 "You will need to login to My.jobs and go to " \
                 "https://secure.my.jobs/prm to create your record manually."
+        logger.warning("User with email address %(user) is associated with "
+                       "multiple companies.", extra={"user": admin_user})
+        logger.warning("POST data: %(post)",
+                       extra={"post": json.dumps(request.POST)})
+        newrelic.agent.add_custom_parameter("admin_user", admin_user)
+        newrelic.agent.add_custom_parameter("admin_email", admin_email)
+        newrelic.agent.add_custom_parameter("contact_emails",
+                                            ", ".join(contact_emails))
         send_contact_record_email_response([], [], [], contact_emails,
                                            error, admin_email)
         return HttpResponse(status=200)
@@ -1314,6 +1339,10 @@ def process_email(request):
 
         created_records.append(record)
 
+    logger.info("created_contacts: %(contacts)",
+                extra={"contacts": ", ".join(created_contacts)})
+    logger.info("unmatched_contacts: %(contacts)",
+                extra={"contacts": ", ".join(unmatched_contacts)})
     send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
                                        None, admin_email)
