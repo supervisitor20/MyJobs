@@ -1159,6 +1159,7 @@ def process_email(request):
     Creates a contact record from an email received via POST.
 
     """
+    PRM_EMAIL = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
         logger.warning("process_email: received %(method) request, returning "
                        "early.", extra={"method": request.method})
@@ -1195,8 +1196,8 @@ def process_email(request):
                             [email[1] for email in recipient_emails_and_names])
 
     if contact_emails == [] or (len(contact_emails) == 1 and
-                                contact_emails[0].lower() == 'prm@my.jobs'):
-        # If prm@my.jobs is the only contact, assume it's a forward.
+                                contact_emails[0].lower() == PRM_EMAIL):
+        # If PRM_EMAIL is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
             recipient_emails_and_names = fwd_headers[0]['recipients']
@@ -1212,7 +1213,7 @@ def process_email(request):
 
     validated_contacts = []
     for element in contact_emails:
-        if not element.lower() == 'prm@my.jobs' and validate_email(element):
+        if not element.lower() == PRM_EMAIL and validate_email(element):
             validated_contacts.append(element)
 
     contact_emails = validated_contacts

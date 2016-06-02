@@ -108,3 +108,6 @@ EMAIL_HOST_PASSWORD = QC_EMAIL_HOST_PASSWORD
 CELERY_ALWAYS_EAGER = True
 
 LOGGING['loggers']['mypartners.views']['level'] = 'INFO'
+
+# The email host used to parse communication records
+PRM_EMAIL_HOST = 'qc.my.jobs'
