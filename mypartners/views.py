@@ -7,6 +7,7 @@ import logging
 from lxml import etree
 import pytz
 import re
+import sys
 import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
