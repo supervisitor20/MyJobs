@@ -688,13 +688,11 @@ describe('doUpdateFilterWithDependencies end to end', () => {
       defaultState,
       {api, idGen});
 
-    await doUpdateFilterWithDependencies(
-      setSimpleFilterAction('locations', {city: 'Indy2', state: 'IN'}),
-      defaultState.reportState.filterInterface,
-      0)(
-      (...args) => store.dispatch(...args),
-      (...args) => store.getState(...args),
-      {api, idGen});
+    store.dispatch(
+      setSimpleFilterAction('locations', {city: 'Indy2', state: 'IN'}));
+    await store.dispatch(
+      doUpdateFilterWithDependencies(
+        defaultState.reportState.filterInterface, 0));
 
     newReportState = store.getState().reportState;
     oldReportState = defaultState.reportState;

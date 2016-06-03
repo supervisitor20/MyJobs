@@ -60,8 +60,8 @@ class SetUpReport extends Component {
 
   dispatchFilterAction(action) {
     const {dispatch, filterInterface, reportDataId} = this.props;
-    dispatch(doUpdateFilterWithDependencies(
-        action, filterInterface, reportDataId));
+    dispatch(action)
+    dispatch(doUpdateFilterWithDependencies(filterInterface, reportDataId));
   }
 
   renderRow(displayName, key, content, buttonRow, textCenter) {

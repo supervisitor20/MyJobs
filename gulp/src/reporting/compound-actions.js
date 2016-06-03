@@ -307,16 +307,12 @@ export function doRefreshReport(reportId) {
  * action: some filter updating action
  * filterInterface: interface used at filter time
  */
-export function doUpdateFilterWithDependencies(
-  action, filterInterface, reportDataId) {
+export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
   return async (dispatch, getState) => {
-    // first do the change
-    dispatch(action);
 
     function latestFilter() {
       return getState().reportState.currentFilter;
     }
-    // get the filter that resulted from the change
 
     // FUTURE: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {
