@@ -416,6 +416,10 @@ LOGGING = {
             'level': 'ERROR',
             'handlers': ['file']
         },
+        'myjobs.views': {
+            'level': 'ERROR',
+            'handlers': ['logfile']
+        },
         'mypartners.views': {
             'level': 'ERROR',
             'handlers': ['logfile']
