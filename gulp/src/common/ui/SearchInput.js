@@ -237,12 +237,14 @@ SearchInput.propTypes = {
    * Callback: the user has changed the input. Need hints.
    *
    * input: string with user input so far
-   *
-   * Return a promise of hints in this form:
-   * [ {key: "key", display: "Display Value"} ]
    */
   getHints: React.PropTypes.func.isRequired,
 
+  /**
+   * What to show in the dropdown.
+   *
+   * [ {value: some id, display: "Display Value"} ]
+   */
   hints: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.any.isRequired,
