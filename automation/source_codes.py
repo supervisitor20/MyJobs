@@ -1,5 +1,6 @@
 import unicodecsv
 import xlrd
+from xlrd.biffh import XLRDError
 
 from django.db.models import Q
 
@@ -190,6 +191,9 @@ def add_destination_manipulations(buids, codes):
     :stats: Dictionary describing the results of this method call; contains the
         number of added and modified manipulations and the total count
     """
+    # This differs from how add_source_codes handles things. I would like to
+    # eventually refactor that method to do something similar but that's out
+    # of scope for the current task. - TP
     code_dict = {(code['view_source'], code['action_type']): code
                  for code in codes}
     if not isinstance(buids, (list, set)):
@@ -198,11 +202,17 @@ def add_destination_manipulations(buids, codes):
 
     vs_and_action_type = code_dict.keys()
 
+    # Build up the list of possible matching manipulations. This will be used
+    # to determine when to update an entry and when to create a new one.
     existing_options = Q()
     for item in vs_and_action_type:
         for buid in buids:
             existing_options |= Q(buid=buid, view_source=item[0],
                                   action_type=item[1])
+
+    # At the end of this method, we should have this set of entries in the
+    # DestinationManipulation table. This set, in conjunction with `existing`,
+    # will be used to determine if we're adding or updating an entry.
     all_manipulations = set((buid, item[0], item[1]) for buid in buids
                             for item in vs_and_action_type)
     existing = set(DestinationManipulation.objects.filter(
@@ -282,6 +292,8 @@ def process_csv(location, buids, add_codes=True):
     # names. We want the actual columns.
     expected_header = [u'BUID', u'View Source', u'Action Type', u'Action',
                        u'Value 1', u'Value 2']
+    # This file should have come from an export. If the headers are off,
+    # other elements may be incorrect. Fail early.
     assert header == expected_header, ('Header mismatch: csv has "%s", '
                                        'expected "%s"') % (
         ",".join(set(header).difference(expected_header)),
@@ -304,5 +316,8 @@ def process_file(location, buids, source_name, view_source_column=2,
         return process_spreadsheet(location, buids, source_name,
                                    view_source_column, source_code_column,
                                    add_codes)
-    except:
+    except XLRDError:
+        # If we had a filename, this would be easy. As we may have a filename
+        # or a file handle, it's easier to just try as Excel and then try as
+        # csv if that fails.
         return process_csv(location, buids, add_codes)

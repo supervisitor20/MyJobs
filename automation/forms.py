@@ -91,6 +91,8 @@ class SourceCodeFileUpload(forms.Form):
             if isinstance(self.cleaned_data['source_codes'][0], dict):
                 method = add_destination_manipulations
         except IndexError:
+            # There are no entries in this file. Send it anyway - the
+            # method we're sending it to knows what to do.
             pass
         return method(self.cleaned_data['buids'],
                       self.cleaned_data['source_codes'])
