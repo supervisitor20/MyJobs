@@ -12,7 +12,7 @@ export class SearchInput extends Component {
     this.state = this.getDefaultState(value);
   }
 
-  onInputChange(event) {
+  handleInputChange(event) {
     const value = event.target.value;
     this.setState({value});
     if (value) {
@@ -22,7 +22,7 @@ export class SearchInput extends Component {
     }
   }
 
-  onInputBlur() {
+  handleInputBlur() {
     const {value, mouseInMenu} = this.state;
     // When the user clicks a menu item, this blur event fires before the click
     // event in the dropdown menu. Our usual handling of blur makes handling the
@@ -31,24 +31,24 @@ export class SearchInput extends Component {
     if (mouseInMenu) {
       this.focus();
     } else {
-      const {onBlur, callSelectWhenEmpty, onSelect: selectCb} = this.props;
+      const {onBlur, callSelectWhenEmpty, onSelect} = this.props;
       if (callSelectWhenEmpty && value === '') {
-        selectCb('');
+        onSelect('');
       }
       onBlur();
       this.clear(value);
     }
   }
 
-  onMouseInMenu(value) {
+  handleMouseInMenu(value) {
     this.setState({mouseInMenu: value});
   }
 
-  onSelect(e, index) {
+  handleSelect(e, index) {
     e.preventDefault();
-    const {hints, onSelect: selectCb} = this.props;
+    const {hints, onSelect} = this.props;
     const selected = hints[index];
-    selectCb(selected);
+    onSelect(selected);
     const {emptyOnSelect} = this.props;
     if (emptyOnSelect) {
       this.clear('');
@@ -57,7 +57,7 @@ export class SearchInput extends Component {
     }
   }
 
-  onInputKeyDown(event) {
+  handleInputKeyDown(event) {
     const {hints} = this.props;
     const {keySelectedIndex, value} = this.state;
     if (hints && hints.length) {
@@ -81,7 +81,7 @@ export class SearchInput extends Component {
       } else if (event.key === 'Enter') {
         killEvent = true;
         if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
-          this.onSelect(event, keySelectedIndex);
+          this.handleSelect(event, keySelectedIndex);
           return;
         }
       } else if (event.key === 'Escape') {
@@ -150,9 +150,9 @@ export class SearchInput extends Component {
           className={theme.input}
           ref="input"
           placeholder={placeholder}
-          onChange={e => this.onInputChange(e)}
-          onBlur={e => this.onInputBlur(e)}
-          onKeyDown={e => this.onInputKeyDown(e)}
+          onChange={e => this.handleInputChange(e)}
+          onBlur={e => this.handleInputBlur(e)}
+          onKeyDown={e => this.handleInputKeyDown(e)}
           value={value}
           type="search"
           aria-autocomplete="list"
@@ -164,8 +164,8 @@ export class SearchInput extends Component {
           <ul
             id={this.suggestId()}
             className={theme.suggestions}
-            onMouseEnter={() => this.onMouseInMenu(true)}
-            onMouseLeave={() => this.onMouseInMenu(false)}>
+            onMouseEnter={() => this.handleMouseInMenu(true)}
+            onMouseLeave={() => this.handleMouseInMenu(false)}>
             {hints.map((hint, index) =>
               <li
                 id={this.itemId(index)}
@@ -177,7 +177,7 @@ export class SearchInput extends Component {
                   })}>
                 <a
                   href="#"
-                  onClick={e => this.onSelect(e, index)}>
+                  onClick={e => this.handleSelect(e, index)}>
                   {hint.display}
                 </a>
               </li>
