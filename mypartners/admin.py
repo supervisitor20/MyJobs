@@ -3,7 +3,8 @@ from django.contrib import admin
 from django_extensions.admin import ForeignKeyAutocompleteAdmin
 
 from mypartners.models import (Partner, Contact, CommonEmailDomain,
-                               OutreachEmailDomain, OutreachEmailAddress)
+                               OutreachEmailDomain, OutreachEmailAddress,
+                               PartnerLibrarySource)
 
 
 def format_company_name(company):
@@ -43,3 +44,4 @@ admin.site.register(CommonEmailDomain)
 # TODO: Remove this once NUO Module is live
 admin.site.register(OutreachEmailAddress)
 admin.site.register(OutreachEmailDomain, OutreachEmailDomainAdmin)
+admin.site.register(PartnerLibrarySource)

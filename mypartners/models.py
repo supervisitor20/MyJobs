@@ -442,6 +442,17 @@ def save_partner(sender, instance, **kwargs):
         instance.approval_status = Status.objects.create()
 
 
+class PartnerLibrarySource(models.Model):
+    name = models.CharField(max_length=255)
+    search_url = models.URLField(blank=True)
+    download_url = models.URLField(blank=True)
+    # json serialized dictionary of parameters
+    params = models.TextField(blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+
 class PartnerLibrary(models.Model):
     """
     Partners curated from the Office of Federal Contract Compliance
