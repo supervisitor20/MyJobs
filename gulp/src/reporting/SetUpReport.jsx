@@ -45,6 +45,11 @@ class SetUpReport extends Component {
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
+  getHints(field, value) {
+    const {dispatch, reportDataId, currentFilter} = this.props;
+    dispatch(doGetHelp(reportDataId, currentFilter, field, value));
+  }
+
   async handleRunReport(e) {
     e.preventDefault();
 
@@ -111,10 +116,6 @@ class SetUpReport extends Component {
         </FieldWrapper>
       );
       forEach(filterInterface, col => {
-        function getHints(field, value) {
-          dispatch(doGetHelp(reportDataId, currentFilter, field, value));
-        }
-
         switch (col.interface_type) {
         case 'date_range':
           const begin = (currentFilter[col.filter] || [])[0];
@@ -142,7 +143,7 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={v => getHints(col.filter, v)}
+                getHints={v => this.getHints(col.filter, v)}
                 hints={hints[col.filter]}/>
             </FieldWrapper>
           );
@@ -157,7 +158,7 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={(f, v) => getHints(f, v)}
+                getHints={(f, v) => this.getHints(f, v)}
                 hints={hints}/>
             </FieldWrapper>
           );
@@ -169,7 +170,7 @@ class SetUpReport extends Component {
               label={col.display}>
 
               <TagAndFilter
-                getHints={v => getHints(col.filter, v)}
+                getHints={v => this.getHints(col.filter, v)}
                 available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
@@ -189,7 +190,7 @@ class SetUpReport extends Component {
               label={col.display}>
 
               <MultiSelectFilter
-                getHints={v => getHints(col.filter, v)}
+                getHints={v => this.getHints(col.filter, v)}
                 available={hints[col.filter] || []}
                 selected={currentFilter[col.filter] || []}
                 onAdd = {vs =>
