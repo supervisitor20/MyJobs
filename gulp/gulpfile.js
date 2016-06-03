@@ -53,7 +53,7 @@ gulp.task('bundle', function(callback) {
 gulp.task('test', function() {
   var testConfig = require('./jasmine.json');
   return gulp.src(['./src/**/spec/*.js'])
-    .pipe(jasmine({config: testConfig}));
+    .pipe(jasmine(testConfig));
 });
 
 // Build everything. Good way to start after a git checkout.

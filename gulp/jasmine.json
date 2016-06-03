@@ -1,8 +1,10 @@
 {
-  "includeStackTrace": true,
+  "includeStackTrace": false,
   "spec_dir": "src",
   "spec_files": [
     "**/spec/*.js"
   ],
-  "random": false
+  "config": {
+    "random": false
+  }
 }
