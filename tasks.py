@@ -54,26 +54,6 @@ sys.path.insert(0, os.path.join(BASE_DIR))
 sys.path.insert(0, os.path.join(BASE_DIR, '../'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 FEED_FILE_PREFIX = "dseo_feed_"
-PARTNER_LIBRARY_SOURCES = {
-    # http://www.dol-esa.gov/errd/index.html
-    'Employment Referral Resource Directory': {
-        'url': 'http://www.dol-esa.gov/errd/getexcel.jsp?op=1',
-        'params': {
-            'sel': 'ALL',
-            'subreg': 'Download'
-        }
-    },
-    #  http://www.dol-esa.gov/errd/Resources.503VEVRAA.html
-    'Disability and Veterans Community Resources Directory': {
-        'url': 'http://www.dol-esa.gov/errd/resourcequery.jsp',
-        'params': {
-            'returnformat': 'excel',
-            'formname': 'downloadreg',
-            'reg': 'ALL',
-            'subreg': 'Download'
-        }
-    }
-}
 
 @task(name='tasks.create_jira_ticket')
 def create_jira_ticket(summary, description, **kwargs):
@@ -205,6 +185,38 @@ def send_search_digest(self, search):
             raise send_search_digest.retry(arg=[search], exc=e)
 
 
+PARTNER_LIBRARY_SOURCES = {
+    'Employment Referral Resource Directory': {
+        'search_url': 'https://ofccp.dol-esa.gov/errd/directory.jsp',
+        'download_url': 'https://ofccp.dol-esa.gov/errd/directoryexcel.jsp',
+        'params': {
+            'reg': 'ALL',
+            'stat': 'None',
+            'name': '',
+            'city': '',
+            'sht': 'None',
+            'lst': 'None',
+            'sortorder': 'asc'
+        }
+    },
+    'Disability and Veterans Community Resources Directory': {
+        'search_url': 'https://ofccp.dol-esa.gov/errd/resourcequery.jsp',
+        'download_url': 'https://ofccp.dol-esa.gov/errd/resourceexcel.jsp',
+        'params': {
+            'returnformat': 'html',
+            'formname': 'searchfrm',
+            'reg': 'ALL',
+            'stat': 'None',
+            'name': '',
+            'city': '',
+            'sht': 'None',
+            'lst': 'None',
+            'sortorder': 'asc'
+        }
+    }
+}
+
+
 @task(name='tasks.update_partner_library', ignore_result=True,
       default_retry_delay=180, max_retries=2)
 def update_partner_library():
@@ -214,7 +226,9 @@ def update_partner_library():
         print "Parsing data for PartnerLibrary information..."
 
         added = skipped = 0
-        for partner in get_library_partners(data['url'], data['params']):
+        for partner in get_library_partners(data['search_url'],
+                                            data['download_url'],
+                                            data.get('params')):
             # the second join + split take care of extra internal whitespace
             fullname = " ".join(" ".join([partner.first_name,
                                           partner.middle_name,
@@ -1132,4 +1146,4 @@ def requeue_failures(hours=8):
 def clean_import_records(days=31):
     days_ago = datetime.now() - timedelta(days=days)
     ImportRecord.objects.filter(date__lt=days_ago).delete()
-    
+
