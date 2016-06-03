@@ -3,7 +3,6 @@ import {connect} from 'react-redux';
 import warning from 'warning';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
-import {debounce} from 'lodash-compat/function';
 import {
   setSimpleFilterAction,
   addToOrFilterAction,
@@ -25,9 +24,9 @@ import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
-import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
+import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
 
 class SetUpReport extends Component {
   onIntentionChange(intention) {
@@ -189,16 +188,20 @@ class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <MultiSelectFilter
-                getHints={v => this.getHints(col.filter, v)}
-                available={hints[col.filter] || []}
-                selected={currentFilter[col.filter] || []}
-                onAdd = {vs =>
+              <SelectByNameOrTag
+                getItemHints={v => this.getHints(col.filter, v)}
+                availableItems={hints[col.filter] || []}
+                selectedItems={currentFilter[col.filter] || []}
+                onSelectItemAdd={vs =>
                   this.dispatchFilterAction(
                     addToOrFilterAction(col.filter, vs))}
-                onRemove = {vs =>
+                onSelectItemRemove={vs =>
                   this.dispatchFilterAction(
-                    removeFromOrFilterAction(col.filter, vs))}/>
+                    removeFromOrFilterAction(col.filter, vs))}
+                placeholder = {'Filter by ' + col.display}
+                searchPlaceholder = "Filter these choices"
+                showCounter
+              />
 
             </FieldWrapper>
             );

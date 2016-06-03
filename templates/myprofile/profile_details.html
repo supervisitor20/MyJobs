@@ -26,7 +26,7 @@
             </table>
             <div class="actions">
                 <a class="btn primary pull-right" href="{% url 'view_profile' %}">{% trans 'Back' %}</a>
-                <a class="btn pull-right" href="{% url 'handle_form' %}?id={{ module.item.id }}&module={{ module.item.get_verbose.title }}">
+                <a class="btn pull-right" href="profile/view/module/#/{{ module.item.id }}&module={{ module.item.get_verbose.title }}">
                     {% trans 'Edit' %}
                 </a>
                 <div class="clear"></div>
