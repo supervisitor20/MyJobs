@@ -444,10 +444,17 @@ def save_partner(sender, instance, **kwargs):
 
 class PartnerLibrarySource(models.Model):
     name = models.CharField(max_length=255)
-    search_url = models.URLField(blank=True)
-    download_url = models.URLField(blank=True)
+    search_url = models.URLField(
+        blank=True,
+        help_text="The URL to the user-facing search page for this source.")
+    download_url = models.URLField(
+        blank=True,
+        help_text="The URL used to download this source.")
     # json serialized dictionary of parameters
-    params = models.TextField(blank=True)
+    params = models.TextField(
+        blank=True,
+        help_text="POST data used when downloading this source, serialized "
+                  "as JSON.")
 
     def __unicode__(self):
         return self.name

@@ -43,7 +43,8 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location, OutreachEmailAddress, OutreachRecord)
+                               Location, OutreachEmailAddress, OutreachRecord,
+                               PartnerLibrarySource)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -115,7 +116,8 @@ def partner_library(request):
     ctx = {
         'company': company,
         'view_name': 'PRM',
-        'partners': paginator
+        'partners': paginator,
+        'sources': PartnerLibrarySource.objects.values('search_url', 'name')
     }
 
     return render_to_response('mypartners/partner_library.html', ctx,

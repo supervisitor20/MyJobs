@@ -38,10 +38,26 @@ class OutreachEmailDomainAdmin(ForeignKeyAutocompleteAdmin):
         js = ('django_extensions/js/jquery-1.7.2.min.js', )
 
 
+class PartnerLibrarySourceAdmin(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # developers can edit everything
+        fields = []
+
+        # staff can edit search_url and name
+        if not request.user.email.endswith('apps.directemployers.org'):
+            fields += ['download_url', 'params']
+
+        # everyone else is restricted to read-only access
+        if not request.user.email.endswith('directemployers.org'):
+            fields += ['name', 'search_url', 'params']
+
+        return fields
+
+
 admin.site.register(Partner)
 admin.site.register(Contact)
 admin.site.register(CommonEmailDomain)
 # TODO: Remove this once NUO Module is live
 admin.site.register(OutreachEmailAddress)
 admin.site.register(OutreachEmailDomain, OutreachEmailDomainAdmin)
-admin.site.register(PartnerLibrarySource)
+admin.site.register(PartnerLibrarySource, PartnerLibrarySourceAdmin)
