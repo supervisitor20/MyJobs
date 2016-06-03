@@ -171,6 +171,7 @@ export function doReportDataSelect(history, intention, category, dataSet,
         intentionValue: menu.selected_reporting_type,
         categoryValue: menu.selected_report_type,
         dataSetValue: menu.selected_data_type,
+        reportDataId: menu.report_data_id,
       }));
       dispatch(markOtherLoadingAction('dataSetMenu', false));
       newReportDataId = menu.report_data_id;

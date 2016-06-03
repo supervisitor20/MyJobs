@@ -42,31 +42,24 @@ class SetUpReport extends Component {
   }
 
   onIntentionChange(intention) {
-    const {history} = this.props;
-    const {category, dataSet} = this.props.location.query;
+    const {history, category, dataSet} = this.props;
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
   onCategoryChange(category) {
-    const {history} = this.props;
-    const {intention, dataSet} = this.props.location.query;
+    const {history, intention, dataSet} = this.props;
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
   onDataSetChange(dataSet) {
-    const {history} = this.props;
-    const {intention, category} = this.props.location.query;
+    const {history, intention, category} = this.props;
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
   async handleRunReport(e) {
     e.preventDefault();
 
-    const {
-      reportDataId: reportDataIdRaw,
-    } = this.props.location.query;
-    const reportDataId = Number.parseInt(reportDataIdRaw, 10);
-    const {dispatch, reportName, currentFilter} = this.props;
+    const {dispatch, reportName, currentFilter, reportDataId} = this.props;
 
     scrollUp();
     await dispatch(doRunReport(reportDataId, reportName, currentFilter));
@@ -77,8 +70,7 @@ class SetUpReport extends Component {
   }
 
   rawDispatchFilterAction(action) {
-    const {dispatch, filterInterface} = this.props;
-    const {reportDataId} = this.props.location.query;
+    const {dispatch, filterInterface, reportDataId} = this.props;
     dispatch(doUpdateFilterWithDependencies(
         action, filterInterface, reportDataId));
   }
@@ -110,10 +102,8 @@ class SetUpReport extends Component {
       reportName,
       reportNameErrors,
       hints,
-    } = this.props;
-    const {
       reportDataId,
-    } = this.props.location.query;
+    } = this.props;
 
     const rows = [];
     if (filterInterface.length > 0) {
@@ -257,9 +247,12 @@ class SetUpReport extends Component {
 SetUpReport.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
-  reportFinder: PropTypes.object.isRequired,
   reportName: PropTypes.string,
   reportNameErrors: PropTypes.arrayOf(PropTypes.string.isRequired),
+  intention: PropTypes.string,
+  category: PropTypes.string,
+  dataSet: PropTypes.string,
+  reportDataId: PropTypes.number,
   hints: PropTypes.object.isRequired,
   currentFilter: PropTypes.object.isRequired,
   filterInterface: PropTypes.arrayOf(
@@ -268,18 +261,6 @@ SetUpReport.propTypes = {
       interface_type: PropTypes.string.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired).isRequired,
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      filter: PropTypes.object,
-    }),
-    query: PropTypes.shape({
-      intention: PropTypes.string,
-      category: PropTypes.string,
-      dataSet: PropTypes.string,
-      reportDataId: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
 };
 
 export default connect(s => ({
@@ -288,4 +269,8 @@ export default connect(s => ({
   reportName: s.reportState.reportName,
   hints: s.reportState.hints,
   reportNameErrors: s.errors.currentErrors.name,
+  intention: s.dataSetMenu.intention,
+  category: s.dataSetMenu.category,
+  dataSet: s.dataSetMenu.dataSet,
+  reportDataId: s.dataSetMenu.reportDataId,
 }))(SetUpReport);

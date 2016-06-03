@@ -18,6 +18,7 @@ describe('dataSetMenuReducer', () => {
   it('can replace its contents entirely', () => {
     const action = replaceDataSetMenu({
       intentionValue: 'a',
+      reportDataId: 7,
     });
     const result = dataSetMenuReducer({
       intentionValue: undefined,
@@ -29,6 +30,7 @@ describe('dataSetMenuReducer', () => {
       intentionChoices: [],
       categoryChoices: [],
       dataSetChoices: [],
+      reportDataId: 7,
     })
   });
 });

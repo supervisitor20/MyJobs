@@ -268,6 +268,7 @@ describe('doReportDataSelect', () => {
         intentionValue: 'prm',
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
+        reportDataId: 7,
       }),
       markOtherLoadingAction('dataSetMenu', false),
       markPageLoadingAction(true),
@@ -334,6 +335,7 @@ describe('doReportDataSelect', () => {
         intentionValue: 'prm',
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
+        reportDataId: 7,
       }),
       markOtherLoadingAction('dataSetMenu', false),
       markPageLoadingAction(true),
@@ -407,6 +409,7 @@ describe('doReportDataSelect', () => {
         intentionValue: 'prm',
         categoryValue: 'contact',
         dataSetValue: 'unaggregated',
+        reportDataId: null,
       }),
       markOtherLoadingAction('dataSetMenu', false),
       startNewReportAction({
