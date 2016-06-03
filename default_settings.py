@@ -408,6 +408,14 @@ LOGGING = {
         'pysolr': {
             'level': 'ERROR'
         },
+        'seo.views.search_views': {
+            'level': 'ERROR',
+            'handlers': ['file']
+        },
+        'seo.updates': {
+            'level': 'ERROR',
+            'handlers': ['file']
+        },
         'mypartners.views': {
             'level': 'ERROR',
             'handlers': ['logfile']
