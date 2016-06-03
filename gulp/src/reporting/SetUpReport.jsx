@@ -95,7 +95,7 @@ class SetUpReport extends Component {
     } = this.props;
 
     const rows = [];
-    if (filterInterface.length > 0) {
+    if (filterInterface.length) {
       const errorTexts = map(reportNameErrors, e => e.message);
       rows.push(
         <FieldWrapper
