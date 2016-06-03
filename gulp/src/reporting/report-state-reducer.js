@@ -130,7 +130,7 @@ export default handleActions({
       i => !contains(removeValues, i.value));
 
     // If the group is empty, return the filter without this key.
-    const newFilter = newOrFilter.length > 0 ? {
+    const newFilter = newOrFilter.length ? {
       ...currentFilter,
       [field]: newOrFilter,
     } : omit(currentFilter, (_, k) => k === field);
