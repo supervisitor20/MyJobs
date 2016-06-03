@@ -2,10 +2,21 @@ import {createStore, applyMiddleware, compose} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
 
-// Since we use this in unit tests occasionally.
-const devToolsMiddleware = typeof window === 'undefined' ?
-  f => f :
-  window.devToolsExtension();
+
+function useDevTools() {
+  if (process.env.NODE_ENV === 'production') {
+    // Not for production
+    return false;
+  } else if (typeof window === 'undefined') {
+    // Not for unit tests
+    return false;
+  }
+  return true;
+}
+
+
+const devToolsMiddleware = useDevTools() ? window.devToolsExtension() : f => f;
+
 
 /**
  * Create redux store with our standard middlewares.
