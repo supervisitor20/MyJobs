@@ -311,7 +311,7 @@ def find_partner_from_email(partner_list, email):
     return None
 
 
-def get_library_partners(url, params=None, headers=None):
+def get_library_partners(search_url, download_url=None, params=None):
     """
     Returns a generator that yields `CompliancePartner` objects, which can then
     be added to the PartnerLibrary table in the database. At the moment, this
@@ -319,20 +319,30 @@ def get_library_partners(url, params=None, headers=None):
     "Export to Excel" button used at wwww.dol-esa.gov/errd/directory.jsp.
 
     Inputs:
-    :url: The post url (str) used to generate the data.
-    :params: POST data (dict) passed to the :url:
+    :search_url: The POST url as a string used to perform a search to obtain
+                 results. Alternatively, the path of an HTML file may be passed
+                 to be parsed directly without making HTTP requests.
+
+    :download-url: The GET url as a string used to download the results
+                   obtained from the :search_url:.
+    :params: POST data as a dict passed to the :search_url:
+
+    .. note :: As of 6/3/2016, both the :search_url: *and* :download_url: are
+               required. The :download_url: remains an optional argument so
+               that you can pass a filename directly to :search_url: for
+               convenience when testing.
 
     Outputs:
     A generator of `CompliancePartner` objects, whose attributes map directly
     with the excel table.
     """
 
-    if os.path.isfile(url):
-        tree = html.parse(url)
+    if os.path.isfile(search_url):
+        tree = html.parse(search_url)
     else:
-        params = params or {}
-        headers = headers or {}
-        response = requests.post(url, params=params, headers=headers)
+        session = requests.Session()
+        session.post(search_url, params=params)
+        response = session.get(download_url)
         tree = html.fromstring(response.text)
 
     # convert column headers to valid Python identifiers, and rename duplicates
