@@ -172,6 +172,14 @@ describe('doSetUpForClone', () => {
       reportDataId: 7,
     });
   }));
+
+  it('handles arbitrary errors', promiseTest(async () => {
+    spyOn(api, 'getReportInfo').and.throwError(new Error('Some Error'));
+    await doSetUpForClone()(dispatch, getState, {api});
+    expect(actions).toEqual([
+      errorAction('Some Error'),
+    ]);
+  }));
 });
 
 describe('doReportDataSelect', () => {
@@ -419,6 +427,17 @@ describe('doReportDataSelect', () => {
         name: '',
       }),
       markPageLoadingAction(false),
+    ]);
+  }));
+
+  it('handles arbitrary errors', promiseTest(async () => {
+    spyOn(api, 'getSetUpMenuChoices').and.throwError(new Error('Some error'));
+    await doReportDataSelect()(dispatch, getState, {api});
+    expect(actions).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
+      markOtherLoadingAction('dataSetMenu', false),
+      markPageLoadingAction(false),
+      errorAction("Some error"),
     ]);
   }));
 });
