@@ -30,7 +30,7 @@ import {
 
 
 import {errorAction, clearErrorsAction} from './error-actions';
-import {is400Error, errorData} from '../common/myjobs-api';
+import {isClientError, errorData} from '../common/myjobs-api';
 
 
 /**
@@ -270,7 +270,7 @@ export function doRunReport(reportDataId, name, filter) {
       dispatch(removeRunningReportAction(runningReportId));
     } catch (exc) {
       dispatch(removeRunningReportAction(runningReportId));
-      if (is400Error(exc)) {
+      if (isClientError(exc)) {
         dispatch(errorAction(exc.message, errorData(exc)));
       } else {
         dispatch(errorAction(exc.message));

@@ -1,4 +1,4 @@
-import {is500Error, is400Error, errorData} from '../myjobs-api';
+import {isClientError, errorData} from '../myjobs-api';
 
 describe('api errors:', () => {
   const a500Error = new Error();
@@ -14,36 +14,22 @@ describe('api errors:', () => {
 
   const someOtherError = new Error();
 
-  describe('is500Error', () => {
-    it('finds 500 errors', () => {
-      expect(is500Error(a500Error)).toBe(true);
-    });
-
-    it('rejects 400 errors', () => {
-      expect(is500Error(a400Error)).toBe(false);
-    });
-
-    it('rejects other errors', () => {
-      expect(is500Error(someOtherError)).toBe(false);
-    });
-  });
-
-  describe('is400Error', () => {
+  describe('isClientError', () => {
     it('finds 400 errors', () => {
-      expect(is400Error(a400Error)).toBe(true);
+      expect(isClientError(a400Error)).toBe(true);
     });
 
     it('rejects 500 errors', () => {
-      expect(is400Error(a500Error)).toBe(false);
+      expect(isClientError(a500Error)).toBe(false);
     });
 
     it('rejects other errors', () => {
-      expect(is400Error(someOtherError)).toBe(false);
+      expect(isClientError(someOtherError)).toBe(false);
     });
   });
 
   describe('errorData', () => {
-    it('returns errorData on 400 errors', () => {
+    it('returns errorData on client errors', () => {
       expect(errorData(a400Error)).toEqual({some: 'data'});
     });
 

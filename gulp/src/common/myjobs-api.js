@@ -62,11 +62,7 @@ export class MyJobsApi {
   }
 }
 
-export function is500Error(exc) {
-  return Boolean(exc.response) && exc.response.status === 500;
-}
-
-export function is400Error(exc) {
+export function isClientError(exc) {
   return Boolean(exc.response) && exc.response.status === 400;
 }
 
