@@ -25,7 +25,6 @@ import {
 } from './dataset-menu-actions';
 import {
   markPageLoadingAction,
-  markFieldsLoadingAction,
   markOtherLoadingAction,
 } from '../common/loading-actions';
 
