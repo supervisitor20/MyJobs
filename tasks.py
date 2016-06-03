@@ -185,6 +185,38 @@ def send_search_digest(self, search):
             raise send_search_digest.retry(arg=[search], exc=e)
 
 
+PARTNER_LIBRARY_SOURCES = {
+    'Employment Referral Resource Directory': {
+        'search_url': 'https://ofccp.dol-esa.gov/errd/directory.jsp',
+        'download_url': 'https://ofccp.dol-esa.gov/errd/directoryexcel.jsp',
+        'params': {
+            'reg': 'ALL',
+            'stat': 'None',
+            'name': '',
+            'city': '',
+            'sht': 'None',
+            'lst': 'None',
+            'sortorder': 'asc'
+        }
+    },
+    'Disability and Veterans Community Resources Directory': {
+        'search_url': 'https://ofccp.dol-esa.gov/errd/resourcequery.jsp',
+        'download_url': 'https://ofccp.dol-esa.gov/errd/resourceexcel.jsp',
+        'params': {
+            'returnformat': 'html',
+            'formname': 'searchfrm',
+            'reg': 'ALL',
+            'stat': 'None',
+            'name': '',
+            'city': '',
+            'sht': 'None',
+            'lst': 'None',
+            'sortorder': 'asc'
+        }
+    }
+}
+
+
 @task(name='tasks.update_partner_library', ignore_result=True,
       default_retry_delay=180, max_retries=2)
 def update_partner_library():
