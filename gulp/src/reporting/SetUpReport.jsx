@@ -30,17 +30,6 @@ import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 
 class SetUpReport extends Component {
-  constructor() {
-    super();
-    this.dispatchFilterAction = debounce(
-      action => this.rawDispatchFilterAction(action),
-      300,
-      {
-        leading: false,
-        trailing: true,
-      });
-  }
-
   onIntentionChange(intention) {
     const {history, category, dataSet} = this.props;
     history.pushState(null, '/', {intention, category, dataSet});
@@ -69,7 +58,7 @@ class SetUpReport extends Component {
     }
   }
 
-  rawDispatchFilterAction(action) {
+  dispatchFilterAction(action) {
     const {dispatch, filterInterface, reportDataId} = this.props;
     dispatch(doUpdateFilterWithDependencies(
         action, filterInterface, reportDataId));
