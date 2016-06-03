@@ -2,7 +2,8 @@ from django import forms
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-from automation.source_codes import process_spreadsheet, add_source_codes
+from automation.source_codes import (
+    add_source_codes, add_destination_manipulations, process_file)
 from redirect.models import Redirect
 
 ATS_PARAMETERS = {
@@ -67,7 +68,7 @@ class SourceCodeFileUpload(forms.Form):
         if all(field in cleaned_data for field in ['source_code_parameter',
                                                    'buids']):
             # TODO: Detect if the file already contains parameters
-            cleaned_data['source_codes'] = process_spreadsheet(
+            cleaned_data['source_codes'] = process_file(
                 cleaned_data['source_code_file'],
                 cleaned_data['buids'],
                 cleaned_data['source_code_parameter'],
@@ -85,5 +86,11 @@ class SourceCodeFileUpload(forms.Form):
         # filename_1.xlsx).
         default_storage.save(source_code_file.name,
                              ContentFile(source_code_file.read()))
-        return add_source_codes(self.cleaned_data['buids'],
-                                self.cleaned_data['source_codes'])
+        method = add_source_codes
+        try:
+            if isinstance(self.cleaned_data['source_codes'][0], dict):
+                method = add_destination_manipulations
+        except IndexError:
+            pass
+        return method(self.cleaned_data['buids'],
+                      self.cleaned_data['source_codes'])
