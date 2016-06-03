@@ -64,7 +64,7 @@ class SetUpReport extends Component {
 
   dispatchFilterAction(action) {
     const {dispatch, filterInterface, reportDataId} = this.props;
-    dispatch(action)
+    dispatch(action);
     dispatch(doUpdateFilterWithDependencies(filterInterface, reportDataId));
   }
 
@@ -95,7 +95,6 @@ class SetUpReport extends Component {
       reportName,
       reportNameErrors,
       hints,
-      reportDataId,
     } = this.props;
 
     const rows = [];
