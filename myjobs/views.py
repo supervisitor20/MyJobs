@@ -1063,7 +1063,6 @@ def api_get_users(request):
 def api_get_current_user(request):
 
     ctx = {}
-    ctx['email'] = request.user.email
     ctx['id'] = request.user.id
 
     return HttpResponse(json.dumps(ctx),

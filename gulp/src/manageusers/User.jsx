@@ -111,7 +111,7 @@ class User extends React.Component {
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
     const {api, rolesAPIResults} = this.props;
     const userId = this.props.params.userId;
-    const currentUserId = this.props.currentUser.id;
+    const currentUserID = this.props.currentUserID;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
 
@@ -142,7 +142,7 @@ class User extends React.Component {
     // manage users.
 
     // Is user editing their own account?
-    if (parseInt(userId, 10) === parseInt(currentUserId, 10)) {
+    if (parseInt(userId, 10) === parseInt(currentUserID, 10)) {
       // What roles are currently assigned?
       const assignedRolesAsStrings = _.map(assignedRoles, function getName(role) {
         return role.name;
@@ -315,7 +315,7 @@ User.propTypes = {
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
   rolesAPIResults: React.PropTypes.array,
-  currentUser: React.PropTypes.object,
+  currentUserID: React.PropTypes.number,
 };
 
 export default User;
