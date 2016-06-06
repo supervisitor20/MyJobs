@@ -36,7 +36,7 @@ TagAnd.propTypes = {
       PropTypes.shape({
         value: PropTypes.any.isRequired,
         display: PropTypes.string.isRequired,
-        hexColor: PropTypes.string.isRequired,
+        hexColor: PropTypes.string,
       })
     ).isRequired
   ).isRequired,
@@ -47,7 +47,7 @@ TagAnd.propTypes = {
     PropTypes.shape({
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
-      hexColor: PropTypes.string.isRequired,
+      hexColor: PropTypes.string,
     })
   ).isRequired,
   /**
