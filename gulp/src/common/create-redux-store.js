@@ -12,7 +12,7 @@ function useDevTools() {
     return false;
   } else if (!window.devToolsExtension) {
     // Not if dev tools aren't present.
-    return false
+    return false;
   }
   return true;
 }

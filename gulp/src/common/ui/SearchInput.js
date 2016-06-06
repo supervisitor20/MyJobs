@@ -7,9 +7,18 @@ import classnames from 'classnames';
  */
 export class SearchInput extends Component {
   constructor(props) {
-    super();
+    super(props);
     const {value} = props;
     this.state = this.getDefaultState(value);
+  }
+
+  getDefaultState(value) {
+    return {
+      partialValue: value,
+      mouseInMenu: false,
+      keySelectedIndex: -1,
+      dropped: false,
+    };
   }
 
   handleInputChange(event) {
@@ -94,15 +103,6 @@ export class SearchInput extends Component {
       }
       this.setState({keySelectedIndex: newIndex});
     }
-  }
-
-  getDefaultState(value) {
-    return {
-      partialValue: value,
-      mouseInMenu: false,
-      keySelectedIndex: -1,
-      dropped: false,
-    };
   }
 
   async search(partialValue) {

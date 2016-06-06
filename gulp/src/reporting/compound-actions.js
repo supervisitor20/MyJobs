@@ -313,7 +313,6 @@ export function doRefreshReport(reportId) {
  */
 export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
   return async (dispatch, getState) => {
-
     function latestFilter() {
       return getState().reportState.currentFilter;
     }
