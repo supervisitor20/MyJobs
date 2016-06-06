@@ -46,7 +46,7 @@ export class App extends React.Component {
     this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
-    this.callCurrentUserAPI()
+    this.callCurrentUserAPI();
   }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
