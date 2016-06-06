@@ -36,7 +36,7 @@ import {
 
 import {
   markPageLoadingAction,
-  markFieldsLoadingAction,
+  markFieldLoadingAction,
   markOtherLoadingAction,
 } from '../../common/loading-actions';
 
@@ -594,11 +594,13 @@ describe('doGetHints', () => {
     await doGetHelp(9, filter, 'labels', 'z')(dispatch, getState, {api});
     expect(api.getHelp).toHaveBeenCalledWith(9, {a: [1]}, 'labels', 'z');
     expect(actions).toEqual([
+      markFieldLoadingAction('labels', true),
       clearHintsAction('labels'),
       receiveHintsAction('labels', [
         {value: 3, display: 'Red'},
         {value: 4, display: 'Blue'},
       ]),
+      markFieldLoadingAction('labels', false),
     ]);
   }));
 
@@ -607,8 +609,10 @@ describe('doGetHints', () => {
     spyOn(api, 'getHelp').and.throwError(error);
     await doGetHelp(9, {}, 'labels')(dispatch, getState, {api});
     expect(actions).toEqual([
+      markFieldLoadingAction('labels', true),
       clearHintsAction('labels'),
       errorAction("Some Error"),
+      markFieldLoadingAction('labels', false),
     ]);
   }));
 });

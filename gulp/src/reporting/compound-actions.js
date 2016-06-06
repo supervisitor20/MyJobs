@@ -25,6 +25,7 @@ import {
 } from './dataset-menu-actions';
 import {
   markPageLoadingAction,
+  markFieldLoadingAction,
   markOtherLoadingAction,
 } from '../common/loading-actions';
 
@@ -84,12 +85,15 @@ export function doGetHelp(reportDataId, currentFilter, fieldName, partial) {
   return async (dispatch, _, {api}) => {
     try {
       // FUTURE: add some loading indicator actions.
+      dispatch(markFieldLoadingAction(fieldName, true));
       dispatch(clearHintsAction(fieldName));
       const hints = await api.getHelp(
         reportDataId, getFilterValuesOnly(currentFilter), fieldName, partial);
       dispatch(receiveHintsAction(fieldName, hints));
+      dispatch(markFieldLoadingAction(fieldName, false));
     } catch (exc) {
       dispatch(errorAction(exc.message));
+      dispatch(markFieldLoadingAction(fieldName, false));
     }
   };
 }

@@ -24,7 +24,6 @@ export class SelectByNameOrTag extends Component {
       availableItemHints: [],
       choice: 0,
       choices,
-      loading: false,
     };
   }
 
@@ -102,13 +101,17 @@ export class SelectByNameOrTag extends Component {
   }
 
   render() {
-    const {availableItemHints} = this.props;
+    const {
+      availableItemHints,
+      itemsLoading,
+      tagsLoading,
+    } = this.props;
     const {
       choices,
       value,
       choice,
-      loading,
     } = this.state;
+    const loading = itemsLoading || tagsLoading;
 
     let valueAndCount = (
       <span>
@@ -133,7 +136,7 @@ export class SelectByNameOrTag extends Component {
           onChange={v => this.changeHandler(v)}
           value={valueAndCount}
           choices = {choices}
-          disable = {loading ? true : false}
+          disable = {loading}
         />
         <div className="select-control-chosen">
           {this.renderControl(choice)}
@@ -148,6 +151,11 @@ SelectByNameOrTag.propTypes = {
    * Function that gets the hints
    */
   getItemHints: PropTypes.func.isRequired,
+
+  /**
+   * Are items loading?
+   */
+  itemsLoading: PropTypes.bool.isRequired,
 
   /**
    * Available items
@@ -180,6 +188,11 @@ SelectByNameOrTag.propTypes = {
   onSelectItemRemove: PropTypes.func.isRequired,
 
   getTagHints: PropTypes.func,
+
+  /**
+   * Are tags loading?
+   */
+  tagsLoading: PropTypes.bool.isRequired,
 
   /**
    * Available tags

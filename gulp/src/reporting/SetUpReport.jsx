@@ -95,6 +95,7 @@ class SetUpReport extends Component {
       reportName,
       reportNameErrors,
       hints,
+      fieldsLoading,
     } = this.props;
 
     const rows = [];
@@ -189,6 +190,7 @@ class SetUpReport extends Component {
 
               <SelectByNameOrTag
                 getItemHints={v => this.getHints(col.filter, v)}
+                itemsLoading={fieldsLoading[col.filter]}
                 availableItemHints={hints[col.filter] || []}
                 selectedItems={currentFilter[col.filter] || []}
                 onSelectItemAdd={vs =>
@@ -197,6 +199,7 @@ class SetUpReport extends Component {
                 onSelectItemRemove={vs =>
                   this.dispatchFilterAction(
                     removeFromOrFilterAction(col.filter, vs))}
+                tagsLoading={false}
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
                 showCounter
@@ -253,6 +256,9 @@ SetUpReport.propTypes = {
       interface_type: PropTypes.string.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired).isRequired,
+  fieldsLoading: PropTypes.objectOf(
+    PropTypes.bool.isRequired
+  ).isRequired,
 };
 
 export default connect(s => ({
@@ -265,4 +271,5 @@ export default connect(s => ({
   category: s.dataSetMenu.category,
   dataSet: s.dataSetMenu.dataSet,
   reportDataId: s.dataSetMenu.reportDataId,
+  fieldsLoading: s.loading.fields,
 }))(SetUpReport);
