@@ -30,7 +30,6 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
-import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
@@ -1194,13 +1193,6 @@ def process_email(request):
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
 
-    # This info will only be sent to newrelic if an exception is raised.
-    newrelic.agent.add_custom_parameter("to", to)
-    newrelic.agent.add_custom_parameter("cc", cc)
-    newrelic.agent.add_custom_parameter("admin_email", admin_email)
-    newrelic.agent.add_custom_parameter("contact_emails",
-                                        ", ".join(contact_emails))
-
     if contact_emails == [] or (len(contact_emails) == 1 and
                                 contact_emails[0].lower() == PRM_EMAIL):
         # If PRM_EMAIL is the only contact, assume it's a forward.
@@ -1211,7 +1203,6 @@ def process_email(request):
                               in recipient_emails_and_names]
             date_time = fwd_headers[0]['date']
         except IndexError:
-            newrelic.agent.record_exception(*sys.exc_info())
             contact_emails = []
 
     # Prevent duplicate contact records for an email address because
@@ -1228,7 +1219,6 @@ def process_email(request):
     try:
         contact_emails.remove(admin_email)
     except ValueError:
-        newrelic.agent.record_exception(*sys.exc_info())
         pass
 
     admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
@@ -1283,7 +1273,6 @@ def process_email(request):
                 else:
                     unmatched_contacts.append(contact)
         except ValueError:
-            newrelic.agent.record_exception(*sys.exc_info())
             unmatched_contacts.append(contact)
 
     num_attachments = int(request.POST.get('attachments', 0))
@@ -1292,7 +1281,6 @@ def process_email(request):
         try:
             attachment = request.FILES['attachment%s' % file_number]
         except KeyError:
-            newrelic.agent.record_exception(*sys.exc_info())
             error = "There was an issue with the email attachments. The " \
                     "contact records for the email will need to be created " \
                     "manually."
@@ -1336,7 +1324,6 @@ def process_email(request):
                 # file; reset it to the beginning for future use.
                 attachment.seek(0)
         except AttributeError:
-            newrelic.agent.record_exception(*sys.exc_info())
             attachment_failures.append(record)
         log_change(record, None, admin_user, contact.partner, contact.name,
                    action_type=ADDITION, change_msg=change_msg,
