@@ -10,6 +10,9 @@ function useDevTools() {
   } else if (typeof window === 'undefined') {
     // Not for unit tests
     return false;
+  } else if (!window.devToolsExtension) {
+    // Not if dev tools aren't present.
+    return false
   }
   return true;
 }
