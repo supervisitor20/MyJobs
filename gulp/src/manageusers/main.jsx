@@ -157,9 +157,6 @@ export class App extends React.Component {
   async callCurrentUserAPI() {
     // Get current logged in user information
     const results = await api.get('/manage-users/api/current-user/');
-
-    console.log("results.id", results.id);
-
     this.setState({
       currentUserID: results.id,
     });
