@@ -1,4 +1,4 @@
-import reportStateReducer from '../report-state-reducer';
+import reportStateReducer, {withFilterDirtied} from '../report-state-reducer';
 
 import {
   startNewReportAction,
@@ -10,6 +10,7 @@ import {
   setReportNameAction,
   receiveHintsAction,
   clearHintsAction,
+  resetCurrentFilterDirty,
 } from '../report-state-actions';
 
 describe('reportStateReducer', () => {
@@ -42,6 +43,7 @@ describe('reportStateReducer', () => {
         filterInterface: {5: 6},
         help: {3: 4},
         currentFilter: {1: 2},
+        currentFilterDirty: false,
         errors: {},
         hints: {},
         reportName: 'zz',
@@ -51,9 +53,15 @@ describe('reportStateReducer', () => {
 
   it('can merge a scalar filter', () => {
     const action = setSimpleFilterAction("city", {value: 2, display: "Clay"});
-    const result = reportStateReducer({currentFilter: {}}, action);
-    expect(result.currentFilter).toEqual({
-      city: {value: 2, display: "Clay"},
+    const result = reportStateReducer({
+      currentFilter: {},
+      currentFilterDirty: false,
+    }, action);
+    expect(result).toEqual({
+      currentFilter: {
+        city: {value: 2, display: "Clay"},
+      },
+      currentFilterDirty: true,
     });
   });
 
@@ -61,29 +69,39 @@ describe('reportStateReducer', () => {
     const action = addToOrFilterAction(
       "contact", [{value: 3, display: "Bob"}, {value: 5, display: "Rex"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "contact": [
           {value: 4, display: "Ann"},
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "contact": [
-        {value: 4, display: "Ann"},
-        {value: 3, display: "Bob"},
-        {value: 5, display: "Rex"},
-      ],
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "contact": [
+          {value: 4, display: "Ann"},
+          {value: 3, display: "Bob"},
+          {value: 5, display: "Rex"},
+        ],
+      },
     });
   });
 
   it('can add to an or filter if that filter does not yet exist', () => {
     const action = addToOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
-    const result = reportStateReducer({currentFilter: {}}, action);
-    expect(result.currentFilter).toEqual({
-      "contact": [
-        {value: 3, display: "Bob"},
-      ],
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "contact": [
+          {value: 3, display: "Bob"},
+        ],
+      }
     });
   });
 
@@ -91,6 +109,7 @@ describe('reportStateReducer', () => {
     const action = addToOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "contact": [
           {value: 3, display: "Dan"},
@@ -98,11 +117,14 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "contact": [
-        {value: 4, display: "Ann"},
-        {value: 3, display: "Bob"},
-      ],
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "contact": [
+          {value: 4, display: "Ann"},
+          {value: 3, display: "Bob"},
+        ],
+      },
     });
   });
 
@@ -110,6 +132,7 @@ describe('reportStateReducer', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}, {value: 5, display: "Rex"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "contact": [
           {value: 3, display: "Bob"},
@@ -118,10 +141,13 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "contact": [
-        {value: 4, display: "Ann"},
-      ],
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "contact": [
+          {value: 4, display: "Ann"},
+        ],
+      },
     });
   });
 
@@ -130,67 +156,91 @@ describe('reportStateReducer', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "contact": [
           {value: 4, display: "Ann"},
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "contact": [
-        {value: 4, display: "Ann"},
-      ],
+    expect(result).toEqual({
+      currentFilterDirty: false,
+      currentFilter: {
+        "contact": [
+          {value: 4, display: "Ann"},
+        ],
+      },
     });
   });
 
   it('can ignore removing an item from a mising filter', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
-    const result = reportStateReducer({currentFilter: {}}, action);
-    expect(result.currentFilter).toEqual({});
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toEqual({
+      currentFilterDirty: false,
+      currentFilter: {},
+    });
   });
 
   it('automatically deletes an empty or filter after remove', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "contact": [
           {value: 3, display: "Whatever"},
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({});
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {},
+    });
   });
 
   it('can add an item to an and/or filter', () => {
     const action = addToAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}, {value: 2, display: "Test2"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [[]],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 3, display: "Test"},
-          {value: 2, display: "Test2"},
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 3, display: "Test"},
+            {value: 2, display: "Test2"},
+          ],
         ],
-      ],
+      },
     });
   });
 
   it('can add an item to an and/or filter if the filter did not exist', () => {
     const action = addToAndOrFilterAction(
       "tags", 10, [{value: 3, display: "Test"}]);
-    const result = reportStateReducer({currentFilter: {}}, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 3, display: "Test"},
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 3, display: "Test"},
+          ],
         ],
-      ],
+      },
     });
   });
 
@@ -198,6 +248,7 @@ describe('reportStateReducer', () => {
     const action = addToAndOrFilterAction(
       "tags", 10, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -206,15 +257,18 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 1, display: "Red"},
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 1, display: "Red"},
+          ],
+          [
+            {value: 3, display: "Test"},
+          ],
         ],
-        [
-          {value: 3, display: "Test"},
-        ],
-      ],
+      },
     });
   });
 
@@ -222,6 +276,7 @@ describe('reportStateReducer', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}, {value:2, display: "Test2"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -232,12 +287,15 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 1, display: "Red"},
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 1, display: "Red"},
+          ],
         ],
-      ],
+      },
     });
   })
 
@@ -246,6 +304,7 @@ describe('reportStateReducer', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -254,12 +313,15 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 1, display: "Red"},
+    expect(result).toEqual({
+      currentFilterDirty: false,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 1, display: "Red"},
+          ],
         ],
-      ],
+      },
     });
   });
 
@@ -268,6 +330,7 @@ describe('reportStateReducer', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 10, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -276,12 +339,15 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 1, display: "Red"},
+    expect(result).toEqual({
+      currentFilterDirty: false,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 1, display: "Red"},
+          ],
         ],
-      ],
+      },
     });
   });
 
@@ -289,6 +355,7 @@ describe('reportStateReducer', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -300,12 +367,15 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({
-      "tags": [
-        [
-          {value: 1, display: "Red"},
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [
+          [
+            {value: 1, display: "Red"},
+          ],
         ],
-      ],
+      },
     });
   });
 
@@ -313,6 +383,7 @@ describe('reportStateReducer', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
+      currentFilterDirty: false,
       currentFilter: {
         "tags": [
           [
@@ -321,7 +392,10 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result.currentFilter).toEqual({});
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {},
+    });
   });
 
   it('can set the report name', () => {
@@ -352,5 +426,42 @@ describe('reportStateReducer', () => {
       },
     }, action);
     expect(result.hints).toEqual({});
+  });
+
+  it('can reset the currentFilterDirty flag', () => {
+    const action = resetCurrentFilterDirty();
+    const result = reportStateReducer({
+      currentFilterDirty: true,
+    }, action);
+    expect(result).toEqual({
+      currentFilterDirty: false,
+    });
+  });
+});
+
+
+describe('withFilterDirtied', () => {
+  it('does nothing when currentFilter is unchanged', () => {
+    const oldState = {
+      currentFilter: {1: 2},
+    };
+    const newState = {
+      currentFilter: {1: 2},
+    };
+    const result = withFilterDirtied(oldState, newState);
+    expect(result).toEqual(newState);
+  });
+
+  it('sets currentFilterDirty when currentFilter changes', () => {
+    const oldState = {
+      currentFilter: {1: 2},
+      currentFilterDirty: false,
+    };
+    const newState = {
+      currentFilter: {1: 3},
+      currentFilterDirty: false,
+    };
+    const result = withFilterDirtied(oldState, newState);
+    expect(result).toEqual({...newState, currentFilterDirty: true});
   });
 });

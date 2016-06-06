@@ -101,3 +101,11 @@ export const receiveHintsAction = createAction('RECEIVE_HINTS',
  * payload: string, which filter field to operate on.
  */
 export const clearHintsAction = createAction('CLEAR_HINTS');
+
+/**
+ * We've cleaned whatever needed to react to filter changes.
+ *
+ * no payload
+ */
+export const resetCurrentFilterDirty =
+  createAction('RESET_CURRENT_FILTER_DIRTY');

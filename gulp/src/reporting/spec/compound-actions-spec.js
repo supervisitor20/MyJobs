@@ -657,6 +657,7 @@ describe('doUpdateFilterWithDependencies end to end', () => {
         {filter: 'partner'},
       ],
 
+      currentFilterDirty: true,
       currentFilter: {
         'locations': {city: 'Indy', state: 'IN'},
         'contact': [
@@ -721,5 +722,31 @@ describe('doUpdateFilterWithDependencies end to end', () => {
       locations: {city: 'Indy2', state: 'IN'},
       contact: [{value: 3}],
     });
+    expect(newReportState.currentFilterDirty).toEqual(false);
+  }));
+});
+
+describe('doUpdateFilterWithDependencies vs clean filter', () => {
+  let actions;
+
+  beforeEach(() => {
+    actions = [];
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {
+      reportState: {
+        currentFilterDirty: false,
+      },
+    };
+  }
+
+  it('does nothing', promiseTest(async () => {
+    await doUpdateFilterWithDependencies()(dispatch, getState);
+    expect(actions).toEqual([]);
   }));
 });

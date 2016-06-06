@@ -19,6 +19,7 @@ import {
   receiveHintsAction,
   clearHintsAction,
   removeFromOrFilterAction,
+  resetCurrentFilterDirty,
 } from './report-state-actions';
 import {
   replaceDataSetMenu,
@@ -317,6 +318,11 @@ export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
       return getState().reportState.currentFilter;
     }
 
+    // If the filter is clean, bail.
+    if (!getState().reportState.currentFilterDirty) {
+      return;
+    }
+
     // FUTURE: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {
       await dispatch(doGetHelp(reportDataId, latestFilter(), 'partner', ''));
@@ -336,5 +342,6 @@ export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
     if (find(filterInterface, i => i.filter === 'locations')) {
       await dispatch(doGetHelp(reportDataId, latestFilter(), 'state', ''));
     }
+    await dispatch(resetCurrentFilterDirty());
   };
 }

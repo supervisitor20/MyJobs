@@ -1,6 +1,7 @@
 import {handleActions} from 'redux-actions';
 import {map, filter as lodashFilter, contains} from 'lodash-compat/collection';
 import {omit} from 'lodash-compat/object';
+import {isEqual} from 'lodash-compat/lang';
 
 const maxNameLength = 24;
 
@@ -25,6 +26,16 @@ function replaceItemAtIndex(items, atIndex, newItem) {
   // Otherwise, replace the matching index.
   return map(items, (item, index) =>
     index === atIndex ? newItem : item);
+}
+
+export function withFilterDirtied(oldState, newState) {
+  if (isEqual(oldState.currentFilter, newState.currentFilter)) {
+    return newState;
+  }
+  return {
+    ...newState,
+    currentFilterDirty: true,
+  };
 }
 
 /**
@@ -71,6 +82,10 @@ function replaceItemAtIndex(items, atIndex, newItem) {
  *      no particular field. 'reportName' is served for the reportName control.
  *    messages: a list of strings, intended to be shown as a bulleted list.
  *
+ *  currentFilterDirty: boolean
+ *    indicates that some change has been made to currentFilter.
+ *    this can be reset to false. It will be set to true the next time
+ *    currentFilter changes.
  * }
  */
 export default handleActions({
@@ -88,18 +103,19 @@ export default handleActions({
       filterInterface,
       errors: {},
       hints: {},
+      currentFilterDirty: false,
     };
   },
 
   'SET_SIMPLE_FILTER': (state, action) => {
     const {field, item} = action.payload;
-    return {
+    return withFilterDirtied(state, {
       ...state,
       currentFilter: {
         ...state.currentFilter,
         [field]: item,
       },
-    };
+    });
   },
 
   'ADD_TO_OR_FILTER': (state, action) => {
@@ -108,13 +124,13 @@ export default handleActions({
 
     const orFilter = currentFilter[field] || [];
     const newOrFilter = addOrReplaceByValues(orFilter, items);
-    return {
+    return withFilterDirtied(state, {
       ...state,
       currentFilter: {
         ...state.currentFilter,
         [field]: newOrFilter,
       },
-    };
+    });
   },
 
   'REMOVE_FROM_OR_FILTER': (state, action) => {
@@ -135,10 +151,10 @@ export default handleActions({
       [field]: newOrFilter,
     } : omit(currentFilter, (_, k) => k === field);
 
-    return {
+    return withFilterDirtied(state, {
       ...state,
       currentFilter: newFilter,
-    };
+    });
   },
 
   'ADD_TO_AND_OR_FILTER': (state, action) => {
@@ -152,13 +168,13 @@ export default handleActions({
         (state.currentFilter[field] || [])[index],
         items));
 
-    return {
+    return withFilterDirtied(state, {
       ...state,
       currentFilter: {
         ...currentFilter,
         [field]: newFilter,
       },
-    };
+    });
   },
 
   'REMOVE_FROM_AND_OR_FILTER': (state, action) => {
@@ -191,10 +207,10 @@ export default handleActions({
       [field]: andGroup,
     } : omit(currentFilter, (_, k) => k === field);
 
-    return {
+    return withFilterDirtied(state, {
       ...state,
       currentFilter: newFilter,
-    };
+    });
   },
 
   'SET_REPORT_NAME': (state, action) => {
@@ -219,6 +235,13 @@ export default handleActions({
     return {
       ...state,
       hints: omit(state.hints, (_, k) => k === field),
+    };
+  },
+
+  'RESET_CURRENT_FILTER_DIRTY': (state) => {
+    return {
+      ...state,
+      currentFilterDirty: false,
     };
   },
 }, {
