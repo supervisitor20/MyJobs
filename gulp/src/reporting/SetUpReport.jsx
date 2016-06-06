@@ -173,10 +173,10 @@ class SetUpReport extends Component {
                 selected={currentFilter[col.filter] || []}
                 onChoose={(i, t) =>
                   this.dispatchFilterAction(
-                    addToAndOrFilterAction(col.filter, i, [t]))}
+                    addToAndOrFilterAction(col.filter, i, t))}
                 onRemove={(i, t) =>
                   this.dispatchFilterAction(
-                    removeFromAndOrFilterAction(col.filter, i, [t]))}/>
+                    removeFromAndOrFilterAction(col.filter, i, t))}/>
 
             </FieldWrapper>
             );
@@ -189,7 +189,7 @@ class SetUpReport extends Component {
 
               <SelectByNameOrTag
                 getItemHints={v => this.getHints(col.filter, v)}
-                availableItems={hints[col.filter] || []}
+                availableItemHints={hints[col.filter] || []}
                 selectedItems={currentFilter[col.filter] || []}
                 onSelectItemAdd={vs =>
                   this.dispatchFilterAction(

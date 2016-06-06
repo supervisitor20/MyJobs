@@ -22,28 +22,10 @@ export class SelectByNameOrTag extends Component {
     this.state = {
       value: 'No filter',
       availableItemHints: [],
-      availableTagHints: [],
       choice: 0,
       choices,
       loading: false,
     };
-  }
-
-  async getHints() {
-    const {getItemHints, getTagHints} = this.props;
-    if (getItemHints) {
-      if (this.mounted) {
-        this.setState({loading: true});
-        const availableItemHints = await getItemHints();
-        this.setState({availableItemHints, loading: false});
-      }
-    }
-    if (getTagHints) {
-      if (this.mounted) {
-        const availableTagHints = await getTagHints();
-        this.setState({availableTagHints});
-      }
-    }
   }
 
   changeHandler(event) {
@@ -89,11 +71,9 @@ export class SelectByNameOrTag extends Component {
       selectedItems,
       searchPlaceholder,
       placeholder,
-    } = this.props;
-    const {
       availableItemHints,
       availableTagHints,
-    } = this.state;
+    } = this.props;
 
     switch (value) {
     case 1:
@@ -122,13 +102,14 @@ export class SelectByNameOrTag extends Component {
   }
 
   render() {
+    const {availableItemHints} = this.props;
     const {
       choices,
       value,
       choice,
-      availableItemHints,
       loading,
     } = this.state;
+
     let valueAndCount = (
       <span>
         <span className="counter">
@@ -169,6 +150,16 @@ SelectByNameOrTag.propTypes = {
   getItemHints: PropTypes.func.isRequired,
 
   /**
+   * Available items
+   */
+  availableItemHints: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+
+  /**
    * Currently selected items
    */
   selectedItems: PropTypes.arrayOf(
@@ -189,6 +180,19 @@ SelectByNameOrTag.propTypes = {
   onSelectItemRemove: PropTypes.func.isRequired,
 
   getTagHints: PropTypes.func,
+
+  /**
+   * Available tags
+   */
+  availableTagHints: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.any.isRequired,
+        display: PropTypes.string.isRequired,
+        hexColor: PropTypes.string,
+      })
+    )
+  ),
 
   /**
    * Currently selected tags

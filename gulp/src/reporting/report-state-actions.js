@@ -35,7 +35,7 @@ export const setSimpleFilterAction =
  * User added a value to an or filter.
  *
  * field: which filter field to operate on.
- * items: filter value
+ * items: [filter values to add]
  */
 export const addToOrFilterAction =
   createAction(
@@ -58,7 +58,7 @@ export const removeFromOrFilterAction =
  *
  * field: which filter field to operate on.
  * index: which row of this field to operate on.
- * items: filter value
+ * items: [filter values to add]
  */
 export const addToAndOrFilterAction =
   createAction(
@@ -70,7 +70,7 @@ export const addToAndOrFilterAction =
  *
  * field: which filter field to operate on.
  * index: which row of this field to operate on.
- * items: filter value
+ * items: [filter values to remove]
  */
 export const removeFromAndOrFilterAction =
   createAction(

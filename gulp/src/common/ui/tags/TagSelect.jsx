@@ -2,6 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Tag} from 'common/ui/tags/Tag';
 import TextField from 'common/ui/TextField';
 import {map, filter, find} from 'lodash-compat/collection';
+import {assign} from 'lodash-compat/object';
 
 /**
  * Selection control for tags.
@@ -17,10 +18,9 @@ export default class TagSelect extends Component {
     };
   }
 
-  setHighlight(tagValue, highlight) {
-    const key = 'highlight-' + tagValue;
-    const newState = {};
-    newState[key] = highlight;
+  setHighlight(tags, highlight) {
+    const newState = assign({}, ...map(tags, t =>
+      ({['highlight-' + t.value]: highlight})));
     this.setState(newState);
   }
 
@@ -50,23 +50,22 @@ export default class TagSelect extends Component {
   }
 
   selectAll() {
-    this.props.available.forEach((v) => {
-      this.handleAdd(v);
-    });
+    const {available} = this.props;
+    this.handleAdd(available);
     this.closeSelectMenu();
   }
 
-  handleAdd(tag) {
+  handleAdd(tags) {
     const {onChoose} = this.props;
     this.setState({partial: ''});
-    this.setHighlight(tag.value, false);
-    onChoose(tag);
+    this.setHighlight(tags, false);
+    onChoose(tags);
   }
 
-  handleRemove(tag) {
+  handleRemove(tags) {
     const {onRemove} = this.props;
-    this.setHighlight(tag.value, false);
-    onRemove(tag);
+    this.setHighlight(tags, false);
+    onRemove(tags);
   }
 
   handleBlur() {
@@ -88,8 +87,8 @@ export default class TagSelect extends Component {
         display={tag.display}
         hexColor={tag.hexColor}
         onClick={() => handleClick(tag)}
-        onMouseEnter={() => this.setHighlight(tag.value, true)}
-        onMouseLeave={() => this.setHighlight(tag.value, false)}
+        onMouseEnter={() => this.setHighlight([tag], true)}
+        onMouseLeave={() => this.setHighlight([tag], false)}
         onRemoveTag={remove ? () => remove(tag) : undefined}
         highlight={highlight}/>
     );
@@ -123,7 +122,7 @@ export default class TagSelect extends Component {
           {map(selected, t => this.renderTag(
               t,
               () => {},
-              () => this.handleRemove(t)))}
+              () => this.handleRemove([t])))}
         </div>
         {selectDropped ? (
           <div className="tag-select-menu-container">
@@ -144,7 +143,7 @@ export default class TagSelect extends Component {
                 <div className="row">
                   {map(filteredAvailable, t => this.renderTag(
                       t,
-                      () => this.handleAdd(t),
+                      () => this.handleAdd([t]),
                       null))}
                 </div>
               </div>
@@ -184,11 +183,11 @@ TagSelect.propTypes = {
     })
   ).isRequired,
   /**
-   * Function called when an available tag is selected.
+   * Function called when available tags are selected.
    */
   onChoose: PropTypes.func.isRequired,
   /**
-   * Function called when a selected tag is removed.
+   * Function called when available tags are removed.
    */
   onRemove: PropTypes.func.isRequired,
   /**
