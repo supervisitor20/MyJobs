@@ -44,7 +44,7 @@ from tasks import (process_sendgrid_event, create_jira_ticket,
                    assign_ticket_to_request)
 from universal.helpers import get_company_or_404
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
 
 
 class About(TemplateView):
