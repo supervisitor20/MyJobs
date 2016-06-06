@@ -1,14 +1,6 @@
 import {createAction} from 'redux-actions';
 
 /**
- * Create an action with payload shaped like:
- *   {field: field to operate on, item: some value}
- */
-function createItemAction(name) {
-  return createAction(name, (field, item) => ({field, item}));
-}
-
-/**
  * User wants to start a new report.
  *
  * payload is an object shaped like {
@@ -27,7 +19,7 @@ export const startNewReportAction = createAction('START_NEW_REPORT');
  * item: filter value
  */
 export const setSimpleFilterAction =
-  createItemAction(
+  createAction(
     'SET_SIMPLE_FILTER',
     (field, item) => ({field, item}));
 
