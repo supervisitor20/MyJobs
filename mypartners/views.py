@@ -30,6 +30,7 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
+import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
@@ -1192,6 +1193,13 @@ def process_email(request):
     admin_email = getaddresses([admin_email])[0][1]
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
+
+    # This info will only be sent to newrelic if an exception is raised.
+    newrelic.agent.add_custom_parameter("to", to)
+    newrelic.agent.add_custom_parameter("cc", cc)
+    newrelic.agent.add_custom_parameter("admin_email", admin_email)
+    newrelic.agent.add_custom_parameter("contact_emails",
+                                        ", ".join(contact_emails))
 
     if contact_emails == [] or (len(contact_emails) == 1 and
                                 contact_emails[0].lower() == PRM_EMAIL):
