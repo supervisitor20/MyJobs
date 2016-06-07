@@ -6,6 +6,18 @@ import {assign} from 'lodash-compat/object';
 const defaultState = {currentErrors: {}};
 
 
+/**
+ *  errors format: {
+ *    lastMessage: last exception message found
+ *    currentErrors: error data accumulated from previous exceptions if any [
+ *      {
+ *        field: string name of a field to associated with this error;
+ *          may be undefined.
+ *        message: string message to show the user.
+ *      }
+ *    ]
+ *  }
+ */
 export default handleActions({
   'ERROR': (state, action) => {
     const {message, data} = action.payload;
