@@ -74,7 +74,6 @@ export class DynamicReportApp extends Component {
           <div className="col-xs-12 col-md-4">
             <ReportList
               history={history}
-              reportFinder={reportFinder}
               reports={reportList}
               highlightId={Number.parseInt(reportId, 10)}
               reportFinder={reportFinder}/>
