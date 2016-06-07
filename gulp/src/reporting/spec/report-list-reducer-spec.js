@@ -3,7 +3,7 @@ import {zip, uniq} from 'lodash-compat/array';
 import reportListReducer, {
   sortReports,
   buildFullId,
-} from '../report-list-reducer';
+} from '../reducers/report-list-reducer';
 
 import {
   startRunningReportAction,
@@ -11,7 +11,7 @@ import {
   removeRunningReportAction,
   replaceReportsListAction,
   highlightReportAction,
-} from '../report-list-actions';
+} from '../actions/report-list-actions';
 
 
 function makeReport(order, name, isRunning, {report_type, isRefreshing}) {

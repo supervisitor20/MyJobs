@@ -3,8 +3,8 @@ import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import ReportList from './ReportList';
 import SetUpReport from './SetUpReport';
-import {highlightReportAction} from './report-list-actions';
-import {doReportDataSelect} from './compound-actions';
+import {highlightReportAction} from '../actions/report-list-actions';
+import {doReportDataSelect} from '../actions/compound-actions';
 
 
 class DynamicReportApp extends Component {

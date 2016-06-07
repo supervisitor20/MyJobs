@@ -9,7 +9,7 @@ import {
   doRefreshReport,
   doSetUpForClone,
   doReportDataSelect,
-} from './compound-actions';
+} from '../actions/compound-actions';
 
 
 class ReportList extends Component {

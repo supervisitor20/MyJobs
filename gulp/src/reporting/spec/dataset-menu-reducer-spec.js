@@ -1,5 +1,5 @@
-import dataSetMenuReducer from '../dataset-menu-reducer';
-import {replaceDataSetMenu} from '../dataset-menu-actions';
+import dataSetMenuReducer from '../reducers/dataset-menu-reducer';
+import {replaceDataSetMenu} from '../actions/dataset-menu-actions';
 
 
 describe('dataSetMenuReducer', () => {

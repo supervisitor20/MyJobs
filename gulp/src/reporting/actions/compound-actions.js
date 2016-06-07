@@ -28,11 +28,14 @@ import {
   markPageLoadingAction,
   markFieldLoadingAction,
   markOtherLoadingAction,
-} from '../common/loading-actions';
+} from '../../common/actions/loading-actions';
 
 
-import {errorAction, clearErrorsAction} from './error-actions';
-import {isClientError, errorData} from '../common/myjobs-api';
+import {
+  errorAction,
+  clearErrorsAction,
+} from '../../common/actions/error-actions';
+import {isClientError, errorData} from '../../common/myjobs-api';
 
 
 /**

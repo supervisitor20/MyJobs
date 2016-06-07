@@ -1,9 +1,9 @@
-import loadingReducer from '../loading-reducer.js';
+import loadingReducer from '../reducers/loading-reducer.js';
 import {
   markPageLoadingAction,
   markFieldLoadingAction,
   markOtherLoadingAction,
-} from '../loading-actions.js';
+} from '../actions/loading-actions.js';
 
 describe('loadingReducer', () => {
   it('has a default state', () => {

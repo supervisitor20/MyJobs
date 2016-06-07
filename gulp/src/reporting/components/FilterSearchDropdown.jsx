@@ -2,7 +2,7 @@ import React, {PropTypes, Component} from 'react';
 import {SearchInput} from 'common/ui/SearchInput';
 
 
-export class WizardFilterSearchDropdown extends Component {
+export default class FilterSearchDropdown extends Component {
   onSearchSelect(value) {
     const {updateFilter} = this.props;
     updateFilter(value.value);
@@ -25,7 +25,7 @@ export class WizardFilterSearchDropdown extends Component {
   }
 }
 
-WizardFilterSearchDropdown.propTypes = {
+FilterSearchDropdown.propTypes = {
   id: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,

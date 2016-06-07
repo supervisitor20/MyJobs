@@ -6,14 +6,14 @@ import createReduxStore from '../common/create-redux-store';
 import Api from './api';
 import {ReportFinder} from './reportEngine';
 import {getCsrf} from '../common/cookie';
-import {WizardRouter} from './WizardRouter';
+import ReportingRouter from './components/ReportingRouter';
 import {combineReducers} from 'redux';
-import dataSetMenuReducer from './dataset-menu-reducer';
-import reportStateReducer from './report-state-reducer';
-import reportListReducer from './report-list-reducer';
-import errorReducer from './error-reducer';
-import loadingReducer from 'common/loading-reducer';
-import {doInitialLoad} from './compound-actions';
+import dataSetMenuReducer from './reducers/dataset-menu-reducer';
+import reportStateReducer from './reducers/report-state-reducer';
+import reportListReducer from './reducers/report-list-reducer';
+import errorReducer from 'common/reducers/error-reducer';
+import loadingReducer from 'common/reducers/loading-reducer';
+import {doInitialLoad} from './actions/compound-actions';
 import {Provider} from 'react-redux';
 
 import React from 'react';
@@ -46,7 +46,7 @@ store.dispatch(doInitialLoad());
 
 ReactDOM.render(
   <Provider store={store}>
-    <WizardRouter reportFinder={reportFinder}/>
+    <ReportingRouter reportFinder={reportFinder}/>
   </Provider>,
   document.getElementById('content')
 );

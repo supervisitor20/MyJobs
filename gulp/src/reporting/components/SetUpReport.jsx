@@ -10,23 +10,23 @@ import {
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
   setReportNameAction,
-} from './report-state-actions';
+} from '../actions/report-state-actions';
 
 import {
   doGetHelp,
   doUpdateFilterWithDependencies,
   doRunReport,
-} from './compound-actions';
+} from '../actions/compound-actions';
 
 import classnames from 'classnames';
-import {WizardFilterDateRange} from './wizard/WizardFilterDateRange';
-import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
-import {WizardFilterCityState} from './wizard/WizardFilterCityState';
+import FilterDateRange from './FilterDateRange';
+import FilterSearchDropdown from './FilterSearchDropdown';
+import FilterCityState from './FilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
-import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
+import DataTypeSelectBar from './DataTypeSelectBar';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
-import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
+import SelectByNameOrTag from './SelectByNameOrTag';
 
 class SetUpReport extends Component {
   onIntentionChange(intention) {
@@ -122,7 +122,7 @@ class SetUpReport extends Component {
 
           rows.push(
             <FieldWrapper key={col.filter} label="Date range">
-              <WizardFilterDateRange
+              <FilterDateRange
                 id={col.filter}
                 updateFilter={v =>
                   this.dispatchFilterAction(
@@ -136,7 +136,7 @@ class SetUpReport extends Component {
         case 'search_select':
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
-              <WizardFilterSearchDropdown
+              <FilterSearchDropdown
                 id={col.filter}
                 value={currentFilter[col.filter] || ''}
                 updateFilter={v =>
@@ -151,7 +151,7 @@ class SetUpReport extends Component {
           const values = currentFilter[col.filter] || {};
           rows.push(
             <FieldWrapper key={col.filter} label={col.display}>
-              <WizardFilterCityState
+              <FilterCityState
                 id={col.filter}
                 values={values}
                 updateFilter={v =>

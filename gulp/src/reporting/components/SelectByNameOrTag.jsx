@@ -8,7 +8,7 @@ import TagAnd from 'common/ui/tags/TagAnd';
  * Reporting filter component that works for selecting individual entities
  * or tags.
  */
-export class SelectByNameOrTag extends Component {
+export default class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
 

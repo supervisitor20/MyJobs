@@ -1,4 +1,6 @@
-import reportStateReducer, {withFilterDirtied} from '../report-state-reducer';
+import reportStateReducer, {
+  withFilterDirtied,
+} from '../reducers/report-state-reducer';
 
 import {
   startNewReportAction,
@@ -11,7 +13,7 @@ import {
   receiveHintsAction,
   clearHintsAction,
   resetCurrentFilterDirty,
-} from '../report-state-actions';
+} from '../actions/report-state-actions';
 
 describe('reportStateReducer', () => {
   describe('default state', () => {

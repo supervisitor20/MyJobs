@@ -1,11 +1,11 @@
 import {map, forEach} from 'lodash-compat/collection';
 import {zip, uniq} from 'lodash-compat/array';
-import errorReducer from '../error-reducer';
+import errorReducer from '../reducers/error-reducer';
 
 import {
     errorAction,
     clearErrorsAction,
-} from '../error-actions';
+} from '../actions/error-actions';
 
 
 describe('errorReducer', () => {

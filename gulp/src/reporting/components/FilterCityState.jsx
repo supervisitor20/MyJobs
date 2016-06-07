@@ -4,7 +4,7 @@ import {SearchInput} from 'common/ui/SearchInput';
 import {getDisplayForValue} from 'common/array';
 
 
-export class WizardFilterCityState extends Component {
+export default class FilterCityState extends Component {
   updateField(field, value) {
     const {updateFilter, values} = this.props;
 
@@ -55,7 +55,7 @@ export class WizardFilterCityState extends Component {
   }
 }
 
-WizardFilterCityState.propTypes = {
+FilterCityState.propTypes = {
   // unique id to use for this React component
   id: PropTypes.string.isRequired,
   // values to display

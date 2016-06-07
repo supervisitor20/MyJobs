@@ -4,24 +4,24 @@ import {
   setSimpleFilterAction,
   receiveHintsAction,
   clearHintsAction,
-} from '../report-state-actions';
+} from '../actions/report-state-actions';
 
-import reportStateReducer from '../report-state-reducer';
+import reportStateReducer from '../reducers/report-state-reducer';
 
 import {
   startNewReportAction,
-} from '../report-state-actions';
+} from '../actions/report-state-actions';
 
 import {
   startRunningReportAction,
   startRefreshingReportAction,
   removeRunningReportAction,
   replaceReportsListAction,
-} from '../report-list-actions';
+} from '../actions/report-list-actions';
 
 import {
   replaceDataSetMenu,
-} from '../dataset-menu-actions';
+} from '../actions/dataset-menu-actions';
 
 import {
   doRunReport,
@@ -32,18 +32,18 @@ import {
   getFilterValuesOnly,
   doUpdateFilterWithDependencies,
   doSetUpForClone,
-} from '../compound-actions';
+} from '../actions/compound-actions';
 
 import {
   markPageLoadingAction,
   markFieldLoadingAction,
   markOtherLoadingAction,
-} from '../../common/loading-actions';
+} from '../../common/actions/loading-actions';
 
 import {
   errorAction,
   clearErrorsAction,
-} from '../error-actions';
+} from '../../common/actions/error-actions';
 
 import {promiseTest} from '../../common/spec';
 import IdGenerator from '../../common/id-generator';
