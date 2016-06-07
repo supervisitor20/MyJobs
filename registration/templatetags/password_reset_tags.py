@@ -23,8 +23,8 @@ def get_current_seosite(attr=None, str_func=None):
     'My.jobs'
     """
 
-    seosite = getattr(settings, 'SITE') or SeoSite.objects.get(
-        domain="secure.my.jobs")
+    seosite = getattr(settings, 'SITE', SeoSite.objects.get(
+        domain="secure.my.jobs"))
 
     if attr:
         # the attribute may not always be a string, so we convert it to one
