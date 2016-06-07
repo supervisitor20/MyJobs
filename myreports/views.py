@@ -21,7 +21,6 @@ from myreports.presentation.disposition import get_content_disposition
 from postajob import location_data
 from universal.helpers import get_company_or_404
 from universal.api_validation import ApiValidator
-from universal.decorators import restrict_to_staff
 
 from myreports.datasources import ds_json_drivers
 
@@ -374,7 +373,6 @@ def dynamicoverview(request):
                               RequestContext(request))
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['POST'])
 def select_data_type_api(request):
@@ -457,7 +455,6 @@ def select_data_type_api(request):
                         content=json.dumps(data))
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def export_options_api(request):
@@ -535,7 +532,6 @@ def export_options_api(request):
                         content=json.dumps(data))
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['POST'])
 def filters_api(request):
@@ -629,7 +625,6 @@ def run_dynamic_report(request):
                         content=json.dumps(data))
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def list_dynamic_reports(request):
@@ -654,7 +649,6 @@ def list_dynamic_reports(request):
                         content=json.dumps({'reports': data}))
 
 
-@restrict_to_staff()
 @requires('read partner', 'read contact', 'read communication record')
 @require_http_methods(['GET'])
 def get_dynamic_report_info(request):
