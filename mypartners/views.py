@@ -1197,7 +1197,6 @@ def process_email(request):
 
     # Get the first valid user based on admin_emails. getaddresses can 
     # return an extra tuple with an invalid email address.
-    admin_email = None
     for admin_email in admin_emails:
         admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
         if admin_user is not None:
@@ -1205,9 +1204,11 @@ def process_email(request):
 
     if admin_user is None:
         logger.warning("The email address {email} could not be associated "
-                       "with a verified user.".format(email=admin_email))
+                       "with a verified user.".format(email=admin_emails))
         logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
         return HttpResponse(status=200)
+    else:
+        admin_email = admin_user.email
 
     # This info will only be sent to newrelic if an exception is raised.
     newrelic.agent.add_custom_parameter("to", to)
