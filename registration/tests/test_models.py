@@ -16,7 +16,7 @@ from myjobs.tests.setup import MyJobsBase
 from myprofile.tests.factories import PrimaryNameFactory
 from registration.models import ActivationProfile, Invitation
 from registration.tests.factories import InvitationFactory
-from seo.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory, SeoSiteFactory
 
 
 class RegistrationModelTests(MyJobsBase):
@@ -32,6 +32,7 @@ class RegistrationModelTests(MyJobsBase):
         super(RegistrationModelTests, self).setUp()
         self.user.delete()
         self.old_activation = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', None)
+        SeoSiteFactory(domain='secure.my.jobs')
         settings.ACCOUNT_ACTIVATION_DAYS = 7
 
     def tearDown(self):
@@ -52,6 +53,20 @@ class RegistrationModelTests(MyJobsBase):
         self.failUnless(re.match('^[a-f0-9]{40}$', profile.activation_key))
         self.assertEqual(unicode(profile),
                          "Registration for alice@example.com")
+
+    def test_manually_send_activation(self):
+        """
+        Atttempting to send an activation email outside of a view shouldn't
+        result in an exception.
+
+        """
+        user = UserFactory(email='activation@test.com')
+        activation = ActivationProfile(user=user)
+        activation.send_activation_email()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('activated', mail.outbox[0].body)
+
 
     def test_user_creation_email(self):
         """
