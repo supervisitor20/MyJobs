@@ -1139,6 +1139,7 @@ class EmailTests(MyPartnersTestCase):
         self.assertTrue('For additional assistance, please contact'
                         in email.body)
 
+
     def test_email_bad_contacts(self):
         start_contact_record_num = ContactRecord.objects.all().count()
         self.data['to'] = 'bademail@1.com, None, 6, bad@email.2'
@@ -1156,6 +1157,51 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(email.to, [self.staff_user.email])
         self.assertTrue(expected_str in email.body)
         self.assert_contact_info_in_email(email)
+
+    def test_email_address_parse(self):
+        """
+        Tests that we can parse different email address formats in the from/to 
+        fields. We weren't correctly parsing emails in this format:
+        "Lastname, Firstname <email@example.com>"
+        getaddresses would return a tuple with Lastname as an email address.
+
+        This may be an invalid format we're getting from SendGrid. Gmail
+        and Outlook both parse that string the same way getaddresses does. 
+        They read it as 2 contacts and separate "Lastname" from 
+        "Firstname <email@example.com>". A comma is a delimiter if it's not
+        part of a quoted string.
+
+        We chose to handle it in our code before diagnosing why we're
+        receiving email data in this format.
+        """
+
+        from_strings = ["\"Example, Alice\" <{email}>",
+                        "Alice <{email}>",
+                        "{email}",
+                        "Example, Alice <{email}>"] # bad format
+        to_strings = ["\"Contact User\" <{email}>",
+                      "Contact <{email}>",
+                      "{email}",
+                      "User, Contact <{email}>"] # bad format
+
+        self.data['to'] = self.contact.email
+        for from_address,to_address in zip(from_strings, to_strings):
+            self.data['to'] = to_address.format(email=self.contact_user.email)
+            self.data['from'] = from_address.format(email=self.user.email)
+            response = self.client.post(reverse('process_email'), self.data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(mail.outbox), 1)
+            email = mail.outbox.pop()
+            expected_str = "We have successfully created contact records for:"
+            unexpected_str = "No contacts or contact records could be created "\
+                             "for the following email addresses."
+            self.assertEqual(email.from_email, 'My.jobs Partner Relationship '
+                                               'Manager <prm@my.jobs>')
+            self.assertEqual(email.to, [self.staff_user.email])
+            self.assertTrue(expected_str in email.body)
+            self.assertFalse(unexpected_str in email.body)
+            self.assert_contact_info_in_email(email)
 
     def test_contact_record_and_log_creation(self):
         new_contact = ContactFactory(partner=self.partner,
