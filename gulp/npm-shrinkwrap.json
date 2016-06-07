@@ -679,6 +679,9 @@
     "flat-cache": {
       "version": "1.0.10"
     },
+    "flux-standard-action": {
+      "version": "0.6.1"
+    },
     "for-in": {
       "version": "0.1.4"
     },
@@ -824,6 +827,9 @@
     },
     "hoek": {
       "version": "2.16.3"
+    },
+    "hoist-non-react-statics": {
+      "version": "1.0.6"
     },
     "home-or-tmp": {
       "version": "1.0.0"
@@ -1093,6 +1099,9 @@
     },
     "lodash-compat": {
       "version": "3.10.1"
+    },
+    "lodash-es": {
+      "version": "4.12.0"
     },
     "lodash._arraycopy": {
       "version": "3.0.0"
@@ -1504,8 +1513,19 @@
     "react-prop-types": {
       "version": "0.3.0"
     },
+    "react-redux": {
+      "version": "4.4.5",
+      "dependencies": {
+        "lodash": {
+          "version": "4.12.0"
+        }
+      }
+    },
     "react-router": {
       "version": "1.0.3"
+    },
+    "react-router-redux": {
+      "version": "3.0.0"
     },
     "react-sortablejs": {
       "version": "1.0.0"
@@ -1539,6 +1559,26 @@
     },
     "redent": {
       "version": "1.0.0"
+    },
+    "reduce-reducers": {
+      "version": "0.1.2"
+    },
+    "redux": {
+      "version": "3.5.2",
+      "dependencies": {
+        "lodash": {
+          "version": "4.12.0"
+        }
+      }
+    },
+    "redux-actions": {
+      "version": "0.9.1"
+    },
+    "redux-promise": {
+      "version": "0.5.3"
+    },
+    "redux-thunk": {
+      "version": "2.1.0"
     },
     "regenerate": {
       "version": "1.2.1"
@@ -1773,6 +1813,9 @@
     },
     "supports-color": {
       "version": "2.0.0"
+    },
+    "symbol-observable": {
+      "version": "0.2.4"
     },
     "tapable": {
       "version": "0.1.10"
