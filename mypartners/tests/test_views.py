@@ -1139,7 +1139,6 @@ class EmailTests(MyPartnersTestCase):
         self.assertTrue('For additional assistance, please contact'
                         in email.body)
 
-
     def test_email_bad_contacts(self):
         start_contact_record_num = ContactRecord.objects.all().count()
         self.data['to'] = 'bademail@1.com, None, 6, bad@email.2'
