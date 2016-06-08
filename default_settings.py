@@ -408,9 +408,21 @@ LOGGING = {
         'pysolr': {
             'level': 'ERROR'
         },
-        'views': {
-            'level': 'INFO',
+        'seo.views.search_views': {
+            'level': 'ERROR',
             'handlers': ['file']
+        },
+        'seo.updates': {
+            'level': 'ERROR',
+            'handlers': ['file']
+        },
+        'myjobs.views': {
+            'level': 'ERROR',
+            'handlers': ['logfile']
+        },
+        'mypartners.views': {
+            'level': 'ERROR',
+            'handlers': ['logfile']
         },
         'requests.packages.urllib3.connectionpool': {
             'level': 'ERROR'
@@ -689,3 +701,6 @@ AJAX_LOOKUP_CHANNELS = {
 }
 
 IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
+
+# The email host used to parse communication records
+PRM_EMAIL_HOST = 'my.jobs'

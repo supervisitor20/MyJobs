@@ -76,7 +76,7 @@ filters = {'title_slug': {value}|None,
 From this dictionary, we should be able to filter most
 items down to what we actually need.
 """
-LOG = logging.getLogger('views')
+LOG = logging.getLogger(__name__)
 
 
 def find_page(request, page_type):

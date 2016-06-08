@@ -3,9 +3,11 @@ from email.parser import HeaderParser
 from email.utils import getaddresses
 from itertools import chain
 import json
+import logging
 from lxml import etree
 import pytz
 import re
+import sys
 import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
@@ -28,6 +30,7 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
+import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
@@ -52,6 +55,8 @@ from mypartners.helpers import (prm_worthy, add_extra_params,
                                 new_partner_from_library,
                                 send_contact_record_email_response,
                                 find_partner_from_email, tag_get_or_create)
+
+logger = logging.getLogger(__name__)
 
 
 @warn_when_inactive(feature='Partner Relationship Manager is')
@@ -1155,7 +1160,10 @@ def process_email(request):
     Creates a contact record from an email received via POST.
 
     """
+    PRM_EMAIL = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
+        logger.warning("process_email: received {method} request, returning "
+                       "early.".format(method=request.method))
         return HttpResponse(status=200)
 
     admin_email = request.REQUEST.get('from')
@@ -1164,6 +1172,8 @@ def process_email(request):
     subject = request.REQUEST.get('subject')
     email_text = request.REQUEST.get('text')
     if key != settings.EMAIL_KEY:
+        logger.warning("process_email: invalid email key provided, returning "
+                       "early.")
         return HttpResponse(status=200)
     if headers:
         parser = HeaderParser()
@@ -1180,13 +1190,36 @@ def process_email(request):
     to = request.REQUEST.get('to', '')
     cc = request.REQUEST.get('cc', '')
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
-    admin_email = getaddresses([admin_email])[0][1]
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
 
+    admin_emails = [name_email[1] for name_email in getaddresses([admin_email])]
+
+    # Get the first valid user based on admin_emails. getaddresses can 
+    # return an extra tuple with an invalid email address.
+    for admin_email in admin_emails:
+        admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
+        if admin_user is not None:
+            break
+
+    if admin_user is None:
+        logger.warning("The email address {email} could not be associated "
+                       "with a verified user.".format(email=admin_emails))
+        logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
+        return HttpResponse(status=200)
+    else:
+        admin_email = admin_user.email
+
+    # This info will only be sent to newrelic if an exception is raised.
+    newrelic.agent.add_custom_parameter("to", to)
+    newrelic.agent.add_custom_parameter("cc", cc)
+    newrelic.agent.add_custom_parameter("admin_email", admin_email)
+    newrelic.agent.add_custom_parameter("contact_emails",
+                                        ", ".join(contact_emails))
+
     if contact_emails == [] or (len(contact_emails) == 1 and
-                                contact_emails[0].lower() == 'prm@my.jobs'):
-        # If prm@my.jobs is the only contact, assume it's a forward.
+                                contact_emails[0].lower() == PRM_EMAIL):
+        # If PRM_EMAIL is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
             recipient_emails_and_names = fwd_headers[0]['recipients']
@@ -1202,7 +1235,7 @@ def process_email(request):
 
     validated_contacts = []
     for element in contact_emails:
-        if not element.lower() == 'prm@my.jobs' and validate_email(element):
+        if not element.lower() == PRM_EMAIL and validate_email(element):
             validated_contacts.append(element)
 
     contact_emails = validated_contacts
@@ -1211,10 +1244,6 @@ def process_email(request):
         contact_emails.remove(admin_email)
     except ValueError:
         pass
-
-    admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
-    if admin_user is None:
-        return HttpResponse(status=200)
 
     # determine if the user is associated with more thanone company
     multiple_companies = admin_user.roles.values(
@@ -1226,6 +1255,9 @@ def process_email(request):
                 "specific partner on a specific company with 100% certainty. " \
                 "You will need to login to My.jobs and go to " \
                 "https://secure.my.jobs/prm to create your record manually."
+        logger.warning("User with email address {user} is associated with "
+                       "multiple companies.".format(user=admin_user))
+        logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
         send_contact_record_email_response([], [], [], contact_emails,
                                            error, admin_email)
         return HttpResponse(status=200)
@@ -1314,6 +1346,10 @@ def process_email(request):
 
         created_records.append(record)
 
+    logger.info("created_contacts: {contacts}".format(contacts=", ".join([
+                    contact.email for contact in created_contacts])))
+    logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
+                    unmatched_contacts)))
     send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
                                        None, admin_email)
