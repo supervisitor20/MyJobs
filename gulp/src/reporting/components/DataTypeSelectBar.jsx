@@ -1,8 +1,9 @@
 import React, {Component, PropTypes} from 'react';
 import Select from 'common/ui/Select';
 import {getDisplayForValue} from 'common/array';
+import {connect} from 'react-redux';
 
-export default class DataTypeSelectBar extends Component {
+class DataTypeSelectBar extends Component {
   render() {
     const {
       intentionChoices,
@@ -83,3 +84,5 @@ DataTypeSelectBar.propTypes = {
   dataSetValue: PropTypes.string.isRequired,
   onDataSetChange: PropTypes.func.isRequired,
 };
+
+export default connect(s => s.dataSetMenu || {})(DataTypeSelectBar);

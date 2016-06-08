@@ -4,16 +4,14 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-from tasks import PARTNER_LIBRARY_SOURCES
-
 class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
 
-        errd = PARTNER_LIBRARY_SOURCES.keys()[0]
         # update tags
-        orm.Tag.objects.filter(name='OFCCP Library').update(name=errd)
+        orm.Tag.objects.filter(name='OFCCP Library').update(
+            name='Employment Referral Resource Directory')
 
     def backwards(self, orm):
         "Write your backwards methods here."

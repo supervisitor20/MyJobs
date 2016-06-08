@@ -15,10 +15,6 @@
 
         {% endif %}
     </div>
-    {% if react %}
-        <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% else %}
-        <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% endif %}
+    <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>
 {% endfor %}

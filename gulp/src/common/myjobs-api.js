@@ -61,3 +61,11 @@ export class MyJobsApi {
     return this.ajaxWithFormData('DELETE', url, data);
   }
 }
+
+export function isClientError(exc) {
+  return Boolean(exc.response) && exc.response.status === 400;
+}
+
+export function errorData(exc) {
+  return exc.data;
+}

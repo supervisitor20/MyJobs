@@ -18,6 +18,7 @@ class MyProfileViewsTests(MyJobsBase):
         self.client.login_user(self.user)
         self.name = PrimaryNameFactory(user=self.user)
 
+
     def test_edit_profile(self):
         """
         Going to the edit_profile view generates a list of existing profile
@@ -25,63 +26,32 @@ class MyProfileViewsTests(MyJobsBase):
         don't have data filled out in the sidebar.
         """
         resp = self.client.get(reverse('view_profile'))
+
         soup = BeautifulSoup(resp.content)
-        item_id = self.name.id
+        item = soup.find('div', id='profileTitleBar')
 
-        # The existing name object should be rendered on the main content
-        # section
-        self.assertIsNotNone(soup.find('div',
-                                       id='name-' + str(item_id) + '-item'))
-        # profile-section contains the name of a profile section that has no
-        # information filled out yet and shows up in the sidebar
-        self.assertTrue(soup.findAll('tr', {'class': 'profile-section'}))
+        # Page should have fake user's email as title
+        self.assertIsNotNone(soup.find_all('h3', text="alice@example.com"))
 
-    def test_edit_summary(self):
-        """
-        See test_edit_profile
-        """
-        summary = SummaryFactory(user=self.user)
-        resp = self.client.get(reverse('view_profile'))
-        soup = BeautifulSoup(resp.content)
+        # The only module that is complete at this point is 'Name'. So there
+        # should only be one module displayed in the moduleColumn div
+        self.assertEquals(1, len(soup.findAll("div", { "class" : "card-wrapper" })))
 
-        item = soup.find('div', id='summary-' + str(summary.id) + '-item')
-        self.assertIsNotNone(item)
+        # The 'Add a New Section' section should have many items
+        # Check for each one
+        self.assertEquals(10, len(soup.findAll("tr", { "class" : "profile-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Education-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Address-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Telephone-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Employment History-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Secondary Email-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Military Service-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Website-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "License-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Summary-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Volunteer History-new-section" })))
+        self.assertEquals(1, len(soup.findAll("a", { "id" : "Summary-new-section" })))
 
-        link = item.find('a').attrs['href']
-        resp = self.client.get(link)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_handle_form_get_new(self):
-        """
-        Invoking the handle_form view without an id parameter returns an
-        empty form with the correct form id
-        """
-
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Name'})
-        self.assertTemplateUsed(resp, 'myprofile/profile_form.html')
-        soup = BeautifulSoup(resp.content)
-        self.assertEquals(soup.form.attrs['id'], 'profile-unit-form')
-        with self.assertRaises(KeyError):
-            soup.find('input', id='id_name-given_name').attrs['value']
-
-    def test_handle_form_get_existing(self):
-        """
-        Invoking the handle_form view with and id paraemeter returns
-        a form filled out with the corresponding profile/ID combination
-        """
-
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Name', 'id': self.name.id})
-        self.assertTemplateUsed(resp, 'myprofile/profile_form.html')
-        soup = BeautifulSoup(resp.content)
-        self.assertEquals(soup.form.attrs['id'], 'profile-unit-form')
-        self.assertEquals(soup.find('input', id='id_name-given_name')
-                          .attrs['value'], 'Alice')
-        self.assertEquals(soup.find('input', id='id_name-family_name')
-                          .attrs['value'], 'Smith')
-        self.assertEquals(soup.find('input', id='id_name-primary')
-                          .attrs['checked'], 'checked')
 
     def test_handle_form_post_new_valid(self):
         """
@@ -98,6 +68,35 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertEqual(Name.objects.filter(given_name='Susy',
                                              family_name='Smith').count(), 1)
 
+
+    def test_delete_item(self):
+        """
+        Invoking the delete_item view deletes the item and returns
+        the 'Deleted!' HttpResponse
+        """
+
+        resp = self.client.post(reverse('delete_item')+'?item='+str(self.name.id))
+
+        self.assertEqual(resp.content, '')
+        self.assertEqual(Name.objects.filter(id=self.name.id).count(), 0)
+
+
+    def test_edit_summary(self):
+        """
+        See test_edit_profile
+        """
+        summary = SummaryFactory(user=self.user)
+        resp = self.client.get(reverse('view_profile'))
+        soup = BeautifulSoup(resp.content)
+
+        item = soup.find('div', id='summary-' + str(summary.id) + '-item')
+        self.assertIsNotNone(item)
+
+        link = item.find('a').attrs['href']
+        resp = self.client.get(link)
+        self.assertEqual(resp.status_code, 200)
+
+
     def test_handle_form_post_invalid(self):
         """
         Invoking the handle_form view as a POST request with an invalid
@@ -111,6 +110,15 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertEqual(json.loads(resp.content),
                          {u'family_name': [u'This field is required.']})
 
+        resp = self.client.post(reverse('handle_form'),
+                                data={'module': 'Name', 'id': 'new',
+                                      'family_name': 'Smithers'},
+                                HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(json.loads(resp.content),
+                         {u'given_name': [u'This field is required.']})
+
+
     def test_handle_form_post_existing_valid(self):
         """
         Invoking the handle_form view as a POST request for an existing
@@ -120,9 +128,11 @@ class MyProfileViewsTests(MyJobsBase):
                                 data={'module': 'Name', 'id': self.name.id,
                                       'given_name': 'Susy',
                                       'family_name': 'Smith'})
+
         self.assertRedirects(resp, reverse('view_profile'))
         self.assertEqual(Name.objects.filter(given_name='Susy',
                                              family_name='Smith').count(), 1)
+
 
     def test_handle_form_json_serialize_get(self):
         """When an ajax requests wants to GET json, serialize the form."""
@@ -142,29 +152,6 @@ class MyProfileViewsTests(MyJobsBase):
         self.assertEquals(3, len(data['data']))
         self.assertIsInstance(data['data'], dict)
 
-    def test_handle_form_redirect_summary(self):
-        """
-        When a user has a summary already if they try to make a new summary
-        handle form should redirect the user to edit the summary they already
-        have. User is only allowed one summary per account.
-        """
-        summary_instance = SummaryFactory(user=self.user)
-        summary_instance.save()
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Summary'})
-        self.assertRedirects(resp, reverse(
-            'handle_form')+'?id=%s&module=Summary' % summary_instance.id)
-
-    def test_delete_item(self):
-        """
-        Invoking the delete_item view deletes the item and returns
-        the 'Deleted!' HttpResponse
-        """
-
-        resp = self.client.post(reverse('delete_item')+'?item='+str(self.name.id))
-
-        self.assertEqual(resp.content, '')
-        self.assertEqual(Name.objects.filter(id=self.name.id).count(), 0)
 
     def test_add_duplicate_primary_email(self):
         """
@@ -179,26 +166,6 @@ class MyProfileViewsTests(MyJobsBase):
                                       'id': 'new',
                                       'email': self.user.email},
                                 HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
         self.assertEqual(json.loads(resp.content),
                          {u'email': [u'This email is already registered.']})
-
-    def test_default_country_changes(self):
-        """
-        The displayed country when editing an address should update to reflect
-        the chosen country.
-        """
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Address'})
-        content = BeautifulSoup(resp.content)
-
-        selected = content.find('option', attrs={'selected': True})
-        self.assertEqual(selected.attrs['value'], 'USA')
-
-        address = AddressFactory(user=self.user, country_code='AFG')
-
-        resp = self.client.get(reverse('handle_form'),
-                               data={'module': 'Address',
-                                     'id': address.id})
-        content = BeautifulSoup(resp.content)
-        selected = content.find('option', attrs={'selected': True})
-        self.assertEqual(selected.attrs['value'], 'AFG')

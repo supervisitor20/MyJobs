@@ -3,7 +3,7 @@ import DateField from '../../common/ui/DateField';
 import moment from 'moment';
 
 // TODO rip this out into a generalized begin/end dual Datefield
-export class WizardFilterDateRange extends Component {
+export default class FilterDateRange extends Component {
     constructor() {
       super();
     }
@@ -83,7 +83,7 @@ export class WizardFilterDateRange extends Component {
     }
 }
 
-WizardFilterDateRange.propTypes = {
+FilterDateRange.propTypes = {
   id: PropTypes.string.isRequired,
   updateFilter: PropTypes.func.isRequired,
   begin: PropTypes.string,

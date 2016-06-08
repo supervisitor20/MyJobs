@@ -19,10 +19,6 @@
         {{ item.city_name }}{% if item.country_sub_division_code %}{% if item.city_name%},{% endif %} {{ item.country_sub_division_code }}{% endif %}{% if item.postal_code %}, {{ item.postal_code }}{% endif %}
     </div>
     {% endif %}
-    {% if react %}
-        <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% else %}
-        <a class="btn" href="{% url 'handle_form' %}?id={{ item.id }}&module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% endif %}
+    <a class="btn" href="{% url 'edit_summary' %}#/{{ item.id }}?module={{ item.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>
 {% endfor %}

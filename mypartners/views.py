@@ -46,7 +46,8 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location, OutreachEmailAddress, OutreachRecord)
+                               Location, OutreachEmailAddress, OutreachRecord,
+                               PartnerLibrarySource)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -120,7 +121,8 @@ def partner_library(request):
     ctx = {
         'company': company,
         'view_name': 'PRM',
-        'partners': paginator
+        'partners': paginator,
+        'sources': PartnerLibrarySource.objects.values('search_url', 'name')
     }
 
     return render_to_response('mypartners/partner_library.html', ctx,
@@ -1209,7 +1211,6 @@ def process_email(request):
         return HttpResponse(status=200)
     else:
         admin_email = admin_user.email
-
     # This info will only be sent to newrelic if an exception is raised.
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
@@ -1472,6 +1473,35 @@ def api_get_nuo_records_list(request):
         )
         json_res.append(json_obj)
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
+
+@restrict_to_staff()
+@requires("read outreach record")
+def api_get_individual_nuo_record(request):
+    """
+    GET /prm/api/nonuseroutreach/records/record
+
+    Retrieves the information for a given outreach record.
+
+    """
+    company = get_company_or_404(request)
+    record_id = request.GET.get('record_id', None)
+    if not record_id:
+        raise Http404("No record id provided")
+    outreach_emails = OutreachEmailAddress.objects.filter(company=company)
+    try:
+        record = OutreachRecord.objects.get(outreach_email__in=outreach_emails,
+                                            pk=record_id)
+        json_obj = dict(
+            date_added = record.date_added.strftime('%m-%d-%Y'),
+            outreach_email = record.outreach_email.email + '@my.jobs',
+            from_email = record.from_email,
+            email_body = record.email_body,
+            current_workflow_state = record.current_workflow_state.state,
+        )
+    except OutreachRecord.DoesNotExist:
+        json_obj = {}
+
+    return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
 @requires('read tag')
 def tag_names(request):

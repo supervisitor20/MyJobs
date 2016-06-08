@@ -1,17 +1,12 @@
 import React, {PropTypes, Component} from 'react';
-import MultiSelect from 'common/ui/MultiSelect';
-import {
-  filter as lodashFilter,
-  indexBy,
-} from 'lodash-compat/collection';
+import TagSelect from 'common/ui/tags/TagSelect';
 
-export default class MultiSelectFilter extends Component {
+export default class TagSelectController extends Component {
   constructor() {
     super();
     this.state = {
       available: [],
     };
-    this.mounted = false;
   }
 
   componentDidMount() {
@@ -33,54 +28,53 @@ export default class MultiSelectFilter extends Component {
   }
 
   async getHints() {
-    const {getHints, selected, onRemove, removeSelected} = this.props;
+    const {getHints} = this.props;
     if (this.mounted) {
       const available = await getHints();
       // gotta check again. Save me redux.
       if (this.mounted) {
         this.setState({available});
-        // If removeSelected is set, we want to forcibly remove
-        // any items from the selected list that are not present in the
-        // available list.
-        //
-        // DANGER: this is opt-in because bugs and even misconfiguration
-        // could lead to a perpetual cycle of fields filtering and refiltering
-        // each other.
-        //
-        // Currently needed only for the contacts filter field.
-        if (removeSelected) {
-          const availableValues = indexBy(available, 'value');
-          const missingSelected =
-            lodashFilter(selected, s => !availableValues[s.value]);
-          onRemove(missingSelected);
-        }
       }
     }
   }
 
   render() {
+    const {placeholder, searchPlaceholder, showCounter} = this.props;
     const {
       selected,
       onAdd,
       onRemove,
-      availableHeader,
-      selectedHeader,
     } = this.props;
     const {available} = this.state;
 
+    let htmlPlaceholder = (
+      <span>
+        <span>{placeholder}</span>
+        <span className="counter">
+          <span className="report-loader"></span>
+        </span>
+      </span>);
+    if (available.length !== 0) {
+      htmlPlaceholder = (
+        <span>
+          <span>{placeholder}</span>
+          <span className="counter">[ {available.length} available ]</span>
+        </span>);
+    }
     return (
-      <MultiSelect
-        availableHeader={availableHeader}
-        selectedHeader={selectedHeader}
+      <TagSelect
         selected={selected}
         available={available}
-        onAdd={onAdd}
-        onRemove={onRemove}/>
+        onChoose = {onAdd}
+        onRemove = {onRemove}
+        searchPlaceholder = {searchPlaceholder}
+        placeholder = {(showCounter ? htmlPlaceholder : placeholder )}
+        />
     );
   }
 }
 
-MultiSelectFilter.propTypes = {
+TagSelectController.propTypes = {
   /**
    * Function to get available items
    */
@@ -92,16 +86,9 @@ MultiSelectFilter.propTypes = {
     React.PropTypes.shape({
       value: React.PropTypes.any.isRequired,
       display: React.PropTypes.string.isRequired,
+      hexColor: PropTypes.string,
     })
   ),
-  /**
-   * Header text for left side select
-   */
-  availableHeader: React.PropTypes.string.isRequired,
-  /**
-   * Header text for right select
-   */
-  selectedHeader: React.PropTypes.string.isRequired,
   /**
    * Function fired when an item is selected from the left side
    */
@@ -115,9 +102,15 @@ MultiSelectFilter.propTypes = {
    */
   reportFinder: React.PropTypes.object,
   /**
-   * Call onRemove for every selected item not in the list returned from
-   * getHints. Future: figure out how to _not_ need this. See DANGER in comment
-   * above.
+   * placeholder text for tag search bar
    */
-  removeSelected: React.PropTypes.bool,
+  searchPlaceholder: React.PropTypes.string,
+  /**
+   * placeholder text for select input
+   */
+  placeholder: React.PropTypes.string,
+  /**
+   * Whether or not to show the counter of results
+   */
+  showCounter: React.PropTypes.bool,
 };
