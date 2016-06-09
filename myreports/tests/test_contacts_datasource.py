@@ -396,6 +396,31 @@ class TestContactsDataSource(MyJobsBase):
         expected = {self.john.name}
         self.assertEqual(expected, subjects)
 
+    def test_filter_by_partner_tags(self):
+        ds = ContactsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            ContactsFilter(partner_tags=[['rigHt']]),
+            [])
+        subjects = {r['name'] for r in recs}
+        expected = {self.sue.name}
+        self.assertEqual(expected, subjects)
+
+    def test_filter_by_partner_tags_empty(self):
+        """
+        Check that we can find a record attached to an untagged partner.
+
+        """
+        self.partner_b.tags.clear()
+        ds = ContactsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            ContactsFilter(partner_tags=[]),
+            [])
+        subjects = {r['name'] for r in recs}
+        expected = {self.sue.name}
+        self.assertEqual(expected, subjects)
+
     def test_help_city(self):
         """Check city help works and ignores current city filter."""
         ds = ContactsDataSource()
@@ -423,6 +448,16 @@ class TestContactsDataSource(MyJobsBase):
         actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
+    def test_help_partner_tags(self):
+        """
+        Check partner tags help works at all.
+
+        """
+        ds = ContactsDataSource()
+        recs = ds.help_partner_tags(self.company, ContactsFilter(), "t")
+        actual = {r['value'] for r in recs}
+        self.assertEqual({'left', 'right'}, actual)
+
     def test_help_tags_colors(self):
         """Tags should have colors"""
         ds = ContactsDataSource()
@@ -449,13 +484,16 @@ class TestContactsDataSource(MyJobsBase):
         self.assertEqual(expected, names)
 
     def test_adorn_filter(self):
+        self.maxDiff = 10000
         filter_spec = ContactsFilter(
             locations={'city': 'Chicago', 'state': 'IL'},
             tags=[['east'], ['west']],
-            partner=[str(self.partner_a.pk)])
+            partner=[str(self.partner_a.pk)],
+            partner_tags=[['lEft'], ['Right']],
+            )
         expected = {
             u'partner': [
-                {u'value': self.partner_a.pk, 'display': u'aaa'},
+                {'value': self.partner_a.pk, 'display': u'aaa'},
             ],
             u'locations': {
                 u'city': u'Chicago',
@@ -474,6 +512,22 @@ class TestContactsDataSource(MyJobsBase):
                         'value': u'west',
                         'display': u'west',
                         'hexColor': u'bbbbbb',
+                    }
+                ],
+            ],
+            u'partner_tags': [
+                [
+                    {
+                        'value': u'left',
+                        'display': u'left',
+                        'hexColor': u'cccccc',
+                    }
+                ],
+                [
+                    {
+                        'value': u'right',
+                        'display': u'right',
+                        'hexColor': u'dddddd',
                     }
                 ],
             ],

@@ -1,10 +1,9 @@
 """Contacts DataSource"""
-from operator import __or__
 from datetime import datetime
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags)
+    filter_date_range, extract_tags, adorn_tags, filter_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
@@ -12,8 +11,6 @@ from mypartners.models import Contact, Location, Tag, Partner, Status
 from universal.helpers import dict_identity, extract_value
 
 from postajob.location_data import states
-
-from django.db.models import Q
 
 
 class ContactsDataSource(DataSource):
@@ -72,6 +69,24 @@ class ContactsDataSource(DataSource):
         tags_qs = (
             Tag.objects
             .filter(contact__in=contacts_qs)
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
+        return [
+            {
+                'value': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in tags_qs]
+
+    def help_partner_tags(self, company, filter_spec, partial):
+        """Get help for the partner tags field."""
+        contacts_qs = self.filtered_query_set(company, ContactsFilter())
+
+        partner_qs = Partner.objects.filter(
+            contact__in=contacts_qs)
+        tags_qs = (
+            Tag.objects
+            .filter(partner__in=partner_qs)
             .filter(name__icontains=partial)
             .values('name', 'hex_color').distinct())
         return [
@@ -141,17 +156,18 @@ class ContactsDataSource(DataSource):
                     adorned[u'locations'][u'state'] = states[0]['value']
 
         if filter_spec.tags:
-            adorned[u'tags'] = []
-            for known_or_tags in filter_spec.tags:
-                or_group = []
+            adorned[u'tags'] = adorn_tags(
+                company,
+                filter_spec.tags,
+                self.help_tags,
+                empty)
 
-                for known_tag in known_or_tags:
-                    tags = self.help_tags(company, empty, known_tag)
-                    if tags:
-                        or_group.append(tags[0])
-
-                if or_group:
-                    adorned[u'tags'].append(or_group)
+        if filter_spec.partner_tags:
+            adorned[u'partner_tags'] = adorn_tags(
+                company,
+                filter_spec.partner_tags,
+                self.help_partner_tags,
+                empty)
 
         if filter_spec.partner:
             partners_qs = (
@@ -176,11 +192,13 @@ class ContactsDataSource(DataSource):
 @dict_identity
 class ContactsFilter(DataSourceFilter):
     """Represent a ContactsDataSource user filter."""
-    def __init__(self, date=None, locations=None, tags=None, partner=None):
+    def __init__(self, date=None, locations=None, tags=None, partner=None,
+                 partner_tags=None):
         self.date = date
         self.locations = locations
         self.tags = tags
         self.partner = partner
+        self.partner_tags = partner_tags
 
     @classmethod
     def filter_key_types(self):
@@ -230,20 +248,10 @@ class ContactsFilter(DataSourceFilter):
         qs = filter_date_range(self.date, 'last_action_time', qs)
 
         if self.tags is not None:
-            list_empty = True
-            or_qs = []
-            for tag_ors in self.tags:
-                if tag_ors:
-                    list_empty = False
-                    or_qs.append(
-                        reduce(
-                            __or__,
-                            map(lambda t: Q(tags__name__iexact=t), tag_ors)))
-            for or_q in or_qs:
-                qs = qs.filter(or_q)
-            if list_empty:
-                # if an empty tags list was received, return only untagged items
-                qs = qs.filter(tags=None)
+            qs = filter_tags('tags', self.tags, qs)
+
+        if self.partner_tags is not None:
+            qs = filter_tags('partner__tags', self.partner_tags, qs)
 
         if self.partner is not None:
             qs = qs.filter(partner__pk__in=self.partner)

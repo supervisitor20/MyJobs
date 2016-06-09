@@ -138,7 +138,7 @@ class CommRecordsDataSource(DataSource):
             } for t in tags_qs]
 
     def help_partner_tags(self, company, filter_spec, partial):
-        """Get help for the contact tags field."""
+        """Get help for the partner tags field."""
         comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
 
         partner_qs = Partner.objects.filter(
