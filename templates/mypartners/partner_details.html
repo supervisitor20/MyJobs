@@ -90,7 +90,7 @@
 
 {% block extra-js %}
 <script type="text/javascript">
-  var create_tags = {{ create_tags }};
+  var createTags = {{ create_tags }};
 
   $(document).ready(function() {
       $(".product-card:not(.no-highlight)").on("click", function() {
@@ -100,5 +100,5 @@
 </script>
 <script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
 <script src="{{ STATIC_URL }}prm.170-6.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}tags.170-6.js{{ gz }}"></script>
+<script src="{{ STATIC_URL }}tags.js"></script>
 {% endblock %}
