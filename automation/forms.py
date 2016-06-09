@@ -23,7 +23,9 @@ ATS_PARAMETERS = {
 
 
 class SourceCodeFileUpload(forms.Form):
-    source_code_file = forms.FileField(required=True)
+    source_code_file = forms.FileField(
+        required=True,
+        widget=forms.ClearableFileInput(attrs={'accept': '.xls,.xlsx,.csv'}))
     buids = forms.CharField(required=True)
     source_code_parameter = forms.CharField(required=False)
 
