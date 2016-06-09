@@ -44,8 +44,15 @@ class TestContactsDataSource(MyJobsBase):
             company=self.company, name='east', hex_color="aaaaaa")
         self.west_tag = TagFactory.create(
             company=self.company, name='west', hex_color="bbbbbb")
+        self.left_tag = TagFactory.create(
+            company=self.company, name='left', hex_color="cccccc")
+        self.right_tag = TagFactory.create(
+            company=self.company, name='right', hex_color="dddddd")
         self.bad_tag = TagFactory.create(
             company=self.company, name='bad', hex_color="cccccc")
+
+        self.partner_a.tags.add(self.left_tag)
+        self.partner_b.tags.add(self.right_tag)
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(

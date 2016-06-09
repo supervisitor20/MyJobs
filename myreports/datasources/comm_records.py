@@ -137,6 +137,24 @@ class CommRecordsDataSource(DataSource):
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
+    def help_partner_tags(self, company, filter_spec, partial):
+        """Get help for the contact tags field."""
+        comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
+
+        partner_qs = Partner.objects.filter(
+            contact__contactrecord__in=comm_records_qs)
+        tags_qs = (
+            Tag.objects
+            .filter(partner__in=partner_qs)
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
+        return [
+            {
+                'value': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in tags_qs]
+
     def help_communication_type(self, company, filter_spec, partial):
         """Get help for the communication type field."""
         return [
@@ -222,6 +240,13 @@ class CommRecordsDataSource(DataSource):
                 self.help_contact_tags,
                 empty)
 
+        if filter_spec.partner_tags:
+            adorned[u'partner_tags'] = adorn_tags(
+                company,
+                filter_spec.partner_tags,
+                self.help_partner_tags,
+                empty)
+
         if filter_spec.partner:
             partners_qs = (
                 Partner.objects
@@ -263,7 +288,7 @@ class CommRecordsDataSource(DataSource):
 class CommRecordsFilter(DataSourceFilter):
     def __init__(self, date_time=None, locations=None, tags=None,
                  communication_type=None, partner=None, contact=None,
-                 contact_tags=None):
+                 contact_tags=None, partner_tags=None):
         self.date_time = date_time
         self.locations = locations
         self.tags = tags
@@ -271,6 +296,7 @@ class CommRecordsFilter(DataSourceFilter):
         self.partner = partner
         self.contact = contact
         self.contact_tags = contact_tags
+        self.partner_tags = partner_tags
 
     @classmethod
     def filter_key_types(self):
@@ -357,5 +383,8 @@ class CommRecordsFilter(DataSourceFilter):
 
         if self.contact_tags is not None:
             qs = filter_tags('contact__tags', self.contact_tags, qs)
+
+        if self.partner_tags is not None:
+            qs = filter_tags('partner__tags', self.partner_tags, qs)
 
         return qs

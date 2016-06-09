@@ -52,8 +52,15 @@ class TestCommRecordsDataSource(MyJobsBase):
             company=self.company, name='north', hex_color="cccccc")
         self.south_tag = TagFactory.create(
             company=self.company, name='south', hex_color="dddddd")
+        self.left_tag = TagFactory.create(
+            company=self.company, name='left', hex_color="eeeeee")
+        self.right_tag = TagFactory.create(
+            company=self.company, name='right', hex_color="ffffff")
         self.bad_tag = TagFactory.create(
             company=self.company, name='bad', hex_color="cccccc")
+
+        self.partner_a.tags.add(self.left_tag)
+        self.partner_b.tags.add(self.right_tag)
 
         self.john_user = UserFactory(email="john@user.com")
         self.john = ContactFactory(
@@ -379,6 +386,31 @@ class TestCommRecordsDataSource(MyJobsBase):
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
+    def test_filter_by_partner_tags(self):
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(partner_tags=[['rigHt']]),
+            [])
+        subjects = {r['subject'] for r in recs}
+        expected = {self.record_3.subject}
+        self.assertEqual(expected, subjects)
+
+    def test_filter_by_partner_tags_empty(self):
+        """
+        Check that we can find a record attached to an untagged partner.
+
+        """
+        self.partner_b.tags.clear()
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(partner_tags=[]),
+            [])
+        subjects = {r['subject'] for r in recs}
+        expected = {self.record_3.subject}
+        self.assertEqual(expected, subjects)
+
     def test_help_city(self):
         """
         Check city help works and ignores current city filter.
@@ -417,13 +449,23 @@ class TestCommRecordsDataSource(MyJobsBase):
 
     def test_help_contact_tags(self):
         """
-        Check tags help works at all.
+        Check contact tags help works at all.
 
         """
         ds = CommRecordsDataSource()
         recs = ds.help_contact_tags(self.company, CommRecordsFilter(), "O")
         actual = {r['value'] for r in recs}
         self.assertEqual({'north', 'south'}, actual)
+
+    def test_help_partner_tags(self):
+        """
+        Check partner tags help works at all.
+
+        """
+        ds = CommRecordsDataSource()
+        recs = ds.help_partner_tags(self.company, CommRecordsFilter(), "t")
+        actual = {r['value'] for r in recs}
+        self.assertEqual({'left', 'right'}, actual)
 
     def test_help_tags_colors(self):
         """
@@ -495,6 +537,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             partner=[str(self.partner_a.pk)],
             contact=[str(self.sue.pk)],
             contact_tags=[['nOrth'], ['south']],
+            partner_tags=[['lEft'], ['riGht']],
             )
 
         expected = {
@@ -524,7 +567,7 @@ class TestCommRecordsDataSource(MyJobsBase):
                     }
                 ],
             ],
-            u'communication_type': [{'value': u'email', 'display': u'Email'}],
+            u'communication_type': [{'value': 'email', 'display': 'Email'}],
             u'contact_tags': [
                 [
                     {
@@ -538,6 +581,22 @@ class TestCommRecordsDataSource(MyJobsBase):
                         'value': u'south',
                         'display': u'south',
                         'hexColor': u'dddddd',
+                    }
+                ],
+            ],
+            u'partner_tags': [
+                [
+                    {
+                        'value': u'left',
+                        'display': u'left',
+                        'hexColor': u'eeeeee',
+                    }
+                ],
+                [
+                    {
+                        'value': u'right',
+                        'display': u'right',
+                        'hexColor': u'ffffff',
                     }
                 ],
             ],
