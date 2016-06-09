@@ -13,7 +13,6 @@ def source_code_upload(request):
         form = SourceCodeFileUpload(post, request.FILES)
         if form.is_valid():
             context['stats'] = form.save()
-        print form._errors
     else:
         form = SourceCodeFileUpload()
     context['form'] = form

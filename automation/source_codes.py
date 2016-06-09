@@ -194,13 +194,18 @@ def add_destination_manipulations(buids, codes):
     # This differs from how add_source_codes handles things. I would like to
     # eventually refactor that method to do something similar but that's out
     # of scope for the current task. - TP
-    code_dict = {(code['view_source'], code['action_type']): code
+    code_dict = {(int(code['view_source']), int(code['action_type'])): code
                  for code in codes}
-    if not isinstance(buids, (list, set)):
+
+    # BUIDs are optional; if none are provided, pull them from the csv
+    if not buids:
+        buids = [code['buid'] for code in codes]
+    elif not isinstance(buids, (list, set)):
         buids = [buids]
     buids = map(int, buids)
 
-    vs_and_action_type = code_dict.keys()
+    vs_and_action_type = set((int(vs), int(action_type))
+                             for (vs, action_type) in code_dict.keys())
 
     # Build up the list of possible matching manipulations. This will be used
     # to determine when to update an entry and when to create a new one.
