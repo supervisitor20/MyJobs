@@ -589,20 +589,20 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         """
 
         all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name',
+            'partner__name', 'partner', 'contact__name', 'contact__id',
             'contact_email').distinct().order_by('partner__name')
 
         records = dict(self.exclude(contact_type='job').values_list(
-            'contact__name').annotate(
-                records=models.Count('contact__name')).distinct())
+            'contact__id').annotate(
+                records=models.Count('contact__id')).distinct())
 
         referrals = dict(self.filter(contact_type='job').values_list(
-            'contact__name').annotate(
-                referrals=models.Count('contact__name')).distinct())
+            'contact__id').annotate(
+                referrals=models.Count('contact__id')).distinct())
 
         for contact in all_contacts:
-            contact['referrals'] = referrals.get(contact['contact__name'], 0)
-            contact['records'] = records.get(contact['contact__name'], 0)
+            contact['referrals'] = referrals.get(contact['contact__id'], 0)
+            contact['records'] = records.get(contact['contact__id'], 0)
 
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 

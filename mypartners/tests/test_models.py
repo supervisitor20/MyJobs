@@ -263,6 +263,32 @@ class MyPartnerTests(MyJobsBase):
             OutreachEmailDomain.objects.create(company=self.company,
                                                domain="foo.bar")
 
+    def test_contact_record_counts_vs_list(self):
+        """
+        ContactRecord counts for Communication Records and Referals
+        should match summed counts from contacts.
+        """
+        contacts = ContactFactory.create_batch(4)
+        contacts[0].name = 'Other name'
+        contacts[1].email = 'other@email.com'
+        contacts[2].partner = PartnerFactory(name='Other Partner')
+        for contact in contacts:
+            ContactRecordFactory.create(contact_type="job", 
+                                        contact=contact)
+            ContactRecordFactory.create(contact_type = 'email',
+                                        contact=contact)
+
+        queryset = ContactRecord.objects.all()
+        self.assertEqual(queryset.count(), 8)
+
+        contacts = list(queryset.contacts)
+
+        sum_referrals = sum([contact['referrals'] for contact in contacts])
+        sum_records = sum([contact['records'] for contact in contacts])
+        self.assertEqual(sum_referrals, queryset.referrals)
+        self.assertEqual(sum_records, queryset.communication_activity.count())
+
+
     def test_contact_record_report_numbers(self):
         """
         Contact records have properties which represent various aggregated
