@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import warning from 'warning';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
+import {blendControls} from './util';
 import {
   setSimpleFilterAction,
   addToOrFilterAction,
@@ -114,7 +115,7 @@ class SetUpReport extends Component {
             onChange={v => dispatch(setReportNameAction(v.target.value))}/>
         </FieldWrapper>
       );
-      forEach(filterInterface, col => {
+      forEach(blendControls(filterInterface), col => {
         switch (col.interface_type) {
         case 'date_range':
           const begin = (currentFilter[col.filter] || [])[0];
@@ -200,6 +201,45 @@ class SetUpReport extends Component {
                   this.dispatchFilterAction(
                     removeFromOrFilterAction(col.filter, vs))}
                 tagsLoading={false}
+                placeholder = {'Filter by ' + col.display}
+                searchPlaceholder = "Filter these choices"
+                showCounter
+              />
+
+            </FieldWrapper>
+            );
+          break;
+        case 'composite':
+          const itemsCol = col.interfaces.search_multiselect;
+          const tagsCol = col.interfaces.tags;
+          rows.push(
+            <FieldWrapper
+              key={col.filter}
+              label={col.display}>
+
+              <SelectByNameOrTag
+                getItemHints={v => this.getHints(itemsCol.filter, v)}
+                itemsLoading={fieldsLoading[itemsCol.filter]}
+                availableItemHints={hints[itemsCol.filter] || []}
+                selectedItems={currentFilter[itemsCol.filter] || []}
+                onSelectItemAdd={vs =>
+                  this.dispatchFilterAction(
+                    addToOrFilterAction(itemsCol.filter, vs))}
+                onSelectItemRemove={vs =>
+                  this.dispatchFilterAction(
+                    removeFromOrFilterAction(itemsCol.filter, vs))}
+
+                getTagHints={v => this.getHints(tagsCol.filter, v)}
+                tagsLoading={fieldsLoading[tagsCol.filter]}
+                availableTagHints={hints[tagsCol.filter] || []}
+                selectedTags={currentFilter[tagsCol.filter] || []}
+                onSelectTagAdd={(i, t) =>
+                  this.dispatchFilterAction(
+                    addToAndOrFilterAction(tagsCol.filter, i, t))}
+                onSelectTagRemove={(i, t) =>
+                  this.dispatchFilterAction(
+                    removeFromAndOrFilterAction(tagsCol.filter, i, t))}
+
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
                 showCounter

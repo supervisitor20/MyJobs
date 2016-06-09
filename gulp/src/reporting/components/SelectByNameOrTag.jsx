@@ -15,8 +15,7 @@ export default class SelectByNameOrTag extends Component {
     const choices = [
       {display: 'No filter', value: 0},
       {display: 'Filter by name', value: 1},
-      // re-enable when tags can be integrated
-      // {display: 'Filter by tag', value: 2},
+      {display: 'Filter by tag', value: 2},
     ];
 
     this.state = {
@@ -198,13 +197,11 @@ SelectByNameOrTag.propTypes = {
    * Available tags
    */
   availableTagHints: PropTypes.arrayOf(
-    PropTypes.arrayOf(
-      PropTypes.shape({
-        value: PropTypes.any.isRequired,
-        display: PropTypes.string.isRequired,
-        hexColor: PropTypes.string,
-      })
-    )
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+      hexColor: PropTypes.string,
+    })
   ),
 
   /**
@@ -230,10 +227,6 @@ SelectByNameOrTag.propTypes = {
    */
   onSelectTagRemove: PropTypes.func,
 
-  /**
-   * Used for hack to refresh available list.
-   */
-  reportFinder: React.PropTypes.object,
   /**
    * placeholder text for tag search bar
    */
