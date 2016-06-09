@@ -21,9 +21,9 @@ def get_current_seosite(attr=None, str_func=None):
     # return the capitalized domain for a site
     >>> {% get_current_seosite 'domain' 'capitalize' %}
     'My.jobs'
-    """
 
-    seosite = getattr(settings, 'Site', SeoSite.objects.filter(
+    """
+    seosite = getattr(settings, 'SITE', SeoSite.objects.filter(
         domain='secure.my.jobs').first() or 'secure.my.jobs')
 
     if attr:
