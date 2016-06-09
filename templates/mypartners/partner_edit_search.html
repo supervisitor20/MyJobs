@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load common_tags %}
-{% gz as gz %}
+{% load compress %}
+{% load staticfiles %}
 {% block site-title %}
     <title>PRM New Saved Searches {{ company.name }}</title>
     <meta name="title" content="PRM New Saved Searches {{ company.name }}">
@@ -71,7 +72,9 @@
 <script language="javascript">
   var createTags = {{ create_tags }};
 </script>
-<script src="{{ STATIC_URL }}tags.js"></script>
-<script src="{{ STATIC_URL }}partner_edit_search.170-6.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
+{% compress js %}
+    <script src="{% static "tags.js" %}"></script>
+    <script src="{% static "partner_edit_search.170-6.js" %}"></script>
+    <script src="{% static "tag-it.min.js" %}"></script>
+{% endcompress %}
 {% endblock %}
