@@ -3,7 +3,6 @@ import {installPolyfills} from '../common/polyfills';
 import {MyJobsApi} from '../common/myjobs-api';
 import Api from './api';
 import {getCsrf} from 'common/cookie';
-import {Container} from'./components/Container';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -11,13 +10,28 @@ import ReactDOM from 'react-dom';
 import createReduxStore from '../common/create-redux-store';
 import {combineReducers} from 'redux';
 import {Provider} from 'react-redux';
+import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 
 installPolyfills();
 
 const myJobsApi = new MyJobsApi(getCsrf());
-const nuoApi = new Api(myJobsApi);
+const api = new Api(myJobsApi);
+
+const inboxReducer = (state = {}) => state;
+
+const reducer = combineReducers({
+  inboxes: inboxReducer,
+});
+
+const thunkExtra = {
+  api: api,
+};
+
+const store = createReduxStore(reducer, {}, thunkExtra);
 
 ReactDOM.render(
-  <Container api = {nuoApi} />,
+  <Provider store={store}>
+    <NonUserOutreachRouter api = {api} />
+  </Provider>,
   document.getElementById('content')
 );

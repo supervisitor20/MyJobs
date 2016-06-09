@@ -5,7 +5,7 @@ import {AddInboxForm} from './AddInboxForm';
 
 
 // inbox management app main page
-export function InboxManagementPage(props) {
+export default function InboxManagementPage(props) {
   const {inboxManager} = props;
   return (
     <div>

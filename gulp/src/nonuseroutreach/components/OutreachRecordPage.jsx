@@ -2,7 +2,7 @@ import React, {PropTypes} from 'react';
 import {OutreachRecordTable} from './OutreachRecordTable';
 
 // outreach record table view
-export function OutreachRecordPage(props) {
+export default function OutreachRecordPage(props) {
   return (
     <div>
         <div className="row">
