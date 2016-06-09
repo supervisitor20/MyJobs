@@ -127,8 +127,8 @@ def get_values(sheet, source_name, view_source_column=2, source_code_column=1):
                     # Example: list_ = {1,2,3}, view_sources=[1,2,4]
                     # list_.difference(view_sources) == {3}; we'll add view
                     # source 3 to our list.
-                    to_add = list(set(list_).difference(view_sources))
-                    view_sources += to_add
+                    to_add = set(list_).difference(view_sources)
+                    view_sources.extend(to_add)
                     for _ in to_add:
                         source_parts.append(source_parts[index])
                     # view sources aren't duplicated between the lists; break

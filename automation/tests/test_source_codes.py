@@ -97,6 +97,8 @@ class SourceCodeUploadTests(MyJobsBase):
                               action_type=1, buid=buid, action='sourcecodetag',
                               value_1='?src=JB-0000',
                               view_source=view_sources[0])]]:
+            # Test our process once with no pre-existing manipulations and once
+            # with one.
             [manipulation.save() for manipulation in manipulations]
 
             with open(self.path % ('good', 'indiana')) as fp:
