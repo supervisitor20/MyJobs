@@ -1,3 +1,7 @@
+import json
+from os import path
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.factories import UserFactory
@@ -77,3 +81,34 @@ class SourceCodeUploadTests(MyJobsBase):
 
         # If this is parsed as a float, int(value) will raise a ValueError
         int_value = int(value)
+
+    def test_autoupdate_view_sources_on_upload(self):
+        """
+        Tests that we correctly add source codes to all applicable view sources
+        when we process a spreadsheet.
+        """
+        with open(path.join(settings.PROJ_ROOT,
+                            'jsondata/view_source_conversion.json')) as f:
+            conversion = json.load(f)
+        view_sources = [int(vs) for vs in conversion['Indiana State Job Bank']]
+        self.assertTrue(len(view_sources) > 1)
+        buid = 1
+        for manipulations in [[], [DestinationManipulation(
+                              action_type=1, buid=buid, action='sourcecodetag',
+                              value_1='?src=JB-0000',
+                              view_source=view_sources[0])]]:
+            [manipulation.save() for manipulation in manipulations]
+
+            with open(self.path % ('good', 'indiana')) as fp:
+                self.client.post(reverse('source_code_upload'),
+                                 {'source_code_file': fp,
+                                  'buids': [buid],
+                                  'source_code_parameter': 'src'})
+
+            actual_view_sources = set(
+                DestinationManipulation.objects.values_list('view_source',
+                                                            flat=True))
+
+            self.assertEqual(actual_view_sources, set(view_sources))
+
+            DestinationManipulation.objects.all().delete()
