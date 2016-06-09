@@ -48,6 +48,10 @@ class TestCommRecordsDataSource(MyJobsBase):
             company=self.company, name='east', hex_color="aaaaaa")
         self.west_tag = TagFactory.create(
             company=self.company, name='west', hex_color="bbbbbb")
+        self.north_tag = TagFactory.create(
+            company=self.company, name='north', hex_color="cccccc")
+        self.south_tag = TagFactory.create(
+            company=self.company, name='south', hex_color="dddddd")
         self.bad_tag = TagFactory.create(
             company=self.company, name='bad', hex_color="cccccc")
 
@@ -66,6 +70,7 @@ class TestCommRecordsDataSource(MyJobsBase):
             LocationFactory.create(
                 city="Chicago",
                 state="IL"))
+        self.john.tags.add(self.north_tag)
 
         self.sue_user = UserFactory(email="sue@user.com")
         self.sue = ContactFactory(
@@ -84,6 +89,7 @@ class TestCommRecordsDataSource(MyJobsBase):
                 address_line_one="234",
                 city="Los Angeles",
                 state="CA"))
+        self.sue.tags.add(self.south_tag)
 
         self.partner_a.primary_contact = self.john
         self.partner_b.primary_contact = self.sue
@@ -348,6 +354,31 @@ class TestCommRecordsDataSource(MyJobsBase):
 
         self.assertEqual(len(recs), 0)
 
+    def test_filter_by_contact_tags(self):
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(contact_tags=[['sOuTh']]),
+            [])
+        subjects = {r['subject'] for r in recs}
+        expected = {self.record_3.subject}
+        self.assertEqual(expected, subjects)
+
+    def test_filter_by_contact_tags_empty(self):
+        """
+        Check that we can find a record attached to an untagged contact.
+
+        """
+        self.sue.tags.clear()
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(contact_tags=[]),
+            [])
+        subjects = {r['subject'] for r in recs}
+        expected = {self.record_3.subject}
+        self.assertEqual(expected, subjects)
+
     def test_help_city(self):
         """
         Check city help works and ignores current city filter.
@@ -383,6 +414,16 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.help_tags(self.company, CommRecordsFilter(), "E")
         actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
+
+    def test_help_contact_tags(self):
+        """
+        Check tags help works at all.
+
+        """
+        ds = CommRecordsDataSource()
+        recs = ds.help_contact_tags(self.company, CommRecordsFilter(), "O")
+        actual = {r['value'] for r in recs}
+        self.assertEqual({'north', 'south'}, actual)
 
     def test_help_tags_colors(self):
         """
@@ -452,13 +493,16 @@ class TestCommRecordsDataSource(MyJobsBase):
             tags=[['east'], ['west']],
             communication_type=['Email'],
             partner=[str(self.partner_a.pk)],
-            contact=[str(self.sue.pk)])
+            contact=[str(self.sue.pk)],
+            contact_tags=[['nOrth'], ['south']],
+            )
+
         expected = {
             u'partner': [
-                {u'value': self.partner_a.pk, 'display': u'aaa'},
+                {'value': self.partner_a.pk, 'display': u'aaa'},
             ],
             u'contact': [
-                {u'value': self.sue.pk, 'display': u'Sue Baxter'},
+                {'value': self.sue.pk, 'display': u'Sue Baxter'},
             ],
             u'locations': {
                 u'city': u'Chicago',
@@ -481,6 +525,22 @@ class TestCommRecordsDataSource(MyJobsBase):
                 ],
             ],
             u'communication_type': [{'value': u'email', 'display': u'Email'}],
+            u'contact_tags': [
+                [
+                    {
+                        'value': u'north',
+                        'display': u'north',
+                        'hexColor': u'cccccc',
+                    }
+                ],
+                [
+                    {
+                        'value': u'south',
+                        'display': u'south',
+                        'hexColor': u'dddddd',
+                    }
+                ],
+            ],
         }
 
         ds = CommRecordsDataSource()

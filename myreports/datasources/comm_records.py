@@ -1,9 +1,7 @@
 """CommRecords DataSource"""
 from HTMLParser import HTMLParser
-from operator import __or__
 from datetime import datetime
 
-from django.db.models import Q
 from django.utils.html import strip_tags
 
 from mypartners.models import (
@@ -13,7 +11,7 @@ from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags)
+    filter_date_range, extract_tags, filter_tags, adorn_tags)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from universal.helpers import dict_identity, extract_value
@@ -122,6 +120,23 @@ class CommRecordsDataSource(DataSource):
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
+    def help_contact_tags(self, company, filter_spec, partial):
+        """Get help for the contact tags field."""
+        comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
+
+        contact_qs = Contact.objects.filter(contactrecord__in=comm_records_qs)
+        tags_qs = (
+            Tag.objects
+            .filter(contact__in=contact_qs)
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
+        return [
+            {
+                'value': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in tags_qs]
+
     def help_communication_type(self, company, filter_spec, partial):
         """Get help for the communication type field."""
         return [
@@ -194,17 +209,18 @@ class CommRecordsDataSource(DataSource):
                     adorned[u'locations'][u'state'] = states[0]['value']
 
         if filter_spec.tags:
-            adorned[u'tags'] = []
-            for known_or_tags in filter_spec.tags:
-                or_group = []
+            adorned[u'tags'] = adorn_tags(
+                company,
+                filter_spec.tags,
+                self.help_tags,
+                empty)
 
-                for known_tag in known_or_tags:
-                    tags = self.help_tags(company, empty, known_tag)
-                    if tags:
-                        or_group.append(tags[0])
-
-                if or_group:
-                    adorned[u'tags'].append(or_group)
+        if filter_spec.contact_tags:
+            adorned[u'contact_tags'] = adorn_tags(
+                company,
+                filter_spec.contact_tags,
+                self.help_contact_tags,
+                empty)
 
         if filter_spec.partner:
             partners_qs = (
@@ -246,13 +262,15 @@ class CommRecordsDataSource(DataSource):
 @dict_identity
 class CommRecordsFilter(DataSourceFilter):
     def __init__(self, date_time=None, locations=None, tags=None,
-                 communication_type=None, partner=None, contact=None):
+                 communication_type=None, partner=None, contact=None,
+                 contact_tags=None):
         self.date_time = date_time
         self.locations = locations
         self.tags = tags
         self.communication_type = communication_type
         self.partner = partner
         self.contact = contact
+        self.contact_tags = contact_tags
 
     @classmethod
     def filter_key_types(self):
@@ -315,20 +333,7 @@ class CommRecordsFilter(DataSourceFilter):
             qs = qs.filter(contact_type__in=self.communication_type)
 
         if self.tags is not None:
-            list_empty = True
-            or_qs = []
-            for tag_ors in self.tags:
-                if tag_ors:
-                    list_empty = False
-                    or_qs.append(
-                        reduce(
-                            __or__,
-                            map(lambda t: Q(tags__name__iexact=t), tag_ors)))
-            for or_q in or_qs:
-                qs = qs.filter(or_q)
-            if list_empty:
-                # if an empty tags list was received, return only untagged items
-                qs = qs.filter(tags=None)
+            qs = filter_tags('tags', self.tags, qs)
 
         if self.locations is not None:
             contact_qs = Contact.objects.all()
@@ -349,5 +354,8 @@ class CommRecordsFilter(DataSourceFilter):
 
         if self.contact is not None:
             qs = qs.filter(contact__pk__in=self.contact)
+
+        if self.contact_tags is not None:
+            qs = filter_tags('contact__tags', self.contact_tags, qs)
 
         return qs

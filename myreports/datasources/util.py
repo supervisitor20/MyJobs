@@ -1,3 +1,5 @@
+from operator import __or__
+from django.db.models import Q
 from datetime import timedelta
 
 
@@ -72,3 +74,60 @@ def extract_tags(tag_list):
         }
         for t in tag_list.all()
     ]
+
+
+def filter_tags(tag_link_field, tag_and_group_list, queryset):
+    """
+    Implements standard tag filtering.
+
+    tag_link_field: django model field reference from base model.
+        Should have a name field.
+        i.e. tags or contact__tags
+    tag_and_group_list: list of lists of tag names.
+        i.e. [['red', 'blue'], ['nice']]
+    queryset: base queryset, filters will be applied to this
+    """
+    name_match_selector = tag_link_field + '__name__iexact'
+    list_empty = True
+    or_qs = []
+    for tag_ors in tag_and_group_list:
+        if tag_ors:
+            list_empty = False
+            or_qs.append(
+                reduce(
+                    __or__,
+                    map(lambda t: Q(**{name_match_selector: t}),
+                        tag_ors)))
+    for or_q in or_qs:
+        queryset = queryset.filter(or_q)
+    if list_empty:
+        # if an empty tags list was received, return only untagged
+        # items
+        queryset = queryset.filter(**{tag_link_field: None})
+
+    return queryset
+
+
+def adorn_tags(company, tag_and_group_list, help_method, ds_filter):
+    """
+    Build an adorned list of tags.
+
+    company: company we are currently working with
+    tag_and_group_list: list of lists of tag names.
+        i.e. [['red', 'blue'], ['nice']]
+    help_method: method called to build the adorned lists
+    ds_filter: a datasource filter which will work with help_method
+        it should be empty
+    """
+    result = []
+    for known_or_tags in tag_and_group_list:
+        or_group = []
+
+        for known_tag in known_or_tags:
+            tags = help_method(company, ds_filter, known_tag)
+            if tags:
+                or_group.append(tags[0])
+
+        if or_group:
+            result.append(or_group)
+    return result
