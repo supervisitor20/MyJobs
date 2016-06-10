@@ -1,42 +1,6 @@
 import {blendControls} from '../components/util';
-import {map, filter} from 'lodash-compat/collection';
-import {join} from 'lodash-compat/array';
-import {split} from 'lodash-compat/string';
-import {isEqual} from 'lodash-compat/lang';
-import {diffLines} from 'diff';
-
-
-function toDiffEqual(util, customEqualityTesters) {
-  return {
-    compare: (actual, expected) => {
-      if (isEqual(actual, expected)) {
-        return {pass: true};
-      }
-
-      const expectedString = JSON.stringify(expected, null, 2);
-      const actualString = JSON.stringify(actual, null, 2);
-      const diff = diffLines(actualString, expectedString, {newLineIsToken: true});
-
-      function prefixLines(prefix, string) {
-        const lines = string.split('\n').slice(0, -1); // drop last blank
-        return map(lines, l => prefix + l + "\n");
-      }
-
-      const message = "Differences found:\n" +
-        map(diff, (part) =>
-          prefixLines(
-            part.added ? '-' : part.removed ? '+' : ' ',
-            part.value).join('')).join('');
-      return {pass: false, message};
-    },
-  };
-}
 
 describe("blend matching controls", () => {
-  beforeEach(() => {
-    jasmine.addMatchers({toDiffEqual});
-  });
-
   it('leaves empty lists alone', () => {
     const result = blendControls([]);
     expect(result).toDiffEqual([]);
