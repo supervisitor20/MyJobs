@@ -1,4 +1,8 @@
+import unicodecsv
 import xlrd
+from xlrd.biffh import XLRDError
+
+from django.db.models import Q
 
 from redirect.models import DestinationManipulation
 
@@ -19,6 +23,14 @@ def get_book(location):
         book = xlrd.open_workbook(location)
     setattr(book, 'source_code_sheet', book.sheets()[0])
     return book
+
+
+def get_csv(location):
+    if not isinstance(location, (unicode, str)):
+        csv = unicodecsv.reader(location)
+    else:
+        csv = unicodecsv.reader(open(location))
+    return csv
 
 
 def get_values(sheet, source_name, view_source_column=2, source_code_column=1):
@@ -167,6 +179,75 @@ def add_source_codes(buids, codes):
     return stats
 
 
+def add_destination_manipulations(buids, codes):
+    """
+    Adds the provided manipulations to a list of buids.
+
+    Inputs:
+    :buids: List of buids that we're adding these manipulations to
+    :codes: List of dictionaries produced by process_csv
+
+    Outputs:
+    :stats: Dictionary describing the results of this method call; contains the
+        number of added and modified manipulations and the total count
+    """
+    # This differs from how add_source_codes handles things. I would like to
+    # eventually refactor that method to do something similar but that's out
+    # of scope for the current task. - TP
+    code_dict = {(int(code['view_source']), int(code['action_type'])): code
+                 for code in codes}
+
+    # BUIDs are optional; if none are provided, pull them from the csv
+    if not buids:
+        buids = [code['buid'] for code in codes]
+    elif not isinstance(buids, (list, set)):
+        buids = [buids]
+    buids = map(int, buids)
+
+    vs_and_action_type = set((int(vs), int(action_type))
+                             for (vs, action_type) in code_dict.keys())
+
+    # Build up the list of possible matching manipulations. This will be used
+    # to determine when to update an entry and when to create a new one.
+    existing_options = Q()
+    for item in vs_and_action_type:
+        for buid in buids:
+            existing_options |= Q(buid=buid, view_source=item[0],
+                                  action_type=item[1])
+
+    # At the end of this method, we should have this set of entries in the
+    # DestinationManipulation table. This set, in conjunction with `existing`,
+    # will be used to determine if we're adding or updating an entry.
+    all_manipulations = set((buid, item[0], item[1]) for buid in buids
+                            for item in vs_and_action_type)
+    existing = set(DestinationManipulation.objects.filter(
+        existing_options).values_list('buid', 'view_source', 'action_type'))
+
+    new = all_manipulations.difference(existing)
+
+    stats = {
+        'added': len(new),
+        'modified': len(existing),
+        'total': len(all_manipulations)
+    }
+
+    new_list = []
+    for new_info in new:
+        manipulation_info = code_dict[(new_info[1], new_info[2])]
+        manipulation_info['buid'] = new_info[0]
+        new_list.append(DestinationManipulation(**manipulation_info))
+    DestinationManipulation.objects.bulk_create(new_list)
+
+    for existing_info in existing:
+        manipulation_info = code_dict[(existing_info[1], existing_info[2])]
+        manipulation_info['buid'] = existing_info[0]
+        DestinationManipulation.objects.filter(
+            buid=existing_info[0], view_source=existing_info[1],
+            action_type=existing_info[2]).update(**manipulation_info)
+
+    return stats
+
+
 def process_spreadsheet(location, buids, source_name, view_source_column=2,
                         source_code_column=1, add_codes=True):
     """
@@ -192,3 +273,56 @@ def process_spreadsheet(location, buids, source_name, view_source_column=2,
         return add_source_codes(buids, codes)
     else:
         return codes
+
+
+def process_csv(location, buids, add_codes=True):
+    """
+    Grabs a csv file by name or file handle, extracts manipulation
+    values, and optionally adds them to the database.
+
+    Inputs:
+    :location: Location of csv file, as a string or file handle
+    :buids: List of business units
+    :add_codes: Boolean denoting whether we should add these manipulations;
+        Default: True
+
+    Outputs:
+    Summary of operations if add_codes==True
+    Manipulations to be added if add_codes==False
+    """
+    csv = get_csv(location)
+    header = csv.next()
+
+    # The csvs exported from our Django admin include human-readable column
+    # names. We want the actual columns.
+    expected_header = [u'BUID', u'View Source', u'Action Type', u'Action',
+                       u'Value 1', u'Value 2']
+    # This file should have come from an export. If the headers are off,
+    # other elements may be incorrect. Fail early.
+    assert header == expected_header, ('Header mismatch: csv has "%s", '
+                                       'expected "%s"') % (
+        ",".join(set(header).difference(expected_header)),
+        ",".join(set(expected_header).difference(header)))
+    fields = ['buid', 'view_source', 'action_type', 'action',
+              'value_1', 'value_2']
+    codes = [dict(zip(fields, code)) for code in csv]
+    if add_codes:
+        return add_destination_manipulations(buids, codes)
+    else:
+        return codes
+
+
+def process_file(location, buids, source_name, view_source_column=2,
+                 source_code_column=1, add_codes=True):
+    """
+    Naively determines if the file we've been given is a spreadsheet or csv.
+    """
+    try:
+        return process_spreadsheet(location, buids, source_name,
+                                   view_source_column, source_code_column,
+                                   add_codes)
+    except XLRDError:
+        # If we had a filename, this would be easy. As we may have a filename
+        # or a file handle, it's easier to just try as Excel and then try as
+        # csv if that fails.
+        return process_csv(location, buids, add_codes)
