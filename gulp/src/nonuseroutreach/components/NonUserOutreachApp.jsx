@@ -20,7 +20,7 @@ class NonUserOutreachApp extends Component {
         </div>
 
         <div className="row">
-          <div className="col-xs-12 col-md-8">
+          <div className="col-xs-12 col-sm-8">
             {pageLoading ? <Loading /> : this.props.children}
           </div>
           <div className="col-xs-12 col-md-4">

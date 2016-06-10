@@ -39,20 +39,24 @@ export class InboxList extends Component {
     }
 
     return (
-      <div className="col-xs-12 ">
-        <div className="wrapper-header">
-          <h2>Existing Inbox Management</h2>
-        </div>
-        <div className="partner-holder no-highlight">
-          {inboxes.map((inboxOb, i) =>
-            <InboxRow
-              inbox={inboxOb}
-              key={inboxOb.pk}
-              index={i}
-              handleDelete={index => this.handleDelete(index)}
-              loadInboxesFromApi={() => this.loadInboxesFromApi()}
-              inboxManager={this.props.inboxManager} />
-          )}
+      <div className="cardWrapper">
+        <div className="row">
+          <div className="col-xs-12 ">
+            <div className="wrapper-header">
+              <h2>Existing Inbox Management</h2>
+            </div>
+            <div className="partner-holder no-highlight">
+              {inboxes.map((inboxOb, i) =>
+                <InboxRow
+                  inbox={inboxOb}
+                  key={inboxOb.pk}
+                  index={i}
+                  handleDelete={index => this.handleDelete(index)}
+                  loadInboxesFromApi={() => this.loadInboxesFromApi()}
+                  inboxManager={this.props.inboxManager} />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
