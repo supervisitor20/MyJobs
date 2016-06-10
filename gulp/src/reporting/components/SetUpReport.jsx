@@ -193,7 +193,7 @@ class SetUpReport extends Component {
                 getItemHints={v => this.getHints(col.filter, v)}
                 itemsLoading={fieldsLoading[col.filter]}
                 availableItemHints={hints[col.filter] || []}
-                selectedItems={currentFilter[col.filter] || []}
+                selectedItems={currentFilter[col.filter]}
                 onSelectItemAdd={vs =>
                   this.dispatchFilterAction(
                     addToOrFilterAction(col.filter, vs))}
@@ -221,7 +221,7 @@ class SetUpReport extends Component {
                 getItemHints={v => this.getHints(itemsCol.filter, v)}
                 itemsLoading={fieldsLoading[itemsCol.filter]}
                 availableItemHints={hints[itemsCol.filter] || []}
-                selectedItems={currentFilter[itemsCol.filter] || []}
+                selectedItems={currentFilter[itemsCol.filter]}
                 onSelectItemAdd={vs =>
                   this.dispatchFilterAction(
                     addToOrFilterAction(itemsCol.filter, vs))}
@@ -232,7 +232,7 @@ class SetUpReport extends Component {
                 getTagHints={v => this.getHints(tagsCol.filter, v)}
                 tagsLoading={fieldsLoading[tagsCol.filter]}
                 availableTagHints={hints[tagsCol.filter] || []}
-                selectedTags={currentFilter[tagsCol.filter] || []}
+                selectedTags={currentFilter[tagsCol.filter]}
                 onSelectTagAdd={(i, t) =>
                   this.dispatchFilterAction(
                     addToAndOrFilterAction(tagsCol.filter, i, t))}

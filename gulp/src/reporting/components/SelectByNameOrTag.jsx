@@ -11,17 +11,38 @@ import TagAnd from 'common/ui/tags/TagAnd';
 export default class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
+    const {
+      onSelectItemAdd,
+      onSelectTagAdd,
+      selectedItems,
+      selectedTags,
+    } = props;
 
-    const choices = [
-      {display: 'No filter', value: 0},
-      {display: 'Filter by name', value: 1},
-      {display: 'Filter by tag', value: 2},
-    ];
+    const noneChoice = {display: 'No filter', value: 0};
+    const itemChoice = {display: 'Filter by name', value: 1};
+    const tagChoice = {display: 'Filter by tag', value: 2};
+
+    const choices = [noneChoice];
+    if (onSelectItemAdd) {
+      choices.push(itemChoice);
+    }
+    if (onSelectTagAdd) {
+      choices.push(tagChoice);
+    }
+
+    let value;
+    let display;
+    if (selectedItems) {
+      ({value, display} = itemChoice);
+    } else if (selectedTags) {
+      ({value, display} = tagChoice);
+    } else {
+      ({value, display} = noneChoice);
+    }
 
     this.state = {
-      value: 'No filter',
-      availableItemHints: [],
-      choice: 0,
+      value: display,
+      choice: value,
       choices,
     };
   }
@@ -77,7 +98,7 @@ export default class SelectByNameOrTag extends Component {
     case 1:
       return (
         <TagSelect
-          selected={selectedItems}
+          selected={selectedItems || []}
           available={availableItemHints}
           onChoose = {onSelectItemAdd}
           onRemove = {onSelectItemRemove}
@@ -89,7 +110,7 @@ export default class SelectByNameOrTag extends Component {
       return (
         <TagAnd
           available={availableTagHints}
-          selected={selectedTags}
+          selected={selectedTags || []}
           onChoose={onSelectTagAdd}
           onRemove={onSelectTagRemove}
           />
