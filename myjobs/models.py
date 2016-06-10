@@ -387,9 +387,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         ContactRecord = self.contactrecord_set.model
         # clear archived relationships
         Contact.all_objects.filter(user=self).update(user=None)
-        ContactRecord.all_objects.filter(user=self).update(user=None)
+        ContactRecord.all_objects.filter(
+            created_by=self).update(created_by=None)
 
-        return super(Contact, self).delete(*args, **kwargs)
+        return super(User, self).delete(*args, **kwargs)
 
 
     def get_activities(self, company):
