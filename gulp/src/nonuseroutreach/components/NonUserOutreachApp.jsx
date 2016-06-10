@@ -1,32 +1,12 @@
 import React, {Component, PropTypes} from 'react';
-
-import {Content} from './Content';
+import {connect} from 'react-redux';
+import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
 
 
-// the "master" container
-export default class NonUserOutreachApp extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      page: 'Overview',
-      tips: [],
-    };
-  }
-
-  /**
-   * change what is displayed in the "Content" div.
-   *
-   * option parameter "tips" allows a list of tips to display beneath
-   * the navigation menu
-   */
-  changePage(page, tips = []) {
-    this.setState({page, tips});
-  }
-
+class NonUserOutreachApp extends Component {
   render() {
-    const {page, tips} = this.state;
-    const {api} = this.props;
+    const {pageLoading} = this.props;
     return (
       <div>
         <div className="row">
@@ -40,15 +20,23 @@ export default class NonUserOutreachApp extends Component {
         </div>
 
         <div className="row">
-          <Content page={page} inboxManager={api} recordsManager={api} />
-          <Menu changePage={(p, t) => this.changePage(p, t)} tips={tips} />
+          <div className="col-xs-12 col-md-8">
+            {pageLoading ? <Loading /> : this.props.children}
+          </div>
+          <div className="col-xs-12 col-md-4">
+            <Menu />
+          </div>
         </div>
-        <div className="clearfix"></div>
       </div>
     );
   }
 }
 
 NonUserOutreachApp.propTypes = {
-  api: PropTypes.object.isRequired,
+  pageLoading: PropTypes.bool.isRequired,
+  children: PropTypes.node,
 };
+
+export default connect(() => ({
+  pageLoading: false,
+}))(NonUserOutreachApp);
