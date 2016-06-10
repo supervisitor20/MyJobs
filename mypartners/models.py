@@ -588,21 +588,34 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
+#        all_contacts = self.extra(
+#                    select={'referrals': "COUNT(IF(contact_type='job', 1, NULL))",
+#                            'records':"COUNT(IF(contact_type!='job', 1, NULL))"}).values(
+#            'partner__name', 'partner', 'contact__name', 'contact',
+#            'contact_email', 'referrals', 'records').order_by('partner__name')
+#        all_contacts.query.group_by = [('mypartners_contactrecord', 'contact_id'), ('mypartners_contactrecord', 'partner_id')]
+#
         all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name', 'contact__id',
+            'partner__name', 'partner', 'contact__name', 'contact',
             'contact_email').distinct().order_by('partner__name')
 
-        records = dict(self.exclude(contact_type='job').values_list(
-            'contact__id').annotate(
-                records=models.Count('contact__id')).distinct())
+        record_qs = (self.exclude(contact_type='job').values(
+                      'contact', 'contact_email').annotate(
+                records=models.Count('contact')).distinct())
 
-        referrals = dict(self.filter(contact_type='job').values_list(
-            'contact__id').annotate(
-                referrals=models.Count('contact__id')).distinct())
+        records = dict([("%s%s" % (record['contact'], record['contact_email']), record['records']) for record in record_qs])
+
+        import ipdb; ipdb.set_trace();
+
+        referral_qs = self.filter(contact_type='job').values(
+            'contact', 'contact_email').annotate(
+                referrals=models.Count('contact')).distinct()
+
+        referrals = dict([("%s%s" % (referral['contact'], referral['contact_email']), referral['referrals']) for referral in referral_qs])
 
         for contact in all_contacts:
-            contact['referrals'] = referrals.get(contact['contact__id'], 0)
-            contact['records'] = records.get(contact['contact__id'], 0)
+            contact['referrals'] = referrals.get("%s%s" % (contact['contact'], contact['contact_email']), 0)
+            contact['records'] = records.get("%s%s" % (contact['contact'], contact['contact_email']), 0)
 
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
