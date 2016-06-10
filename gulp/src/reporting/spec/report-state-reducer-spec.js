@@ -9,6 +9,8 @@ import {
   removeFromOrFilterAction,
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
+  deleteFilterAction,
+  emptyFilterAction,
   setReportNameAction,
   receiveHintsAction,
   clearHintsAction,
@@ -188,7 +190,7 @@ describe('reportStateReducer', () => {
     });
   });
 
-  it('automatically deletes an empty or filter after remove', () => {
+  it('leaves behind an empty or filter after remove', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
@@ -199,9 +201,11 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result).toEqual({
+    expect(result).toDiffEqual({
       currentFilterDirty: true,
-      currentFilter: {},
+      currentFilter: {
+        "contact": [],
+      },
     });
   });
 
@@ -381,7 +385,7 @@ describe('reportStateReducer', () => {
     });
   });
 
-  it('automatically deletes an empty and/or filter after remove', () => {
+  it('leaves behind an empty and/or filter after remove', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
@@ -394,11 +398,42 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result).toEqual({
+    expect(result).toDiffEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [],
+      },
+    });
+  });
+
+  it('clears a filter on demand', () => {
+    const action = deleteFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {
+        "tags": [],
+      },
+    }, action);
+    expect(result).toDiffEqual({
       currentFilterDirty: true,
       currentFilter: {},
     });
   });
+
+  it('empties a filter', () => {
+    const action = emptyFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [],
+      },
+    });
+  });
+
 
   it('can set the report name', () => {
     const action = setReportNameAction("Contacts 2016");

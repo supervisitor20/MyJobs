@@ -49,7 +49,9 @@ export function getFilterValuesOnly(currentFilter) {
   //  i.e. "date_range", "or", "and_or", "string", etc.
   //  This will make this function need to do less guessing.
   const result = mapValues(currentFilter, item => {
-    if (isString(item) || isPlainObject(item)) {
+    if (isString(item) ||
+        isPlainObject(item) ||
+        (isArray(item) && !item.length)) {
       return item;
     } else if (isArray(item) && isPlainObject(item[0])) {
       return map(item, o => o.value);

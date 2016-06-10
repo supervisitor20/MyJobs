@@ -10,6 +10,8 @@ import {
   removeFromOrFilterAction,
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
+  deleteFilterAction,
+  emptyFilterAction,
   setReportNameAction,
 } from '../actions/report-state-actions';
 
@@ -25,7 +27,6 @@ import FilterSearchDropdown from './FilterSearchDropdown';
 import FilterCityState from './FilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import DataTypeSelectBar from './DataTypeSelectBar';
-import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
 import SelectByNameOrTag from './SelectByNameOrTag';
 
@@ -169,16 +170,23 @@ class SetUpReport extends Component {
               key={col.filter}
               label={col.display}>
 
-              <TagAndFilter
-                getHints={v => this.getHints(col.filter, v)}
-                available={hints[col.filter] || []}
-                selected={currentFilter[col.filter] || []}
-                onChoose={(i, t) =>
+              <SelectByNameOrTag
+                getTagHints={v => this.getHints(col.filter, v)}
+                availableTagHints={hints[col.filter] || []}
+                selectedTags={currentFilter[col.filter]}
+                onSelectTagAdd={(i, t) =>
                   this.dispatchFilterAction(
                     addToAndOrFilterAction(col.filter, i, t))}
-                onRemove={(i, t) =>
+                onSelectTagRemove={(i, t) =>
                   this.dispatchFilterAction(
-                    removeFromAndOrFilterAction(col.filter, i, t))}/>
+                    removeFromAndOrFilterAction(col.filter, i, t))}
+                onEmptyTags={() =>
+                  this.dispatchFilterAction(
+                    emptyFilterAction(col.filter))}
+                onClearTags={() =>
+                  this.dispatchFilterAction(
+                    deleteFilterAction(col.filter))}
+                tagsLoading={fieldsLoading[col.filter]}/>
 
             </FieldWrapper>
             );
@@ -200,6 +208,12 @@ class SetUpReport extends Component {
                 onSelectItemRemove={vs =>
                   this.dispatchFilterAction(
                     removeFromOrFilterAction(col.filter, vs))}
+                onEmptyItems={() =>
+                  this.dispatchFilterAction(
+                    emptyFilterAction(col.filter))}
+                onClearItems={() =>
+                  this.dispatchFilterAction(
+                    deleteFilterAction(col.filter))}
                 tagsLoading={false}
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"
@@ -228,6 +242,12 @@ class SetUpReport extends Component {
                 onSelectItemRemove={vs =>
                   this.dispatchFilterAction(
                     removeFromOrFilterAction(itemsCol.filter, vs))}
+                onEmptyItems={() =>
+                  this.dispatchFilterAction(
+                    emptyFilterAction(itemsCol.filter))}
+                onClearItems={() =>
+                  this.dispatchFilterAction(
+                    deleteFilterAction(itemsCol.filter))}
 
                 getTagHints={v => this.getHints(tagsCol.filter, v)}
                 tagsLoading={fieldsLoading[tagsCol.filter]}
@@ -239,6 +259,12 @@ class SetUpReport extends Component {
                 onSelectTagRemove={(i, t) =>
                   this.dispatchFilterAction(
                     removeFromAndOrFilterAction(tagsCol.filter, i, t))}
+                onEmptyTags={() =>
+                  this.dispatchFilterAction(
+                    emptyFilterAction(tagsCol.filter))}
+                onClearTags={() =>
+                  this.dispatchFilterAction(
+                    deleteFilterAction(tagsCol.filter))}
 
                 placeholder = {'Filter by ' + col.display}
                 searchPlaceholder = "Filter these choices"

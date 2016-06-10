@@ -109,3 +109,19 @@ export const clearHintsAction = createAction('CLEAR_HINTS');
  */
 export const resetCurrentFilterDirty =
   createAction('RESET_CURRENT_FILTER_DIRTY');
+
+/**
+ * Delete an "or" or "and/or" filter.
+ *
+ * field: which filter field to operate on.
+ */
+export const deleteFilterAction = createAction('DELETE_FILTER',
+  (field) => ({field}));
+
+/**
+ * Empty an "or" or "and/or" filter.
+ *
+ * field: which filter field to operate on.
+ */
+export const emptyFilterAction = createAction('EMPTY_FILTER',
+  (field) => ({field}));

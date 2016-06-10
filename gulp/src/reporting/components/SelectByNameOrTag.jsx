@@ -51,29 +51,35 @@ export default class SelectByNameOrTag extends Component {
     const {choices} = this.state;
     const value = event.target.value;
     const display = getDisplayForValue(choices, value);
-    this.resetFilter();
+    this.resetFilter(value);
     this.setState({
       choice: value,
       value: display,
     });
   }
 
-  resetFilter() {
+  resetFilter(newChoice) {
     const {
-      onSelectItemRemove,
-      selectedItems,
+      onClearItems,
+      onClearTags,
+      onEmptyItems,
+      onEmptyTags,
     } = this.props;
-    const {
-      choice,
-    } = this.state;
-    switch (choice) {
+
+    switch (newChoice) {
+    case 0:
+      onClearItems();
+      onClearTags();
+      break;
     case 1:
-      [...selectedItems].forEach((v) => {
-        onSelectItemRemove(v);
-      });
+      onClearItems();
+      onClearTags();
+      onEmptyItems();
       break;
     case 2:
-      // address this later when tags are enabled
+      onClearItems();
+      onClearTags();
+      onEmptyTags();
       break;
     default:
       return;
@@ -141,13 +147,17 @@ export default class SelectByNameOrTag extends Component {
         {value}
       </span>);
     if (!loading) {
-      valueAndCount = (
-      <span>
-        <span className="counter">
-          {'(' + availableItemHints.length + ' available)'}
-        </span>
-        {value}
-      </span>);
+      if (availableItemHints) {
+        valueAndCount = (
+        <span>
+          <span className="counter">
+            {'(' + availableItemHints.length + ' available)'}
+          </span>
+          {value}
+        </span>);
+      } else {
+        valueAndCount = value;
+      }
     }
     return (
       <div>
@@ -207,6 +217,16 @@ SelectByNameOrTag.propTypes = {
    */
   onSelectItemRemove: PropTypes.func.isRequired,
 
+  /**
+   * Function to clear the items filter
+   */
+  onClearItems: PropTypes.func,
+
+  /**
+   * Function to empty the items filter
+   */
+  onEmptyItems: PropTypes.func,
+
   getTagHints: PropTypes.func,
 
   /**
@@ -249,6 +269,16 @@ SelectByNameOrTag.propTypes = {
   onSelectTagRemove: PropTypes.func,
 
   /**
+   * Function to clear the tags filter
+   */
+  onClearTags: PropTypes.func,
+
+  /**
+   * Function to empty the tags filter
+   */
+  onEmptyTags: PropTypes.func,
+
+  /**
    * placeholder text for tag search bar
    */
   searchPlaceholder: React.PropTypes.string,
@@ -260,4 +290,11 @@ SelectByNameOrTag.propTypes = {
    * Whether or not to show the counter of results
    */
   showCounter: React.PropTypes.bool,
+};
+
+SelectByNameOrTag.defaultProps = {
+  onClearItems: () => {},
+  onClearTags: () => {},
+  onEmptyItems: () => {},
+  onEmptyTags: () => {},
 };

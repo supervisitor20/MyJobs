@@ -145,11 +145,10 @@ export default handleActions({
     const newOrFilter = lodashFilter(orFilter,
       i => !contains(removeValues, i.value));
 
-    // If the group is empty, return the filter without this key.
-    const newFilter = newOrFilter.length ? {
+    const newFilter = {
       ...currentFilter,
       [field]: newOrFilter,
-    } : omit(currentFilter, (_, k) => k === field);
+    };
 
     return withFilterDirtied(state, {
       ...state,
@@ -202,15 +201,38 @@ export default handleActions({
     }
 
     // If the group is empty, return the filter without this key.
-    const newFilter = andGroup.length > 0 ? {
+    const newFilter = {
       ...currentFilter,
       [field]: andGroup,
-    } : omit(currentFilter, (_, k) => k === field);
+    };
 
     return withFilterDirtied(state, {
       ...state,
       currentFilter: newFilter,
     });
+  },
+
+  'EMPTY_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...state.currentFilter,
+        [field]: [],
+      },
+    };
+  },
+
+  'DELETE_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...omit(state.currentFilter, field),
+      },
+    };
   },
 
   'SET_REPORT_NAME': (state, action) => {
