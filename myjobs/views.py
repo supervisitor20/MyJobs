@@ -36,6 +36,7 @@ from myjobs.models import (Ticket, User, FAQ, CustomHomepage, Role, Activity,
 from myprofile.forms import (InitialNameForm, InitialEducationForm,
                              InitialAddressForm, InitialPhoneForm,
                              InitialWorkForm)
+from mypartners.models import Contact, ContactRecord
 from myprofile.models import ProfileUnits, Name
 from registration.forms import RegistrationForm, CustomAuthForm
 from registration.models import Invitation
@@ -374,6 +375,11 @@ def edit_account(request):
 @user_passes_test(User.objects.not_disabled)
 def delete_account(request):
     email = request.user.email
+
+    # clear archived relationships
+    Contact.all_objects.filter(user=request.user).update(user=None)
+    ContactRecord.all_objects.filter(user=request.user).update(user=None)
+
     request.user.delete()
 
     template = '%s/delete-account-confirmation.html' % settings.PROJECT
