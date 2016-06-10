@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from 'react-bootstrap/lib/Button';
+import {Link} from 'react-router';
 
 // navigation links
 export class Menu extends React.Component {
@@ -7,15 +7,15 @@ export class Menu extends React.Component {
     return (
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <Button onClick={() => console.log('Overview')}>
+          <Link to="overview" className="btn">
             Overview
-          </Button>
-          <Button onClick={() => console.log('Inbox Management')}>
+          </Link>
+          <Link to="inboxes" className="btn">
             Inbox Management
-          </Button>
-          <Button onClick={() => console.log('Outreach Records')}>
+          </Link>
+          <Link to="records" className="btn">
             Outreach Records
-          </Button>
+          </Link>
         </div>
     );
   }
