@@ -155,6 +155,22 @@ class RegistrationModelTests(MyJobsBase):
         profile = ActivationProfile.objects.get(user=new_user)
         self.failIf(ActivationProfile.objects.activate_user(profile.activation_key))
 
+    def test_manually_send_activation(self):
+        """
+        Atttempting to send an activation email outside of a view shouldn't
+        result in an exception.
+
+        """
+        # when running in console, settings.SITE isn't set
+        del settings.SITE
+
+        user = UserFactory(email='activation@test.com')
+        activation = ActivationProfile(user=user)
+        activation.send_activation_email()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('activated', mail.outbox[0].body)
+
     def test_activation_nonexistent_key(self):
         """
         Attempting to activate with a non-existent key (i.e., one not
