@@ -18,10 +18,10 @@ export default class NonUserOutreachRouter extends React.Component {
       <Router createElement={(c, p) => this.createElement(c, p)}
               history={hashHistory}>
         <Route path="/" component={NonUserOutreachApp}>
-          <IndexRedirect to="overview" />
-          <Route path="overview" component={OverviewPage} />
-          <Route path="inboxes" component={InboxManagementPage} />
-          <Router path="records" component={OutreachRecordPage} />
+          <IndexRedirect to="/overview" />
+          <Route path="/overview" component={OverviewPage} />
+          <Route path="/inboxes" component={InboxManagementPage} />
+          <Router path="/records" component={OutreachRecordPage} />
         </Route>
       </Router>
     );

@@ -7,13 +7,13 @@ export class Menu extends React.Component {
     return (
         <div className="sidebar">
           <h2 className="top">Navigation</h2>
-          <Link to="overview" className="btn">
+          <Link to="/overview" className="btn">
             Overview
           </Link>
-          <Link to="inboxes" className="btn">
+          <Link to="/inboxes" className="btn">
             Inbox Management
           </Link>
-          <Link to="records" className="btn">
+          <Link to="/records" className="btn">
             Outreach Records
           </Link>
         </div>

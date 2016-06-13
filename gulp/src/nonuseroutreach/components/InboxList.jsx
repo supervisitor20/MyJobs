@@ -14,10 +14,6 @@ export class InboxList extends Component {
     };
   }
 
-  componentDidMount() {
-    this.loadInboxesFromApi();
-  }
-
   handleDelete(index) {
     this.props.api.deleteInbox(this.state.inboxes[index].pk);
     this.setState({
@@ -54,7 +50,7 @@ export class InboxList extends Component {
                   handleDelete={index => this.handleDelete(index)}
                   loadInboxesFromApi={() => this.loadInboxesFromApi()}
                   api={this.props.api} />
-                )}
+              )}
             </div>
           </div>
         </div>

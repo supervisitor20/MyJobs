@@ -14,7 +14,7 @@ export class OutreachRecordTable extends Component {
   }
 
   async getRecords() {
-    const records = await this.props.recordsManager.getExistingOutreachRecords();
+    const records = await this.props.api.getExistingOutreachRecords();
     this.setState({
       records: records,
     });
@@ -53,5 +53,5 @@ export class OutreachRecordTable extends Component {
 }
 
 OutreachRecordTable.propTypes = {
-  recordsManager: PropTypes.object.isRequired,
+  api: PropTypes.object.isRequired,
 };
