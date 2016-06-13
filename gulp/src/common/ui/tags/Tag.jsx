@@ -49,6 +49,10 @@ export function Tag(props) {
   );
 }
 
+Tag.defaultProps = {
+  hexColor: 'dddddd',
+};
+
 Tag.propTypes = {
   /**
    * Display name for this tag.
@@ -58,7 +62,7 @@ Tag.propTypes = {
   /**
    * Color to use for this tag.
    */
-  hexColor: PropTypes.string.isRequired,
+  hexColor: PropTypes.string,
 
   /**
    * Is this tag currently highlighted?

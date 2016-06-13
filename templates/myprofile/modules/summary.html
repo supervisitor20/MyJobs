@@ -7,9 +7,5 @@
     <div class="product-details">
         {{ module.0.the_summary }}
     </div>
-    {% if react %}
-        <a class="btn" href="{% url 'edit_summary' %}#/{{ module.0.id }}?module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% else %}
-        <a class="btn" href="{% url 'handle_form' %}?id={{ module.0.id }}&module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
-    {% endif %}
+    <a class="btn" href="{% url 'edit_summary' %}#/{{ module.0.id }}?module={{ module.0.get_verbose.title }}">{% trans 'Edit' %}</a>
 </div>

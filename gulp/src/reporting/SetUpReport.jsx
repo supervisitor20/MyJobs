@@ -2,7 +2,6 @@ import React, {PropTypes, Component} from 'react';
 import warning from 'warning';
 import {Loading} from 'common/ui/Loading';
 import {scrollUp} from 'common/dom';
-import {forEach} from 'lodash-compat/collection';
 import {debounce} from 'lodash-compat/function';
 
 import classnames from 'classnames';
@@ -11,9 +10,9 @@ import {WizardFilterSearchDropdown} from './wizard/WizardFilterSearchDropdown';
 import {WizardFilterCityState} from './wizard/WizardFilterCityState';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import DataTypeSelectBar from 'reporting/DataTypeSelectBar';
-import MultiSelectFilter from './MultiSelectFilter';
 import TagAndFilter from './TagAndFilter';
 import TextField from 'common/ui/TextField';
+import {SelectByNameOrTag} from 'reporting/SelectByNameOrTag';
 
 export default class SetUpReport extends Component {
   constructor() {
@@ -25,6 +24,7 @@ export default class SetUpReport extends Component {
       reportingTypes: [],
       reportTypes: [],
       dataTypes: [],
+      fieldCounts: {},
     };
   }
 
@@ -206,6 +206,7 @@ export default class SetUpReport extends Component {
       reportingTypes,
       reportTypes,
       dataTypes,
+      // fieldCounts,
     } = this.state;
 
     if (loading) {
@@ -296,28 +297,22 @@ export default class SetUpReport extends Component {
           if (col.filter === 'contact' || col.filter === 'partner') {
             passReportFinder = reportFinder;
           }
-          let removeSelected;
-          if (col.filter === 'contact') {
-            removeSelected = true;
-          }
-
           rows.push(
             <FieldWrapper
               key={col.filter}
               label={col.display}>
 
-              <MultiSelectFilter
-                availableHeader="Available"
-                selectedHeader="Selected"
-                getHints={v =>
+              <SelectByNameOrTag
+                getItemHints = {v =>
                   reportConfig.getHints(col.filter, v)}
-                selected={reportConfig.currentFilter[col.filter] || []}
-                onAdd = {vs => forEach(vs, v =>
-                  reportConfig.addToMultifilter(col.filter, v))}
-                onRemove = {vs => forEach(vs, v =>
-                  reportConfig.removeFromMultifilter(col.filter, v))}
-                reportFinder={passReportFinder}
-                removeSelected={removeSelected}/>
+                selectedItems = {reportConfig.currentFilter[col.filter] || []}
+                onSelectItemAdd = {v => reportConfig.addToMultifilter(col.filter, v)}
+                onSelectItemRemove = {v => reportConfig.removeFromMultifilter(col.filter, v)}
+                reportFinder = {passReportFinder}
+                placeholder = {'Filter by ' + col.display}
+                searchPlaceholder = "Filter these choices"
+                showCounter
+              />
 
             </FieldWrapper>
             );

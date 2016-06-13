@@ -49,6 +49,13 @@ export default class TagSelect extends Component {
     }
   }
 
+  selectAll() {
+    this.props.available.forEach((v) => {
+      this.handleAdd(v);
+    });
+    this.closeSelectMenu();
+  }
+
   handleAdd(tag) {
     const {onChoose} = this.props;
     this.setState({partial: ''});
@@ -89,7 +96,7 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {available, selected} = this.props;
+    const {available, selected, placeholder, searchPlaceholder} = this.props;
     const {selectDropped, partial} = this.state;
     const filteredAvailable =
       filter(available, at =>
@@ -106,11 +113,11 @@ export default class TagSelect extends Component {
         <div
           className="tag-select-chosen-tags"
           onClick={() => this.toggleSelectMenu()}>
-          {selected
+          {(selected.length !== 0)
             ? ''
             : (
               <span className="tag-select-placeholder">
-                Select tags
+                {placeholder}
               </span>
               )}
           {map(selected, t => this.renderTag(
@@ -121,15 +128,26 @@ export default class TagSelect extends Component {
         {selectDropped ? (
           <div className="tag-select-menu-container">
             <div className="tag-select-menu">
-              <TextField
-                name="name"
-                value={partial}
-                onChange={e => this.handleFilterChange(e.target.value)}
-                placeholder="Type to filter tags"/>
-              {map(filteredAvailable, t => this.renderTag(
-                  t,
-                  () => this.handleAdd(t),
-                  null))}
+              <div className="container-fluid">
+                <div className="row">
+                  <div className="col-xs-12 col-md-8">
+                    <TextField
+                      name="name"
+                      value={partial}
+                      onChange={e => this.handleFilterChange(e.target.value)}
+                      placeholder={searchPlaceholder} />
+                  </div>
+                  <div className="col-xs-12 col-md-4">
+                    <div className="button" onClick={() => this.selectAll()}>Select All</div>
+                  </div>
+                </div>
+                <div className="row">
+                  {map(filteredAvailable, t => this.renderTag(
+                      t,
+                      () => this.handleAdd(t),
+                      null))}
+                </div>
+              </div>
             </div>
           </div>
         ) : '' }
@@ -137,6 +155,12 @@ export default class TagSelect extends Component {
     );
   }
 }
+
+TagSelect.defaultProps = {
+  available: [{value: '', display: '', hexColor: ''}],
+  searchPlaceholder: 'Type to filter',
+  placeholder: 'Not specified',
+};
 
 TagSelect.propTypes = {
   /**
@@ -146,7 +170,7 @@ TagSelect.propTypes = {
     PropTypes.shape({
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
-      hexColor: PropTypes.string.isRequired,
+      hexColor: PropTypes.string,
     })
   ).isRequired,
   /**
@@ -156,7 +180,7 @@ TagSelect.propTypes = {
     PropTypes.shape({
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
-      hexColor: PropTypes.string.isRequired,
+      hexColor: PropTypes.string,
     })
   ).isRequired,
   /**
@@ -167,4 +191,12 @@ TagSelect.propTypes = {
    * Function called when a selected tag is removed.
    */
   onRemove: PropTypes.func.isRequired,
+  /**
+   * placeholder text for tag search bar
+   */
+  searchPlaceholder: PropTypes.string,
+  /**
+   * placeholder text for select input
+   */
+  placeholder: PropTypes.any,
 };

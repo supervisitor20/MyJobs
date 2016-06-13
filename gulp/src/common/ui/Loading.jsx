@@ -31,8 +31,8 @@ export class Loading extends React.Component {
         <img
           src={spinnerImg}
           style={{
-            align: 'center',
-            padding: '1em',
+            margin: '50px auto 50px',
+            display: 'block',
           }}/>
       );
     }
