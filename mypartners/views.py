@@ -1382,7 +1382,8 @@ def api_get_nuo_inbox_list(request):
         'pk', 'email')
 
     return HttpResponse(
-        json.dumps(inboxes), content_type='application/json; charset=utf-8')
+        json.dumps(
+            list(inboxes)), content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()

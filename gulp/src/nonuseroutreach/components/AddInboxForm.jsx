@@ -10,14 +10,10 @@ import {validateEmailAction} from '../actions/inbox-actions';
 class AddInboxForm extends React.Component {
   render() {
     const {dispatch, email, errors, isValid} = this.props;
-    console.log(errors);
 
-    const validationMessages = errors.map((message) =>
-      <HelpText message={message} />
-    );
     return (
       <div className="col-xs-12">
-        {validationMessages}
+        {errors.map(error => <HelpText message={error} />)}
         <EmailInput
           id="add"
           email={email}
@@ -41,5 +37,5 @@ AddInboxForm.propTypes = {
 };
 
 export default connect(state => ({
-  ...state.newInbox,
+  ...state.inboxManagement.newInbox,
 }))(AddInboxForm);
