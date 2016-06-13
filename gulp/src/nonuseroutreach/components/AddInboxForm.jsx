@@ -1,43 +1,18 @@
-import React, {Component, PropTypes} from 'react';
+import React from 'react';
+import Button from 'react-bootstrap/lib/Button';
+import {connect} from 'react-redux';
 
 import {HelpText} from './HelpText';
 import {EmailInput} from './EmailInput';
-import {AddInboxButton} from './AddInboxButton';
+import {validateEmailAction} from '../actions/inbox-actions';
 
 // container for add button and new inbox input field
-export class AddInboxForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      addDisabled: true,
-      validationMessages: [],
-    };
-  }
-
-  onClick() {
-    this.props.inboxManager.createNewInbox(this.state.currentEmail);
-    this.setState({
-      currentEmail: '',
-    });
-  }
-
-
-  emailFieldChanged(value) {
-    const {inboxManager} = this.props;
-    const validationObject = inboxManager.validateEmailInput(value);
-    this.setState({
-      currentEmail: value,
-      validationMessages: validationObject.messages,
-    });
-    if (validationObject.success) {
-      this.setState({addDisabled: false});
-    } else {
-      this.setState({addDisabled: true});
-    }
-  }
-
+class AddInboxForm extends React.Component {
   render() {
-    const validationMessages = this.state.validationMessages.map((message) =>
+    const {dispatch, email, errors, isValid} = this.props;
+    console.log(errors);
+
+    const validationMessages = errors.map((message) =>
       <HelpText message={message} />
     );
     return (
@@ -45,16 +20,26 @@ export class AddInboxForm extends Component {
         {validationMessages}
         <EmailInput
           id="add"
-          email={this.state.currentEmail}
-          emailFieldChanged={v => this.emailFieldChanged(v)} />
-        <AddInboxButton
-          addDisabled={this.state.addDisabled}
-          onClick={() => this.onClick()} />
+          email={email}
+          emailFieldChanged={v => dispatch(validateEmailAction(v))} />
+        <Button
+          className="primary pull-right margin-top"
+          disabled={!isValid}>
+          Add Inbox
+        </Button>
       </div>
     );
   }
 }
 
 AddInboxForm.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  dispatch: React.PropTypes.func.isRequired,
+  api: React.PropTypes.object.isRequired,
+  email: React.PropTypes.string.isRequired,
+  errors: React.PropTypes.arrayOf(React.PropTypes.string.isRequired),
+  isValid: React.PropTypes.bool.isRequired,
 };
+
+export default connect(state => ({
+  ...state.newInbox,
+}))(AddInboxForm);

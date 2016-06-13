@@ -2,7 +2,7 @@ import React, {PropTypes} from 'react';
 import {OutreachRecordTable} from './OutreachRecordTable';
 
 // outreach record table view
-export default class OutreachRecordPage {
+export default class OutreachRecordPage extends React.Component {
   render() {
     return (
       <div>

@@ -19,14 +19,14 @@ export class InboxList extends Component {
   }
 
   handleDelete(index) {
-    this.props.inboxManager.deleteInbox(this.state.inboxes[index].pk);
+    this.props.api.deleteInbox(this.state.inboxes[index].pk);
     this.setState({
       inboxes: this.state.inboxes.filter((_, i) => i !== index),
     });
   }
 
   async loadInboxesFromApi() {
-    const results = await this.props.inboxManager.getExistingInboxes();
+    const results = await this.props.api.getExistingInboxes();
     this.setState({
       inboxes: results,
     });
@@ -53,7 +53,7 @@ export class InboxList extends Component {
                   index={i}
                   handleDelete={index => this.handleDelete(index)}
                   loadInboxesFromApi={() => this.loadInboxesFromApi()}
-                  inboxManager={this.props.inboxManager} />
+                  api={this.props.api} />
               )}
             </div>
           </div>
@@ -64,5 +64,5 @@ export class InboxList extends Component {
 }
 
 InboxList.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  api: PropTypes.object.isRequired,
 };

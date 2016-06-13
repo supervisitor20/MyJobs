@@ -2,7 +2,7 @@ import React from 'react';
 
 
 // overview main display page
-export default class OverviewPage {
+export default class OverviewPage extends React.Component {
   render() {
     return (
       <div className="card-wrapper">

@@ -4,7 +4,25 @@ export function validateEmail(email) {
   return re.test(email);
 }
 
-export function validateEmailLocalPart(email) {
+export function localPartOnly(email) {
   const re = /@+/;
-  return re.test(email);
+  return !re.test(email);
+}
+
+export function validateEmailAddress(email) {
+  const result = {
+    success: true,
+    errors: [],
+  };
+  if (!localPartOnly(email)) {
+    result.success = false;
+    result.errors.push(
+      'Please only enter the portion to the left of the "@"');
+  }
+
+  if (!email.length) {
+    result.success = false;
+  }
+
+  return result;
 }

@@ -9,29 +9,41 @@ import ReactDOM from 'react-dom';
 // new imports
 import createReduxStore from '../common/create-redux-store';
 import {combineReducers} from 'redux';
+import inboxManagementReducer from './reducers/inbox-management-reducer';
 import {Provider} from 'react-redux';
 import NonUserOutreachRouter from './components/NonUserOutreachRouter';
+
 
 installPolyfills();
 
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
-
-const inboxReducer = (state = {}) => state;
+const initialState = {
+  inboxManagement: {
+    inboxes: [],
+    newInbox: {
+      email: '',
+      errors: [],
+      isValid: false,
+    },
+  },
+};
 
 const reducer = combineReducers({
-  inboxes: inboxReducer,
+  inboxManagement: inboxManagementReducer,
 });
 
 const thunkExtra = {
   api: api,
 };
 
-const store = createReduxStore(reducer, {}, thunkExtra);
+const store = createReduxStore(reducer, initialState, thunkExtra);
 
 ReactDOM.render(
   <Provider store={store}>
-    <NonUserOutreachRouter api = {api} />
+    <div>
+      <NonUserOutreachRouter api = {api} />
+    </div>
   </Provider>,
   document.getElementById('content')
 );

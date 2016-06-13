@@ -1378,11 +1378,11 @@ def api_get_nuo_inbox_list(request):
 
     """
     company = get_company_or_404(request)
+    inboxes = OutreachEmailAddress.objects.filter(company=company).values(
+        'pk', 'email')
 
-    inboxes = OutreachEmailAddress.objects.filter(company=company)
-    ctx = serializers.serialize("json", inboxes, fields=('email',))
-
-    return HttpResponse(ctx)
+    return HttpResponse(
+        json.dumps(inboxes), content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()
