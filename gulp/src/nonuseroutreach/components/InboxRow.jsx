@@ -40,8 +40,8 @@ export class InboxRow extends Component {
   }
 
   emailFieldChanged(value) {
-    const {inboxManager} = this.props;
-    const validationObject = inboxManager.validateEmailInput(value);
+    const {api} = this.props;
+    const validationObject = api.validateEmailInput(value);
     this.setState({
       currentEmail: value,
       success: validationObject.success,
@@ -63,11 +63,11 @@ export class InboxRow extends Component {
   }
 
   updateEmail() {
-    const {inboxManager} = this.props;
-    const validationObject = inboxManager.validateEmailInput(
+    const {api} = this.props;
+    const validationObject = api.validateEmailInput(
       this.state.currentEmail);
     if (validationObject.success) {
-      inboxManager.updateInbox(this.state.id, this.state.currentEmail);
+      api.updateInbox(this.state.id, this.state.currentEmail);
       this.props.loadInboxesFromApi();
 
       this.setState({
@@ -121,7 +121,7 @@ export class InboxRow extends Component {
 
 InboxRow.propTypes = {
   inbox: PropTypes.object.isRequired,
-  inboxManager: PropTypes.object.isRequired,
+  api: PropTypes.object.isRequired,
   handleDelete: PropTypes.func.isRequired,
   loadInboxesFromApi: PropTypes.func.isRequired,
   index: PropTypes.number.isRequired,

@@ -4,7 +4,10 @@ import {connect} from 'react-redux';
 
 import {HelpText} from './HelpText';
 import {EmailInput} from './EmailInput';
-import {validateEmailAction} from '../actions/inbox-actions';
+import {
+  doCreateInbox,
+  validateEmailAction,
+} from '../actions/inbox-actions';
 
 // container for add button and new inbox input field
 class AddInboxForm extends React.Component {
@@ -13,14 +16,15 @@ class AddInboxForm extends React.Component {
 
     return (
       <div className="col-xs-12">
-        {errors.map(error => <HelpText message={error} />)}
+        {errors.map((error, index) =>
+          <HelpText key={index} message={error} />)}
         <EmailInput
           id="add"
           email={email}
-          emailFieldChanged={v => dispatch(validateEmailAction(v))} />
-        <Button
+          emailFieldChanged={v => dispatch(validateEmailAction(v))} /> <Button
           className="primary pull-right margin-top"
-          disabled={!isValid}>
+          disabled={!isValid}
+          onClick={() => dispatch(doCreateInbox(email))}>
           Add Inbox
         </Button>
       </div>

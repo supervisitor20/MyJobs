@@ -54,7 +54,7 @@ export class InboxList extends Component {
                   handleDelete={index => this.handleDelete(index)}
                   loadInboxesFromApi={() => this.loadInboxesFromApi()}
                   api={this.props.api} />
-              )}
+                )}
             </div>
           </div>
         </div>

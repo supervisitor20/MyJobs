@@ -15,6 +15,16 @@ export default handleActions({
       },
     };
   },
+  'CREATE_INBOX': (state) => ({
+    // TODO: Create a notification when an inbox is created
+    ...state,
+    newInbox: {
+      email: '',
+      errors: [],
+      isValid: false,
+    },
+  }),
+  'GET_INBOXES': (state, action) => ({...state, inboxes: action.payload}),
 }, {
   inboxes: [],
   newInbox: {
