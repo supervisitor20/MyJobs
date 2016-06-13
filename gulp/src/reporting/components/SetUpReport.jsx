@@ -185,34 +185,36 @@ class SetUpReport extends Component {
                 this.dispatchUpdateFilterWithDependencies();
               }
             };
+            const choices = [
+              {value: 'none', display: 'No filter', render: () => ''},
+              {
+                value: 'tags',
+                display: 'Filter by tags',
+                render: () => (
+                  <TagAnd
+                    available={hints[col.filter] || []}
+                    selected={currentFilter[col.filter]}
+                    onChoose={(i, t) =>
+                      this.dispatchFilterAction(
+                        addToAndOrFilterAction(col.filter, i, t))}
+                    onRemove={(i, t) =>
+                      this.dispatchFilterAction(
+                        removeFromAndOrFilterAction(col.filter, i, t))}
+                  />
+                ),
+              },
+            ];
+
             rows.push(
               <FieldWrapper
                 key={col.filter}
                 label={col.display}>
 
                 <SelectControls
-                  choices={[
-                    {value: 'none', display: 'No filter'},
-                    {value: 'tags', display: 'Filter by tags'},
-                  ]}
+                  choices={choices}
                   value={selectValue}
                   loading={fieldsLoading[col.filter]}
-                  onSelect={v => switchControl(v)}>
-                  <div value="none"/>
-                  <div value="tags">
-                    <TagAnd
-                      available={hints[col.filter] || []}
-                      selected={currentFilter[col.filter] || []}
-                      onChoose={(i, t) =>
-                        this.dispatchFilterAction(
-                          addToAndOrFilterAction(col.filter, i, t))}
-                      onRemove={(i, t) =>
-                        this.dispatchFilterAction(
-                          removeFromAndOrFilterAction(col.filter, i, t))}
-                      placeholder = {'Filter by ' + col.display}
-                    />
-                  </div>
-                </SelectControls>
+                  onSelect={v => switchControl(v)}/>
 
               </FieldWrapper>
               );
@@ -231,35 +233,37 @@ class SetUpReport extends Component {
                 this.dispatchUpdateFilterWithDependencies();
               }
             };
+            const choices = [
+              {value: 'none', display: 'No filter', render: () => ''},
+              {
+                value: 'items',
+                display: 'Filter by ' + col.display,
+                render: () => (
+                  <TagSelect
+                    selected={currentFilter[col.filter]}
+                    available={hints[col.filter] || []}
+                    onChoose={vs =>
+                      this.dispatchFilterAction(
+                        addToOrFilterAction(col.filter, vs))}
+                    onRemove={vs =>
+                      this.dispatchFilterAction(
+                        removeFromOrFilterAction(col.filter, vs))}
+                    searchPlaceholder="Filter these choices"
+                    placeholder="Make a selection"
+                  />
+                ),
+              },
+            ];
             rows.push(
               <FieldWrapper
                 key={col.filter}
                 label={col.display}>
 
                 <SelectControls
-                  choices={[
-                    {value: 'none', display: 'No filter'},
-                    {value: 'items', display: 'Filter by ' + col.display},
-                  ]}
+                  choices={choices}
                   value={selectValue}
                   loading={fieldsLoading[col.filter]}
-                  onSelect={v => switchControl(v)}>
-                  <div value="none"/>
-                  <div value="items">
-                    <TagSelect
-                      selected={currentFilter[col.filter] || []}
-                      available={hints[col.filter] || []}
-                      onChoose={vs =>
-                        this.dispatchFilterAction(
-                          addToOrFilterAction(col.filter, vs))}
-                      onRemove={vs =>
-                        this.dispatchFilterAction(
-                          removeFromOrFilterAction(col.filter, vs))}
-                      searchPlaceholder="Filter these choices"
-                      placeholder = {'Filter by ' + col.display}
-                    />
-                  </div>
-                </SelectControls>
+                  onSelect={v => switchControl(v)}/>
 
               </FieldWrapper>
               );
@@ -294,9 +298,46 @@ class SetUpReport extends Component {
                 this.dispatchUpdateFilterWithDependencies();
               }
             };
+            const choices = [
+              {value: 'none', display: 'No filter', render: () => ''},
+              {
+                value: 'names',
+                display: 'Filter by name',
+                render: () => (
+                  <TagSelect
+                    selected={currentFilter[namesCol.filter]}
+                    available={hints[namesCol.filter] || []}
+                    onChoose={vs =>
+                      this.dispatchFilterAction(
+                        addToOrFilterAction(namesCol.filter, vs))}
+                    onRemove={vs =>
+                      this.dispatchFilterAction(
+                        removeFromOrFilterAction(namesCol.filter, vs))}
+                    searchPlaceholder="Filter these choices"
+                    placeholder="Make a selection"
+                  />
+                ),
+              },
+              {
+                value: 'tags',
+                display: 'Filter by tags',
+                render: () => (
+                  <TagAnd
+                    available={hints[tagsCol.filter] || []}
+                    selected={currentFilter[tagsCol.filter]}
+                    onChoose={(i, t) =>
+                      this.dispatchFilterAction(
+                        addToAndOrFilterAction(tagsCol.filter, i, t))}
+                    onRemove={(i, t) =>
+                      this.dispatchFilterAction(
+                        removeFromAndOrFilterAction(tagsCol.filter, i, t))}
+                  />
+                ),
+              },
+            ];
             const counter = '(' +
               (hints[namesCol.filter] || []).length +
-              ' available)';
+              ' ' + col.display.toLowerCase() + ' available)';
             const loading = (
               fieldsLoading[tagsCol.filter] || fieldsLoading[namesCol.filter]);
             rows.push(
@@ -305,44 +346,11 @@ class SetUpReport extends Component {
                 label={col.display}>
 
                 <SelectControls
-                  choices={[
-                    {value: 'none', display: 'No filter'},
-                    {value: 'names', display: 'Filter by name'},
-                    {value: 'tags', display: 'Filter by tags'},
-                  ]}
+                  choices={choices}
                   value={selectValue}
                   loading={loading}
                   decoration={counter}
-                  onSelect={v => switchControl(v)}>
-                  <div value="none"/>
-                  <div value="names">
-                    <TagSelect
-                      selected={currentFilter[namesCol.filter] || []}
-                      available={hints[namesCol.filter] || []}
-                      onChoose={vs =>
-                        this.dispatchFilterAction(
-                          addToOrFilterAction(namesCol.filter, vs))}
-                      onRemove={vs =>
-                        this.dispatchFilterAction(
-                          removeFromOrFilterAction(namesCol.filter, vs))}
-                      searchPlaceholder="Filter these choices"
-                      placeholder = {'Filter by ' + col.display}
-                    />
-                  </div>
-                  <div value="tags">
-                    <TagAnd
-                      available={hints[tagsCol.filter] || []}
-                      selected={currentFilter[tagsCol.filter] || []}
-                      onChoose={(i, t) =>
-                        this.dispatchFilterAction(
-                          addToAndOrFilterAction(tagsCol.filter, i, t))}
-                      onRemove={(i, t) =>
-                        this.dispatchFilterAction(
-                          removeFromAndOrFilterAction(tagsCol.filter, i, t))}
-                      placeholder = {'Filter by ' + col.display}
-                    />
-                  </div>
-                </SelectControls>
+                  onSelect={v => switchControl(v)}/>
 
               </FieldWrapper>
               );

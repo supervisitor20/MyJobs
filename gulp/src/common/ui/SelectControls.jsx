@@ -1,6 +1,5 @@
-import React, {PropTypes, Children} from 'react';
+import React, {PropTypes} from 'react';
 import warning from 'warning';
-import {getDisplayForValue} from 'common/array';
 import {indexBy} from 'lodash-compat/collection';
 import Select from 'common/ui/Select';
 
@@ -9,35 +8,30 @@ import Select from 'common/ui/Select';
  * Generic select dropdown which shows different vdom based on which item
  * is currently selected.
  *
- * example:
+ * example, currently set to the 'a' choice:
  *
  *  <SelectControls
  *    choices={[
- *      {value: 'a', display: 'Choose A content'},
- *      {value: 'b', display: 'Choose B content'},
+ *      {value: 'a', display: 'Choose A content', render: () => <div>A</div>},
+ *      {value: 'b', display: 'Choose B content', render: () => <div>B</div>},
  *    ]}
  *    value={'a'}
- *    onSelect={value => ...}>
- *    <div value="a">A content here.</div>
- *    <div value="b">B content here.</div>
- *  </SelectControls>
+ *    onSelect={value => ...}/>
  */
 export default function SelectControls(props) {
-  const {choices, children, value, onSelect, loading, decoration} = props;
+  const {choices, value, onSelect, loading, decoration} = props;
 
-  const display = getDisplayForValue(choices, value);
+  const choiceIndex = indexBy(choices, c => c.value);
 
-  const childIndex = indexBy(
-    Children.toArray(children),
-    c => c.props.value);
+  warning(choiceIndex.hasOwnProperty(value),
+    'SelectControls missing choice for ' + value);
 
-  const child = childIndex[value];
-  warning(child, 'SelectControls cannot render ' + value + ': ' + child);
+  const {display, render: renderInner} = choiceIndex[value];
 
 
-  let contents;
+  let selectContents;
   if (loading) {
-    contents = (
+    selectContents = (
       <span>
         <span className="counter">
           <span className="report-loader"></span>
@@ -46,7 +40,7 @@ export default function SelectControls(props) {
       </span>
     );
   } else if (decoration) {
-    contents = (
+    selectContents = (
       <span>
         <span className="counter">
           {decoration}
@@ -55,7 +49,7 @@ export default function SelectControls(props) {
       </span>
     );
   } else {
-    contents = display;
+    selectContents = display;
   }
 
   return (
@@ -63,12 +57,12 @@ export default function SelectControls(props) {
       <Select
         name=""
         onChange={v => onSelect(v.target.value)}
-        value={contents}
+        value={selectContents}
         choices={choices}
         disable={loading}
       />
       <div className="select-control-chosen">
-        {child || ''}
+        {renderInner()}
       </div>
     </div>
   );
@@ -76,12 +70,25 @@ export default function SelectControls(props) {
 
 SelectControls.propTypes = {
   /**
-   * Choices to display [{value: ..., display: 'some string'}]
+   * Choices to display
    */
   choices: PropTypes.arrayOf(
     PropTypes.shape({
+      /**
+       * activate this choice when component value prop equals this;
+       * should be a string or integer
+       */
       value: PropTypes.any.isRequired,
+
+      /**
+       * string to display when active
+       */
       display: PropTypes.string.isRequired,
+
+      /**
+       * function returning vdom called when this entry is active
+       */
+      render: PropTypes.func.isRequired,
     }).isRequired,
   ).isRequired,
 
@@ -89,19 +96,6 @@ SelectControls.propTypes = {
    * Currently selected choice, must correspond to a value in choices.
    */
   value: PropTypes.any.isRequired,
-
-  /**
-   * Content to show. Selection is made at the root level of this child based
-   * on the value prop of the child.
-   *
-   * example:
-   *  <div value="a">
-   *  <div value="b">
-   *
-   * The above example renders only the div with the value 'a' if the value of
-   * this control is 'a'.
-   */
-  children: PropTypes.node.isRequired,
 
   /**
    * Function to call if the user makes a new selection.
