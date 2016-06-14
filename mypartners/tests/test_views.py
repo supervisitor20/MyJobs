@@ -5,9 +5,7 @@ from datetime import datetime, date, timedelta
 import json
 from os import path
 import random
-import requests
 from StringIO import StringIO
-from unittest import skip
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -26,7 +24,6 @@ from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory, RoleFactory
 from myjobs.models import SecondPartyAccessRequest
-from mydashboard.tests.factories import CompanyFactory, CompanyUserFactory
 from mymessages.models import MessageInfo
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
                                         ContactLogEntryFactory, LocationFactory,
@@ -34,7 +31,8 @@ from mypartners.tests.factories import (PartnerFactory, ContactFactory,
 from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
-                               Partner, PartnerLibrary, ADDITION, OutreachEmailAddress)
+                               Partner, PartnerLibrary, ADDITION,
+                               OutreachEmailAddress)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mypartners.views import process_email
 from mysearches.models import PartnerSavedSearch
