@@ -144,23 +144,22 @@ class User extends React.Component {
     // Is user editing their own account?
     if (parseInt(userId, 10) === parseInt(currentUserID, 10)) {
       // What roles are currently assigned?
-      const assignedRolesAsStrings = _.map(assignedRoles, role => role.name );
-      
+      const assignedRolesAsStrings = _.map(assignedRoles, role => role.name);
+
       // Do any of the currently assigned roles contain the 'read role' activity?
       let containsReadRoleActivity = false;
       // Loop through all roles
-      containsReadRoleActivity = _.some(rolesAPIResults, function loopRoles(role) {
+      containsReadRoleActivity = _.some(rolesAPIResults, role => {
         // Identify the roles which are currently assigned
         if (_.includes(assignedRolesAsStrings, role.role_name)) {
           // For each currently assigned role, determine if the 'read role'
           // activity is associated with it
-          return _.some(role.activities, function loopActivities(activity) {
-            return _.some(activity.assigned_activities, function loopActivityNames(assignedActivity) {
-              return assignedActivity.name === 'read role';
-            });
+          return _.some(role.activities, activity => {
+            return _.some(activity.assigned_activities, assignedActivity => assignedActivity.name === 'read role');
           });
         }
-      });
+      }
+    );
       if (containsReadRoleActivity === false) {
         this.setState({
           userEmailHelp: '',
