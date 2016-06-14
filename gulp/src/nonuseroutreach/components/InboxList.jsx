@@ -1,64 +1,91 @@
 import React, {Component, PropTypes} from 'react';
-
-import {InboxRow} from './InboxRow';
+import {connect} from 'react-redux';
+import {EmailInput} from './EmailInput';
+import Button from 'react-bootstrap/lib/Button';
+import {
+  doGetInboxes,
+  modifyInboxAction,
+  resetInboxAction,
+} from '../actions/inbox-actions';
 
 
 /**
  * container for all edit rows of objects loaded from DB
  */
-export class InboxList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      inboxes: [],
-    };
-  }
-
-  handleDelete(index) {
-    this.props.api.deleteInbox(this.state.inboxes[index].pk);
-    this.setState({
-      inboxes: this.state.inboxes.filter((_, i) => i !== index),
-    });
-  }
-
-  async loadInboxesFromApi() {
-    const results = await this.props.api.getExistingInboxes();
-    this.setState({
-      inboxes: results,
-    });
+class InboxList extends Component {
+  componentWillMount() {
+    const {dispatch} = this.props;
+    dispatch(doGetInboxes());
   }
 
   render() {
-    const {inboxes} = this.state;
-    if (inboxes.length === 0) {
-      return (<div></div>);
-    }
-
+    const {dispatch, inboxes, modifiedInboxes} = this.props;
+    const mergedInboxes =
+      inboxes.map(i => modifiedInboxes.find(m => m.pk === i.pk) || i);
     return (
-      <div className="cardWrapper">
-        <div className="row">
-          <div className="col-xs-12 ">
-            <div className="wrapper-header">
-              <h2>Existing Inbox Management</h2>
-            </div>
-            <div className="partner-holder no-highlight">
-              {inboxes.map((inboxOb, i) =>
-                <InboxRow
-                  inbox={inboxOb}
-                  key={inboxOb.pk}
-                  index={i}
-                  handleDelete={index => this.handleDelete(index)}
-                  loadInboxesFromApi={() => this.loadInboxesFromApi()}
-                  api={this.props.api} />
+      inboxes.length ?
+        <div className="cardWrapper">
+          <div className="row">
+            <div className="col-xs-12 ">
+              <div className="wrapper-header">
+                <h2>Existing Inbox Management</h2>
+              </div>
+              {mergedInboxes.map((inbox, i) =>
+                <div className="product-card no-highlight clearfix ">
+                  <div className="row">
+                    <div className="col-xs-12">
+                      <EmailInput
+                        email={inbox.email}
+                        onChange={v =>
+                          dispatch(modifyInboxAction(inbox, v))}
+                        id={i} />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-xs-12">
+                      {modifiedInboxes.indexOf(inbox) > -1 ?
+                        <div>
+                          <Button
+                            className="primary pull-right">
+                            Update
+                          </Button>
+                          <Button
+                            className="pull-right"
+                            onClick={() => dispatch(resetInboxAction(inbox))}>
+                            Cancel
+                          </Button>
+                        </div> :
+                        <Button
+                          className="primary pull-right">
+                          Delete
+                        </Button>}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      : <div></div>
     );
   }
 }
 
 InboxList.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   api: PropTypes.object.isRequired,
+  inboxes: PropTypes.arrayOf(React.PropTypes.shape({
+    pk: React.PropTypes.number.isRequired,
+    email: React.PropTypes.string.isRequired,
+  })),
+  modifiedInboxes: React.PropTypes.shape({
+    email: React.PropTypes.string.isRequired,
+    errors: React.PropTypes.arrayOf(React.PropTypes.string.isRequired),
+    isValid: React.PropTypes.bool.isRequired,
+  }),
 };
+
+export default connect(state => ({
+  inboxes: state.inboxManagement.inboxes,
+  modifiedInboxes: state.inboxManagement.modifiedInboxes,
+}))(InboxList);

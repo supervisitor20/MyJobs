@@ -15,19 +15,29 @@ class AddInboxForm extends React.Component {
     const {dispatch, email, errors, isValid} = this.props;
 
     return (
-      <div className="col-xs-12">
-        {errors.map((error, index) =>
-          <HelpText key={index} message={error} />)}
-        <EmailInput
-          id="add"
-          email={email}
-          emailFieldChanged={v => dispatch(validateEmailAction(v))} /> <Button
-          className="primary pull-right margin-top"
-          disabled={!isValid}
-          onClick={() => dispatch(doCreateInbox(email))}>
-          Add Inbox
-        </Button>
-      </div>
+        <div className="row">
+          <div className="col-xs-12">
+            <div className="wrapper-header">
+              <h2>Add New Inbox</h2>
+            </div>
+            <div className="product-card no-highlight clearfix">
+              <div className="col-xs-12">
+                {errors.map((error, index) =>
+                  <HelpText key={index} message={error} />)}
+                <EmailInput
+                  id="add"
+                  email={email}
+                  onChange={v => dispatch(validateEmailAction(v))} />
+                <Button
+                  className="primary pull-right margin-top"
+                  disabled={!isValid}
+                  onClick={() => dispatch(doCreateInbox(email))}>
+                  Add Inbox
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
     );
   }
 }

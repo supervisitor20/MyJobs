@@ -1,31 +1,18 @@
 import React from 'react';
 import {connect} from 'react-redux';
 
-import {InboxList} from './InboxList';
+import InboxList from './InboxList';
 import AddInboxForm from './AddInboxForm';
 
 
 // inbox management app main page
 class InboxManagementPage extends React.Component {
   render() {
-    const {api, newInbox} = this.props;
+    const {api, newInbox, inboxes} = this.props;
     return (
-      <div>
-        <InboxList api={api} />
-        <div className="card-wrapper">
-          <div className="row">
-            <div className="col-xs-12 ">
-              <div className="wrapper-header">
-                <h2>Add New Inbox</h2>
-              </div>
-              <div className="partner-holder no-highlight">
-                <div className="product-card no-highlight clearfix">
-                  <AddInboxForm api={api} {...newInbox} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="card-wrapper">
+        <AddInboxForm api={api} {...newInbox} />
+        <InboxList api={api} inboxes={inboxes} />
       </div>
     );
   }
@@ -48,7 +35,5 @@ InboxManagementPage.propTypes = {
 };
 
 export default connect(state => ({
-  // todo .. shorthand syntax
-  inboxes: state.inboxes,
-  newInbox: state.newInbox,
+  ...state.inboxManagement,
 }))(InboxManagementPage);

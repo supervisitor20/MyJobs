@@ -6,8 +6,8 @@ import React, {Component, PropTypes} from 'react';
  * used in both add and edit functions
  */
 export class EmailInput extends Component {
-  emailChanged() {
-    this.props.emailFieldChanged(this.refs.email_input.value.trim());
+  handleChange() {
+    this.props.onChange(this.refs.email_input.value.trim());
   }
 
   render() {
@@ -18,7 +18,7 @@ export class EmailInput extends Component {
           className="email-input form-control"
           id={this.props.id}
           value={this.props.email}
-          onChange={() => this.emailChanged()}
+          onChange={() => this.handleChange()}
           ref="email_input"
           autoFocus/>
         <span className="input-group-addon">@my.jobs</span>
@@ -28,7 +28,7 @@ export class EmailInput extends Component {
 }
 
 EmailInput.propTypes = {
-  emailFieldChanged: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
   email: PropTypes.string,
 };

@@ -9,7 +9,11 @@ import ReactDOM from 'react-dom';
 // new imports
 import createReduxStore from '../common/create-redux-store';
 import {combineReducers} from 'redux';
-import inboxManagementReducer from './reducers/inbox-management-reducer';
+import {
+  initialState,
+  inboxManagementReducer,
+} from './reducers/inbox-management-reducer';
+
 import {Provider} from 'react-redux';
 import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 
@@ -18,17 +22,6 @@ installPolyfills();
 
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
-const initialState = {
-  inboxManagement: {
-    inboxes: [],
-    newInbox: {
-      email: '',
-      errors: [],
-      isValid: false,
-    },
-  },
-};
-
 const reducer = combineReducers({
   inboxManagement: inboxManagementReducer,
 });
