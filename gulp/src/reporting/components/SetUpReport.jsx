@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import warning from 'warning';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
+import {keys} from 'lodash-compat/object';
 import {blendControls} from './util';
 import {
   setSimpleFilterAction,
@@ -21,7 +22,6 @@ import {
   doRunReport,
 } from '../actions/compound-actions';
 
-import classnames from 'classnames';
 import FilterDateRange from './FilterDateRange';
 import FilterSearchDropdown from './FilterSearchDropdown';
 import FilterCityState from './FilterCityState';
@@ -78,23 +78,217 @@ class SetUpReport extends Component {
       doUpdateFilterWithDependencies(filterInterface, reportDataId));
   }
 
-  renderRow(displayName, key, content, buttonRow, textCenter) {
+  renderTagsControl(col) {
+    const {
+      dispatch,
+      currentFilter,
+      hints,
+      fieldsLoading,
+    } = this.props;
+
+    const selectValue = currentFilter[col.filter] ? 'tags' : 'none';
+    const switchControl = (value) => {
+      if (value === 'tags') {
+        dispatch(deleteFilterAction(col.filter));
+        dispatch(emptyFilterAction(col.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else {
+        dispatch(deleteFilterAction(col.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      }
+    };
+    const choices = [
+      {value: 'none', display: 'No filter', render: () => ''},
+      {
+        value: 'tags',
+        display: 'Filter by tags',
+        render: () => (
+          <TagAnd
+            available={hints[col.filter] || []}
+            selected={currentFilter[col.filter]}
+            onChoose={(i, t) =>
+              this.dispatchFilterAction(
+                addToAndOrFilterAction(col.filter, i, t))}
+            onRemove={(i, t) =>
+              this.dispatchFilterAction(
+                removeFromAndOrFilterAction(col.filter, i, t))}
+          />
+        ),
+      },
+    ];
+
     return (
-      <div key={key} className={
-        classnames(
-        {'row': true},
-        {'actions': buttonRow},
-        {'text-center': textCenter})}>
-        <div className="col-xs-12 col-md-4">
-          <label>
-            {displayName}
-          </label>
-        </div>
-        <div className="col-xs-12 col-md-8">
-          {content}
-        </div>
-      </div>
+      <FieldWrapper
+        key={col.filter}
+        label={col.display}>
+
+        <SelectControls
+          choices={choices}
+          value={selectValue}
+          loading={fieldsLoading[col.filter]}
+          onSelect={v => switchControl(v)}/>
+
+      </FieldWrapper>
     );
+  }
+
+  renderMultiselectControl(col) {
+    const {
+      dispatch,
+      currentFilter,
+      hints,
+      fieldsLoading,
+    } = this.props;
+
+    const selectValue = currentFilter[col.filter] ? 'items' : 'none';
+    const switchControl = (value) => {
+      if (value === 'items') {
+        dispatch(deleteFilterAction(col.filter));
+        dispatch(emptyFilterAction(col.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else {
+        dispatch(deleteFilterAction(col.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      }
+    };
+    const choices = [
+      {value: 'none', display: 'No filter', render: () => ''},
+      {
+        value: 'items',
+        display: 'Filter by ' + col.display,
+        render: () => (
+          <TagSelect
+            selected={currentFilter[col.filter]}
+            available={hints[col.filter] || []}
+            onChoose={vs =>
+              this.dispatchFilterAction(
+                addToOrFilterAction(col.filter, vs))}
+            onRemove={vs =>
+              this.dispatchFilterAction(
+                removeFromOrFilterAction(col.filter, vs))}
+            searchPlaceholder="Filter these choices"
+            placeholder="Make a selection"
+          />
+        ),
+      },
+    ];
+
+    return (
+      <FieldWrapper
+        key={col.filter}
+        label={col.display}>
+
+        <SelectControls
+          choices={choices}
+          value={selectValue}
+          loading={fieldsLoading[col.filter]}
+          onSelect={v => switchControl(v)}/>
+
+      </FieldWrapper>
+    );
+  }
+
+  renderCompositeMultiselectWithTagsControl(col) {
+    const {
+      dispatch,
+      currentFilter,
+      hints,
+      fieldsLoading,
+    } = this.props;
+
+    const namesCol = col.interfaces.search_multiselect;
+    const tagsCol = col.interfaces.tags;
+    let selectValue;
+    if (currentFilter[namesCol.filter]) {
+      selectValue = 'names';
+    } else if (currentFilter[tagsCol.filter]) {
+      selectValue = 'tags';
+    } else {
+      selectValue = 'none';
+    }
+    const switchControl = (value) => {
+      if (value === 'names') {
+        dispatch(deleteFilterAction(namesCol.filter));
+        dispatch(deleteFilterAction(tagsCol.filter));
+        dispatch(emptyFilterAction(namesCol.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else if (value === 'tags') {
+        dispatch(deleteFilterAction(namesCol.filter));
+        dispatch(deleteFilterAction(tagsCol.filter));
+        dispatch(emptyFilterAction(tagsCol.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else {
+        dispatch(deleteFilterAction(namesCol.filter));
+        dispatch(deleteFilterAction(tagsCol.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      }
+    };
+    const choices = [
+      {value: 'none', display: 'No filter', render: () => ''},
+      {
+        value: 'names',
+        display: 'Filter by name',
+        render: () => (
+          <TagSelect
+            selected={currentFilter[namesCol.filter]}
+            available={hints[namesCol.filter] || []}
+            onChoose={vs =>
+              this.dispatchFilterAction(
+                addToOrFilterAction(namesCol.filter, vs))}
+            onRemove={vs =>
+              this.dispatchFilterAction(
+                removeFromOrFilterAction(namesCol.filter, vs))}
+            searchPlaceholder="Filter these choices"
+            placeholder="Make a selection"
+          />
+        ),
+      },
+      {
+        value: 'tags',
+        display: 'Filter by tags',
+        render: () => (
+          <TagAnd
+            available={hints[tagsCol.filter] || []}
+            selected={currentFilter[tagsCol.filter]}
+            onChoose={(i, t) =>
+              this.dispatchFilterAction(
+                addToAndOrFilterAction(tagsCol.filter, i, t))}
+            onRemove={(i, t) =>
+              this.dispatchFilterAction(
+                removeFromAndOrFilterAction(tagsCol.filter, i, t))}
+          />
+        ),
+      },
+    ];
+    const counter = '(' +
+      (hints[namesCol.filter] || []).length +
+      ' ' + col.display.toLowerCase() + ' available)';
+    const loading = (
+      fieldsLoading[tagsCol.filter] || fieldsLoading[namesCol.filter]);
+
+    return (
+      <FieldWrapper
+        key={col.filter}
+        label={col.display}>
+
+        <SelectControls
+          choices={choices}
+          value={selectValue}
+          loading={loading}
+          decoration={counter}
+          onSelect={v => switchControl(v)}/>
+
+      </FieldWrapper>
+    );
+  }
+
+  renderCompositeControl(col) {
+    const {interfaces} = col;
+    if (interfaces && interfaces.search_multiselect && interfaces.tags) {
+      return this.renderCompositeMultiselectWithTagsControl(col);
+    }
+    warning(false,
+      'Unknown composite interface types: ' + keys(interfaces).join(','));
   }
 
   render() {
@@ -105,7 +299,6 @@ class SetUpReport extends Component {
       reportName,
       reportNameErrors,
       hints,
-      fieldsLoading,
     } = this.props;
 
     const rows = [];
@@ -173,191 +366,16 @@ class SetUpReport extends Component {
           );
           break;
         case 'tags':
-          {
-            const selectValue = currentFilter[col.filter] ? 'tags' : 'none';
-            const switchControl = (value) => {
-              if (value === 'tags') {
-                dispatch(deleteFilterAction(col.filter));
-                dispatch(emptyFilterAction(col.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              } else {
-                dispatch(deleteFilterAction(col.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              }
-            };
-            const choices = [
-              {value: 'none', display: 'No filter', render: () => ''},
-              {
-                value: 'tags',
-                display: 'Filter by tags',
-                render: () => (
-                  <TagAnd
-                    available={hints[col.filter] || []}
-                    selected={currentFilter[col.filter]}
-                    onChoose={(i, t) =>
-                      this.dispatchFilterAction(
-                        addToAndOrFilterAction(col.filter, i, t))}
-                    onRemove={(i, t) =>
-                      this.dispatchFilterAction(
-                        removeFromAndOrFilterAction(col.filter, i, t))}
-                  />
-                ),
-              },
-            ];
-
-            rows.push(
-              <FieldWrapper
-                key={col.filter}
-                label={col.display}>
-
-                <SelectControls
-                  choices={choices}
-                  value={selectValue}
-                  loading={fieldsLoading[col.filter]}
-                  onSelect={v => switchControl(v)}/>
-
-              </FieldWrapper>
-              );
-          }
+          rows.push(this.renderTagsControl(col));
           break;
         case 'search_multiselect':
-          {
-            const selectValue = currentFilter[col.filter] ? 'items' : 'none';
-            const switchControl = (value) => {
-              if (value === 'items') {
-                dispatch(deleteFilterAction(col.filter));
-                dispatch(emptyFilterAction(col.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              } else {
-                dispatch(deleteFilterAction(col.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              }
-            };
-            const choices = [
-              {value: 'none', display: 'No filter', render: () => ''},
-              {
-                value: 'items',
-                display: 'Filter by ' + col.display,
-                render: () => (
-                  <TagSelect
-                    selected={currentFilter[col.filter]}
-                    available={hints[col.filter] || []}
-                    onChoose={vs =>
-                      this.dispatchFilterAction(
-                        addToOrFilterAction(col.filter, vs))}
-                    onRemove={vs =>
-                      this.dispatchFilterAction(
-                        removeFromOrFilterAction(col.filter, vs))}
-                    searchPlaceholder="Filter these choices"
-                    placeholder="Make a selection"
-                  />
-                ),
-              },
-            ];
-            rows.push(
-              <FieldWrapper
-                key={col.filter}
-                label={col.display}>
-
-                <SelectControls
-                  choices={choices}
-                  value={selectValue}
-                  loading={fieldsLoading[col.filter]}
-                  onSelect={v => switchControl(v)}/>
-
-              </FieldWrapper>
-              );
-            break;
-          }
+          rows.push(this.renderMultiselectControl(col));
+          break;
         case 'composite':
-          {
-            const namesCol = col.interfaces.search_multiselect;
-            const tagsCol = col.interfaces.tags;
-            let selectValue;
-            if (currentFilter[namesCol.filter]) {
-              selectValue = 'names';
-            } else if (currentFilter[tagsCol.filter]) {
-              selectValue = 'tags';
-            } else {
-              selectValue = 'none';
-            }
-            const switchControl = (value) => {
-              if (value === 'names') {
-                dispatch(deleteFilterAction(namesCol.filter));
-                dispatch(deleteFilterAction(tagsCol.filter));
-                dispatch(emptyFilterAction(namesCol.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              } else if (value === 'tags') {
-                dispatch(deleteFilterAction(namesCol.filter));
-                dispatch(deleteFilterAction(tagsCol.filter));
-                dispatch(emptyFilterAction(tagsCol.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              } else {
-                dispatch(deleteFilterAction(namesCol.filter));
-                dispatch(deleteFilterAction(tagsCol.filter));
-                this.dispatchUpdateFilterWithDependencies();
-              }
-            };
-            const choices = [
-              {value: 'none', display: 'No filter', render: () => ''},
-              {
-                value: 'names',
-                display: 'Filter by name',
-                render: () => (
-                  <TagSelect
-                    selected={currentFilter[namesCol.filter]}
-                    available={hints[namesCol.filter] || []}
-                    onChoose={vs =>
-                      this.dispatchFilterAction(
-                        addToOrFilterAction(namesCol.filter, vs))}
-                    onRemove={vs =>
-                      this.dispatchFilterAction(
-                        removeFromOrFilterAction(namesCol.filter, vs))}
-                    searchPlaceholder="Filter these choices"
-                    placeholder="Make a selection"
-                  />
-                ),
-              },
-              {
-                value: 'tags',
-                display: 'Filter by tags',
-                render: () => (
-                  <TagAnd
-                    available={hints[tagsCol.filter] || []}
-                    selected={currentFilter[tagsCol.filter]}
-                    onChoose={(i, t) =>
-                      this.dispatchFilterAction(
-                        addToAndOrFilterAction(tagsCol.filter, i, t))}
-                    onRemove={(i, t) =>
-                      this.dispatchFilterAction(
-                        removeFromAndOrFilterAction(tagsCol.filter, i, t))}
-                  />
-                ),
-              },
-            ];
-            const counter = '(' +
-              (hints[namesCol.filter] || []).length +
-              ' ' + col.display.toLowerCase() + ' available)';
-            const loading = (
-              fieldsLoading[tagsCol.filter] || fieldsLoading[namesCol.filter]);
-            rows.push(
-              <FieldWrapper
-                key={col.filter}
-                label={col.display}>
-
-                <SelectControls
-                  choices={choices}
-                  value={selectValue}
-                  loading={loading}
-                  decoration={counter}
-                  onSelect={v => switchControl(v)}/>
-
-              </FieldWrapper>
-              );
-            break;
-          }
+          rows.push(this.renderCompositeControl(col));
+          break;
         default:
-          warning(true, 'Unknown interface type: ' + col.interface_type);
+          warning(false, 'Unknown interface type: ' + col.interface_type);
         }
       });
     }
