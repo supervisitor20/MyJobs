@@ -144,10 +144,8 @@ class User extends React.Component {
     // Is user editing their own account?
     if (parseInt(userId, 10) === parseInt(currentUserID, 10)) {
       // What roles are currently assigned?
-      const assignedRolesAsStrings = _.map(assignedRoles, function getName(role) {
-        return role.name;
-      });
-
+      const assignedRolesAsStrings = _.map(assignedRoles, role => role.name );
+      
       // Do any of the currently assigned roles contain the 'read role' activity?
       let containsReadRoleActivity = false;
       // Loop through all roles
