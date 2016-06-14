@@ -4,6 +4,7 @@ import warning from 'warning';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
 import {keys} from 'lodash-compat/object';
+import {debounce} from 'lodash-compat/function';
 import {blendControls} from './util';
 import {
   setSimpleFilterAction,
@@ -32,6 +33,10 @@ import SelectControls from 'common/ui/SelectControls';
 import TagSelect from 'common/ui/tags/TagSelect';
 import TagAnd from 'common/ui/tags/TagAnd';
 
+function hintDebounce(fn) {
+  return debounce(fn, 300, {leading: false, trailing: true});
+}
+
 class SetUpReport extends Component {
   onIntentionChange(intention) {
     const {history, category, dataSet} = this.props;
@@ -50,7 +55,7 @@ class SetUpReport extends Component {
 
   getHints(field, value) {
     const {dispatch, reportDataId, currentFilter} = this.props;
-    dispatch(doGetHelp(reportDataId, currentFilter, field, value));
+    return dispatch(doGetHelp(reportDataId, currentFilter, field, value));
   }
 
   async handleRunReport(e) {
@@ -299,6 +304,7 @@ class SetUpReport extends Component {
       reportName,
       reportNameErrors,
       hints,
+      fieldsLoading,
     } = this.props;
 
     const rows = [];
@@ -345,7 +351,8 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={v => this.getHints(col.filter, v)}
+                getHints={hintDebounce(v => this.getHints(col.filter, v))}
+                loading={fieldsLoading[col.filter]}
                 hints={hints[col.filter]}/>
             </FieldWrapper>
           );
@@ -360,7 +367,9 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={(f, v) => this.getHints(f, v)}
+                getHints={hintDebounce((f, v) => this.getHints(f, v))}
+                cityLoading={fieldsLoading.city}
+                stateLoading={fieldsLoading.state}
                 hints={hints}/>
             </FieldWrapper>
           );
