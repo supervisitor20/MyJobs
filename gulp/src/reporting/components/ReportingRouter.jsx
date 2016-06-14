@@ -1,12 +1,11 @@
 import React, {Component, PropTypes} from 'react';
-import {Router, Route, IndexRoute} from 'react-router';
-import {DynamicReportApp} from 'reporting/DynamicReportApp';
-import DefaultRedirect from 'reporting/DefaultRedirect';
-import SetUpReport from 'reporting/SetUpReport';
-import ExportReport from 'reporting/ExportReport';
-import OldPreviewEmbedPage from 'reporting/OldPreviewEmbedPage';
+import {Router, Route, IndexRedirect} from 'react-router';
+import DynamicReportApp from './DynamicReportApp';
+import SetUpReport from './SetUpReport';
+import ExportReport from './ExportReport';
+import OldPreviewEmbedPage from './OldPreviewEmbedPage';
 
-export class WizardRouter extends Component {
+export default class ReportingRouter extends Component {
   createElement(TheComponent, componentProps) {
     const {reportFinder} = this.props;
     const newProps = {...componentProps, reportFinder};
@@ -18,7 +17,7 @@ export class WizardRouter extends Component {
     return (
       <Router createElement={(c, p) => this.createElement(c, p)}>
         <Route path="/" component={DynamicReportApp}>
-          <IndexRoute component={DefaultRedirect}/>
+          <IndexRedirect to="/set-up-report"/>
           <Route
             path="set-up-report"
             component={SetUpReport}/>
@@ -34,6 +33,6 @@ export class WizardRouter extends Component {
   }
 }
 
-WizardRouter.propTypes = {
+ReportingRouter.propTypes = {
   reportFinder: PropTypes.object.isRequired,
 };

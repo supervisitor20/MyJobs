@@ -137,10 +137,70 @@ Library Policy
 Practices
 =========
 
-Gulp watch is your friend.
-
 * Write unit tests for new code.
 * Keep unit tests passing.
 * Keep unit tests fast.
 * Keep lint report clean.
-* Keep external libraries in vendor.js.
+
+React Conventions
+=================
+
+* There should be one React component per file. Use ``export default`` to
+  export it.
+
+  * Document the react component with a ``/**`` comment at the top of the
+    component class or function.
+  * Keep propTypes up to date. Document what each prop means.
+
+* Write controlled components.
+* Keep separation between components which define a lot of user interaction and
+  components which compose other components to build a user application.
+
+Redux Conventions
+=================
+
+* The most important documentation is the documentation of the reducer
+  functions. Put a `/**` comment at the top of the reducer function.
+
+  * Make clear the concept behind each prop.
+  * Don't describe what the UI does, at that is likely to change.
+  * Bad example: "active: make item blue"
+  * Good example:
+
+::
+
+    /**
+     *  format for user list {
+     *
+     *    users: [
+     *      id: integer, database id for this user
+     *      name: string, display name for this user
+     *      active: boolean indicating that the user working on this item.
+     *    ]
+     *  }
+     */
+    export default handleActions({
+
+* Also document compound actions with ``/**`` comments
+
+  * Describe the action in terms of why it is occuring.
+  * Include descriptions 
+  * Example:
+
+::
+
+    /**
+     * The user is done working and ready to see the result
+     *
+     * dryRun: don't save the result, just show a preview
+     */
+    export function submitWork(dryRun) {
+
+* Encode as much business logic as possible into redux reducers.
+* Keep business logic out of React components. It is necessary to do the
+  occasional dom tweak or auto-scroll in React, but this should not be common.
+* Write action creators to conform to "Standard Flux Actions".
+* When unit testing reducers, just invoke them as functions and check their
+  result.
+* When unit testing compound actions, you can either invoke them as functions
+  or create a redux store and dispatch them.

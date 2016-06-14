@@ -8,7 +8,7 @@ import TagAnd from 'common/ui/tags/TagAnd';
  * Reporting filter component that works for selecting individual entities
  * or tags.
  */
-export class SelectByNameOrTag extends Component {
+export default class SelectByNameOrTag extends Component {
   constructor(props) {
     super(props);
 
@@ -22,46 +22,9 @@ export class SelectByNameOrTag extends Component {
     this.state = {
       value: 'No filter',
       availableItemHints: [],
-      availableTagHints: [],
       choice: 0,
       choices,
-      loading: false,
     };
-  }
-
-  componentDidMount() {
-    const {reportFinder} = this.props;
-    // This is used to reload the available list anytime the filter changes.
-    this.mounted = true;
-    if (reportFinder) {
-      this.unsubscribeToFilterChanges = reportFinder.subscribeToFilterChanges(
-          () => this.getHints());
-    }
-    this.getHints();
-  }
-
-  componentWillUnmount() {
-    if (this.filterChangesRef) {
-      this.unsubscribeToFilterChanges();
-    }
-    this.mounted = false;
-  }
-
-  async getHints() {
-    const {getItemHints, getTagHints} = this.props;
-    if (getItemHints) {
-      if (this.mounted) {
-        this.setState({loading: true});
-        const availableItemHints = await getItemHints();
-        this.setState({availableItemHints, loading: false});
-      }
-    }
-    if (getTagHints) {
-      if (this.mounted) {
-        const availableTagHints = await getTagHints();
-        this.setState({availableTagHints});
-      }
-    }
   }
 
   changeHandler(event) {
@@ -107,11 +70,9 @@ export class SelectByNameOrTag extends Component {
       selectedItems,
       searchPlaceholder,
       placeholder,
-    } = this.props;
-    const {
       availableItemHints,
       availableTagHints,
-    } = this.state;
+    } = this.props;
 
     switch (value) {
     case 1:
@@ -141,12 +102,17 @@ export class SelectByNameOrTag extends Component {
 
   render() {
     const {
+      availableItemHints,
+      itemsLoading,
+      tagsLoading,
+    } = this.props;
+    const {
       choices,
       value,
       choice,
-      availableItemHints,
-      loading,
     } = this.state;
+    const loading = itemsLoading || tagsLoading;
+
     let valueAndCount = (
       <span>
         <span className="counter">
@@ -170,7 +136,7 @@ export class SelectByNameOrTag extends Component {
           onChange={v => this.changeHandler(v)}
           value={valueAndCount}
           choices = {choices}
-          disable = {loading ? true : false}
+          disable = {loading}
         />
         <div className="select-control-chosen">
           {this.renderControl(choice)}
@@ -185,6 +151,21 @@ SelectByNameOrTag.propTypes = {
    * Function that gets the hints
    */
   getItemHints: PropTypes.func.isRequired,
+
+  /**
+   * Are items loading?
+   */
+  itemsLoading: PropTypes.bool.isRequired,
+
+  /**
+   * Available items
+   */
+  availableItemHints: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 
   /**
    * Currently selected items
@@ -207,6 +188,24 @@ SelectByNameOrTag.propTypes = {
   onSelectItemRemove: PropTypes.func.isRequired,
 
   getTagHints: PropTypes.func,
+
+  /**
+   * Are tags loading?
+   */
+  tagsLoading: PropTypes.bool.isRequired,
+
+  /**
+   * Available tags
+   */
+  availableTagHints: PropTypes.arrayOf(
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.any.isRequired,
+        display: PropTypes.string.isRequired,
+        hexColor: PropTypes.string,
+      })
+    )
+  ),
 
   /**
    * Currently selected tags
