@@ -69,6 +69,20 @@ describe('reportStateReducer', () => {
     });
   });
 
+  it('deletes simple filters set to undefined', () => {
+    const action = setSimpleFilterAction("city", undefined);
+    const result = reportStateReducer({
+      currentFilter: {
+        city: "Heresville",
+      },
+      currentFilterDirty: false,
+    }, action);
+    expect(result).toEqual({
+      currentFilter: {},
+      currentFilterDirty: true,
+    });
+  });
+
   it('can add to an or filter', () => {
     const action = addToOrFilterAction(
       "contact", [{value: 3, display: "Bob"}, {value: 5, display: "Rex"}]);

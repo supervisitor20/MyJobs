@@ -48,7 +48,7 @@ export function getFilterValuesOnly(currentFilter) {
   // FUTURE: add filterType to specify the type of filter data required
   //  i.e. "date_range", "or", "and_or", "string", etc.
   //  This will make this function need to do less guessing.
-  const result = mapValues(currentFilter, item => {
+  const result = mapValues(currentFilter, (item, key) => {
     if (isString(item) ||
         isPlainObject(item) ||
         (isArray(item) && !item.length)) {
@@ -62,7 +62,8 @@ export function getFilterValuesOnly(currentFilter) {
         typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
       return item;
     }
-    warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
+    warning(false,
+      'Unrecognized filter type: ' + JSON.stringify(item) + ' at ' + key);
   });
   return result;
 }

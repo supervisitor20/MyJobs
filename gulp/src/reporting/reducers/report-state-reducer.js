@@ -109,12 +109,19 @@ export default handleActions({
 
   'SET_SIMPLE_FILTER': (state, action) => {
     const {field, item} = action.payload;
-    return withFilterDirtied(state, {
-      ...state,
-      currentFilter: {
+    let newFilter;
+    if (typeof item === 'undefined') {
+      newFilter = omit(state.currentFilter, field);
+    } else {
+      newFilter = {
         ...state.currentFilter,
         [field]: item,
-      },
+      };
+    }
+
+    return withFilterDirtied(state, {
+      ...state,
+      currentFilter: newFilter,
     });
   },
 
