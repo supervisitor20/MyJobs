@@ -12,8 +12,8 @@ import Select from 'common/ui/Select';
  *
  *  <SelectControls
  *    choices={[
- *      {value: 'a', display: 'Choose A content', render: () => <div>A</div>},
- *      {value: 'b', display: 'Choose B content', render: () => <div>B</div>},
+ *      {value: 1, display: 'Choose A content', render: () => <div>A</div>},
+ *      {value: 2, display: 'Choose B content', render: () => <div>B</div>},
  *    ]}
  *    value={'a'}
  *    onSelect={value => ...}/>

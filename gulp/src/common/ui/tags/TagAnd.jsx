@@ -67,5 +67,5 @@ TagAnd.propTypes = {
 
 
 TagAnd.defaultProps = {
-  placeholder: "Not specified, searching \"untagged\" entries",
+  placeholder: 'Not specified, searching \"untagged\" entries',
 };
