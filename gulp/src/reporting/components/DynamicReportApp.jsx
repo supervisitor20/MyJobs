@@ -28,7 +28,13 @@ class DynamicReportApp extends Component {
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
 
-    dispatch(highlightReportAction(Number.parseInt(loc.params.reportId, 10)));
+    const reportId = loc.params.reportId;
+    if (reportId) {
+      const fullId = 'completed-' + reportId;
+      dispatch(highlightReportAction(fullId));
+    } else {
+      dispatch(highlightReportAction());
+    }
 
     const lastComponent = loc.components[loc.components.length - 1];
     if (lastComponent === SetUpReport) {
