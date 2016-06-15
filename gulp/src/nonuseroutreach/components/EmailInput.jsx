@@ -1,28 +1,35 @@
 import React, {Component, PropTypes} from 'react';
 
+import {
+  InputGroup,
+  FormControl,
+} from 'react-bootstrap';
+
 /**
  * textbox for entering email usernames
  *
  * used in both add and edit functions
  */
 export class EmailInput extends Component {
-  handleChange() {
-    this.props.onChange(this.refs.email_input.value.trim());
+  handleChange(e) {
+    this.props.onChange(e.target.value);
   }
 
   render() {
+    const {id, email} = this.props;
+
     return (
-      <div className="input-group">
-        <input
+      <InputGroup>
+        <FormControl
           type="text"
-          className="email-input form-control"
-          id={this.props.id}
-          value={this.props.email}
-          onChange={() => this.handleChange()}
+          className="email-input"
+          id={id}
+          value={email}
           ref="email_input"
-          autoFocus/>
-        <span className="input-group-addon">@my.jobs</span>
-      </div>
+          autoFocus
+          onChange={e => this.handleChange(e)} />
+        <InputGroup.Addon>@my.jobs</InputGroup.Addon>
+      </InputGroup>
     );
   }
 }

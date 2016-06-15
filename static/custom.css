@@ -3478,6 +3478,10 @@ fieldset:nth-child(n+2) {
     margin: 0 0 10px 0;
 }
 
+.row .col-md-8 .input-group input {
+  margin: 0;
+}
+
 .row .col-md-8 textarea {
   height: auto;
 }

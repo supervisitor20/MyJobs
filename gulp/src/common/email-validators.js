@@ -11,17 +11,17 @@ export function localPartOnly(email) {
 
 export function validateEmailAddress(email) {
   const result = {
-    success: true,
+    valid: true,
     errors: [],
   };
   if (!localPartOnly(email)) {
-    result.success = false;
+    result.valid = false;
     result.errors.push(
       'Please only enter the portion to the left of the "@"');
   }
 
   if (!email.length) {
-    result.success = false;
+    result.valid = false;
   }
 
   return result;
