@@ -231,6 +231,12 @@ export function doDataSetMenuFill(intention, category, dataSet) {
 export function doLoadReportSetUp(reportDataId, reportFilter, reportName) {
   return async (dispatch, getState, {api}) => {
     try {
+      // Bail early if the reportDataId doesn't match what is in the menu.
+      const menuReportDataId = getState().dataSetMenu.reportDataId;
+      if (reportDataId !== menuReportDataId) {
+        return;
+      }
+
       dispatch(markPageLoadingAction(true));
       // Get the interface for this report.
       const filterInfo = await api.getFilters(reportDataId);

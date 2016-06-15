@@ -400,7 +400,11 @@ describe('doLoadReportSetUp', () => {
   }
 
   function getState() {
-    return {dataSetMenu: {}};
+    return {
+      dataSetMenu: {
+        reportDataId: 7,
+      },
+    };
   }
 
   it('handles the correct page happy path', promiseTest(async () => {
@@ -492,9 +496,16 @@ describe('doLoadReportSetUp', () => {
     ]);
   }));
 
+  it('gives up early when the reportDataId does not ' +
+    'match the data set menu', promiseTest(async () => {
+    await doLoadReportSetUp(8)(dispatch, getState, {api});
+    expect(filter(actions, a => typeof a !== 'function')).toEqual([
+    ]);
+  }));
+
   it('handles arbitrary errors', promiseTest(async () => {
     spyOn(api, 'getFilters').and.throwError(new Error('Some error'));
-    await doLoadReportSetUp()(dispatch, getState, {api});
+    await doLoadReportSetUp(7)(dispatch, getState, {api});
     expect(actions).toEqualActionList([
       markPageLoadingAction(true),
       markPageLoadingAction(false),
