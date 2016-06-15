@@ -8,8 +8,9 @@ import {
 class ReportRedirect extends Component {
   componentDidMount() {
     const {dispatch, history} = this.props;
+    const {intention, category, dataSet} = this.props.location.query;
 
-    dispatch(doReportDataRedirect(history));
+    dispatch(doReportDataRedirect(history, intention, category, dataSet));
   }
 
   render() {
@@ -20,6 +21,13 @@ class ReportRedirect extends Component {
 ReportRedirect.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
+  location: PropTypes.shape({
+    query: PropTypes.shape({
+      intention: PropTypes.string,
+      category: PropTypes.string,
+      dataSet: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
 };
 
 
