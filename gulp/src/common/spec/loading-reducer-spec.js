@@ -9,7 +9,7 @@ describe('loadingReducer', () => {
   it('has a default state', () => {
     const result = loadingReducer(undefined, {});
     expect(result).toEqual({
-      mainPage: true,
+      mainPage: false,
       fields: {},
       other: {},
     });

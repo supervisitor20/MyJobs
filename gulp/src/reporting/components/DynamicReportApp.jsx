@@ -4,7 +4,10 @@ import {Loading} from 'common/ui/Loading';
 import ReportList from './ReportList';
 import SetUpReport from './SetUpReport';
 import {highlightReportAction} from '../actions/report-list-actions';
-import {doReportDataSelect} from '../actions/compound-actions';
+import {
+  doLoadReportSetUp,
+  doDataSetMenuFill,
+} from '../actions/compound-actions';
 
 
 class DynamicReportApp extends Component {
@@ -19,7 +22,7 @@ class DynamicReportApp extends Component {
   }
 
   async handleNewLocation(_, loc) {
-    const {dispatch, history} = this.props;
+    const {dispatch} = this.props;
 
     dispatch(highlightReportAction(Number.parseInt(loc.params.reportId, 10)));
 
@@ -33,9 +36,8 @@ class DynamicReportApp extends Component {
       } = loc.location.query || {};
       const reportDataId = Number.parseInt(reportDataIdString, 10);
       const {currentFilter, name} = loc.location.state || {};
-      await dispatch(
-        doReportDataSelect(history, intention, category, dataSet, reportDataId,
-          currentFilter, name));
+      await dispatch(doDataSetMenuFill(intention, category, dataSet));
+      await dispatch(doLoadReportSetUp(reportDataId, currentFilter, name));
     }
   }
 

@@ -28,7 +28,9 @@ import {
   doRefreshReport,
   doGetHelp,
   doInitialLoad,
-  doReportDataSelect,
+  doLoadReportSetUp,
+  doReportDataRedirect,
+  doDataSetMenuFill,
   getFilterValuesOnly,
   doUpdateFilterWithDependencies,
   doSetUpForClone,
@@ -88,6 +90,25 @@ class FakeApi {
 
 class FakeHistory {
   pushState() {}
+  replaceState() {}
+}
+
+
+function spyOnSetUpMenuChoicesSuccess(api, reportDataId) {
+  spyOn(api, 'getSetUpMenuChoices').and.returnValue(Promise.resolve({
+    report_data_id: reportDataId,
+    reporting_types: [{value: 'prm', display: 'PRM'}],
+    report_types: [
+      {value: 'partner', display: 'Partner'},
+      {value: 'contact', display: 'Contacts'},
+    ],
+    data_types: [
+      {value: 'unaggregated', display: 'Unaggregated'},
+    ],
+    selected_reporting_type: 'prm',
+    selected_report_type: 'contact',
+    selected_data_type: 'unaggregated',
+  }));
 }
 
 
@@ -182,7 +203,8 @@ describe('doSetUpForClone', () => {
   }));
 });
 
-describe('doReportDataSelect', () => {
+
+describe('doReportDataRedirect', () => {
   let actions;
   let api;
   let history;
@@ -202,42 +224,186 @@ describe('doReportDataSelect', () => {
     return {dataSetMenu: {}};
   }
 
-  function spyOnSetUpMenuChoicesSuccess(reportDataId) {
-    spyOn(api, 'getSetUpMenuChoices').and.returnValue(Promise.resolve({
-      report_data_id: reportDataId,
-      reporting_types: [{value: 'prm', display: 'PRM'}],
-      report_types: [
-        {value: 'partner', display: 'Partner'},
-        {value: 'contact', display: 'Contacts'},
-      ],
-      data_types: [
-        {value: 'unaggregated', display: 'Unaggregated'},
-      ],
-      selected_reporting_type: 'prm',
-      selected_report_type: 'contact',
-      selected_data_type: 'unaggregated',
-    }));
-  }
-
-  it('handles the initial happy path', promiseTest(async () => {
-    spyOnSetUpMenuChoicesSuccess(7);
-    spyOn(history, 'pushState');
-    await doReportDataSelect(history)(dispatch, getState, {api});
+  it('redirects to a default location', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(api, 7);
+    spyOn(history, 'replaceState');
+    await doReportDataRedirect(history)(dispatch, undefined, {api});
     expect(api.getSetUpMenuChoices).toHaveBeenCalledWith('', '', '');
-    expect(history.pushState).toHaveBeenCalledWith(null, '/set-up-report', {
+    expect(history.replaceState).toHaveBeenCalledWith(null, '/set-up-report', {
       intention: 'prm',
       category: 'contact',
       dataSet: 'unaggregated',
       reportDataId: 7,
     });
     expect(actions).toEqualActionList([
+      markPageLoadingAction(true),
       markOtherLoadingAction('dataSetMenu', true),
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+        reportDataId: 7,
+      }),
+      markOtherLoadingAction('dataSetMenu', false),
     ]);
   }));
 
+  it('uses choices with api', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(api, 8);
+    spyOn(history, 'replaceState');
+    await (
+      doReportDataRedirect(history, 'a', 'b', 'c')
+        (dispatch, undefined, {api}));
+    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith('a', 'b', 'c');
+    expect(history.replaceState).toHaveBeenCalledWith(null, '/set-up-report', {
+      intention: 'prm',
+      category: 'contact',
+      dataSet: 'unaggregated',
+      reportDataId: 8,
+    });
+    expect(actions).toEqualActionList([
+      markPageLoadingAction(true),
+      markOtherLoadingAction('dataSetMenu', true),
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+        reportDataId: 8,
+      }),
+      markOtherLoadingAction('dataSetMenu', false),
+    ]);
+  }));
+
+  it('handles arbitrary errors', promiseTest(async () => {
+    spyOn(api, 'getSetUpMenuChoices').and.throwError(new Error('Some error'));
+    await doReportDataRedirect()(dispatch, getState, {api});
+    expect(actions).toEqualActionList([
+      markPageLoadingAction(true),
+      markOtherLoadingAction('dataSetMenu', true),
+      markOtherLoadingAction('dataSetMenu', false),
+      markPageLoadingAction(false),
+      errorAction("Some error"),
+    ]);
+  }));
+});
+
+
+describe('doDataSetMenuFill', () => {
+  let actions;
+  let api;
+  let history;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+    history = new FakeHistory();
+    jasmine.addMatchers(customMatchers);
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {dataSetMenu: {}};
+  }
+
+  it('skips calling setup menu if the choices match', promiseTest(async () => {
+    function getState() {
+      return {
+        dataSetMenu: {
+          intentionValue: 'prm',
+          categoryValue: 'contact',
+          dataSetValue: 'unaggregated',
+          reportDataId: 7,
+        },
+      };
+    }
+
+    spyOnSetUpMenuChoicesSuccess(api, null);
+
+    await doDataSetMenuFill('prm', 'contact', 'unaggregated')
+      (dispatch, getState, {api});
+
+    expect(api.getSetUpMenuChoices).not.toHaveBeenCalled();
+    expect(actions).toEqual([]);
+  }));
+
+  it('makes an api call when needed', promiseTest(async () => {
+    spyOnSetUpMenuChoicesSuccess(api, 8);
+
+    await doDataSetMenuFill('prm', 'contact', 'unaggregated')
+      (dispatch, getState, {api});
+
+    expect(actions).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
+      replaceDataSetMenu({
+        intentionChoices: [{value: 'prm', display: 'PRM'}],
+        categoryChoices: [
+          {value: 'partner', display: 'Partner'},
+          {value: 'contact', display: 'Contacts'},
+        ],
+        dataSetChoices: [
+          {value: 'unaggregated', display: 'Unaggregated'},
+        ],
+        intentionValue: 'prm',
+        categoryValue: 'contact',
+        dataSetValue: 'unaggregated',
+        reportDataId: 8,
+      }),
+      markOtherLoadingAction('dataSetMenu', false),
+    ]);
+  }));
+
+  it('handles arbitrary errors', promiseTest(async () => {
+    spyOn(api, 'getSetUpMenuChoices').and.throwError(new Error('Some error'));
+    await doDataSetMenuFill()(dispatch, getState, {api});
+    expect(actions).toEqualActionList([
+      markOtherLoadingAction('dataSetMenu', true),
+      markOtherLoadingAction('dataSetMenu', false),
+      errorAction("Some error"),
+    ]);
+  }));
+});
+
+
+describe('doLoadReportSetUp', () => {
+  let actions;
+  let api;
+  let history;
+
+  beforeEach(() => {
+    actions = [];
+    api = new FakeApi();
+    history = new FakeHistory();
+    jasmine.addMatchers(customMatchers);
+  });
+
+  function dispatch(action) {
+    actions.push(action);
+  }
+
+  function getState() {
+    return {dataSetMenu: {}};
+  }
+
   it('handles the correct page happy path', promiseTest(async () => {
-    spyOnSetUpMenuChoicesSuccess(7);
-    spyOn(history, 'pushState');
     spyOn(api, 'getFilters').and.returnValue(Promise.resolve({
       default_filter: {
         date_time: ["01/01/2014", "06/01/2016"],
@@ -256,29 +422,10 @@ describe('doReportDataSelect', () => {
     spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({
       name: 'thereportname',
     }));
-    await doReportDataSelect(history, 'prm', 'contact', 'unaggregated', 7)
+    await doLoadReportSetUp(7)
       (dispatch, getState, {api});
-    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith(
-      'prm', 'contact', 'unaggregated');
-    expect(history.pushState).not.toHaveBeenCalled();
     // leave functions out of the comparison.
     expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
-      markOtherLoadingAction('dataSetMenu', true),
-      replaceDataSetMenu({
-        intentionChoices: [{value: 'prm', display: 'PRM'}],
-        categoryChoices: [
-          {value: 'partner', display: 'Partner'},
-          {value: 'contact', display: 'Contacts'},
-        ],
-        dataSetChoices: [
-          {value: 'unaggregated', display: 'Unaggregated'},
-        ],
-        intentionValue: 'prm',
-        categoryValue: 'contact',
-        dataSetValue: 'unaggregated',
-        reportDataId: 7,
-      }),
-      markOtherLoadingAction('dataSetMenu', false),
       markPageLoadingAction(true),
       startNewReportAction({
         defaultFilter: {
@@ -301,8 +448,6 @@ describe('doReportDataSelect', () => {
   }));
 
   it('uses the given report filter', promiseTest(async () => {
-    spyOnSetUpMenuChoicesSuccess(7);
-    spyOn(history, 'pushState');
     spyOn(api, 'getFilters').and.returnValue(Promise.resolve({
       default_filter: {},
       help: {
@@ -322,30 +467,10 @@ describe('doReportDataSelect', () => {
     const givenFilter = {
       date_time: ["01/01/2014", "06/01/2016"],
     };
-    await doReportDataSelect(
-      history, 'prm', 'contact', 'unaggregated', 7, givenFilter)
+    await doLoadReportSetUp(7, givenFilter)
       (dispatch, getState, {api});
-    expect(api.getSetUpMenuChoices).toHaveBeenCalledWith(
-      'prm', 'contact', 'unaggregated');
-    expect(history.pushState).not.toHaveBeenCalled();
     // leave functions out of the comparison.
     expect(filter(actions, a => typeof a !== 'function')).toEqualActionList([
-      markOtherLoadingAction('dataSetMenu', true),
-      replaceDataSetMenu({
-        intentionChoices: [{value: 'prm', display: 'PRM'}],
-        categoryChoices: [
-          {value: 'partner', display: 'Partner'},
-          {value: 'contact', display: 'Contacts'},
-        ],
-        dataSetChoices: [
-          {value: 'unaggregated', display: 'Unaggregated'},
-        ],
-        intentionValue: 'prm',
-        categoryValue: 'contact',
-        dataSetValue: 'unaggregated',
-        reportDataId: 7,
-      }),
-      markOtherLoadingAction('dataSetMenu', false),
       markPageLoadingAction(true),
       startNewReportAction({
         defaultFilter: {
@@ -367,75 +492,11 @@ describe('doReportDataSelect', () => {
     ]);
   }));
 
-  it('skips calling setup menu if the choices match', promiseTest(async () => {
-    function getState() {
-      return {
-        dataSetMenu: {
-          intentionValue: 'prm',
-          categoryValue: 'contact',
-          dataSetValue: 'unaggregated',
-          reportDataId: 7,
-        },
-      };
-    }
-
-    spyOn(history, 'pushState');
-    spyOnSetUpMenuChoicesSuccess(null);
-    spyOn(api, 'getFilters').and.returnValue(Promise.resolve({}));
-    spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({}));
-
-    await doReportDataSelect(history, 'prm', 'contact', 'unaggregated', 7)
-      (dispatch, getState, {api});
-
-    expect(history.pushState).not.toHaveBeenCalled();
-    expect(api.getSetUpMenuChoices).not.toHaveBeenCalled();
-    expect(api.getFilters).toHaveBeenCalled();
-    expect(api.getDefaultReportName).toHaveBeenCalled();
-
-  }));
-
-  it('gives up when the menu hits a dead end', promiseTest(async () => {
-    spyOnSetUpMenuChoicesSuccess(null);
-    spyOn(history, 'pushState');
-    spyOn(api, 'getFilters');
-    spyOn(api, 'getDefaultReportName');
-    await doReportDataSelect(history)(dispatch, getState, {api});
-    expect(history.pushState).not.toHaveBeenCalled();
-    expect(api.getFilters).not.toHaveBeenCalled();
-    expect(api.getDefaultReportName).not.toHaveBeenCalled();
-    expect(actions).toEqualActionList([
-      markOtherLoadingAction('dataSetMenu', true),
-      replaceDataSetMenu({
-        intentionChoices: [{value: 'prm', display: 'PRM'}],
-        categoryChoices: [
-          {value: 'partner', display: 'Partner'},
-          {value: 'contact', display: 'Contacts'},
-        ],
-        dataSetChoices: [
-          {value: 'unaggregated', display: 'Unaggregated'},
-        ],
-        intentionValue: 'prm',
-        categoryValue: 'contact',
-        dataSetValue: 'unaggregated',
-        reportDataId: null,
-      }),
-      markOtherLoadingAction('dataSetMenu', false),
-      startNewReportAction({
-        defaultFilter: {},
-        help: {},
-        filters: [],
-        name: '',
-      }),
-      markPageLoadingAction(false),
-    ]);
-  }));
-
   it('handles arbitrary errors', promiseTest(async () => {
-    spyOn(api, 'getSetUpMenuChoices').and.throwError(new Error('Some error'));
-    await doReportDataSelect()(dispatch, getState, {api});
+    spyOn(api, 'getFilters').and.throwError(new Error('Some error'));
+    await doLoadReportSetUp()(dispatch, getState, {api});
     expect(actions).toEqualActionList([
-      markOtherLoadingAction('dataSetMenu', true),
-      markOtherLoadingAction('dataSetMenu', false),
+      markPageLoadingAction(true),
       markPageLoadingAction(false),
       errorAction("Some error"),
     ]);
