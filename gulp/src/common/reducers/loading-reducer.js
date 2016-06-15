@@ -48,7 +48,7 @@ export default handleActions({
     };
   },
 }, {
-  mainPage: false,
+  mainPage: true,
   fields: {},
   other: {},
 });

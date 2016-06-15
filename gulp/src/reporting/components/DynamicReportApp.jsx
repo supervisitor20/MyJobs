@@ -2,8 +2,12 @@ import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import ReportList from './ReportList';
+import ReportRedirect from './ReportRedirect';
 import SetUpReport from './SetUpReport';
 import {highlightReportAction} from '../actions/report-list-actions';
+import {
+  markPageLoadingAction,
+} from 'common/actions/loading-actions';
 import {
   doLoadReportSetUp,
   doDataSetMenuFill,
@@ -38,6 +42,11 @@ class DynamicReportApp extends Component {
       const {currentFilter, name} = loc.location.state || {};
       await dispatch(doDataSetMenuFill(intention, category, dataSet));
       await dispatch(doLoadReportSetUp(reportDataId, currentFilter, name));
+    }
+
+    // Allow redirect to mount.
+    if (lastComponent === ReportRedirect) {
+      dispatch(markPageLoadingAction(false));
     }
   }
 
