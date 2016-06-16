@@ -1,18 +1,38 @@
 import React from 'react';
 import {connect} from 'react-redux';
+import {doGetInboxes} from '../actions/inbox-actions';
+import Inbox from './Inbox';
+import {Col, Row} from 'react-bootstrap';
 
-import InboxList from './InboxList';
-import AddInboxForm from './AddInboxForm';
-
-
-// inbox management app main page
 class InboxManagementPage extends React.Component {
+  componentWillMount() {
+    const {dispatch} = this.props;
+    dispatch(doGetInboxes());
+  }
+
   render() {
-    const {api, newInbox, inboxes} = this.props;
+    const {dispatch, inboxes} = this.props;
+
     return (
-      <div className="card-wrapper">
-        <AddInboxForm api={api} {...newInbox} />
-        <InboxList api={api} inboxes={inboxes} />
+      <div className="cardWrapper">
+        <Row>
+          <Col xs={12}>
+            <div className="wrapper-header">
+              <h2>Non-User Outreach Inboxes</h2>
+            </div>
+            {inboxes.map(inbox =>
+              <div
+                key={'inbox-' + inbox.pk}
+                className="product-card no-highlight clearfix">
+                <Row>
+                  <Col xs={12}>
+                    <Inbox dispatch={dispatch} inbox={inbox} />
+                  </Col>
+                </Row>
+              </div>
+            )}
+          </Col>
+        </Row>
       </div>
     );
   }
@@ -20,18 +40,14 @@ class InboxManagementPage extends React.Component {
 
 InboxManagementPage.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
-  api: React.PropTypes.object.isRequired,
   inboxes: React.PropTypes.arrayOf(
     React.PropTypes.shape({
-      pk: React.PropTypes.number.isRequired,
+      pk: React.PropTypes.number,
       email: React.PropTypes.string.isRequired,
-    })
+      errors: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+      valid: React.PropTypes.bool.isRequired,
+    }).isRequired,
   ),
-  newInbox: React.PropTypes.shape({
-    email: React.PropTypes.string.isRequired,
-    errors: React.PropTypes.arrayOf(React.PropTypes.string.isRequired),
-    isValid: React.PropTypes.bool.isRequired,
-  }),
 };
 
 export default connect(state => ({

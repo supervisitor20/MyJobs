@@ -6,9 +6,6 @@ import {getCsrf} from 'common/cookie';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-// TODO: remove
-import Inbox from './components/Inbox';
-
 // new imports
 import createReduxStore from '../common/create-redux-store';
 import {combineReducers} from 'redux';
@@ -37,7 +34,7 @@ const store = createReduxStore(reducer, initialState, thunkExtra);
 
 ReactDOM.render(
   <Provider store={store}>
-    <Inbox />
+    <NonUserOutreachRouter api = {api} />
   </Provider>,
   document.getElementById('content')
 );
