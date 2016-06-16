@@ -1,8 +1,9 @@
 import React, {PropTypes} from 'react';
+import {connect} from 'react-redux';
 import Modal from 'react-bootstrap/lib/Modal';
 
 
-export default function Confirm(props) {
+function Confirm(props) {
   const {show, message, onResolve} = props;
 
   return (
@@ -29,9 +30,15 @@ export default function Confirm(props) {
 Confirm.propTypes = {
   show: PropTypes.bool.isRequired,
   message: PropTypes.string,
-  onResolve: PropTypes.func.isRequired,
+  onResolve: PropTypes.func,
 };
 
 Confirm.defaultProps = {
   message: 'Are you sure?',
 };
+
+export default connect(s => ({
+  show: s.confirm.data.show,
+  message: s.confirm.data.message,
+  onResolve: s.confirm.resolve,
+}))(Confirm);

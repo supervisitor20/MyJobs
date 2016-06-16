@@ -4,7 +4,11 @@ import {getCsrf} from '../common/cookie';
 import React from 'react';
 import _ from 'lodash-compat';
 import {render} from 'react-dom';
+import createReduxStore from '../common/create-redux-store';
+import {combineReducers} from 'redux';
+import {Provider} from 'react-redux';
 import {Router, Route, IndexRoute, Link} from 'react-router';
+import confirmReducer from 'common/reducers/confirm-reducer';
 
 import Overview from './Overview';
 import Roles from './Roles';
@@ -19,12 +23,21 @@ import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Status from './Status';
 import Confirm from 'common/ui/Confirm';
-import {confirmCb} from 'common/confirm';
 import {MyJobsApi} from 'common/myjobs-api';
 
 installPolyfills();
 
+const reducer = combineReducers({
+  confirm: confirmReducer,
+});
+
 const api = new MyJobsApi(getCsrf());
+
+const thunkExtra = {
+  api: api,
+};
+
+const store = createReduxStore(reducer, undefined, thunkExtra);
 
 export class App extends React.Component {
   constructor(props) {
@@ -52,20 +65,6 @@ export class App extends React.Component {
       this.callRolesAPI();
       this.callUsersAPI();
     }
-  }
-  async confirmModal(message) {
-    return confirmCb(
-      message,
-      handleConfirmResolve => this.setState({
-        confirmShow: true,
-        confirmMessage: message,
-        handleConfirmResolve,
-      }),
-      () => this.setState({
-        confirmShow: false,
-        confirmMessage: undefined,
-        handleConfirmResolve: undefined,
-      }));
   }
   async callActivitiesAPI() {
     // Get activities once, and only once
@@ -164,18 +163,9 @@ export class App extends React.Component {
     });
   }
   render() {
-    const {confirmShow, confirmMessage, handleConfirmResolve} = this.state;
-
     return (
       <div>
-        <span> hello </span>
-        { confirmShow ?
-          <Confirm
-            show
-            message={confirmMessage}
-            onResolve={handleConfirmResolve}/>
-          : '' }
-
+        <Confirm/>
         <div className="row">
           <div className="col-sm-12">
             <div className="breadcrumbs">
@@ -225,18 +215,20 @@ App.propTypes = {
 };
 
 render((
-  <Router>
-    <Route path="/" component={App}>
-      <IndexRoute component={Overview} />
-      <Route path="activities" component={Activities} />
-      <Route path="roles" component={Roles} />
-      <Route path="/role/add" component={Role} />
-      <Route path="/role/:roleId" component={Role} />
-      <Route path="users" component={Users} />
-      <Route path="/user/add" component={User} />
-      <Route path="/user/:userId" component={User} />
-      <Route path="help-and-tutorials" component={HelpAndTutorials} />
-      <Route path="*" component={NoMatch}/>
-    </Route>
-  </Router>
+  <Provider store={store}>
+    <Router>
+      <Route path="/" component={App}>
+        <IndexRoute component={Overview} />
+        <Route path="activities" component={Activities} />
+        <Route path="roles" component={Roles} />
+        <Route path="/role/add" component={Role} />
+        <Route path="/role/:roleId" component={Role} />
+        <Route path="users" component={Users} />
+        <Route path="/user/add" component={User} />
+        <Route path="/user/:userId" component={User} />
+        <Route path="help-and-tutorials" component={HelpAndTutorials} />
+        <Route path="*" component={NoMatch}/>
+      </Route>
+    </Router>
+  </Provider>
 ), document.getElementById('content'));
