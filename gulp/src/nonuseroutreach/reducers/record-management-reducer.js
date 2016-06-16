@@ -1,6 +1,6 @@
 import {handleActions} from 'redux-actions';
 
-export const initialState = {
+export const recordState = {
   recordManagement: {
     records: [],
   },
@@ -15,4 +15,4 @@ export const recordManagementReducer = handleActions({
       records: records,
     };
   },
-}, initialState);
+}, recordState);

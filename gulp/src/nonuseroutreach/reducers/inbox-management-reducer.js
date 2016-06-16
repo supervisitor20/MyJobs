@@ -11,7 +11,7 @@ export const emptyInbox = {
   valid: false,
 };
 
-export const initialState = {
+export const inboxState = {
   inboxManagement: {
     inboxes: [
       emptyInbox,
@@ -24,7 +24,7 @@ export const inboxManagementReducer = handleActions({
     const inbox = action.payload;
     const validator = validateEmailAddress(inbox.email);
     const alreadyExists = state.inboxes.filter(i =>
-      i.email === inbox.email).length;
+      i.pk && i.email === inbox.email).length;
     const newInbox = {
       ...inbox,
       ...validator,
@@ -50,7 +50,7 @@ export const inboxManagementReducer = handleActions({
   'ADD_INBOX': (state, action) => {
     const inbox = action.payload;
     const newInbox = {...emptyInbox, ...inbox};
-    const index = findIndex(state.inboxes, i => inbox.pk === i.pk);
+    const index = findIndex(state.inboxes, i => inbox.email === i.email);
 
     return index > -1 ? {
       ...state,
@@ -126,4 +126,4 @@ export const inboxManagementReducer = handleActions({
 
     return result;
   },
-}, initialState);
+}, inboxState);
