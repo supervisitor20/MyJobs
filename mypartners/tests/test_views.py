@@ -32,7 +32,7 @@ from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION,
-                               OutreachEmailAddress)
+                               OutreachEmailAddress, OutreachRecord)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mypartners.views import process_email
 from mysearches.models import PartnerSavedSearch
@@ -1124,16 +1124,37 @@ class EmailTests(MyPartnersTestCase):
     def setUp(self):
         # Allows for comparing datetimes
         super(EmailTests, self).setUp()
+        self.default_prm = 'prm@my.jobs'
+        self.default_from = self.staff_user.email
         self.data = {
-            'from': self.staff_user.email,
+            'from': self.default_from,
             'subject': 'Test Email Subject',
             'text': 'Test email body',
             'key': settings.EMAIL_KEY,
+            'to': self.default_prm,
         }
+        self.outreach_address = OutreachEmailAddress.objects.create(
+            email='foo', company=self.company)
+        self.full_outreach_address = '%s@my.jobs' % self.outreach_address.email
 
     def assert_contact_info_in_email(self, email):
         self.assertTrue('For additional assistance, please contact'
                         in email.body)
+
+    def do_setup_for_email_post(self, address, from_1, from_2):
+        """
+        Does some setup for normal prm@my.jobs posts and for posts using
+        outreach email addresses.
+        """
+        if address == 'prm@my.jobs':
+            self.data['to'] = self.default_prm
+            self.data['from'] = from_1
+            model = ContactRecord
+        else:
+            self.data['to'] = self.full_outreach_address
+            self.data['from'] = from_2
+            model = OutreachRecord
+        return model
 
     def test_email_bad_contacts(self):
         start_contact_record_num = ContactRecord.objects.all().count()
@@ -1149,7 +1170,7 @@ class EmailTests(MyPartnersTestCase):
         expected_str = "No contacts or contact records could be created for " \
                        "the following email addresses."
         self.assertEqual(email.from_email, 'My.jobs Partner Relationship Manager <prm@my.jobs>')
-        self.assertEqual(email.to, [self.staff_user.email])
+        self.assertEqual(email.to, [self.data['from']])
         self.assertTrue(expected_str in email.body)
         self.assert_contact_info_in_email(email)
 
@@ -1180,7 +1201,7 @@ class EmailTests(MyPartnersTestCase):
                       "User, Contact <{email}>"] # bad format
 
         self.data['to'] = self.contact.email
-        for from_address,to_address in zip(from_strings, to_strings):
+        for from_address, to_address in zip(from_strings, to_strings):
             self.data['to'] = to_address.format(email=self.contact_user.email)
             self.data['from'] = from_address.format(email=self.user.email)
             response = self.client.post(reverse('process_email'), self.data)
@@ -1198,11 +1219,42 @@ class EmailTests(MyPartnersTestCase):
             self.assertFalse(unexpected_str in email.body)
             self.assert_contact_info_in_email(email)
 
+    def test_outreach_record_and_log_creation(self):
+        new_contact = ContactFactory(partner=self.partner,
+                                     user=UserFactory(email='new@user.com'),
+                                     email='new@user.com')
+        self.data['to'] = ', '.join([self.full_outreach_address,
+                                     self.contact.email])
+        self.data['from'] = 'non-user@my.jobs'
+        self.data['cc'] = new_contact.email
+        response = self.client.post(reverse('process_email'), self.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+
+        email = mail.outbox.pop()
+        self.assertEqual(email.from_email, 'My.jobs Partner Relationship Manager <prm@my.jobs>')
+        self.assertEqual(email.to, [self.data['from']])
+        expected_nuo_str = ("We have received your submission to "
+                            "{bucket}").format(
+            bucket=self.full_outreach_address)
+        self.assertTrue(expected_nuo_str in email.body)
+
+        record = OutreachRecord.objects.get(contacts__email=self.contact.email)
+        self.assertEqual(record.email_body, self.data['text'])
+        self.assertEqual(self.data['subject'], self.data['subject'])
+
+        record = OutreachRecord.objects.get(contacts__email=new_contact.email)
+        self.assertEqual(record.email_body, self.data['text'])
+        self.assertEqual(self.data['subject'], self.data['subject'])
+
     def test_contact_record_and_log_creation(self):
         new_contact = ContactFactory(partner=self.partner,
-                                     user=UserFactory(email="new@user.com"),
+                                     user=UserFactory(email='new@user.com'),
                                      email="new@user.com")
-        self.data['to'] = self.contact.email
+        self.data['to'] = ', '.join([self.default_prm,
+                                     self.contact.email])
+        self.data['from'] = self.default_from
         self.data['cc'] = new_contact.email
         response = self.client.post(reverse('process_email'), self.data)
 
@@ -1214,11 +1266,10 @@ class EmailTests(MyPartnersTestCase):
         unexpected_str = "No contacts or contact records could be created " \
                          "for the following email addresses."
         self.assertEqual(email.from_email, 'My.jobs Partner Relationship Manager <prm@my.jobs>')
-        self.assertEqual(email.to, [self.staff_user.email])
+        self.assertEqual(email.to, [self.data['from']])
         self.assertTrue(expected_str in email.body)
         self.assertFalse(unexpected_str in email.body)
         self.assert_contact_info_in_email(email)
-
         record = ContactRecord.objects.get(contact_email=self.contact.email)
         self.assertEqual(record.notes, self.data['text'])
         self.assertEqual(self.data['subject'], self.data['subject'])
@@ -1409,16 +1460,17 @@ class EmailTests(MyPartnersTestCase):
 
     def test_various_forward_header_formats(self):
         self.data['to'] = 'prm@my.jobs'
-        self.data['text'] = ("Some text before the forward\n"
-                            "\n"
-                            "From: A New Person<anewperson@my.jobs<mailto:anewperson@my.jobs>>\n"
-                            "Reply-To: A New Person<anewperson@my.jobs<mailto:anewperson@my.jobs>>\n"
-                            "Date: Tuesday, July 8, 2014 2:02 PM\n"
-                            "To: PRM <prm@my.jobs>\n"
-                            "Subject: Test email\n"
-                            "\n"
-                            "Forwarded email content\n"
-                            "\n")
+        self.data['text'] = (
+            "Some text before the forward\n"
+            "\n"
+            "From: A New Person<anewperson@my.jobs<mailto:anewperson@my.jobs>>\n"
+            "Reply-To: A New Person<anewperson@my.jobs<mailto:anewperson@my.jobs>>\n"
+            "Date: Tuesday, July 8, 2014 2:02 PM\n"
+            "To: PRM <prm@my.jobs>\n"
+            "Subject: Test email\n"
+            "\n"
+            "Forwarded email content\n"
+            "\n")
         self.client.post(reverse('process_email'), self.data)
         ContactRecord.objects.get(contact_email='anewperson@my.jobs')
         ContactRecord.objects.all().delete()
@@ -1441,7 +1493,6 @@ class EmailTests(MyPartnersTestCase):
 
         self.client.post(reverse('process_email'), self.data)
         ContactRecord.objects.get(contact_email='anewperson@my.jobs')
-        ContactRecord.objects.all().delete()
 
     def test_timezone_awareness(self):
         self.data['to'] = self.contact.email

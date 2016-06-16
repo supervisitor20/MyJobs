@@ -47,7 +47,7 @@ from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
                                Location, OutreachEmailAddress, OutreachRecord,
-                               PartnerLibrarySource)
+                               PartnerLibrarySource, OutreachWorkflowState)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1196,12 +1196,12 @@ def process_email(request):
                             [email[1] for email in recipient_emails_and_names])
     # TODO: confirm mysql is case-insensitive
     NUO_HOSTS = OutreachEmailAddress.objects.filter(email__in=[
-        contact.split('@') for contact in contact_emails])
+        contact.split('@')[0] for contact in contact_emails])
     NUO_LOCAL = [host.email for host in NUO_HOSTS]
 
     admin_emails = [name_email[1] for name_email in getaddresses([admin_email])]
 
-    # Get the first valid user based on admin_emails. getaddresses can 
+    # Get the first valid user based on admin_emails. getaddresses can
     # return an extra tuple with an invalid email address.
     for admin_email in admin_emails:
         admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
@@ -1213,7 +1213,7 @@ def process_email(request):
             logger.info("Email address {email} could not be associated "
                         "with a verified user but NUO addresses {nuo} were "
                         "found".format(email=admin_emails,
-                                       nuo=",".join(NUO_HOSTS)))
+                                       nuo=",".join(map(unicode, NUO_HOSTS))))
             admin_email = admin_emails[0]
         else:
             logger.warning("The email address {email} could not be associated "
@@ -1229,10 +1229,10 @@ def process_email(request):
     newrelic.agent.add_custom_parameter("contact_emails",
                                         ", ".join(contact_emails))
 
-    if contact_emails == [] or (len(contact_emails) == NUO_HOSTS.count() and
+    if contact_emails == [] or (len(contact_emails) == len(NUO_HOSTS) and
                                 set(contact.lower().split('@')[0]
                                     for contact in contact_emails) == set(
-                                    host.email for host in PRM_EMAIL_HOST) or
+                                    host.email for host in NUO_HOSTS) or
                                 (len(contact_emails) == 1 and contact_emails[0].lower() == PRM_EMAIL_HOST)):
         # If PRM_EMAIL_HOST is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
@@ -1282,7 +1282,8 @@ def process_email(request):
             return HttpResponse(status=200)
 
         if admin_user.roles.exists():
-            partners = admin_user.roles.first().company.partner_set.all()
+            companies = [admin_user.roles.first().company]
+            partners = companies[0].partner_set.all()
     if not partners:
         companies = set(host.company for host in NUO_HOSTS)
         for company in companies:
@@ -1367,11 +1368,15 @@ def process_email(request):
                        impersonator=request.impersonator)
             created_records.append(record)
         else:
+            workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
+                state='unreviewed')
             for email in NUO_HOSTS:
                 record = OutreachRecord.objects.create(
                     outreach_email=email, from_email=admin_email,
-                    email_body=email_text, partners=partners,
-                    contacts=all_contacts)
+                    email_body=email_text,
+                    current_workflow_state=workflow_state)
+                record.partners.add(contact.partner)
+                record.contacts.add(contact)
                 created_records.append(record)
 
     logger.info("created_contacts: {contacts}".format(contacts=", ".join([
@@ -1380,7 +1385,9 @@ def process_email(request):
                     unmatched_contacts)))
     send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
-                                       None, admin_email)
+                                       None, admin_email, companies,
+                                       is_nuo=not bool(admin_user),
+                                       buckets=NUO_LOCAL)
     return HttpResponse(status=200)
 
 
