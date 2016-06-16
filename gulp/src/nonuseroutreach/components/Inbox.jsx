@@ -68,7 +68,7 @@ export default class Inbox extends React.Component {
                 className="email-input"
                 value={inbox.email}
                 ref="email_input"
-                autoFocus
+                autoFocus={!inbox.pk}
                 onChange={e => dispatch(validateInboxAction({
                   ...inbox,
                   email: e.target.value,

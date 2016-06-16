@@ -6,13 +6,15 @@ import {getCsrf} from 'common/cookie';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-// new imports
 import createReduxStore from '../common/create-redux-store';
 import {combineReducers} from 'redux';
+
 import {
-  initialState,
+  emptyInbox,
   inboxManagementReducer,
 } from './reducers/inbox-management-reducer';
+import {recordManagementReducer} from './reducers/record-management-reducer';
+
 
 import {Provider} from 'react-redux';
 import NonUserOutreachRouter from './components/NonUserOutreachRouter';
@@ -20,10 +22,22 @@ import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 
 installPolyfills();
 
+export const initialState = {
+  inboxManagement: {
+    inboxes: [
+      emptyInbox,
+    ],
+  },
+  recordManagement: {
+    records: [],
+  },
+};
+
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
 const reducer = combineReducers({
   inboxManagement: inboxManagementReducer,
+  recordManagement: recordManagementReducer,
 });
 
 const thunkExtra = {

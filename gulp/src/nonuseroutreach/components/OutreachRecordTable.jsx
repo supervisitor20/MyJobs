@@ -1,49 +1,33 @@
-import React, {Component, PropTypes} from 'react';
+import React from 'react';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
-export class OutreachRecordTable extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      tableHeight: 0,
-      tableWidth: 0,
-      records: [],
-    };
-    this.getRecords();
-  }
-
-  async getRecords() {
-    const records = await this.props.api.getExistingOutreachRecords();
-    this.setState({
-      records: records,
-    });
-  }
+export default class OutreachRecordTable extends React.Component {
 
   render() {
+    const {records} = this.props;
     const isIE = /* @cc_on!@ */false || !!document.documentMode;
     return (
-      <BootstrapTable data={this.state.records}
+      <BootstrapTable data={records}
                       hover
                       search
                       pagination={!isIE}
                       height={isIE ? '600px' : undefined}
                       options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
-        <TableHeaderColumn dataField="date_added"
+        <TableHeaderColumn dataField="dateAdded"
                            dataAlign="center"
                            dataSort
                            isKey>Date
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="outreach_email"
+        <TableHeaderColumn dataField="outreachEmail"
                            dataAlign="center"
                            dataSort>Inbox
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="from_email"
+        <TableHeaderColumn dataField="fromEmail"
                            dataAlign="center"
                            dataSort>From
         </TableHeaderColumn>
-        <TableHeaderColumn dataField="current_workflow_state"
+        <TableHeaderColumn dataField="currentWorkflowState"
                            dataAlign="center"
                            dataSort>Action State
         </TableHeaderColumn>
@@ -53,5 +37,12 @@ export class OutreachRecordTable extends Component {
 }
 
 OutreachRecordTable.propTypes = {
-  api: PropTypes.object.isRequired,
+  records: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      dateAdded: React.PropTypes.string.isRequired,
+      outreachEmail: React.PropTypes.string.isRequired,
+      fromEmail: React.PropTypes.string.isRequired,
+      currentWorkflowState: React.PropTypes.string.isRequired,
+    }).isRequired,
+  ).isRequired,
 };

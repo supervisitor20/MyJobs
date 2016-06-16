@@ -1,21 +1,40 @@
-import React, {PropTypes} from 'react';
-import {OutreachRecordTable} from './OutreachRecordTable';
+import React from 'react';
+import {connect} from 'react-redux';
+import {Col, Row} from 'react-bootstrap';
+import OutreachRecordTable from './OutreachRecordTable';
+import {doGetRecords} from '../actions/record-actions';
 
 // outreach record table view
-export default class OutreachRecordPage extends React.Component {
+class OutreachRecordPage extends React.Component {
+  componentWillMount() {
+    const {dispatch} = this.props;
+    dispatch(doGetRecords());
+  }
+
   render() {
+    const {records} = this.props;
     return (
-      <div>
-          <div className="row">
-            <div className="col-sm-12">
-              <OutreachRecordTable {...this.props} />
-            </div>
-          </div>
-      </div>
+      <Row>
+        <Col xs={12}>
+          <OutreachRecordTable records={records} />
+        </Col>
+      </Row>
     );
   }
 }
 
 OutreachRecordPage.propTypes = {
-  recordsManager: PropTypes.object.isRequired,
+  dispatch: React.PropTypes.func.isRequired,
+  records: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      dateAdded: React.PropTypes.string.isRequired,
+      outreachEmail: React.PropTypes.string.isRequired,
+      fromEmail: React.PropTypes.string.isRequired,
+      currentWorkflowState: React.PropTypes.string.isRequired,
+    }).isRequired,
+  ).isRequired,
 };
+
+export default connect(state => ({
+  ...state.recordManagement,
+}))(OutreachRecordPage);

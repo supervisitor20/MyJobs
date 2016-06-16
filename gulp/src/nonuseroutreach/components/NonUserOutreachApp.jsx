@@ -14,7 +14,7 @@ class NonUserOutreachApp extends Component {
           <Col sm={12}>
             <div className="breadcrumbs">
               <span>
-                Non-User Outreach Inbox Management
+                Non-User Outreach
               </span>
             </div>
           </Col>

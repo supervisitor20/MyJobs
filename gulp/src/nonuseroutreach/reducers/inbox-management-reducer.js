@@ -11,7 +11,6 @@ export const emptyInbox = {
   valid: false,
 };
 
-
 export const initialState = {
   inboxManagement: {
     inboxes: [
@@ -21,7 +20,6 @@ export const initialState = {
 };
 
 export const inboxManagementReducer = handleActions({
-  // Experimental Reducers
   'VALIDATE_INBOX': (state, action) => {
     const inbox = action.payload;
     const validator = validateEmailAddress(inbox.email);
