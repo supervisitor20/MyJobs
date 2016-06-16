@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load common_tags %}
+{% load compress %}
+{% load staticfiles %}
 {% gz as gz %}
 {% block site-title %}
     {% with name_obj=user.full_name %}
@@ -40,10 +42,12 @@
 {% endblock content %}
 
 {% block extra-js %}
-<script type="text/javascript">
-  var create_tags = {{ create_tags }};
-</script>
-<script src="{{ STATIC_URL }}tag-it.min.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}tags.170-6.js{{ gz }}"></script>
-<script src="{{ STATIC_URL }}partner_tagging.170-17.js{{ gz }}"></script>
+    <script type="text/javascript">
+      var createTags = {{ create_tags }};
+    </script>
+    {% compress js %}
+        <script src="{% static "tags.js" %}"></script>
+        <script src="{% static "tag-it.min.js" %}"></script>
+        <script src="{% static "partner_tagging.170-17.js" %}"></script>
+    {% endcompress %}
 {% endblock %}
