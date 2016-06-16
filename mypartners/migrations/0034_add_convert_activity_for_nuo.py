@@ -4,22 +4,29 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 from myjobs.models import Activity, AppAccess
-
+from mypartners.models import OutreachWorkflowState
 class Migration(DataMigration):
+
 
     def forwards(self, orm):
         nuo = AppAccess.objects.get(name='NUO')
         Activity.objects.create(
             app_access=nuo,
             name="convert outreach record",
-            description="View existing outreach records")
+            description="Convert outreach record to contact record")
+
+        for state in ['reviewed','unreviewed','converted']:
+            OutreachWorkflowState.objects.create(state=state)
 
     def backwards(self, orm):
         nuo = AppAccess.objects.get(name='NUO')
         Activity.objects.filter(
             app_access=nuo,
-            name="read outreach record",
-            description="View existing outreach records").delete()
+            name="convert outreach record",
+            description="Convert outreach record to contact record").delete()
+
+        OutreachWorkflowState.objects.filter(
+            state__in=['reviewed','unreviewed','converted']).delete()
 
     models = {
         u'auth.group': {

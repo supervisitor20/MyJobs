@@ -18,6 +18,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
@@ -35,8 +36,10 @@ import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
+from universal.api_validation import MultiFormApiValidator
 from myjobs.models import User
 
+from seo.models import Company
 from myjobs.decorators import requires
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -48,7 +51,7 @@ from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
                                Location, OutreachEmailAddress, OutreachRecord,
-                               PartnerLibrarySource)
+                               PartnerLibrarySource, Status)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1499,6 +1502,7 @@ def api_get_individual_nuo_record(request):
 
     return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
+@csrf_exempt
 @restrict_to_staff()
 @requires("convert outreach record")
 def api_convert_outreach_record(request):
@@ -1514,139 +1518,207 @@ def api_convert_outreach_record(request):
     object would be populated, ex. {... contact:{pk:"12"} ...}
 
     {
-    partner: {pk:"", name:"James B", data_source:"email", uri:"www.example.com",
-    tags:[12, 68], owner: 152, approval_status: 1},
+        "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
+        "tags":["12", "68"], "owner": "152", "approval_status": "3"},
 
-    contact: {pk:"", name:"Nicole J", email:"nicolej@test.com", phone:"7651234123",
-    locations:[{pk:"", address_line_one:"123 Drill St", address_line_two:"",
-    city:"Newton", state:"AZ", country_code:"1", postal_code:"65410",
-    label:"new place"}, {pk:"13"}], tags:[54, 12], notes: "long note left here",
-    approval_status:"2"},
+        "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
+        "locations":[{"pk":"", "address_line_one":"123 Drill St", "address_line_two":"",
+        "city":"Newton", "state":"AZ", "country_code":"1", "postal_code":"65410",
+        "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
+        "approval_status":"3"},
 
-    contact_record: {contact_type:"phone", location:"dining hall", length:"30",
-    subject:"new job", date_time:"20160101051030", notes:"dude was chill",
-    job_id:"10", job_applications:"20", job_interviews:"10", job_hires:"0",
-    tags:[10, 15, 1], approval_status:1},
+        "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
+        "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
+        "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
+        "tags":["10", "15", "3"], "approval_status":"1"}
     }
 
     :return: Nothing, status code 200 on success, 400, 405 indicates error
     """
-    if request.method != 'POST':
-        return HttpResponseNotAllowed('Invalid Method. Allowed Methods: POST')
+    def add_tags_to_object(tagged_object, tags_list):
+        """
+        add tags from list of tags to the object
 
-    base_message = 'Data object malformed: '
-    data_object = request.POST.get('data', None)
+        :param tagged_object: object to add tags
+        :param tags_list: list of tag PKs
+        :return: None
+
+        """
+        try:
+            tags = Tag.objects.filter(pk__in=tags_list)
+            tagged_object.tags.add(*list(tags))
+        except ValueError as ve:
+            validator.form_field_error(tagged_object.__class__.__name__.lower(),
+                                       'tags', 'invalid pk provided for tag')
+
+    def return_or_create_object(target_model, object_pk, data_dict):
+        """
+        retrieve or create an object based on the inputs. if pk provided,
+        retrieve an object. else, use data_dict to create the object and
+        return it. this function also checks if an approval status id exists in
+        and swaps it with the corresponding object within the data dictionary
+
+        :param target_model: model for use to create or retrieve object
+        :param object_pk: pk of existing object
+        :param data_dict: data to generate new object
+        :return: existing or newly created object
+
+        """
+        return_object = None
+        if data_dict.get('approval_status'):
+            try:
+                approval = Status(code=data_dict['approval_status'],
+                                  approved_by=request.user)
+                data_dict['approval_status'] = approval
+            except ValueError:
+                validator.form_field_error(target_model.__name__.lower(),
+                                           'approval_status',
+                                           'approval status %s invalid' % object_pk)
+
+        if object_pk:
+            try:
+                return_object = target_model.objects.get(pk=object_pk)
+            except target_model.DoesNotExist:
+                validator.form_field_error(target_model.__name__.lower(),
+                                           'pk',
+                                           'object not found for PK %s' % object_pk)
+            except ValueError:
+                validator.form_field_error(target_model.__name__.lower(),
+                                           'pk',
+                                            '%s is not a valid pk' % object_pk)
+        else:
+            try:
+                return_object = target_model(**data_dict)
+                return_object.full_clean()
+            except ValidationError as ve:
+                for key, value in ve.message_dict.iteritems():
+                    validator.form_field_error(target_model.__name__.lower(),
+                                               key, value)
+            except TypeError as te:
+                validator.form_error(target_model.__name__.lower(),
+                                     "erroneous field detected in data dict")
+                return None
+
+        return return_object
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data_object = request.body
+    valid_keys = ['contactrecord', 'contact', 'partner']
+    validator = MultiFormApiValidator(valid_keys)
+
     if not data_object:
-        return HttpResponseBadRequest('Data object not provided')
+        validator.api_error('data object not provided')
+        return validator.build_error_response()
 
     try:
         data_object = json.loads(data_object)
     except (TypeError, ValueError):
-        return HttpResponseBadRequest('%s not formatted for JSON' % base_message)
+        validator.api_error('data object not formatted for JSON')
+        return validator.build_error_response()
 
     # verify that data object has correct keys, no additional keys and
     # that the value is a dict
     valid_keys = ['contactrecord', 'contact', 'partner']
     for key, value in data_object.iteritems():
-        index_of_key = valid_keys.index(key)
-        if index_of_key == -1:
-            return HttpResponseBadRequest('%s %s is invalid or redundant'
-                                          % (base_message, key))
+        try:
+            index_of_key = valid_keys.index(key)
+        except ValueError:
+            index_of_key = None
+
+        if index_of_key is None:
+            validator.api_error('%s is an invalid key' % key)
+            continue
         valid_keys.pop(index_of_key)
         if not isinstance(value, dict):
-            return HttpResponseBadRequest('%s In key %s, expected dict, got %s.'
-                                          % (base_message, key, type(value)))
+            validator.api_error('error in key %s, expected dict, got %s.'
+                                % (key, type(value)))
 
     # if any keys remain in the list, they were not in the data dict.
     if valid_keys:
-        return HttpResponseBadRequest('%s Missing keys '
-                                      % (base_message, ', '.join(valid_keys)))
+        validator.api_error('object missing keys %s' % ', '.join(valid_keys))
+
+    # if there are any errors at this point, end processing
+    if validator.api_errors:
+        return validator.build_error_response()
 
     # parse contact information
     # pop is used to pull out necessary information and remove it from
     # subsequent object creation. from here, we mold the dict to be used
     # as a keyword dict to create a contact from the model
-    contact_pk = data_object['contact'].pop('pk')
-    contact_tags = data_object['contact'].pop('tags')
-    locations = data_object['contact'].pop('locations')
-    try:
-        contact = return_or_create_object(Contact,
-                                          contact_pk,
-                                          data_object['contact'])
+    # during this step, the models are VALIDATED, but NOT SAVED
+    contact_pk = data_object['contact'].pop('pk', None)
+    contact_tags = data_object['contact'].pop('tags', None)
+    contact_locations = data_object['contact'].pop('locations', None)
+    contact_location_objects = []
+    contact = return_or_create_object(Contact,
+                                      contact_pk,
+                                      data_object['contact'])
 
-    except ValueError as ve:
-        return HttpResponseBadRequest('%s %s' % base_message, ve.message)
-    add_tags_to_object(contact, contact_tags)
 
-    for location in locations:
-        location_pk = location.pop('pk')
+    # parse locations for contact, create where necessary
+    for location in contact_locations:
+        location_pk = location.pop('pk', None)
         try:
             location_object = return_or_create_object(Location,
                                                       location_pk,
                                                       location)
         except ValueError as ve:
-            return HttpResponseBadRequest('%s %s' % base_message, ve.message)
-        contact.locations.add(location_object)
+            validator.field_error('contact', 'locations',
+                                  '%s %s' % (base_message, ve.message))
+        contact_location_objects.append(location_object)
 
-    partner_pk = data_object['partner'].pop('pk')
-    partner_tags = data_object['partner'].pop('tags')
+    partner_pk = data_object['partner'].pop('pk', None)
+    partner_tags = data_object['partner'].pop('tags', None)
+    owner_pk = data_object['partner'].pop('owner', None)
     try:
+        if owner_pk:
+            data_object['partner']['owner'] = Company.objects.get(id=owner_pk)
         partner = return_or_create_object(Partner,
                                           partner_pk,
                                           data_object['partner'])
     except ValueError as ve:
-        return HttpResponseBadRequest('%s %s' % base_message, ve.message)
+        validator.form_error('partner', '%s %s' % (base_message, ve.message))
+
+    contactrecord_tags = data_object['contactrecord'].pop('tags', None)
+    data_object['contactrecord']['created_by'] = request.user
+    try:
+        contact_record = return_or_create_object(ContactRecord,
+                                                 None,
+                                                 data_object['contactrecord'])
+    except ValueError as ve:
+        validator.form_error('contactrecord',
+                             '%s %s' % (base_message, ve.message))
+
+    # if there are any errors at this point, return them to the UI
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    # save all objects, since fields are already cleaned, this should not
+    # trigger any further exceptions, but verify anyway
+    contact.save()
+    add_tags_to_object(contact, contact_tags)
+    for c_location in contact_location_objects:
+        c_location.save()
+        contact.locations.add(c_location)
+
+    partner.primary_contact = contact
+    partner.save()
     add_tags_to_object(partner, partner_tags)
 
-    data_object['contactrecord']['partner'] = partner
-    data_object['contactrecord']['contact'] = contact
-    try:
-        return_or_create_object(ContactRecord,
-                                None,
-                                data_object['contactrecord'])
-    except ValueError as ve:
-        return HttpResponseBadRequest('%s %s' % base_message, ve.message)
+    # partner had to be added after partner was saved, so add and re-save
+    contact.partner = partner
+    contact.save()
 
+    contact_record.partner = partner
+    contact_record.contact = contact
+    contact_record.save()
+    add_tags_to_object(contact_record, contactrecord_tags)
+
+    if validator.has_errors():
+        return validator.build_error_response()
     return HttpResponse("success")
-    # TODO: add link partner <-> contact
-
-def add_tags_to_object(tagged_object, tags_list):
-    """
-    add tags from list of tags to the object
-
-    :param tagged_object: object to add tags
-    :param tags_list: list of tag PKs
-    :return: None
-
-    """
-    tags = Tag.objects.filter(pk__in=tags_list)
-    tagged_object.tags.add(*list(tags))
-
-def return_or_create_object(target_model, object_pk, data_dict):
-    """
-    retrieve or create an object based on the inputs. if pk provided,
-    retrieve an object. else, use data_dict to create the object and
-    return it.
-
-    :param target_model: model for use to create or retrieve object
-    :param object_pk: pk of existing object
-    :param data_dict: data to generate new object
-    :return: existing or newly created object
-
-    """
-    if object_pk:
-        try:
-            return_object = target_model.objects.get(pk=object_pk)
-        except target_model.DoesNotExist:
-            raise ValueError('%s for PK %s does not exist'
-                            % target_model, object_pk)
-    else:
-        try:
-            return_object = target_model(**data_dict)
-            return_object.save()
-        except ValueError:
-            raise ValueError('Data to create %s failed form validation')
-    return return_object
 
 @requires('read tag')
 def tag_names(request):
