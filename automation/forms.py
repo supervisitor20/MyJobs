@@ -2,7 +2,8 @@ from django import forms
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-from automation.source_codes import process_spreadsheet, add_source_codes
+from automation.source_codes import (
+    add_source_codes, add_destination_manipulations, process_file)
 from redirect.models import Redirect
 
 ATS_PARAMETERS = {
@@ -22,56 +23,57 @@ ATS_PARAMETERS = {
 
 
 class SourceCodeFileUpload(forms.Form):
-    source_code_file = forms.FileField(required=True)
-    buids = forms.CharField(required=True)
+    source_code_file = forms.FileField(
+        required=True,
+        widget=forms.ClearableFileInput(attrs={'accept': '.xls,.xlsx,.csv'}))
+    buids = forms.CharField(required=False)
     source_code_parameter = forms.CharField(required=False)
 
-    def clean_buids(self):
-        """
-        Ensures that the buids input is both present and a comma-delimited
-        list of digits
-        """
-        buids = self.data['buids']
+    def clean(self):
+        cleaned_data = super(SourceCodeFileUpload, self).clean()
+        source_code_file = cleaned_data.get('source_code_file')
+        if not source_code_file:
+            self._errors['source_code_file'] = ['Source code file required']
+            return
+
+        is_excel = not source_code_file.name.endswith('.csv')
+        self.cleaned_data['is_excel'] = is_excel
+
+        # Ensures that the buids input is both present and a comma-delimited
+        # list of digits
+        buids = self.cleaned_data['buids']
         if buids:
             buids = buids.split(',')
             buids = [buid.strip() for buid in buids]
             if not all([buid.isdigit() for buid in buids]):
-                raise forms.ValidationError('Buids provided are not numeric')
+                self._errors['buids'] = ['Buids provided are not numeric']
+
+        source_code_parameter = cleaned_data['source_code_parameter']
+        if is_excel:
+            if not buids:
+                self._errors['buids'] = [
+                    'Buids must be provided on Excel upload']
+            # Checks for jobs belonging to the buids provided and
+            # auto-determines an acceptable parameter based on the job. If
+            # this fails, a parameter must be provided in the form
+            test_job = Redirect.objects.filter(buid__in=buids,
+                                               expired_date__isnull=True)
+            if test_job.count():
+                test_job = test_job[0]
+                for url_part, key in ATS_PARAMETERS.items():
+                    if url_part in test_job.url:
+                        source_code_parameter = key
+                        break
+            if not source_code_parameter:
+                self._errors['source_code_parameter'] = [
+                    "Can't guess source code parameters"]
+        if self._errors:
+            return
         else:
-            raise forms.ValidationError('No buids provided')
-        return buids
-
-    def clean_source_code_parameter(self):
-        """
-        Checks for jobs belonging to the buids provided and auto-determines
-        an acceptable parameter based on the job. If this fails, a parameter
-        must be provided in the form
-        """
-        parameter = self.cleaned_data['source_code_parameter']
-        buids = self.data['buids'].split(',')
-
-        test_job = Redirect.objects.filter(buid__in=buids,
-                                           expired_date__isnull=True)
-        if test_job.count():
-            test_job = test_job[0]
-            for url_part, key in ATS_PARAMETERS.items():
-                if url_part in test_job.url:
-                    parameter = key
-                    break
-        if not parameter:
-            raise forms.ValidationError("Can't guess source code parameters")
-        return parameter
-
-    def clean(self):
-        cleaned_data = super(SourceCodeFileUpload, self).clean()
-        if all(field in cleaned_data for field in ['source_code_parameter',
-                                                   'buids']):
             # TODO: Detect if the file already contains parameters
-            cleaned_data['source_codes'] = process_spreadsheet(
-                cleaned_data['source_code_file'],
-                cleaned_data['buids'],
-                cleaned_data['source_code_parameter'],
-                add_codes=False)
+            cleaned_data['source_codes'] = process_file(
+                location=source_code_file, buids=buids,
+                source_name=source_code_parameter, add_codes=False)
         return cleaned_data
 
     def save(self):
@@ -85,5 +87,8 @@ class SourceCodeFileUpload(forms.Form):
         # filename_1.xlsx).
         default_storage.save(source_code_file.name,
                              ContentFile(source_code_file.read()))
-        return add_source_codes(self.cleaned_data['buids'],
-                                self.cleaned_data['source_codes'])
+        method = add_source_codes
+        if not self.cleaned_data['is_excel']:
+            method = add_destination_manipulations
+        return method(buids=self.cleaned_data['buids'],
+                      codes=self.cleaned_data['source_codes'])
