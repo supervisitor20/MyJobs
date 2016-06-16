@@ -1,6 +1,6 @@
 import {
   inboxManagementReducer as reducer,
-  inboxState as state,
+  initialInboxes as state,
   emptyInbox,
 } from '../reducers/inbox-management-reducer';
 

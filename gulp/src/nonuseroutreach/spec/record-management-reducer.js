@@ -1,11 +1,9 @@
 import {
   recordManagementReducer as reducer,
-  recordState,
+  initialRecords,
 } from '../reducers/record-management-reducer';
 
 import {getRecordsAction} from '../actions/record-actions';
-
-const state = recordState.recordManagement;
 
 describe('recordManagementReducer', () => {
   describe('getRecordsAction', () => {
@@ -24,8 +22,8 @@ describe('recordManagementReducer', () => {
           workflowState: 'Reviewed',
         },
       ];
-      const result = reducer(state, getRecordsAction(outreach));
-      expect(result.records).toEqual(outreach);
+      const result = reducer(initialRecords, getRecordsAction(outreach));
+      expect(result).toEqual(outreach);
     });
   });
 });

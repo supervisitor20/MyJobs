@@ -36,5 +36,5 @@ OutreachRecordPage.propTypes = {
 };
 
 export default connect(state => ({
-  ...state.recordManagement,
+  records: state.records,
 }))(OutreachRecordPage);

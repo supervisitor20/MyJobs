@@ -11,7 +11,7 @@ export const emptyInbox = {
   valid: false,
 };
 
-export const inboxState = [
+export const initialInboxes = [
   emptyInbox,
 ];
 
@@ -102,4 +102,4 @@ export const inboxManagementReducer = handleActions({
       ...state.slice(index + 1),
     ];
   },
-}, inboxState);
+}, initialInboxes);
