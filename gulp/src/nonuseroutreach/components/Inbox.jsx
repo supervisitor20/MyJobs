@@ -57,7 +57,7 @@ export default class Inbox extends React.Component {
     }
 
     return (
-      <div className="product-card no-highlight clearfix">
+      <div>
         {inbox.errors.map((error, index) =>
           <HelpText key={index} message={error} />)}
         <Row>
