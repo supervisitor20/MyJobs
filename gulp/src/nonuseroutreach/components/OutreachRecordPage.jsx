@@ -3,11 +3,13 @@ import {connect} from 'react-redux';
 import {Col, Row} from 'react-bootstrap';
 import OutreachRecordTable from './OutreachRecordTable';
 import {doGetRecords} from '../actions/record-actions';
+import {setPageAction} from '../actions/navigation-actions';
 
 // outreach record table view
 class OutreachRecordPage extends React.Component {
   componentWillMount() {
     const {dispatch} = this.props;
+    dispatch(setPageAction('records'));
     dispatch(doGetRecords());
   }
 

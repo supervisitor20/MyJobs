@@ -1,12 +1,14 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {doGetInboxes} from '../actions/inbox-actions';
+import {setPageAction} from '../actions/navigation-actions';
 import Inbox from './Inbox';
 import {Col, Row} from 'react-bootstrap';
 
 class InboxManagementPage extends React.Component {
   componentWillMount() {
     const {dispatch} = this.props;
+    dispatch(setPageAction('inboxes'));
     dispatch(doGetInboxes());
   }
 

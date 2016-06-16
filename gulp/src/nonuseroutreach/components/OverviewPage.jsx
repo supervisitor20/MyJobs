@@ -1,9 +1,15 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import {Col, Row} from 'react-bootstrap';
+import {setPageAction} from '../actions/navigation-actions';
 
 
 // overview main display page
-export default class OverviewPage extends React.Component {
+class OverviewPage extends React.Component {
+  componentWillMount() {
+    const {dispatch} = this.props;
+    dispatch(setPageAction('overview'));
+  }
   render() {
     return (
       <div className="cardWrapper">
@@ -25,4 +31,8 @@ export default class OverviewPage extends React.Component {
   }
 }
 
-OverviewPage.propTypes = {};
+OverviewPage.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
+};
+
+export default connect()(OverviewPage);

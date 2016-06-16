@@ -13,11 +13,16 @@ import {
   initialInboxes,
   inboxManagementReducer,
 } from './reducers/inbox-management-reducer';
+
 import {
   initialRecords,
   recordManagementReducer,
 } from './reducers/record-management-reducer';
 
+import {
+  initialNavigation,
+  navigationReducer,
+} from './reducers/navigation-reducer';
 
 import {Provider} from 'react-redux';
 import NonUserOutreachRouter from './components/NonUserOutreachRouter';
@@ -28,6 +33,7 @@ installPolyfills();
 export const initialState = {
   inboxes: initialInboxes,
   records: initialRecords,
+  navigation: initialNavigation,
 };
 
 const myJobsApi = new MyJobsApi(getCsrf());
@@ -35,6 +41,7 @@ const api = new Api(myJobsApi);
 const reducer = combineReducers({
   inboxes: inboxManagementReducer,
   records: recordManagementReducer,
+  navigation: navigationReducer,
 });
 
 const thunkExtra = {

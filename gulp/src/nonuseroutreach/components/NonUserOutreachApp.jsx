@@ -7,7 +7,7 @@ import {Menu} from './Menu';
 
 class NonUserOutreachApp extends Component {
   render() {
-    const {pageLoading} = this.props;
+    const {pageLoading, tips} = this.props;
     return (
       <Grid>
         <Row>
@@ -25,7 +25,7 @@ class NonUserOutreachApp extends Component {
             {pageLoading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
-            <Menu />
+            <Menu tips={tips} />
           </Col>
         </Row>
       </Grid>
@@ -35,9 +35,11 @@ class NonUserOutreachApp extends Component {
 
 NonUserOutreachApp.propTypes = {
   pageLoading: PropTypes.bool.isRequired,
+  tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
   children: PropTypes.node,
 };
 
-export default connect(() => ({
+export default connect(state => ({
   pageLoading: false,
+  tips: state.navigation.tips,
 }))(NonUserOutreachApp);
