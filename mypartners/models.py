@@ -951,7 +951,7 @@ class OutreachEmailAddress(models.Model):
 
 
 class OutreachWorkflowState(models.Model):
-    state = models.CharField(max_length=50)
+    state = models.CharField(max_length=50, unique=True)
 
     def __unicode__(self):
         return self.state

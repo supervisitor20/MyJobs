@@ -51,7 +51,8 @@ from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
                                Location, OutreachEmailAddress, OutreachRecord,
-                               PartnerLibrarySource, Status)
+                               OutreachWorkflowState, PartnerLibrarySource,
+                               Status)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1518,6 +1519,8 @@ def api_convert_outreach_record(request):
     object would be populated, ex. {... contact:{pk:"12"} ...}
 
     {
+        "outreachrecord":{"pk":"1", "current_workflow_state":"1"},
+
         "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
         "tags":["12", "68"], "owner": "152", "approval_status": "3"},
 
@@ -1533,7 +1536,8 @@ def api_convert_outreach_record(request):
         "tags":["10", "15", "3"], "approval_status":"1"}
     }
 
-    :return: Nothing, status code 200 on success, 400, 405 indicates error
+    :return: status code 200 on success, 400, 405 indicates error
+
     """
     def add_tags_to_object(tagged_object, tags_list):
         """
@@ -1551,27 +1555,32 @@ def api_convert_outreach_record(request):
             validator.form_field_error(tagged_object.__class__.__name__.lower(),
                                        'tags', 'invalid pk provided for tag')
 
-    def return_or_create_object(target_model, object_pk, data_dict):
+    def return_or_create_object(target_model, object_pk, data_dict={},
+                                parent_field=None):
         """
         retrieve or create an object based on the inputs. if pk provided,
         retrieve an object. else, use data_dict to create the object and
-        return it. this function also checks if an approval status id exists in
+        return it. if the object being returned is the child of a field (ex.
+        contact's location, partner's tag) then the parent field is supplied.
+        this function also checks if an approval status id exists in
         and swaps it with the corresponding object within the data dictionary
 
         :param target_model: model for use to create or retrieve object
         :param object_pk: pk of existing object
         :param data_dict: data to generate new object
+        :param parent_field: object is child of field, ex. partner's tag
         :return: existing or newly created object
 
         """
         return_object = None
+        field_name = parent_field or target_model.__name__.lower()
         if data_dict.get('approval_status'):
             try:
                 approval = Status(code=data_dict['approval_status'],
                                   approved_by=request.user)
                 data_dict['approval_status'] = approval
             except ValueError:
-                validator.form_field_error(target_model.__name__.lower(),
+                validator.form_field_error(field_name,
                                            'approval_status',
                                            'approval status %s invalid' % object_pk)
 
@@ -1579,11 +1588,11 @@ def api_convert_outreach_record(request):
             try:
                 return_object = target_model.objects.get(pk=object_pk)
             except target_model.DoesNotExist:
-                validator.form_field_error(target_model.__name__.lower(),
+                validator.form_field_error(field_name,
                                            'pk',
                                            'object not found for PK %s' % object_pk)
             except ValueError:
-                validator.form_field_error(target_model.__name__.lower(),
+                validator.form_field_error(field_name,
                                            'pk',
                                             '%s is not a valid pk' % object_pk)
         else:
@@ -1605,7 +1614,7 @@ def api_convert_outreach_record(request):
         return HttpResponseNotAllowed(['POST'])
 
     data_object = request.body
-    valid_keys = ['contactrecord', 'contact', 'partner']
+    valid_keys = ['outreachrecord', 'contactrecord', 'contact', 'partner']
     validator = MultiFormApiValidator(valid_keys)
 
     if not data_object:
@@ -1620,7 +1629,6 @@ def api_convert_outreach_record(request):
 
     # verify that data object has correct keys, no additional keys and
     # that the value is a dict
-    valid_keys = ['contactrecord', 'contact', 'partner']
     for key, value in data_object.iteritems():
         try:
             index_of_key = valid_keys.index(key)
@@ -1643,6 +1651,16 @@ def api_convert_outreach_record(request):
     if validator.api_errors:
         return validator.build_error_response()
 
+
+    # pull outreach record
+    outreach_pk = data_object['outreachrecord'].pop('pk', None)
+    workflow_pk = data_object['outreachrecord'].pop('current_workflow_state',
+                                                    None)
+    outreach_record = return_or_create_object(OutreachRecord,
+                                              outreach_pk)
+    workflow_status = return_or_create_object(OutreachWorkflowState,
+                                              workflow_pk)
+
     # parse contact information
     # pop is used to pull out necessary information and remove it from
     # subsequent object creation. from here, we mold the dict to be used
@@ -1660,36 +1678,25 @@ def api_convert_outreach_record(request):
     # parse locations for contact, create where necessary
     for location in contact_locations:
         location_pk = location.pop('pk', None)
-        try:
-            location_object = return_or_create_object(Location,
-                                                      location_pk,
-                                                      location)
-        except ValueError as ve:
-            validator.field_error('contact', 'locations',
-                                  '%s %s' % (base_message, ve.message))
+        location_object = return_or_create_object(Location,
+                                                  location_pk,
+                                                  location)
         contact_location_objects.append(location_object)
 
     partner_pk = data_object['partner'].pop('pk', None)
     partner_tags = data_object['partner'].pop('tags', None)
     owner_pk = data_object['partner'].pop('owner', None)
-    try:
-        if owner_pk:
-            data_object['partner']['owner'] = Company.objects.get(id=owner_pk)
-        partner = return_or_create_object(Partner,
-                                          partner_pk,
-                                          data_object['partner'])
-    except ValueError as ve:
-        validator.form_error('partner', '%s %s' % (base_message, ve.message))
+    if owner_pk:
+        data_object['partner']['owner'] = Company.objects.get(id=owner_pk)
+    partner = return_or_create_object(Partner,
+                                      partner_pk,
+                                      data_object['partner'])
 
     contactrecord_tags = data_object['contactrecord'].pop('tags', None)
     data_object['contactrecord']['created_by'] = request.user
-    try:
-        contact_record = return_or_create_object(ContactRecord,
-                                                 None,
-                                                 data_object['contactrecord'])
-    except ValueError as ve:
-        validator.form_error('contactrecord',
-                             '%s %s' % (base_message, ve.message))
+    contact_record = return_or_create_object(ContactRecord,
+                                             None,
+                                             data_object['contactrecord'])
 
     # if there are any errors at this point, return them to the UI
     if validator.has_errors():
@@ -1715,6 +1722,9 @@ def api_convert_outreach_record(request):
     contact_record.contact = contact
     contact_record.save()
     add_tags_to_object(contact_record, contactrecord_tags)
+
+    outreach_record.current_workflow_state = workflow_status
+    outreach_record.save()
 
     if validator.has_errors():
         return validator.build_error_response()
