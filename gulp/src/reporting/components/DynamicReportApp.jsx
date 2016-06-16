@@ -50,6 +50,13 @@ class DynamicReportApp extends Component {
       return;
     }
 
+    /* This may result in users seeing a flickering loading indicator. It and
+     * the page components it affects are eliminating flickering content so
+     * I'm willing to make that tradeoff.
+     *
+     * When the no-ie8 future arrives and we can upgrade the history and router
+     * components which may allow us to do better than this.
+     */
     // Allow other pages to mount.
     dispatch(markPageLoadingAction(false));
   }
