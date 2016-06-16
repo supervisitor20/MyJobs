@@ -51,5 +51,5 @@ InboxManagementPage.propTypes = {
 };
 
 export default connect(state => ({
-  ...state.inboxManagement,
+  inboxes: state.inboxes,
 }))(InboxManagementPage);

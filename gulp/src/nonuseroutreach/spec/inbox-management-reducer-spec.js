@@ -1,6 +1,6 @@
 import {
   inboxManagementReducer as reducer,
-  inboxState,
+  inboxState as state,
   emptyInbox,
 } from '../reducers/inbox-management-reducer';
 
@@ -13,8 +13,6 @@ import {
   deleteInboxAction,
 } from '../actions/inbox-actions';
 
-const state = inboxState.inboxManagement;
-
 describe('inboxManagementReducer', () => {
   describe('validateInboxAction', () => {
     it('should mark blank emails as invalid', () => {
@@ -22,8 +20,8 @@ describe('inboxManagementReducer', () => {
         ...emptyInbox,
       }));
 
-      expect(result.inboxes.filter(i => !i.valid)).toBeTruthy();
-      expect(result.inboxes.filter(i => !!i.errors.length)).toBeTruthy();
+      expect(result.filter(i => !i.valid)).toBeTruthy();
+      expect(result.filter(i => !!i.errors.length)).toBeTruthy();
     });
 
     it('should mark duplicate emails as invalid.', () => {
@@ -31,17 +29,11 @@ describe('inboxManagementReducer', () => {
         ...emptyInbox,
         email: 'testing',
       };
-      const newState = {
-        ...state,
-        inboxes: [
-          ...state.inboxes,
-          newInbox,
-        ],
-      };
+      const newState = [...state, newInbox];
       const result = reducer(newState, validateInboxAction(newInbox));
 
-      expect(result.inboxes.filter(i => !i.valid)).toBeTruthy();
-      expect(result.inboxes.filter(i => !!i.errors.length)).toBeTruthy();
+      expect(result.filter(i => !i.valid)).toBeTruthy();
+      expect(result.filter(i => !!i.errors.length)).toBeTruthy();
     });
 
     it('should mark emails with more than the local part as invalid', () => {
@@ -50,26 +42,23 @@ describe('inboxManagementReducer', () => {
         email: 'foo@bar.com',
       }));
 
-      expect(result.inboxes.filter(i => !i.valid)).toBeTruthy();
-      expect(result.inboxes.filter(i => !!i.errors.length)).toBeTruthy();
+      expect(result.filter(i => !i.valid)).toBeTruthy();
+      expect(result.filter(i => !!i.errors.length)).toBeTruthy();
     });
   });
 
   describe('addInboxAction', () => {
     it('should add one new inbox to the inboxes list', () => {
-      const newState = {
-        ...state,
-        inboxes: [
-          {...emptyInbox, email: 'something'},
-        ]
-      };
+      const newState = [
+        {...emptyInbox, email: 'something'},
+      ];
       const result = reducer(newState, addInboxAction({
         ...emptyInbox,
         pk: 1,
         email: 'something',
       }));
 
-      expect(result.inboxes).toEqual([
+      expect(result).toEqual([
         {...emptyInbox, pk: 1, email: 'something'}
       ]);
     });
@@ -81,13 +70,7 @@ describe('inboxManagementReducer', () => {
           {pk: 1, email: 'first'},
           {pk: 2, email: 'second'},
       ]));
-      expect(result.inboxes).toContain({
-        ...emptyInbox,
-        pk: 1,
-        email: 'first',
-        originalEmail: 'first',
-      });
-      expect(result.inboxes).toEqual([
+      expect(result).toEqual([
         emptyInbox,
         {...emptyInbox, pk: 1, email: 'first', originalEmail: 'first'},
         {...emptyInbox, pk: 2, email: 'second', originalEmail: 'second'},
@@ -97,20 +80,17 @@ describe('inboxManagementReducer', () => {
 
   describe('updateInboxAction', () => {
     it('should replace the inbox with the correct pk', () => {
-      const newState = {
-        ...state,
-        inboxes: [
-          {...emptyInbox, pk: 1, email: 'first'},
-          {...emptyInbox, pk: 5, email: 'fifth'},
-        ],
-      };
+      const newState = [
+        {...emptyInbox, pk: 1, email: 'first'},
+        {...emptyInbox, pk: 5, email: 'fifth'},
+      ];
       const result = reducer(newState, updateInboxAction({
         ...emptyInbox,
         pk: 5,
         email: 'still-fifth',
       }));
 
-      expect(result.inboxes).toEqual([
+      expect(result).toEqual([
         {...emptyInbox, pk: 1, email: 'first'},
         {
           ...emptyInbox,
@@ -123,17 +103,14 @@ describe('inboxManagementReducer', () => {
 
   describe('resetInboxAction', () => {
     it('should set the inbox email to originalEmail', () => {
-      const newState = {
-        ...state,
-        inboxes: [
-          {
-            ...emptyInbox,
-            pk: 1,
-            email: 'new',
-            originalEmail: 'old',
-          }
-        ],
-      };
+      const newState = [
+        {
+          ...emptyInbox,
+          pk: 1,
+          email: 'new',
+          originalEmail: 'old',
+        }
+      ];
       const response = reducer(newState, resetInboxAction({
         ...emptyInbox,
         pk: 1,
@@ -141,7 +118,7 @@ describe('inboxManagementReducer', () => {
         originalEmail: 'old',
       }));
 
-      expect(response.inboxes).toEqual([
+      expect(response).toEqual([
         {...emptyInbox, pk: 1, email: 'old', originalEmail: 'old'},
       ]);
     });
@@ -149,17 +126,16 @@ describe('inboxManagementReducer', () => {
 
   describe('deleteInboxAction', () => {
     it('should remove an inbox by pk.', () => {
-      const newState = {
-        ...state,
-        inboxes: [{...emptyInbox, pk: 1, email: 'testing'}],
-      };
+      const newState = [
+        {...emptyInbox, pk: 1, email: 'testing'},
+      ];
       const result = reducer(newState, deleteInboxAction({
         ...emptyInbox,
         pk: 1,
         email: 'testing',
       }));
 
-      expect(result.inboxes).toEqual([]);
+      expect(result).toEqual([]);
     });
   });
 });

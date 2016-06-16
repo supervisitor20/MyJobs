@@ -11,19 +11,15 @@ export const emptyInbox = {
   valid: false,
 };
 
-export const inboxState = {
-  inboxManagement: {
-    inboxes: [
-      emptyInbox,
-    ],
-  },
-};
+export const inboxState = [
+  emptyInbox,
+];
 
 export const inboxManagementReducer = handleActions({
   'VALIDATE_INBOX': (state, action) => {
     const inbox = action.payload;
     const validator = validateEmailAddress(inbox.email);
-    const alreadyExists = state.inboxes.filter(i =>
+    const alreadyExists = state.filter(i =>
       i.pk && i.email === inbox.email).length;
     const newInbox = {
       ...inbox,
@@ -33,33 +29,27 @@ export const inboxManagementReducer = handleActions({
         ...alreadyExists ? ['An inbox with this email already exists.'] : [],
       ],
     };
-    const index = findIndex(state.inboxes, i => i.pk === inbox.pk);
+    const index = findIndex(state, i => i.pk === inbox.pk);
 
-    return {
+    return index > -1 ? [
+      ...state.slice(0, index),
+      newInbox,
+      ...state.slice(index + 1),
+    ] : [
       ...state,
-      inboxes: index > -1 ? [
-        ...state.inboxes.slice(0, index),
-        newInbox,
-        ...state.inboxes.slice(index + 1),
-      ] : [
-        ...state.inboxes,
-        inbox,
-      ],
-    };
+      inbox,
+    ];
   },
   'ADD_INBOX': (state, action) => {
     const inbox = action.payload;
     const newInbox = {...emptyInbox, ...inbox};
-    const index = findIndex(state.inboxes, i => inbox.email === i.email);
+    const index = findIndex(state, i => inbox.email === i.email);
 
-    return index > -1 ? {
-      ...state,
-      inboxes: [
-        ...state.inboxes.slice(0, index),
-        newInbox,
-        ...state.inboxes.slice(index + 1),
-      ],
-    } : state;
+    return index > -1 ? [
+      ...state.slice(0, index),
+      newInbox,
+      ...state.slice(index + 1),
+    ] : state;
   },
   'GET_INBOXES': (state, action) => {
     const inboxes = action.payload.map(i => ({
@@ -68,62 +58,48 @@ export const inboxManagementReducer = handleActions({
       originalEmail: i.email,
     }));
 
-    return {
-      ...state,
-      inboxes: [
-        emptyInbox,
-        ...inboxes,
-      ],
-    };
+    return [
+      emptyInbox,
+      ...inboxes,
+    ];
   },
   'UPDATE_INBOX': (state, action) => {
     const updatedInbox = action.payload;
-    const inboxIndex = findIndex(state.inboxes, inbox =>
+    const inboxIndex = findIndex(state, inbox =>
         updatedInbox.pk === inbox.pk);
     const newInbox = {
       ...updatedInbox,
       originalEmail: updatedInbox.email,
     };
 
-    return {
-      ...state,
-      inboxes: [
-        ...state.inboxes.slice(0, inboxIndex),
-        newInbox,
-        ...state.inboxes.slice(inboxIndex + 1),
-      ],
-    };
+    return [
+      ...state.slice(0, inboxIndex),
+      newInbox,
+      ...state.slice(inboxIndex + 1),
+    ];
   },
   'RESET_INBOX': (state, action) => {
     const resetInbox = action.payload;
-    const inboxIndex = findIndex(state.inboxes, inbox =>
+    const inboxIndex = findIndex(state, inbox =>
         resetInbox.pk === inbox.pk);
     const newInbox = {
       ...resetInbox,
       email: resetInbox.originalEmail,
     };
 
-    return {
-      ...state,
-      inboxes: [
-        ...state.inboxes.slice(0, inboxIndex),
-        newInbox,
-        ...state.inboxes.slice(inboxIndex + 1),
-      ],
-    };
+    return [
+      ...state.slice(0, inboxIndex),
+      newInbox,
+      ...state.slice(inboxIndex + 1),
+    ];
   },
   'DELETE_INBOX': (state, action) => {
     const deletedInbox = action.payload;
-    const index = findIndex(state.inboxes, i => deletedInbox.pk === i.pk);
+    const index = findIndex(state, i => deletedInbox.pk === i.pk);
 
-    const result = {
-      ...state,
-      inboxes: [
-        ...state.inboxes.slice(0, index),
-        ...state.inboxes.slice(index + 1),
-      ],
-    };
-
-    return result;
+    return [
+      ...state.slice(0, index),
+      ...state.slice(index + 1),
+    ];
   },
 }, inboxState);

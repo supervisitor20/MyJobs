@@ -23,11 +23,9 @@ import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 installPolyfills();
 
 export const initialState = {
-  inboxManagement: {
-    inboxes: [
-      emptyInbox,
-    ],
-  },
+  inboxes: [
+    emptyInbox,
+  ],
   recordManagement: {
     records: [],
   },
@@ -36,7 +34,7 @@ export const initialState = {
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
 const reducer = combineReducers({
-  inboxManagement: inboxManagementReducer,
+  inboxes: inboxManagementReducer,
   recordManagement: recordManagementReducer,
 });
 
