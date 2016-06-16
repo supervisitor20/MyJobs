@@ -18,6 +18,8 @@ import AssociatedRolesList from './AssociatedRolesList';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Status from './Status';
+import Confirm from 'common/ui/Confirm';
+import {confirmCb} from 'common/confirm';
 import {MyJobsApi} from 'common/myjobs-api';
 
 installPolyfills();
@@ -33,6 +35,7 @@ export class App extends React.Component {
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
+      confirmShow: false,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
@@ -49,6 +52,20 @@ export class App extends React.Component {
       this.callRolesAPI();
       this.callUsersAPI();
     }
+  }
+  async confirmModal(message) {
+    return confirmCb(
+      message,
+      handleConfirmResolve => this.setState({
+        confirmShow: true,
+        confirmMessage: message,
+        handleConfirmResolve,
+      }),
+      () => this.setState({
+        confirmShow: false,
+        confirmMessage: undefined,
+        handleConfirmResolve: undefined,
+      }));
   }
   async callActivitiesAPI() {
     // Get activities once, and only once
@@ -147,8 +164,18 @@ export class App extends React.Component {
     });
   }
   render() {
+    const {confirmShow, confirmMessage, handleConfirmResolve} = this.state;
+
     return (
       <div>
+        <span> hello </span>
+        { confirmShow ?
+          <Confirm
+            show
+            message={confirmMessage}
+            onResolve={handleConfirmResolve}/>
+          : '' }
+
         <div className="row">
           <div className="col-sm-12">
             <div className="breadcrumbs">
@@ -181,6 +208,7 @@ export class App extends React.Component {
                   callRolesAPI: this.callRolesAPI,
                   callUsersAPI: this.callUsersAPI,
                   api: api,
+                  confirmModal: message => this.confirmModal(message),
                 })
               }
             </div>

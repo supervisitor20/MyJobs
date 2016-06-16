@@ -188,9 +188,10 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api} = this.props;
+    const {history, api, confirmModal} = this.props;
 
-    if (confirm('Are you sure you want to delete this user?') === false) {
+    if (await confirmModal('Are you sure you want to delete this user?')
+      === false) {
       return;
     }
 
@@ -277,6 +278,7 @@ User.propTypes = {
   callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
+  confirmModal: React.PropTypes.func,
 };
 
 export default User;
