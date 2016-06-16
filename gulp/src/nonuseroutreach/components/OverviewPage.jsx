@@ -1,24 +1,25 @@
 import React from 'react';
+import {Col, Row} from 'react-bootstrap';
 
 
 // overview main display page
 export default class OverviewPage extends React.Component {
   render() {
     return (
-      <div className="card-wrapper">
-        <div className="row">
-          <div className="col-xs-12 ">
+      <div className="cardWrapper">
+        <Row>
+          <Col xs={12}>
             <div className="wrapper-header">
               <h2>Overview</h2>
             </div>
-            <div className="product-card no-highlight">
+            <div className="product-card no-highlight clearfix">
               <p>
                 Non User Outreach is a module that will help you manage
                 and track positive outreach efforts by your employees
               </p>
             </div>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </div>
     );
   }
