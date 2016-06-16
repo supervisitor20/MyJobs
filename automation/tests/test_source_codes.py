@@ -1,3 +1,7 @@
+import json
+from os import path
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.factories import UserFactory
@@ -126,3 +130,42 @@ class SourceCodeUploadTests(MyJobsBase):
 
         # If this is parsed as a float, int(value) will raise a ValueError
         int_value = int(value)
+
+    def do_autoupdate_view_source_test(self, filename):
+        with open(path.join(settings.PROJ_ROOT,
+                            'jsondata/view_source_conversion.json')) as f:
+            conversion = json.load(f)
+        view_sources = [int(vs) for vs in conversion['Indiana State Job Bank']]
+        self.assertTrue(len(view_sources) > 1)
+        buid = 1
+        for manipulations in [[], [DestinationManipulation(
+                              action_type=1, buid=buid, action='sourcecodetag',
+                              value_1='?src=JB-0000',
+                              view_source=view_sources[0])]]:
+            # Test our process once with no pre-existing manipulations and once
+            # with one.
+            [manipulation.save() for manipulation in manipulations]
+
+            with open(filename) as fp:
+                kwargs = {
+                    'source_code_file': fp
+                }
+                if not filename.endswith('csv'):
+                    kwargs.update({'buids': [buid],
+                                   'source_code_parameter': 'src'})
+                self.client.post(reverse('source_code_upload'),
+                                 kwargs)
+
+            actual_view_sources = set(
+                DestinationManipulation.objects.values_list('view_source',
+                                                            flat=True))
+            self.assertEqual(actual_view_sources, set(view_sources))
+            DestinationManipulation.objects.all().delete()
+
+    def test_autoupdate_view_sources_on_spreadsheet_upload(self):
+        self.do_autoupdate_view_source_test(
+            self.spreadsheet_path % ('good', 'indiana'))
+
+    def test_autoupdate_view_sources_on_csv_upload(self):
+        self.do_autoupdate_view_source_test(
+            self.csv_path % ('good', 'indiana'))

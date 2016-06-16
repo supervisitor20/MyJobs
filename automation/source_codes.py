@@ -1,8 +1,13 @@
+import json
+from os import path
+
 import unicodecsv
 import xlrd
 from xlrd.biffh import XLRDError
 
 from django.db.models import Q
+
+from django.conf import settings
 
 from redirect.models import DestinationManipulation
 
@@ -93,19 +98,55 @@ def get_values(sheet, source_name, view_source_column=2, source_code_column=1):
 
     parsed_view_sources = []
     bad_view_sources = []
+    seen = set()
+    with open(path.join(settings.PROJ_ROOT,
+                        'jsondata/view_source_conversion.json')) as f:
+        # Grab our list of equivalent view sources
+        conversion = json.load(f)
+    conversion_lists = [[int(item) for item in list_]
+                        for list_ in conversion.values()]
     for index, value in enumerate(view_sources):
         try:
             # Ensure all elements in the view source list are integers
-            parsed_view_sources.append(int(value))
+            int_value = int(value)
         except ValueError:
             # The current element is not an integer; add it to the list of
             # elements to be removed
             bad_view_sources.append(index)
+            continue
+        parsed_view_sources.append(int_value)
 
     for index in bad_view_sources[::-1]:
         # Discard all source codes that correspond to a non-integer view source
         source_parts.pop(index)
     view_sources = parsed_view_sources
+
+    for index, value in enumerate(view_sources[:]):
+        # Keep track of the view sources we've seen thus far so we don't
+        # double up on one.
+        if value not in seen:
+            seen.add(value)
+
+            # Search for a list of view sources containing ours.
+            for list_ in conversion_lists:
+                if value in list_:
+                    # Found a list of view sources. Add all of them to the seen
+                    # set so we don't do this for each one.
+                    seen.update(list_)
+
+                    # Determine which view sources we're not adding so we can
+                    # add them now.
+                    # Example: list_ = {1,2,3}, view_sources=[1,2,4]
+                    # list_.difference(view_sources) == {3}; we'll add view
+                    # source 3 to our list.
+                    to_add = set(list_).difference(view_sources)
+                    view_sources.extend(to_add)
+                    for _ in to_add:
+                        source_parts.append(source_parts[index])
+                    # view sources aren't duplicated between the lists; break
+                    # so we don't do unnecessary work.
+                    break
+            # If we fell out of the loop, we didn't have to add anything.
 
     # Some files already contain query parameters; in those cases, we don't
     # need to do any additional handling.
@@ -306,6 +347,31 @@ def process_csv(location, buids, add_codes=True):
     fields = ['buid', 'view_source', 'action_type', 'action',
               'value_1', 'value_2']
     codes = [dict(zip(fields, code)) for code in csv]
+    [code.update(view_source=int(code['view_source'])) for code in codes]
+
+    seen = set()
+    with open(path.join(settings.PROJ_ROOT,
+                        'jsondata/view_source_conversion.json')) as f:
+        conversion = json.load(f)
+    conversion_lists = [[int(item) for item in list_]
+                        for list_ in conversion.values()]
+    all_view_sources = {code['view_source'] for code in codes}
+    for index, value in enumerate(codes[:]):
+        vs = value['view_source']
+        if vs not in seen:
+            seen.add(vs)
+
+            for list_ in conversion_lists:
+                if vs in list_:
+                    seen.update(list_)
+
+                    to_add = set(list_).difference(all_view_sources)
+                    for item in to_add:
+                        new_dict = value.copy()
+                        new_dict['view_source'] = item
+                        codes.append(new_dict)
+                    break
+
     if add_codes:
         return add_destination_manipulations(buids, codes)
     else:
