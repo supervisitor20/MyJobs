@@ -100,6 +100,10 @@ textarea{
 }
 
 /*Lists*/
+ul {
+    margin: 0 0 0 20px;
+}
+
 li {
     color: #000;
 }
@@ -3496,10 +3500,6 @@ fieldset:nth-child(n+2) {
     display: inline-block;
 }
 
-.row .col-md-8 ul {
-    margin: 0;
-}
-
 .row .col-md-8 ul li label {
     font-weight: normal;
 }
@@ -3738,10 +3738,6 @@ legend.fieldset-border {
 /* Export Page Styles */
 #export-page #record-count {
   text-align: center;
-}
-
-#export-page ul {
-    margin: 0 0 0 20px;
 }
 
 #export-page ul li {

@@ -18,6 +18,7 @@ from myjobs.models import (User, EmailLog, FAQ, CompanyAccessRequest,
                            SecondPartyAccessRequest)
 from myjobs.tests.factories import (UserFactory, RoleFactory, ActivityFactory,
                                     AppAccessFactory)
+from mypartners.tests.factories import ContactFactory
 from myjobs.tests.setup import MyJobsBase, TestClient
 from mymessages.models import Message
 from mymessages.tests.factories import MessageInfoFactory
@@ -249,6 +250,17 @@ class MyJobsViewsTests(MyJobsBase):
         Going to the delete_account view removes a user and their data
         completely
         """
+        self.assertEqual(User.objects.count(), 2)
+        self.client.get(reverse('delete_account'), follow=True)
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_delete_with_archived_contacts(self):
+        """
+        Deleted a user when an archived contact still refers to the should be
+        possible.
+        """
+        contact = ContactFactory(user=self.user)
+        contact.archive()
         self.assertEqual(User.objects.count(), 2)
         self.client.get(reverse('delete_account'), follow=True)
         self.assertEqual(User.objects.count(), 1)
