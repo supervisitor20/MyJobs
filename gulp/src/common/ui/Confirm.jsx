@@ -13,10 +13,10 @@ import Button from 'react-bootstrap/lib/Button';
  * i.e.: <Confirm/>
  */
 function Confirm(props) {
-  const {show, message, onResolve} = props;
+  const {show, message, onConfirm} = props;
 
   return (
-    <Modal show={show} onHide={() => onResolve(false)}>
+    <Modal show={show} onHide={() => onConfirm(false)}>
       <Modal.Body>
       {message}
       </Modal.Body>
@@ -24,12 +24,12 @@ function Confirm(props) {
           <Button
             bsStyle="primary"
             block
-            onClick={e => {e.preventDefault(); onResolve(true);}}>
+            onClick={e => {e.preventDefault(); onConfirm(true);}}>
             Ok
           </Button>
           <Button
             block
-            onClick={e => {e.preventDefault(); onResolve(false);}}>
+            onClick={e => {e.preventDefault(); onConfirm(false);}}>
             Cancel
           </Button>
       </Modal.Footer>
@@ -43,7 +43,7 @@ Confirm.propTypes = {
   // What message should it show?
   message: PropTypes.string,
   // Callback for when a button is clicked.
-  onResolve: PropTypes.func,
+  onConfirm: PropTypes.func,
 };
 
 Confirm.defaultProps = {
@@ -53,5 +53,5 @@ Confirm.defaultProps = {
 export default connect(s => ({
   show: s.confirm.data.show,
   message: s.confirm.data.message,
-  onResolve: s.confirm.resolve,
+  onConfirm: s.confirm.resolve,
 }))(Confirm);
