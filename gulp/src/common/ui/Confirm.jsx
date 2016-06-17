@@ -1,6 +1,7 @@
 import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
 import Modal from 'react-bootstrap/lib/Modal';
+import Button from 'react-bootstrap/lib/Button';
 
 
 /**
@@ -20,16 +21,17 @@ function Confirm(props) {
       {message}
       </Modal.Body>
       <Modal.Footer>
-          <button
-            className="button primary wide"
+          <Button
+            bsStyle="primary"
+            block
             onClick={e => {e.preventDefault(); onResolve(true);}}>
             Ok
-          </button>
-          <button
-            className="button primary wide"
+          </Button>
+          <Button
+            block
             onClick={e => {e.preventDefault(); onResolve(false);}}>
             Cancel
-          </button>
+          </Button>
       </Modal.Footer>
     </Modal>
   );
