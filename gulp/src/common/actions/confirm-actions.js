@@ -33,6 +33,30 @@ export const hideConfirmAction =
  * For this to work there should be exactly 1 <Confirm> component included
  * in the app somewhere. A `react-router` root component tends to be a
  * good spot.
+ *
+ *
+ * Example:
+ *
+ *  // about to do thing which cannot be undone!
+ *  if (! await runConfirmInPlace(dispatch, "Are you REALLY sure?")) {
+ *    // Wisely, they changed their mind. Bail.
+ *    return;
+ *  }
+ *  // Do thing which cannot be undone. We warned them.
+ *
+ * Elsewhere:
+ *
+ *  import Confirm from 'common/ui/Confirm';
+ *
+ *  render() {
+ *    // Include <Confirm/> somewhere in the app where it is always mounted.
+ *    return (
+ *      <div>
+ *        <Confirm/>
+ *        <div className="row"> etc ...
+ *        ...
+ *    );
+ *  }
  */
 export async function runConfirmInPlace(dispatch, message) {
   // We want to pause execution of this function until a confirm dialog makes
