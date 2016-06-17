@@ -214,7 +214,7 @@ class Role extends React.Component {
     const {api, history, dispatch} = this.props;
 
     const message = 'Are you sure you want to delete this role?';
-    if (runConfirmInPlace(dispatch, message) === false) {
+    if (! await runConfirmInPlace(dispatch, message)) {
       return;
     }
 
