@@ -29,6 +29,10 @@ export const hideConfirmAction =
  *
  * dispatch: store dispatch function
  * message: optional, confirmation message to display.
+ *
+ * For this to work there should be exactly 1 <Confirm> component included
+ * in the app somewhere. A `react-router` root component tends to be a
+ * good spot.
  */
 export async function runConfirmInPlace(dispatch, message) {
   let innerReject;

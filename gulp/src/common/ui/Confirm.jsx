@@ -3,6 +3,14 @@ import {connect} from 'react-redux';
 import Modal from 'react-bootstrap/lib/Modal';
 
 
+/**
+ * Show a confirm modal containing a message and ok/cancel buttons.
+ *
+ * This component must be in the vdom for the confirmModal method to work.
+ *
+ * All props are connected so just include the Component.
+ * i.e.: <Confirm/>
+ */
 function Confirm(props) {
   const {show, message, onResolve} = props;
 
@@ -28,8 +36,11 @@ function Confirm(props) {
 }
 
 Confirm.propTypes = {
+  // Should the dialog show right now?
   show: PropTypes.bool.isRequired,
+  // What message should it show?
   message: PropTypes.string,
+  // Callback for when a button is clicked.
   onResolve: PropTypes.func,
 };
 
