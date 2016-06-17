@@ -8,6 +8,15 @@ export const resetInboxAction = createAction('RESET_INBOX');
 export const updateInboxAction = createAction('UPDATE_INBOX');
 export const deleteInboxAction = createAction('DELETE_INBOX');
 
+// Note: Each of the asynchronous calls will dispatch an `errorAction` if an
+// exception was thrown.
+
+/* doSaveInbox
+ *
+ * Given an unsaved :inbox: asynchronously creates an inbox based on that
+ * inbox's :email: and dispatches `saveInboxAction`. Then asynchronously
+ * fetches an updated list of inboxes and dispatches `getInboxesAction`.
+ */
 export function doSaveInbox(inbox) {
   return async (dispatch, _, {api}) => {
     try {
@@ -22,6 +31,11 @@ export function doSaveInbox(inbox) {
   };
 }
 
+/* doGetInboxes
+ *
+ * Asynchronously fetches an updated list of inboxes and dispatches
+ * `getInboxesAction`.
+ */
 export function doGetInboxes() {
   return async (dispatch, _, {api}) => {
     try {
@@ -33,6 +47,12 @@ export function doGetInboxes() {
   };
 }
 
+/* doUpdateInbox
+ *
+ * Given a modified inbox, asynchronously updates an inbox based on that
+ * inbox's :pk: and :email: and dispatches `updateInboxAction' if the
+ * asynchronous update was a success.
+ */
 export function doUpdateInbox(inbox) {
   return async (dispatch, _, {api}) => {
     try {
@@ -48,6 +68,11 @@ export function doUpdateInbox(inbox) {
   };
 }
 
+/* doDeleteInbox
+ * Given an unmodified inbox, asynchronously deletes that inbox based on that
+ * inbox's :pk: and dispatches `dleteInboxAction` if the asynchronous delete
+ * was a success.
+ */
 export function doDeleteInbox(inbox) {
   return async (dispatch, _, {api}) => {
     try {
