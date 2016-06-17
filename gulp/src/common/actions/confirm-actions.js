@@ -35,6 +35,10 @@ export const hideConfirmAction =
  * good spot.
  */
 export async function runConfirmInPlace(dispatch, message) {
+  // We want to pause execution of this function until a confirm dialog makes
+  // a callback. A promise is perfect for this except that we need to make our
+  // own promise _and_ grab it's resolve/reject methods and send them to the
+  // dialog.
   let innerReject;
   let innerResolve;
   const waiter = new Promise(function confirmPromise(resolve, reject) {
@@ -42,12 +46,19 @@ export async function runConfirmInPlace(dispatch, message) {
     innerReject = reject;
   });
 
-  while (!innerResolve) {
+  // We can't directly control when the function in the promise executes. Block
+  // here until it does, as indicated by the variables being initialized.
+  while (!innerResolve || !innerReject) {
     setTimeout(() => {}, 1);
   }
 
   dispatch(showConfirmAction(message, innerResolve, innerReject));
+
+  // Wait until the dialog calls the resolve method (or blows us up here by
+  // calling reject) and retreive the result.
   const result = await waiter;
+
   dispatch(hideConfirmAction());
+
   return result;
 }
