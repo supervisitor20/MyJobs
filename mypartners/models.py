@@ -972,3 +972,6 @@ class OutreachRecord(models.Model):
     def __unicode__(self):
         return "Outreach email from %s sent to %s." % (
             self.from_email, self.outreach_email)
+
+    def get_parent_company(self):
+        return self.outreach_email.company

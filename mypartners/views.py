@@ -1519,21 +1519,21 @@ def api_convert_outreach_record(request):
     object would be populated, ex. {... contact:{pk:"12"} ...}
 
     {
-        "outreachrecord":{"pk":"1", "current_workflow_state":"1"},
+        "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
 
         "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-        "tags":["12", "68"], "owner": "152", "approval_status": "3"},
+        "tags":["12", "68"], "approval_status": "3"},
 
         "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-        "locations":[{"pk":"", "address_line_one":"123 Drill St", "address_line_two":"",
-        "city":"Newton", "state":"AZ", "country_code":"1", "postal_code":"65410",
+        "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
+        "city":"Newtoneous", "state":"AZ", "country_code":"1",
         "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
         "approval_status":"3"},
 
         "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
         "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
         "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-        "tags":["10", "15", "3"], "approval_status":"1"}
+        "tags":["10", "15", "3"], "approval_status":"1a"}
     }
 
     :return: status code 200 on success, 400, 405 indicates error
@@ -1588,23 +1588,21 @@ def api_convert_outreach_record(request):
             try:
                 return_object = target_model.objects.get(pk=object_pk)
             except target_model.DoesNotExist:
-                validator.form_field_error(field_name,
-                                           'pk',
-                                           'object not found for PK %s' % object_pk)
+                validator.form_error(field_name,
+                                     'object not found for PK %s' % object_pk)
             except ValueError:
-                validator.form_field_error(field_name,
-                                           'pk',
-                                            '%s is not a valid pk' % object_pk)
+                validator.form_error(field_name,
+                                     '%s is not a valid pk' % object_pk)
         else:
             try:
                 return_object = target_model(**data_dict)
                 return_object.full_clean()
             except ValidationError as ve:
                 for key, value in ve.message_dict.iteritems():
-                    validator.form_field_error(target_model.__name__.lower(),
+                    validator.form_field_error(field_name,
                                                key, value)
             except TypeError as te:
-                validator.form_error(target_model.__name__.lower(),
+                validator.form_error(field_name,
                                      "erroneous field detected in data dict")
                 return None
 
@@ -1613,6 +1611,7 @@ def api_convert_outreach_record(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
+    user_company = get_company_or_404(request)
     data_object = request.body
     valid_keys = ['outreachrecord', 'contactrecord', 'contact', 'partner']
     validator = MultiFormApiValidator(valid_keys)
@@ -1652,14 +1651,22 @@ def api_convert_outreach_record(request):
         return validator.build_error_response()
 
 
-    # pull outreach record
+    # pull outreach record, validate it belongs to member's company
     outreach_pk = data_object['outreachrecord'].pop('pk', None)
     workflow_pk = data_object['outreachrecord'].pop('current_workflow_state',
                                                     None)
-    outreach_record = return_or_create_object(OutreachRecord,
-                                              outreach_pk)
-    workflow_status = return_or_create_object(OutreachWorkflowState,
-                                              workflow_pk)
+    try:
+        outreach_record = OutreachRecord.objects.get(
+            pk=outreach_pk, outreach_email__company=user_company
+        )
+    except OutreachRecord.DoesNotExist:
+        validator.form_error('outreachrecord', "invalid outreach record pk")
+
+    try:
+        workflow_status = OutreachWorkflowState.objects.get(pk=workflow_pk)
+    except OutreachWorkflowState.DoesNotExist:
+        validator.form_error('outreachrecord', "invalid outreach workflow pk")
+
 
     # parse contact information
     # pop is used to pull out necessary information and remove it from
@@ -1680,14 +1687,13 @@ def api_convert_outreach_record(request):
         location_pk = location.pop('pk', None)
         location_object = return_or_create_object(Location,
                                                   location_pk,
-                                                  location)
+                                                  location,
+                                                  'contact')
         contact_location_objects.append(location_object)
 
     partner_pk = data_object['partner'].pop('pk', None)
     partner_tags = data_object['partner'].pop('tags', None)
-    owner_pk = data_object['partner'].pop('owner', None)
-    if owner_pk:
-        data_object['partner']['owner'] = Company.objects.get(id=owner_pk)
+    data_object['partner']['owner'] = user_company
     partner = return_or_create_object(Partner,
                                       partner_pk,
                                       data_object['partner'])
@@ -1714,7 +1720,7 @@ def api_convert_outreach_record(request):
     partner.save()
     add_tags_to_object(partner, partner_tags)
 
-    # partner had to be added after partner was saved, so add and re-save
+    # partner had to be linked after partner was saved, so add and re-save
     contact.partner = partner
     contact.save()
 

@@ -4,7 +4,9 @@ from django.core.urlresolvers import reverse
 
 from mypartners.tests.test_views import MyPartnersTestCase
 from mypartners.tests.factories import (OutreachEmailAddressFactory,
-                                        OutreachRecordFactory)
+                                        OutreachRecordFactory,
+                                        OutreachWorkflowStateFactory,
+                                        TagFactory)
 from myjobs.tests.factories import UserFactory
 from mypartners.models import OutreachEmailAddress
 
@@ -174,3 +176,42 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         self.assertEqual(response_json, {}, msg="record information was "
                                                 "returned for a non-company "
                                                 "record.")
+
+    def test_outreach_conversion_api(self):
+        """
+        Test that the conversion API properly creates partner, contact,
+        and contact records, as well as updating a given outreach record
+        when used.
+
+        """
+        request_data = self.get_example_dict()
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    request_data)
+
+    def get_example_dict(self):
+        """
+        Build example data for testing conversion API.
+
+        :return:
+
+        """
+        outreach_record = OutreachRecordFactory()
+        outreach_workflow = OutreachWorkflowStateFactory()
+        a_tag = TagFactory()
+        return {
+            "outreachrecord":{"pk":outreach_record.pk, "current_workflow_state":outreach_workflow.pk},
+
+            "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
+            "tags":[a_tag.pk], "owner": self.company.pk, "approval_status": "3"},
+
+            "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
+            "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
+            "city":"Newtoneous", "state":"AZ", "country_code":"1",
+            "label":"new place"}], "tags":[a_tag.pk], "notes": "long note left here",
+            "approval_status":"3"},
+
+            "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
+            "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
+            "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
+            "tags":[a_tag.pk], "approval_status":"1"}
+            }
