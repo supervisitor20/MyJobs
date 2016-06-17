@@ -1159,8 +1159,7 @@ def prm_export(request):
 @csrf_exempt
 def process_email(request):
     """
-    Creates a contact record from an email received via POST.
-
+    Creates a contact/outreach record from an email received via POST
     """
     PRM_EMAIL_HOST = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
@@ -1198,42 +1197,93 @@ def process_email(request):
     NUO_HOSTS = OutreachEmailAddress.objects.filter(email__in=[
         contact.split('@')[0] for contact in contact_emails])
     NUO_LOCAL = [host.email for host in NUO_HOSTS]
-
-    admin_emails = [name_email[1] for name_email in getaddresses([admin_email])]
-
-    # Get the first valid user based on admin_emails. getaddresses can
-    # return an extra tuple with an invalid email address.
-    for admin_email in admin_emails:
-        admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
-        if admin_user is not None:
-            break
-
-    if admin_user is None:
-        if NUO_HOSTS:
-            logger.info("Email address {email} could not be associated "
-                        "with a verified user but NUO addresses {nuo} were "
-                        "found".format(email=admin_emails,
-                                       nuo=",".join(map(unicode, NUO_HOSTS))))
-            admin_email = admin_emails[0]
-        else:
-            logger.warning("The email address {email} could not be associated "
-                           "with a verified user.".format(email=admin_emails))
-            logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
-            return HttpResponse(status=200)
+    admin = get_admin(admin_email, NUO_HOSTS, request)
+    if admin is None:
+        return HttpResponse(200)
     else:
-        admin_email = admin_user.email
-    # This info will only be sent to newrelic if an exception is raised.
+        admin_user, admin_email = admin
+
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
     newrelic.agent.add_custom_parameter("admin_email", admin_email)
     newrelic.agent.add_custom_parameter("contact_emails",
                                         ", ".join(contact_emails))
 
-    if contact_emails == [] or (len(contact_emails) == len(NUO_HOSTS) and
+    contact_emails, date_time = determine_contacts(
+        contact_emails, NUO_HOSTS, email_text, PRM_EMAIL_HOST, NUO_LOCAL,
+        admin_email, date_time)
+
+    partners = determine_partners(
+        admin_user, request, contact_emails, admin_email, NUO_HOSTS)
+    if partners is None:
+        return HttpResponse(200)
+    else:
+        partners, companies = partners
+    possible_contacts, created_contacts, unmatched_contacts = make_contacts(
+        contact_emails, partners, admin_user, request)
+
+    logger.info("created_contacts: {contacts}".format(contacts=", ".join([
+                contact.email for contact in created_contacts])))
+    logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
+                unmatched_contacts)))
+    attachments = make_attachments(request, contact_emails, admin_email)
+    if attachments is None:
+        return HttpResponse(200)
+    else:
+        attachments = attachments
+    created_records = make_records(
+        date_time, possible_contacts, created_contacts, contact_emails,
+        admin_email, admin_user, subject, email_text, attachments, request,
+        NUO_HOSTS)
+    if created_records is None:
+        return HttpResponse(200)
+    else:
+        created_records, attachment_failures = created_records
+    send_contact_record_email_response(created_records, created_contacts,
+                                       attachment_failures, unmatched_contacts,
+                                       None, admin_email, companies,
+                                       is_nuo=not bool(admin_user),
+                                       buckets=NUO_LOCAL)
+    return HttpResponse(status=200)
+
+
+def get_admin(admin_email, nuo_hosts, request):
+    admin_emails = [name_email[1]
+                    for name_email in getaddresses([admin_email])]
+
+    # Get the first valid user based on admin_emails. getaddresses can
+    # return an extra tuple with an invalid email address.
+    for admin_email in admin_emails:
+        admin_user = User.objects.get_email_owner(admin_email,
+                                                  only_verified=True)
+        if admin_user is not None:
+            break
+
+    if admin_user is None:
+        if nuo_hosts:
+            logger.info("Email address {email} could not be associated "
+                        "with a verified user but NUO addresses {nuo} were "
+                        "found".format(email=admin_emails,
+                                       nuo=",".join(map(unicode, nuo_hosts))))
+            admin_email = admin_emails[0]
+        else:
+            logger.warning("The email address {email} could not be associated "
+                           "with a verified user.".format(email=admin_emails))
+            logger.warning("POST data: {post}".format(post=json.dumps(
+                request.POST)))
+            return None
+    else:
+        admin_email = admin_user.email
+    return admin_user, admin_email
+
+
+def determine_contacts(contact_emails, nuo_hosts, email_text, prm_email_host,
+                       nuo_local, admin_email, date_time):
+    if contact_emails == [] or (len(contact_emails) == len(nuo_hosts) and
                                 set(contact.lower().split('@')[0]
                                     for contact in contact_emails) == set(
-                                    host.email for host in NUO_HOSTS) or
-                                (len(contact_emails) == 1 and contact_emails[0].lower() == PRM_EMAIL_HOST)):
+                                    host.email for host in nuo_hosts) or
+                                (len(contact_emails) == 1 and contact_emails[0].lower() == prm_email_host)):
         # If PRM_EMAIL_HOST is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
@@ -1250,8 +1300,8 @@ def process_email(request):
 
     validated_contacts = []
     for element in contact_emails:
-        if (not (element.lower() == PRM_EMAIL_HOST
-                 or element.lower().split('@')[0] in NUO_LOCAL)
+        if (not (element.lower() == prm_email_host
+                 or element.lower().split('@')[0] in nuo_local)
                 and validate_email(element)):
             validated_contacts.append(element)
 
@@ -1261,7 +1311,11 @@ def process_email(request):
         contact_emails.remove(admin_email)
     except ValueError:
         pass
+    return contact_emails, date_time
 
+
+def determine_partners(admin_user, request, contact_emails, admin_email,
+                       nuo_hosts):
     partners = []
     # determine if the user is associated with more thanone company
     if admin_user:
@@ -1269,26 +1323,31 @@ def process_email(request):
             "company").distinct().count() > 1
 
         if multiple_companies:
-            error = "Your account is setup as the admin for multiple companies. " \
-                    "Because of this we cannot match this email with a " \
-                    "specific partner on a specific company with 100% certainty. " \
-                    "You will need to login to My.jobs and go to " \
-                    "https://secure.my.jobs/prm to create your record manually."
+            error = (
+                "Your account is setup as the admin for multiple companies. "
+                "Because of this we cannot match this email with a "
+                "specific partner on a specific company with 100% certainty. "
+                "You will need to login to My.jobs and go to "
+                "https://secure.my.jobs/prm to create your record manually.")
             logger.warning("User with email address {user} is associated with "
                            "multiple companies.".format(user=admin_user))
-            logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
+            logger.warning("POST data: {post}".format(
+                post=json.dumps(request.POST)))
             send_contact_record_email_response([], [], [], contact_emails,
                                                error, admin_email)
-            return HttpResponse(status=200)
+            return None
 
         if admin_user.roles.exists():
             companies = [admin_user.roles.first().company]
             partners = companies[0].partner_set.all()
     if not partners:
-        companies = set(host.company for host in NUO_HOSTS)
+        companies = set(host.company for host in nuo_hosts)
         for company in companies:
             partners.extend(company.partner_set.all())
+    return partners, companies
 
+
+def make_contacts(contact_emails, partners, admin_user, request):
     possible_contacts, created_contacts, unmatched_contacts = [], [], []
     for contact in contact_emails:
         try:
@@ -1311,7 +1370,10 @@ def process_email(request):
                     unmatched_contacts.append(contact)
         except ValueError:
             unmatched_contacts.append(contact)
+    return possible_contacts, created_contacts, unmatched_contacts
 
+
+def make_attachments(request, contact_emails, admin_email):
     num_attachments = int(request.POST.get('attachments', 0))
     attachments = []
     for file_number in range(1, num_attachments+1):
@@ -1325,7 +1387,12 @@ def process_email(request):
                                                error, admin_email)
             return HttpResponse(status=200)
         attachments.append(attachment)
+    return attachments
 
+
+def make_records(date_time, possible_contacts, created_contacts,
+                 contact_emails, admin_email, admin_user, subject, email_text,
+                 attachments, request, nuo_hosts):
     created_records = []
     attachment_failures = []
     date_time = now() if not date_time else date_time
@@ -1336,7 +1403,7 @@ def process_email(request):
                 "create contact records for this email."
         send_contact_record_email_response([], [], [], contact_emails,
                                            error, admin_email)
-        return HttpResponse(status=200)
+        return None
 
     for contact in all_contacts:
         if admin_user:
@@ -1358,8 +1425,8 @@ def process_email(request):
                     prm_attachment.contact_record = record
                     prm_attachment._partner = contact.partner
                     prm_attachment.save()
-                    # The file pointer for this attachment is now at the end of the
-                    # file; reset it to the beginning for future use.
+                    # The file pointer for this attachment is now at the end of
+                    # the file; reset it to the beginning for future use.
                     attachment.seek(0)
             except AttributeError:
                 attachment_failures.append(record)
@@ -1370,7 +1437,7 @@ def process_email(request):
         else:
             workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
                 state='unreviewed')
-            for email in NUO_HOSTS:
+            for email in nuo_hosts:
                 record = OutreachRecord.objects.create(
                     outreach_email=email, from_email=admin_email,
                     email_body=email_text,
@@ -1378,17 +1445,7 @@ def process_email(request):
                 record.partners.add(contact.partner)
                 record.contacts.add(contact)
                 created_records.append(record)
-
-    logger.info("created_contacts: {contacts}".format(contacts=", ".join([
-                    contact.email for contact in created_contacts])))
-    logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
-                    unmatched_contacts)))
-    send_contact_record_email_response(created_records, created_contacts,
-                                       attachment_failures, unmatched_contacts,
-                                       None, admin_email, companies,
-                                       is_nuo=not bool(admin_user),
-                                       buckets=NUO_LOCAL)
-    return HttpResponse(status=200)
+    return created_records, attachment_failures
 
 
 @restrict_to_staff()
