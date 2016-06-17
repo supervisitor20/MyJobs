@@ -41,10 +41,11 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                     "company's inbox returned")
 
         return_msg = "error loading inbox api, expected {0}, got {1}"
-        self.assertEqual(response_json[0]["pk"], self.inbox.pk,
-                         msg=return_msg.format(response_json[0]["pk"], self.inbox.pk))
-        self.assertEqual(response_json[0]["fields"]["email"], self.inbox.email,
-                         msg=return_msg.format(response_json[0]["fields"]["email"],
+        self.assertEqual(
+            response_json[0]["pk"], self.inbox.pk,
+            msg=return_msg.format(response_json[0]["pk"], self.inbox.pk))
+        self.assertEqual(response_json[0]["email"], self.inbox.email,
+                         msg=return_msg.format(response_json[0]["email"],
                                                self.inbox.email))
 
     def test_non_staff_cannot_use_view(self):
@@ -124,18 +125,19 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                          response.status_code)
         response_json = json.loads(response.content)
 
-        self.assertEqual(len(response_json), 1, msg="assert only user's "
-                                                    "company's record returned")
+        self.assertEqual(
+            len(response_json), 1,
+            msg="assert only user's company's record returned")
 
         return_msg = "error loading records api, expected {0}, got {1}"
-        self.assertEqual(response_json[0]["from_email"],
-                         self.outreach_record.from_email,
-                         msg=return_msg.format(response_json[0]["from_email"],
-                                               self.outreach_record.from_email))
-        self.assertEqual(response_json[0]["outreach_email"],
-                         self.inbox.email + "@my.jobs",
-                         msg=return_msg.format(response_json[0]["outreach_email"],
-                                               self.inbox.email + "@my.jobs"))
+        self.assertEqual(
+            response_json[0]["fromEmail"], self.outreach_record.from_email,
+            msg=return_msg.format(response_json[0]["fromEmail"],
+                                  self.outreach_record.from_email))
+        self.assertEqual(
+            response_json[0]["outreachEmail"], self.inbox.email + "@my.jobs",
+            msg=return_msg.format(response_json[0]["outreachEmail"],
+                                  self.inbox.email + "@my.jobs"))
 
     def test_individual_record_api(self):
         """
