@@ -4,11 +4,37 @@ export function validateEmail(email) {
   return re.test(email);
 }
 
+/* localPartOnly
+ * 
+ * Given a string, returns whether or not that string could potentially be
+ * considered as the local part of an email address. That is, if the string
+ * contains an '@', this function will return false.
+ */
 export function localPartOnly(email) {
   const re = /@+/;
   return !re.test(email);
 }
 
+// TODO: Move this back to nonuseroutreach, as I doubt we'll use this anywhere
+// else and it's poorly nameda - Edwin, 06/17/2016
+
+/* validateEmailAddress
+ *
+ * Given a string, returns an object denoting any error messages to present as
+ * well as whether or not the string can be considred as valid for the local
+ * part of an email address
+ *
+ * Examples:
+ *  validateEmailAddress('testing') => {
+ *    valid: true,
+ *    errors: []
+ *  }
+ *
+ *  validateEmailAddress('foo@bar.com') => {
+ *    valid: false,
+ *    errors: ['Please only enter the portion to the left of the "@"']
+ *  }
+ */
 export function validateEmailAddress(email) {
   const result = {
     valid: true,
