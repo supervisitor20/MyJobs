@@ -1197,11 +1197,9 @@ def process_email(request):
     NUO_HOSTS = OutreachEmailAddress.objects.filter(email__in=[
         contact.split('@')[0] for contact in contact_emails])
     NUO_LOCAL = [host.email for host in NUO_HOSTS]
-    admin = get_admin(admin_email, NUO_HOSTS, request)
-    if admin is None:
-        return HttpResponse(200)
-    else:
-        admin_user, admin_email = admin
+    admin_user, admin_email, error = get_admin(admin_email, NUO_HOSTS, request)
+    if error is not None:
+        return error
 
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
@@ -1213,12 +1211,10 @@ def process_email(request):
         contact_emails, NUO_HOSTS, email_text, PRM_EMAIL_HOST, NUO_LOCAL,
         admin_email, date_time)
 
-    partners = determine_partners(
+    partners, companies, error = determine_partners(
         admin_user, request, contact_emails, admin_email, NUO_HOSTS)
-    if partners is None:
-        return HttpResponse(200)
-    else:
-        partners, companies = partners
+    if error is not None:
+        return error
     possible_contacts, created_contacts, unmatched_contacts = make_contacts(
         contact_emails, partners, admin_user, request)
 
@@ -1226,19 +1222,15 @@ def process_email(request):
                 contact.email for contact in created_contacts])))
     logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
                 unmatched_contacts)))
-    attachments = make_attachments(request, contact_emails, admin_email)
-    if attachments is None:
-        return HttpResponse(200)
-    else:
-        attachments = attachments
-    created_records = make_records(
+    attachments, error = make_attachments(request, contact_emails, admin_email)
+    if error is not None:
+        return error
+    created_records, attachment_failures, error = make_records(
         date_time, possible_contacts, created_contacts, contact_emails,
         admin_email, admin_user, subject, email_text, attachments, request,
         NUO_HOSTS)
-    if created_records is None:
-        return HttpResponse(200)
-    else:
-        created_records, attachment_failures = created_records
+    if error is not None:
+        return error
     send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
                                        None, admin_email, companies,
@@ -1271,19 +1263,27 @@ def get_admin(admin_email, nuo_hosts, request):
                            "with a verified user.".format(email=admin_emails))
             logger.warning("POST data: {post}".format(post=json.dumps(
                 request.POST)))
-            return None
+            return None, None, HttpResponse(200)
     else:
         admin_email = admin_user.email
-    return admin_user, admin_email
+    return admin_user, admin_email, None
 
 
 def determine_contacts(contact_emails, nuo_hosts, email_text, prm_email_host,
                        nuo_local, admin_email, date_time):
-    if contact_emails == [] or (len(contact_emails) == len(nuo_hosts) and
-                                set(contact.lower().split('@')[0]
-                                    for contact in contact_emails) == set(
-                                    host.email for host in nuo_hosts) or
-                                (len(contact_emails) == 1 and contact_emails[0].lower() == prm_email_host)):
+    # There are three different cases in which we know this is a forward.
+    # 1) There are no contacts
+    forward = contact_emails == []
+    # 2) The only contacts are outreach email addresses
+    forward |= (
+        len(contact_emails) == len(nuo_hosts) and
+        set(contact.lower().split('@')[0]
+            for contact in contact_emails) == set(host.email
+                                                  for host in nuo_hosts))
+    # 3) The only contact is the normal PRM address
+    forward |= (len(contact_emails) == 1 and
+                contact_emails[0].lower() == prm_email_host)
+    if forward:
         # If PRM_EMAIL_HOST is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
@@ -1335,7 +1335,7 @@ def determine_partners(admin_user, request, contact_emails, admin_email,
                 post=json.dumps(request.POST)))
             send_contact_record_email_response([], [], [], contact_emails,
                                                error, admin_email)
-            return None
+            return None, None, HttpResponse(200)
 
         if admin_user.roles.exists():
             companies = [admin_user.roles.first().company]
@@ -1344,7 +1344,7 @@ def determine_partners(admin_user, request, contact_emails, admin_email,
         companies = set(host.company for host in nuo_hosts)
         for company in companies:
             partners.extend(company.partner_set.all())
-    return partners, companies
+    return partners, companies, None
 
 
 def make_contacts(contact_emails, partners, admin_user, request):
@@ -1385,9 +1385,9 @@ def make_attachments(request, contact_emails, admin_email):
                     "manually."
             send_contact_record_email_response([], [], [], contact_emails,
                                                error, admin_email)
-            return HttpResponse(status=200)
+            return None, HttpResponse(200)
         attachments.append(attachment)
-    return attachments
+    return attachments, None
 
 
 def make_records(date_time, possible_contacts, created_contacts,
@@ -1403,7 +1403,7 @@ def make_records(date_time, possible_contacts, created_contacts,
                 "create contact records for this email."
         send_contact_record_email_response([], [], [], contact_emails,
                                            error, admin_email)
-        return None
+        return None, None, HttpResponse(200)
 
     for contact in all_contacts:
         if admin_user:
@@ -1445,7 +1445,7 @@ def make_records(date_time, possible_contacts, created_contacts,
                 record.partners.add(contact.partner)
                 record.contacts.add(contact)
                 created_records.append(record)
-    return created_records, attachment_failures
+    return created_records, attachment_failures, None
 
 
 @restrict_to_staff()
