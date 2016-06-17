@@ -6,7 +6,7 @@ import {
 
 import {
   validateInboxAction,
-  addInboxAction,
+  saveInboxAction,
   getInboxesAction,
   updateInboxAction,
   resetInboxAction,
@@ -47,19 +47,19 @@ describe('inboxManagementReducer', () => {
     });
   });
 
-  describe('addInboxAction', () => {
-    it('should add one new inbox to the inboxes list', () => {
+  describe('saveInboxAction', () => {
+    it('should save an editing inbox within the inboxes list', () => {
       const newState = [
         {...emptyInbox, email: 'something'},
       ];
-      const result = reducer(newState, addInboxAction({
+      const result = reducer(newState, saveInboxAction({
         ...emptyInbox,
         pk: 1,
         email: 'something',
       }));
 
       expect(result).toEqual([
-        {...emptyInbox, pk: 1, email: 'something'}
+        {...emptyInbox, pk: 1, email: 'something', originalEmail: 'something'}
       ]);
     });
   });

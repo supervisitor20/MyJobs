@@ -13,7 +13,7 @@ import {
   validateInboxAction,
   resetInboxAction,
   doUpdateInbox,
-  doAddInbox,
+  doSaveInbox,
   doDeleteInbox,
 } from '../actions/inbox-actions';
 
@@ -57,7 +57,7 @@ export default class Inbox extends React.Component {
         <Button
           key={'add-' + inbox.pk}
           disabled={!inbox.valid}
-          onClick={() => dispatch(doAddInbox(inbox))} >
+          onClick={() => dispatch(doSaveInbox(inbox))} >
           Add
         </Button>,
       ];
@@ -100,6 +100,8 @@ Inbox.propTypes = {
   inbox: React.PropTypes.shape({
     // primary key for the inbox; null for new inboxes
     pk: React.PropTypes.number,
+    // this is the original email before editing occurred; null for new inboxes
+    originalEmail: React.PropTypes.string,
     // the local part of the email address associated with the inbox
     email: React.PropTypes.string.isRequired,
     // any validation errors which occured for the provided email

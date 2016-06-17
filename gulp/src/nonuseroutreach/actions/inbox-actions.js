@@ -2,17 +2,17 @@ import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 
 export const validateInboxAction = createAction('VALIDATE_INBOX');
-export const addInboxAction = createAction('ADD_INBOX');
+export const saveInboxAction = createAction('SAVE_INBOX');
 export const getInboxesAction = createAction('GET_INBOXES');
 export const resetInboxAction = createAction('RESET_INBOX');
 export const updateInboxAction = createAction('UPDATE_INBOX');
 export const deleteInboxAction = createAction('DELETE_INBOX');
 
-export function doAddInbox(inbox) {
+export function doSaveInbox(inbox) {
   return async (dispatch, _, {api}) => {
     try {
       const newInbox = await api.createNewInbox(inbox.email);
-      dispatch(addInboxAction(newInbox));
+      dispatch(saveInboxAction(newInbox));
 
       const inboxes = await api.getExistingInboxes();
       dispatch(getInboxesAction(inboxes));
