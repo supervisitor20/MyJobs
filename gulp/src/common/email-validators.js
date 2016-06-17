@@ -5,7 +5,7 @@ export function validateEmail(email) {
 }
 
 /* localPartOnly
- * 
+ *
  * Given a string, returns whether or not that string could potentially be
  * considered as the local part of an email address. That is, if the string
  * contains an '@', this function will return false.
