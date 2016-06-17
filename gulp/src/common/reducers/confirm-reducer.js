@@ -1,6 +1,8 @@
 import {handleActions} from 'redux-actions';
 
 /**
+ * -This reducer is ONLY intended for use with the runConfirmInPlace method.--
+ *
  * current state of a singleton confirmation dialog box: {
  *
  *  data: {
@@ -9,7 +11,10 @@ import {handleActions} from 'redux-actions';
  *  },
  *
  *  These are the resolve/reject functions of a promise. If present, it is
- *  assumed that these are associated with an active promise somewhere.
+ *  assumed that these are associated with an active promise in the
+ *  runConfirmInPlace method. Calling back should result in removal of these
+ *  callbacks.
+ *
  *  resolve: function, dialog should call this with true or false to indicate
  *    ok or cancel.
  *  reject: function, dialog should call this if something goes wrong.
