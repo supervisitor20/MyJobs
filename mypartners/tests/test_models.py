@@ -273,18 +273,23 @@ class MyPartnerTests(MyJobsBase):
         contacts[1].email = 'other@email.com'
         contacts[2].partner = PartnerFactory(name='Other Partner')
         for contact in contacts:
-            ContactRecordFactory.create(contact_type="job", 
+            ContactRecordFactory.create(contact_type="job",
                                         contact=contact,
                                         partner=contact.partner)
             ContactRecordFactory.create(contact_type = 'email',
                                         contact=contact,
                                         partner=contact.partner)
 
+        contacts[0].email = 'changed@email.com'
+        ContactRecordFactory.create(contact_type = 'email',
+                                    contact=contacts[0],
+                                    partner=contact.partner)
+
+
         queryset = ContactRecord.objects.all()
-        self.assertEqual(queryset.count(), 8)
+        self.assertEqual(queryset.count(), 9)
 
         contacts = list(queryset.contacts)
-        import ipdb; ipdb.set_trace();
         sum_referrals = sum([contact['referrals'] for contact in contacts])
         sum_records = sum([contact['records'] for contact in contacts])
         self.assertEqual(sum_referrals, queryset.referrals)

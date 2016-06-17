@@ -578,6 +578,28 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
     def referrals(self):
         return self.filter(contact_type='job').count()
 
+    @staticmethod
+    def _dict_from_values(values, key_fields, value_field):
+        """
+        Sorts a single value from values into a dictionary keyed by key_fields.
+        Used to match distinct items between querysets based multiple field 
+        values.
+
+        Inputs:
+            :values: An iterable of dictionaries such as queryset.values()
+                     [{field_name: value}]
+            :key_fields: An ordered iterable of field names whose values will be
+                         used to form a unique key
+            :value_field: The field from values stored in the returned 
+                          dictionary
+
+        """
+        dictionary = {}
+        for item in values:
+            key = ''.join([str(item[field]) for field in key_fields])
+            dictionary[key] = item[value_field]
+        return dictionary
+
     @property
     def contacts(self):
         """
@@ -588,35 +610,28 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-#        all_contacts = self.extra(
-#                    select={'referrals': "COUNT(IF(contact_type='job', 1, NULL))",
-#                            'records':"COUNT(IF(contact_type!='job', 1, NULL))"}).values(
-#            'partner__name', 'partner', 'contact__name', 'contact',
-#            'contact_email', 'referrals', 'records').order_by('partner__name')
-#        all_contacts.query.group_by = [('mypartners_contactrecord', 'contact_id'), ('mypartners_contactrecord', 'partner_id')]
-#
-        all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name', 'contact',
-            'contact_email').distinct().order_by('partner__name')
+        all_contacts = self.values('partner__name', 'partner',  'contact__name',
+                'contact', 'contact_email').distinct().order_by('partner__name')
 
+        # Fields required to identify distinct instances. Names are redundant.
+        distinct_fields = ('partner', 'contact', 'contact_email')
         record_qs = (self.exclude(contact_type='job').values(
-                      'contact', 'contact_email').annotate(
-                records=models.Count('contact')).distinct())
+                         *distinct_fields).annotate(
+                         record_count=models.Count('contact')).distinct())
 
-        records = dict([("%s%s" % (record['contact'], record['contact_email']), record['records']) for record in record_qs])
-
-        import ipdb; ipdb.set_trace();
+        records = self._dict_from_values(record_qs, distinct_fields,
+                                         'record_count')
 
         referral_qs = self.filter(contact_type='job').values(
-            'contact', 'contact_email').annotate(
-                referrals=models.Count('contact')).distinct()
+                        *distinct_fields).annotate(
+                        referral_count=models.Count('contact')).distinct()
 
-        referrals = dict([("%s%s" % (referral['contact'], referral['contact_email']), referral['referrals']) for referral in referral_qs])
-
+        referrals = self._dict_from_values(referral_qs, distinct_fields,
+                                           'referral_count')
         for contact in all_contacts:
-            contact['referrals'] = referrals.get("%s%s" % (contact['contact'], contact['contact_email']), 0)
-            contact['records'] = records.get("%s%s" % (contact['contact'], contact['contact_email']), 0)
-
+            key = ''.join([str(contact[field]) for field in distinct_fields])
+            contact['referrals'] = referrals.get(key, 0)
+            contact['records'] = records.get(key, 0)
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
