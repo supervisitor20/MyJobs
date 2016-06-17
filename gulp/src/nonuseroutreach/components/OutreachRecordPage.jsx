@@ -5,9 +5,15 @@ import OutreachRecordTable from './OutreachRecordTable';
 import {doGetRecords} from '../actions/record-actions';
 import {setPageAction} from '../actions/navigation-actions';
 
-// outreach record table view
+/* OutreachRecordPage
+ * Component which encapsulates the OutreachRecordTable.
+ * Note: While we currently only display a table here, it is intended that this
+ * interface will grow to be something more elaborate - Edwin, 6/17/2016
+ */
 class OutreachRecordPage extends React.Component {
   componentWillMount() {
+    // update the application's state with the current page and refresh the
+    // list of outreach records
     const {dispatch} = this.props;
     dispatch(setPageAction('records'));
     dispatch(doGetRecords());
@@ -27,13 +33,9 @@ class OutreachRecordPage extends React.Component {
 
 OutreachRecordPage.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  // records are of the shape documented in OutreachRecordTable
   records: React.PropTypes.arrayOf(
-    React.PropTypes.shape({
-      dateAdded: React.PropTypes.string.isRequired,
-      outreachEmail: React.PropTypes.string.isRequired,
-      fromEmail: React.PropTypes.string.isRequired,
-      currentWorkflowState: React.PropTypes.string.isRequired,
-    }).isRequired,
+    React.PropTypes.object.isRequired,
   ).isRequired,
 };
 

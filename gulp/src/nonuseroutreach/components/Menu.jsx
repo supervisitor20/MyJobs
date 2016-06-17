@@ -1,7 +1,9 @@
 import React from 'react';
 import {Link} from 'react-router';
 
-// navigation links
+/* Menu
+ * Component for displaying navigation and tips relevant to the current page.
+ */
 export class Menu extends React.Component {
   render() {
     const {tips} = this.props;
@@ -29,5 +31,6 @@ export class Menu extends React.Component {
 }
 
 Menu.propTypes = {
+  // the tips to be displayed
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
 };

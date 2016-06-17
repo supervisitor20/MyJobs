@@ -3,13 +3,17 @@ import {connect} from 'react-redux';
 import {Col, Row} from 'react-bootstrap';
 import {setPageAction} from '../actions/navigation-actions';
 
-
-// overview main display page
+/* OverviewPage
+ * Component responsible for providing a brief description of the
+ * NonUserOutreach application.
+ */
 class OverviewPage extends React.Component {
   componentWillMount() {
+    // update the application's state with the current page
     const {dispatch} = this.props;
     dispatch(setPageAction('overview'));
   }
+
   render() {
     return (
       <div className="cardWrapper">

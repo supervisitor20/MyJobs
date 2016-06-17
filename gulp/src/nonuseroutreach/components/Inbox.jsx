@@ -17,9 +17,16 @@ import {
   doDeleteInbox,
 } from '../actions/inbox-actions';
 
+/* Inbox
+ * Component for manipulating NonUser Outreach inboxes (the
+ * OutreachEmailAddress model in Django)
+ */
 export default class Inbox extends React.Component {
   render() {
     const {dispatch, inbox} = this.props;
+    // For new inboxes, we only show the add button. For existing inboxes, we
+    // show the delete button, unless the email has changed, in which case we
+    // show the Update and Cancel buttons.
     let buttons;
     if (inbox.pk) {
       if (inbox.email === inbox.originalEmail) {
@@ -88,11 +95,16 @@ export default class Inbox extends React.Component {
 }
 
 Inbox.propTypes = {
+  // method used to evoke Redux actions
   dispatch: React.PropTypes.func.isRequired,
   inbox: React.PropTypes.shape({
+    // primary key for the inbox; null for new inboxes
     pk: React.PropTypes.number,
+    // the local part of the email address associated with the inbox
     email: React.PropTypes.string.isRequired,
+    // any validation errors which occured for the provided email
     errors: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+    // whether the email is valid; absense of errors does *not* imply validity
     valid: React.PropTypes.bool.isRequired,
   }).isRequired,
 };

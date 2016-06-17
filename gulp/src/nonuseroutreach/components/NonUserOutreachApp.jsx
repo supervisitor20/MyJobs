@@ -5,6 +5,11 @@ import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
 
 
+/* NonUserOutreachApp
+ * An app for managing nonuser outreach, providing a sidebar for navigation and
+ * a content area which displays either an overview, inbox management, or
+ * outreach record management page.
+ */
 class NonUserOutreachApp extends Component {
   render() {
     const {pageLoading, tips} = this.props;
@@ -34,12 +39,16 @@ class NonUserOutreachApp extends Component {
 }
 
 NonUserOutreachApp.propTypes = {
+  // whether or not to show a page loading indicator in the content area
   pageLoading: PropTypes.bool.isRequired,
+  // the tips to pass along to the menu component
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
+  // which page to show in the content area
   children: PropTypes.node,
 };
 
 export default connect(state => ({
+  // TODO: Add pageLoadingto navigation state and emit relevant actions
   pageLoading: false,
   tips: state.navigation.tips,
 }))(NonUserOutreachApp);

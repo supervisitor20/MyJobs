@@ -5,8 +5,14 @@ import {setPageAction} from '../actions/navigation-actions';
 import Inbox from './Inbox';
 import {Col, Row} from 'react-bootstrap';
 
+/* InboxManagementPage
+ * Component which allows the user to configure new and existing outreach
+ * inboxes.
+ */
 class InboxManagementPage extends React.Component {
   componentWillMount() {
+    // update the application's state with the current page and refresh the
+    // list of inboxes
     const {dispatch} = this.props;
     dispatch(setPageAction('inboxes'));
     dispatch(doGetInboxes());
@@ -42,13 +48,9 @@ class InboxManagementPage extends React.Component {
 
 InboxManagementPage.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  // inboxes are of the shape documented in Inbox.propTypes
   inboxes: React.PropTypes.arrayOf(
-    React.PropTypes.shape({
-      pk: React.PropTypes.number,
-      email: React.PropTypes.string.isRequired,
-      errors: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-      valid: React.PropTypes.bool.isRequired,
-    }).isRequired,
+    React.PropTypes.object.isRequired,
   ),
 };
 

@@ -6,17 +6,13 @@ import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage.jsx';
 
 
+/* NonUserOutreachRouter
+ * Component which manages browser history and assigns components to URLs
+ */
 export default class NonUserOutreachRouter extends React.Component {
-  createElement(Component, componentProps) {
-    const {api} = this.props;
-    const newProps = {...componentProps, api};
-
-    return <Component {...newProps} />;
-  }
   render() {
     return (
-      <Router createElement={(c, p) => this.createElement(c, p)}
-              history={hashHistory}>
+      <Router history={hashHistory}>
         <Route path="/" component={NonUserOutreachApp}>
           <IndexRedirect to="/overview" />
           <Route path="/overview" component={OverviewPage} />
@@ -27,7 +23,3 @@ export default class NonUserOutreachRouter extends React.Component {
     );
   }
 }
-
-NonUserOutreachRouter.propTypes = {
-  api: React.PropTypes.object.isRequired,
-};

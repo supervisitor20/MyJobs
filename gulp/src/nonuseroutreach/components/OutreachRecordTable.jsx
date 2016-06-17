@@ -1,17 +1,21 @@
 import React from 'react';
+import {isIE8} from '../../common/dom';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
+/* OutreachRecordTable
+ * Component which displays a list of outreach records (the OutreachRecord model
+ * in Django).
+ */
 export default class OutreachRecordTable extends React.Component {
 
   render() {
     const {records} = this.props;
-    const isIE = /* @cc_on!@ */false || !!document.documentMode;
     return (
       <BootstrapTable data={records}
                       hover
                       search
-                      pagination={!isIE}
-                      height={isIE ? '600px' : undefined}
+                      pagination={!isIE8}
+                      height={isIE8 ? '600px' : undefined}
                       options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
         <TableHeaderColumn dataField="dateAdded"
@@ -39,9 +43,14 @@ export default class OutreachRecordTable extends React.Component {
 OutreachRecordTable.propTypes = {
   records: React.PropTypes.arrayOf(
     React.PropTypes.shape({
+      // date teh record was created
       dateAdded: React.PropTypes.string.isRequired,
+      // the inbox the record went to
       outreachEmail: React.PropTypes.string.isRequired,
+      // the email the record was created from
       fromEmail: React.PropTypes.string.isRequired,
+      // denotes what action, if any, was taken on the record (pending,
+      // unprocessed, etc)
       currentWorkflowState: React.PropTypes.string.isRequired,
     }).isRequired,
   ).isRequired,
