@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from 'react';
-import {Router, Route, IndexRedirect} from 'react-router';
+import {Router, Route, IndexRoute} from 'react-router';
 import DynamicReportApp from './DynamicReportApp';
+import ReportRedirect from './ReportRedirect';
 import SetUpReport from './SetUpReport';
 import ExportReport from './ExportReport';
 import OldPreviewEmbedPage from './OldPreviewEmbedPage';
@@ -17,7 +18,7 @@ export default class ReportingRouter extends Component {
     return (
       <Router createElement={(c, p) => this.createElement(c, p)}>
         <Route path="/" component={DynamicReportApp}>
-          <IndexRedirect to="/set-up-report"/>
+          <IndexRoute component={ReportRedirect}/>
           <Route
             path="set-up-report"
             component={SetUpReport}/>

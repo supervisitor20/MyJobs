@@ -4,7 +4,13 @@ import {Loading} from 'common/ui/Loading';
 import ReportList from './ReportList';
 import SetUpReport from './SetUpReport';
 import {highlightReportAction} from '../actions/report-list-actions';
-import {doReportDataSelect} from '../actions/compound-actions';
+import {
+  markPageLoadingAction,
+} from 'common/actions/loading-actions';
+import {
+  doLoadReportSetUp,
+  doDataSetMenuFill,
+} from '../actions/compound-actions';
 
 
 class DynamicReportApp extends Component {
@@ -19,9 +25,15 @@ class DynamicReportApp extends Component {
   }
 
   async handleNewLocation(_, loc) {
-    const {dispatch, history} = this.props;
+    const {dispatch} = this.props;
 
-    dispatch(highlightReportAction(Number.parseInt(loc.params.reportId, 10)));
+    const reportId = loc.params.reportId;
+    if (reportId) {
+      const fullId = 'completed-' + reportId;
+      dispatch(highlightReportAction(fullId));
+    } else {
+      dispatch(highlightReportAction());
+    }
 
     const lastComponent = loc.components[loc.components.length - 1];
     if (lastComponent === SetUpReport) {
@@ -33,10 +45,20 @@ class DynamicReportApp extends Component {
       } = loc.location.query || {};
       const reportDataId = Number.parseInt(reportDataIdString, 10);
       const {currentFilter, name} = loc.location.state || {};
-      await dispatch(
-        doReportDataSelect(history, intention, category, dataSet, reportDataId,
-          currentFilter, name));
+      await dispatch(doDataSetMenuFill(intention, category, dataSet));
+      await dispatch(doLoadReportSetUp(reportDataId, currentFilter, name));
+      return;
     }
+
+    /* This may result in users seeing a flickering loading indicator. It and
+     * the page components it affects are eliminating flickering content so
+     * I'm willing to make that tradeoff.
+     *
+     * When the no-ie8 future arrives and we can upgrade the history and router
+     * components which may allow us to do better than this.
+     */
+    // Allow other pages to mount.
+    dispatch(markPageLoadingAction(false));
   }
 
   render() {
