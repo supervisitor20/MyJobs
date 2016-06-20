@@ -22,15 +22,13 @@ function Confirm(props) {
       </Modal.Body>
       <Modal.Footer>
           <Button
-            bsStyle="primary"
-            block
-            onClick={e => {e.preventDefault(); onConfirm(true);}}>
-            Ok
-          </Button>
-          <Button
-            block
+            className="primary"
             onClick={e => {e.preventDefault(); onConfirm(false);}}>
             Cancel
+          </Button>
+          <Button
+            onClick={e => {e.preventDefault(); onConfirm(true);}}>
+            Ok
           </Button>
       </Modal.Footer>
     </Modal>
