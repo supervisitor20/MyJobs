@@ -581,7 +581,6 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
     @staticmethod
     def _dict_from_values(values, key_fields, value_field):
         """
-        Sorts a single value from values into a dictionary keyed by key_fields.
         Used to match distinct items between querysets based on multiple field 
         values.
 
@@ -595,7 +594,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         """
         dictionary = {}
         for item in values:
-            key = ''.join([str(item[field]) for field in key_fields])
+            key = '-'.join([str(item[field]) for field in key_fields])
             dictionary[key] = item[value_field]
         return dictionary
 
@@ -628,7 +627,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         referrals = self._dict_from_values(referral_qs, distinct_fields,
                                            'referral_count')
         for contact in all_contacts:
-            key = ''.join([str(contact[field]) for field in distinct_fields])
+            key = '-'.join([str(contact[field]) for field in distinct_fields])
             contact['referrals'] = referrals.get(key, 0)
             contact['records'] = records.get(key, 0)
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
