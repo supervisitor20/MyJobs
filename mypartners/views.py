@@ -16,8 +16,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
-from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
+from django.core.validators import EmailValidator
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -1159,10 +1161,12 @@ def prm_export(request):
 @csrf_exempt
 def process_email(request):
     """
-    Creates a contact/outreach record from an email received via POST
+    Creates one or more contact/outreach records from an email
+    received via POST.
     """
     PRM_EMAIL_HOST = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
+        # We receive emails via HTTP POST. Any other verbs are denied.
         logger.warning("process_email: received {method} request, returning "
                        "early.".format(method=request.method))
         return HttpResponse(status=200)
@@ -1197,7 +1201,8 @@ def process_email(request):
     NUO_HOSTS = OutreachEmailAddress.objects.filter(email__in=[
         contact.split('@')[0] for contact in contact_emails])
     NUO_LOCAL = [host.email for host in NUO_HOSTS]
-    admin_user, admin_email, error = get_admin(admin_email, NUO_HOSTS, request)
+    admin_user, admin_email, is_nuo, error = get_admin(admin_email, NUO_HOSTS,
+                                                       request)
     if error is not None:
         return error
 
@@ -1208,8 +1213,8 @@ def process_email(request):
                                         ", ".join(contact_emails))
 
     contact_emails, date_time = determine_contacts(
-        contact_emails, NUO_HOSTS, email_text, PRM_EMAIL_HOST, NUO_LOCAL,
-        admin_email, date_time)
+        contact_emails, email_text, PRM_EMAIL_HOST, NUO_LOCAL, admin_email,
+        date_time)
 
     partners, companies, error = determine_partners(
         admin_user, request, contact_emails, admin_email, NUO_HOSTS)
@@ -1222,6 +1227,7 @@ def process_email(request):
                 contact.email for contact in created_contacts])))
     logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
                 unmatched_contacts)))
+
     attachments, error = make_attachments(request, contact_emails, admin_email)
     if error is not None:
         return error
@@ -1240,16 +1246,25 @@ def process_email(request):
 
 
 def get_admin(admin_email, nuo_hosts, request):
-    admin_emails = [name_email[1]
-                    for name_email in getaddresses([admin_email])]
+    admin_emails = [email for name, email in getaddresses([admin_email])]
 
-    # Get the first valid user based on admin_emails. getaddresses can
+    # Get the first valid address based on admin_emails. getaddresses can
     # return an extra tuple with an invalid email address.
+    email_validator = EmailValidator()
     for admin_email in admin_emails:
-        admin_user = User.objects.get_email_owner(admin_email,
-                                                  only_verified=True)
-        if admin_user is not None:
+        try:
+            email_validator(admin_email)
+        except ValidationError:
+            pass
+        else:
             break
+
+    def is_proper_domain(admin_email, companies):
+        # TODO: Query OutreachEmailDomain and compare with admin_email
+        pass
+
+    admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
+    is_nuo = True
 
     if admin_user is None:
         if nuo_hosts:
@@ -1257,29 +1272,35 @@ def get_admin(admin_email, nuo_hosts, request):
                         "with a verified user but NUO addresses {nuo} were "
                         "found".format(email=admin_emails,
                                        nuo=",".join(map(unicode, nuo_hosts))))
-            admin_email = admin_emails[0]
         else:
             logger.warning("The email address {email} could not be associated "
                            "with a verified user.".format(email=admin_emails))
             logger.warning("POST data: {post}".format(post=json.dumps(
                 request.POST)))
-            return None, None, HttpResponse(200)
+            return None, None, None, HttpResponse(200)
     else:
-        admin_email = admin_user.email
-    return admin_user, admin_email, None
+        user_companies = admin_user.roles.values_list('company',
+                                                      flat=True).distinct()
+        nuo_companies = set(nuo_hosts.values_list('company',
+                                                  flat=True).distinct())
+        if nuo_companies.issubset(user_companies):
+            admin_email = admin_user.email
+            is_nuo = False
+        else:
+            admin_user = None
+    return admin_user, admin_email, is_nuo, None
 
 
-def determine_contacts(contact_emails, nuo_hosts, email_text, prm_email_host,
+def determine_contacts(contact_emails, email_text, prm_email_host,
                        nuo_local, admin_email, date_time):
     # There are three different cases in which we know this is a forward.
     # 1) There are no contacts
     forward = contact_emails == []
     # 2) The only contacts are outreach email addresses
     forward |= (
-        len(contact_emails) == len(nuo_hosts) and
+        len(contact_emails) == len(nuo_local) and
         set(contact.lower().split('@')[0]
-            for contact in contact_emails) == set(host.email
-                                                  for host in nuo_hosts))
+            for contact in contact_emails) == set(nuo_local))
     # 3) The only contact is the normal PRM address
     forward |= (len(contact_emails) == 1 and
                 contact_emails[0].lower() == prm_email_host)

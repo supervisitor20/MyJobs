@@ -1141,21 +1141,6 @@ class EmailTests(MyPartnersTestCase):
         self.assertTrue('For additional assistance, please contact'
                         in email.body)
 
-    def do_setup_for_email_post(self, address, from_1, from_2):
-        """
-        Does some setup for normal prm@my.jobs posts and for posts using
-        outreach email addresses.
-        """
-        if address == 'prm@my.jobs':
-            self.data['to'] = self.default_prm
-            self.data['from'] = from_1
-            model = ContactRecord
-        else:
-            self.data['to'] = self.full_outreach_address
-            self.data['from'] = from_2
-            model = OutreachRecord
-        return model
-
     def test_email_bad_contacts(self):
         start_contact_record_num = ContactRecord.objects.all().count()
         self.data['to'] = 'bademail@1.com, None, 6, bad@email.2'
