@@ -222,13 +222,20 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api} = this.props;
+    const {history, api, currentUserID} = this.props;
+    const userID = this.props.params.userID;
+
+    // Is user trying to delete their own account?
+    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
+      this.setState({
+        roleMultiselectHelp: 'You cannot delete your own user.',
+      });
+      return;
+    }
 
     if (confirm('Are you sure you want to delete this user?') === false) {
       return;
     }
-
-    const userID = this.props.params.userID;
 
     // Submit to server
     try {
