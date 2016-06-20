@@ -179,7 +179,6 @@ class TestReportView(MyReportsTestCase):
             job_applications="0", job_interviews="0", job_hires="1",
             partner=self.partner)
 
-
     def test_create_report(self):
         """Test that a report model instance is properly created."""
 
