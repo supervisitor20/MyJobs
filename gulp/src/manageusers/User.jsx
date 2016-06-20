@@ -3,7 +3,7 @@ import _ from 'lodash-compat';
 import Button from 'react-bootstrap/lib/Button';
 import {Link} from 'react-router';
 
-import {validateEmail} from 'common/validateEmail';
+import {validateEmail} from 'common/email-validators';
 
 import RolesMultiselect from './RolesMultiselect';
 import HelpText from './HelpText';

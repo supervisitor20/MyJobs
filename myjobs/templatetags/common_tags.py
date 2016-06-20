@@ -293,14 +293,24 @@ def get_menus(context):
         beta_menu.update({
             "label": "Beta",
             "id": "beta-menu",
-            "submenus": [
-                {
-                    "id": "nonuseroutreach",
-                    "href": url("prm/view/nonuseroutreach"),
-                    "label": "Non-User Outreach",
-                }
-            ],
         })
+
+        try:
+            can_read_outreach_email_address = user.can(
+                company, "read outreach email address")
+        except MissingAppLevelAccess:
+            can_read_outreach_email_address = False
+
+        if can_read_outreach_email_address:
+            beta_menu.update({
+                "submenus": [
+                    {
+                        "id": "nonuseroutreach",
+                        "href": url("prm/view/nonuseroutreach"),
+                        "label": "Non-User Outreach",
+                    }
+                ],
+            })
 
     employer_menu = {
         "label": "Employers",

@@ -39,7 +39,7 @@
     "moment": "^2.13.0",
     "react": "^0.14.3",
     "react-addons-update": "^0.14.3",
-    "react-bootstrap": "^0.28.0",
+    "react-bootstrap": "^0.29.4",
     "react-bootstrap-table": "^2.2.0",
     "react-dom": "^0.14.3",
     "react-filtered-multiselect": "^0.4.2",

@@ -1,37 +1,59 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import {connect} from 'react-redux';
+import {doGetInboxes} from '../actions/inbox-actions';
+import {setPageAction} from '../actions/navigation-actions';
+import Inbox from './Inbox';
+import {Col, Row} from 'react-bootstrap';
 
-import {InboxList} from './InboxList';
-import {AddInboxForm} from './AddInboxForm';
+/* InboxManagementPage
+ * Component which allows the user to configure new and existing outreach
+ * inboxes.
+ */
+class InboxManagementPage extends React.Component {
+  componentWillMount() {
+    // update the application's state with the current page and refresh the
+    // list of inboxes
+    const {dispatch} = this.props;
+    dispatch(setPageAction('inboxes'));
+    dispatch(doGetInboxes());
+  }
 
+  render() {
+    const {dispatch, inboxes} = this.props;
 
-// inbox management app main page
-export function InboxManagementPage(props) {
-  const {inboxManager} = props;
-  return (
-    <div>
-      <div className="card-wrapper">
-        <div className="row">
-          <InboxList inboxManager={inboxManager} />
-        </div>
-      </div>
-      <div className="card-wrapper">
-        <div className="row">
-          <div className="col-xs-12 ">
+    return (
+      <div className="cardWrapper">
+        <Row>
+          <Col xs={12}>
             <div className="wrapper-header">
-              <h2>Add New Inbox</h2>
+              <h2>Non-User Outreach Inboxes</h2>
             </div>
-            <div className="partner-holder no-highlight">
-              <div className="product-card no-highlight clearfix">
-                <AddInboxForm inboxManager={inboxManager} />
+            {inboxes.map(inbox =>
+              <div
+                key={'inbox-' + inbox.pk}
+                className="product-card no-highlight clearfix">
+                <Row>
+                  <Col xs={12}>
+                    <Inbox dispatch={dispatch} inbox={inbox} />
+                  </Col>
+                </Row>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
+          </Col>
+        </Row>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 InboxManagementPage.propTypes = {
-  inboxManager: PropTypes.object.isRequired,
+  dispatch: React.PropTypes.func.isRequired,
+  // inboxes are of the shape documented in Inbox.propTypes
+  inboxes: React.PropTypes.arrayOf(
+    React.PropTypes.object.isRequired,
+  ),
 };
+
+export default connect(state => ({
+  inboxes: state.inboxes,
+}))(InboxManagementPage);
