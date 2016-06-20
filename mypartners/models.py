@@ -582,7 +582,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
     def _dict_from_values(values, key_fields, value_field):
         """
         Sorts a single value from values into a dictionary keyed by key_fields.
-        Used to match distinct items between querysets based multiple field 
+        Used to match distinct items between querysets based on multiple field 
         values.
 
         Inputs:
