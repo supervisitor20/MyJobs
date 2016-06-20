@@ -8,7 +8,10 @@ from mypartners.tests.factories import (OutreachEmailAddressFactory,
                                         OutreachWorkflowStateFactory,
                                         TagFactory)
 from myjobs.tests.factories import UserFactory
-from mypartners.models import OutreachEmailAddress
+from mypartners.models import (OutreachEmailAddress, Partner, Contact,
+                               ContactRecord, OutreachRecord, OutreachEmailAddress,
+                               OutreachWorkflowState)
+from seo.models import Company
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
@@ -186,20 +189,47 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         """
         request_data = self.get_example_dict()
         response = self.client.post(reverse('api_convert_outreach_record'),
-                                    request_data)
+                                    json.dumps(request_data),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 200,
+                         msg="request failed, expected status 200, got %s, "
+                             "error message: %s" %
+                             (response.status_code, response.content))
+
+        objects_created, objects_missing = self.check_objects_created()
+
+        self.assertEqual(len(objects_created), 3,
+                         msg="some objects not created despite 200, created:"
+                             " %s, missing: %s" % (', '.join(objects_created),
+                                                   ', '.join(objects_missing)))
+
+
+
+    def check_objects_created(self):
+        total_objects = ['partner', 'contact', 'contactrecord']
+        objects_created = []
+        if Partner.objects.filter(name="James B"):
+            objects_created.append("partner")
+        if Contact.objects.filter(name="Nicole J"):
+            objects_created.append("contact")
+        if ContactRecord.objects.filter(notes="dude was chill"):
+            objects_created.append("contactrecord")
+        objects_missing = [x for x in total_objects if x not in objects_created]
+        return objects_created, objects_missing
 
     def get_example_dict(self):
         """
         Build example data for testing conversion API.
 
-        :return:
-
         """
         outreach_record = OutreachRecordFactory()
-        outreach_workflow = OutreachWorkflowStateFactory()
+        self.company
+        orea = OutreachEmailAddress.objects.create(company=self.company, email="koonsies")
+        outreach_workflow = OutreachWorkflowState.objects.create(state="this")
+        orr = OutreachRecord.objects.create(outreach_email=orea, from_email="this@test.com", email_body="this", current_workflow_state=outreach_workflow)
         a_tag = TagFactory()
         return {
-            "outreachrecord":{"pk":outreach_record.pk, "current_workflow_state":outreach_workflow.pk},
+            "outreachrecord":{"pk":orr.pk, "current_workflow_state":outreach_workflow.pk},
 
             "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
             "tags":[a_tag.pk], "owner": self.company.pk, "approval_status": "3"},
