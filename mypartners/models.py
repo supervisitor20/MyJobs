@@ -587,12 +587,11 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
 
         Inputs:
             :values: An iterable of dictionaries such as queryset.values()
-                     [{field_name: value}]
+                     [{field1: value}, {field2: value}]
             :key_fields: An ordered iterable of field names whose values will be
                          used to form a unique key
             :value_field: The field from values stored in the returned 
                           dictionary
-
         """
         dictionary = {}
         for item in values:
@@ -613,7 +612,7 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         all_contacts = self.values('partner__name', 'partner',  'contact__name',
                 'contact', 'contact_email').distinct().order_by('partner__name')
 
-        # Fields required to identify distinct instances. Names are redundant.
+        # Fields to identify distinct instances for grouping. Names are redundant.
         distinct_fields = ('partner', 'contact', 'contact_email')
         record_qs = (self.exclude(contact_type='job').values(
                          *distinct_fields).annotate(
