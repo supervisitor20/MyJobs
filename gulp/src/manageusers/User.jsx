@@ -56,8 +56,8 @@ class User extends React.Component {
     const {action} = this.props.location.query;
 
     if (action === 'Edit') {
-      const results = await api.get('/manage-users/api/users/' + this.props.params.userId + '/');
-      const userObject = results[this.props.params.userId];
+      const results = await api.get('/manage-users/api/users/' + this.props.params.userID + '/');
+      const userObject = results[this.props.params.userID];
 
       const userEmail = userObject.email;
 
@@ -110,7 +110,7 @@ class User extends React.Component {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
     const {api, rolesAPIResults} = this.props;
-    const userId = this.props.params.userId;
+    const userID = this.props.params.userID;
     const currentUserID = this.props.currentUserID;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
@@ -142,7 +142,7 @@ class User extends React.Component {
     // manage users.
 
     // Is user editing their own account?
-    if (parseInt(userId, 10) === parseInt(currentUserID, 10)) {
+    if (userID == currentUserID){
       // What roles are currently assigned?
       const assignedRolesAsStrings = _.map(assignedRoles, role => role.name);
 
@@ -187,7 +187,7 @@ class User extends React.Component {
 
     let url = '';
     if ( action === 'Edit' ) {
-      url = '/manage-users/api/users/edit/' + userId + '/';
+      url = '/manage-users/api/users/edit/' + userID + '/';
     } else {
       url = '/manage-users/api/users/create/';
     }
@@ -228,11 +228,11 @@ class User extends React.Component {
       return;
     }
 
-    const userId = this.props.params.userId;
+    const userID = this.props.params.userID;
 
     // Submit to server
     try {
-      await api.delete('/manage-users/api/users/delete/' + userId + '/');
+      await api.delete('/manage-users/api/users/delete/' + userID + '/');
       await this.props.callUsersAPI();
       history.pushState(null, '/users');
     } catch (e) {

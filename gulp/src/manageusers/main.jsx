@@ -223,7 +223,7 @@ render((
       <Route path="/role/:roleId" component={Role} />
       <Route path="users" component={Users} />
       <Route path="/user/add" component={User} />
-      <Route path="/user/:userId" component={User} />
+      <Route path="/user/:userID" component={User} />
       <Route path="help-and-tutorials" component={HelpAndTutorials} />
       <Route path="*" component={NoMatch}/>
     </Route>
