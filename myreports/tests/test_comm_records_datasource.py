@@ -197,7 +197,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_filter_by_tags(self):
-        """Show only commrec with correct tags."""
+        """
+        Show only commrec with correct tags.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -205,6 +208,21 @@ class TestCommRecordsDataSource(MyJobsBase):
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
+        self.assertEqual(expected, subjects)
+
+    def test_filter_by_tags_empty_list(self):
+        """
+        When tags receives an empty list, only return untagged commrecs.
+
+        """
+        self.record_1.tags.clear()
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(tags=[[]]),
+            [])
+        subjects = {r['subject'] for r in recs}
+        expected = {self.record_1.subject}
         self.assertEqual(expected, subjects)
 
     def test_filter_by_tags_or(self):
@@ -245,12 +263,17 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_filter_by_empty_things(self):
-        """Empty filters should not filter, just like missing filters."""
+        """
+        Empty filters should not filter, just like missing filters.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
-                locations={'city': '', 'state': ''}),
+                locations={'city': '', 'state': ''},
+                contact=None,
+                partner=None),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {
@@ -272,7 +295,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_filter_by_partner(self):
-        """Check partner filter works at all."""
+        """
+        Check partner filter works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -282,8 +308,24 @@ class TestCommRecordsDataSource(MyJobsBase):
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
 
+    def test_filter_by_partner_empty_list(self):
+        """
+        Verify that sending an empty list for partner returns no results.
+
+        """
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(partner=[]),
+            [])
+
+        self.assertEqual(len(recs), 0)
+
     def test_filter_by_contact(self):
-        """Check partner filter works at all."""
+        """
+        Check partner filter works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -293,8 +335,24 @@ class TestCommRecordsDataSource(MyJobsBase):
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
+    def test_filter_by_contact_empty_list(self):
+        """
+        Check partner filter returns no result if given an empty list
+
+        """
+        ds = CommRecordsDataSource()
+        recs = ds.run_unaggregated(
+            self.company,
+            CommRecordsFilter(contact=[]),
+            [])
+
+        self.assertEqual(len(recs), 0)
+
     def test_help_city(self):
-        """Check city help works and ignores current city filter."""
+        """
+        Check city help works and ignores current city filter.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_city(
             self.company,
@@ -304,7 +362,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual({'Los Angeles'}, actual)
 
     def test_help_state(self):
-        """Check state help works and ignores current state filter."""
+        """
+        Check state help works and ignores current state filter.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_state(
             self.company,
@@ -314,20 +375,29 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual({'IL', 'IN'}, actual)
 
     def test_help_tags(self):
-        """Check tags help works at all."""
+        """
+        Check tags help works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_tags(self.company, CommRecordsFilter(), "E")
         actual = {r['value'] for r in recs}
         self.assertEqual({'east', 'west'}, actual)
 
     def test_help_tags_colors(self):
-        """Tags should have colors"""
+        """
+        Tags should have colors
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_tags(self.company, CommRecordsFilter(), "east")
         self.assertEqual("aaaaaa", recs[0]['hexColor'])
 
     def test_help_communication_types(self):
-        """Check communication_types help works at all."""
+        """
+        Check communication_types help works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_communication_type(
             self.company, CommRecordsFilter(), "ph")
@@ -336,7 +406,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, actual)
 
     def test_help_partner(self):
-        """Check partner help works at all."""
+        """
+        Check partner help works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_partner(self.company, CommRecordsFilter(), "A")
         self.assertEqual(
@@ -344,7 +417,10 @@ class TestCommRecordsDataSource(MyJobsBase):
             recs)
 
     def test_help_contact(self):
-        """Check contact help works at all."""
+        """
+        Check contact help works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.help_contact(self.company, CommRecordsFilter(), "U")
         self.assertEqual(
@@ -352,7 +428,10 @@ class TestCommRecordsDataSource(MyJobsBase):
             recs)
 
     def test_order(self):
-        """Check ordering results works at all."""
+        """
+        Check ordering results works at all.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -409,7 +488,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, adorned_filter)
 
     def test_default_filter(self):
-        """should produce a populated filter object."""
+        """
+        should produce a populated filter object.
+
+        """
         ds = CommRecordsDataSource()
         default_filter = ds.get_default_filter(None, self.company)
         self.assertEquals(
@@ -425,13 +507,19 @@ class TestCommRecordsDataSource(MyJobsBase):
 
 class TestCommRecordsFilterCloning(TestCase):
     def test_clone_without_empty(self):
-        """Cloning empty filters shouldn't crash."""
+        """
+        Cloning empty filters shouldn't crash.
+
+        """
         filter = CommRecordsFilter()
         self.assertEqual(CommRecordsFilter(), filter.clone_without_city())
         self.assertEqual(CommRecordsFilter(), filter.clone_without_state())
 
     def test_clone_without_full(self):
-        """Cloning should remove certain fields."""
+        """
+        Cloning should remove certain fields.
+
+        """
         filter = CommRecordsFilter(
                 tags=['C'],
                 locations={'city': 'A', 'state': 'B'})

@@ -381,6 +381,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(force_insert, force_update, using,
                                update_fields)
 
+    def delete(self, *args, **kwargs):
+        # importing the models directly would probably cause a circular import
+        Contact = self.contact_set.model
+        ContactRecord = self.contactrecord_set.model
+        # clear archived relationships
+        Contact.all_objects.filter(user=self).update(user=None)
+        ContactRecord.all_objects.filter(
+            created_by=self).update(created_by=None)
+
+        return super(User, self).delete(*args, **kwargs)
+
+
     def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
 

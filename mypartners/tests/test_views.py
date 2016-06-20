@@ -22,8 +22,6 @@ from django.utils.timezone import utc
 from myprofile.tests.factories import SecondaryEmailFactory
 from seo.models import SeoSite
 
-from tasks import PARTNER_LIBRARY_SOURCES
-
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory, RoleFactory

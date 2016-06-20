@@ -7,23 +7,32 @@ import classnames from 'classnames';
  */
 export class SearchInput extends Component {
   constructor(props) {
-    super();
+    super(props);
     const {value} = props;
     this.state = this.getDefaultState(value);
   }
 
-  onInputChange(event) {
-    const value = event.target.value;
-    this.setState({value});
-    if (value) {
-      this.search(value);
+  getDefaultState(value) {
+    return {
+      partialValue: value,
+      mouseInMenu: false,
+      keySelectedIndex: -1,
+      dropped: false,
+    };
+  }
+
+  handleInputChange(event) {
+    const partialValue = event.target.value;
+    this.setState({partialValue});
+    if (partialValue) {
+      this.search(partialValue);
     } else {
       this.clear('');
     }
   }
 
-  onInputBlur() {
-    const {value, mouseInMenu} = this.state;
+  handleInputBlur() {
+    const {partialValue, mouseInMenu} = this.state;
     // When the user clicks a menu item, this blur event fires before the click
     // event in the dropdown menu. Our usual handling of blur makes handling the
     // click impossible. Avoid our usual blur handling if the pointer is in the
@@ -31,25 +40,24 @@ export class SearchInput extends Component {
     if (mouseInMenu) {
       this.focus();
     } else {
-      const {onBlur, callSelectWhenEmpty, onSelect: selectCb} = this.props;
-      if (callSelectWhenEmpty && value === '') {
-        selectCb('');
+      const {onBlur, callSelectWhenEmpty, onSelect} = this.props;
+      if (callSelectWhenEmpty && partialValue === '') {
+        onSelect('');
       }
       onBlur();
-      this.clear(value);
+      this.clear(partialValue);
     }
   }
 
-  onMouseInMenu(value) {
+  handleMouseInMenu(value) {
     this.setState({mouseInMenu: value});
   }
 
-  onSelect(e, index) {
+  handleSelect(e, index) {
     e.preventDefault();
-    const {onSelect: selectCb} = this.props;
-    const {items} = this.state;
-    const selected = items[index];
-    selectCb(selected);
+    const {hints, onSelect} = this.props;
+    const selected = hints[index];
+    onSelect(selected);
     const {emptyOnSelect} = this.props;
     if (emptyOnSelect) {
       this.clear('');
@@ -58,12 +66,13 @@ export class SearchInput extends Component {
     }
   }
 
-  onInputKeyDown(event) {
-    const {items, keySelectedIndex, value} = this.state;
-    if (items.length) {
+  handleInputKeyDown(event) {
+    const {hints} = this.props;
+    const {keySelectedIndex, partialValue} = this.state;
+    if (hints && hints.length) {
       let newIndex = keySelectedIndex;
       let killEvent = false;
-      const lastIndex = items.length - 1;
+      const lastIndex = hints.length - 1;
       if (event.key === 'ArrowDown') {
         killEvent = true;
         if (keySelectedIndex < 0 || keySelectedIndex >= lastIndex) {
@@ -81,12 +90,12 @@ export class SearchInput extends Component {
       } else if (event.key === 'Enter') {
         killEvent = true;
         if (keySelectedIndex >= 0 && keySelectedIndex <= lastIndex) {
-          this.onSelect(event, keySelectedIndex);
+          this.handleSelect(event, keySelectedIndex);
           return;
         }
       } else if (event.key === 'Escape') {
         killEvent = true;
-        this.clear(value);
+        this.clear(partialValue);
       }
       if (killEvent) {
         event.preventDefault();
@@ -96,19 +105,10 @@ export class SearchInput extends Component {
     }
   }
 
-  getDefaultState(value) {
-    return {
-      value,
-      mouseInMenu: false,
-      keySelectedIndex: -1,
-      items: [],
-    };
-  }
-
-  async search(value) {
+  async search(partialValue) {
     const {getHints} = this.props;
-    const items = await getHints(value);
-    this.setState({items});
+    this.setState({dropped: true});
+    await getHints(partialValue);
   }
 
   focus() {
@@ -134,26 +134,26 @@ export class SearchInput extends Component {
   }
 
   render() {
-    const {id, theme, placeholder, autofocus} = this.props;
-    const {value, items, keySelectedIndex} = this.state;
+    const {id, theme, placeholder, autofocus, hints} = this.props;
+    const {dropped, partialValue, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
-    const showItems = Boolean(items.length);
+    const showItems = Boolean(dropped && hints && hints.length);
     const activeId = this.itemId(keySelectedIndex);
 
     return (
       <div
         className={classnames(
           theme.root,
-          {[theme.rootOpen]: items})}>
+          {[theme.rootOpen]: hints})}>
         <input
           className={theme.input}
           ref="input"
           placeholder={placeholder}
-          onChange={e => this.onInputChange(e)}
-          onBlur={e => this.onInputBlur(e)}
-          onKeyDown={e => this.onInputKeyDown(e)}
-          value={value}
+          onChange={e => this.handleInputChange(e)}
+          onBlur={e => this.handleInputBlur(e)}
+          onKeyDown={e => this.handleInputKeyDown(e)}
+          value={partialValue}
           type="search"
           aria-autocomplete="list"
           aria-owns={suggestId}
@@ -164,21 +164,21 @@ export class SearchInput extends Component {
           <ul
             id={this.suggestId()}
             className={theme.suggestions}
-            onMouseEnter={() => this.onMouseInMenu(true)}
-            onMouseLeave={() => this.onMouseInMenu(false)}>
-            {items.map((item, index) =>
+            onMouseEnter={() => this.handleMouseInMenu(true)}
+            onMouseLeave={() => this.handleMouseInMenu(false)}>
+            {hints.map((hint, index) =>
               <li
                 id={this.itemId(index)}
-                key={item.key}
+                key={hint.value}
                 className={classnames(
-                  theme.item,
+                  theme.hint,
                   {
                     [theme.itemActive]: index === keySelectedIndex,
                   })}>
                 <a
                   href="#"
-                  onClick={e => this.onSelect(e, index)}>
-                  {item.display}
+                  onClick={e => this.handleSelect(e, index)}>
+                  {hint.display}
                 </a>
               </li>
             )}
@@ -237,11 +237,19 @@ SearchInput.propTypes = {
    * Callback: the user has changed the input. Need hints.
    *
    * input: string with user input so far
-   *
-   * Return a promise of hints in this form:
-   * [ {key: "key", display: "Display Value"} ]
    */
   getHints: React.PropTypes.func.isRequired,
+
+  /**
+   * What to show in the dropdown.
+   *
+   * [ {value: some id, display: "Display Value"} ]
+   */
+  hints: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired),
 
   /**
    * Callback: the user has left the search input.

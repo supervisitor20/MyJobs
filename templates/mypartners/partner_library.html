@@ -13,12 +13,15 @@
     {% include "mypartners/includes/prm_header.html" with page_title="Partner Library" back_to="Back to Partner Relationship Manager" back_to_url="prm" %}
     <div class="row">
         <div id="ofccp-referral-directory" class="span12">
-            <small>
-                <i>
-                    The partner(s) listed here are from the <a href="https://ofccp.dol-esa.gov/errd/index.html" target="_blank" style="text-decoration: underline">Employment Referral Resource Directory</a>,
-                    the <a href="https://ofccp.dol-esa.gov/errd/Resources.503VEVRAA.html" target="_blank" style="text-decoration: underline">Disability and Veterans Community Resource Directory</a>, and other sources.
-                </i>
-            </small>
+            <div><small><i>
+                {% if sources %}
+                    The partner(s) listed here are from
+                    {% for source in sources %}
+                        the <a href="{{ source.search_url }}" target="_blank" style="text-decoration: underline">{{ source.name }}</a>,
+                    {% endfor %}
+                     and other sources.
+                {% endif %}
+            </i></small></div>
         </div>
     </div>
     <div class="row">

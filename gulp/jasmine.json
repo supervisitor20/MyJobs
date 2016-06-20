@@ -4,5 +4,7 @@
   "spec_files": [
     "**/spec/*.js"
   ],
-  "random": true
+  "config": {
+    "random": false
+  }
 }
