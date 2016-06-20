@@ -142,7 +142,7 @@ class User extends React.Component {
     // manage users.
 
     // Is user editing their own account?
-    if (userID == currentUserID){
+    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
       // What roles are currently assigned?
       const assignedRolesAsStrings = _.map(assignedRoles, role => role.name);
 
