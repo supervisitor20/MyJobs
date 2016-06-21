@@ -8,6 +8,9 @@ import {validateEmail} from 'common/email-validators';
 import RolesMultiselect from './RolesMultiselect';
 import HelpText from './HelpText';
 
+import {connect} from 'react-redux';
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
+
 class User extends React.Component {
   constructor(props) {
     super(props);
@@ -222,7 +225,7 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api, currentUserID} = this.props;
+    const {history, api, currentUserID, dispatch} = this.props;
     const userID = this.props.params.userID;
 
     // Is user trying to delete their own account?
@@ -233,7 +236,8 @@ class User extends React.Component {
       return;
     }
 
-    if (confirm('Are you sure you want to delete this user?') === false) {
+    const message = 'Are you sure you want to delete this user?';
+    if (! await runConfirmInPlace(dispatch, message)) {
       return;
     }
 
@@ -313,6 +317,7 @@ class User extends React.Component {
 }
 
 User.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   location: React.PropTypes.object.isRequired,
   params: React.PropTypes.object.isRequired,
   callUsersAPI: React.PropTypes.func,
@@ -322,4 +327,4 @@ User.propTypes = {
   currentUserID: React.PropTypes.number,
 };
 
-export default User;
+export default connect()(User);
