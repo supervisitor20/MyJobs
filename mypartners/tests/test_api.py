@@ -6,18 +6,19 @@ from mypartners.tests.test_views import MyPartnersTestCase
 from mypartners.tests.factories import (OutreachEmailAddressFactory,
                                         OutreachRecordFactory,
                                         OutreachWorkflowStateFactory,
-                                        TagFactory)
+                                        TagFactory,
+                                        PartnerFactory,
+                                        LocationFactory)
 from myjobs.tests.factories import UserFactory
 from mypartners.models import (OutreachEmailAddress, Partner, Contact,
-                               ContactRecord, OutreachRecord, OutreachEmailAddress,
-                               OutreachWorkflowState)
-from seo.models import Company
+                               ContactRecord, Location)
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
     """
-        Tests related to the non user outreach single page app. These APIs
-        provide data to the React-based application.
+    Tests related to the non user outreach single page app. These APIs
+    provide data to the React-based application.
+
     """
 
     def setUp(self):
@@ -32,8 +33,9 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def test_inbox_list_api(self):
         """
-            Verify that the inbox list API will properly return any inboxes
-            for the current company.
+        Verify that the inbox list API will properly return any inboxes
+        for the current company.
+
         """
         response = self.client.get(reverse('api_get_nuo_inbox_list'))
         self.assertEqual(response.status_code, 200, msg="expected status 200, "
@@ -54,8 +56,9 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def test_non_staff_cannot_use_view(self):
         """
-            Temporary test. Ensure user cannot access this view if they are not
-            staff. Remove when launching NonUserOutreach module.
+        Temporary test. Ensure user cannot access this view if they are not
+        staff. Remove when launching NonUserOutreach module.
+
         """
         non_staff_user = UserFactory(is_staff=False, email="testuser@test.com")
         self.client.login_user(non_staff_user)
@@ -119,8 +122,9 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def test_records_list_api(self):
         """
-            Verify that the outreach records list API will properly return any
-            records for the current company.
+        Verify that the outreach records list API will properly return any
+        records for the current company.
+
         """
         response = self.client.get(reverse('api_get_nuo_records_list'))
         self.assertEqual(response.status_code, 200, msg="expected status 200, "
@@ -144,8 +148,9 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
     def test_individual_record_api(self):
         """
-            Test the record API given the logged in user is a member of the same
-            company.
+        Test the record API given the logged in user is a member of the same
+        company.
+
         """
         # test to ensure current company's record will return
         response = self.client.get(reverse('api_get_individual_nuo_record'),
@@ -180,56 +185,25 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                 "returned for a non-company "
                                                 "record.")
 
-    def test_outreach_conversion_api(self):
-        """
-        Test that the conversion API properly creates partner, contact,
-        and contact records, as well as updating a given outreach record
-        when used.
+class NUOConversionAPITestCase(MyPartnersTestCase):
+    """
+    Tests related to the conversion API for non user outreach. This API
+    accepts a data object with information to create partners, contacts,
+    and contact records, as well as marking a NUO record as reviewed.
 
-        """
-        request_data = self.get_example_dict()
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(request_data),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 200,
-                         msg="request failed, expected status 200, got %s, "
-                             "error message: %s" %
-                             (response.status_code, response.content))
+    """
 
-        objects_created, objects_missing = self.check_objects_created()
-
-        self.assertEqual(len(objects_created), 3,
-                         msg="some objects not created despite 200, created:"
-                             " %s, missing: %s" % (', '.join(objects_created),
-                                                   ', '.join(objects_missing)))
-
-
-
-    def check_objects_created(self):
-        total_objects = ['partner', 'contact', 'contactrecord']
-        objects_created = []
-        if Partner.objects.filter(name="James B"):
-            objects_created.append("partner")
-        if Contact.objects.filter(name="Nicole J"):
-            objects_created.append("contact")
-        if ContactRecord.objects.filter(notes="dude was chill"):
-            objects_created.append("contactrecord")
-        objects_missing = [x for x in total_objects if x not in objects_created]
-        return objects_created, objects_missing
-
-    def get_example_dict(self):
-        """
-        Build example data for testing conversion API.
-
-        """
-        outreach_record = OutreachRecordFactory()
-        self.company
-        orea = OutreachEmailAddress.objects.create(company=self.company, email="koonsies")
-        outreach_workflow = OutreachWorkflowState.objects.create(state="this")
-        orr = OutreachRecord.objects.create(outreach_email=orea, from_email="this@test.com", email_body="this", current_workflow_state=outreach_workflow)
+    def setUp(self):
+        super(NUOConversionAPITestCase, self).setUp()
+        self.inbox = OutreachEmailAddressFactory(company=self.company)
+        self.other_company_inbox = OutreachEmailAddressFactory()
+        self.outreach_record = OutreachRecordFactory(outreach_email =
+                                                     self.inbox)
+        self.role.activities.add(*self.activities)
+        self.outreach_workflow = OutreachWorkflowStateFactory()
         a_tag = TagFactory()
-        return {
-            "outreachrecord":{"pk":orr.pk, "current_workflow_state":outreach_workflow.pk},
+        self.request_data =  {
+            "outreachrecord":{"pk":self.outreach_record.pk, "current_workflow_state":self.outreach_workflow.pk},
 
             "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
             "tags":[a_tag.pk], "owner": self.company.pk, "approval_status": "3"},
@@ -244,4 +218,179 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
             "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
             "tags":[a_tag.pk], "approval_status":"1"}
-            }
+        }
+
+    def test_outreach_conversion_api(self):
+        """
+        Test that the conversion API properly creates partner, contact,
+        and contact records, as well as updating a given outreach record
+        when used.
+
+        """
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+        self.check_status_code_and_objects(response, 200, 4)
+
+    def test_outreach_api_all_fields_required(self):
+        """
+        Test that the outreach conversion API forces the inbound data object
+        to have all relevant fields
+
+        """
+        self.request_data.pop('partner')
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+        self.check_status_code_and_objects(response, 400, 0)
+
+    def test_outreach_api_rejects_non_post_calls(self):
+        """
+        Test that the outreach conversion API rejects calls that are not POST
+
+        """
+        response = self.client.get(reverse('api_convert_outreach_record'))
+        self.check_status_code_and_objects(response, 405, 0)
+
+    def test_outreach_api_can_link_existing_records(self):
+        """
+        Test that the outreach conversion API can link to existing records
+        with a PK
+
+        """
+        existing_partner = PartnerFactory(owner=self.company)
+        self.request_data['partner']['pk'] = existing_partner.pk
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 200, 3)
+
+        dict_contact = Contact.objects.get(name="Nicole J")
+        self.assertEqual(dict_contact.partner.pk, existing_partner.pk,
+                         msg="New contact does not link to provided partner,"
+                             "expected pk of %s, got %s" % (existing_partner.pk,
+                                                            dict_contact.partner.pk))
+
+    def test_outreach_api_contact_locations(self):
+        """
+        Test that the outreach conversion API allows the member to add multiple
+        locations as well as locations via PK
+
+        """
+        existing_location = LocationFactory()
+        self.request_data['contact']['locations'].append({"pk":existing_location.pk})
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 200, 4)
+
+        dict_contact = Contact.objects.get(name="Nicole J")
+        self.assertEqual(dict_contact.locations.count(), 2,
+                         msg="Contact locations not added corrected by API,"
+                             " contact had %s locations, expected %s"
+                             % (dict_contact.locations.count(), 2))
+
+    def test_outreach_api_contact_no_locations(self):
+        """
+        Test that the outreach conversion API allows a contact to have no
+        locations.
+
+        """
+        self.request_data['contact'].pop('locations')
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 200, 3)
+
+        dict_contact = Contact.objects.get(name="Nicole J")
+        self.assertEqual(dict_contact.locations.count(), 0,
+                         msg="Contact locations not added corrected by API,"
+                             " contact had %s locations, expected %s"
+                             % (dict_contact.locations.count(), 0))
+
+    def test_outreach_api_no_data(self):
+        """
+        Test that the outreach conversion API does nothing if not given a
+        data dict
+
+        """
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps({}),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 400, 0)
+
+    def test_outreach_api_invalid_data(self):
+        """
+        Test that the outreach conversion API does nothing if not given a
+        data dict
+
+        """
+        self.request_data['dummystuff'] = "invalid stuff"
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 400, 0)
+
+    def test_outreach_api_invalid_field_data(self):
+        """
+        Test that the outreach conversion API does not create any objects
+        if a model fails form validation
+
+        """
+        self.request_data['contactrecord']['date_time'] = "invalid dt"
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 400, 0)
+
+    def check_status_code_and_objects(self, response, expected_code,
+                                      expected_count):
+        """
+        Helper method to keep code DRY. Check the status code is what is
+        expected. Verify that a certain number of objects from the request
+        data was created.
+
+        :param expected_code: What status code is expected
+        :param expected_count: How many objects should be created
+
+        """
+        self.assertEqual(response.status_code, expected_code,
+                         msg="request failed, expected status %s, got %s, "
+                             "reponse content was: %s" %
+                             (expected_code, response.status_code,
+                              response.content))
+
+        objects_created, objects_missing = self.check_objects_created()
+
+        self.assertEqual(len(objects_created), expected_count,
+                         msg="unexpected behavior, status code %s but objects "
+                             "created: %s, missing: %s" %
+                                                 (expected_code,
+                                                 ', '.join(objects_created),
+                                                 ', '.join(objects_missing)))
+
+    def check_objects_created(self):
+        """
+        Check how many of the objects from the data dict were created.
+
+        :return: tuple of (objects created, objected missing)
+
+        """
+        total_objects = ['partner', 'contact', 'contactrecord', 'location']
+        objects_created = []
+        if Partner.objects.filter(name="James B"):
+            objects_created.append("partner")
+        if Contact.objects.filter(name="Nicole J"):
+            objects_created.append("contact")
+        if ContactRecord.objects.filter(notes="dude was chill"):
+            objects_created.append("contactrecord")
+        if Location.objects.filter(city="Newtoneous"):
+            objects_created.append("location")
+        objects_missing = [x for x in total_objects if x not in objects_created]
+        return objects_created, objects_missing

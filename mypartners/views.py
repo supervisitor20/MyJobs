@@ -1674,8 +1674,8 @@ def api_convert_outreach_record(request):
     # as a keyword dict to create a contact from the model
     # during this step, the models are VALIDATED, but NOT SAVED
     contact_pk = data_object['contact'].pop('pk', None)
-    contact_tags = data_object['contact'].pop('tags', None)
-    contact_locations = data_object['contact'].pop('locations', None)
+    contact_tags = data_object['contact'].pop('tags', [])
+    contact_locations = data_object['contact'].pop('locations', [])
     contact_location_objects = []
     contact = return_or_create_object(Contact,
                                       contact_pk,
@@ -1692,13 +1692,13 @@ def api_convert_outreach_record(request):
         contact_location_objects.append(location_object)
 
     partner_pk = data_object['partner'].pop('pk', None)
-    partner_tags = data_object['partner'].pop('tags', None)
+    partner_tags = data_object['partner'].pop('tags', [])
     data_object['partner']['owner'] = user_company
     partner = return_or_create_object(Partner,
                                       partner_pk,
                                       data_object['partner'])
 
-    contactrecord_tags = data_object['contactrecord'].pop('tags', None)
+    contactrecord_tags = data_object['contactrecord'].pop('tags', [])
     data_object['contactrecord']['created_by'] = request.user
     contact_record = return_or_create_object(ContactRecord,
                                              None,
@@ -1708,8 +1708,7 @@ def api_convert_outreach_record(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    # save all objects, since fields are already cleaned, this should not
-    # trigger any further exceptions, but verify anyway
+    # save all objects
     contact.save()
     add_tags_to_object(contact, contact_tags)
     for c_location in contact_location_objects:
