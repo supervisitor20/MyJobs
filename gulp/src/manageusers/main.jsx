@@ -29,31 +29,27 @@ export class App extends React.Component {
     super(props);
     this.state = {
       rolesTableRows: [],
+      currentUserID: null,
       rolesAPIResults: null,
       tablesOfActivitiesByApp: [],
       usersTableRows: [],
-      currentUserID: null,
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
-      callCurrentUserAPI: this.callCurrentUserAPI,
     };
     this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
     this.callUsersAPI = this.callUsersAPI.bind(this);
-    this.callCurrentUserAPI = this.callCurrentUserAPI.bind(this);
   }
   componentDidMount() {
     this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
-    this.callCurrentUserAPI();
   }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
       this.callActivitiesAPI();
       this.callRolesAPI();
       this.callUsersAPI();
-      this.callCurrentUserAPI();
     }
   }
   async callActivitiesAPI() {
@@ -133,32 +129,32 @@ export class App extends React.Component {
     // Get users once, but reload if needed
     const results = await api.get('/manage-users/api/users/');
     const usersTableRows = [];
-    _.forOwn(results, function buildListOfRows(user, key) {
-      user.roles = JSON.parse(user.roles);
-      usersTableRows.push(
-        <tr key={key}>
-          <td data-title="User Email">{user.email}</td>
-          <td data-title="Associated Roles">
-            <AssociatedRolesList roles={user.roles}/>
-          </td>
-          <td data-title="Status">
-            <Status status={user.status} lastInvitation={user.lastInvitation}/>
-          </td>
-          <td data-title="Edit">
-            <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
-          </td>
-        </tr>
-      );
+    _.forOwn(results, (user, key) => {
+      // Identify userID of the logged in user
+      if (typeof user === 'number' ) {
+        this.setState({
+          currentUserID: user,
+        });
+      } else {
+        user.roles = JSON.parse(user.roles);
+        usersTableRows.push(
+          <tr key={key}>
+            <td data-title="User Email">{user.email}</td>
+            <td data-title="Associated Roles">
+              <AssociatedRolesList roles={user.roles}/>
+            </td>
+            <td data-title="Status">
+              <Status status={user.status} lastInvitation={user.lastInvitation}/>
+            </td>
+            <td data-title="Edit">
+              <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+            </td>
+          </tr>
+        );
+      }
     });
     this.setState({
       usersTableRows: usersTableRows,
-    });
-  }
-  async callCurrentUserAPI() {
-    // Get current logged in user information
-    const results = await api.get('/manage-users/api/current-user/');
-    this.setState({
-      currentUserID: results.id,
     });
   }
   render() {

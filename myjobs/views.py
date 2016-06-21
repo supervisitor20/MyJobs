@@ -1011,6 +1011,9 @@ def api_get_users(request):
 
     company = get_company_or_404(request)
 
+    # Pass back the id of the user making this request
+    ctx['id'] = request.user.id
+
     # Retrieve users already assigned to roles associated with this company
     users_available = []
     roles = Role.objects.filter(company=company)

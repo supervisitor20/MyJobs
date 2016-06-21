@@ -412,6 +412,9 @@ class ManageUsersTests(MyJobsBase):
         email = first_result['email']
         self.assertIsInstance(email, unicode)
 
+        id_returned = output['id']
+        self.assertEqual(id_returned, expected_user_pk)
+
         lastInvitation = first_result['lastInvitation']
         self.assertIsInstance(lastInvitation, unicode)
 
@@ -421,6 +424,7 @@ class ManageUsersTests(MyJobsBase):
 
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
+
 
     def test_get_users_with_unique_roles_list(self):
         """
