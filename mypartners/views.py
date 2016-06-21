@@ -1383,11 +1383,12 @@ def api_get_nuo_inbox_list(request):
 
     """
     company = get_company_or_404(request)
+    inboxes = OutreachEmailAddress.objects.filter(company=company).values(
+        'pk', 'email')
 
-    inboxes = OutreachEmailAddress.objects.filter(company=company)
-    ctx = serializers.serialize("json", inboxes, fields=('email',))
-
-    return HttpResponse(ctx)
+    return HttpResponse(
+        json.dumps(
+            list(inboxes)), content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()
@@ -1463,15 +1464,13 @@ def api_get_nuo_records_list(request):
     company = get_company_or_404(request)
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
     records = OutreachRecord.objects.filter(outreach_email__in=outreach_emails)
-    json_res = []
-    for record in records:
-        json_obj = dict(
-            date_added = record.date_added.strftime('%m-%d-%Y'),
-            outreach_email = record.outreach_email.email + '@my.jobs',
-            from_email = record.from_email,
-            current_workflow_state = record.current_workflow_state.state,
-        )
-        json_res.append(json_obj)
+    json_res = [{
+        'dateAdded': record.date_added.strftime('%m-%d-%Y'),
+        'outreachEmail': record.outreach_email.email + '@my.jobs',
+        'fromEmail': record.from_email,
+        'currentWorkflowState': record.current_workflow_state.state,
+    } for record in records]
+
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 @restrict_to_staff()
