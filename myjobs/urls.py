@@ -89,6 +89,9 @@ urlpatterns = patterns(
     url(r'^manage-users/api/activities/$',
         'api_get_activities',
         name='api_get_activities'),
+    url(r'^manage-users/api/current-user/$',
+        'api_get_current_user',
+        name='api_get_current_user'),
     url(r'^request-company-access/$',
         'request_company_access', name='request_company_access'),
 )
