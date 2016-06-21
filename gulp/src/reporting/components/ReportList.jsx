@@ -8,7 +8,6 @@ import classnames from 'classnames';
 import {
   doRefreshReport,
   doSetUpForClone,
-  doReportDataSelect,
 } from '../actions/compound-actions';
 
 
@@ -54,9 +53,9 @@ class ReportList extends Component {
   }
 
   handleCreateNewReport(e) {
-    const {history, dispatch} = this.props;
+    const {history} = this.props;
     e.preventDefault();
-    dispatch(doReportDataSelect(history));
+    history.pushState('/');
   }
 
   handleSwitchVersions() {

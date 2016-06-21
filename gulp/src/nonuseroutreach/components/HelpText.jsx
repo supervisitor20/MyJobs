@@ -1,6 +1,8 @@
 import React, {PropTypes} from 'react';
 
-// Display errors from client-side form validation.. red text above stuff
+/* HelpText
+ * Component for displaying a validation error.
+ */
 export function HelpText(props) {
   const {message} = props;
   return (
@@ -11,5 +13,6 @@ export function HelpText(props) {
 }
 
 HelpText.propTypes = {
+  // the error message to display
   message: PropTypes.string.isRequired,
 };

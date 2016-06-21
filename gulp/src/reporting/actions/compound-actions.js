@@ -131,87 +131,122 @@ export function doSetUpForClone(history, reportId) {
   };
 }
 
+
 /**
- * The user changed the data set directly or via history.
+ * The user just arrived or just picked from the report/data menu.
  *
- * Figure out a valid configuration and reportDataId. NAVIGATE if needed.
+ * Figure out a valid default and NAVIGATE there.
  *
- * history: history object, in case we have to navigate
+ * history: history object, we will navigate
+ * intention, category, dataSet: optional, strings that together describe which
+ * report the user wants to run.
+ */
+export function doReportDataRedirect(history, intention, category, dataSet) {
+  return async (dispatch, getState, {api}) => {
+    try {
+      dispatch(markPageLoadingAction(true));
+      dispatch(markOtherLoadingAction('dataSetMenu', true));
+      const menu = await api.getSetUpMenuChoices(
+        intention || '',
+        category || '',
+        dataSet || '');
+      dispatch(replaceDataSetMenu({
+        intentionChoices: menu.reporting_types,
+        categoryChoices: menu.report_types,
+        dataSetChoices: menu.data_types,
+        intentionValue: menu.selected_reporting_type,
+        categoryValue: menu.selected_report_type,
+        dataSetValue: menu.selected_data_type,
+        reportDataId: menu.report_data_id,
+      }));
+      history.replaceState(null, '/set-up-report', {
+        intention: menu.selected_reporting_type,
+        category: menu.selected_report_type,
+        dataSet: menu.selected_data_type,
+        reportDataId: menu.report_data_id,
+      });
+      dispatch(markOtherLoadingAction('dataSetMenu', false));
+    } catch (e) {
+      dispatch(markOtherLoadingAction('dataSetMenu', false));
+      dispatch(markPageLoadingAction(false));
+      dispatch(errorAction(e.message));
+    }
+  };
+}
+
+
+/**
+ * We may need to fill in the data set menus.
+ *
  * intention, category, dataSet: strings that together describe which report
  *   the user wants to run.
- * reportDataId: optional, the database id for the reportData previously in use
- * reportFilter: optional, prepopulate the filter
- * reportName: optional, use this name instead of a default name
  */
-export function doReportDataSelect(history, intention, category, dataSet,
-  reportDataId, reportFilter, reportName) {
+export function doDataSetMenuFill(intention, category, dataSet) {
   return async (dispatch, getState, {api}) => {
     try {
       const previousMenuState = getState().dataSetMenu;
-      let newReportDataId;
 
-      // First, do we need to refresh the menu items?
+      // Dataset menu is filled in already. We're done.
       if (previousMenuState &&
           intention && intention === previousMenuState.intentionValue &&
           category && category === previousMenuState.categoryValue &&
           dataSet && dataSet === previousMenuState.dataSetValue &&
-          reportDataId && reportDataId === previousMenuState.reportDataId) {
-        newReportDataId = reportDataId;
-      } else {
-        // We need to refresh the menu. Get some menu items.
-        dispatch(markOtherLoadingAction('dataSetMenu', true));
-        const menu = await api.getSetUpMenuChoices(
-          intention || '',
-          category || '',
-          dataSet || '');
-
-        // If we got a new reportDataId navigate there and stop for now.
-        if (menu.report_data_id &&
-            menu.report_data_id !== reportDataId) {
-          history.pushState(null, '/set-up-report', {
-            intention: menu.selected_reporting_type,
-            category: menu.selected_report_type,
-            dataSet: menu.selected_data_type,
-            reportDataId: menu.report_data_id,
-          });
-          return;
-        }
-        dispatch(replaceDataSetMenu({
-          intentionChoices: menu.reporting_types,
-          categoryChoices: menu.report_types,
-          dataSetChoices: menu.data_types,
-          intentionValue: menu.selected_reporting_type,
-          categoryValue: menu.selected_report_type,
-          dataSetValue: menu.selected_data_type,
-          reportDataId: menu.report_data_id,
-        }));
-        dispatch(markOtherLoadingAction('dataSetMenu', false));
-        newReportDataId = menu.report_data_id;
+          previousMenuState.reportDataId) {
+        return;
       }
 
-      // If we haven't found a reportDataId stop. (Should never happen but
-      // it's possible.)
-      if (!newReportDataId) {
-        dispatch(startNewReportAction({
-          defaultFilter: {},
-          help: {},
-          filters: [],
-          name: '',
-        }));
-        dispatch(markPageLoadingAction(false));
+      dispatch(markOtherLoadingAction('dataSetMenu', true));
+      const menu = await api.getSetUpMenuChoices(
+        intention || '',
+        category || '',
+        dataSet || '');
+      dispatch(replaceDataSetMenu({
+        intentionChoices: menu.reporting_types,
+        categoryChoices: menu.report_types,
+        dataSetChoices: menu.data_types,
+        intentionValue: menu.selected_reporting_type,
+        categoryValue: menu.selected_report_type,
+        dataSetValue: menu.selected_data_type,
+        reportDataId: menu.report_data_id,
+      }));
+      dispatch(markOtherLoadingAction('dataSetMenu', false));
+    } catch (e) {
+      dispatch(markOtherLoadingAction('dataSetMenu', false));
+      dispatch(errorAction(e.message));
+    }
+  };
+}
+
+
+/**
+ * The user is ready to edit a report.
+ *
+ * Load everything needed to allow the user to set up a report.
+ *
+ * history: history object, in case we have to navigate
+ * reportDataId: optional, the database id for the reportData previously in use
+ * reportFilter: optional, prepopulate the filter
+ * reportName: optional, use this name instead of a default name
+ */
+export function doLoadReportSetUp(reportDataId, reportFilter, reportName) {
+  return async (dispatch, getState, {api}) => {
+    try {
+      // Bail early if the reportDataId doesn't match what is in the menu.
+      const menuReportDataId = getState().dataSetMenu.reportDataId;
+      if (reportDataId !== menuReportDataId) {
         return;
       }
 
       dispatch(markPageLoadingAction(true));
       // Get the interface for this report.
-      const filterInfo = await api.getFilters(newReportDataId);
+      const filterInfo = await api.getFilters(reportDataId);
 
       // Figure out the name for this report.
       let finalReportName;
       if (reportName) {
         finalReportName = reportName;
       } else {
-        const defaultNameInfo = await api.getDefaultReportName(newReportDataId);
+        const defaultNameInfo = await api.getDefaultReportName(reportDataId);
         finalReportName = defaultNameInfo.name;
       }
 
@@ -244,12 +279,11 @@ export function doReportDataSelect(history, intention, category, dataSet,
 
         if (fieldName) {
           await dispatch(
-            doGetHelp(newReportDataId, finalDefaultFilter, fieldName, ''));
+            doGetHelp(reportDataId, finalDefaultFilter, fieldName, ''));
         }
       }));
       dispatch(markPageLoadingAction(false));
     } catch (e) {
-      dispatch(markOtherLoadingAction('dataSetMenu', false));
       dispatch(markPageLoadingAction(false));
       dispatch(errorAction(e.message));
     }

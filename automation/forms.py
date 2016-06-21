@@ -56,10 +56,11 @@ class SourceCodeFileUpload(forms.Form):
             # Checks for jobs belonging to the buids provided and
             # auto-determines an acceptable parameter based on the job. If
             # this fails, a parameter must be provided in the form
-            test_job = Redirect.objects.filter(buid__in=buids,
-                                               expired_date__isnull=True)
-            if test_job.count():
-                test_job = test_job[0]
+            jobs = Redirect.objects.filter(
+                buid__in=buids, expired_date__isnull=True)
+            jobs.query.clear_ordering(True)
+            test_job = jobs.first()
+            if test_job:
                 for url_part, key in ATS_PARAMETERS.items():
                     if url_part in test_job.url:
                         source_code_parameter = key
