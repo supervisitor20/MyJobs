@@ -10,6 +10,7 @@ from mypartners.tests.factories import (OutreachEmailAddressFactory,
                                         PartnerFactory,
                                         LocationFactory)
 from myjobs.tests.factories import UserFactory
+from myjobs.models import Activity
 from mypartners.models import (OutreachEmailAddress, Partner, Contact,
                                ContactRecord, Location)
 
@@ -346,6 +347,73 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         response = self.client.post(reverse('api_convert_outreach_record'),
                                     json.dumps(self.request_data),
                                     content_type='application/json')
+
+        self.check_status_code_and_objects(response, 400, 0)
+
+    def test_convert_permission(self):
+        """
+        Test that the outreach conversion API does not operate without convert
+        permission
+
+        """
+        convert = Activity.objects.get(name="convert outreach record")
+        self.role.activities.remove(convert)
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        self.check_status_code_and_objects(response, 403, 0)
+
+    def test_contact_permission(self):
+        """
+        Test that the outreach conversion API does not allow contact creation
+        without create contact permission
+
+        """
+        create = Activity.objects.get(name="create contact")
+        self.role.activities.remove(create)
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        parsed_content = json.loads(response.content)
+        contact_errors = [i['message'] for i in
+                          parsed_content['form_errors']['contact']]
+
+        self.assertEqual(len(contact_errors), 1,
+                         msg="Expected 1 error in partner form, got %s, "
+                             "errors: %s" % (len(contact_errors),
+                                             ', '.join(contact_errors)))
+
+        self.assertEqual(contact_errors[0],
+                         "User does not have permission to create a contact.",
+                         msg="Unexpected error msg: %s " % contact_errors[0])
+
+    def test_partner_permission(self):
+        """
+        Test that the outreach conversion API does not allow partner creation
+        without create partner permission
+
+        """
+        create = Activity.objects.get(name="create partner")
+        self.role.activities.remove(create)
+        response = self.client.post(reverse('api_convert_outreach_record'),
+                                    json.dumps(self.request_data),
+                                    content_type='application/json')
+
+        parsed_content = json.loads(response.content)
+        partner_errors = [i['message'] for i in
+                          parsed_content['form_errors']['partner']]
+
+        self.assertEqual(len(partner_errors), 1,
+                         msg="Expected 1 error in partner form, got %s, "
+                             "errors: %s" % (len(partner_errors),
+                                             ', '.join(partner_errors)))
+
+        self.assertEqual(partner_errors[0],
+                         "User does not have permission to create a partner.",
+                         msg="Unexpected error msg: %s " % partner_errors[0])
+
 
         self.check_status_code_and_objects(response, 400, 0)
 

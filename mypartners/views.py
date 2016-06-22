@@ -1677,9 +1677,14 @@ def api_convert_outreach_record(request):
     contact_tags = data_object['contact'].pop('tags', [])
     contact_locations = data_object['contact'].pop('locations', [])
     contact_location_objects = []
-    contact = return_or_create_object(Contact,
-                                      contact_pk,
-                                      data_object['contact'])
+    create_contact = request.user.can(user_company, "create contact")
+    if contact_pk or create_contact:
+        contact = return_or_create_object(Contact,
+                                          contact_pk,
+                                          data_object['contact'])
+    else:
+        validator.form_error("contact", "User does not have permission to"
+                                        " create a contact.")
 
 
     # parse locations for contact, create where necessary
@@ -1694,9 +1699,15 @@ def api_convert_outreach_record(request):
     partner_pk = data_object['partner'].pop('pk', None)
     partner_tags = data_object['partner'].pop('tags', [])
     data_object['partner']['owner'] = user_company
-    partner = return_or_create_object(Partner,
-                                      partner_pk,
-                                      data_object['partner'])
+    create_partner = request.user.can(user_company, "create partner")
+    if partner_pk or create_partner:
+        partner = return_or_create_object(Partner,
+                                          partner_pk,
+                                          data_object['partner'])
+    else:
+        validator.form_error("partner", "User does not have permission to"
+                                        " create a partner.")
+
 
     contactrecord_tags = data_object['contactrecord'].pop('tags', [])
     data_object['contactrecord']['created_by'] = request.user
