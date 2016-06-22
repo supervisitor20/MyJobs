@@ -18,7 +18,7 @@ class Migration(SchemaMigration):
             name="convert outreach record",
             description="Convert outreach record to contact record")
 
-        for state in ['reviewed','unreviewed','converted']:
+        for state in ['new','waiting for info','complete']:
             OutreachWorkflowState.objects.create(state=state)
 
     def backwards(self, orm):
@@ -32,7 +32,7 @@ class Migration(SchemaMigration):
             description="Convert outreach record to contact record").delete()
 
         OutreachWorkflowState.objects.filter(
-            state__in=['reviewed','unreviewed','converted']).delete()
+            state__in=['new','waiting for info','complete']).delete()
 
     models = {
         u'auth.group': {
