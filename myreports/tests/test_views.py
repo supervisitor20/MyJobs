@@ -206,9 +206,11 @@ class TestReportView(MyReportsTestCase):
         for key in ['applications', 'hires', 'communications', 'emails']:
             self.assertEqual(data[key], 5)
 
-        # check contact stats
-        self.assertEqual(data['contacts'][0]['records'], 5)
-        self.assertEqual(data['contacts'][0]['referrals'], 10)
+        for contact in data['contacts']:
+            self.assertTrue(contact['records'] < 2)
+            self.assertTrue(contact['referrals'] < 2)
+            total = contact['records'] + contact['referrals']
+            self.assertEqual(total, 1)
 
     def test_reports_exclude_archived(self):
         """

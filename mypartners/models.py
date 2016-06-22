@@ -578,6 +578,26 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
     def referrals(self):
         return self.filter(contact_type='job').count()
 
+    @staticmethod
+    def _dict_from_values(values, key_fields, value_field):
+        """
+        Used to match distinct items between querysets based on multiple field 
+        values.
+
+        Inputs:
+            :values: An iterable of dictionaries such as queryset.values()
+                     [{field1: value}, {field2: value}]
+            :key_fields: An ordered iterable of field names whose values will be
+                         used to form a unique key
+            :value_field: The field from values stored in the returned 
+                          dictionary
+        """
+        dictionary = {}
+        for item in values:
+            key = '-'.join([str(item[field]) for field in key_fields])
+            dictionary[key] = item[value_field]
+        return dictionary
+
     @property
     def contacts(self):
         """
@@ -588,22 +608,28 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-        all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name',
-            'contact_email').distinct().order_by('partner__name')
+        all_contacts = self.values('partner__name', 'partner',  'contact__name',
+                'contact', 'contact_email').distinct().order_by('partner__name')
 
-        records = dict(self.exclude(contact_type='job').values_list(
-            'contact__name').annotate(
-                records=models.Count('contact__name')).distinct())
+        # Fields to identify distinct instances for grouping. Names are redundant.
+        distinct_fields = ('partner', 'contact', 'contact_email')
+        record_qs = (self.exclude(contact_type='job').values(
+                         *distinct_fields).annotate(
+                         record_count=models.Count('contact')).distinct())
 
-        referrals = dict(self.filter(contact_type='job').values_list(
-            'contact__name').annotate(
-                referrals=models.Count('contact__name')).distinct())
+        records = self._dict_from_values(record_qs, distinct_fields,
+                                         'record_count')
 
+        referral_qs = self.filter(contact_type='job').values(
+                        *distinct_fields).annotate(
+                        referral_count=models.Count('contact')).distinct()
+
+        referrals = self._dict_from_values(referral_qs, distinct_fields,
+                                           'referral_count')
         for contact in all_contacts:
-            contact['referrals'] = referrals.get(contact['contact__name'], 0)
-            contact['records'] = records.get(contact['contact__name'], 0)
-
+            key = '-'.join([str(contact[field]) for field in distinct_fields])
+            contact['referrals'] = referrals.get(key, 0)
+            contact['records'] = records.get(key, 0)
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
