@@ -1652,8 +1652,8 @@ def api_convert_outreach_record(request):
 
 
     # pull outreach record, validate it belongs to member's company
-    outreach_pk = data_object['outreachrecord'].pop('pk', None)
-    workflow_pk = data_object['outreachrecord'].pop('current_workflow_state',
+    outreach_pk = data_object['outreachrecord'].get('pk', None)
+    workflow_pk = data_object['outreachrecord'].get('current_workflow_state',
                                                     None)
     try:
         outreach_record = OutreachRecord.objects.get(
