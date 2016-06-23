@@ -15,7 +15,6 @@ const pageTips = {
 export const initialNavigation = {
   currentPage: 'overview',
   tips: [],
-  loading: true,
 };
 
 export const navigationReducer = handleActions({
@@ -27,12 +26,6 @@ export const navigationReducer = handleActions({
       ...state,
       currentPage: action.payload,
       tips: pageTips[action.payload] || [],
-    };
-  },
-  'SET_PAGE_LOADING': (state, action) => {
-    return {
-      ...state,
-      loading: action.payload,
     };
   },
 }, initialNavigation);
