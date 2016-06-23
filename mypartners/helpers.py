@@ -264,8 +264,8 @@ def get_records_from_request(request):
 
 def send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
-                                       error, to_email, companies=None,
-                                       is_nuo=False, buckets=None):
+                                       error, to_email, is_nuo=False,
+                                       companies=None, buckets=None):
     bucket = ''
     if buckets:
         bucket = buckets[0]
