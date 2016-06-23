@@ -27,7 +27,7 @@ class NonUserOutreachApp extends Component {
 
         <Row>
           <Col xs={12} md={8}>
-            <Loading />
+            {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
             <Menu tips={tips} />
@@ -48,6 +48,6 @@ NonUserOutreachApp.propTypes = {
 };
 
 export default connect(state => ({
-  loading: state.loading,
+  loading: state.loading.mainPage,
   tips: state.navigation.tips,
 }))(NonUserOutreachApp);
