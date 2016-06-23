@@ -44,8 +44,6 @@ export class App extends React.Component {
     super(props);
     this.state = {
       rolesTableRows: [],
-      currentUserID: null,
-      rolesAPIResults: null,
       tablesOfActivitiesByApp: [],
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
@@ -138,36 +136,28 @@ export class App extends React.Component {
     });
     this.setState({
       rolesTableRows: rolesTableRows,
-      rolesAPIResults: results,
     });
   }
   async callUsersAPI() {
     // Get users once, but reload if needed
     const results = await api.get('/manage-users/api/users/');
     const usersTableRows = [];
-    _.forOwn(results, (user, key) => {
-      // Identify userID of the logged in user
-      if (typeof user === 'number' ) {
-        this.setState({
-          currentUserID: user,
-        });
-      } else {
-        user.roles = JSON.parse(user.roles);
-        usersTableRows.push(
-          <tr key={key}>
-            <td data-title="User Email">{user.email}</td>
-            <td data-title="Associated Roles">
-              <AssociatedRolesList roles={user.roles}/>
-            </td>
-            <td data-title="Status">
-              <Status status={user.status} lastInvitation={user.lastInvitation}/>
-            </td>
-            <td data-title="Edit">
-              <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
-            </td>
-          </tr>
-        );
-      }
+    _.forOwn(results, function buildListOfRows(user, key) {
+      user.roles = JSON.parse(user.roles);
+      usersTableRows.push(
+        <tr key={key}>
+         <td data-title="User Email">{user.email}</td>
+         <td data-title="Associated Roles">
+           <AssociatedRolesList roles={user.roles}/>
+         </td>
+         <td data-title="Status">
+           <Status status={user.status} lastInvitation={user.lastInvitation}/>
+         </td>
+         <td data-title="Edit">
+           <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+         </td>
+       </tr>
+     );
     });
     this.setState({
       usersTableRows: usersTableRows,
@@ -206,11 +196,9 @@ export class App extends React.Component {
                   tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
-                  currentUserID: this.state.currentUserID,
                   callRolesAPI: this.callRolesAPI,
                   callUsersAPI: this.callUsersAPI,
                   api: api,
-                  rolesAPIResults: this.state.rolesAPIResults,
                 })
               }
             </div>
@@ -237,7 +225,7 @@ render((
         <Route path="/role/:roleId" component={Role} />
         <Route path="users" component={Users} />
         <Route path="/user/add" component={User} />
-        <Route path="/user/:userID" component={User} />
+        <Route path="/user/:userId" component={User} />
         <Route path="help-and-tutorials" component={HelpAndTutorials} />
         <Route path="*" component={NoMatch}/>
       </Route>

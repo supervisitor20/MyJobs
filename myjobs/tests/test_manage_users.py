@@ -412,9 +412,6 @@ class ManageUsersTests(MyJobsBase):
         email = first_result['email']
         self.assertIsInstance(email, unicode)
 
-        id_returned = output['id']
-        self.assertEqual(id_returned, expected_user_pk)
-
         lastInvitation = first_result['lastInvitation']
         self.assertIsInstance(lastInvitation, unicode)
 
