@@ -1,4 +1,6 @@
 from django.core.urlresolvers import reverse
+import datetime
+import pytz
 
 from myjobs.forms import ChangePasswordForm
 from myjobs.models import CompanyAccessRequest
@@ -77,3 +79,39 @@ class CompanyAccessRequestFormTests(MyJobsBase):
         # object is cached so we need to refetch it
         access_request = CompanyAccessRequest.objects.get(pk=request.pk)
         self.assertEqual(access_request.authorized_by, self.user)
+
+    def test_expired_request(self):
+        """
+        Expired requests should not be authenticated.
+
+        """
+        # required for django admin during tests, apparently
+        self.user.is_superuser = True
+        self.user.save()
+
+        # give us a handle to the unhashed access code
+        access_code = '1234ABCD'
+        requesting_user = UserFactory(email="requestuser@example.com")
+        yesterday = datetime.datetime.now(
+            tz=pytz.UTC) - datetime.timedelta(days=1)
+        request = CompanyAccessRequestFactory(
+            access_code=hashlib.md5(access_code).hexdigest(),
+            requested_by=requesting_user)
+
+        # force the request to be expired
+        request.requested_on = yesterday
+        request.save()
+
+        self.assertTrue(request.expired)
+
+        data = {
+            "company": self.company.pk,
+            "verification_code": access_code
+        }
+        admin_url = reverse("admin:myjobs_companyaccessrequest_change",
+                            args=(request.pk,))
+        response = self.client.post(path=admin_url, data=data, follow=True)
+
+        # object is cached so we need to refetch it
+        access_request = CompanyAccessRequest.objects.get(pk=request.pk)
+        self.assertEqual(access_request.authorized_by, None)
