@@ -159,7 +159,10 @@
         </ul>
     </div>
 </div>
-<script>
-$(document).ready(function(){RetrieveExternalCampaignCookie();});
-</script>
+{% endblock %}
+{% block extra-js %}
+    <script>
+        $(document).ready(function(){RetrieveExternalCampaignCookie();});
+    </script>
+    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,1"></script> 
 {% endblock %}
