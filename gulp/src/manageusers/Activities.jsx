@@ -58,7 +58,15 @@ class Activities extends React.Component {
 }
 
 Activities.propTypes = {
-  activitiesList: React.PropTypes.array.isRequired,
+  activitiesList: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      activity_description: React.PropTypes.string.isRequired,
+      activity_id: React.PropTypes.number.isRequired,
+      activity_name: React.PropTypes.string.isRequired,
+      app_access_id: React.PropTypes.number.isRequired,
+      app_access_name: React.PropTypes.string.isRequired,
+    }).isRequired,
+  ).isRequired,
 };
 
 export default connect(s => ({
