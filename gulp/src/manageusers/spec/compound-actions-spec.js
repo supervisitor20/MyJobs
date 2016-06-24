@@ -68,105 +68,18 @@ describe('doRefreshActivities', () => {
     });
   });
 
+  describe('after API fails:', () => {
+    let runPromise;
+    let resolve;
+    let reject;
 
+    beforeEach(promiseTest(async () => {
+      spyOn(api, 'get').and.throwError(new Error("some error"));
+      await store.dispatch(doRefreshActivities())
+    }));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    describe('after API fails:', () => {
-      let runPromise;
-      let resolve;
-      let reject;
-
-      beforeEach(promiseTest(async () => {
-        spyOn(api, 'get').and.throwError(new Error("some error"));
-        await store.dispatch(doRefreshActivities())
-      }));
-
-      it('data is unchanged', () => {
-        expect(store.getState().data).not.toBeDefined();
-      });
-    });
-
-
-
-
-});
-/*
-    it('state has resolve callback', () => {
-      expect(resolve).toBeDefined();
-    });
-
-    it('state has reject callback', () => {
-      expect(reject).toBeDefined();
-    });
-
-    describe('after ok completion:', () => {
-      let result;
-
-      beforeEach(promiseTest(async () => {
-        resolve(true);
-        result = await runPromise;
-      }));
-
-      it('has a result', () => {
-        expect(result).toBe(true);
-      });
-
-      it('state is clear', () => {
-        expect(store.getState().data).toEqual({
-          show: false,
-        });
-      });
-    });
-
-    describe('after cancel completion:', () => {
-      let result;
-
-      beforeEach(promiseTest(async () => {
-        resolve(false);
-        result = await runPromise;
-      }));
-
-      it('has a result', () => {
-        expect(result).toBe(false);
-      });
-
-      it('state is clear', () => {
-        expect(store.getState().data).toEqual({
-          show: false,
-        });
-      });
-    });
-
-    describe('after error completion:', () => {
-      let result;
-
-      it('throws an exception', promiseTest(async () => {
-        const error = new Error('some error');
-        reject(error);
-        try {
-          await runPromise;
-          fail('expected runPromise to throw exception');
-        } catch(e) {}
-      }));
+    it('data is unchanged', () => {
+      expect(store.getState().data).not.toBeDefined();
     });
   });
-*/
+});

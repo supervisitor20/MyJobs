@@ -1,7 +1,5 @@
 import {createAction} from 'redux-actions';
 
-
-
 /**
  * We have a new list of activities.
  *

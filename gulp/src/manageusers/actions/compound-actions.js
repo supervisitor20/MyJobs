@@ -6,12 +6,8 @@ import {
   replaceActivitiesListAction,
 } from './activities-list-actions';
 
-
-
 /**
- * User refreshed a report.
- *
- * reportId: id of report to refresh
+ * Calling activities API
  */
 export function doRefreshActivities() {
   return async (dispatch, _, {api}) => {
