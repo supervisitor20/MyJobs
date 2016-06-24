@@ -1,34 +1,36 @@
-import React, {PropTypes} from 'react';
+import React from 'react';
+import {Link} from 'react-router';
 
-import {InboxManagementButton} from './InboxManagementButton';
-import {OverviewButton} from './OverviewButton';
-import {OutreachRecordButton} from './OutreachRecordButton';
+/* Menu
+ * Component for displaying navigation and tips relevant to the current page.
+ */
+export class Menu extends React.Component {
+  render() {
+    const {tips} = this.props;
+    const pageTips = tips.length ? [
+      <h2>Tips</h2>,
+      tips.map((tip, i) => <p key={i}>{tip}</p>),
+    ] : [];
 
-// navigation links
-export function Menu(props) {
-  const {tips, changePage} = props;
-  let tipsHeader;
-  let tipsComponent;
-  if (tips && tips.length > 0) {
-    tipsComponent = tips.map((tip, i) => <p key={i}>{tip}</p>
+    return (
+        <div className="sidebar">
+          <h2 className="top">Navigation</h2>
+          <Link to="/overview" className="btn">
+            Overview
+          </Link>
+          <Link to="/inboxes" className="btn">
+            Inbox Management
+          </Link>
+          <Link to="/records" className="btn">
+            Outreach Records
+          </Link>
+          {pageTips}
+        </div>
     );
-    tipsHeader = <h2>Tips</h2>;
   }
-  return (
-    <div className="col-xs-12 col-md-4">
-      <div className="sidebar">
-        <h2 className="top">Navigation</h2>
-        <OverviewButton changePage={changePage} />
-        <InboxManagementButton changePage={changePage} />
-        <OutreachRecordButton changePage={changePage} />
-        {tipsHeader}
-        {tipsComponent}
-      </div>
-    </div>
-  );
 }
 
 Menu.propTypes = {
-  tips: PropTypes.arrayOf(PropTypes.string).isRequired,
-  changePage: PropTypes.func.isRequired,
+  // the tips to be displayed
+  tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
 };

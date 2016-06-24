@@ -9,6 +9,7 @@
 .btn {
     padding-top: 6px;
     padding-bottom: 7px;
+    background-image: linear-gradient(rgb(255, 255, 255), rgb(230, 230, 230));
 }
 
 .clear {
@@ -493,7 +494,7 @@ h1 > small > a:hover {
 .product-card {
     background-color: #F7F7F7;
     box-sizing: border-box;
-    padding: 15px 75px 15px 10px;
+    padding: 15px 15px 15px 10px;
     border: 1px solid #E5E5E5;
     position: relative;
 }
@@ -3482,6 +3483,10 @@ fieldset:nth-child(n+2) {
     margin: 0 0 10px 0;
 }
 
+.row .col-md-8 .input-group input {
+  margin: 0;
+}
+
 .row .col-md-8 textarea {
   height: auto;
 }
@@ -5032,6 +5037,15 @@ a.btn.pull-right {
   .topbar-inner {
     height: 30px !important;
   }
+
+  .modal.fade .modal-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
 }
 @media(min-width:1200px){
 
@@ -5104,4 +5118,11 @@ a.btn.pull-right {
 
 .react-component input {
   margin: 0 0 10px 0;
+}
+
+.modal.fade .modal-dialog {
+  transition: none;
+  -moz-transition: none;
+  -ms-transition: none;
+  -webkit-transition: none;
 }

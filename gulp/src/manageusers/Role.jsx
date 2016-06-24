@@ -10,6 +10,10 @@ import ActivitiesAccordion from './ActivitiesAccordion';
 
 import UsersMultiselect from './UsersMultiselect';
 
+import {connect} from 'react-redux';
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
+
+
 class Role extends React.Component {
   constructor(props) {
     super(props);
@@ -207,9 +211,10 @@ class Role extends React.Component {
     }
   }
   async handleDeleteRoleClick() {
-    const {api, history} = this.props;
+    const {api, history, dispatch} = this.props;
 
-    if (confirm('Are you sure you want to delete this role?') === false) {
+    const message = 'Are you sure you want to delete this role?';
+    if (! await runConfirmInPlace(dispatch, message)) {
       return;
     }
 
@@ -295,6 +300,7 @@ class Role extends React.Component {
 }
 
 Role.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   location: React.PropTypes.object.isRequired,
   params: React.PropTypes.object.isRequired,
   callRolesAPI: React.PropTypes.func,
@@ -302,4 +308,4 @@ Role.propTypes = {
   api: React.PropTypes.object,
 };
 
-export default Role;
+export default connect()(Role);

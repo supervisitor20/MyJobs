@@ -18,9 +18,11 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
+from django.core.exceptions import ValidationError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import (Http404, HttpResponse, HttpResponseRedirect,
+                        HttpResponseNotAllowed, HttpResponseBadRequest)
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
@@ -34,6 +36,7 @@ import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
+from universal.api_validation import MultiFormApiValidator
 from myjobs.models import User
 
 from myjobs.decorators import requires
@@ -48,7 +51,7 @@ from mypartners.models import (Partner, Contact, ContactRecord,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
                                Location, OutreachEmailAddress, OutreachRecord,
                                PartnerLibrarySource, OutreachWorkflowState,
-                               OutreachEmailDomain)
+                               OutreachEmailDomain, Status)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1196,9 +1199,8 @@ def process_email(request):
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
     bcc_addresses = []
     try:
-        # prm@my.jobs appears in the 'envelope' parameter
-        # posted from SendGrid if prm@my.jobs was added
-        # via BCC
+        # prm@my.jobs (and other outreach addresses) appears in the 'envelope'
+        # parameter posted from SendGrid if we were added to this email via BCC
         envelope = json.loads(request.POST.get('envelope',
                                                ''))
     except ValueError:
@@ -1206,7 +1208,8 @@ def process_email(request):
         pass
     else:
         bcc_addresses = envelope.get('to', [])
-        recipient_emails_and_names += getaddresses(bcc_addresses)
+        if bcc_addresses:
+            recipient_emails_and_names += getaddresses(bcc_addresses)
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
 
@@ -1229,7 +1232,7 @@ def process_email(request):
         contact_emails, email_text, PRM_EMAIL_HOST, NUO_LOCAL, admin_email,
         date_time)
 
-    partners, companies, error = determine_partners(
+    partners, company, error = determine_partners(
         request, admin_user, contact_emails, admin_email, NUO_HOSTS, is_nuo)
     if error is not None:
         return error
@@ -1254,7 +1257,7 @@ def process_email(request):
                                        attachment_failures, unmatched_contacts,
                                        None, admin_email,
                                        is_nuo=not bool(admin_user),
-                                       companies=companies,
+                                       company=company,
                                        buckets=NUO_LOCAL)
     return HttpResponse(status=200)
 
@@ -1690,11 +1693,12 @@ def api_get_nuo_inbox_list(request):
 
     """
     company = get_company_or_404(request)
+    inboxes = OutreachEmailAddress.objects.filter(company=company).values(
+        'pk', 'email')
 
-    inboxes = OutreachEmailAddress.objects.filter(company=company)
-    ctx = serializers.serialize("json", inboxes, fields=('email',))
-
-    return HttpResponse(ctx)
+    return HttpResponse(
+        json.dumps(
+            list(inboxes)), content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()
@@ -1770,15 +1774,13 @@ def api_get_nuo_records_list(request):
     company = get_company_or_404(request)
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
     records = OutreachRecord.objects.filter(outreach_email__in=outreach_emails)
-    json_res = []
-    for record in records:
-        json_obj = dict(
-            date_added = record.date_added.strftime('%m-%d-%Y'),
-            outreach_email = record.outreach_email.email + '@my.jobs',
-            from_email = record.from_email,
-            current_workflow_state = record.current_workflow_state.state,
-        )
-        json_res.append(json_obj)
+    json_res = [{
+        'dateAdded': record.date_added.strftime('%m-%d-%Y'),
+        'outreachEmail': record.outreach_email.email + '@my.jobs',
+        'fromEmail': record.from_email,
+        'currentWorkflowState': record.current_workflow_state.state,
+    } for record in records]
+
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 @restrict_to_staff()
@@ -1809,6 +1811,249 @@ def api_get_individual_nuo_record(request):
         json_obj = {}
 
     return HttpResponse(json.dumps(json_obj), mimetype='application/json')
+
+@csrf_exempt
+@restrict_to_staff()
+@requires("convert outreach record")
+def api_convert_outreach_record(request):
+    """
+    POST /prm/api/nonuseroutreach/records/convert
+
+    convert data object into contactrecord, create partner, contact where
+    necessary.
+
+    Example data object (JSON):
+    This example represents a data set with a NEW partner and contact. If
+    either was selected from an existing record, only the PK field of that
+    object would be populated, ex. {... contact:{pk:"12"} ...}
+
+    {
+        "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
+
+        "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
+        "tags":["12", "68"], "approval_status": "3"},
+
+        "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
+        "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
+        "city":"Newtoneous", "state":"AZ", "country_code":"1",
+        "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
+        "approval_status":"3"},
+
+        "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
+        "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
+        "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
+        "tags":["10", "15", "3"], "approval_status":"1a"}
+    }
+
+    :return: status code 200 on success, 400, 405 indicates error
+
+    """
+    def add_tags_to_object(tagged_object, tags_list):
+        """
+        add tags from list of tags to the object
+
+        :param tagged_object: object to add tags
+        :param tags_list: list of tag PKs
+        :return: None
+
+        """
+        try:
+            tags = Tag.objects.filter(pk__in=tags_list)
+            tagged_object.tags.add(*list(tags))
+        except ValueError as ve:
+            validator.form_field_error(tagged_object.__class__.__name__.lower(),
+                                       'tags', 'invalid pk provided for tag')
+
+    def return_or_create_object(target_model, object_pk, data_dict={},
+                                parent_field=None):
+        """
+        retrieve or create an object based on the inputs. if pk provided,
+        retrieve an object. else, use data_dict to create the object and
+        return it. if the object being returned is the child of a field (ex.
+        contact's location, partner's tag) then the parent field is supplied.
+        this function also checks if an approval status id exists in
+        and swaps it with the corresponding object within the data dictionary
+
+        :param target_model: model for use to create or retrieve object
+        :param object_pk: pk of existing object
+        :param data_dict: data to generate new object
+        :param parent_field: object is child of field, ex. partner's tag
+        :return: existing or newly created object
+
+        """
+        return_object = None
+        field_name = parent_field or target_model.__name__.lower()
+        if data_dict.get('approval_status'):
+            try:
+                approval = Status(code=data_dict['approval_status'],
+                                  approved_by=request.user)
+                data_dict['approval_status'] = approval
+            except ValueError:
+                validator.form_field_error(field_name,
+                                           'approval_status',
+                                           'approval status %s invalid' % object_pk)
+
+        if object_pk:
+            try:
+                return_object = target_model.objects.get(pk=object_pk)
+            except target_model.DoesNotExist:
+                validator.form_error(field_name,
+                                     'object not found for PK %s' % object_pk)
+            except ValueError:
+                validator.form_error(field_name,
+                                     '%s is not a valid pk' % object_pk)
+        else:
+            try:
+                return_object = target_model(**data_dict)
+                return_object.full_clean()
+            except ValidationError as ve:
+                for key, value in ve.message_dict.iteritems():
+                    validator.form_field_error(field_name,
+                                               key, value)
+            except TypeError as te:
+                validator.form_error(field_name,
+                                     "erroneous field detected in data dict")
+                return None
+
+        return return_object
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    user_company = get_company_or_404(request)
+    data_object = request.body
+    valid_keys = ['outreachrecord', 'contactrecord', 'contact', 'partner']
+    validator = MultiFormApiValidator(valid_keys)
+
+    if not data_object:
+        validator.api_error('data object not provided')
+        return validator.build_error_response()
+
+    try:
+        data_object = json.loads(data_object)
+    except (TypeError, ValueError):
+        validator.api_error('data object not formatted for JSON')
+        return validator.build_error_response()
+
+    # verify that data object has correct keys, no additional keys and
+    # that the value is a dict
+    for key, value in data_object.iteritems():
+        try:
+            index_of_key = valid_keys.index(key)
+        except ValueError:
+            index_of_key = None
+
+        if index_of_key is None:
+            validator.api_error('%s is an invalid key' % key)
+            continue
+        valid_keys.pop(index_of_key)
+        if not isinstance(value, dict):
+            validator.api_error('error in key %s, expected dict, got %s.'
+                                % (key, type(value)))
+
+    # if any keys remain in the list, they were not in the data dict.
+    if valid_keys:
+        validator.api_error('object missing keys %s' % ', '.join(valid_keys))
+
+    # if there are any errors at this point, end processing
+    if validator.api_errors:
+        return validator.build_error_response()
+
+
+    # pull outreach record, validate it belongs to member's company
+    outreach_pk = data_object['outreachrecord'].get('pk', None)
+    workflow_pk = data_object['outreachrecord'].get('current_workflow_state',
+                                                    None)
+    try:
+        outreach_record = OutreachRecord.objects.get(
+            pk=outreach_pk, outreach_email__company=user_company
+        )
+    except OutreachRecord.DoesNotExist:
+        validator.form_error('outreachrecord', "invalid outreach record pk")
+
+    try:
+        workflow_status = OutreachWorkflowState.objects.get(pk=workflow_pk)
+    except OutreachWorkflowState.DoesNotExist:
+        validator.form_error('outreachrecord', "invalid outreach workflow pk")
+
+
+    # parse contact information
+    # pop is used to pull out necessary information and remove it from
+    # subsequent object creation. from here, we mold the dict to be used
+    # as a keyword dict to create a contact from the model
+    # during this step, the models are VALIDATED, but NOT SAVED
+    contact_pk = data_object['contact'].pop('pk', None)
+    contact_tags = data_object['contact'].pop('tags', [])
+    contact_locations = data_object['contact'].pop('locations', [])
+    contact_location_objects = []
+    create_contact = request.user.can(user_company, "create contact")
+    if contact_pk or create_contact:
+        contact = return_or_create_object(Contact,
+                                          contact_pk,
+                                          data_object['contact'])
+    else:
+        validator.form_error("contact", "User does not have permission to"
+                                        " create a contact.")
+
+
+    # parse locations for contact, create where necessary
+    for location in contact_locations:
+        location_pk = location.pop('pk', None)
+        location_object = return_or_create_object(Location,
+                                                  location_pk,
+                                                  location,
+                                                  'contact')
+        contact_location_objects.append(location_object)
+
+    partner_pk = data_object['partner'].pop('pk', None)
+    partner_tags = data_object['partner'].pop('tags', [])
+    data_object['partner']['owner'] = user_company
+    create_partner = request.user.can(user_company, "create partner")
+    if partner_pk or create_partner:
+        partner = return_or_create_object(Partner,
+                                          partner_pk,
+                                          data_object['partner'])
+    else:
+        validator.form_error("partner", "User does not have permission to"
+                                        " create a partner.")
+
+
+    contactrecord_tags = data_object['contactrecord'].pop('tags', [])
+    data_object['contactrecord']['created_by'] = request.user
+    contact_record = return_or_create_object(ContactRecord,
+                                             None,
+                                             data_object['contactrecord'])
+
+    # if there are any errors at this point, return them to the UI
+    if validator.has_errors():
+        return validator.build_error_response()
+
+    # save all objects
+    contact.save()
+    add_tags_to_object(contact, contact_tags)
+    for c_location in contact_location_objects:
+        c_location.save()
+        contact.locations.add(c_location)
+
+    partner.primary_contact = contact
+    partner.save()
+    add_tags_to_object(partner, partner_tags)
+
+    # partner had to be linked after partner was saved, so add and re-save
+    contact.partner = partner
+    contact.save()
+
+    contact_record.partner = partner
+    contact_record.contact = contact
+    contact_record.save()
+    add_tags_to_object(contact_record, contactrecord_tags)
+
+    outreach_record.current_workflow_state = workflow_status
+    outreach_record.save()
+
+    if validator.has_errors():
+        return validator.build_error_response()
+    return HttpResponse("success")
 
 @requires('read tag')
 def tag_names(request):

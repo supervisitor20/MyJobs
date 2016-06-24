@@ -13,12 +13,16 @@
     {% endif %}
 {% endblock publisher %}
 
-        {% block directseo_main_content%}
-        {% if site_config.body %} {{site_config.body|safe}} {% endif %}        
-        {% endblock %}
+{% block directseo_main_content%}
+    {% if site_config.body %} {{site_config.body|safe}} {% endif %}        
+{% endblock %}
 
-        {% block directseo_searchbox %}{% endblock %}
+{% block directseo_searchbox %}{% endblock %}
 
-        {% block directseo_off_site_links %}{% endblock %}
+{% block directseo_off_site_links %}{% endblock %}
 
-        {% block directseo_micrositecarousel %}{% endblock %}
+{% block directseo_micrositecarousel %}{% endblock %}
+
+{% block extra-js %}
+    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0"></script> 
+{% endblock %}
