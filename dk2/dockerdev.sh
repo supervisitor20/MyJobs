@@ -106,6 +106,11 @@ backgroundstop() {
     docker rm revproxy || true
 }
 
+bgrst() {
+    backgroundstop || true
+    background || true
+}
+
 restartsecure() {
     docker stop secure.my.jobs || true
     docker rm secure.my.jobs || true
