@@ -1280,6 +1280,20 @@ def check_company_connections(request, admin_email, nuo_hosts, email_domain):
     What we need to do is grab the user, if one exists, that is associated
     with the provided email address and determine what, if any, companies
     it is connected to.
+
+    Inputs:
+    :request: http request
+    :admin_email: sender of this email
+    :nuo_hosts: list of outreach addresses found in this email
+    :email_domain: OutreachEmailDomain instance that matches admin_email,
+        if one exists
+
+    Outputs:
+    :admin_user: user connected to admin_email, if one exists
+    :admin_email: admin_user's primary address (if admin_user exists) or input
+        admin_email
+    :is_nuo: bool; is this a non-user outreach email
+    :error:
     """
     admin_user = User.objects.get_email_owner(admin_email,
                                               only_verified=True)
