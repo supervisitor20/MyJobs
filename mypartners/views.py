@@ -1194,6 +1194,19 @@ def process_email(request):
     to = request.REQUEST.get('to', '')
     cc = request.REQUEST.get('cc', '')
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
+    bcc_addresses = []
+    try:
+        # prm@my.jobs appears in the 'envelope' parameter
+        # posted from SendGrid if prm@my.jobs was added
+        # via BCC
+        envelope = json.loads(request.POST.get('envelope',
+                                               ''))
+    except ValueError:
+        # envelope was not valid JSON or was not provided
+        pass
+    else:
+        bcc_addresses = envelope.get('to', [])
+        recipient_emails_and_names += getaddresses(bcc_addresses)
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
 
@@ -1207,6 +1220,7 @@ def process_email(request):
 
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
+    newrelic.agent.add_custom_parameter("bcc", bcc_addresses)
     newrelic.agent.add_custom_parameter("admin_email", admin_email)
     newrelic.agent.add_custom_parameter("contact_emails",
                                         ", ".join(contact_emails))
