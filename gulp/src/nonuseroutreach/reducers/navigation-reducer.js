@@ -4,7 +4,7 @@ import {handleActions} from 'redux-actions';
 // page
 const pageTips = {
   inboxes: [
-    'Use this page to manage the various email addresses to which you will' +
+    'Use this page to manage the various email addresses to which you will ' +
     'have your employees send outreach emails.',
   ],
   records: [
