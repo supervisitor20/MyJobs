@@ -1269,14 +1269,17 @@ def check_company_connections(request, admin_email, nuo_hosts, email_domain):
 
     if admin_user is None:
         if nuo_hosts:
-            # It is perfectly acceptable for a non-user outreach participant
-            # to not have an associated User.
-            logger.info("Email address {email} could not be associated "
-                        "with a verified user but NUO addresses {nuo} "
-                        "were found".format(
-                            email=admin_email,
-                            nuo=",".join(map(unicode, nuo_hosts))))
-            return None, admin_email, True, None
+            if email_domain:
+                # It is perfectly acceptable for a non-user outreach
+                # participant to not have an associated User.
+                logger.info("Email address {email} could not be associated "
+                            "with a verified user but NUO addresses {nuo} "
+                            "were found".format(
+                                email=admin_email,
+                                nuo=",".join(map(unicode, nuo_hosts))))
+                return None, admin_email, True, None
+            else:
+                return None, None, None, HttpResponse(20)
         else:
             # At least one of admin_user or nuo_hosts must be truthy -
             # non-user outreach participants cannot create records by emailing

@@ -32,7 +32,8 @@ from mysearches.tests.factories import PartnerSavedSearchFactory
 from mypartners import views
 from mypartners.models import (Contact, ContactRecord, ContactLogEntry,
                                Partner, PartnerLibrary, ADDITION,
-                               OutreachEmailAddress, OutreachRecord)
+                               OutreachEmailAddress, OutreachRecord,
+                               OutreachEmailDomain)
 from mypartners.helpers import find_partner_from_email, get_library_partners
 from mypartners.views import process_email
 from mysearches.models import PartnerSavedSearch
@@ -1208,9 +1209,11 @@ class EmailTests(MyPartnersTestCase):
         new_contact = ContactFactory(partner=self.partner,
                                      user=UserFactory(email='new@user.com'),
                                      email='new@user.com')
+        OutreachEmailDomain.objects.create(company=self.company,
+                                           domain='good.com')
         self.data['to'] = ', '.join([self.full_outreach_address,
                                      self.contact.email])
-        self.data['from'] = 'non-user@my.jobs'
+        self.data['from'] = 'non-user@good.com'
         self.data['cc'] = new_contact.email
         response = self.client.post(reverse('process_email'), self.data)
 
@@ -1232,6 +1235,22 @@ class EmailTests(MyPartnersTestCase):
         record = OutreachRecord.objects.get(contacts__email=new_contact.email)
         self.assertEqual(record.email_body, self.data['text'])
         self.assertEqual(self.data['subject'], self.data['subject'])
+
+    def test_outreach_record_with_wrong_email_domain(self):
+        new_contact = ContactFactory(partner=self.partner,
+                                     user=UserFactory(email='new@user.com'),
+                                     email='new@user.com')
+        OutreachEmailDomain.objects.create(company=self.company,
+                                           domain='good.com')
+        self.data['to'] = ', '.join([self.full_outreach_address,
+                                     self.contact.email])
+        self.data['from'] = 'non-user@bad.com'
+        self.data['cc'] = new_contact.email
+
+        response = self.client.post(reverse('process_email'), self.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_contact_record_and_log_creation(self):
         new_contact = ContactFactory(partner=self.partner,
