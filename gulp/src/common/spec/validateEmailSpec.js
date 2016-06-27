@@ -1,4 +1,4 @@
-import {validateEmail} from '../../common/validateEmail';
+import {validateEmail} from '../../common/email-validators';
 
 describe('ValidateEmail', () => {
   it('can discover malformed emails', () => {

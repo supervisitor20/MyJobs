@@ -31,7 +31,7 @@ from myjobs.helpers import log_to_jira
 from mymessages.models import Message
 from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
                                DOM_CHOICES, DOW_CHOICES)
-from mypartners.models import PartnerLibrary
+from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
 import import_jobs
 from import_jobs.models import ImportRecord
@@ -221,14 +221,14 @@ PARTNER_LIBRARY_SOURCES = {
       default_retry_delay=180, max_retries=2)
 def update_partner_library():
 
-    for source, data in PARTNER_LIBRARY_SOURCES.items():
+    for source in PartnerLibrarySource.objects.all():
         print "Connecting to %s...." % source
         print "Parsing data for PartnerLibrary information..."
 
         added = skipped = 0
-        for partner in get_library_partners(data['search_url'],
-                                            data['download_url'],
-                                            data.get('params')):
+        for partner in get_library_partners(source.search_url,
+                                            source.download_url,
+                                            json.loads(source.params)):
             # the second join + split take care of extra internal whitespace
             fullname = " ".join(" ".join([partner.first_name,
                                           partner.middle_name,
@@ -238,13 +238,13 @@ def update_partner_library():
 
             for email in emails:
                 # disambiguate records by source, contact name, and address
-                if not PartnerLibrary.objects.filter(data_source=source,
+                if not PartnerLibrary.objects.filter(data_source=source.name,
                                                      contact_name=fullname,
                                                      st=partner.st,
                                                      city=partner.city,
                                                      email=email).exists():
                     PartnerLibrary.objects.create(
-                        data_source=source,
+                        data_source=source.name,
                         name=partner.organization_name,
                         uri=partner.website,
                         region=partner.region,

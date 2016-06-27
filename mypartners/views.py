@@ -46,7 +46,8 @@ from mypartners.forms import (PartnerForm, ContactForm,
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
-                               Location, OutreachEmailAddress, OutreachRecord)
+                               Location, OutreachEmailAddress, OutreachRecord,
+                               PartnerLibrarySource)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -120,7 +121,8 @@ def partner_library(request):
     ctx = {
         'company': company,
         'view_name': 'PRM',
-        'partners': paginator
+        'partners': paginator,
+        'sources': PartnerLibrarySource.objects.values('search_url', 'name')
     }
 
     return render_to_response('mypartners/partner_library.html', ctx,
@@ -1160,7 +1162,7 @@ def process_email(request):
     Creates a contact record from an email received via POST.
 
     """
-    PRM_EMAIL = 'prm@%s' % settings.PRM_EMAIL_HOST
+    PRM_EMAIL_HOST = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
         logger.warning("process_email: received {method} request, returning "
                        "early.".format(method=request.method))
@@ -1209,7 +1211,6 @@ def process_email(request):
         return HttpResponse(status=200)
     else:
         admin_email = admin_user.email
-
     # This info will only be sent to newrelic if an exception is raised.
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
@@ -1218,8 +1219,8 @@ def process_email(request):
                                         ", ".join(contact_emails))
 
     if contact_emails == [] or (len(contact_emails) == 1 and
-                                contact_emails[0].lower() == PRM_EMAIL):
-        # If PRM_EMAIL is the only contact, assume it's a forward.
+                                contact_emails[0].lower() == PRM_EMAIL_HOST):
+        # If PRM_EMAIL_HOST is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
             recipient_emails_and_names = fwd_headers[0]['recipients']
@@ -1235,7 +1236,7 @@ def process_email(request):
 
     validated_contacts = []
     for element in contact_emails:
-        if not element.lower() == PRM_EMAIL and validate_email(element):
+        if not element.lower() == PRM_EMAIL_HOST and validate_email(element):
             validated_contacts.append(element)
 
     contact_emails = validated_contacts
@@ -1382,11 +1383,12 @@ def api_get_nuo_inbox_list(request):
 
     """
     company = get_company_or_404(request)
+    inboxes = OutreachEmailAddress.objects.filter(company=company).values(
+        'pk', 'email')
 
-    inboxes = OutreachEmailAddress.objects.filter(company=company)
-    ctx = serializers.serialize("json", inboxes, fields=('email',))
-
-    return HttpResponse(ctx)
+    return HttpResponse(
+        json.dumps(
+            list(inboxes)), content_type='application/json; charset=utf-8')
 
 
 @restrict_to_staff()
@@ -1462,15 +1464,13 @@ def api_get_nuo_records_list(request):
     company = get_company_or_404(request)
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
     records = OutreachRecord.objects.filter(outreach_email__in=outreach_emails)
-    json_res = []
-    for record in records:
-        json_obj = dict(
-            date_added = record.date_added.strftime('%m-%d-%Y'),
-            outreach_email = record.outreach_email.email + '@my.jobs',
-            from_email = record.from_email,
-            current_workflow_state = record.current_workflow_state.state,
-        )
-        json_res.append(json_obj)
+    json_res = [{
+        'dateAdded': record.date_added.strftime('%m-%d-%Y'),
+        'outreachEmail': record.outreach_email.email + '@my.jobs',
+        'fromEmail': record.from_email,
+        'currentWorkflowState': record.current_workflow_state.state,
+    } for record in records]
+
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 @restrict_to_staff()
