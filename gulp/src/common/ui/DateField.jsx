@@ -77,6 +77,7 @@ class DateField extends React.Component {
     fakeEvent.target.value = month;
     onChange(fakeEvent);
   }
+
   updateYear(year) {
     const {onChange, value} = this.props;
 
@@ -91,13 +92,23 @@ class DateField extends React.Component {
     fakeEvent.target.value = year;
     onChange(fakeEvent);
   }
+
+  // Create an array of choices to add to the year box. The choices will be
+  // such that the current year sits in the middle of the :numberOfYears:
+  // provided. For example, if this year is 2016 and 10 is passed in, you would
+  // get entries for 2011-2020.
   generateYearChoices(numberOfYears) {
     const now = new Date();
-    const currentYear = now.getFullYear();
+    const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
+    const offset = Math.floor(pivot / 2);
+    const startYear = now.getFullYear() + offset;
 
     const yearChoices = [];
     for (let i = 0; i < numberOfYears; i++) {
-      yearChoices.push({value: (currentYear - i), display: (currentYear - i).toString()});
+      yearChoices.push({
+        value: (startYear - i),
+        display: (startYear - i).toString(),
+      });
     }
     return yearChoices;
   }
@@ -195,7 +206,7 @@ class DateField extends React.Component {
                       onMonthChange={m => this.updateMonth(m)}
                       onSelect={d => this.onDaySelect(d)}
                       closeCalendar={() => this.closeCalendar()}
-                      yearChoices={this.generateYearChoices(50)}
+                      yearChoices={this.generateYearChoices(10)}
                       />
                   </div>);
     }
