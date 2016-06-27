@@ -99,7 +99,9 @@ class DateField extends React.Component {
   // get entries for 2011-2020.
   generateYearChoices(numberOfYears) {
     const now = new Date();
+    // the middle of the date range where the current year should lie
     const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
+    // how many years should come before and after the current year
     const offset = Math.floor(pivot / 2);
     const startYear = now.getFullYear() + offset;
 
