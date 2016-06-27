@@ -1,13 +1,11 @@
 from datetime import date, timedelta
 from email.parser import HeaderParser
 from email.utils import getaddresses
-from itertools import chain
 import json
 import logging
 from lxml import etree
 import pytz
 import re
-import sys
 import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
@@ -16,8 +14,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
-from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
+from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -39,7 +39,6 @@ from universal.decorators import warn_when_inactive, restrict_to_staff
 from universal.api_validation import MultiFormApiValidator
 from myjobs.models import User
 
-from seo.models import Company
 from myjobs.decorators import requires
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
@@ -51,8 +50,8 @@ from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
                                Location, OutreachEmailAddress, OutreachRecord,
-                               OutreachWorkflowState, PartnerLibrarySource,
-                               Status)
+                               PartnerLibrarySource, OutreachWorkflowState,
+                               OutreachEmailDomain, Status)
 from mypartners.helpers import (prm_worthy, add_extra_params,
                                 add_extra_params_to_jobs, log_change,
                                 contact_record_val_to_str, retrieve_fields,
@@ -1164,11 +1163,12 @@ def prm_export(request):
 @csrf_exempt
 def process_email(request):
     """
-    Creates a contact record from an email received via POST.
-
+    Creates one or more contact/outreach records from an email
+    received via POST.
     """
     PRM_EMAIL_HOST = 'prm@%s' % settings.PRM_EMAIL_HOST
     if request.method != 'POST':
+        # We receive emails via HTTP POST. Any other verbs are denied.
         logger.warning("process_email: received {method} request, returning "
                        "early.".format(method=request.method))
         return HttpResponse(status=200)
@@ -1197,34 +1197,240 @@ def process_email(request):
     to = request.REQUEST.get('to', '')
     cc = request.REQUEST.get('cc', '')
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
+    bcc_addresses = []
+    try:
+        # prm@my.jobs (and other outreach addresses) appears in the 'envelope'
+        # parameter posted from SendGrid if we were added to this email via BCC
+        envelope = json.loads(request.POST.get('envelope',
+                                               ''))
+    except ValueError:
+        # envelope was not valid JSON or was not provided
+        pass
+    else:
+        bcc_addresses = envelope.get('to', [])
+        if bcc_addresses:
+            recipient_emails_and_names += getaddresses(bcc_addresses)
     contact_emails = filter(None,
                             [email[1] for email in recipient_emails_and_names])
 
-    admin_emails = [name_email[1] for name_email in getaddresses([admin_email])]
+    NUO_HOSTS = OutreachEmailAddress.objects.filter(email__in=[
+        contact.rsplit('@', 1)[0] for contact in contact_emails])
+    NUO_LOCAL = [host.email for host in NUO_HOSTS]
+    admin_user, admin_email, is_nuo, error = get_admin(request, admin_email,
+                                                       NUO_HOSTS)
+    if error is not None:
+        return error
 
-    # Get the first valid user based on admin_emails. getaddresses can 
-    # return an extra tuple with an invalid email address.
-    for admin_email in admin_emails:
-        admin_user = User.objects.get_email_owner(admin_email, only_verified=True)
-        if admin_user is not None:
-            break
-
-    if admin_user is None:
-        logger.warning("The email address {email} could not be associated "
-                       "with a verified user.".format(email=admin_emails))
-        logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
-        return HttpResponse(status=200)
-    else:
-        admin_email = admin_user.email
-    # This info will only be sent to newrelic if an exception is raised.
     newrelic.agent.add_custom_parameter("to", to)
     newrelic.agent.add_custom_parameter("cc", cc)
+    newrelic.agent.add_custom_parameter("bcc", bcc_addresses)
     newrelic.agent.add_custom_parameter("admin_email", admin_email)
     newrelic.agent.add_custom_parameter("contact_emails",
                                         ", ".join(contact_emails))
 
-    if contact_emails == [] or (len(contact_emails) == 1 and
-                                contact_emails[0].lower() == PRM_EMAIL_HOST):
+    contact_emails, date_time = determine_contacts(
+        contact_emails, email_text, PRM_EMAIL_HOST, NUO_LOCAL, admin_email,
+        date_time)
+
+    partners, company, error = determine_partners(
+        request, admin_user, contact_emails, admin_email, NUO_HOSTS, is_nuo)
+    if error is not None:
+        return error
+    possible_contacts, created_contacts, unmatched_contacts = make_contacts(
+        request, contact_emails, partners, admin_user)
+
+    logger.info("created_contacts: {contacts}".format(contacts=", ".join([
+                contact.email for contact in created_contacts])))
+    logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
+                unmatched_contacts)))
+
+    attachments, error = make_attachments(request, contact_emails, admin_email)
+    if error is not None:
+        return error
+    created_records, attachment_failures, error = make_records(
+        request, date_time, possible_contacts, created_contacts,
+        contact_emails, admin_email, admin_user, subject, email_text,
+        attachments, NUO_HOSTS)
+    if error is not None:
+        return error
+    send_contact_record_email_response(created_records, created_contacts,
+                                       attachment_failures, unmatched_contacts,
+                                       None, admin_email,
+                                       is_nuo=not bool(admin_user),
+                                       company=company,
+                                       buckets=NUO_LOCAL)
+    return HttpResponse(status=200)
+
+
+def check_outreach_domain(admin_email):
+    """
+    Grabs an outreach email domain from an email address, if one exists
+    """
+    domain = admin_email.rsplit('@', 1)[1]
+
+    return OutreachEmailDomain.objects.filter(
+        domain=domain).first()
+
+
+def check_company_connections(request, admin_email, nuo_hosts, email_domain):
+    """
+    When this is called, we know that nuo_hosts is either empty or
+    contains outreach email addresses from at most one company.
+
+    What we need to do is grab the user, if one exists, that is associated
+    with the provided email address and determine what, if any, companies
+    it is connected to.
+
+    Inputs:
+    :request: http request
+    :admin_email: sender of this email
+    :nuo_hosts: list of outreach addresses found in this email
+    :email_domain: OutreachEmailDomain instance that matches admin_email,
+        if one exists
+
+    Outputs:
+    :admin_user: user connected to admin_email, if one exists
+    :admin_email: admin_user's primary address (if admin_user exists) or input
+        admin_email
+    :is_nuo: bool; is this a non-user outreach email
+    :error:
+    """
+    admin_user = User.objects.get_email_owner(admin_email,
+                                              only_verified=True)
+
+    if admin_user is None:
+        if nuo_hosts:
+            if email_domain:
+                # It is perfectly acceptable for a non-user outreach
+                # participant to not have an associated User.
+                logger.info("Email address {email} could not be associated "
+                            "with a verified user but NUO addresses {nuo} "
+                            "were found".format(
+                                email=admin_email,
+                                nuo=",".join(map(unicode, nuo_hosts))))
+                return None, admin_email, True, None
+            else:
+                return None, None, None, HttpResponse(20)
+        else:
+            # At least one of admin_user or nuo_hosts must be truthy -
+            # non-user outreach participants cannot create records by emailing
+            # prm@my.jobs
+            logger.warning(
+                "The email address {email} could not be associated "
+                "with a verified user.".format(email=admin_email))
+            logger.warning("POST data: {post}".format(post=json.dumps(
+                request.POST)))
+            return None, None, None, HttpResponse(200)
+    else:
+        user_companies = admin_user.roles.values_list('company',
+                                                      flat=True).distinct()
+        nuo_companies = set(nuo_hosts.values_list('company',
+                                                  flat=True).distinct())
+        if ((nuo_companies.issubset(user_companies)
+                and len(nuo_companies) == 1)
+                or (not bool(nuo_companies))):
+            # All outreach emails in use mapped to a single company that this
+            # user is a part of or no outreach emails were used
+            admin_email = admin_user.email
+            is_nuo = False
+        elif email_domain and all([email_domain.company.pk == outreach
+                                   for outreach in nuo_companies]):
+            # The current user's email matches an outreach domain and all
+            # outreach emails that were used match that domain's owner
+            admin_user = None
+            is_nuo = True
+        else:
+            logger.warning(
+                "The account associated with {email} is connected to or "
+                "sent email to multiple companies".format(email=admin_email))
+            return None, None, None, HttpResponse(200)
+        return admin_user, admin_email, is_nuo, None
+
+
+def get_admin(request, admin_email, nuo_hosts):
+    """
+    Determines the sender of this email and maps that address to a user
+    if appropriate.
+
+    Inputs:
+    :request: http request
+    :admin_email: email of sender
+    :nuo_hosts: list of outreach emails found in this email
+
+    Outputs:
+    :admin_user: None if is_nuo is True, else the user matching admin_email
+    :admin_email: input admin_email, or admin_user.email if different
+    :is_nuo: bool; is this a non-user outreach email
+    :error: returned to denote a problem with the email (usually due to an
+        invalid use of this system)
+    """
+    admin_emails = [email for name, email in getaddresses([admin_email])]
+
+    # Get the first valid address based on admin_emails. getaddresses can
+    # return an extra tuple with an invalid email address.
+    email_validator = EmailValidator()
+    for admin_email in admin_emails:
+        try:
+            email_validator(admin_email)
+        except ValidationError:
+            pass
+        else:
+            break
+
+    email_domain = None
+    if nuo_hosts:
+        email_domain = check_outreach_domain(admin_email)
+        if email_domain:
+            nuo_companies = set(host.company for host in nuo_hosts)
+            if set([email_domain.company]) != nuo_companies:
+                # nuo_companies either does not contain the correct company
+                # or contains more than one company; either way, drop this mail
+                logger.warning(
+                    u"Email address {email} matches a domain used by {member} "
+                    u"({match}) but sent message to {addresses}".format(
+                        email=admin_email,
+                        match=email_domain.domain,
+                        addresses=u', '.join(host.address
+                                             for host in nuo_hosts)))
+                return None, None, None, HttpResponse(200)
+            else:
+                return None, admin_email, True, None
+    return check_company_connections(request, admin_email, nuo_hosts,
+                                     email_domain)
+
+
+def determine_contacts(contact_emails, email_text, prm_email_host,
+                       nuo_local, admin_email, date_time):
+    """
+    Examines various parts of the received email and extracts addresses
+    from to/cc or forward headers
+
+    Inputs:
+    :contact_emails: to/cc fields
+    :email_text: email body
+    :prm_email_host: prm@my.jobs on production, prm@qc.my.jobs on qc
+    :nuo_local: list of outreach addresses that were found in this email
+    :admin_email: sender of this email
+    :date_time: time that we think this email was sent; may be modified by
+        forward headers
+
+    Outputs:
+    :contact_emails: input list, modified by forward status and nuo_local list
+    :date_time: input date_time or the value we parsed from forward headers
+    """
+    # If this is a forward, we need to parse forward headers.
+    # There are three different cases in which we know this is a forward.
+    # 1) There are no contacts
+    forward = contact_emails == []
+    # 2) The only contacts are outreach email addresses
+    forward |= (
+        len(contact_emails) == len(nuo_local) and
+        set(contact.lower().rsplit('@', 1)[0]
+            for contact in contact_emails) == set(nuo_local))
+    # 3) The only contact is the normal PRM address
+    forward |= (len(contact_emails) == 1 and
+                contact_emails[0].lower() == prm_email_host)
+    if forward:
         # If PRM_EMAIL_HOST is the only contact, assume it's a forward.
         fwd_headers = build_email_dicts(email_text)
         try:
@@ -1241,7 +1447,9 @@ def process_email(request):
 
     validated_contacts = []
     for element in contact_emails:
-        if not element.lower() == PRM_EMAIL_HOST and validate_email(element):
+        if (not (element.lower() == prm_email_host
+                 or element.lower().rsplit('@', 1)[0] in nuo_local)
+                and validate_email(element)):
             validated_contacts.append(element)
 
     contact_emails = validated_contacts
@@ -1250,29 +1458,94 @@ def process_email(request):
         contact_emails.remove(admin_email)
     except ValueError:
         pass
+    return contact_emails, date_time
 
-    # determine if the user is associated with more thanone company
-    multiple_companies = admin_user.roles.values(
-        "company").distinct().count() > 1
 
-    if multiple_companies:
-        error = "Your account is setup as the admin for multiple companies. " \
-                "Because of this we cannot match this email with a " \
-                "specific partner on a specific company with 100% certainty. " \
-                "You will need to login to My.jobs and go to " \
-                "https://secure.my.jobs/prm to create your record manually."
-        logger.warning("User with email address {user} is associated with "
-                       "multiple companies.".format(user=admin_user))
-        logger.warning("POST data: {post}".format(post=json.dumps(request.POST)))
-        send_contact_record_email_response([], [], [], contact_emails,
-                                           error, admin_email)
-        return HttpResponse(status=200)
+def determine_partners(request, admin_user, contact_emails, admin_email,
+                       nuo_hosts, is_nuo):
+    """
+    Ensures that there is one company connected to either admin_user or
+    nuo_hosts, as appropriate. Grabs all partners for that company.
 
-    if admin_user.roles.exists():
-        partners = admin_user.roles.first().company.partner_set.all()
+    Inputs:
+    :request: http request
+    :admin_user: sending user; None for non-user outreach
+    :contact_emails: final list of contact emails
+    :admin_email: sender of this email
+    :nuo_hosts: list of outreach addresses found in this email
+    :is_nuo: bool; is this a non-user outreach email
+
+    Outputs:
+    :partners: list of partners owned by this company
+    :company: only company tied to this user or the company that owns the
+        outreach addresses that were used
+    :error:
+    """
+    partners = []
+
+    error_text = None
+    if is_nuo:
+        companies = set(host.company for host in nuo_hosts)
+        if len(companies) > 1:
+            error_text = (
+                "The outreach addresses used are for multiple companies. To "
+                "create records for multiple companies, send mail to each "
+                "separately.")
+            logger.warning("Email address {email} sent to multiple outreach "
+                           "addresses".format(email=admin_email))
+            logger.warning("POST data: {post}".format(
+                post=json.dumps(request.POST)))
+        else:
+            company = companies.pop()
+            partners = company.partner_set.all()
     else:
-        partners = []
+        company_count = admin_user.roles.values(
+            "company").distinct().count()
 
+        if company_count > 1:
+            error_text = (
+                "Your account is setup as the admin for multiple companies. "
+                "Because of this we cannot match this email with a "
+                "specific partner on a specific company with 100% certainty. "
+                "You will need to login to My.jobs and go to "
+                "https://secure.my.jobs/prm to create your record manually.")
+            logger.warning("User with email address {user} is associated with "
+                           "multiple companies.".format(user=admin_user))
+            logger.warning("POST data: {post}".format(
+                post=json.dumps(request.POST)))
+
+        else:
+            company = admin_user.roles.first().company
+            partners = company.partner_set.all()
+    if error_text:
+        send_contact_record_email_response([], [], [], contact_emails,
+                                           error_text, admin_email)
+        return None, None, HttpResponse(200)
+
+    return partners, company, None
+
+
+def make_contacts(request, contact_emails, partners, admin_user):
+    """
+    Makes a list of Contact objects that consists of rows pulled from the
+    database (if an email already exists as a contact in one of the provided
+    partners) or new rows (if no row exists and we were able to determine
+    the correct partner)
+
+    Inputs:
+    :request: http request
+    :contact_emails: list of emails that we will attempt to turn into Contact
+        objects
+    :partners: list of partners that will be used to determine if a contact
+        exists
+    :admin_user: sending user; used to log changes
+
+    Outputs:
+    :possible_contacts: list of existing rows in the Contact table
+    :created_contacts: list of rows that we added to the Contact table
+    :unmatched_contacts: list of email addresses that we were unable to tie
+        to a partner
+    """
     possible_contacts, created_contacts, unmatched_contacts = [], [], []
     for contact in contact_emails:
         try:
@@ -1295,7 +1568,22 @@ def process_email(request):
                     unmatched_contacts.append(contact)
         except ValueError:
             unmatched_contacts.append(contact)
+    return possible_contacts, created_contacts, unmatched_contacts
 
+
+def make_attachments(request, contact_emails, admin_email):
+    """
+    Creates a list of attachments from the provided email.
+
+    Inputs:
+    :request: http request
+    :contact_emails: list of email addresses from this email; used in messaging
+    :admin_email: sender of this email
+
+    Outputs:
+    :attachments: list of attachments
+    :error:
+    """
     num_attachments = int(request.POST.get('attachments', 0))
     attachments = []
     for file_number in range(1, num_attachments+1):
@@ -1307,9 +1595,37 @@ def process_email(request):
                     "manually."
             send_contact_record_email_response([], [], [], contact_emails,
                                                error, admin_email)
-            return HttpResponse(status=200)
+            return None, HttpResponse(200)
         attachments.append(attachment)
+    return attachments, None
 
+
+def make_records(request, date_time, possible_contacts, created_contacts,
+                 contact_emails, admin_email, admin_user, subject, email_text,
+                 attachments, nuo_hosts):
+    """
+    Creates communication/outreach records as appropriate from the information
+    provided.
+
+    Inputs:
+    :request: http request
+    :date_time: date/time that we've determined this record occurred
+    :possible_contacts: list of contacts pulled from the database
+    :created_contacts: list of created contacts
+    :contact_emails: list of email addresses pulled from this email
+    :admin_email: sender of this email
+    :admin_user: user connected to admin_email
+    :subject: subject of the email we're processing
+    :email_text: body of the email we're processing
+    :attachments: list of attachments
+    :nuo_hosts: list of outreach addresses we found in this email
+
+    Outputs:
+    :created_records: list of records that were created
+    :attachment_failures: list of attachments that could not be turned into
+        PRMAttachments for some reason
+    :error:
+    """
     created_records = []
     attachment_failures = []
     date_time = now() if not date_time else date_time
@@ -1320,46 +1636,49 @@ def process_email(request):
                 "create contact records for this email."
         send_contact_record_email_response([], [], [], contact_emails,
                                            error, admin_email)
-        return HttpResponse(status=200)
+        return None, None, HttpResponse(200)
 
     for contact in all_contacts:
-        change_msg = "Email was sent by %s to %s" % \
-                     (admin_user.get_full_name(), contact.name)
-        record = ContactRecord.objects.create(partner=contact.partner,
-                                              contact_type='email',
-                                              contact=contact,
-                                              contact_email=contact.email,
-                                              contact_phone=contact.phone,
-                                              created_by=admin_user,
-                                              date_time=date_time,
-                                              subject=subject,
-                                              notes=force_text(email_text))
-        try:
-            for attachment in attachments:
-                prm_attachment = PRMAttachment()
-                prm_attachment.attachment = attachment
-                prm_attachment.contact_record = record
-                prm_attachment._partner = contact.partner
-                prm_attachment.save()
-                # The file pointer for this attachment is now at the end of the
-                # file; reset it to the beginning for future use.
-                attachment.seek(0)
-        except AttributeError:
-            attachment_failures.append(record)
-        log_change(record, None, admin_user, contact.partner, contact.name,
-                   action_type=ADDITION, change_msg=change_msg,
-                   impersonator=request.impersonator)
-
-        created_records.append(record)
-
-    logger.info("created_contacts: {contacts}".format(contacts=", ".join([
-                    contact.email for contact in created_contacts])))
-    logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
-                    unmatched_contacts)))
-    send_contact_record_email_response(created_records, created_contacts,
-                                       attachment_failures, unmatched_contacts,
-                                       None, admin_email)
-    return HttpResponse(status=200)
+        if admin_user:
+            change_msg = "Email was sent by %s to %s" % \
+                         (admin_user.get_full_name(), contact.name)
+            record = ContactRecord.objects.create(partner=contact.partner,
+                                                  contact_type='email',
+                                                  contact=contact,
+                                                  contact_email=contact.email,
+                                                  contact_phone=contact.phone,
+                                                  created_by=admin_user,
+                                                  date_time=date_time,
+                                                  subject=subject,
+                                                  notes=force_text(email_text))
+            try:
+                for attachment in attachments:
+                    prm_attachment = PRMAttachment()
+                    prm_attachment.attachment = attachment
+                    prm_attachment.contact_record = record
+                    prm_attachment._partner = contact.partner
+                    prm_attachment.save()
+                    # The file pointer for this attachment is now at the end of
+                    # the file; reset it to the beginning for future use.
+                    attachment.seek(0)
+            except AttributeError:
+                attachment_failures.append(record)
+            log_change(record, None, admin_user, contact.partner, contact.name,
+                       action_type=ADDITION, change_msg=change_msg,
+                       impersonator=request.impersonator)
+            created_records.append(record)
+        else:
+            workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
+                state='new')
+            for email in nuo_hosts:
+                record = OutreachRecord.objects.create(
+                    outreach_email=email, from_email=admin_email,
+                    email_body=email_text,
+                    current_workflow_state=workflow_state)
+                record.partners.add(contact.partner)
+                record.contacts.add(contact)
+                created_records.append(record)
+    return created_records, attachment_failures, None
 
 
 @restrict_to_staff()
