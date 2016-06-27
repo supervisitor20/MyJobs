@@ -35,8 +35,10 @@ def update_buid_from_jobsfs(guid, buid, name, mongo=MONGO_HOST):
     
     client = MongoClient(mongo, w="majority")
     collection = client.analytics.jobs
+    bulk = collection.initialize_unordered_bulk_op()
     for job in jobs:
-        collection.update({'guid':job['guid']}, job, upsert=True)
+        bulk.find({'guid': job['guid']}).upsert().replace_one(job)
+    bulk.execute()
 
 
 def update_state_job_bank(buid, data_dir=DATA_DIR, mongo=MONGO_HOST):
@@ -60,5 +62,7 @@ def update_state_job_bank(buid, data_dir=DATA_DIR, mongo=MONGO_HOST):
 
     client = MongoClient(mongo, w="majority")
     collection = client.analytics.jobs
+    bulk = collection.initialize_unordered_bulk_op()
     for job in jobs:
-        collection.update({'guid':job['guid']}, job, upsert=True)
+        bulk.find({'guid': job['guid']}).upsert().replace_one(job)
+    bulk.execute()
