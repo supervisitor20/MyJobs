@@ -3,7 +3,7 @@ import React, {PropTypes} from 'react';
 /* HelpText
  * Component for displaying a validation error.
  */
-export function HelpText(props) {
+export default function HelpText(props) {
   const {message} = props;
   return (
     <div className="input-error">

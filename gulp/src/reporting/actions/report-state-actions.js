@@ -109,3 +109,11 @@ export const clearHintsAction = createAction('CLEAR_HINTS');
  */
 export const resetCurrentFilterDirty =
   createAction('RESET_CURRENT_FILTER_DIRTY');
+
+/**
+ * Mark the report as valid or invalid, which corresponds to an
+ * enabled/disabled run button, respectively.
+ *
+ * payload: bool, whether or not the report is valid
+ */
+export const setValidAction = createAction('SET_VALID');
