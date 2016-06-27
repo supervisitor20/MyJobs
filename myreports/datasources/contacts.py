@@ -3,7 +3,9 @@ from datetime import datetime
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags, adorn_tags, filter_tags)
+    extract_tags, adorn_tags,
+    apply_filter_to_queryset,
+    NoFilter, CompositeAndFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
@@ -192,8 +194,8 @@ class ContactsDataSource(DataSource):
 @dict_identity
 class ContactsFilter(DataSourceFilter):
     """Represent a ContactsDataSource user filter."""
-    def __init__(self, date=None, locations=None, tags=None, partner=None,
-                 partner_tags=None):
+    def __init__(self, date=NoFilter(), locations=NoFilter(), tags=NoFilter(),
+                 partner=NoFilter(), partner_tags=NoFilter()):
         self.date = date
         self.locations = locations
         self.tags = tags
@@ -204,6 +206,7 @@ class ContactsFilter(DataSourceFilter):
     def filter_key_types(self):
         return {
             'date': 'date_range',
+            'locations': 'composite',
         }
 
     def clone_without_city(self):
@@ -212,12 +215,12 @@ class ContactsFilter(DataSourceFilter):
         Return a new ContactsFilter without the current city filter applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'city' in locations:
+            new_locations = dict(locations.field_map)
+            if 'city' in locations.field_map:
                 del new_locations['city']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return ContactsFilter(**new_root)
 
     def clone_without_state(self):
@@ -228,10 +231,10 @@ class ContactsFilter(DataSourceFilter):
         new_root = dict(self.__dict__)
         locations = new_root.get('locations', None)
         if locations:
-            new_locations = dict(locations)
-            if 'state' in locations:
+            new_locations = dict(locations.field_map)
+            if 'state' in locations.field_map:
                 del new_locations['state']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return ContactsFilter(**new_root)
 
     def clone_without_partner(self):
@@ -245,24 +248,38 @@ class ContactsFilter(DataSourceFilter):
 
         qs: the query set to receive the filter
         """
-        qs = filter_date_range(self.date, 'last_action_time', qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.date,
+            'last_action_time')
 
-        if self.tags is not None:
-            qs = filter_tags('tags', self.tags, qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.tags,
+            'tags', '__name__iexact')
 
-        if self.partner_tags is not None:
-            qs = filter_tags('partner__tags', self.partner_tags, qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.locations,
+            {
+                'city': 'locations__city__iexact',
+                'state': 'locations__state__iexact',
+            })
 
-        if self.partner is not None:
-            qs = qs.filter(partner__pk__in=self.partner)
+        if self.partner or self.partner_tags:
+            partner_qs = Partner.objects.all()
 
-        if self.locations is not None:
-            city = self.locations.get('city', None)
-            if city:
-                qs = qs.filter(locations__city__iexact=city)
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner,
+                'pk')
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner_tags,
+                'tags', '__name__iexact')
 
-            state = self.locations.get('state', None)
-            if state:
-                qs = qs.filter(locations__state__iexact=state)
+            partner_qs = partner_qs.distinct()
+
+            qs = qs.filter(partner=partner_qs)
 
         return qs

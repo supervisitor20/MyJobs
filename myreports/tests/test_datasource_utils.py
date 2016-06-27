@@ -1,15 +1,20 @@
+import json
 from unittest import TestCase
 
 from datetime import datetime
+from django.db.models import Q
 
 from myreports.report_configuration import (
      ReportConfiguration, ColumnConfiguration)
 from myreports.datasources.util import (
+    DateRangeFilter, MatchFilter, OrGroupFilter, AndGroupFilter, NoFilter,
+    CompositeAndFilter, UnlinkedFilter,
+    apply_filter_to_queryset,
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags)
+    extract_tags)
 from myreports.datasources.base import DataSource
 from myreports.datasources.jsondriver import DataSourceJsonDriver
-from myreports.datasources.partners import PartnersFilter
+from myreports.datasources.contacts import ContactsFilter
 
 
 class MockQuerySet(object):
@@ -17,8 +22,16 @@ class MockQuerySet(object):
         self.filters = filters
         self.data = data
 
-    def filter(self, **kwargs):
-        return MockQuerySet(filters=self.filters + [kwargs])
+    def filter(self, arg=None, **kwargs):
+        qs = self
+        if not arg and not kwargs:
+            qs = MockQuerySet(filters=qs.filters + [None])
+        if arg:
+            qs = MockQuerySet(filters=qs.filters + [arg])
+        if kwargs:
+            qs = MockQuerySet(filters=qs.filters + [kwargs])
+
+        return qs
 
     def all(self):
         return self.data
@@ -41,47 +54,145 @@ class MockCursor(object):
 
 
 class TestUtils(TestCase):
+    def extract_q(self, q):
+        if q.__class__ == Q:
+            return (q.connector, [self.extract_q(c) for c in q.children])
+        return q
+
+    def assert_q_equals(self, expected, actual):
+        self.assertEquals(
+            self.extract_q(expected), self.extract_q(actual),
+            "Expected %s to equal %s" % (expected, actual))
+
+    def assert_filters_equals(self, expected, actual):
+        self.assertEquals(
+            [self.extract_q(q) for q in expected],
+            [self.extract_q(q) for q in actual])
+
     def test_date_range(self):
         """Test date ranges
 
         The range end should have an extra day added.
         """
-        qs = MockQuerySet()
-        result = filter_date_range(
-            [datetime(2009, 12, 1), datetime(2009, 12, 2)],
-            'zz', qs)
-        self.assertEqual([
-            {
-                'zz__range': (
-                    datetime(2009, 12, 1),
-                    datetime(2009, 12, 3)),
-            }],
-            result.filters)
+        filt = DateRangeFilter(
+            [datetime(2009, 12, 1), datetime(2009, 12, 2)])
+        self.assert_q_equals(
+            Q(zz__range=(datetime(2009, 12, 1), datetime(2009, 12, 3))),
+            filt.as_q('zz'))
 
     def test_date_before(self):
         """Test date's before given."""
-        qs = MockQuerySet()
-        result = filter_date_range([None, datetime(2009, 12, 2)], 'zz', qs)
-        self.assertEqual([
-            {
-                'zz__lte': datetime(2009, 12, 3),
-            }],
-            result.filters)
+        filt = DateRangeFilter([None, datetime(2009, 12, 2)])
+        self.assert_q_equals(
+            Q(zz__lte=datetime(2009, 12, 3)),
+            filt.as_q('zz'))
 
     def test_date_after(self):
         """Test date's after given."""
-        qs = MockQuerySet()
-        result = filter_date_range([datetime(2009, 12, 1), None], 'zz', qs)
-        self.assertEqual([
-            {
-                'zz__gte': datetime(2009, 12, 1),
-            }],
-            result.filters)
+        filt = DateRangeFilter([datetime(2009, 12, 1), None])
+        self.assert_q_equals(
+            Q(zz__gte=datetime(2009, 12, 1)),
+            filt.as_q('zz'))
 
-    def test_no_date(self):
+    def test_daterange_none(self):
+        filt = DateRangeFilter(None)
+        self.assertEqual(None, filt.as_q('zz'))
+
+    def test_match_filter(self):
+        filt = MatchFilter('yy')
+        self.assert_q_equals(Q(zz='yy'), filt.as_q('zz'))
+
+    def test_match_none(self):
+        filt = MatchFilter(None)
+        self.assert_q_equals(None, filt.as_q('zz'))
+
+    def test_no_filter(self):
+        self.assertEqual(False, bool(NoFilter()))
+        self.assertEqual(None, NoFilter().as_q(None))
+
+    def test_or_group(self):
+        filt = OrGroupFilter([MatchFilter('a'), MatchFilter('b')])
+        result = filt.as_q('zz')
+        self.assert_q_equals(Q(zz='a') | Q(zz='b'), result)
+
+    def test_or_group_empty(self):
+        filt = OrGroupFilter([])
+        result = filt.as_q('zz')
+        self.assertEqual(None, result)
+
+    def test_and_group(self):
         qs = MockQuerySet()
-        result = filter_date_range(None, 'zz', qs)
-        self.assertEqual([], result.filters)
+        result = apply_filter_to_queryset(
+            qs,
+            AndGroupFilter([
+                OrGroupFilter([MatchFilter('f')]),
+                OrGroupFilter([
+                    MatchFilter('g'),
+                    MatchFilter('h')]),
+                MatchFilter('i')]),
+            'z')
+        self.assert_filters_equals([
+            Q(z='f'),
+            Q(z='g') | Q(z='h'),
+            Q(z='i'),
+            ], result.filters)
+
+    def test_and_group_empty(self):
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, AndGroupFilter([]), 'z')
+        self.assert_filters_equals([], result.filters)
+
+    def test_composite_and_group(self):
+        filt = CompositeAndFilter({
+            'a': MatchFilter('b'),
+            'c': OrGroupFilter([MatchFilter('d'), MatchFilter('e')])})
+        result = filt.as_q({'a': 'aaa', 'c': 'ccc'})
+        self.assert_q_equals(
+            Q(aaa='b') & (Q(ccc='d') | Q(ccc='e')),
+            result)
+
+    def test_composite_and_group_none(self):
+        filt = CompositeAndFilter({
+            'a': MatchFilter('b'),
+            'c': NoFilter()})
+        result = filt.as_q({'a': 'aaa', 'c': 'ccc'})
+        self.assert_q_equals(
+            Q(aaa='b'),
+            result)
+
+    def test_composite_and_group_empty(self):
+        filt = CompositeAndFilter({})
+        self.assertEquals(None, filt.as_q(None))
+
+    def test_composite_and_group_missing_db_field(self):
+        filt = CompositeAndFilter({
+            'a': MatchFilter('b'),
+            'c': NoFilter()})
+        self.assert_q_equals(Q(aaa='b'), filt.as_q({'a': 'aaa', 'b': 'bbb'}))
+        self.assertEquals(None, filt.as_q({'b': 'bbb'}))
+
+    def test_unlinked(self):
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, UnlinkedFilter(), 'z')
+        self.assert_filters_equals([{'z': None}], result.filters)
+
+    def test_apply_filters(self):
+        qs = MockQuerySet()
+
+        result = apply_filter_to_queryset(qs, NoFilter(), 'z')
+        self.assert_filters_equals([], result.filters)
+
+        result = apply_filter_to_queryset(qs, MatchFilter('b'), 'a')
+        self.assert_filters_equals([Q(a='b')], result.filters)
+
+        result = apply_filter_to_queryset(qs, OrGroupFilter([]), 'z')
+        self.assert_filters_equals([], result.filters)
+
+        result = apply_filter_to_queryset(
+            qs,
+            OrGroupFilter([MatchFilter('c'), MatchFilter('d')]),
+            'z')
+        self.assert_filters_equals([Q(z='c') | Q(z='d')], result.filters)
 
     def test_extract_tag_list(self):
         """Should grab only the names from the list."""
@@ -104,7 +215,7 @@ class MockDataSource(DataSource):
         self.calls = []
 
     def filter_type(self):
-        return PartnersFilter
+        return ContactsFilter
 
     def help(self, company, filter, field, partial):
         self.calls.append(['help', company, filter, field, partial])
@@ -198,7 +309,7 @@ class TestDataSourceJsonDriver(TestCase):
         result = self.driver.help('company', '{}', 'city', 'zzz')
         self.assertEqual('aaa', result)
         self.assertEqual([
-            ['help', 'company', PartnersFilter(), 'city', 'zzz']
+            ['help', 'company', ContactsFilter(), 'city', 'zzz']
             ], self.ds.calls)
 
     def test_run(self):
@@ -206,30 +317,74 @@ class TestDataSourceJsonDriver(TestCase):
         result = self.driver.run('unaggregated', 'company', '{}', '["zzz"]')
         self.assertEqual('aaa', result)
         self.assertEqual([
-            ['run', 'unaggregated', 'company', PartnersFilter(), ['zzz']]
+            ['run', 'unaggregated', 'company', ContactsFilter(), ['zzz']]
             ], self.ds.calls)
 
     def test_empty_filter(self):
-        """Test that PartnersFilter has all proper defaults."""
+        """Test that ContactsFilter has all proper defaults."""
         result = self.driver.build_filter("{}")
-        self.assertEquals(PartnersFilter(), result)
+        self.assertEquals(ContactsFilter(), result)
+
+    def test_tag_filter(self):
+        """Test that tag filter is built properly."""
+        result = self.driver.build_filter(
+                '{"tags": [[1, 2], [3, 4]]}')
+        self.assertEquals(ContactsFilter(
+            tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter(1), MatchFilter(2)]),
+                OrGroupFilter([MatchFilter(3), MatchFilter(4)]),
+            ])), result)
 
     def test_city_filter(self):
         """Test that city filter is built properly."""
         result = self.driver.build_filter(
                 '{"locations": {"city": "Indy"}}')
-        self.assertEquals(PartnersFilter(locations={'city': 'Indy'}), result)
+        self.assertEquals(
+            ContactsFilter(
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('Indy')})), result)
+
+    def test_partner_filter(self):
+        """Test that partner filter is built properly."""
+        result = self.driver.build_filter(
+                '{"partner": [1, 2]}')
+        self.assertEquals(
+            ContactsFilter(
+                partner=OrGroupFilter([
+                    MatchFilter(1),
+                    MatchFilter(2)])), result)
 
     def test_date_filters(self):
         """Test that date filters are built properly."""
         spec = '{"date": ["09/01/2015", "09/30/2015"]}'
         result = self.driver.build_filter(spec)
-        expected = PartnersFilter(
-            date=[datetime(2015, 9, 1), datetime(2015, 9, 30)])
+        expected = ContactsFilter(
+            date=DateRangeFilter([
+                datetime(2015, 9, 1),
+                datetime(2015, 9, 30)]))
+        self.assertEquals(expected, result)
+
+    def test_empty_list_filters(self):
+        """
+        Test that an empty list is interpreted as no filter.
+        """
+        spec = '{"partner": [], "partner_tags": []}'
+        result = self.driver.build_filter(spec)
+        expected = ContactsFilter()
+        self.assertEquals(expected, result)
+
+    def test_unlinked_filters(self):
+        """
+        Test that we can build an unlinked filter
+        """
+        spec = '{"partner": {"nolink": true}}'
+        result = self.driver.build_filter(spec)
+        expected = ContactsFilter(partner=UnlinkedFilter())
         self.assertEquals(expected, result)
 
     def test_filterlike_serialize(self):
-        result = self.driver.serialize_filterlike([{'a': 'b'}, {'c': datetime(2016, 1, 2)}])
+        result = self.driver.serialize_filterlike(
+            [{'a': 'b'}, {'c': datetime(2016, 1, 2)}])
         expected = '[{"a": "b"}, {"c": "01/02/2016"}]'
         self.assertEquals(expected, result)
 

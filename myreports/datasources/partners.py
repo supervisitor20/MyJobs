@@ -1,5 +1,4 @@
 """Partners DataSource"""
-from operator import __or__
 from datetime import datetime
 
 from mypartners.models import Contact, Partner, Status, Location, Tag
@@ -8,7 +7,9 @@ from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags)
+    extract_tags,
+    apply_filter_to_queryset,
+    NoFilter, CompositeAndFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 from myreports.datasources.sql import (
     count_comm_rec_per_month_per_partner_sql)
@@ -18,7 +19,6 @@ from myreports.datasources.rowstream import (
 
 from universal.helpers import dict_identity
 
-from django.db.models import Q
 from django.db import connection
 
 
@@ -253,8 +253,8 @@ class PartnersDataSource(DataSource):
 
 @dict_identity
 class PartnersFilter(DataSourceFilter):
-    def __init__(self, date=None, locations=None, tags=None,
-                 data_source=None, uri=None):
+    def __init__(self, date=NoFilter(), locations=NoFilter(), tags=NoFilter(),
+                 data_source=NoFilter(), uri=NoFilter()):
         self.date = date
         self.locations = locations
         self.tags = tags
@@ -273,12 +273,12 @@ class PartnersFilter(DataSourceFilter):
         Return a new PartnersFilter without the current city filter applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'city' in locations:
+            new_locations = dict(locations.field_map)
+            if 'city' in locations.field_map:
                 del new_locations['city']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return PartnersFilter(**new_root)
 
     def clone_without_state(self):
@@ -287,12 +287,12 @@ class PartnersFilter(DataSourceFilter):
         Return a new PartnersFilter without the current state filter applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'state' in locations:
+            new_locations = dict(locations.field_map)
+            if 'state' in locations.field_map:
                 del new_locations['state']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return PartnersFilter(**new_root)
 
     def filter_partners(self, company):
@@ -302,34 +302,36 @@ class PartnersFilter(DataSourceFilter):
             .filter(approval_status__code__iexact=Status.APPROVED)
             .filter(archived_on__isnull=True))
 
-        qs = filter_date_range(self.date, 'last_action_time', qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.date,
+            'last_action_time')
 
-        if self.data_source:
-            qs = qs.filter(data_source__iexact=self.data_source)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.data_source,
+            'data_source__iexact')
 
-        if self.uri:
-            qs = qs.filter(uri__iexact=self.uri)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.uri,
+            'uri__iexact')
 
-        if self.tags:
-            or_qs = []
-            for tag_ors in self.tags:
-                or_qs.append(
-                    reduce(
-                        __or__,
-                        map(lambda t: Q(tags__name__iexact=t), tag_ors)))
-            for or_q in or_qs:
-                qs = qs.filter(or_q)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.tags,
+            'tags', '__name__iexact')
 
-        if self.locations is not None:
+        if self.locations:
             contact_qs = Contact.objects.all()
 
-            city = self.locations.get('city', None)
-            if city:
-                contact_qs = contact_qs.filter(locations__city__iexact=city)
-
-            state = self.locations.get('state', None)
-            if state:
-                contact_qs = contact_qs.filter(locations__state__iexact=state)
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.locations,
+                {
+                    'city': 'locations__city__iexact',
+                    'state': 'locations__state__iexact',
+                })
 
             contact_qs.distinct()
             qs = qs.filter(primary_contact=contact_qs)

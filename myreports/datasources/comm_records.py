@@ -11,7 +11,9 @@ from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags, filter_tags, adorn_tags)
+    extract_tags, adorn_tags,
+    apply_filter_to_queryset,
+    NoFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from universal.helpers import dict_identity, extract_value
@@ -286,9 +288,10 @@ class CommRecordsDataSource(DataSource):
 
 @dict_identity
 class CommRecordsFilter(DataSourceFilter):
-    def __init__(self, date_time=None, locations=None, tags=None,
-                 communication_type=None, partner=None, contact=None,
-                 contact_tags=None, partner_tags=None):
+    def __init__(self, date_time=NoFilter(), locations=NoFilter(),
+                 tags=NoFilter(), communication_type=NoFilter(),
+                 partner=NoFilter(), contact=NoFilter(),
+                 contact_tags=NoFilter(), partner_tags=NoFilter()):
         self.date_time = date_time
         self.locations = locations
         self.tags = tags
@@ -353,38 +356,55 @@ class CommRecordsFilter(DataSourceFilter):
         return CommRecordsFilter(**new_root)
 
     def filter_query_set(self, qs):
-        qs = filter_date_range(self.date_time, 'date_time', qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.date_time,
+            'date_time')
+        qs = apply_filter_to_queryset(
+            qs,
+            self.communication_type,
+            'contact_type')
+        qs = apply_filter_to_queryset(
+            qs,
+            self.tags,
+            'tags', '__name__iexact')
 
-        if self.communication_type:
-            qs = qs.filter(contact_type__in=self.communication_type)
-
-        if self.tags is not None:
-            qs = filter_tags('tags', self.tags, qs)
-
-        if self.locations is not None:
+        if self.locations or self.contact or self.contact_tags:
             contact_qs = Contact.objects.all()
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.locations,
+                {
+                    'city': 'locations__city__iexact',
+                    'state': 'locations__state__iexact',
+                })
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.contact,
+                'pk')
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.contact_tags,
+                'tags', '__name__iexact')
 
-            city = self.locations.get('city', None)
-            if city:
-                contact_qs = contact_qs.filter(locations__city__iexact=city)
+            contact_qs = contact_qs.distinct()
 
-            state = self.locations.get('state', None)
-            if state:
-                contact_qs = contact_qs.filter(locations__state__iexact=state)
-
-            contact_qs.distinct()
             qs = qs.filter(contact=contact_qs)
 
-        if self.partner is not None:
-            qs = qs.filter(partner__pk__in=self.partner)
+        if self.partner or self.partner_tags:
+            partner_qs = Partner.objects.all()
 
-        if self.contact is not None:
-            qs = qs.filter(contact__pk__in=self.contact)
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner,
+                'pk')
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner_tags,
+                'tags', '__name__iexact')
 
-        if self.contact_tags is not None:
-            qs = filter_tags('contact__tags', self.contact_tags, qs)
+            partner_qs = partner_qs.distinct()
 
-        if self.partner_tags is not None:
-            qs = filter_tags('partner__tags', self.partner_tags, qs)
+            qs = qs.filter(partner=partner_qs)
 
         return qs

@@ -1,6 +1,10 @@
 import json
 from datetime import datetime
 
+from myreports.datasources.util import (
+    AndGroupFilter, CompositeAndFilter, OrGroupFilter, MatchFilter,
+    DateRangeFilter, UnlinkedFilter)
+
 
 class DataSourceJsonDriver(object):
     def __init__(self, ds):
@@ -63,23 +67,85 @@ class DataSourceJsonDriver(object):
         return json.loads(order_spec)
 
     def build_filter(self, filter_json):
-        """Build a filter for the given filter_json"""
+        """
+        Build a filter for the given filter_json
+
+        filters look like: {
+            filter_column1: some filter_spec...,
+            filter_column2: another filter_spec...,
+
+        }
+
+        filter_specs can be any of:
+
+        missing/null/[]: Empty lists, nulls, or missing keys are all
+            interpreted as do not filter on this column.
+
+        [date, date]: A list of two dates is date range. The filter
+            class must have a key type of 'date
+
+        1/"a": A single choice.
+
+        [1, 2, 3]: A list of choices is an "or group". Match any of the
+            choices.
+
+        [[1, 2, 3], [4, 5, 6]]: A list of lists of choices is an "and group".
+            Must match any of the first AND any of each of the subsequent
+            groups.
+
+        {'nolink': True}: A special object which means to find objects not
+            linked to the objects in this column. i.e. If this is a tags
+            column, find untagged objects.
+        """
         kwargs = {}
         filter_spec = json.loads(filter_json)
-
         filter_type = self.ds.filter_type()
         types = filter_type.filter_key_types()
         for key, data in filter_spec.iteritems():
             key_type = types.get(key, None)
             if key_type is None:
-                kwargs[key] = data
+                # empty lists are the same as no filter
+                if data == []:
+                    continue
+
+                elif (isinstance(data, list) and
+                        len(data) > 0 and
+                        isinstance(data[0], list)):
+                    kwargs[key] = AndGroupFilter([
+                        OrGroupFilter([
+                            MatchFilter(v)
+                            for v in or_f
+                            ])
+                        for or_f in data])
+
+                elif isinstance(data, list) and len(data) > 0:
+                    kwargs[key] = OrGroupFilter([
+                        MatchFilter(v)
+                        for v in data
+                        ])
+
+                elif isinstance(data, dict) and 'nolink' in data:
+                    kwargs[key] = UnlinkedFilter()
+
+                else:
+                    kwargs[key] = MatchFilter(data)
+
             elif key_type == 'date_range':
                 date_strings = filter_spec.get(key, None)
                 dates = [
                     (datetime.strptime(d, "%m/%d/%Y") if d else None)
                     for d in date_strings]
 
-                kwargs[key] = dates
+                kwargs[key] = DateRangeFilter(dates)
+
+            elif key_type == 'composite':
+                value_map = {
+                    col: MatchFilter(value)
+                    for col, value in filter_spec.get(key, {}).iteritems()
+                }
+
+                kwargs[key] = CompositeAndFilter(value_map)
+
             else:
                 message = 'DataSource %s has unknown filter key type %s' % (
                     self.ds.__class__.__name__,

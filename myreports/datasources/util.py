@@ -1,6 +1,7 @@
-from operator import __or__
+from operator import __or__, __and__
 from django.db.models import Q
 from datetime import timedelta
+from universal.helpers import dict_identity
 
 
 def dispatch_help_by_field_name(ds, company, filter_spec, field, partial):
@@ -37,31 +38,8 @@ def dispatch_run_by_data_type(ds, data_type, company, filter_spec, order_spec):
     return method(company, filter_spec, order_spec)
 
 
-def filter_arg(field, op, data):
-    return {
-        field + '__' + op: data
-    }
-
-
-def filter_date_range(dates, field, qs):
-    if dates is None:
-        return qs
-
-    begin = None
-    if (dates[0] is not None):
-        begin = dates[0]
-
-    end = None
-    if (dates[1] is not None):
-        end = dates[1] + timedelta(days=1)
-
-    if (begin is not None and end is not None):
-        qs = qs.filter(**filter_arg(field, 'range', (begin, end)))
-    elif end is not None:
-        qs = qs.filter(**filter_arg(field, 'lte', end))
-    elif begin is not None:
-        qs = qs.filter(**filter_arg(field, 'gte', begin))
-    return qs
+def build_q(field, op, data):
+    return Q(**{field + '__' + op: data})
 
 
 def extract_tags(tag_list):
@@ -74,6 +52,118 @@ def extract_tags(tag_list):
         }
         for t in tag_list.all()
     ]
+
+
+def apply_filter_to_queryset(queryset, filt, field, extension=None):
+    if extension:
+        full_field = field + extension
+    else:
+        full_field = field
+
+    result = queryset
+
+    if isinstance(filt, AndGroupFilter):
+        for child in filt.child_filters:
+            result = apply_filter_to_queryset(result, child, full_field)
+    elif isinstance(filt, UnlinkedFilter):
+        result = result.filter(**{field: None})
+    else:
+        q = filt.as_q(full_field)
+        if q is not None:
+            result = result.filter(q)
+    return result
+
+
+@dict_identity
+class AndGroupFilter(object):
+    def __init__(self, child_filters):
+        self.child_filters = child_filters
+
+
+@dict_identity
+class CompositeAndFilter(object):
+    def __init__(self, field_map):
+        self.field_map = field_map
+
+    def as_q(self, db_field_map):
+        usable_fields = {
+            k: v
+            for k, v in {
+                k: v.as_q(db_field_map[k])
+                for k, v in self.field_map.iteritems()
+                if k in db_field_map
+            }.iteritems()
+            if v is not None
+        }
+
+        if not usable_fields:
+            return None
+
+        return reduce(__and__, (q for q in usable_fields.itervalues()))
+
+
+@dict_identity
+class OrGroupFilter(object):
+    def __init__(self, child_filters):
+        self.child_filters = child_filters
+
+    def as_q(self, field):
+        if not self.child_filters:
+            return None
+
+        return reduce(__or__, (cf.as_q(field) for cf in self.child_filters))
+
+
+@dict_identity
+class MatchFilter(object):
+    def __init__(self, value):
+        self.value = value
+
+    def as_q(self, field):
+        if self.value is None:
+            return None
+
+        return Q(**{field: self.value})
+
+
+@dict_identity
+class DateRangeFilter(object):
+    def __init__(self, dates):
+        self.dates = dates
+
+    def as_q(self, field):
+        if self.dates is None:
+            return None
+
+        begin = None
+        if (self.dates[0] is not None):
+            begin = self.dates[0]
+
+        end = None
+        if (self.dates[1] is not None):
+            end = self.dates[1] + timedelta(days=1)
+
+        if (begin is not None and end is not None):
+            return build_q(field, 'range', (begin, end))
+        elif end is not None:
+            return build_q(field, 'lte', end)
+        elif begin is not None:
+            return build_q(field, 'gte', begin)
+        return None
+
+
+@dict_identity
+class UnlinkedFilter(object):
+    pass
+
+
+@dict_identity
+class NoFilter(object):
+    def __nonzero__(self):
+        return False
+
+    def as_q(self, field):
+        return None
 
 
 def filter_tags(tag_link_field, tag_and_group_list, queryset):

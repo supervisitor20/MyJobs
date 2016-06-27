@@ -5,6 +5,10 @@ from unittest import TestCase
 from myreports.datasources.contacts import (
     ContactsDataSource, ContactsFilter)
 
+from myreports.datasources.util import (
+    DateRangeFilter, CompositeAndFilter, MatchFilter,
+    OrGroupFilter, AndGroupFilter, UnlinkedFilter)
+
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
 from mydashboard.tests.factories import CompanyFactory
@@ -216,7 +220,9 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
+                date=DateRangeFilter([
+                    datetime(2015, 9, 1),
+                    datetime(2015, 9, 30)])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.sue.name}
@@ -231,7 +237,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                date=[None, datetime(2015, 9, 30)]),
+                date=DateRangeFilter([None, datetime(2015, 9, 30)])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.sue.name}
@@ -246,7 +252,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                date=[datetime(2015, 10, 1), None]),
+                date=DateRangeFilter([datetime(2015, 10, 1), None])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.john.name}
@@ -260,7 +266,8 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(tags=[['EaSt']]),
+            ContactsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.john.name}
@@ -274,7 +281,8 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(tags=[['EaSt', 'wEsT']]),
+            ContactsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt'), MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.john.name, self.sue.name}
@@ -288,7 +296,9 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(tags=[['EaSt'], ['wEsT']]),
+            ContactsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = set()
@@ -298,60 +308,24 @@ class TestContactsDataSource(MyJobsBase):
         self.john.tags.add(self.west_tag)
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(tags=[['EaSt'], ['wEsT']]),
+            ContactsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.john.name}
         self.assertEqual(expected, names)
 
-    def test_filter_by_empty_things(self):
+    def test_filter_untagged(self):
         """
-        None filters should not filter, just like missing filters.
-
-        """
-        ds = ContactsDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            ContactsFilter(
-                partner=None,
-                tags=None,
-                locations={'city': '', 'state': ''}),
-            [])
-        names = {r['name'] for r in recs}
-        expected = {self.john.name, self.sue.name}
-        self.assertEqual(expected, names)
-
-    def test_filter_with_empty_partner_list(self):
-        """
-        Empty partner list should cause no results to return
-        This indicates that the member selected to filter by partner,
-        but selected no partners
-
-        """
-        ds = ContactsDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            ContactsFilter(
-                partner=[],
-                locations={'city': '', 'state': ''}),
-            [])
-
-        self.assertEqual(len(recs), 0)
-
-    def test_filter_with_empty_tag_list(self):
-        """
-        Empty tag list should cause only items without tags to return.
-        This indicates that the member selected to filter by tags, but
-        selected no tags to filter by.
+        This indicates that the member selected to filter by untagged.
 
         """
         self.sue.tags.clear()
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(
-                tags=[[]],
-                locations={'city': '', 'state': ''}),
+            ContactsFilter(tags=UnlinkedFilter()),
             [])
         names = {r['name'] for r in recs}
         expected = {self.sue.name}
@@ -363,9 +337,7 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                locations={
-                    'state': 'CA'
-                }),
+                locations=CompositeAndFilter({'state': MatchFilter('CA')})),
             [])
         names = [r['name'] for r in recs]
         expected = [self.sue.name]
@@ -377,9 +349,8 @@ class TestContactsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(
-                locations={
-                    'city': 'Los Angeles'
-                }),
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('Los Angeles')})),
             [])
         names = [r['name'] for r in recs]
         expected = [self.sue.name]
@@ -390,7 +361,8 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(partner=[self.partner_a.pk]),
+            ContactsFilter(
+                partner=OrGroupFilter([MatchFilter(self.partner_a.pk)])),
             [])
         subjects = {r['name'] for r in recs}
         expected = {self.john.name}
@@ -400,13 +372,14 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(partner_tags=[['rigHt']]),
+            ContactsFilter(partner_tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('rigHt')])])),
             [])
         subjects = {r['name'] for r in recs}
         expected = {self.sue.name}
         self.assertEqual(expected, subjects)
 
-    def test_filter_by_partner_tags_empty(self):
+    def test_filter_by_partner_tags_untagged(self):
         """
         Check that we can find a record attached to an untagged partner.
 
@@ -415,7 +388,7 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            ContactsFilter(partner_tags=[]),
+            ContactsFilter(partner_tags=UnlinkedFilter()),
             [])
         subjects = {r['name'] for r in recs}
         expected = {self.sue.name}
@@ -426,7 +399,9 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.help_city(
             self.company,
-            ContactsFilter(locations={'city': "zz"}),
+            ContactsFilter(
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('Los Angeles')})),
             "angel")
         actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
@@ -436,7 +411,9 @@ class TestContactsDataSource(MyJobsBase):
         ds = ContactsDataSource()
         recs = ds.help_state(
             self.company,
-            ContactsFilter(locations={'state': "zz"}),
+            ContactsFilter(
+                locations=CompositeAndFilter({
+                    'state': MatchFilter('zz')})),
             "i")
         actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
@@ -563,22 +540,25 @@ class TestContactsFilterCloning(TestCase):
         """Cloning should remove certain fields."""
         filter = ContactsFilter(
                 tags=['C'],
-                locations={'city': 'A', 'state': 'B'})
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A'),
+                    'state': MatchFilter('B')}))
         expected_with_city = ContactsFilter(
                 tags=['C'],
-                locations={'city': 'A'})
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A')}))
         expected_with_state = ContactsFilter(
                 tags=['C'],
-                locations={'state': 'B'})
+                locations=CompositeAndFilter({
+                    'state': MatchFilter('B')}))
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
 
     def test_clone_without_partners(self):
-        filter = ContactsFilter(
-                partner=[1, 2, 3],
-                locations={'city': 'A', 'state': 'B'})
-        expected_without_partners = ContactsFilter(
-                locations={'city': 'A', 'state': 'B'})
+        locations_filter = CompositeAndFilter({
+            'city': MatchFilter('A'), 'state': MatchFilter('B')})
+        filter = ContactsFilter(partner=[1, 2, 3], locations=locations_filter)
+        expected_without_partners = ContactsFilter(locations=locations_filter)
         self.assertEqual(
             expected_without_partners,
             filter.clone_without_partner())

@@ -3,7 +3,10 @@ from datetime import datetime
 from unittest import TestCase
 
 from myreports.datasources.comm_records import (
-     CommRecordsDataSource, CommRecordsFilter)
+    CommRecordsDataSource, CommRecordsFilter)
+from myreports.datasources.util import (
+    DateRangeFilter, CompositeAndFilter, MatchFilter,
+    OrGroupFilter, AndGroupFilter, UnlinkedFilter)
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
@@ -148,10 +151,12 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_range(self):
         """Should show only commrec with last_action_time in range."""
         ds = CommRecordsDataSource()
+        date_range = DateRangeFilter([
+            datetime(2015, 9, 1),
+            datetime(2015, 9, 30)])
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(
-                date_time=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
+            CommRecordsFilter(date_time=date_range),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
@@ -160,10 +165,11 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_before(self):
         """Should show only commrec with last_action_time before date."""
         ds = CommRecordsDataSource()
+        date_range = DateRangeFilter(
+            [None, datetime(2015, 9, 30)])
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(
-                date_time=[None, datetime(2015, 9, 30)]),
+            CommRecordsFilter(date_time=date_range),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
@@ -172,10 +178,11 @@ class TestCommRecordsDataSource(MyJobsBase):
     def test_filter_by_date_after(self):
         """Should show only commrec with last_action_time after date."""
         ds = CommRecordsDataSource()
+        date_range = DateRangeFilter(
+            [datetime(2015, 10, 1), None])
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(
-                date_time=[datetime(2015, 10, 1), None]),
+            CommRecordsFilter(date_time=date_range),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
@@ -187,9 +194,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
-                locations={
-                    'state': 'CA'
-                }),
+                locations=CompositeAndFilter({'state': MatchFilter('CA')})),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
@@ -201,9 +206,8 @@ class TestCommRecordsDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(
-                locations={
-                    'city': 'Los Angeles'
-                }),
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('Los Angeles')})),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
@@ -217,22 +221,23 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(tags=[['EaSt']]),
+            CommRecordsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
 
-    def test_filter_by_tags_empty_list(self):
+    def test_filter_by_tags_unlinked(self):
         """
-        When tags receives an empty list, only return untagged commrecs.
+       Only return untagged commrecs.
 
         """
         self.record_1.tags.clear()
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(tags=[[]]),
+            CommRecordsFilter(tags=UnlinkedFilter()),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
@@ -243,7 +248,8 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(tags=[['EaSt', 'wEsT']]),
+            CommRecordsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt'), MatchFilter('wEsT')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {
@@ -258,7 +264,9 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
+            CommRecordsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = set()
@@ -269,31 +277,12 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.record_1.save()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(tags=[['EaSt'], ['wEsT']]),
+            CommRecordsFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
-        self.assertEqual(expected, subjects)
-
-    def test_filter_by_empty_things(self):
-        """
-        Empty filters should not filter, just like missing filters.
-
-        """
-        ds = CommRecordsDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            CommRecordsFilter(
-                locations={'city': '', 'state': ''},
-                contact=None,
-                partner=None),
-            [])
-        subjects = {r['subject'] for r in recs}
-        expected = {
-            self.record_1.subject,
-            self.record_2.subject,
-            self.record_3.subject,
-        }
         self.assertEqual(expected, subjects)
 
     def test_filter_by_communication_type(self):
@@ -301,7 +290,8 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(communication_type=['email']),
+            CommRecordsFilter(communication_type=OrGroupFilter([
+                MatchFilter('email')])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject}
@@ -315,24 +305,12 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(partner=[self.partner_a.pk]),
+            CommRecordsFilter(
+                partner=OrGroupFilter([MatchFilter(self.partner_a.pk)])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_1.subject, self.record_2.subject}
         self.assertEqual(expected, subjects)
-
-    def test_filter_by_partner_empty_list(self):
-        """
-        Verify that sending an empty list for partner returns no results.
-
-        """
-        ds = CommRecordsDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            CommRecordsFilter(partner=[]),
-            [])
-
-        self.assertEqual(len(recs), 0)
 
     def test_filter_by_contact(self):
         """
@@ -342,36 +320,26 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(contact=[self.sue.pk]),
+            CommRecordsFilter(
+                contact=OrGroupFilter([MatchFilter(self.sue.pk)])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
-
-    def test_filter_by_contact_empty_list(self):
-        """
-        Check partner filter returns no result if given an empty list
-
-        """
-        ds = CommRecordsDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            CommRecordsFilter(contact=[]),
-            [])
-
-        self.assertEqual(len(recs), 0)
 
     def test_filter_by_contact_tags(self):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(contact_tags=[['sOuTh']]),
+            CommRecordsFilter(
+                contact_tags=AndGroupFilter([
+                    OrGroupFilter([MatchFilter('sOuTh')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
-    def test_filter_by_contact_tags_empty(self):
+    def test_filter_by_contact_tags_untagged(self):
         """
         Check that we can find a record attached to an untagged contact.
 
@@ -380,7 +348,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(contact_tags=[]),
+            CommRecordsFilter(contact_tags=UnlinkedFilter()),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
@@ -390,13 +358,15 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(partner_tags=[['rigHt']]),
+            CommRecordsFilter(
+                partner_tags=AndGroupFilter([
+                    OrGroupFilter([MatchFilter('rigHt')])])),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
         self.assertEqual(expected, subjects)
 
-    def test_filter_by_partner_tags_empty(self):
+    def test_filter_by_partner_tags_untagged(self):
         """
         Check that we can find a record attached to an untagged partner.
 
@@ -405,7 +375,7 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            CommRecordsFilter(partner_tags=[]),
+            CommRecordsFilter(partner_tags=UnlinkedFilter()),
             [])
         subjects = {r['subject'] for r in recs}
         expected = {self.record_3.subject}
