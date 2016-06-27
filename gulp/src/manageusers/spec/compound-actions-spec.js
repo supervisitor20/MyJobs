@@ -67,19 +67,4 @@ describe('doRefreshActivities', () => {
       ]);
     });
   });
-
-  describe('after API fails:', () => {
-    let runPromise;
-    let resolve;
-    let reject;
-
-    beforeEach(promiseTest(async () => {
-      spyOn(api, 'get').and.throwError(new Error("some error"));
-      await store.dispatch(doRefreshActivities())
-    }));
-
-    it('data is unchanged', () => {
-      expect(store.getState().data).not.toBeDefined();
-    });
-  });
 });
