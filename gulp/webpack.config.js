@@ -13,6 +13,7 @@ module.exports = {
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
+    importwizard: './src/importwizard/main',
   },
   resolve: {
     root: path.resolve('src'),

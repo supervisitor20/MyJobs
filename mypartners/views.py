@@ -45,7 +45,7 @@ from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
 from mypartners.forms import (PartnerForm, ContactForm,
                               NewPartnerForm, ContactRecordForm, TagForm,
-                              LocationForm)
+                              LocationForm, ImportWizardForm)
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
@@ -1694,6 +1694,26 @@ def nuo_main(request):
 
     return render_to_response('nonuseroutreach/nuo_main.html', ctx,
                               RequestContext(request))
+
+# TODO: set proper activities
+@restrict_to_staff()
+def import_wizard(request):
+    """
+    The Import Wizard allows a user to import partners, contacts, and
+    communmication records from an uploaded Excel spreadsheet.
+
+    """
+    # TODO: move this to a parsing view
+    if request.method == "POST":
+        form = ImportWizardForm(request.POST, request.FILES)
+        if form.is_valid():
+            return HttpResponse(json.dumps({"result": "success"}))
+        return HttpResponse(json.dumps({"result": "failure"}))
+    company = get_company_or_404(request)
+    ctx = {"company": company}
+
+    return render_to_response(
+        "import_wizard/index.html", ctx, RequestContext(request))
 
 
 @restrict_to_staff()

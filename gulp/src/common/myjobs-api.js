@@ -60,6 +60,22 @@ export class MyJobsApi {
   async delete(url, data) {
     return this.ajaxWithFormData('DELETE', url, data);
   }
+
+  async upload(url, files) {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': this.csrf,
+      },
+    });
+
+    return response;
+  }
 }
 
 export function isClientError(exc) {
