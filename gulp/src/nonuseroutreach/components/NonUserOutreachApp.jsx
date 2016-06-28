@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react';
-import {Col, Grid, Row} from 'react-bootstrap';
+import {Col, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
@@ -14,7 +14,7 @@ class NonUserOutreachApp extends Component {
   render() {
     const {loading, tips} = this.props;
     return (
-      <Grid>
+      <div>
         <Row>
           <Col sm={12}>
             <div className="breadcrumbs">
@@ -33,7 +33,7 @@ class NonUserOutreachApp extends Component {
             <Menu tips={tips} />
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
 }
