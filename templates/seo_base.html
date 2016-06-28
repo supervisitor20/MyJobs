@@ -73,7 +73,7 @@
         {% endif %}
     {% endblock seo_description %}
 
-    {% if num_filters > max_filter_settings %}
+    {% if num_filters >= max_filter_settings %}
         <meta name="robots" content="nofollow">
     {% endif %}
 
