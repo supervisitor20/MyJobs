@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from myreports.datasources.util import (
+    plain_filter, adorn_filter,
     AndGroupFilter, CompositeAndFilter, OrGroupFilter, MatchFilter,
     DateRangeFilter, UnlinkedFilter)
 
@@ -48,7 +49,7 @@ class DataSourceJsonDriver(object):
             values on fields with help available will be replaced with help
         """
         filter_obj = self.build_filter(filter_spec)
-        return self.ds.adorn_filter(company, filter_obj)
+        return plain_filter(adorn_filter(company, self.ds, filter_obj))
 
     def get_default_filter(self, data_type, company):
         """Get a filter object with default values prepopulated.
@@ -60,7 +61,7 @@ class DataSourceJsonDriver(object):
             an adorned filter with default values
             see adorn_filter
         """
-        return self.ds.get_default_filter(data_type, company)
+        return plain_filter(self.ds.get_default_filter(data_type, company))
 
     def build_order(self, order_spec):
         """Build a list of order_by fields from the given order_spec."""

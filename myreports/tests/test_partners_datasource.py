@@ -423,39 +423,29 @@ class TestPartnersDataSource(MyJobsBase):
         expected = [self.partner_b.name, self.partner_a.name]
         self.assertEqual(expected, names)
 
-    def test_adorn_filter(self):
-        filter_spec = PartnersFilter(
-            locations={'city': 'Chicago', 'state': 'IL'},
-            tags=[['east'], ['west']],
-            data_source='zap',
-            uri='http://www.example.com/')
+    def test_adorn_filter_items(self):
+        found_filter_items = {
+            'tags': ['east', 'west'],
+            'uri': 'http://www.example.com/',
+        }
         expected = {
-            u'locations': {
-                u'city': u'Chicago',
-                u'state': u'IL',
+            u'tags': {
+                'east': {
+                    'value': u'east',
+                    'display': u'east',
+                    'hexColor': u'aaaaaa',
+                },
+                'west': {
+                    'value': u'west',
+                    'display': u'west',
+                    'hexColor': u'bbbbbb',
+                },
             },
-            u'tags': [
-                [
-                    {
-                        'value': u'east',
-                        'display': u'east',
-                        'hexColor': u'aaaaaa',
-                    }
-                ],
-                [
-                    {
-                        'value': u'west',
-                        'display': u'west',
-                        'hexColor': u'bbbbbb',
-                    }
-                ],
-            ],
-            u'data_source': u'zap',
-            u'uri': u'http://www.example.com/',
         }
 
         ds = PartnersDataSource()
-        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        adorned_filter = ds.adorn_filter_items(
+            self.company, found_filter_items)
         self.assertEqual(expected, adorned_filter)
 
     def test_default_filter(self):
@@ -464,12 +454,11 @@ class TestPartnersDataSource(MyJobsBase):
         default_filter = ds.get_default_filter(None, self.company)
         self.assertEquals(
             datetime.now().year,
-            default_filter['date'][1].year)
+            default_filter.date.dates[1].year)
         # Take out value dated today. Too hard to run through assertEquals.
-        default_filter['date'][1] = None
-        expected = {
-            'date': [datetime(2014, 1, 1), None],
-        }
+        default_filter.date.dates[1] = None
+        expected = PartnersFilter(
+            date=DateRangeFilter([datetime(2014, 1, 1), None]))
         self.assertEquals(expected, default_filter)
 
 

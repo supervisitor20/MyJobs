@@ -7,9 +7,8 @@ from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    extract_tags,
-    apply_filter_to_queryset,
-    NoFilter, CompositeAndFilter)
+    extract_tags, apply_filter_to_queryset, adorn_filter,
+    NoFilter, CompositeAndFilter, DateRangeFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 from myreports.datasources.sql import (
     count_comm_rec_per_month_per_partner_sql)
@@ -197,57 +196,26 @@ class PartnersDataSource(DataSource):
             for c in data_sources_qs
         ]
 
-    def adorn_filter(self, company, filter_spec):
+    def adorn_filter_items(self, company, found_filter_items):
         adorned = {}
         empty = PartnersFilter()
 
-        if filter_spec.date:
-            adorned[u'date'] = filter_spec.date
-
-        if filter_spec.locations:
-            adorned[u'locations'] = {}
-            known_city = filter_spec.locations.get('city', None)
-            if known_city:
-                cities = self.help_city(company, empty, known_city)
-                if cities:
-                    adorned[u'locations'][u'city'] = cities[0]['value']
-            known_state = filter_spec.locations.get('state', None)
-            if known_state:
-                states = self.help_state(company, empty, known_state)
-                if states:
-                    adorned[u'locations'][u'state'] = states[0]['value']
-
-        if filter_spec.tags:
-            adorned[u'tags'] = []
-            for known_or_tags in filter_spec.tags:
-                or_group = []
-
-                for known_tag in known_or_tags:
-                    tags = self.help_tags(company, empty, known_tag)
-                    if tags:
-                        or_group.append(tags[0])
-
-                if or_group:
-                    adorned[u'tags'].append(or_group)
-
-        if filter_spec.data_source:
-            known_source = filter_spec.data_source
-            sources = self.help_data_source(company, empty, known_source)
-            if sources:
-                adorned[u'data_source'] = sources[0]['value']
-
-        if filter_spec.uri:
-            known_uri = filter_spec.uri
-            uris = self.help_uri(company, empty, known_uri)
-            if uris:
-                adorned[u'uri'] = uris[0]['value']
+        if 'tags' in found_filter_items:
+            adorned[u'tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for t in found_filter_items['tags']
+                    for result in self.help_tags(company, empty, t)
+                ]
+            }
 
         return adorned
 
     def get_default_filter(self, data_type, company):
         filter_spec = PartnersFilter(
-            date=[datetime(2014, 1, 1), datetime.now()])
-        adorned = self.adorn_filter(company, filter_spec)
+            date=DateRangeFilter([datetime(2014, 1, 1), datetime.now()]))
+        adorned = adorn_filter(company, self, filter_spec)
         return adorned
 
 

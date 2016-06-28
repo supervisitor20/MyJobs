@@ -3,9 +3,9 @@ from datetime import datetime
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    extract_tags, adorn_tags,
+    extract_tags, adorn_filter,
     apply_filter_to_queryset,
-    NoFilter, CompositeAndFilter)
+    NoFilter, CompositeAndFilter, DateRangeFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from mypartners.models import Contact, Location, Tag, Partner, Status
@@ -137,57 +137,51 @@ class ContactsDataSource(DataSource):
         qs_filtered = filter_spec.filter_query_set(qs_live)
         return qs_filtered
 
-    def adorn_filter(self, company, filter_spec):
+    def adorn_filter_items(self, company, found_filter_items):
         adorned = {}
         empty = ContactsFilter()
 
-        if filter_spec.date:
-            adorned[u'date'] = filter_spec.date
+        if 'tags' in found_filter_items:
+            adorned[u'tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for t in found_filter_items['tags']
+                    for result in self.help_tags(company, empty, t)
+                ]
+            }
 
-        if filter_spec.locations:
-            adorned[u'locations'] = {}
-            known_city = filter_spec.locations.get('city', None)
-            if known_city:
-                cities = self.help_city(company, empty, known_city)
-                if cities:
-                    adorned[u'locations'][u'city'] = cities[0]['value']
-            known_state = filter_spec.locations.get('state', None)
-            if known_state:
-                states = self.help_state(company, empty, known_state)
-                if states:
-                    adorned[u'locations'][u'state'] = states[0]['value']
+        if 'partner_tags' in found_filter_items:
+            adorned[u'partner_tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for t in found_filter_items['partner_tags']
+                    for result in self.help_partner_tags(company, empty, t)
+                ]
+            }
 
-        if filter_spec.tags:
-            adorned[u'tags'] = adorn_tags(
-                company,
-                filter_spec.tags,
-                self.help_tags,
-                empty)
-
-        if filter_spec.partner_tags:
-            adorned[u'partner_tags'] = adorn_tags(
-                company,
-                filter_spec.partner_tags,
-                self.help_partner_tags,
-                empty)
-
-        if filter_spec.partner:
+        if 'partner' in found_filter_items:
             partners_qs = (
                 Partner.objects
                 .filter(owner=company)
-                .filter(pk__in=filter_spec.partner)
+                .filter(pk__in=found_filter_items['partner'])
                 .values('name', 'pk').distinct())
-            adorned[u'partner'] = [
-                {'value': p['pk'], 'display': p['name']}
-                for p in partners_qs
-            ]
+
+            adorned[u'partner'] = {
+                found['value']: found
+                for found in [
+                    {'value': p['pk'], 'display': p['name']}
+                    for p in partners_qs
+                ]
+            }
 
         return adorned
 
     def get_default_filter(self, data_type, company):
         filter_spec = ContactsFilter(
-            date=[datetime(2014, 1, 1), datetime.now()])
-        adorned = self.adorn_filter(company, filter_spec)
+            date=DateRangeFilter([datetime(2014, 1, 1), datetime.now()]))
+        adorned = adorn_filter(company, self, filter_spec)
         return adorned
 
 

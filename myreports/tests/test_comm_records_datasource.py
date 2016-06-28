@@ -500,81 +500,68 @@ class TestCommRecordsDataSource(MyJobsBase):
 
     def test_adorn_filter(self):
         self.maxDiff = 10000
-        filter_spec = CommRecordsFilter(
-            locations={'city': 'Chicago', 'state': 'IL'},
-            tags=[['east'], ['west']],
-            communication_type=['Email'],
-            partner=[str(self.partner_a.pk)],
-            contact=[str(self.sue.pk)],
-            contact_tags=[['nOrth'], ['south']],
-            partner_tags=[['lEft'], ['riGht']],
-            )
+        found_filter_items = {
+            'tags': ['east', 'west'],
+            'communication_type': ['Email'],
+            'partner': [str(self.partner_a.pk)],
+            'contact': [str(self.sue.pk)],
+            'contact_tags': ['nOrth', 'south'],
+            'partner_tags': ['lEft', 'riGht'],
+        }
 
         expected = {
-            u'partner': [
-                {'value': self.partner_a.pk, 'display': u'aaa'},
-            ],
-            u'contact': [
-                {'value': self.sue.pk, 'display': u'Sue Baxter'},
-            ],
-            u'locations': {
-                u'city': u'Chicago',
-                u'state': u'IL',
+            u'partner': {
+                self.partner_a.pk:
+                    {'value': self.partner_a.pk, 'display': u'aaa'},
             },
-            u'tags': [
-                [
-                    {
-                        'value': u'east',
-                        'display': u'east',
-                        'hexColor': u'aaaaaa',
-                    }
-                ],
-                [
-                    {
-                        'value': u'west',
-                        'display': u'west',
-                        'hexColor': u'bbbbbb',
-                    }
-                ],
-            ],
-            u'communication_type': [{'value': 'email', 'display': 'Email'}],
-            u'contact_tags': [
-                [
-                    {
-                        'value': u'north',
-                        'display': u'north',
-                        'hexColor': u'cccccc',
-                    }
-                ],
-                [
-                    {
-                        'value': u'south',
-                        'display': u'south',
-                        'hexColor': u'dddddd',
-                    }
-                ],
-            ],
-            u'partner_tags': [
-                [
-                    {
-                        'value': u'left',
-                        'display': u'left',
-                        'hexColor': u'eeeeee',
-                    }
-                ],
-                [
-                    {
-                        'value': u'right',
-                        'display': u'right',
-                        'hexColor': u'ffffff',
-                    }
-                ],
-            ],
+            u'contact': {
+                self.sue.pk:
+                    {'value': self.sue.pk, 'display': u'Sue Baxter'},
+            },
+            u'tags': {
+                u'east': {
+                    'value': u'east',
+                    'display': u'east',
+                    'hexColor': u'aaaaaa',
+                },
+                u'west': {
+                    'value': u'west',
+                    'display': u'west',
+                    'hexColor': u'bbbbbb',
+                },
+            },
+            u'communication_type': {
+                'email': {'value': 'email', 'display': 'Email'}
+            },
+            u'contact_tags': {
+                u'north': {
+                    'value': u'north',
+                    'display': u'north',
+                    'hexColor': u'cccccc',
+                },
+                u'south': {
+                    'value': u'south',
+                    'display': u'south',
+                    'hexColor': u'dddddd',
+                },
+            },
+            u'partner_tags': {
+                u'left': {
+                    'value': u'left',
+                    'display': u'left',
+                    'hexColor': u'eeeeee',
+                },
+                u'right': {
+                    'value': u'right',
+                    'display': u'right',
+                    'hexColor': u'ffffff',
+                },
+            },
         }
 
         ds = CommRecordsDataSource()
-        adorned_filter = ds.adorn_filter(self.company, filter_spec)
-        self.assertEqual(expected, adorned_filter)
+        result = ds.adorn_filter_items(self.company, found_filter_items)
+        self.assertEqual(expected, result)
 
     def test_default_filter(self):
         """
@@ -585,12 +572,11 @@ class TestCommRecordsDataSource(MyJobsBase):
         default_filter = ds.get_default_filter(None, self.company)
         self.assertEquals(
             datetime.now().year,
-            default_filter['date_time'][1].year)
+            default_filter.date_time.dates[1].year)
         # Take out value dated today. Too hard to run through assertEquals.
-        default_filter['date_time'][1] = None
-        expected = {
-            'date_time': [datetime(2014, 1, 1), None],
-        }
+        default_filter.date_time.dates[1] = None
+        expected = CommRecordsFilter(
+            date_time=DateRangeFilter([datetime(2014, 1, 1), None]))
         self.assertEquals(expected, default_filter)
 
 

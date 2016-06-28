@@ -462,56 +462,45 @@ class TestContactsDataSource(MyJobsBase):
 
     def test_adorn_filter(self):
         self.maxDiff = 10000
-        filter_spec = ContactsFilter(
-            locations={'city': 'Chicago', 'state': 'IL'},
-            tags=[['east'], ['west']],
-            partner=[str(self.partner_a.pk)],
-            partner_tags=[['lEft'], ['Right']],
-            )
+        found_filter_items = {
+            'tags': ['east', 'west'],
+            'partner': [str(self.partner_a.pk)],
+            'partner_tags': ['lEft', 'Right'],
+        }
         expected = {
-            u'partner': [
-                {'value': self.partner_a.pk, 'display': u'aaa'},
-            ],
-            u'locations': {
-                u'city': u'Chicago',
-                u'state': u'IL',
+            u'partner': {
+                self.partner_a.pk:
+                    {'value': self.partner_a.pk, 'display': u'aaa'},
             },
-            u'tags': [
-                [
-                    {
-                        'value': u'east',
-                        'display': u'east',
-                        'hexColor': u'aaaaaa',
-                    }
-                ],
-                [
-                    {
-                        'value': u'west',
-                        'display': u'west',
-                        'hexColor': u'bbbbbb',
-                    }
-                ],
-            ],
-            u'partner_tags': [
-                [
-                    {
-                        'value': u'left',
-                        'display': u'left',
-                        'hexColor': u'cccccc',
-                    }
-                ],
-                [
-                    {
-                        'value': u'right',
-                        'display': u'right',
-                        'hexColor': u'dddddd',
-                    }
-                ],
-            ],
+            u'tags': {
+                'east': {
+                    'value': u'east',
+                    'display': u'east',
+                    'hexColor': u'aaaaaa',
+                },
+                'west': {
+                    'value': u'west',
+                    'display': u'west',
+                    'hexColor': u'bbbbbb',
+                },
+            },
+            u'partner_tags': {
+                'left': {
+                    'value': u'left',
+                    'display': u'left',
+                    'hexColor': u'cccccc',
+                },
+                'right': {
+                    'value': u'right',
+                    'display': u'right',
+                    'hexColor': u'dddddd',
+                },
+            },
         }
 
         ds = ContactsDataSource()
-        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        adorned_filter = ds.adorn_filter_items(
+            self.company, found_filter_items)
         self.assertEqual(expected, adorned_filter)
 
     def test_default_filter(self):
@@ -520,12 +509,11 @@ class TestContactsDataSource(MyJobsBase):
         default_filter = ds.get_default_filter(None, self.company)
         self.assertEquals(
             datetime.now().year,
-            default_filter['date'][1].year)
+            default_filter.date.dates[1].year)
         # Take out value dated today. Too hard to run through assertEquals.
-        default_filter['date'][1] = None
-        expected = {
-            'date': [datetime(2014, 1, 1), None],
-        }
+        default_filter.date.dates[1] = None
+        expected = ContactsFilter(
+            date=DateRangeFilter([datetime(2014, 1, 1), None]))
         self.assertEquals(expected, default_filter)
 
 

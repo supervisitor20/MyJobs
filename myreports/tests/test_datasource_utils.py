@@ -9,12 +9,13 @@ from myreports.report_configuration import (
 from myreports.datasources.util import (
     DateRangeFilter, MatchFilter, OrGroupFilter, AndGroupFilter, NoFilter,
     CompositeAndFilter, UnlinkedFilter,
-    apply_filter_to_queryset,
+    apply_filter_to_queryset, adorn_filter, plain_filter,
     dispatch_help_by_field_name, dispatch_run_by_data_type,
     extract_tags)
 from myreports.datasources.base import DataSource
 from myreports.datasources.jsondriver import DataSourceJsonDriver
 from myreports.datasources.contacts import ContactsFilter
+from myreports.datasources.partners import PartnersFilter
 
 
 class MockQuerySet(object):
@@ -209,10 +210,66 @@ class TestUtils(TestCase):
         ]
         self.assertEqual(expected, result)
 
+    def test_plain_filter_match(self):
+        filt = PartnersFilter(uri=MatchFilter('www'))
+        self.assertEqual({
+            'uri': 'www',
+        }, plain_filter(filt))
+
+    def test_plain_filter_or(self):
+        filt = ContactsFilter(
+            partner=OrGroupFilter([
+                MatchFilter(1),
+                MatchFilter(2),
+            ]))
+        self.assertEqual({'partner': [1, 2]}, plain_filter(filt))
+
+    def test_plain_filter_and(self):
+        filt = ContactsFilter(
+            tags=AndGroupFilter([
+                OrGroupFilter([
+                    MatchFilter(1),
+                    MatchFilter(2),
+                ]),
+                OrGroupFilter([
+                    MatchFilter(3),
+                    MatchFilter(4),
+                ])]))
+        self.assertEqual({'tags': [[1, 2], [3, 4]]}, plain_filter(filt))
+
+    def test_plain_filter_composite_and(self):
+        filt = ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter('indy'),
+                'state': MatchFilter('IN'),
+            }))
+        self.assertEqual({
+            'locations': {
+                'city': 'indy',
+                'state': 'IN',
+            },
+        }, plain_filter(filt))
+
+    def test__plain_filter_composite_date_range(self):
+        filt = ContactsFilter(
+            date=DateRangeFilter([
+                datetime(2015, 9, 1),
+                datetime(2015, 9, 30)]))
+        self.assertEqual({
+            'date': [datetime(2015, 9, 1), datetime(2015, 9, 30)],
+        }, plain_filter(filt))
+
+    def test_plain_filter_unlinked(self):
+        filt = ContactsFilter(tags=UnlinkedFilter())
+        self.assertEqual({
+            'tags': {'nolink': True},
+        }, plain_filter(filt))
+
 
 class MockDataSource(DataSource):
     def __init__(self):
         self.calls = []
+        self.adorn_calls = []
 
     def filter_type(self):
         return ContactsFilter
@@ -225,11 +282,176 @@ class MockDataSource(DataSource):
         self.calls.append(['run', data_source, company, filter, order])
         return 'aaa'
 
-    def adorn_filter(self, company, filter_spec):
-        pass
+    def adorn_filter_items(self, company, filter_items):
+        self.adorn_calls.append(filter_items)
+        return {
+            'locations': {
+                'city': {
+                    'indy': {'value': 'indy', 'display': 'Indy'},
+                },
+                'state': {
+                    'IN': {'value': 'IN', 'display': 'Indiana'},
+                },
+            },
+            'tags': {
+                'a': {'value': 'a', 'display': 'A', 'hexcolor': 'aaaaaa'},
+                'b': {'value': 'b', 'display': 'B', 'hexcolor': 'bbbbbb'},
+            },
+        }
 
     def get_default_filter(self, data_type, company):
         pass
+
+
+class TestAdornFilter(TestCase):
+    def setUp(self):
+        super(TestAdornFilter, self).setUp()
+        self.ds = MockDataSource()
+
+    def test_passthrough_missing(self):
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            partner=OrGroupFilter([
+                MatchFilter(1),
+                MatchFilter(2)])))
+        self.assertEqual([{
+            'partner': [1, 2],
+        }], self.ds.adorn_calls)
+        self.assertEqual(
+            ContactsFilter(partner=OrGroupFilter([
+                MatchFilter(1),
+                MatchFilter(2)])), result)
+
+    def test_passthrough_missing_composite_and(self):
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            partner=CompositeAndFilter({
+                'a': MatchFilter(1),
+                'b': MatchFilter(2)
+            })))
+        self.assertEqual([{
+            'partner': {'a': [1], 'b': [2]},
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            partner=CompositeAndFilter({
+                'a': MatchFilter(1),
+                'b': MatchFilter(2)
+            })), result)
+
+    def test_match(self):
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            date=MatchFilter('dt'),
+            tags=MatchFilter('a')))
+        self.assertEqual([{
+            'date': ['dt'],
+            'tags': ['a'],
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            date=MatchFilter('dt'),
+            tags=MatchFilter(
+                {'value': 'a', 'display': 'A', 'hexcolor': 'aaaaaa'})), result)
+
+    def test_or_group(self):
+        self.maxDiff = 10000
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            tags=OrGroupFilter([
+                MatchFilter('a'),
+                MatchFilter('b'),
+                MatchFilter('c'),
+            ])))
+        self.assertEqual([{
+            'tags': ['a', 'b', 'c'],
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            tags=OrGroupFilter([
+                MatchFilter(
+                    {'value': 'a', 'display': 'A', 'hexcolor': 'aaaaaa'}),
+                MatchFilter(
+                    {'value': 'b', 'display': 'B', 'hexcolor': 'bbbbbb'}),
+                MatchFilter('c'),
+            ])), result)
+
+    def test_and_group(self):
+        self.maxDiff = 10000
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            tags=AndGroupFilter([
+                OrGroupFilter([
+                    MatchFilter('a'),
+                    MatchFilter('c'),
+                ]),
+                OrGroupFilter([
+                    MatchFilter('b'),
+                    MatchFilter('d'),
+                ]),
+            ])))
+        self.assertEqual([{
+            'tags': ['a', 'c', 'b', 'd'],
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            tags=AndGroupFilter([
+                OrGroupFilter([
+                    MatchFilter(
+                        {'value': 'a', 'display': 'A', 'hexcolor': 'aaaaaa'}),
+                    MatchFilter('c')]),
+                OrGroupFilter([
+                    MatchFilter(
+                        {'value': 'b', 'display': 'B', 'hexcolor': 'bbbbbb'}),
+                    MatchFilter('d')])])), result)
+
+    def test_composite_and(self):
+        self.maxDiff = 10000
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter('indy'),
+                'state': MatchFilter('IN'),
+            })))
+        self.assertEqual([{
+            'locations': {
+                'city': ['indy'],
+                'state': ['IN'],
+            },
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter({'value': 'indy', 'display': 'Indy'}),
+                'state': MatchFilter({'value': 'IN', 'display': 'Indiana'}),
+            })), result)
+
+    def test_composite_and_missing_in_db(self):
+        self.maxDiff = 10000
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter('indy'),
+                'state': MatchFilter('IN'),
+                'county': MatchFilter('marion'),
+            })))
+        self.assertEqual([{
+            'locations': {
+                'city': ['indy'],
+                'state': ['IN'],
+                'county': ['marion'],
+            },
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter({'value': 'indy', 'display': 'Indy'}),
+                'state': MatchFilter({'value': 'IN', 'display': 'Indiana'}),
+                'county': MatchFilter('marion'),
+            })), result)
+
+    def test_composite_and_partial_filter(self):
+        self.maxDiff = 10000
+        result = adorn_filter(None, self.ds, ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter('indy'),
+            })))
+        self.assertEqual([{
+            'locations': {
+                'city': ['indy'],
+            },
+        }], self.ds.adorn_calls)
+        self.assertEqual(ContactsFilter(
+            locations=CompositeAndFilter({
+                'city': MatchFilter({'value': 'indy', 'display': 'Indy'}),
+            })), result)
 
 
 class TestDataSourceJsonDriver(TestCase):
@@ -407,7 +629,7 @@ class SomeDataSource(DataSource):
     def help_name(self, company, filter_spec, partial):
         return partial + ' zz'
 
-    def adorn_filter(self, company, filter_spec):
+    def adorn_filter_items(self, company, found_items):
         pass
 
     def get_default_filter(self, data_type, company):

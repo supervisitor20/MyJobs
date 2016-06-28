@@ -74,6 +74,40 @@ def apply_filter_to_queryset(queryset, filt, field, extension=None):
     return result
 
 
+def plain_filter(full_filter):
+    return {
+        k: reduce_filter(v)
+        for k, v in full_filter.__dict__.iteritems()
+        if v
+    }
+
+
+def reduce_filter(filt):
+    if isinstance(filt, MatchFilter):
+        return filt.value
+    elif isinstance(filt, OrGroupFilter):
+        return [
+            reduce_filter(f)
+            for f in filt.child_filters
+        ]
+    elif isinstance(filt, AndGroupFilter):
+        return [
+            reduce_filter(f)
+            for f in filt.child_filters
+        ]
+    elif isinstance(filt, CompositeAndFilter):
+        return {
+            k: reduce_filter(v)
+            for k, v in filt.field_map.iteritems()
+        }
+    elif isinstance(filt, DateRangeFilter):
+        return filt.dates
+    elif isinstance(filt, UnlinkedFilter):
+        return {'nolink': True}
+    else:
+        return filt
+
+
 @dict_identity
 class AndGroupFilter(object):
     def __init__(self, child_filters):
@@ -166,58 +200,64 @@ class NoFilter(object):
         return None
 
 
-def filter_tags(tag_link_field, tag_and_group_list, queryset):
-    """
-    Implements standard tag filtering.
+def adorn_filter(company, datasource, full_filter):
+    collected = {
+        k: collect_matches(f)
+        for k, f in full_filter.__dict__.iteritems()
+        if f
+    }
+    adorned_items = datasource.adorn_filter_items(company, collected)
 
-    tag_link_field: django model field reference from base model.
-        Should have a name field.
-        i.e. tags or contact__tags
-    tag_and_group_list: list of lists of tag names.
-        i.e. [['red', 'blue'], ['nice']]
-    queryset: base queryset, filters will be applied to this
-    """
-    name_match_selector = tag_link_field + '__name__iexact'
-    list_empty = True
-    or_qs = []
-    for tag_ors in tag_and_group_list:
-        if tag_ors:
-            list_empty = False
-            or_qs.append(
-                reduce(
-                    __or__,
-                    map(lambda t: Q(**{name_match_selector: t}),
-                        tag_ors)))
-    for or_q in or_qs:
-        queryset = queryset.filter(or_q)
-    if list_empty:
-        # if an empty tags list was received, return only untagged
-        # items
-        queryset = queryset.filter(**{tag_link_field: None})
+    adorned_filter_dict = {
+        k: place_adornments(f, adorned_items.get(k, {}))
+        for k, f in full_filter.__dict__.iteritems()
+        if f
+    }
 
-    return queryset
+    return datasource.filter_type()(**adorned_filter_dict)
 
 
-def adorn_tags(company, tag_and_group_list, help_method, ds_filter):
-    """
-    Build an adorned list of tags.
+def collect_matches(filt):
+    if isinstance(filt, MatchFilter):
+        return [filt.value]
+    elif isinstance(filt, OrGroupFilter) or isinstance(filt, AndGroupFilter):
+        return [
+            item for sublist in [
+                collect_matches(f)
+                for f in filt.child_filters
+            ]
+            for item in sublist
+        ]
+    elif isinstance(filt, CompositeAndFilter):
+        return {
+            k: collect_matches(f)
+            for k, f in filt.field_map.iteritems()
+        }
+    else:
+        return filt
 
-    company: company we are currently working with
-    tag_and_group_list: list of lists of tag names.
-        i.e. [['red', 'blue'], ['nice']]
-    help_method: method called to build the adorned lists
-    ds_filter: a datasource filter which will work with help_method
-        it should be empty
-    """
-    result = []
-    for known_or_tags in tag_and_group_list:
-        or_group = []
 
-        for known_tag in known_or_tags:
-            tags = help_method(company, ds_filter, known_tag)
-            if tags:
-                or_group.append(tags[0])
-
-        if or_group:
-            result.append(or_group)
-    return result
+def place_adornments(filt, adorned_items):
+    if isinstance(filt, MatchFilter):
+        return MatchFilter(adorned_items.get(filt.value, filt.value))
+    elif isinstance(filt, OrGroupFilter):
+        return OrGroupFilter([
+            place_adornments(f, adorned_items)
+            for f in filt.child_filters
+        ])
+    elif isinstance(filt, AndGroupFilter):
+        return AndGroupFilter([
+            place_adornments(f, adorned_items)
+            for f in filt.child_filters
+        ])
+    elif isinstance(filt, CompositeAndFilter):
+        adorned_field_map = {
+            k: place_adornments(f, adorned_items[k])
+            for k, f in filt.field_map.iteritems()
+            if k in adorned_items
+        }
+        merged_field_map = dict(filt.field_map)
+        merged_field_map.update(adorned_field_map)
+        return CompositeAndFilter(merged_field_map)
+    else:
+        return filt
