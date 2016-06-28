@@ -123,7 +123,7 @@ def _load_json_data(json_file):
     Retrieves an internal json file, opens it, and reads it in as a dict.
 
     Inputs:
-    :jason_file:     The location of the json data file
+    :json_file:     The location of the json data file
 
     Returns:
     :json_data:     Python dictionary version of the json file
