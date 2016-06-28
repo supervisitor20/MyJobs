@@ -11,6 +11,7 @@ import {
   removeFromAndOrFilterAction,
   deleteFilterAction,
   emptyFilterAction,
+  unlinkFilterAction,
   setReportNameAction,
   receiveHintsAction,
   clearHintsAction,
@@ -440,7 +441,7 @@ describe('reportStateReducer', () => {
       currentFilterDirty: false,
       currentFilter: {},
     }, action);
-    expect(result).toEqual({
+    expect(result).toDiffEqual({
       currentFilterDirty: true,
       currentFilter: {
         "tags": [],
@@ -448,6 +449,19 @@ describe('reportStateReducer', () => {
     });
   });
 
+  it('unlinks a filter', () => {
+    const action = unlinkFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toDiffEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": {nolink: true},
+      },
+    });
+  });
 
   it('can set the report name', () => {
     const action = setReportNameAction("Contacts 2016");

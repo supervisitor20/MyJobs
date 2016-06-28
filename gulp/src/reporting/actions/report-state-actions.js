@@ -125,3 +125,12 @@ export const deleteFilterAction = createAction('DELETE_FILTER',
  */
 export const emptyFilterAction = createAction('EMPTY_FILTER',
   (field) => ({field}));
+
+
+/**
+ * Mark a filter as unlinked. i.e. untagged
+ *
+ * field: which filter field to operate on.
+ */
+export const unlinkFilterAction = createAction('UNLINK_FILTER',
+  (field) => ({field}));

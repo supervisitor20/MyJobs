@@ -15,6 +15,7 @@ import {
   deleteFilterAction,
   emptyFilterAction,
   setReportNameAction,
+  unlinkFilterAction,
 } from '../actions/report-state-actions';
 
 import {
@@ -91,11 +92,25 @@ class SetUpReport extends Component {
       fieldsLoading,
     } = this.props;
 
-    const selectValue = currentFilter[col.filter] ? 'tags' : 'none';
+
+    let selectValue;
+    if (currentFilter[col.filter]) {
+      if (currentFilter[col.filter].nolink) {
+        selectValue = 'untagged';
+      } else {
+        selectValue = 'tags';
+      }
+    } else {
+      selectValue = 'none';
+    }
     const switchControl = (value) => {
       if (value === 'tags') {
         dispatch(deleteFilterAction(col.filter));
         dispatch(emptyFilterAction(col.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else if (value === 'untagged') {
+        dispatch(deleteFilterAction(col.filter));
+        dispatch(unlinkFilterAction(col.filter));
         this.dispatchUpdateFilterWithDependencies();
       } else {
         dispatch(deleteFilterAction(col.filter));
@@ -120,6 +135,7 @@ class SetUpReport extends Component {
           />
         ),
       },
+      {value: 'untagged', display: 'Filter by untagged', render: () => ''},
     ];
 
     return (
@@ -207,7 +223,11 @@ class SetUpReport extends Component {
     if (currentFilter[namesCol.filter]) {
       selectValue = 'names';
     } else if (currentFilter[tagsCol.filter]) {
-      selectValue = 'tags';
+      if (currentFilter[tagsCol.filter].nolink) {
+        selectValue = 'untagged';
+      } else {
+        selectValue = 'tags';
+      }
     } else {
       selectValue = 'none';
     }
@@ -221,6 +241,11 @@ class SetUpReport extends Component {
         dispatch(deleteFilterAction(namesCol.filter));
         dispatch(deleteFilterAction(tagsCol.filter));
         dispatch(emptyFilterAction(tagsCol.filter));
+        this.dispatchUpdateFilterWithDependencies();
+      } else if (value === 'untagged') {
+        dispatch(deleteFilterAction(namesCol.filter));
+        dispatch(deleteFilterAction(tagsCol.filter));
+        dispatch(unlinkFilterAction(tagsCol.filter));
         this.dispatchUpdateFilterWithDependencies();
       } else {
         dispatch(deleteFilterAction(namesCol.filter));
@@ -264,6 +289,7 @@ class SetUpReport extends Component {
           />
         ),
       },
+      {value: 'untagged', display: 'Filter by untagged', render: () => ''},
     ];
     const counter = '(' +
       (hints[namesCol.filter] || []).length +

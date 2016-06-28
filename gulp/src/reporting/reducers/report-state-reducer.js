@@ -231,6 +231,18 @@ export default handleActions({
     };
   },
 
+  'UNLINK_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...state.currentFilter,
+        [field]: {nolink: true},
+      },
+    };
+  },
+
   'DELETE_FILTER': (state, action) => {
     const {field} = action.payload;
     return {
