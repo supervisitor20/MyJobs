@@ -232,23 +232,23 @@ def hr_xml_to_json(xml, business_unit):
     logger.debug("Parsing job %s", guid)
 
     reqid = xml.find("./reqid").text
-    city = xml.find('.//locations/loc[@Type="Primary"]/city').text
+    city = xml.find('.//locations/loc[@type="primary"]/city').text
     city = city if city not in ['', 'XX'] else None
-    state_code = xml.find('./locations/loc[@Type="Primary"]/state').text
+    state_code = xml.find('./locations/loc[@type="primary"]/state').text
     state_short = state_code if state_code in states.keys() else None
     state = states.get(state_code, None)
-    country_short = xml.find('./locations/loc[@Type="Primary"]/country').text
+    country_short = xml.find('./locations/loc[@type="primary"]/country').text
     if country_short in [None, '', 'XXX']:
         country = country_short = ""
     else:
         country = Country.objects.get(abbrev=country_short).name
-    zipcode = xml.find('./locations/loc[@Type="Primary"]/postalcode')
+    zipcode = xml.find('./locations/loc[@type="primary"]/postalcode')
     title = xml.find('./jobtitle').text
     description = xml.find('./jobdescription').text
     link = xml.find('./joburl').text
 
-    latitude = xml.find('./locations/loc[@Type="Primary"]/latitude').text
-    longitude = xml.find('./locations/loc[@Type="Primary"]/longitude').text
+    latitude = xml.find('./locations/loc[@type="primary"]/latitude').text
+    longitude = xml.find('./locations/loc[@type="primary"]/longitude').text
 
     # Lookup the company.  (Assumes that company is 1-to-1 on BusinessUnit)
     try:
