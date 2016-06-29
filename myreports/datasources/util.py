@@ -55,6 +55,27 @@ def extract_tags(tag_list):
 
 
 def apply_filter_to_queryset(queryset, filt, field, extension=None):
+    """
+    Apply the given filter to the given queryset using the provided field info.
+
+    queryset: a queryset to apply the filter to
+    filt: a filter object
+    field: base field name.
+    extension: rest of field name
+
+    Special cases:
+        CompositeAndFilter: field is a dictionary of field info: i.e. {
+            'name': 'name__iexact,
+        }
+        UnlinkedFilter uses only field, not field+extension as the field to
+            compare. i.e.
+
+            apply_filter_to_queryset(qs, filt, 'tags', '__name__iexact')
+
+            This works for ordinary filters, which use field+exention. If
+            filt is UnlinkedFilter we still get the expected behavior since
+            bare field is what we need to compare against None.
+    """
     if extension:
         full_field = field + extension
     else:
@@ -62,6 +83,9 @@ def apply_filter_to_queryset(queryset, filt, field, extension=None):
 
     result = queryset
 
+    # and'ed Q won't work as it means something different
+    # https://docs.djangoproject.com/en/dev/topics/db/queries/#spanning-multi-valued-relationships
+    # So we handle AndGroupFilter at this level only.
     if isinstance(filt, AndGroupFilter):
         for child in filt.child_filters:
             result = apply_filter_to_queryset(result, child, full_field)
@@ -75,6 +99,13 @@ def apply_filter_to_queryset(queryset, filt, field, extension=None):
 
 
 def as_q(filt, field):
+    """
+    Convert filters to django db Q values.
+
+    Don't call this directly. Use apply_filter_to_queryset instead.
+    filt: a filter object
+    field: the db field to use for Q values.
+    """
     if isinstance(filt, MatchFilter):
         if filt.value is None:
             return None
@@ -127,6 +158,11 @@ def as_q(filt, field):
 
 
 def plain_filter(full_filter):
+    """
+    Convert a filter object back to object form.
+
+    See DataSourceJsonDriver.build_filter for the format.
+    """
     return {
         k: reduce_filter(v)
         for k, v in full_filter.__dict__.iteritems()
@@ -135,9 +171,16 @@ def plain_filter(full_filter):
 
 
 def reduce_filter(filt):
+    """
+    Convert an individual filter to object form.
+
+    Don't call this directly. Call plain_filter instead.
+    """
     if isinstance(filt, MatchFilter):
         return filt.value
     elif isinstance(filt, OrGroupFilter):
+        # TODO: Note that OrGroupFilter and AndGroupFilter are identical.
+        # In the future make these distinct.
         return [
             reduce_filter(f)
             for f in filt.child_filters
@@ -162,46 +205,77 @@ def reduce_filter(filt):
 
 @dict_identity
 class AndGroupFilter(object):
+    """
+    Represents a series of filters that must all pass.
+    """
     def __init__(self, child_filters):
         self.child_filters = child_filters
 
 
+# TODO: Eliminate this! It is inconsistent with the other fields. It is
+# currently only used by city/state fields. A viable strategy is to replace
+# the composite fields with separate city and state fields and "blend" them
+# in the UI somehow.
 @dict_identity
 class CompositeAndFilter(object):
+    """
+    Represents a series of filters on different fields.
+    """
     def __init__(self, field_map):
         self.field_map = field_map
 
 
 @dict_identity
 class OrGroupFilter(object):
+    """
+    Represents a series of filters, any of which should pass.
+    """
     def __init__(self, child_filters):
         self.child_filters = child_filters
 
 
 @dict_identity
 class MatchFilter(object):
+    """
+    Represents a match condition.
+    """
     def __init__(self, value):
         self.value = value
 
 
 @dict_identity
 class DateRangeFilter(object):
+    """
+    Represents a date range.
+    """
     def __init__(self, dates):
         self.dates = dates
 
 
 @dict_identity
 class UnlinkedFilter(object):
+    """
+    Represents the lack of relationship, i.e. untagged.
+    """
     pass
 
 
 @dict_identity
 class NoFilter(object):
+    """
+    Placeholder meaning not filtered.
+    """
     def __nonzero__(self):
         return False
 
 
 def adorn_filter(company, datasource, full_filter):
+    """
+    Create a new filter matching the old one where MatchFilter's are "adorned".
+
+    Adorning means replacing values like 3 with objects shaped like:
+        {value: 3, display: "EmployCo", ... }
+    """
     collected = {
         k: collect_matches(f)
         for k, f in full_filter.__dict__.iteritems()
@@ -219,6 +293,9 @@ def adorn_filter(company, datasource, full_filter):
 
 
 def collect_matches(filt):
+    """
+    Find all the values which the datasource needs to provide displays for.
+    """
     if isinstance(filt, MatchFilter):
         return [filt.value]
     elif isinstance(filt, OrGroupFilter) or isinstance(filt, AndGroupFilter):
@@ -239,6 +316,9 @@ def collect_matches(filt):
 
 
 def place_adornments(filt, adorned_items):
+    """
+    Walk the filter and replace values with display objects where we can.
+    """
     if isinstance(filt, MatchFilter):
         return MatchFilter(adorned_items.get(filt.value, filt.value))
     elif isinstance(filt, OrGroupFilter):

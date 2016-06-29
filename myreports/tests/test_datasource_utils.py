@@ -109,27 +109,32 @@ class TestUtils(TestCase):
             result.filters)
 
     def test_daterange_none(self):
+        """Test dates with no range given."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, DateRangeFilter(None), 'zz')
         self.assert_filters_equals([], result.filters)
 
     def test_match_filter(self):
+        """Match filter does basic comparison."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, MatchFilter('yy'), 'zz')
         self.assert_filters_equals([Q(zz='yy')], result.filters)
 
     def test_match_none(self):
+        """Empty match filter."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, MatchFilter(None), 'z')
         self.assert_filters_equals([], result.filters)
 
     def test_no_filter(self):
+        """NoFilter should evaluate falsey and not result in a comparison."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, NoFilter(), 'zz')
         self.assertEqual(False, bool(NoFilter()))
         self.assert_filters_equals([], result.filters)
 
     def test_or_group(self):
+        """Or group should result in or'ed comparisons."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(
                 qs,
@@ -138,11 +143,13 @@ class TestUtils(TestCase):
         self.assert_filters_equals([Q(zz='a') | Q(zz='b')], result.filters)
 
     def test_or_group_empty(self):
+        """Empty or group should result in no comparisons."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, OrGroupFilter([]), 'zz')
         self.assert_filters_equals([], result.filters)
 
     def test_and_group(self):
+        """And group should result in a series of comparisons."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(
             qs,
@@ -160,11 +167,13 @@ class TestUtils(TestCase):
             ], result.filters)
 
     def test_and_group_empty(self):
+        """Empty And group should result in no comparisons."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, AndGroupFilter([]), 'z')
         self.assert_filters_equals([], result.filters)
 
     def test_composite_and_group(self):
+        """CompositeAndFilter should result in and'ed Q."""
         qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
@@ -175,6 +184,7 @@ class TestUtils(TestCase):
             ], result.filters)
 
     def test_composite_and_group_none(self):
+        """Falsey branches of CompositeAndFilter should not compare."""
         qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
@@ -183,12 +193,17 @@ class TestUtils(TestCase):
         self.assert_filters_equals([Q(aaa='b')], result.filters)
 
     def test_composite_and_group_empty(self):
+        """Empty CompositeAndFilter should result in no comparisons."""
         qs = MockQuerySet()
         filt = CompositeAndFilter({})
         result = apply_filter_to_queryset(qs, filt, {})
         self.assert_filters_equals([], result.filters)
 
     def test_composite_and_group_missing_db_field(self):
+        """
+        Failing to pass a db field to a compsite and field should result in
+        no comparison for that field.
+        """
         qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
@@ -199,27 +214,10 @@ class TestUtils(TestCase):
         self.assert_filters_equals([], result.filters)
 
     def test_unlinked(self):
+        """Unlinked filter should compare with None."""
         qs = MockQuerySet()
         result = apply_filter_to_queryset(qs, UnlinkedFilter(), 'z')
         self.assert_filters_equals([{'z': None}], result.filters)
-
-    def test_apply_filters(self):
-        qs = MockQuerySet()
-
-        result = apply_filter_to_queryset(qs, NoFilter(), 'z')
-        self.assert_filters_equals([], result.filters)
-
-        result = apply_filter_to_queryset(qs, MatchFilter('b'), 'a')
-        self.assert_filters_equals([Q(a='b')], result.filters)
-
-        result = apply_filter_to_queryset(qs, OrGroupFilter([]), 'z')
-        self.assert_filters_equals([], result.filters)
-
-        result = apply_filter_to_queryset(
-            qs,
-            OrGroupFilter([MatchFilter('c'), MatchFilter('d')]),
-            'z')
-        self.assert_filters_equals([Q(z='c') | Q(z='d')], result.filters)
 
     def test_extract_tag_list(self):
         """Should grab only the names from the list."""
@@ -237,12 +235,14 @@ class TestUtils(TestCase):
         self.assertEqual(expected, result)
 
     def test_plain_filter_match(self):
+        """Convert MatchFilter to plain object."""
         filt = PartnersFilter(uri=MatchFilter('www'))
         self.assertEqual({
             'uri': 'www',
         }, plain_filter(filt))
 
     def test_plain_filter_or(self):
+        """Convert OrGroupFilter to plain object."""
         filt = ContactsFilter(
             partner=OrGroupFilter([
                 MatchFilter(1),
@@ -251,6 +251,7 @@ class TestUtils(TestCase):
         self.assertEqual({'partner': [1, 2]}, plain_filter(filt))
 
     def test_plain_filter_and(self):
+        """Convert AndGroupFilter to plain object."""
         filt = ContactsFilter(
             tags=AndGroupFilter([
                 OrGroupFilter([
@@ -264,6 +265,7 @@ class TestUtils(TestCase):
         self.assertEqual({'tags': [[1, 2], [3, 4]]}, plain_filter(filt))
 
     def test_plain_filter_composite_and(self):
+        """Convert CompositeAndFilter to plain object."""
         filt = ContactsFilter(
             locations=CompositeAndFilter({
                 'city': MatchFilter('indy'),
@@ -276,7 +278,8 @@ class TestUtils(TestCase):
             },
         }, plain_filter(filt))
 
-    def test__plain_filter_composite_date_range(self):
+    def test__plain_filter_date_range(self):
+        """Convert date range to plain object."""
         filt = ContactsFilter(
             date=DateRangeFilter([
                 datetime(2015, 9, 1),
@@ -286,6 +289,7 @@ class TestUtils(TestCase):
         }, plain_filter(filt))
 
     def test_plain_filter_unlinked(self):
+        """Convert unlinked filter to plain object."""
         filt = ContactsFilter(tags=UnlinkedFilter())
         self.assertEqual({
             'tags': {'nolink': True},
@@ -335,6 +339,7 @@ class TestAdornFilter(TestCase):
         self.ds = MockDataSource()
 
     def test_passthrough_missing(self):
+        """Pass through items not indexed by the data source."""
         result = adorn_filter(None, self.ds, ContactsFilter(
             partner=OrGroupFilter([
                 MatchFilter(1),
@@ -348,6 +353,10 @@ class TestAdornFilter(TestCase):
                 MatchFilter(2)])), result)
 
     def test_passthrough_missing_composite_and(self):
+        """
+        Pass through  when all branches of a CompositeAndFilter are not indexed
+        by the data source.
+        """
         result = adorn_filter(None, self.ds, ContactsFilter(
             partner=CompositeAndFilter({
                 'a': MatchFilter(1),
@@ -363,6 +372,7 @@ class TestAdornFilter(TestCase):
             })), result)
 
     def test_match(self):
+        """Test adorning a bare MatchFilter."""
         result = adorn_filter(None, self.ds, ContactsFilter(
             date=MatchFilter('dt'),
             tags=MatchFilter('a')))
@@ -376,6 +386,7 @@ class TestAdornFilter(TestCase):
                 {'value': 'a', 'display': 'A', 'hexcolor': 'aaaaaa'})), result)
 
     def test_or_group(self):
+        """Test adorning an OrGroupFilter."""
         self.maxDiff = 10000
         result = adorn_filter(None, self.ds, ContactsFilter(
             tags=OrGroupFilter([
@@ -396,6 +407,7 @@ class TestAdornFilter(TestCase):
             ])), result)
 
     def test_and_group(self):
+        """Test adorning an AndGroupFilter."""
         self.maxDiff = 10000
         result = adorn_filter(None, self.ds, ContactsFilter(
             tags=AndGroupFilter([
@@ -423,6 +435,7 @@ class TestAdornFilter(TestCase):
                     MatchFilter('d')])])), result)
 
     def test_composite_and(self):
+        """Test adorning a CompositeAndFilter."""
         self.maxDiff = 10000
         result = adorn_filter(None, self.ds, ContactsFilter(
             locations=CompositeAndFilter({
@@ -442,6 +455,10 @@ class TestAdornFilter(TestCase):
             })), result)
 
     def test_composite_and_missing_in_db(self):
+        """
+        Pass through branches of a CompositeAndFilter not indexed by the data
+        source.
+        """
         self.maxDiff = 10000
         result = adorn_filter(None, self.ds, ContactsFilter(
             locations=CompositeAndFilter({
@@ -464,6 +481,9 @@ class TestAdornFilter(TestCase):
             })), result)
 
     def test_composite_and_partial_filter(self):
+        """
+        Only one branch of a CompositeAndFilter is specified.
+        """
         self.maxDiff = 10000
         result = adorn_filter(None, self.ds, ContactsFilter(
             locations=CompositeAndFilter({

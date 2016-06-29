@@ -8,15 +8,19 @@ import Select from 'common/ui/Select';
  * Generic select dropdown which shows different vdom based on which item
  * is currently selected.
  *
- * example, currently set to the 'a' choice:
+ * example, currently set to choice '1':
  *
  *  <SelectControls
  *    choices={[
  *      {value: 1, display: 'Choose A content', render: () => <div>A</div>},
  *      {value: 2, display: 'Choose B content', render: () => <div>B</div>},
  *    ]}
- *    value={'a'}
+ *    value={1}
  *    onSelect={value => ...}/>
+ *
+ * Note that value does not have to be a sequence of numbers. The order of
+ * choices decides the order of the menu. Value can be any type that can be
+ * tested for equality.
  */
 export default function SelectControls(props) {
   const {choices, value, onSelect, loading, decoration} = props;

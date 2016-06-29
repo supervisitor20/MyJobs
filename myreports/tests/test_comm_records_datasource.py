@@ -328,6 +328,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_filter_by_contact_tags(self):
+        """
+        Test that we can filter by contact tags.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
@@ -355,6 +359,10 @@ class TestCommRecordsDataSource(MyJobsBase):
         self.assertEqual(expected, subjects)
 
     def test_filter_by_partner_tags(self):
+        """
+        Test that we can filter by partner tags.
+
+        """
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,

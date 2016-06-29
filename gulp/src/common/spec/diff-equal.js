@@ -3,6 +3,12 @@ import {map, filter} from 'lodash-compat/collection';
 import {diffLines} from 'diff';
 
 
+/**
+ * Compare two objects deeply for equality.
+ *
+ * If the objects are different, fail with a message highlighting
+ * the differences between the two objects.
+ */
 function toDiffEqual(util, customEqualityTesters) {
   return {
     compare: (actual, expected) => {
