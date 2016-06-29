@@ -303,6 +303,7 @@ class CommRecordsFilter(DataSourceFilter):
     def filter_key_types(self):
         return {
             'date_time': 'date_range',
+            'locations': 'composite',
         }
 
     def clone_without_city(self):

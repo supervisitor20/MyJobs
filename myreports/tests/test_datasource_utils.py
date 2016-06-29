@@ -126,6 +126,12 @@ class TestUtils(TestCase):
         result = apply_filter_to_queryset(qs, MatchFilter(None), 'z')
         self.assert_filters_equals([], result.filters)
 
+    def test_match_empty(self):
+        """Empty string match filter."""
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, MatchFilter(''), 'z')
+        self.assert_filters_equals([], result.filters)
+
     def test_no_filter(self):
         """NoFilter should evaluate falsey and not result in a comparison."""
         qs = MockQuerySet()

@@ -107,7 +107,7 @@ def as_q(filt, field):
     field: the db field to use for Q values.
     """
     if isinstance(filt, MatchFilter):
-        if filt.value is None:
+        if filt.value is None or filt.value == '':
             return None
 
         return Q(**{field: filt.value})

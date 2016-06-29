@@ -83,7 +83,7 @@ class DataSourceJsonDriver(object):
             interpreted as do not filter on this column.
 
         [date, date]: A list of two dates is date range. The filter
-            class must have a key type of 'date
+            class must have a key type of 'date'.
 
         1/"a": A single choice.
 
@@ -93,6 +93,10 @@ class DataSourceJsonDriver(object):
         [[1, 2, 3], [4, 5, 6]]: A list of lists of choices is an "and group".
             Must match any of the first AND any of each of the subsequent
             groups.
+
+        {'field1': some filter}: Match each field with the filter given:
+            A CompositeAndFilter. The filter class must have a key type of
+            'composite'.
 
         {'nolink': True}: A special object which means to find objects not
             linked to the objects in this column. i.e. If this is a tags

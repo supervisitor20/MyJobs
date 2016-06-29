@@ -232,6 +232,7 @@ class PartnersFilter(DataSourceFilter):
     def filter_key_types(self):
         return {
             'date': 'date_range',
+            'locations': 'composite',
         }
 
     def clone_without_city(self):
