@@ -1,5 +1,5 @@
 import {createAction} from 'redux-actions';
-import {errorAction} from '../../common/actions/error-actions';
+import {errorAction} from 'common/actions/error-actions';
 
 export const validateInboxAction = createAction('VALIDATE_INBOX');
 export const saveInboxAction = createAction('SAVE_INBOX');

@@ -9,6 +9,7 @@ import re
 import unicodecsv
 from urllib import urlencode
 from validate_email import validate_email
+import xlrd
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -45,7 +46,7 @@ from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
 from mypartners.forms import (PartnerForm, ContactForm,
                               NewPartnerForm, ContactRecordForm, TagForm,
-                              LocationForm, ImportWizardForm)
+                              LocationForm)
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
@@ -1703,12 +1704,16 @@ def import_wizard(request):
     communmication records from an uploaded Excel spreadsheet.
 
     """
-    # TODO: move this to a parsing view
     if request.method == "POST":
-        form = ImportWizardForm(request.POST, request.FILES)
-        if form.is_valid():
-            return HttpResponse(json.dumps({"result": "success"}))
-        return HttpResponse(json.dumps({"result": "failure"}))
+        # TODO: support parsing of multiple files
+        files = request.FILES.getlist('files')
+        spreadsheet = files[0]
+        workbook = xlrd.open_workbook(
+            file_contents="".join(spreadsheet.chunks()))
+        sheets = workbook.sheets()
+        sheet = sheets[0]
+        import ipdb; ipdb.set_trace()
+
     company = get_company_or_404(request)
     ctx = {"company": company}
 

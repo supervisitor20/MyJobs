@@ -500,7 +500,3 @@ class LocationForm(NormalizedModelForm):
                    action_type=new_or_change)
 
         return instance
-
-
-class ImportWizardForm(forms.Form):
-    files = forms.FileField()

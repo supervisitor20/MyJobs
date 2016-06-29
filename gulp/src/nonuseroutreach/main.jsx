@@ -52,7 +52,7 @@ const store = createReduxStore(reducer, initialState, thunkExtra);
 
 ReactDOM.render(
   <Provider store={store}>
-    <NonUserOutreachRouter api = {api} />
+    <NonUserOutreachRouter />
   </Provider>,
   document.getElementById('content')
 );

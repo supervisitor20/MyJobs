@@ -3647,6 +3647,9 @@ height: 33px;
     line-height: 33px;
     margin: 0;
 }
+.select-element-input span {
+  margin-left: 5px;
+}
 .select-element-input.disabled {
     border: 1px solid #c3c3c3;
     color: #999;

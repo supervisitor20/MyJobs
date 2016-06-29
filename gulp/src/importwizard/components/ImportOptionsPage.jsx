@@ -1,48 +1,48 @@
 import React from 'react';
-import {Col, Row} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {Row} from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
-import {MyJobsApi} from 'common/myjobs-api';
-import {getCsrf} from 'common/cookie';
 
-const api = new MyJobsApi(getCsrf());
+import FieldWrapper from 'common/ui/FieldWrapper';
+import ColumnMapping from './ColumnMapping';
+
+import {doImportFiles} from '../actions/column-actions';
+
 const excelMimeType =
   'application/vnd.ms-excel,' +
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-const style = {
-  width: '100%',
-  height: '50px',
-  borderColor: 'rgb(102, 102, 102)',
-  borderStyle: 'dashed',
-  borerRadius: '5px',
-};
+/* TODO
+ * - add a fieldset to house configuration optoins
+ * - alternatively, see if the sidebar makes sense for the above
+ */
 
-export default class ImportOptionsPage extends React.Component {
-  async onDrop(files) {
-    const response = await api.upload('/prm/view/import/', files);
-    return response;
-  }
-
+export class ImportOptionsPage extends React.Component {
   render() {
+    const {dispatch} = this.props;
     return (
-      <Row>
-        <Col xs={12}>
-          <Row>
-            <Col md={4}>
-              Import File
-            </Col>
-            <Col md={8}>
+      <div>
+        <Row>
+            <FieldWrapper
+              key="import-file"
+              label="Import File">
               <Dropzone
-                style={style}
+                className="select-element-input"
                 accept={excelMimeType}
-                onDrop={files => this.onDrop(files)}
+                onDrop={files => dispatch(doImportFiles(files))}
                 multiple={false}>
-                Try dragging a spreadsheet here or clicking to select one.
+                drag file here or click to upload
               </Dropzone>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+            </FieldWrapper>
+            <ColumnMapping />
+        </Row>
+      </div>
     );
   }
 }
+
+ImportOptionsPage.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
+};
+
+export default connect(() => ({}))(ImportOptionsPage);

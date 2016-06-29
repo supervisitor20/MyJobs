@@ -6,15 +6,31 @@ import {installPolyfills} from '../common/polyfills';
 
 import createReduxStore from '../common/create-redux-store';
 import {Provider} from 'react-redux';
-// import {combineReducers} from 'redux';
+import {combineReducers} from 'redux';
+
+import api from './api';
 
 import ImportWizardRouter from './components/ImportWizardRouter';
 
+import {
+  columnReducer,
+  initialColumns,
+} from './reducers/column-reducer';
+
+
 installPolyfills();
 
-const reducer = (state) => state;
-const initialState = {};
-const thunkExtra = {};
+const initialState = {
+  columns: initialColumns,
+};
+
+const reducer = combineReducers({
+  columns: columnReducer,
+});
+
+const thunkExtra = {
+  api: api,
+};
 
 const store = createReduxStore(reducer, initialState, thunkExtra);
 
