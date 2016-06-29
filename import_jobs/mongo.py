@@ -12,7 +12,7 @@ import logging
 from xmlparse import DEv2JobFeed, guid_from_link
 logger = logging.getLogger(__name__)
 
-def update_buid_from_jobsfs(guid, buid, name, mongo=MONGO_HOST):
+def jobsfs_to_mongo(guid, buid, name, mongo=MONGO_HOST):
     """Composed method for resopnding to a guid update."""
 
     assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
@@ -41,7 +41,7 @@ def update_buid_from_jobsfs(guid, buid, name, mongo=MONGO_HOST):
     bulk.execute()
 
 
-def update_state_job_bank(buid, data_dir=DATA_DIR, mongo=MONGO_HOST):
+def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=MONGO_HOST):
     filepath = download_feed_file(buid, data_dir=data_dir)
 
     jobfeed = DEv2JobFeed(filepath, jsid=buid, markdown=False,
