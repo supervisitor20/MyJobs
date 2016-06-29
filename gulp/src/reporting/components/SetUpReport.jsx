@@ -135,7 +135,11 @@ class SetUpReport extends Component {
           />
         ),
       },
-      {value: 'untagged', display: 'Filter by untagged', render: () => ''},
+      {
+        value: 'untagged',
+        display: 'Filter only untagged items',
+        render: () => '',
+      },
     ];
 
     return (
@@ -289,7 +293,11 @@ class SetUpReport extends Component {
           />
         ),
       },
-      {value: 'untagged', display: 'Filter by untagged', render: () => ''},
+      {
+        value: 'untagged',
+        display: 'Filter only untagged items',
+        render: () => '',
+      },
     ];
     const counter = '(' +
       (hints[namesCol.filter] || []).length +
