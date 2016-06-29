@@ -205,8 +205,7 @@ class PartnersDataSource(DataSource):
                 found['value']: found
                 for found in [
                     result
-                    for t in found_filter_items['tags']
-                    for result in self.help_tags(company, empty, t)
+                    for result in self.help_tags(company, empty, '')
                 ]
             }
 
