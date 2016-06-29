@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.utils.http import urlquote_plus
 
 from myjobs.tests.factories import UserFactory
+from mypartners.models import OutreachEmailAddress
 from redirect.actions import sourcecodetag
 from redirect.models import (DestinationManipulation, ExcludedViewSource,
                              CompanyEmail)
@@ -32,7 +33,8 @@ from redirect.tests.factories import (RedirectFactory, RedirectArchiveFactory,
                                       ViewSourceFactory, ViewSourceGroupFactory)
 from redirect.tests.setup import RedirectBase
 from redirect.views import home
-from seo.tests.factories import SeoSiteFactory, SeoSiteRedirectFactory
+from seo.tests.factories import (SeoSiteFactory, SeoSiteRedirectFactory,
+                                 CompanyFactory)
 
 GUID_RE = re.compile(r'([{\-}])')
 
@@ -1187,12 +1189,15 @@ class EmailForwardTests(RedirectBase):
 
     def test_prm_email(self):
         """
-        If prm@my.jobs is included as a recipient, we repost this email to
-        My.jobs. This is a straight post, which we don't want to do in a
-        testing environment. If we receive a 200 status code and no emails
-        were sent, this was reasonably likely to have completed successfully.
+        If prm@my.jobs or an outreach email address is included as a
+        recipient, we repost this email to My.jobs. This is a straight post,
+        which we don't want to do in a testing environment. If we receive a
+        200 status code and no emails were sent, this was reasonably likely to
+        have completed successfully.
         """
-        prm_list = ['prm@my.jobs', 'PRM@MY.JOBS']
+        OutreachEmailAddress.objects.create(email='test',
+                                            company=CompanyFactory())
+        prm_list = ['prm@my.jobs', 'PRM@MY.JOBS', 'test@my.jobs']
 
         for email in prm_list:
             # SendGrid adds prm@my.jobs to the 'envelope' JSON string

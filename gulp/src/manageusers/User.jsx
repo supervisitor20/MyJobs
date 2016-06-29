@@ -190,7 +190,7 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api} = this.props;
+    const {history, api, dispatch} = this.props;
 
     const userId = this.props.params.userId;
 

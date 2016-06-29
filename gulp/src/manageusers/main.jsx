@@ -25,9 +25,15 @@ import Status from './Status';
 import Confirm from 'common/ui/Confirm';
 import {MyJobsApi} from 'common/myjobs-api';
 
+import activitiesListReducer from './reducers/activities-list-reducer';
+import {
+  doRefreshActivities,
+} from './actions/compound-actions';
+
 installPolyfills();
 
 const reducer = combineReducers({
+  activities: activitiesListReducer,
   confirm: confirmReducer,
 });
 
@@ -38,6 +44,7 @@ const thunkExtra = {
 };
 
 const store = createReduxStore(reducer, undefined, thunkExtra);
+store.dispatch(doRefreshActivities());
 
 export class App extends React.Component {
   constructor(props) {
@@ -50,64 +57,18 @@ export class App extends React.Component {
       callUsersAPI: this.callUsersAPI,
       confirmShow: false,
     };
-    this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
     this.callUsersAPI = this.callUsersAPI.bind(this);
   }
   componentDidMount() {
-    this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
   }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
-      this.callActivitiesAPI();
       this.callRolesAPI();
       this.callUsersAPI();
     }
-  }
-  async callActivitiesAPI() {
-    // Get activities once, and only once
-    const results = await api.get('/manage-users/api/activities/');
-    // Create an array of tables, each a list of activities of a
-    // particular app_access
-    const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
-    // Build a table for each app present
-    const tablesOfActivitiesByApp = [];
-    // First assemble rows needed for each table
-    _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
-      // For each app, build list of rows from results
-      const activityRows = [];
-      // Loop through all activities...
-      _.forOwn(activityGroup, function buildListOfRows(activity) {
-        activityRows.push(
-          <tr key={activity.activity_id}>
-            <td>{activity.activity_name}</td>
-            <td>{activity.activity_description}</td>
-          </tr>
-        );
-      });
-      // Assemble this app's table
-      tablesOfActivitiesByApp.push(
-        <span key={key}>
-          <h3>{key}</h3>
-          <table className="table table-striped table-activities">
-            <thead>
-              <tr>
-                <th>Activity</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activityRows}
-            </tbody>
-          </table>
-        </span>
-      );
-    });
-    this.setState({
-      tablesOfActivitiesByApp: tablesOfActivitiesByApp,
-    });
   }
   async callRolesAPI() {
     // Get roles once, but reload if needed
@@ -193,7 +154,6 @@ export class App extends React.Component {
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
                 this.props.children, {
-                  tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,

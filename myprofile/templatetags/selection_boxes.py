@@ -1,6 +1,8 @@
 import json
+import os
 import urllib2
 
+from django.conf import settings
 from django import template
 
 register = template.Library()
@@ -26,9 +28,12 @@ def country_select(selected="usa", html_id="", input_name="country",
 
     """
     selected = selected.lower()
-    data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/countries_167-24.json'
-    data_list = _load_json_data(data_url)
-    country_list = data_list["countries"]
+    data_file = os.path.join(settings.PROJ_ROOT,
+                             'jsondata/countries_167-24.json')
+    data_list = _load_json_data(data_file)
+
+    country_list = data_list['countries']
+
     try:
         label = data_list["friendly_label"]
     except KeyError:
@@ -69,8 +74,10 @@ def region_select(country="usa", selected="az", html_id="",
     # there is a single file per country, else it returns null.
     country = country.lower()
     selected = selected.lower()
-    data_url = 'https://d2e48ltfsb5exy.cloudfront.net/myjobs/data/%s_regions.json' % country
-    data_list = _load_json_data(data_url)
+    data_file = os.path.join(settings.PROJ_ROOT,
+                             'jsondata/%s_regions.json' % country)
+    data_list = _load_json_data(data_file)
+
     try:
         region_list = data_list["regions"]
     except KeyError:
@@ -111,24 +118,23 @@ def default_country(field):
 
 
 # utility function below here
-def _load_json_data(json_url):
+def _load_json_data(json_file):
     """
-    Retrieves an external json file, opens it, and reads it in as a dict.
+    Retrieves an internal json file, opens it, and reads it in as a dict.
 
     Inputs:
-    :jason_url:     The full url of the json data file, with protocol
+    :json_file:     The location of the json data file
 
     Returns:
     :json_data:     Python dictionary version of the json file
 
     """
     try:
-        data = urllib2.Request(json_url)
-        opener = urllib2.build_opener()
-        json_data = json.load(opener.open(data))
-    except (urllib2.HTTPError,ValueError):
-        return {"code":"error","error":"There was an error loading the file."}
-    return json_data
+        with open(json_file) as f:
+            return json.load(f)
+    except ValueError:
+        return {"code": "error",
+                "error": "There was an error loading the file."}
 
 
 def _build_select_list(select_dict,selected,input_name,html_id,class_name="",

@@ -12,7 +12,7 @@ import {Menu} from './Menu';
  */
 class NonUserOutreachApp extends Component {
   render() {
-    const {pageLoading, tips} = this.props;
+    const {loading, tips} = this.props;
     return (
       <Grid>
         <Row>
@@ -27,7 +27,7 @@ class NonUserOutreachApp extends Component {
 
         <Row>
           <Col xs={12} md={8}>
-            {pageLoading ? <Loading /> : this.props.children}
+            {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
             <Menu tips={tips} />
@@ -40,7 +40,7 @@ class NonUserOutreachApp extends Component {
 
 NonUserOutreachApp.propTypes = {
   // whether or not to show a page loading indicator in the content area
-  pageLoading: PropTypes.bool.isRequired,
+  loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
   // which page to show in the content area
@@ -48,7 +48,6 @@ NonUserOutreachApp.propTypes = {
 };
 
 export default connect(state => ({
-  // TODO: Add pageLoadingto navigation state and emit relevant actions
-  pageLoading: false,
+  loading: state.loading.mainPage,
   tips: state.navigation.tips,
 }))(NonUserOutreachApp);

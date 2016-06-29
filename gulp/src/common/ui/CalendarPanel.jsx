@@ -17,14 +17,18 @@ export default class CalendarPanel extends React.Component {
   renderDay(currentDay) {
     const {onSelect, day} = this.props;
 
-    currentDay.selected = ((currentDay.day === day) && (currentDay.siblingMonth !== true)) ? true : false;
+    currentDay.selected = (currentDay.day === day) && !currentDay.siblingMonth;
 
     const className = classnames({
       dim: currentDay.siblingMonth,
       selected: currentDay.selected,
     });
 
-    const dayEvent = {year: currentDay.year, month: currentDay.month, day: currentDay.day};
+    const dayEvent = {
+      year: currentDay.year,
+      month: currentDay.month,
+      day: currentDay.day,
+    };
 
     return (
       <td
