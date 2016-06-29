@@ -13,7 +13,7 @@ from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
     extract_tags, adorn_filter,
     apply_filter_to_queryset,
-    NoFilter, DateRangeFilter)
+    NoFilter, CompositeAndFilter, DateRangeFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from universal.helpers import dict_identity, extract_value
@@ -314,12 +314,12 @@ class CommRecordsFilter(DataSourceFilter):
         Return a new CommRecordsFilter without the current city filter applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'city' in locations:
+            new_locations = dict(locations.field_map)
+            if 'city' in locations.field_map:
                 del new_locations['city']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return CommRecordsFilter(**new_root)
 
     def clone_without_state(self):
@@ -329,12 +329,12 @@ class CommRecordsFilter(DataSourceFilter):
         applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'state' in locations:
+            new_locations = dict(locations.field_map)
+            if 'state' in locations.field_map:
                 del new_locations['state']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return CommRecordsFilter(**new_root)
 
     def clone_without_tags(self):

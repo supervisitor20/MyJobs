@@ -75,51 +75,72 @@ class TestUtils(TestCase):
 
         The range end should have an extra day added.
         """
-        filt = DateRangeFilter(
-            [datetime(2009, 12, 1), datetime(2009, 12, 2)])
-        self.assert_q_equals(
-            Q(zz__range=(datetime(2009, 12, 1), datetime(2009, 12, 3))),
-            filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(
+                qs,
+                DateRangeFilter([
+                    datetime(2009, 12, 1),
+                    datetime(2009, 12, 2)]),
+                'zz')
+        self.assert_filters_equals(
+            [Q(zz__range=(datetime(2009, 12, 1), datetime(2009, 12, 3)))],
+            result.filters)
 
     def test_date_before(self):
         """Test date's before given."""
-        filt = DateRangeFilter([None, datetime(2009, 12, 2)])
-        self.assert_q_equals(
-            Q(zz__lte=datetime(2009, 12, 3)),
-            filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(
+            qs,
+            DateRangeFilter([None, datetime(2009, 12, 2)]),
+            'zz')
+        self.assert_filters_equals(
+            [Q(zz__lte=datetime(2009, 12, 3))],
+            result.filters)
 
     def test_date_after(self):
         """Test date's after given."""
-        filt = DateRangeFilter([datetime(2009, 12, 1), None])
-        self.assert_q_equals(
-            Q(zz__gte=datetime(2009, 12, 1)),
-            filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(
+            qs,
+            DateRangeFilter([datetime(2009, 12, 1), None]),
+            'zz')
+        self.assert_filters_equals(
+            [Q(zz__gte=datetime(2009, 12, 1))],
+            result.filters)
 
     def test_daterange_none(self):
-        filt = DateRangeFilter(None)
-        self.assertEqual(None, filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, DateRangeFilter(None), 'zz')
+        self.assert_filters_equals([], result.filters)
 
     def test_match_filter(self):
-        filt = MatchFilter('yy')
-        self.assert_q_equals(Q(zz='yy'), filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, MatchFilter('yy'), 'zz')
+        self.assert_filters_equals([Q(zz='yy')], result.filters)
 
     def test_match_none(self):
-        filt = MatchFilter(None)
-        self.assert_q_equals(None, filt.as_q('zz'))
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, MatchFilter(None), 'z')
+        self.assert_filters_equals([], result.filters)
 
     def test_no_filter(self):
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, NoFilter(), 'zz')
         self.assertEqual(False, bool(NoFilter()))
-        self.assertEqual(None, NoFilter().as_q(None))
+        self.assert_filters_equals([], result.filters)
 
     def test_or_group(self):
-        filt = OrGroupFilter([MatchFilter('a'), MatchFilter('b')])
-        result = filt.as_q('zz')
-        self.assert_q_equals(Q(zz='a') | Q(zz='b'), result)
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(
+                qs,
+                OrGroupFilter([MatchFilter('a'), MatchFilter('b')]),
+                'zz')
+        self.assert_filters_equals([Q(zz='a') | Q(zz='b')], result.filters)
 
     def test_or_group_empty(self):
-        filt = OrGroupFilter([])
-        result = filt.as_q('zz')
-        self.assertEqual(None, result)
+        qs = MockQuerySet()
+        result = apply_filter_to_queryset(qs, OrGroupFilter([]), 'zz')
+        self.assert_filters_equals([], result.filters)
 
     def test_and_group(self):
         qs = MockQuerySet()
@@ -144,33 +165,38 @@ class TestUtils(TestCase):
         self.assert_filters_equals([], result.filters)
 
     def test_composite_and_group(self):
+        qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
             'c': OrGroupFilter([MatchFilter('d'), MatchFilter('e')])})
-        result = filt.as_q({'a': 'aaa', 'c': 'ccc'})
-        self.assert_q_equals(
+        result = apply_filter_to_queryset(qs, filt, {'a': 'aaa', 'c': 'ccc'})
+        self.assert_filters_equals([
             Q(aaa='b') & (Q(ccc='d') | Q(ccc='e')),
-            result)
+            ], result.filters)
 
     def test_composite_and_group_none(self):
+        qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
             'c': NoFilter()})
-        result = filt.as_q({'a': 'aaa', 'c': 'ccc'})
-        self.assert_q_equals(
-            Q(aaa='b'),
-            result)
+        result = apply_filter_to_queryset(qs, filt, {'a': 'aaa', 'c': 'ccc'})
+        self.assert_filters_equals([Q(aaa='b')], result.filters)
 
     def test_composite_and_group_empty(self):
+        qs = MockQuerySet()
         filt = CompositeAndFilter({})
-        self.assertEquals(None, filt.as_q(None))
+        result = apply_filter_to_queryset(qs, filt, {})
+        self.assert_filters_equals([], result.filters)
 
     def test_composite_and_group_missing_db_field(self):
+        qs = MockQuerySet()
         filt = CompositeAndFilter({
             'a': MatchFilter('b'),
             'c': NoFilter()})
-        self.assert_q_equals(Q(aaa='b'), filt.as_q({'a': 'aaa', 'b': 'bbb'}))
-        self.assertEquals(None, filt.as_q({'b': 'bbb'}))
+        result = apply_filter_to_queryset(qs, filt, {'a': 'aaa', 'b': 'bbb'})
+        self.assert_filters_equals([Q(aaa='b')], result.filters)
+        result = apply_filter_to_queryset(qs, filt, {'b', 'bbb'})
+        self.assert_filters_equals([], result.filters)
 
     def test_unlinked(self):
         qs = MockQuerySet()

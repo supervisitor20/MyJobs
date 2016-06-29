@@ -389,7 +389,9 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_city(
             self.company,
-            CommRecordsFilter(locations={'city': "zz"}),
+            CommRecordsFilter(
+                locations=CompositeAndFilter({
+                    'city': MatchFilter("zz")})),
             "angel")
         actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
@@ -402,7 +404,9 @@ class TestCommRecordsDataSource(MyJobsBase):
         ds = CommRecordsDataSource()
         recs = ds.help_state(
             self.company,
-            CommRecordsFilter(locations={'state': "zz"}),
+            CommRecordsFilter(
+                locations=CompositeAndFilter({
+                    'state': MatchFilter("zz")})),
             "i")
         actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
@@ -597,13 +601,17 @@ class TestCommRecordsFilterCloning(TestCase):
         """
         filter = CommRecordsFilter(
                 tags=['C'],
-                locations={'city': 'A', 'state': 'B'})
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A'),
+                    'state': MatchFilter('B')}))
         expected_with_city = CommRecordsFilter(
                 tags=['C'],
-                locations={'city': 'A'})
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A')}))
         expected_with_state = CommRecordsFilter(
                 tags=['C'],
-                locations={'state': 'B'})
+                locations=CompositeAndFilter({
+                    'state': MatchFilter('B')}))
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
 

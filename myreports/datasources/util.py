@@ -68,10 +68,62 @@ def apply_filter_to_queryset(queryset, filt, field, extension=None):
     elif isinstance(filt, UnlinkedFilter):
         result = result.filter(**{field: None})
     else:
-        q = filt.as_q(full_field)
+        q = as_q(filt, full_field)
         if q is not None:
             result = result.filter(q)
     return result
+
+
+def as_q(filt, field):
+    if isinstance(filt, MatchFilter):
+        if filt.value is None:
+            return None
+
+        return Q(**{field: filt.value})
+    elif isinstance(filt, OrGroupFilter):
+        if not filt.child_filters:
+            return None
+
+        return reduce(__or__, (as_q(cf, field) for cf in filt.child_filters))
+    elif isinstance(filt, DateRangeFilter):
+        if filt.dates is None:
+            return None
+
+        begin = None
+        if (filt.dates[0] is not None):
+            begin = filt.dates[0]
+
+        end = None
+        if (filt.dates[1] is not None):
+            end = filt.dates[1] + timedelta(days=1)
+
+        if (begin is not None and end is not None):
+            return build_q(field, 'range', (begin, end))
+        elif end is not None:
+            return build_q(field, 'lte', end)
+        elif begin is not None:
+            return build_q(field, 'gte', begin)
+        return None
+    elif isinstance(filt, CompositeAndFilter):
+        db_field_map = field
+        usable_fields = {
+            k: v
+            for k, v in {
+                k: as_q(v, db_field_map[k])
+                for k, v in filt.field_map.iteritems()
+                if k in db_field_map
+            }.iteritems()
+            if v is not None
+        }
+
+        if not usable_fields:
+            return None
+
+        return reduce(__and__, (q for q in usable_fields.itervalues()))
+    elif isinstance(filt, NoFilter):
+        return None
+    else:
+        raise KeyError("Can't generate Q for filter: " + str(filt))
 
 
 def plain_filter(full_filter):
@@ -119,33 +171,11 @@ class CompositeAndFilter(object):
     def __init__(self, field_map):
         self.field_map = field_map
 
-    def as_q(self, db_field_map):
-        usable_fields = {
-            k: v
-            for k, v in {
-                k: v.as_q(db_field_map[k])
-                for k, v in self.field_map.iteritems()
-                if k in db_field_map
-            }.iteritems()
-            if v is not None
-        }
-
-        if not usable_fields:
-            return None
-
-        return reduce(__and__, (q for q in usable_fields.itervalues()))
-
 
 @dict_identity
 class OrGroupFilter(object):
     def __init__(self, child_filters):
         self.child_filters = child_filters
-
-    def as_q(self, field):
-        if not self.child_filters:
-            return None
-
-        return reduce(__or__, (cf.as_q(field) for cf in self.child_filters))
 
 
 @dict_identity
@@ -153,37 +183,11 @@ class MatchFilter(object):
     def __init__(self, value):
         self.value = value
 
-    def as_q(self, field):
-        if self.value is None:
-            return None
-
-        return Q(**{field: self.value})
-
 
 @dict_identity
 class DateRangeFilter(object):
     def __init__(self, dates):
         self.dates = dates
-
-    def as_q(self, field):
-        if self.dates is None:
-            return None
-
-        begin = None
-        if (self.dates[0] is not None):
-            begin = self.dates[0]
-
-        end = None
-        if (self.dates[1] is not None):
-            end = self.dates[1] + timedelta(days=1)
-
-        if (begin is not None and end is not None):
-            return build_q(field, 'range', (begin, end))
-        elif end is not None:
-            return build_q(field, 'lte', end)
-        elif begin is not None:
-            return build_q(field, 'gte', begin)
-        return None
 
 
 @dict_identity
@@ -195,9 +199,6 @@ class UnlinkedFilter(object):
 class NoFilter(object):
     def __nonzero__(self):
         return False
-
-    def as_q(self, field):
-        return None
 
 
 def adorn_filter(company, datasource, full_filter):
