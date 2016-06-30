@@ -33,7 +33,7 @@ class DESolrSitemap(SolrSitemap):
         # the index. Whatever fields you would put into the 'fl' parameter for
         # Solr's API are the same fields that should be present in the 'fields'
         # kwarg.
-        self.limit = 2000
+        self.limit = 6000
         self.fields = fields or []
         self.fields.extend(self.required_fields)
         self.buids = settings.SITE_BUIDS
@@ -42,6 +42,7 @@ class DESolrSitemap(SolrSitemap):
 
     def _sqs(self):
         sqs = super(DESolrSitemap, self)._sqs()._clone()
+        sqs = sqs.order_by('-date_new')
 
         if self.buids:
             sqs = sqs.narrow("buid:(%s)" % self.buid_str)
@@ -139,9 +140,10 @@ class DESolrSitemap(SolrSitemap):
         In format field:value
 
         """
-        end = int(self.pagenum) * self.limit
-        start = end - self.limit
-        results = self.results.values(*self.fields)[start:end]
+        start = int(self.pagenum) * self.limit
+        end = start + self.limit
+        results = self.results.values(
+            *self.fields)[start:end]
         items = []
 
         for d in results:

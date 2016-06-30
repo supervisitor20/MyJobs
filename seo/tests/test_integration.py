@@ -148,8 +148,11 @@ class SiteTestCase(DirectSEOBase):
             # Check each job in daily sitemap - I'm a bot
             for loc, _, _, _ in urlset:
                 resp = self.client.get(loc.text, HTTP_HOST=self.site.domain)
-                self.assertEqual(resp.status_code, 200)
-                self.assertIn(str(resp.context['the_job'].uid), loc.text)
+                guid = loc.text.rsplit('/', 1)[1]
+                self.assertEqual(
+                    resp['Location'],
+                    'http://my.jobs/{guid}?my.jobs.site.id={site_id}'.format(
+                        guid=guid, site_id=self.site.id))
                 crawled_jobs += 1
         # This assertion worked when the test was made, but will change with
         # date

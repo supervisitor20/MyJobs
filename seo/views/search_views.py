@@ -54,7 +54,7 @@ from seo.forms.admin_forms import UploadJobFileForm
 from seo.models import (BusinessUnit, Company, Configuration, Country,
                         GoogleAnalytics, JobFeed, SeoSite, SiteTag)
 from seo.decorators import custom_cache_page, protected_site, home_page_check
-from seo.sitemap import DateSitemap
+from seo.sitemap import DateSitemap, DESolrSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
@@ -1375,69 +1375,42 @@ def new_sitemap_index(request):
     get to every other page.
 
     """
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
-    midnight = datetime.time.max
-    # The latest date/time in sitemaps is yesterday, midnight (time.max)
-    latest_datetime = datetime.datetime.combine(yesterday, midnight)
-    # Number of days to go back from today.
-    history = 30
-    # Populate a list of datetime.datetime objects representing today's date
-    # as well as one for each day going back 'history' days.
-    dates = [latest_datetime - datetime.timedelta(days=i) for i in xrange(history)]
-    earliest_day = (latest_datetime - datetime.timedelta(days=history)).date()
-    datecounts = DateSitemap().numpages(startdate=earliest_day,
-                                        enddate=latest_datetime)
+    num_pages = DESolrSitemap().numpages()
     sitemaps = {}
 
-    for date in dates:
-        dt = datetime.date(*date.timetuple()[0:3]).isoformat()
-        sitemaps[dt] = {'sitemap': DateSitemap(), 'count': datecounts[dt]}
+    for page in range(num_pages):
+        site_map = DESolrSitemap(page=page)
+        sitemaps[page] = site_map
     current_site = Site.objects.get_current()
     protocol = request.is_secure() and 'https' or 'http'
 
     # List of tuples: (sitemap url, lastmod date)
     sites_dates = []
-    for date in sorted(sitemaps.keys(), reverse=True):
-        pages = sitemaps[date]['count']
-        sitemap_url = urlresolvers.reverse('sitemap_date',
-                                           kwargs={'jobdate': date})
+    for thing in sorted(sitemaps.keys()):
+        sitemap_url = urlresolvers.reverse('sitemap_page',
+                                           kwargs={'page': thing})
+        site_map = sitemaps[thing]
         sites_dates.append(('%s://%s%s' % (protocol, current_site.domain,
                                            sitemap_url),
-                            date))
-        if pages > 1:
-            for page in xrange(2, pages+1):
-                sites_dates.append(('%s://%s%s?p=%s' % (protocol,
-                                                        current_site.domain,
-                                                        sitemap_url, page),
-                                    date))
+                            site_map.lastmod(site_map.items()[0]).strftime(
+                                '%Y-%m-%d')))
 
     xml = loader.render_to_string('sitemaps/sitemap_index_lastmod.xml',
                                   {'sitemaps': sites_dates})
     return HttpResponse(xml, content_type='application/xml')
 
 
-def new_sitemap(request, jobdate=None):
-    page = request.GET.get("p", 1)
+def new_sitemap(request, page=None):
     fields = ['title', 'location', 'uid', 'guid']
-    sitemaps = {
-        jobdate: DateSitemap(page=page, fields=fields, jobdate=jobdate)
-    }
-    maps, urls = [], []
-    if jobdate:
-        if jobdate not in sitemaps:
-            raise Http404("No sitemap available for job date: %r" % jobdate)
-        maps.append(sitemaps[jobdate])
-    else:
-        maps = sitemaps.values()
 
-    for site in maps:
-        try:
-            urls.extend(site.get_urls())
-        except EmptyPage:
-            raise Http404("Page %s empty" % page)
-        except PageNotAnInteger:
-            raise Http404("No page '%s'" % page)
+    site_map = DESolrSitemap(page=page, fields=fields)
+    try:
+        urls = site_map.get_urls()
+    except EmptyPage:
+        raise Http404("Page %s empty" % page)
+    except PageNotAnInteger:
+        raise Http404("No page '%s'" % page)
+
     xml = smart_str(loader.render_to_string('sitemap.xml', {'urlset': urls}))
     return HttpResponse(xml, content_type='application/xml')
 

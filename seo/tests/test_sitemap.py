@@ -31,9 +31,7 @@ class SitemapTestCase(DirectSEOBase):
         site.save()
         job = dict(SOLR_FIXTURE[0])
         self.conn.add([job])
-        today = datetime.datetime.today()
-        dt = datetime.date(*today.timetuple()[0:3]).isoformat()
-        resp = self.client.get("/sitemap-" + dt + ".xml")
+        resp = self.client.get("/sitemap-0.xml")
         self.assertTrue("<url>" in resp.content)
 
     def test_noreverse(self):
@@ -68,8 +66,6 @@ class SitemapTestCase(DirectSEOBase):
         job = dict(SOLR_FIXTURE[0])
         job.update(kwargs)
         self.conn.add([job])
-        today = datetime.datetime.now()
-        dt = today.date().isoformat()
-        resp = self.client.get("/sitemap-" + dt + ".xml")
+        resp = self.client.get("/sitemap-0.xml")
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("<url>" in resp.content)
