@@ -131,10 +131,7 @@ class SiteTestCase(DirectSEOBase):
                         str(self.site.pk))
             self.assertEqual(resp['Location'], expected)
 
-        # Sitemap index Test - Since sitemap only builds out updates from the
-        # last 30 days, this test will eventually be checking 0 jobs in sitemap
-        # TODO, find a way to keep feed dates current. We might be able to use
-        # the mock library to override datetime functions
+        # Sitemap test - index and sitemaps
         resp = self.client.get('/sitemap.xml', HTTP_HOST=self.site.domain)
         root = etree.fromstring(resp.content)
         self.assertGreater(len(root), 0)
@@ -154,8 +151,4 @@ class SiteTestCase(DirectSEOBase):
                     'http://my.jobs/{guid}?my.jobs.site.id={site_id}'.format(
                         guid=guid, site_id=self.site.id))
                 crawled_jobs += 1
-        # This assertion worked when the test was made, but will change with
-        # date
-        # self.assertEqual(crawled_jobs, 2)
-        # This assertion should work after date issues have been resolved
-        # self.assertEqual(crawled_jobs, total_jobs)
+        self.assertEqual(crawled_jobs, total_jobs)
