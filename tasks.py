@@ -925,7 +925,7 @@ def task_etl_to_solr(guid, buid, name):
 
 
 @task(name='tasks.jobsfs_to_mongo', ingore_result=True, send_error_emails=False)
-def jobsfs_to_mongo(guid, buid, name):
+def task_jobsfs_to_mongo(guid, buid, name):
     try:
         import_jobs.mongo.jobsfs_to_mongo(guid, buid, name)
     except Exception as e:
@@ -935,7 +935,7 @@ def jobsfs_to_mongo(guid, buid, name):
 
 
 @task(name='tasks.seoxml_to_mongo', ingore_result=True, send_error_emails=False)
-def seoxml_to_mongo(buid, **kwargs):
+def task_seoxml_to_mongo(buid, **kwargs):
     try:
         import_jobs.mongo.seoxml_to_mongo(buid)
     except Exception as e:
