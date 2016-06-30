@@ -35,7 +35,7 @@ urlpatterns = patterns('seo.views.search_views',
         name="mobile_stylesheet"),
     (r'^ajax/mac/$','moc_index'),
     url(r'^sitemap.xml$', 'new_sitemap_index', name='sitemap_xml'),
-    url(r'^sitemap-(?P<page>[\d-]+)\.xml$', 'new_sitemap',
+    url(r'^sitemap-(?P<page>\d+)\.xml$', 'new_sitemap',
         name='sitemap_page'),
     (r'^robots.txt$', 'robots_txt'),
 )

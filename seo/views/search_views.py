@@ -54,7 +54,7 @@ from seo.forms.admin_forms import UploadJobFileForm
 from seo.models import (BusinessUnit, Company, Configuration, Country,
                         GoogleAnalytics, JobFeed, SeoSite, SiteTag)
 from seo.decorators import custom_cache_page, protected_site, home_page_check
-from seo.sitemap import DateSitemap, DESolrSitemap
+from seo.sitemap import DESolrSitemap
 from seo.templatetags.seo_extras import filter_carousel
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
@@ -1376,23 +1376,21 @@ def new_sitemap_index(request):
 
     """
     num_pages = DESolrSitemap().numpages()
-    sitemaps = {}
 
-    for page in range(num_pages):
-        site_map = DESolrSitemap(page=page)
-        sitemaps[page] = site_map
     current_site = Site.objects.get_current()
     protocol = request.is_secure() and 'https' or 'http'
 
     # List of tuples: (sitemap url, lastmod date)
     sites_dates = []
-    for thing in sorted(sitemaps.keys()):
+
+    for page in range(num_pages):
+        sitemap = DESolrSitemap(page=page)
+
         sitemap_url = urlresolvers.reverse('sitemap_page',
-                                           kwargs={'page': thing})
-        site_map = sitemaps[thing]
+                                           kwargs={'page': page})
         sites_dates.append(('%s://%s%s' % (protocol, current_site.domain,
                                            sitemap_url),
-                            site_map.lastmod(site_map.items()[0]).strftime(
+                            sitemap.lastmod(sitemap.items()[0]).strftime(
                                 '%Y-%m-%d')))
 
     xml = loader.render_to_string('sitemaps/sitemap_index_lastmod.xml',
