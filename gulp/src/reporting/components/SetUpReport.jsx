@@ -1,4 +1,5 @@
 import React, {PropTypes, Component} from 'react';
+import HelpText from '../../common/ui/HelpText';
 import {connect} from 'react-redux';
 import warning from 'warning';
 import {scrollUp} from 'common/dom';
@@ -339,6 +340,7 @@ class SetUpReport extends Component {
       reportNameErrors,
       hints,
       fieldsLoading,
+      isValid,
     } = this.props;
 
     const rows = [];
@@ -436,8 +438,13 @@ class SetUpReport extends Component {
         <div className="row actions text-center">
           <div className="col-xs-12 col-md-4"></div>
           <div className="col-xs-12 col-md-8">
+            {!isValid ?
+            <HelpText
+              message="Current set of filters would result in an empty report"
+            /> : null}
             <button
-              className="button primary"
+              disabled={!isValid}
+              className={'button' + (isValid ? ' primary' : '')}
               onClick={ e => this.handleRunReport(e)}>
               Run Report
             </button>
@@ -458,6 +465,7 @@ SetUpReport.propTypes = {
   dataSet: PropTypes.string,
   reportDataId: PropTypes.number,
   hints: PropTypes.object.isRequired,
+  isValid: PropTypes.bool.isRequired,
   currentFilter: PropTypes.object.isRequired,
   filterInterface: PropTypes.arrayOf(
     PropTypes.shape({
@@ -475,6 +483,7 @@ export default connect(s => ({
   filterInterface: s.reportState.filterInterface,
   reportName: s.reportState.reportName,
   hints: s.reportState.hints,
+  isValid: s.reportState.isValid,
   reportNameErrors: s.errors.currentErrors.name,
   intention: s.dataSetMenu.intention,
   category: s.dataSetMenu.category,

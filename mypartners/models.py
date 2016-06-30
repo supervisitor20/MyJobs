@@ -167,7 +167,7 @@ class SearchParameterManager(models.Manager):
 
 
 class ArchivedModel(models.Model):
-    archived_on = models.DateTimeField(null=True)
+    archived_on = models.DateTimeField(null=True, blank=True)
 
     # These two managers do different things and may not exactly do what you
     # want unless you're paying attention. The first (objects) retrieves only
@@ -227,10 +227,10 @@ class Contact(ArchivedModel):
     """
     user = models.ForeignKey('myjobs.User', blank=True, null=True,
                              on_delete=models.SET_NULL)
-    partner = models.ForeignKey('Partner',
+    partner = models.ForeignKey('Partner', blank=True,
                                 null=True, on_delete=models.SET_NULL)
     # used if this partner was created by using the partner library
-    library = models.ForeignKey('PartnerLibrary', null=True,
+    library = models.ForeignKey('PartnerLibrary', null=True, blank=True,
                                 on_delete=models.SET_NULL)
     name = models.CharField(max_length=255, verbose_name='Full Name',
                             help_text='Contact\'s full name')
@@ -243,8 +243,8 @@ class Contact(ArchivedModel):
     notes = models.TextField(max_length=1000, verbose_name='Notes',
                              blank=True, default="",
                              help_text='Any additional information you want to record')
-    approval_status = models.OneToOneField(
-        'mypartners.Status', null=True, verbose_name="Approval Status")
+    approval_status = models.OneToOneField('mypartners.Status', null=True,
+                                           blank=True, verbose_name="Approval Status")
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'partner__owner'
@@ -334,20 +334,20 @@ class Partner(ArchivedModel):
                                    help_text='Website, event, or other source where you found the partner')
     uri = models.URLField(verbose_name='URL', blank=True,
                         help_text='Full url. ie http://partnerorganization.org')
-    primary_contact = models.ForeignKey('Contact', null=True,
+    primary_contact = models.ForeignKey('Contact', null=True, blank=True,
                                         related_name='primary_contact',
                                         on_delete=models.SET_NULL,
                                         help_text='Denotes who the primary contact is for this organization.')
     # used if this partner was created by using the partner library
-    library = models.ForeignKey('PartnerLibrary', null=True,
+    library = models.ForeignKey('PartnerLibrary', null=True, blank=True,
                                 on_delete=models.SET_NULL)
     tags = models.ManyToManyField('Tag', null=True,
         help_text='ie \'Disability\', \'veteran-outreach\', etc. Separate tags with a comma.')
     # owner is the Company that owns this partner.
-    owner = models.ForeignKey('seo.Company', null=True,
+    owner = models.ForeignKey('seo.Company', null=True, blank=True,
                               on_delete=models.SET_NULL)
-    approval_status = models.OneToOneField(
-        'mypartners.Status', null=True, verbose_name="Approval Status")
+    approval_status = models.OneToOneField('mypartners.Status', null=True,
+                                           blank=True,verbose_name="Approval Status")
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     company_ref = 'owner'
@@ -578,6 +578,26 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
     def referrals(self):
         return self.filter(contact_type='job').count()
 
+    @staticmethod
+    def _dict_from_values(values, key_fields, value_field):
+        """
+        Used to match distinct items between querysets based on multiple field 
+        values.
+
+        Inputs:
+            :values: An iterable of dictionaries such as queryset.values()
+                     [{field1: value}, {field2: value}]
+            :key_fields: An ordered iterable of field names whose values will be
+                         used to form a unique key
+            :value_field: The field from values stored in the returned 
+                          dictionary
+        """
+        dictionary = {}
+        for item in values:
+            key = '-'.join([str(item[field]) for field in key_fields])
+            dictionary[key] = item[value_field]
+        return dictionary
+
     @property
     def contacts(self):
         """
@@ -588,22 +608,28 @@ class ContactRecordQuerySet(SearchParameterQuerySet):
         to the resulting objects.
         """
 
-        all_contacts = self.values(
-            'partner__name', 'partner', 'contact__name',
-            'contact_email').distinct().order_by('partner__name')
+        all_contacts = self.values('partner__name', 'partner',  'contact__name',
+                'contact', 'contact_email').distinct().order_by('partner__name')
 
-        records = dict(self.exclude(contact_type='job').values_list(
-            'contact__name').annotate(
-                records=models.Count('contact__name')).distinct())
+        # Fields to identify distinct instances for grouping. Names are redundant.
+        distinct_fields = ('partner', 'contact', 'contact_email')
+        record_qs = (self.exclude(contact_type='job').values(
+                         *distinct_fields).annotate(
+                         record_count=models.Count('contact')).distinct())
 
-        referrals = dict(self.filter(contact_type='job').values_list(
-            'contact__name').annotate(
-                referrals=models.Count('contact__name')).distinct())
+        records = self._dict_from_values(record_qs, distinct_fields,
+                                         'record_count')
 
+        referral_qs = self.filter(contact_type='job').values(
+                        *distinct_fields).annotate(
+                        referral_count=models.Count('contact')).distinct()
+
+        referrals = self._dict_from_values(referral_qs, distinct_fields,
+                                           'referral_count')
         for contact in all_contacts:
-            contact['referrals'] = referrals.get(contact['contact__name'], 0)
-            contact['records'] = records.get(contact['contact__name'], 0)
-
+            key = '-'.join([str(contact[field]) for field in distinct_fields])
+            contact['referrals'] = referrals.get(key, 0)
+            contact['records'] = records.get(key, 0)
         return sorted(all_contacts, key=lambda c: c['records'], reverse=True)
 
 
@@ -626,9 +652,12 @@ class ContactRecord(ArchivedModel):
     all_objects = ContactRecordManager(archived=None)
 
     created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey('myjobs.User', null=True, on_delete=models.SET_NULL)
-    partner = models.ForeignKey(Partner, null=True, on_delete=models.SET_NULL)
-    contact = models.ForeignKey(Contact, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('myjobs.User', null=True, blank=True,
+                                   on_delete=models.SET_NULL)
+    partner = models.ForeignKey(Partner, null=True, blank=True,
+                                on_delete=models.SET_NULL)
+    contact = models.ForeignKey(Contact, null=True, blank=True,
+                                on_delete=models.SET_NULL)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES,
                                     max_length=50,
                                     verbose_name="Communication Type")
@@ -660,8 +689,8 @@ class ContactRecord(ArchivedModel):
     job_hires = models.CharField(max_length=6, verbose_name="Number of Hires",
                                  blank=True, default="")
     tags = models.ManyToManyField('Tag', null=True)
-    approval_status = models.OneToOneField(
-        'mypartners.Status', null=True, verbose_name="Approval Status")
+    approval_status = models.OneToOneField('mypartners.Status', null=True,
+                                           blank=True, verbose_name="Approval Status")
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     def __unicode__(self):
@@ -948,7 +977,7 @@ class OutreachEmailAddress(models.Model):
 
 
 class OutreachWorkflowState(models.Model):
-    state = models.CharField(max_length=50)
+    state = models.CharField(max_length=50, unique=True)
 
     def __unicode__(self):
         return self.state

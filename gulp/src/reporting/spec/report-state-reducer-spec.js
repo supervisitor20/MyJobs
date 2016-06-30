@@ -52,6 +52,7 @@ describe('reportStateReducer', () => {
         errors: {},
         hints: {},
         reportName: 'zz',
+        isValid: true,
       });
     });
   });

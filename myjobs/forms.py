@@ -273,7 +273,7 @@ class CompanyAccessRequestApprovalForm(ModelForm):
 
         if request.expired:
             raise ValidationError(
-                "This request expired on %s" % request.expired_on)
+                "This request expired on %s" % request.expires_on)
 
         if not request.check_access_code(code):
             raise ValidationError(

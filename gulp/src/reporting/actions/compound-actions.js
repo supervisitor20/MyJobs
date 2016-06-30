@@ -20,6 +20,7 @@ import {
   clearHintsAction,
   removeFromOrFilterAction,
   resetCurrentFilterDirty,
+  setValidAction,
 } from './report-state-actions';
 import {
   replaceDataSetMenu,
@@ -45,7 +46,7 @@ import {isClientError, errorData} from '../../common/myjobs-api';
  * transformed down to just x.
  */
 export function getFilterValuesOnly(currentFilter) {
-  // FUTURE: add filterType to specify the type of filter data required
+  // TODO: add filterType to specify the type of filter data required
   //  i.e. "date_range", "or", "and_or", "string", etc.
   //  This will make this function need to do less guessing.
   const result = mapValues(currentFilter, (item, key) => {
@@ -363,20 +364,24 @@ export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
       return;
     }
 
-    // FUTURE: declare all of this in the database somehow.
+    // TODO: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {
       await dispatch(doGetHelp(reportDataId, latestFilter(), 'partner', ''));
+      const partnerHints = getState().reportState.hints.partner;
+      dispatch(setValidAction(partnerHints.length > 0));
     }
     if (find(filterInterface, i => i.filter === 'contact')) {
       await dispatch(doGetHelp(reportDataId, latestFilter(), 'contact', ''));
       // Ugly hack: remove elements from the contact filter if they are
       // not in hints.
+      const contactHints = getState().reportState.hints.contact;
       const availableValues = indexBy(
         getState().reportState.hints.contact,
         'value');
       const selected = latestFilter().contact;
       const missingSelected =
         lodashFilter(selected, s => !availableValues[s.value]);
+      dispatch(setValidAction(contactHints.length > 0));
       dispatch(removeFromOrFilterAction('contact', missingSelected));
     }
     if (find(filterInterface, i => i.filter === 'locations')) {

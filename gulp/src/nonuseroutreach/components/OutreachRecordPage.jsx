@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Col, Row} from 'react-bootstrap';
 import OutreachRecordTable from './OutreachRecordTable';
+import {markPageLoadingAction} from '../../common/actions/loading-actions';
 import {doGetRecords} from '../actions/record-actions';
 import {setPageAction} from '../actions/navigation-actions';
 
@@ -11,12 +12,14 @@ import {setPageAction} from '../actions/navigation-actions';
  * interface will grow to be something more elaborate - Edwin, 6/17/2016
  */
 class OutreachRecordPage extends React.Component {
-  componentWillMount() {
+  componentDidMount() {
     // update the application's state with the current page and refresh the
     // list of outreach records
     const {dispatch} = this.props;
     dispatch(setPageAction('records'));
+    dispatch(markPageLoadingAction(true));
     dispatch(doGetRecords());
+    dispatch(markPageLoadingAction(false));
   }
 
   render() {

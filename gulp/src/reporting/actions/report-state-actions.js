@@ -134,3 +134,11 @@ export const emptyFilterAction = createAction('EMPTY_FILTER',
  */
 export const unlinkFilterAction = createAction('UNLINK_FILTER',
   (field) => ({field}));
+
+/**
+ * Mark the report as valid or invalid, which corresponds to an
+ * enabled/disabled run button, respectively.
+ *
+ * payload: bool, whether or not the report is valid
+ */
+export const setValidAction = createAction('SET_VALID');

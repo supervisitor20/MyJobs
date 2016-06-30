@@ -47,7 +47,10 @@ export function withFilterDirtied(oldState, newState) {
  *      filter: column filtered by this control; i.e. "contact"
  *      interfaceType: type of control to use; i.e. "date_range"
  *      display: display name for this control; i.e. "Contacts"
- *      FUTURE: add filterType to specify the type of filter data required
+ *      isValid: whether or not the current report criteria is valid. For
+ *      instance, in a communication record report, if no partners or contacts
+ *      are returned, this would be false.
+ *      TODO: add filterType to specify the type of filter data required
  *        i.e. "date_range", "or", "and_or", "string", etc.
  *    }
  *  ]
@@ -104,6 +107,7 @@ export default handleActions({
       errors: {},
       hints: {},
       currentFilterDirty: false,
+      isValid: true,
     };
   },
 
@@ -285,9 +289,11 @@ export default handleActions({
       currentFilterDirty: false,
     };
   },
+  'SET_VALID': (state, action) => ({...state, isValid: action.payload}),
 }, {
   currentFilter: {},
   filterInterface: [],
   reportName: '',
   hints: {},
+  isValid: true,
 });
