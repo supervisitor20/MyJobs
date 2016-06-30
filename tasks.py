@@ -931,7 +931,7 @@ def task_jobsfs_to_mongo(guid, buid, name):
     except Exception as e:
         logging.error("Error loading mongo from jobsfs for guid: %s", guid)
         logging.exception(e)
-        raise jobsfs_to_mongo.retry(exc=e)
+        raise task_jobsfs_to_mongo.retry(exc=e)
 
 
 @task(name='tasks.seoxml_to_mongo', ingore_result=True, send_error_emails=False)
@@ -941,7 +941,7 @@ def task_seoxml_to_mongo(buid, **kwargs):
     except Exception as e:
         logging.error("Error loading mongo from seoxml for buid: %s", buid)
         logging.exception(e)
-        raise seoxml_to_mongo.retry(exc=e)
+        raise task_seoxml_to_mongo.retry(exc=e)
 
 
 @task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)
