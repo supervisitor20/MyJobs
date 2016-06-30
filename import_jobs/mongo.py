@@ -6,13 +6,13 @@ from import_jobs import add_company, get_jobsfs_zipfile, get_jobs_from_zipfile,\
     filter_current_jobs, DATA_DIR, download_feed_file, FeedImportError
 from transform import hr_xml_to_json
 
-from secrets import MONGO_HOST
+from django.conf import settings
 
 import logging
-from xmlparse import DEv2JobFeed, guid_from_link
+from xmlparse import DEv2JobFeed
 logger = logging.getLogger(__name__)
 
-def jobsfs_to_mongo(guid, buid, name, mongo=MONGO_HOST):
+def jobsfs_to_mongo(guid, buid, name, mongo=settings.MONGO_HOST):
     """Composed method for resopnding to a guid update."""
 
     assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
@@ -41,7 +41,7 @@ def jobsfs_to_mongo(guid, buid, name, mongo=MONGO_HOST):
     bulk.execute()
 
 
-def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=MONGO_HOST):
+def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=settings.MONGO_HOST):
     filepath = download_feed_file(buid, data_dir=data_dir)
 
     jobfeed = DEv2JobFeed(filepath, jsid=buid, markdown=False,
