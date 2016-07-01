@@ -1,4 +1,6 @@
 import React from 'react';
+import {Col, Row, Table} from 'react-bootstrap';
+
 import ActivitiesList from './ActivitiesList';
 import {connect} from 'react-redux';
 import _ from 'lodash-compat';
@@ -7,15 +9,16 @@ class Activities extends React.Component {
   render() {
     // Create an array of tables, each a list of activities of a
     // particular app_access
-    const activitiesGroupedByAppAccess = _.groupBy(this.props.activitiesList, 'app_access_name');
+    const activitiesGroupedByAppAccess =
+      _.groupBy(this.props.activitiesList, 'app_access_name');
     // Build a table for each app present
     const tablesOfActivitiesByApp = [];
     // First assemble rows needed for each table
-    _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
+    _.forOwn(activitiesGroupedByAppAccess, (activityGroup, key) => {
       // For each app, build list of rows from results
       const activityRows = [];
       // Loop through all activities...
-      _.forOwn(activityGroup, function buildListOfRows(activity) {
+      _.forOwn(activityGroup, activity => {
         activityRows.push(
           <tr key={activity.activity_id}>
             <td>{activity.activity_name}</td>
@@ -27,7 +30,7 @@ class Activities extends React.Component {
       tablesOfActivitiesByApp.push(
         <span key={key}>
           <h3>{key}</h3>
-          <table className="table table-striped table-activities">
+          <Table className="table-activities" striped>
             <thead>
               <tr>
                 <th>Activity</th>
@@ -37,22 +40,23 @@ class Activities extends React.Component {
             <tbody>
               {activityRows}
             </tbody>
-          </table>
+          </Table>
         </span>
       );
     });
 
     return (
-      <div className="row">
-        <div className="col-xs-12 ">
+      <Row>
+        <Col xs={12}>
           <div className="wrapper-header">
             <h2>Activities</h2>
           </div>
           <div className="product-card-full no-highlight">
-            <ActivitiesList tablesOfActivitiesByApp={tablesOfActivitiesByApp} />
+            <ActivitiesList
+              tablesOfActivitiesByApp={tablesOfActivitiesByApp} />
           </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 }
