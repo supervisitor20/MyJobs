@@ -216,7 +216,15 @@ CELERY_ROUTES = {
     'tasks.clean_import_records': {
         'queue': 'myjobs',
         'routing_key': 'myjobs.clean_import_records'
-    }
+    },
+    'tasks.seoxml_to_mongo': {
+        'queue': 'solr',
+        'routing_key': 'solr.seoxml_to_mongo'
+    },
+    'tasks.jobsfs_to_mongo': {
+        'queue': 'solr',
+        'routing_key': 'solr.jobsfs_to_mongo'
+    },
 }
 CELERYBEAT_SCHEDULE = {
     'weekly-partner-library-update': {
