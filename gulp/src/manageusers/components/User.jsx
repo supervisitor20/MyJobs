@@ -59,8 +59,8 @@ class User extends React.Component {
     const {action} = this.props.location.query;
 
     if (action === 'Edit') {
-      const results = await api.get('/manage-users/api/users/' + this.props.params.userId + '/');
-      const userObject = results[this.props.params.userId];
+      const results = await api.get('/manage-users/api/users/' + this.props.params.userID + '/');
+      const userObject = results[this.props.params.userID];
 
       const userEmail = userObject.email;
 
@@ -112,8 +112,9 @@ class User extends React.Component {
   async handleSaveUserClick() {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
-    const {api} = this.props;
-    const userId = this.props.params.userId;
+    const {api, rolesAPIResults} = this.props;
+    const userID = this.props.params.userID;
+    const currentUserID = this.props.currentUserID;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
 
@@ -134,9 +135,43 @@ class User extends React.Component {
         userEmailHelp: '',
         roleMultiselectHelp: 'Each user must be assigned to at least one role.',
         availableRoles: this.refs.roles.state.availableRoles,
-        assignedRoles: this.refs.roles.state.assignedRoles,
+        assignedRoles: assignedRoles,
       });
       return;
+    }
+
+    // If a user is editing their own account, they must have at least one role
+    // with the 'read role' activity, otherwise they'll be kicked out of
+    // manage users.
+
+    // Is user editing their own account?
+    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
+      // What roles are currently assigned?
+      const assignedRolesAsStrings = _.map(assignedRoles, role => role.name);
+
+      // Do any of the currently assigned roles contain the 'read role' activity?
+      let containsReadRoleActivity = false;
+      // Loop through all roles
+      containsReadRoleActivity = _.some(rolesAPIResults, role => {
+        // Identify the roles which are currently assigned
+        if (_.includes(assignedRolesAsStrings, role.role_name)) {
+          // For each currently assigned role, determine if the 'read role'
+          // activity is associated with it
+          return _.some(role.activities, activity => {
+            return _.some(activity.assigned_activities, assignedActivity => assignedActivity.name === 'read role');
+          });
+        }
+      }
+    );
+      if (containsReadRoleActivity === false) {
+        this.setState({
+          userEmailHelp: '',
+          roleMultiselectHelp: 'You must have at least one role that has the \'read role\' activity.',
+          availableRoles: this.refs.roles.state.availableRoles,
+          assignedRoles: assignedRoles,
+        });
+        return;
+      }
     }
 
     // No errors? Clear help text
@@ -155,7 +190,7 @@ class User extends React.Component {
 
     let url = '';
     if ( action === 'Edit' ) {
-      url = '/manage-users/api/users/edit/' + userId + '/';
+      url = '/manage-users/api/users/edit/' + userID + '/';
     } else {
       url = '/manage-users/api/users/create/';
     }
@@ -190,9 +225,16 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api, dispatch} = this.props;
+    const {history, api, currentUserID, dispatch} = this.props;
+    const userID = this.props.params.userID;
 
-    const userId = this.props.params.userId;
+    // Is user trying to delete their own account?
+    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
+      this.setState({
+        roleMultiselectHelp: 'You cannot delete your own user.',
+      });
+      return;
+    }
 
     const message = 'Are you sure you want to delete this user?';
     if (! await runConfirmInPlace(dispatch, message)) {
@@ -201,7 +243,7 @@ class User extends React.Component {
 
     // Submit to server
     try {
-      await api.delete('/manage-users/api/users/delete/' + userId + '/');
+      await api.delete('/manage-users/api/users/delete/' + userID + '/');
       await this.props.callUsersAPI();
       history.pushState(null, '/users');
     } catch (e) {
@@ -281,6 +323,8 @@ User.propTypes = {
   callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
+  rolesAPIResults: React.PropTypes.array,
+  currentUserID: React.PropTypes.number,
 };
 
 export default connect()(User);
