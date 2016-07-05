@@ -16,12 +16,12 @@ from postajob.location_data import states
 
 
 class ContactsDataSource(DataSource):
-    def run(self, data_type, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, values):
         return dispatch_run_by_data_type(
-            self, data_type, company, filter_spec, order)
+            self, data_type, company, filter_spec, values)
 
-    def run_unaggregated(self, company, filter_spec, order):
-        """Run the query with the given company, filter, and ordering.
+    def run_unaggregated(self, company, filter_spec, values):
+        """Run the query with the given company, filter, and values.
 
         returns: list of relatively flat dictionaries.
 
@@ -29,9 +29,8 @@ class ContactsDataSource(DataSource):
         allow for some flexibility in formatting at report download time.
         """
         qs_filtered = self.filtered_query_set(company, filter_spec)
-        qs_ordered = qs_filtered.order_by(*order)
-        qs_distinct = qs_ordered.distinct()
-        return [self.extract_record(r) for r in qs_distinct]
+        qs_distinct = qs_filtered.distinct()
+        return [self.extract_record(r, values) for r in qs_distinct]
 
     def filter_type(self):
         return ContactsFilter
@@ -109,20 +108,31 @@ class ContactsDataSource(DataSource):
             .values('name', 'pk').distinct())
         return [{'value': t['pk'], 'display':t['name']} for t in partners_qs]
 
-    def extract_record(self, record):
+    def extract_record(self, record, values):
         """Translate from a query set record to a dictionary."""
-        return {
-            'name': record.name,
-            'partner': extract_value(record, 'partner', 'name'),
-            'email': record.email,
-            'phone': record.phone,
-            'notes': record.notes,
-            'locations': [
+        fields = {
+            'name': lambda r: r.name,
+            'partner': lambda r: extract_value(r, 'partner', 'name'),
+            'email': lambda r: r.email,
+            'phone': lambda r: r.phone,
+            'notes': lambda r: r.notes,
+            'locations': lambda r: [
                 {'city': l.city, 'state': l.state}
-                for l in record.locations.all()
+                for l in r.locations.all()
             ],
-            'date': record.last_action_time,
-            'tags': extract_tags(record.tags.all()),
+            'date': lambda r: r.last_action_time,
+            'tags': lambda r: extract_tags(r.tags.all()),
+        }
+
+        if values:
+            return_values = values
+        else:
+            return_values = fields.keys()
+
+        return {
+            k: v(record)
+            for k, v in fields.iteritems()
+            if k in return_values
         }
 
     def filtered_query_set(self, company, filter_spec):

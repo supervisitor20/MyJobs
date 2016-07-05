@@ -411,16 +411,18 @@ class TestPartnersDataSource(MyJobsBase):
         actual = {r['value'] for r in recs}
         self.assertEqual({'zap'}, actual)
 
-    def test_order(self):
-        """Check ordering results works at all."""
+    def test_values(self):
+        """Check limiting values works at all."""
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(),
-            ["-name"])
-        names = [r['name'] for r in recs]
-        expected = [self.partner_b.name, self.partner_a.name]
-        self.assertEqual(expected, names)
+            ["name", "uri"])
+        expected = [
+            {'name': self.partner_a.name, 'uri': 'http://www.example.com/'},
+            {'name': self.partner_b.name, 'uri': 'http://www.asdf.com/'},
+        ]
+        self.assertEqual(expected, recs)
 
     def test_adorn_filter_items(self):
         found_filter_items = {

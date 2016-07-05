@@ -31,22 +31,21 @@ class PartnersDataSource(DataSource):
         DjangoField('tags', transform=extract_tags),
         DjangoField('uri')])
 
-    def run(self, data_type, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, values):
         return dispatch_run_by_data_type(
-            self, data_type, company, filter_spec, order)
+            self, data_type, company, filter_spec, values)
 
     def filtered_partners(self, company, filter_spec):
         qs_filtered = filter_spec.filter_partners(company)
         qs_distinct = qs_filtered.distinct()
         return qs_distinct
 
-    def run_unaggregated(self, company, filter_spec, order):
+    def run_unaggregated(self, company, filter_spec, values):
         qs_filtered = filter_spec.filter_partners(company)
-        qs_ordered = qs_filtered.order_by(*order)
-        qs_optimized = qs_ordered.prefetch_related(
+        qs_optimized = qs_filtered.prefetch_related(
             'tags', 'primary_contact')
 
-        partners = from_django(self.partner_row_builder, qs_optimized)
+        partners = from_django(self.partner_row_builder, qs_optimized, values)
         return list(partners)
 
     def run_count_comm_rec_per_month(self, company, filter_spec, order):
