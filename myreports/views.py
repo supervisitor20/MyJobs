@@ -12,6 +12,7 @@ from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize, sort_records
+from myreports.result_encoder import ReportJsonEncoder
 from myjobs.decorators import requires
 from myreports.models import (
     Report, ReportPresentation, DynamicReport, ReportTypeDataTypes,
@@ -623,6 +624,47 @@ def run_dynamic_report(request):
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def run_trial_dynamic_report(request):
+    """Run a dynamic report.
+
+    report_data_id: Report Presentation ID
+    name: name of report
+    filter_spec: JSON string with user filter to use
+
+    response: {'id': new dynamic report id}
+    """
+    company = get_company_or_404(request)
+    report_data_id = request.POST['report_data_id']
+    filter_spec = request.POST.get('filter', '{}')
+    values_spec = request.POST.get('values', '[]')
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
+
+    data_type = report_data.data_type
+
+    driver = ds_json_drivers[report_data.report_type.datasource]
+    data_type_name = data_type.data_type
+    data = driver.run(data_type_name, company, filter_spec, "[]")
+
+    values = json.loads(values_spec)
+    if values:
+        result = [
+            {
+                c: d
+                for c, d in r.iteritems()
+                if c in values
+            }
+            for r in data
+        ]
+    else:
+        result = data
+
+    contents = json.dumps(result, cls=ReportJsonEncoder)
+    return HttpResponse(content_type='application/json',
+                        content=contents)
 
 
 @requires('read partner', 'read contact', 'read communication record')
