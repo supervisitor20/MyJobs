@@ -48,7 +48,7 @@ class PartnersDataSource(DataSource):
         partners = from_django(self.partner_row_builder, qs_optimized, values)
         return list(partners)
 
-    def run_count_comm_rec_per_month(self, company, filter_spec, order):
+    def run_count_comm_rec_per_month(self, company, filter_spec, values):
         # Get a list of valid partners (according to our filter).
         qs_filtered = filter_spec.filter_partners(company)
         partner_ids = list(qs_filtered.values_list('id', flat=True))
@@ -121,9 +121,7 @@ class PartnersDataSource(DataSource):
                 joined_data.append(joined_record)
         joined = from_list(joined_fields, joined_data)
 
-        sorted_stream = sort_stream(order, joined)
-
-        return list(sorted_stream)
+        return list(joined)
 
     def filter_type(self):
         return PartnersFilter

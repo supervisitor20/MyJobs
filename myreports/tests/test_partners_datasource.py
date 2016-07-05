@@ -6,7 +6,7 @@ from myreports.datasources.partners import PartnersDataSource, PartnersFilter
 
 from myreports.datasources.util import (
     DateRangeFilter, CompositeAndFilter, MatchFilter,
-    OrGroupFilter, AndGroupFilter, UnlinkedFilter)
+    OrGroupFilter, AndGroupFilter)
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
@@ -133,36 +133,36 @@ class TestPartnersDataSource(MyJobsBase):
 
         ds = PartnersDataSource()
         recs = ds.run_count_comm_rec_per_month(
-            self.company, PartnersFilter(), ['name', 'year', '-month'])
+            self.company, PartnersFilter(), [])
         data = [
             (r['name'], r['year'], r['month'], r['comm_rec_count'])
             for r in recs
         ]
         expected = [
-            (self.partner_a.name, 2015, 12, 0),
-            (self.partner_a.name, 2015, 11, 0),
-            (self.partner_a.name, 2015, 10, 0),
-            (self.partner_a.name, 2015, 9, 0),
-            (self.partner_a.name, 2015, 8, 0),
-            (self.partner_a.name, 2015, 7, 0),
-            (self.partner_a.name, 2015, 6, 0),
-            (self.partner_a.name, 2015, 5, 0),
-            (self.partner_a.name, 2015, 4, 0),
-            (self.partner_a.name, 2015, 3, 0),
-            (self.partner_a.name, 2015, 2, 0),
             (self.partner_a.name, 2015, 1, 0),
-            (self.partner_b.name, 2015, 12, 0),
-            (self.partner_b.name, 2015, 11, 0),
-            (self.partner_b.name, 2015, 10, 0),
-            (self.partner_b.name, 2015, 9, 0),
-            (self.partner_b.name, 2015, 8, 0),
-            (self.partner_b.name, 2015, 7, 0),
-            (self.partner_b.name, 2015, 6, 0),
-            (self.partner_b.name, 2015, 5, 0),
-            (self.partner_b.name, 2015, 4, 3),
-            (self.partner_b.name, 2015, 3, 3),
-            (self.partner_b.name, 2015, 2, 3),
+            (self.partner_a.name, 2015, 2, 0),
+            (self.partner_a.name, 2015, 3, 0),
+            (self.partner_a.name, 2015, 4, 0),
+            (self.partner_a.name, 2015, 5, 0),
+            (self.partner_a.name, 2015, 6, 0),
+            (self.partner_a.name, 2015, 7, 0),
+            (self.partner_a.name, 2015, 8, 0),
+            (self.partner_a.name, 2015, 9, 0),
+            (self.partner_a.name, 2015, 10, 0),
+            (self.partner_a.name, 2015, 11, 0),
+            (self.partner_a.name, 2015, 12, 0),
             (self.partner_b.name, 2015, 1, 0),
+            (self.partner_b.name, 2015, 2, 3),
+            (self.partner_b.name, 2015, 3, 3),
+            (self.partner_b.name, 2015, 4, 3),
+            (self.partner_b.name, 2015, 5, 0),
+            (self.partner_b.name, 2015, 6, 0),
+            (self.partner_b.name, 2015, 7, 0),
+            (self.partner_b.name, 2015, 8, 0),
+            (self.partner_b.name, 2015, 9, 0),
+            (self.partner_b.name, 2015, 10, 0),
+            (self.partner_b.name, 2015, 11, 0),
+            (self.partner_b.name, 2015, 12, 0),
         ]
         self.assertEqual(expected, data)
 
