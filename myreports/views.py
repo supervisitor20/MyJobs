@@ -647,22 +647,9 @@ def run_trial_dynamic_report(request):
 
     driver = ds_json_drivers[report_data.report_type.datasource]
     data_type_name = data_type.data_type
-    data = driver.run(data_type_name, company, filter_spec, "[]")
+    data = driver.run(data_type_name, company, filter_spec, values_spec)
 
-    values = json.loads(values_spec)
-    if values:
-        result = [
-            {
-                c: d
-                for c, d in r.iteritems()
-                if c in values
-            }
-            for r in data
-        ]
-    else:
-        result = data
-
-    contents = json.dumps(result, cls=ReportJsonEncoder)
+    contents = json.dumps(data, cls=ReportJsonEncoder)
     return HttpResponse(content_type='application/json',
                         content=contents)
 
