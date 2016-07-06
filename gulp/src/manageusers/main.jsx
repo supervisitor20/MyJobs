@@ -20,7 +20,7 @@ installPolyfills();
 
 const reducer = combineReducers({
   activities: activitiesListReducer,
-  confirm: confirmReducer,
+  confirmation: confirmReducer,
 });
 
 const api = new MyJobsApi(getCsrf());
