@@ -4,8 +4,10 @@ import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
 import InboxManagementPage from './InboxManagementPage';
+import OutreachRecordPage from './OutreachRecordPage';
 import {markPageLoadingAction} from '../../common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
+import {doGetRecords} from '../actions/record-actions';
 import {setPageAction} from '../actions/navigation-actions';
 
 
@@ -37,7 +39,16 @@ class NonUserOutreachApp extends Component {
       await dispatch(doGetInboxes());
       dispatch(markPageLoadingAction(false));
       return;
+    } else if (lastComponent === OutreachRecordPage) {
+      // update the application's state with the current page and refresh the
+      // list of outreach records
+      dispatch(setPageAction('records'));
+      dispatch(markPageLoadingAction(true));
+      await dispatch(doGetRecords());
+      dispatch(markPageLoadingAction(false));
+      return;
     }
+
 
     // Allow other pages to mount.
     dispatch(markPageLoadingAction(false));
