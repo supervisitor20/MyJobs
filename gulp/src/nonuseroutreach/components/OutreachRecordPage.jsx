@@ -18,7 +18,7 @@ class OutreachRecordPage extends React.Component {
     const {dispatch} = this.props;
     dispatch(setPageAction('records'));
     dispatch(markPageLoadingAction(true));
-    dispatch(await doGetRecords());
+    await dispatch(doGetRecords());
     dispatch(markPageLoadingAction(false));
   }
 

@@ -17,7 +17,7 @@ class InboxManagementPage extends React.Component {
     const {dispatch} = this.props;
     dispatch(setPageAction('inboxes'));
     dispatch(markPageLoadingAction(true));
-    dispatch(await doGetInboxes());
+    await dispatch(doGetInboxes());
     dispatch(markPageLoadingAction(false));
   }
 
