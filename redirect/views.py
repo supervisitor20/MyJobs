@@ -174,7 +174,7 @@ def home(request, guid, vsid=None, debug=None):
             # with another (Z).
             'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
-        response['X-ANALYTICS'] = json.dumps(analytics)
+        response['X-JSON-Header'] = json.dumps(analytics)
 
         response = helpers.set_aguid_cookie(response,
                                             request.get_host(),
