@@ -41,7 +41,7 @@ class JobsFStoJsonTest(DirectSEOBase):
 
         # Assert the datetime is correct when converted to UTC.
         actual_utc = date_updated.astimezone(pytz.UTC)
-        expected = datetime.datetime(2015, 12, 23, 06, 48, 11, 533000, pytz.UTC)
+        expected = datetime.datetime(2016, 01, 27, 20, 57, 03, 997, pytz.UTC)
         self.assertEqual(actual_utc, expected,
             msg="date_updated is '%s', it should equal '%s'" % (
                 date_updated.astimezone(pytz.UTC),
