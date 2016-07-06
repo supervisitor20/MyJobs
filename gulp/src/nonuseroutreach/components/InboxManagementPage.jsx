@@ -11,13 +11,13 @@ import {Col, Row} from 'react-bootstrap';
  * inboxes.
  */
 class InboxManagementPage extends React.Component {
-  componentDidMount() {
+  async componentDidMount() {
     // update the application's state with the current page and refresh the
     // list of inboxes
     const {dispatch} = this.props;
     dispatch(setPageAction('inboxes'));
     dispatch(markPageLoadingAction(true));
-    dispatch(doGetInboxes());
+    dispatch(await doGetInboxes());
     dispatch(markPageLoadingAction(false));
   }
 
