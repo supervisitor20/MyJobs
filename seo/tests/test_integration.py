@@ -131,6 +131,10 @@ class SiteTestCase(DirectSEOBase):
                         str(self.site.pk))
             self.assertEqual(resp['Location'], expected)
 
+        default_site_facet.delete()
+        default_cf.delete()
+        cache.clear()
+
         # Sitemap index Test - Since sitemap only builds out updates from the
         # last 30 days, this test will eventually be checking 0 jobs in sitemap
         # TODO, find a way to keep feed dates current. We might be able to use
@@ -147,10 +151,17 @@ class SiteTestCase(DirectSEOBase):
             urlset = etree.fromstring(resp.content)
             # Check each job in daily sitemap - I'm a bot
             for loc, _, _, _ in urlset:
+                guid = loc.text.rsplit('/', 1)[1]
                 resp = self.client.get(loc.text, HTTP_HOST=self.site.domain)
-                self.assertEqual(resp.status_code, 200)
-                self.assertIn(str(resp.context['the_job'].uid), loc.text)
+                expected = ('http://my.jobs/{guid}'
+                            '?my.jobs.site.id={site_id}').format(
+                    guid=guid, site_id=self.site.id)
+                self.assertEqual(
+                    resp['Location'],
+                    'http://my.jobs/{guid}?my.jobs.site.id={site_id}'.format(
+                        guid=guid, site_id=self.site.id))
                 crawled_jobs += 1
+        print crawled_jobs
         # This assertion worked when the test was made, but will change with
         # date
         # self.assertEqual(crawled_jobs, 2)

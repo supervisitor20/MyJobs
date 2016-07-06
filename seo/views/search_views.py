@@ -1375,24 +1375,13 @@ def new_sitemap_index(request):
     get to every other page.
 
     """
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
-    midnight = datetime.time.max
-    # The latest date/time in sitemaps is yesterday, midnight (time.max)
-    latest_datetime = datetime.datetime.combine(yesterday, midnight)
-    # Number of days to go back from today.
-    history = 30
-    # Populate a list of datetime.datetime objects representing today's date
-    # as well as one for each day going back 'history' days.
-    dates = [latest_datetime - datetime.timedelta(days=i) for i in xrange(history)]
-    earliest_day = (latest_datetime - datetime.timedelta(days=history)).date()
-    datecounts = DateSitemap().numpages(startdate=earliest_day,
-                                        enddate=latest_datetime)
+    datecounts = {date: count
+                  for date, count in DateSitemap().numpages().iteritems()
+                  if count}
     sitemaps = {}
 
-    for date in dates:
-        dt = datetime.date(*date.timetuple()[0:3]).isoformat()
-        sitemaps[dt] = {'sitemap': DateSitemap(), 'count': datecounts[dt]}
+    for date in sorted(datecounts.keys(), reverse=True):
+        sitemaps[date] = {'sitemap': DateSitemap(), 'count': datecounts[date]}
     current_site = Site.objects.get_current()
     protocol = request.is_secure() and 'https' or 'http'
 

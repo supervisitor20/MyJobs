@@ -33,7 +33,7 @@ class DESolrSitemap(SolrSitemap):
         # the index. Whatever fields you would put into the 'fl' parameter for
         # Solr's API are the same fields that should be present in the 'fields'
         # kwarg.
-        self.limit = 2000
+        self.limit = 6000
         self.fields = fields or []
         self.fields.extend(self.required_fields)
         self.buids = settings.SITE_BUIDS
@@ -164,31 +164,24 @@ class DateSitemap(DESolrSitemap):
     object.
 
     """
-    def __init__(self, jobdate=None, **kwargs):
-        """
-        Inputs:
-        :jobdate: datetime.date object.
-
-        """
-        if not jobdate:
-            jobdate = datetime.date.today()
-        else:
-            jobdate = datetime.datetime.strptime(jobdate, "%Y-%m-%d").date()
-
-        self.jobdate = jobdate.timetuple()
+    def __init__(self, jobdate=None, gap='month', **kwargs):
+        if jobdate:
+            jobdate = datetime.datetime.strptime(jobdate,
+                                                 "%Y-%m-%d").date().timetuple()
+        self.jobdate = jobdate
+        self.gap = gap
         super(DateSitemap, self).__init__(**kwargs)
         self.results = self._sqs()._clone()
 
     def _sqs(self):
-        """
-        Filters the search results returned from DESolrSitemap to only
-        include jobs from `self.jobdate`.
-
-        """
         sqs = super(DateSitemap, self)._sqs()._clone()
-        return sqs.filter(date_new__range=self._daterange())
+        sqs = sqs.order_by('-date_new')
+        date_range = self._daterange()
+        if date_range is not None:
+            sqs = sqs.filter(date_new__range=date_range)
+        return sqs
 
-    def numpages(self, startdate, enddate, field='date_new'):
+    def numpages(self, field='date_new'):
         """
         This method gets the counts for each individual date in the
         `[startdate, enddate]` date range. By default, the `numpages`
@@ -199,9 +192,8 @@ class DateSitemap(DESolrSitemap):
         because if it is passed a value for `fields`, the return value of
         the `_sqs` method will be of type ValuesSearchQuerySet, which
         does not have a `facet_limit` method.
-        Inputs::
-        :startdate:
-        :enddate:
+        Inputs:
+        :field:
 
         """
         # The date format Solr uses to represent dates.
@@ -222,9 +214,9 @@ class DateSitemap(DESolrSitemap):
         # A facet.limit of -1 means no limit to the number of facets that will
         # be returned. If we don't set this setting, it will only return the
         # default number of facets (10, by default).
-        sqs = sqs.filter(date_new__range=[startdate, enddate])\
-                 .date_facet(field, startdate, enddate, gap_by='day')\
-                 .facet_limit(-1)
+        sqs = sqs.date_facet(
+            field, datetime.date(year=2008, month=7, day=26),
+            datetime.date.today(), gap_by=self.gap).facet_limit(-1)
         facetcounts = dict(sqs.facet_counts()['dates'][field])
 
         # Haystack puts some 'administrative' data in with the facet counts, so
@@ -258,6 +250,8 @@ class DateSitemap(DESolrSitemap):
     def _daterange(self, date_val=None):
         if date_val is None:
             date_val = self.jobdate
+        if date_val is None:
+            return
 
         oneday = datetime.timedelta(hours=23, minutes=59, seconds=59)
         lastnight = datetime.datetime(*date_val[0:3])
