@@ -2,6 +2,7 @@ from email.utils import getaddresses
 from datetime import datetime
 import json
 from urllib import unquote
+from urlparse import urlparse
 import uuid
 
 from django.conf import settings
@@ -47,6 +48,12 @@ def home(request, guid, vsid=None, debug=None):
 
     guid_redirect = helpers.get_redirect_or_404(guid=guid)
     cleaned_guid = helpers.clean_guid(guid_redirect.guid).upper()
+
+    analytics = {
+        'gu': cleaned_guid, 've': '1.0', 'vs': vsid, 'ia': 'uk', 'ev': 'rd',
+        'cp': 'uk', 'tm': 'r', 'mo': '0',
+        'ua': request.META.get('HTTP_USER_AGENT', '')
+    }
 
     syndication_params = {'request': request, 'redirect': guid_redirect,
                           'guid': cleaned_guid, 'view_source': vsid}
@@ -127,6 +134,7 @@ def home(request, guid, vsid=None, debug=None):
         if '%' in aguid:
             aguid = uuid.UUID(unquote(aguid)).hex
         myguid = request.COOKIES.get('myguid', '')
+        analytics.update({'aguid': aguid, 'myguid': myguid})
         buid = helpers.get_Post_a_Job_buid(guid_redirect)
         qs = 'jcnlx.ref=%s&jcnlx.url=%s&jcnlx.buid=%s&jcnlx.vsid=%s&jcnlx.aguid=%s&jcnlx.myguid=%s'
         qs %= (helpers.quote_string(request.META.get('HTTP_REFERER', '')),
@@ -135,12 +143,36 @@ def home(request, guid, vsid=None, debug=None):
                vsid,
                aguid,
                myguid)
+        now = datetime.utcnow()
         if expired:
-            now = datetime.now(tz=timezone.utc)
-            d_seconds = (now - guid_redirect.expired_date).total_seconds()
+            d_seconds = (now.replace(tzinfo=timezone.utc) -
+                         guid_redirect.expired_date).total_seconds()
             d_hours = int(d_seconds / 60 / 60)
             qs += '%s&jcnlx.xhr=%s' % (err, d_hours)
+
+            hn = request.get_host()
+            pr = request.is_secure() and 'https:' or 'http:'
+            pn = request.path
+            se = request.META.get('QUERY_STRING', '')
+            if se:
+                se = '?' + se
+        else:
+            parsed = urlparse(redirect_url)
+            pn = parsed.path
+            pr = parsed.scheme + ':'
+            hn = parsed.netloc
+            analytics.update({
+                'pn': parsed.path, 'pr': parsed.scheme + ':',
+                'hn': parsed.netloc,
+                })
+            se = parsed.query
+            if se:
+                se = '?' + se
         response['X-REDIRECT'] = qs
+        analytics.update({
+            'to': now.isoformat() + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
+            'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
+        response['X-ANALYTICS'] = json.dumps(analytics)
 
         response = helpers.set_aguid_cookie(response,
                                             request.get_host(),
