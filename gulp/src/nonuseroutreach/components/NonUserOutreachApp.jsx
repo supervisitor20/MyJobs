@@ -3,6 +3,10 @@ import {Col, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
+import InboxManagementPage from './InboxManagementPage';
+import {markPageLoadingAction} from '../../common/actions/loading-actions';
+import {doGetInboxes} from '../actions/inbox-actions';
+import {setPageAction} from '../actions/navigation-actions';
 
 
 /* NonUserOutreachApp
@@ -11,6 +15,34 @@ import {Menu} from './Menu';
  * outreach record management page.
  */
 class NonUserOutreachApp extends Component {
+  componentDidMount() {
+    const {history} = this.props;
+    this.unsubscribeToHistory = history.listen(
+      (...args) => this.handleNewLocation(...args));
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeToHistory();
+  }
+
+  async handleNewLocation(_, loc) {
+    const {dispatch} = this.props;
+
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === InboxManagementPage) {
+      // update the application's state with the current page and refresh the
+      // list of inboxes
+      dispatch(setPageAction('inboxes'));
+      dispatch(markPageLoadingAction(true));
+      await dispatch(doGetInboxes());
+      dispatch(markPageLoadingAction(false));
+      return;
+    }
+
+    // Allow other pages to mount.
+    dispatch(markPageLoadingAction(false));
+  }
+
   render() {
     const {loading, tips} = this.props;
     return (
@@ -39,6 +71,8 @@ class NonUserOutreachApp extends Component {
 }
 
 NonUserOutreachApp.propTypes = {
+  history: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
   // whether or not to show a page loading indicator in the content area
   loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
