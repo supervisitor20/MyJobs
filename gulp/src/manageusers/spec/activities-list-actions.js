@@ -2,7 +2,7 @@ import {promiseTest} from '../../common/spec';
 import createReduxStore from '../../common/create-redux-store';
 import {
   doRefreshActivities,
-} from '../actions/compound-actions';
+} from '../actions/activities-list-actions';
 import {combineReducers} from 'redux';
 import activitiesListReducer from '../reducers/activities-list-reducer';
 

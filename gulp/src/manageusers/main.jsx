@@ -14,7 +14,7 @@ import ManageUsersRouter from './components/ManageUsersRouter';
 import activitiesListReducer from './reducers/activities-list-reducer';
 import {
   doRefreshActivities,
-} from './actions/compound-actions';
+} from './actions/activities-list-actions';
 
 installPolyfills();
 
