@@ -148,13 +148,13 @@ class LoadETLTestCase(DirectSEOBase):
         super(LoadETLTestCase, self).setUp()
         self.zipfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'data',
-                                    'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip')
+                                    '0812fe95-e7cb-4eb5-813c-55c9180f6bd7.zip')
         with open(self.zipfile) as zf:
-            self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
+            self.jobs = list(get_jobs_from_zipfile(zf, "0812fe95-e7cb-4eb5-813c-55c9180f6bd7"))
 
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
-        self.guid = 'ce2ca701-eeca-4c13-96ba-e6bde9cb7060'
+        self.guid = '0812fe95-e7cb-4eb5-813c-55c9180f6bd7'
         self.name = "Test"
 
     def tearDown(self):
@@ -194,12 +194,12 @@ class LoadETLTestCase(DirectSEOBase):
         """Test that filtering on the include_in_index bit works"""
 
         # Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39,
+        self.assertEqual(len(self.jobs), 28,
                          "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
 
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
-        self.assertEqual(len(filtered_jobs), 38,
+        self.assertEqual(len(filtered_jobs), 27,
                          "filter_current_jobs should rmeove jobs with the includeinindex bit set, "
                          "it's expected to return %s.  Instead it returned %s" % (38, len(filtered_jobs)))
 
@@ -211,11 +211,11 @@ class LoadETLTestCase(DirectSEOBase):
         self.businessunit.save()
 
         # Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39,
+        self.assertEqual(len(self.jobs), 28,
                          "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
 
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
-        self.assertEqual(len(filtered_jobs), 39,
+        self.assertEqual(len(filtered_jobs), 28,
                          "filter_current_jobs should ignore the includeinindex bit, returning 39 jobs.  "
                          "Instead returned %s." % len(filtered_jobs))
