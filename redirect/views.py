@@ -143,10 +143,9 @@ def home(request, guid, vsid=None, debug=None):
                vsid,
                aguid,
                myguid)
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         if expired:
-            d_seconds = (now.replace(tzinfo=timezone.utc) -
-                         guid_redirect.expired_date).total_seconds()
+            d_seconds = (now - guid_redirect.expired_date).total_seconds()
             d_hours = int(d_seconds / 60 / 60)
             qs += '%s&jcnlx.xhr=%s' % (err, d_hours)
 
@@ -170,7 +169,10 @@ def home(request, guid, vsid=None, debug=None):
                 se = '?' + se
         response['X-REDIRECT'] = qs
         analytics.update({
-            'to': now.isoformat() + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
+            # Python doesn't have a method of easily creating a timestamp with
+            # Zulu at the end. Replace one ISO-8601 supported format (+00:00)
+            # with another (Z).
+            'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
         response['X-ANALYTICS'] = json.dumps(analytics)
 
