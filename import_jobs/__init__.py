@@ -107,8 +107,7 @@ def get_jobsfs_zipfile(guid):
     :return: A urllib2 Response (A filelike object)
     """
     # Download the zipfile
-    url = 'http://jobsfs.directemployers.org/%s/ActiveDirectory_%s.zip' % (
-        guid, guid)
+    url = 'http://jobsfs2.directemployers.org/%s/%s.zip' % (guid, guid)
     req = urllib2.Request(url)
     authheader = "Basic %s" % base64.encodestring(
         '%s:%s' % (settings.JOBSFS_USERNAME, settings.JOBSFS_PASSWORD))
