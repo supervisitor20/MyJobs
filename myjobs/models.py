@@ -316,6 +316,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Password Settings
     password_change = models.BooleanField(_('Password must be changed on next '
                                             'login'), default=False)
+    password_last_modified = models.DateTimeField(
+        'Last modified time for the password.',
+        null=True, blank=True, default=None,
+        help_text=_(
+            'When was the password last changed? Only used if the user is ' +
+            'associated with a company which enforces password expiration.'))
 
     user_guid = models.CharField(max_length=100, db_index=True, unique=True)
 
@@ -373,6 +379,11 @@ class User(AbstractBaseUser, PermissionsMixin):
                 and self.__original_password and (self.password != '')):
             self.password_change = False
 
+            # If this user has password expiration, update their last modified
+            # password timestamp
+            if self.has_password_expiration():
+                self.password_last_modified = datetime.datetime.now()
+
         if update_fields is not None and 'is_active' in update_fields:
             if self.is_active:
                 self.deactivate_type = DEACTIVE_TYPES_AND_NONE[0]
@@ -401,6 +412,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         user_companies = Company.objects.filter(role__user=self)
         user_companies.filter(password_expiration=True)
         return user_companies.count() > 0
+
+    def is_password_expired(self):
+        """
+        Is the users's password still fresh enough to use?
+
+        """
+        if (not self.has_password_expiration()):
+            return False
+
+        if (not self.password_last_modified):
+            return True
+
+        expiration_cutoff = (
+            datetime.datetime.now() -
+            datetime.timedelta(days=settings.PASSWORD_EXPIRATION_DAYS))
+
+        if (self.password_last_modified > expiration_cutoff):
+            return False
+        else:
+            return True
 
     def get_activities(self, company):
         """Returns a list of activity names associated with this user."""

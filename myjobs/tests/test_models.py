@@ -184,25 +184,64 @@ class TestPasswordExpiration(TestCase):
         super(TestPasswordExpiration, self).setUp()
 
         (self.user, _) = User.objects.create_user(
-            password1='somepass',
+            password='somepass',
             email='someuser@example.com')
         self.strict = CompanyFactory(password_expiration=True, name='strict')
         self.strict_role = RoleFactory(company=self.strict, name="Admin")
         self.loose = CompanyFactory(password_expiration=False, name='loose')
         self.loose_role = RoleFactory(company=self.loose, name="Admin")
-
-    def test_no_company(self):
-        """Users with no company should not have password expiration"""
-        self.assertEqual(
-            False,
-            self.user.has_password_expiration())
-
-    def test_use_stricter_company(self):
-        """Users with any strict company should have password expiration"""
         self.user.roles.add(self.strict_role)
         self.user.roles.add(self.loose_role)
 
+        # Reload from db to get correct password state.
+        self.user = User.objects.get(pk=self.user.pk)
+
+    def test_no_company(self):
+        """Users with no company should not have password expiration"""
+        self.user.roles.clear()
+        self.assertEqual(
+            False,
+            self.user.has_password_expiration())
+        self.assertEqual(
+            False,
+            self.user.is_password_expired())
+
+        self.user.password = 'somepass2'
+        self.user.save()
+        self.assertEqual(None, self.user.password_last_modified)
+
+    def test_use_stricter_company(self):
+        """Users with any strict company should have password expiration"""
         self.assertEqual(True, self.user.has_password_expiration())
+
+    def test_first_expirable_login(self):
+        """is_password_expired is True when the user has never logged in."""
+        self.assertEqual(True, self.user.is_password_expired())
+
+    def test_login_within_expire_window(self):
+        """is_password_expired is False when in the expiration window."""
+        self.user.password_last_modified = (
+            datetime.datetime.now() - datetime.timedelta(days=1))
+        self.user.save()
+        self.assertEqual(False, self.user.is_password_expired())
+
+    def test_login_out_of_expire_window(self):
+        """is_password_expired is True when past the expiration window."""
+        self.user.password_last_modified = (
+            datetime.datetime.now() - datetime.timedelta(days=30000))
+        self.user.save()
+        self.assertEqual(True, self.user.is_password_expired())
+
+    def test_change_password(self):
+        """
+        Changing password for a user in a company does sets pasword last
+        modified time.
+        """
+        before_password_set = datetime.datetime.now()
+        self.user.set_password('somepass2')
+        self.user.save()
+        self.assertGreater(
+            self.user.password_last_modified, before_password_set)
 
 
 class TestActivities(MyJobsBase):
