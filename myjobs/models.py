@@ -392,6 +392,15 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return super(User, self).delete(*args, **kwargs)
 
+    def has_password_expiration(self):
+        """
+        Is the user affected by a password expiration policy?
+
+        """
+        Company = get_model('seo', 'Company')
+        user_companies = Company.objects.filter(role__user=self)
+        user_companies.filter(password_expiration=True)
+        return user_companies.count() > 0
 
     def get_activities(self, company):
         """Returns a list of activity names associated with this user."""

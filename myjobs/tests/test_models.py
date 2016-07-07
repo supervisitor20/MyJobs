@@ -1,5 +1,6 @@
 import datetime
 import urllib
+from django.test import TestCase
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.exceptions import ValidationError
@@ -174,6 +175,34 @@ class UserManagerTests(MyJobsBase):
         user.delete()
         self.assertIn(pss, PartnerSavedSearch.objects.all())
         self.assertIn(report, Report.objects.all())
+
+
+class TestPasswordExpiration(TestCase):
+    """Test password expiration"""
+
+    def setUp(self):
+        super(TestPasswordExpiration, self).setUp()
+
+        (self.user, _) = User.objects.create_user(
+            password1='somepass',
+            email='someuser@example.com')
+        self.strict = CompanyFactory(password_expiration=True, name='strict')
+        self.strict_role = RoleFactory(company=self.strict, name="Admin")
+        self.loose = CompanyFactory(password_expiration=False, name='loose')
+        self.loose_role = RoleFactory(company=self.loose, name="Admin")
+
+    def test_no_company(self):
+        """Users with no company should not have password expiration"""
+        self.assertEqual(
+            False,
+            self.user.has_password_expiration())
+
+    def test_use_stricter_company(self):
+        """Users with any strict company should have password expiration"""
+        self.user.roles.add(self.strict_role)
+        self.user.roles.add(self.loose_role)
+
+        self.assertEqual(True, self.user.has_password_expiration())
 
 
 class TestActivities(MyJobsBase):

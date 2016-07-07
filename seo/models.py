@@ -688,6 +688,8 @@ class Company(models.Model):
 
     prm_saved_search_sites = models.ManyToManyField('SeoSite', null=True,
                                                     blank=True)
+    password_expiration = models.BooleanField(
+        'Enforce Password Expiration', default=False)
 
     # Permissions
     app_access = models.ManyToManyField(
