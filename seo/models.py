@@ -970,6 +970,11 @@ class Configuration(models.Model):
         (3, 'Top')
     )
 
+    TEMPLATE_VERSION_CHOICES = (
+        ('v1', 'Version 1'),
+        ('v2', 'Version 2'),
+    )
+
     def __init__(self, *args, **kwargs):
         super(Configuration, self).__init__(*args, **kwargs)
         self._original_browse_moc_show = self.browse_moc_show
@@ -1032,13 +1037,13 @@ class Configuration(models.Model):
         :return: Original path or v2 path if exists and enabled
 
         """
-        if not self.use_v2_templates:
+        if self.template_version in ('v1', None):
             return template_string
 
         try:
-            v2_string = "v2/" + template_string
-            loader.get_template(v2_string)
-            return v2_string
+            version_string = '%s/%s' % (self.template_version, template_string)
+            loader.get_template(version_string)
+            return version_string
         except loader.TemplateDoesNotExist:
             return template_string
 
@@ -1196,8 +1201,8 @@ class Configuration(models.Model):
                                             help_text='Use secure blocks for '
                                                       'displaying widgets.')
 
-    use_v2_templates = models.BooleanField(default=False,
-                                           help_text='Use version 2 templates')
+    template_version = models.CharField(max_length=5, default='v1',
+                                        choices=TEMPLATE_VERSION_CHOICES)
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)

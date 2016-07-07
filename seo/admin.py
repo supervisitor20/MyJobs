@@ -158,7 +158,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                              ('doc_type', 'language_code'),
                              ('view_all_jobs_detail', 'show_social_footer',
                               'show_saved_search_widget', 'use_secure_blocks',
-                              'use_v2_templates'),
+                              'template_version'),
                              'sites', ]
         my_fieldsets = [
             ('Basic Info', {'fields': [
@@ -167,7 +167,7 @@ class ConfigurationAdmin (admin.ModelAdmin):
                 ('doc_type', 'language_code'),
                 ('view_all_jobs_detail', 'show_social_footer',
                  'show_saved_search_widget', 'use_secure_blocks',
-                 'use_v2_templates'),
+                 'template_version'),
                 'sites']}),
             ('Home Page Options', {'fields': [
                 ('home_page_template', 'publisher',
