@@ -43,14 +43,16 @@
                     {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state }}</span>
                   {% else %}
                     {% if the_job.city %}
-                        <span itemprop="addressLocality">{{ the_job.city }}</span>,
+                        <span itemprop="addressLocality">{{ the_job.city }}</span>
                     {% endif %}
                   {% endif %}
                   {% is_special_case the_job as special_case %}
                   {% if special_case %}
                       <meta itemprop="addressCountry" content="{{ the_job.country }}" />
                   {% else %}
-                      <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% if the_job.country %}
+                          , <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% endif %}
                   {% endif %}
               </span>
               {% endspaceless %}
