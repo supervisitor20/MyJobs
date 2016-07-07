@@ -10,7 +10,7 @@ class FakeApi {
   get() {}
 }
 
-describe('doRefreshActivities', () => {
+describe('activities-list-actions', () => {
   let store;
   let api;
 
@@ -23,48 +23,40 @@ describe('doRefreshActivities', () => {
       {api});
   }));
 
-  describe('after API succeeds:', () => {
-    let runPromise;
-    let resolve;
-    let reject;
-
+  describe('doRefreshActivities', () => {
     beforeEach(promiseTest(async () => {
-      spyOn(api, 'get').and.returnValue(Promise.resolve([
-        {
-          activity_name: "create product",
-          app_access_name: "MarketPlace",
-          activity_description: "Add new products",
-          activity_id: 33,
-          app_access_id: 5
-        },
-        {
-          activity_name: "read product",
-          app_access_name: "MarketPlace",
-          activity_description: "View existing products.",
-          activity_id: 34,
-          app_access_id: 5
-        },
-      ]))
+      spyOn(api, 'get').and.returnValue(Promise.resolve({
+        MarketPlace: [
+          {
+            name: "create product",
+            description: "Add new products",
+            id: 33,
+          },
+          {
+            name: "read product",
+            description: "View existing products.",
+            id: 34,
+          },
+        ],
+      }))
       await store.dispatch(doRefreshActivities())
     }));
 
-    it('data is in right place', () => {
-      expect(store.getState().data).toEqual([
-        {
-          activity_name: "create product",
-          app_access_name: "MarketPlace",
-          activity_description: "Add new products",
-          activity_id: 33,
-          app_access_id: 5
-        },
-        {
-          activity_name: "read product",
-          app_access_name: "MarketPlace",
-          activity_description: "View existing products.",
-          activity_id: 34,
-          app_access_id: 5
-        },
-      ]);
+    it('should return activities grouped by app-level access', () => {
+      expect(store.getState().activities).toEqual({
+        MarketPlace:  [
+          {
+            name: "create product",
+            description: "Add new products",
+            id: 33,
+          },
+          {
+            name: "read product",
+            description: "View existing products.",
+            id: 34,
+          },
+        ],
+      });
     });
   });
 });
