@@ -19,6 +19,7 @@ from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
 from django.dispatch import Signal, receiver
+from django.template import loader
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
@@ -1021,6 +1022,27 @@ class Configuration(models.Model):
         return ", ".join(self.seosite_set.all().values_list("domain",
                                                             flat=True))
 
+    def get_template(self, template_string):
+        """
+        Determine if the current configuration is set to use v2 templates,
+        and if so, check whether or not the template provided in template_string
+        exists in the v2 directory.
+
+        :param template_string: Original path of desired template
+        :return: Original path or v2 path if exists and enabled
+
+        """
+        if not self.use_v2_templates:
+            return template_string
+
+        try:
+            v2_string = "v2/" + template_string
+            loader.get_template(v2_string)
+            return v2_string
+        except loader.TemplateDoesNotExist:
+            return template_string
+
+
     title = models.CharField(max_length=50, null=True)
     # version control
     status = models.IntegerField('Status', default=1, choices=STATUS_CHOICES,
@@ -1173,6 +1195,9 @@ class Configuration(models.Model):
     use_secure_blocks = models.BooleanField(default=False,
                                             help_text='Use secure blocks for '
                                                       'displaying widgets.')
+
+    use_v2_templates = models.BooleanField(default=False,
+                                           help_text='Use version 2 templates')
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)
