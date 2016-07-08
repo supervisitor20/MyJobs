@@ -267,6 +267,19 @@ class TestPasswordExpiration(TestCase):
         self.assertNotIn('entry-0', hashes)
         self.assertEquals(limit, len(hashes))
 
+    def test_is_password_in_history(self):
+        """
+        Don't let the user reuse a password they used recently.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit + 1):
+            self.user.set_password('entry-%d' % i)
+            self.user.save()
+        self.assertFalse(self.user.is_password_in_history('entry-0'))
+        for i in range(1, limit + 1):
+            entry = 'entry-%d' % i
+            self.assertTrue(self.user.is_password_in_history(entry), entry)
+
 
 class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""

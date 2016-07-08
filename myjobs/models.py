@@ -18,6 +18,7 @@ import pytz
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         Group, PermissionsMixin)
+from django.contrib.auth.hashers import check_password
 from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
@@ -427,9 +428,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             user=self,
             changed_on=changed_on,
             password_hash=password_hash)
-        history = self.userpasswordhistory_set.order_by('-changed_on')
+        ordering = ['-changed_on', '-pk']
+        history = self.userpasswordhistory_set.order_by(*ordering)
         keep_ids = [i.pk for i in history[:limit]]
         self.userpasswordhistory_set.exclude(pk__in=keep_ids).delete()
+
+    def is_password_in_history(self, cleartext_password):
+        """
+        Check to see if this cleartext password matches any historical hashes.
+        """
+        return any(
+            check_password(cleartext_password, entry.password_hash)
+            for entry in self.userpasswordhistory_set.all())
 
     def is_password_expired(self):
         """
