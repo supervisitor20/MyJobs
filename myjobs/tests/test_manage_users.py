@@ -1,6 +1,6 @@
 from django.core import mail
 from django.core.urlresolvers import reverse
-from myjobs.models import User
+from myjobs.models import User, AppAccess
 from myjobs.tests.factories import RoleFactory
 from seo.tests.factories import CompanyFactory
 from setup import MyJobsBase
@@ -24,27 +24,21 @@ class ManageUsersTests(MyJobsBase):
     def test_activities(self):
         """
         Tests that the Activities API returns the proper data in the
-        proper form
+        proper form.
+
         """
         response = self.client.get(reverse('api_get_activities'))
+        results = json.loads(response.content)
 
-        output = json.loads(response.content)
-        first_result = output[0]
+        # ensure we have a key for each app level access
+        apps = list(AppAccess.objects.values_list('name', flat=True))
+        self.assertEqual(apps, results.keys())
 
-        activity_name = first_result['activity_name']
-        self.assertIsInstance(activity_name, unicode)
-
-        app_access_name = first_result['app_access_name']
-        self.assertIsInstance(app_access_name, unicode)
-
-        activity_description = first_result['activity_description']
-        self.assertIsInstance(activity_description, unicode)
-
-        activity_id = first_result['activity_id']
-        self.assertIsInstance(activity_id, int)
-
-        app_access_id = first_result['app_access_id']
-        self.assertIsInstance(app_access_id, int)
+        # ensure that activities are of the correct shape
+        activity = results[apps[0]][0]
+        expected_shape = {'id': int, 'name': unicode, 'description': unicode}
+        actual_shape = {key: type(value) for key, value in activity.items()}
+        self.assertEqual(expected_shape, actual_shape)
 
     def test_create_role_require_post(self):
         """

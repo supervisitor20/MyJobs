@@ -741,6 +741,11 @@ class Company(models.Model):
 
         return filter(bool, self.app_access.values_list('name', flat=True))
 
+    @property
+    def activities(self):
+        return Activity.objects.select_related('app_access').filter(
+            app_access__in=self.app_access.all())
+
 
 class FeaturedCompany(models.Model):
     """
