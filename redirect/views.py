@@ -174,7 +174,6 @@ def home(request, guid, vsid=None, debug=None):
             # with another (Z).
             'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
-        response['X-JSON-Header'] = json.dumps(analytics)
 
         response = helpers.set_aguid_cookie(response,
                                             request.get_host(),
@@ -182,11 +181,12 @@ def home(request, guid, vsid=None, debug=None):
 
     if debug and not user_agent_vs:
         data = {'debug_content': debug_content}
-        return render_to_response('redirect/debug.html',
-                                  data,
-                                  context_instance=RequestContext(request))
-    else:
-        return response
+        response = render_to_response('redirect/debug.html',
+                                      data,
+                                      context_instance=RequestContext(request))
+
+    response['X-JSON-Header'] = json.dumps(analytics)
+    return response
 
 
 def myjobs_redirect(request):
