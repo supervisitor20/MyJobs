@@ -411,8 +411,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         """
         Company = get_model('seo', 'Company')
-        user_companies = Company.objects.filter(role__user=self)
-        user_companies.filter(password_expiration=True)
+        user_companies = (
+            Company.objects.filter(role__user=self)
+            .filter(password_expiration=True))
         return user_companies.count() > 0
 
     def add_password_to_history(self, password_hash, changed_on=None):

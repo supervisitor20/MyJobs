@@ -214,6 +214,12 @@ class TestPasswordExpiration(TestCase):
         self.assertEqual(None, self.user.password_last_modified)
         self.assertEqual(0, self.user.userpasswordhistory_set.count())
 
+    def test_use_loose_companies_only(self):
+        """Making the strict company loose should disable expiration."""
+        self.strict.password_expiration = False
+        self.strict.save()
+        self.assertEqual(False, self.user.has_password_expiration())
+
     def test_use_stricter_company(self):
         """Users with any strict company should have password expiration"""
         self.assertEqual(True, self.user.has_password_expiration())
@@ -281,7 +287,6 @@ class TestPasswordExpiration(TestCase):
         for i in range(1, limit + 1):
             entry = 'entry-%d' % i
             self.assertTrue(self.user.is_password_in_history(entry), entry)
-
 
 class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""
