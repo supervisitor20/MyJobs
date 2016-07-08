@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import Http404
@@ -209,6 +210,7 @@ class TestPasswordExpiration(TestCase):
         self.user.password = 'somepass2'
         self.user.save()
         self.assertEqual(None, self.user.password_last_modified)
+        self.assertEqual(0, self.user.userpasswordhistory_set.count())
 
     def test_use_stricter_company(self):
         """Users with any strict company should have password expiration"""
@@ -227,8 +229,9 @@ class TestPasswordExpiration(TestCase):
 
     def test_login_out_of_expire_window(self):
         """is_password_expired is True when past the expiration window."""
+        days = settings.PASSWORD_EXPIRATION_DAYS
         self.user.password_last_modified = (
-            datetime.datetime.now() - datetime.timedelta(days=30000))
+            datetime.datetime.now() - datetime.timedelta(days))
         self.user.save()
         self.assertEqual(True, self.user.is_password_expired())
 
@@ -242,6 +245,27 @@ class TestPasswordExpiration(TestCase):
         self.user.save()
         self.assertGreater(
             self.user.password_last_modified, before_password_set)
+        self.assertEqual(1, self.user.userpasswordhistory_set.count())
+
+    def test_history_limit(self):
+        """
+        Adding to the password history should exceed the history limit.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit + 2):
+            date = (
+                datetime.datetime(2016, 1, 1) +
+                datetime.timedelta(days=i))
+            self.user.add_password_to_history('entry-%d' % i, date)
+            self.assertLess(0, self.user.userpasswordhistory_set.count())
+            self.assertLessEqual(
+                self.user.userpasswordhistory_set.count(),
+                limit)
+        hashes = set(
+            h.password_hash
+            for h in self.user.userpasswordhistory_set.all())
+        self.assertNotIn('entry-0', hashes)
+        self.assertEquals(limit, len(hashes))
 
 
 class TestActivities(MyJobsBase):

@@ -380,9 +380,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.password_change = False
 
             # If this user has password expiration, update their last modified
-            # password timestamp
+            # password timestamp and password history.
             if self.has_password_expiration():
                 self.password_last_modified = datetime.datetime.now()
+                self.add_password_to_history(self.password)
 
         if update_fields is not None and 'is_active' in update_fields:
             if self.is_active:
@@ -412,6 +413,23 @@ class User(AbstractBaseUser, PermissionsMixin):
         user_companies = Company.objects.filter(role__user=self)
         user_companies.filter(password_expiration=True)
         return user_companies.count() > 0
+
+    def add_password_to_history(self, password_hash, changed_on=None):
+        """
+        Add this new password hash to the history of known passwords.
+
+        Remove any known passwords past the history limit.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        if changed_on is None:
+            changed_on = datetime.datetime.now()
+        UserPasswordHistory.objects.create(
+            user=self,
+            changed_on=changed_on,
+            password_hash=password_hash)
+        history = self.userpasswordhistory_set.order_by('-changed_on')
+        keep_ids = [i.pk for i in history[:limit]]
+        self.userpasswordhistory_set.exclude(pk__in=keep_ids).delete()
 
     def is_password_expired(self):
         """
@@ -824,6 +842,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         self.groups.add(group)
 
+
+class UserPasswordHistory(models.Model):
+    """
+    Represents a previous password used by this user.
+    """
+    user = models.ForeignKey('User')
+    changed_on = models.DateTimeField("Password change on")
+    # Field type copied from AbstractBaseUser
+    password_hash = models.CharField('Password hash', max_length=128)
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
