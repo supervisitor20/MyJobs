@@ -288,6 +288,19 @@ class TestPasswordExpiration(TestCase):
             entry = 'entry-%d' % i
             self.assertTrue(self.user.is_password_in_history(entry), entry)
 
+    def test_lockout_counter(self):
+        """
+        Keep track of failed login attempts.
+        """
+        limit = settings.PASSWORD_ATTEMPT_LOCKOUT
+        for i in range(0, limit):
+            self.assertFalse(self.user.is_locked_out(), 'iteration %d' % i)
+            self.user.note_failed_login()
+        self.assertTrue(self.user.is_locked_out())
+        self.user.reset_lockout()
+        self.assertFalse(self.user.is_locked_out())
+
+
 class TestActivities(MyJobsBase):
     """Tests the relationships between activities, roles, and app access."""
 

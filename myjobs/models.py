@@ -323,6 +323,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_(
             'When was the password last changed? Only used if the user is ' +
             'associated with a company which enforces password expiration.'))
+    failed_login_count = models.IntegerField(
+        _('Failed Login Count'),
+        default=0)
 
     user_guid = models.CharField(max_length=100, db_index=True, unique=True)
 
@@ -461,6 +464,27 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
         else:
             return True
+
+    def is_locked_out(self):
+        """
+        Is the user's account locked such that they require a password reset?
+        """
+        limit = settings.PASSWORD_ATTEMPT_LOCKOUT
+        return self.failed_login_count >= limit
+
+    def note_failed_login(self):
+        """
+        The user failed to login: good username, bad password.
+        """
+        self.failed_login_count += 1
+        self.save()
+
+    def reset_lockout(self):
+        """
+        Reset the lockout counter.
+        """
+        self.failed_login_count = 0
+        self.save()
 
     def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
@@ -852,6 +876,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     def make_purchased_microsite_admin(self):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         self.groups.add(group)
+
+
+def reset_lockout(sender, user, request, **kwargs):
+    """
+    If the user logs in successfully, clear the lockout count.
+    """
+    user.reset_lockout()
+
+user_logged_in.connect(reset_lockout)
 
 
 class UserPasswordHistory(models.Model):
