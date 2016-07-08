@@ -40,7 +40,7 @@
               {% spaceless %}
               <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
                   {% if the_job.state %}
-                    {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state }}</span>,
+                    {% if the_job.city %}<span itemprop="addressLocality">{{ the_job.city }}</span>, {% endif %}<span itemprop="addressRegion">{{ the_job.state }}</span>
                   {% else %}
                     {% if the_job.city %}
                         <span itemprop="addressLocality">{{ the_job.city }}</span>,
