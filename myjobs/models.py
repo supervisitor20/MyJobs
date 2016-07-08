@@ -383,7 +383,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             # If this user has password expiration, update their last modified
             # password timestamp and password history.
             if self.has_password_expiration():
-                self.password_last_modified = datetime.datetime.now()
+                self.password_last_modified = timezone.now()
                 self.add_password_to_history(self.password)
 
         if update_fields is not None and 'is_active' in update_fields:
@@ -423,7 +423,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         limit = settings.PASSWORD_HISTORY_ENTRIES
         if changed_on is None:
-            changed_on = datetime.datetime.now()
+            changed_on = timezone.now()
         UserPasswordHistory.objects.create(
             user=self,
             changed_on=changed_on,
@@ -453,7 +453,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return True
 
         expiration_cutoff = (
-            datetime.datetime.now() -
+            timezone.now() -
             datetime.timedelta(days=settings.PASSWORD_EXPIRATION_DAYS))
 
         if (self.password_last_modified > expiration_cutoff):

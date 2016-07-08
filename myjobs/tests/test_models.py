@@ -1,4 +1,5 @@
 import datetime
+import pytz
 import urllib
 from django.test import TestCase
 from django.contrib.auth.models import Group
@@ -10,6 +11,7 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.http import Http404
 from django.utils.http import urlquote
+from django.utils import timezone
 
 import pytz
 
@@ -223,7 +225,7 @@ class TestPasswordExpiration(TestCase):
     def test_login_within_expire_window(self):
         """is_password_expired is False when in the expiration window."""
         self.user.password_last_modified = (
-            datetime.datetime.now() - datetime.timedelta(days=1))
+            timezone.now() - datetime.timedelta(days=1))
         self.user.save()
         self.assertEqual(False, self.user.is_password_expired())
 
@@ -231,7 +233,7 @@ class TestPasswordExpiration(TestCase):
         """is_password_expired is True when past the expiration window."""
         days = settings.PASSWORD_EXPIRATION_DAYS
         self.user.password_last_modified = (
-            datetime.datetime.now() - datetime.timedelta(days))
+            timezone.now() - datetime.timedelta(days))
         self.user.save()
         self.assertEqual(True, self.user.is_password_expired())
 
@@ -240,7 +242,7 @@ class TestPasswordExpiration(TestCase):
         Changing password for a user in a company does sets pasword last
         modified time.
         """
-        before_password_set = datetime.datetime.now()
+        before_password_set = timezone.now()
         self.user.set_password('somepass2')
         self.user.save()
         self.assertGreater(
@@ -254,7 +256,7 @@ class TestPasswordExpiration(TestCase):
         limit = settings.PASSWORD_HISTORY_ENTRIES
         for i in range(0, limit + 2):
             date = (
-                datetime.datetime(2016, 1, 1) +
+                datetime.datetime(2016, 1, 1, tzinfo=pytz.UTC) +
                 datetime.timedelta(days=i))
             self.user.add_password_to_history('entry-%d' % i, date)
             self.assertLess(0, self.user.userpasswordhistory_set.count())
