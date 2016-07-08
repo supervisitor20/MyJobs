@@ -394,7 +394,7 @@
       "version": "2.2.0",
       "dependencies": {
         "object-assign": {
-          "version": "4.0.1"
+          "version": "4.1.0"
         }
       }
     },
@@ -415,6 +415,9 @@
     },
     "detective": {
       "version": "4.3.1"
+    },
+    "diff": {
+      "version": "2.2.3"
     },
     "doctrine": {
       "version": "0.7.2",
@@ -657,7 +660,7 @@
       "version": "1.2.4",
       "dependencies": {
         "object-assign": {
-          "version": "4.0.1"
+          "version": "4.1.0"
         }
       }
     },

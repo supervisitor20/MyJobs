@@ -3278,6 +3278,7 @@ em.pendingText {
     font-size: .8em;
 }
 
+.select-element-menu-container .report-loader,
 .select-element-chosen-container .counter .report-loader,
 .tag-select-placeholder .counter .report-loader {
   display: inline-block;

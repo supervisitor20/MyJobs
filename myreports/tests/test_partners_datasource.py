@@ -5,6 +5,10 @@ from unittest import TestCase
 from myreports.datasources.partners import (
      PartnersDataSource, PartnersFilter)
 
+from myreports.datasources.util import (
+    DateRangeFilter, CompositeAndFilter, MatchFilter,
+    OrGroupFilter, AndGroupFilter, UnlinkedFilter)
+
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
 from mydashboard.tests.factories import CompanyFactory
@@ -174,7 +178,8 @@ class TestPartnersDataSource(MyJobsBase):
                             date_time=datetime(year, month, 1)))
 
         ds = PartnersDataSource()
-        partners_filter = PartnersFilter(tags=[['west']])
+        partners_filter = PartnersFilter(tags=AndGroupFilter([
+            OrGroupFilter([MatchFilter('west')])]))
         recs = ds.run_count_comm_rec_per_month(
             self.company, partners_filter, ['name', 'year', '-month'])
         data = [
@@ -193,7 +198,8 @@ class TestPartnersDataSource(MyJobsBase):
                         date_time=datetime(2015, month, 1)))
 
         ds = PartnersDataSource()
-        partners_filter = PartnersFilter(tags=[['zzz']])
+        partners_filter = PartnersFilter(tags=AndGroupFilter([
+            OrGroupFilter([MatchFilter('zzz')])]))
         recs = ds.run_count_comm_rec_per_month(
             self.company, partners_filter, ['name', 'year', '-month'])
         self.assertEqual(0, len(recs))
@@ -201,7 +207,8 @@ class TestPartnersDataSource(MyJobsBase):
     def test_run_count_comm_rec_per_month_empty_partner(self):
         """One partner, no communication records."""
         ds = PartnersDataSource()
-        partners_filter = PartnersFilter(tags=[['east']])
+        partners_filter = PartnersFilter(tags=AndGroupFilter([
+            OrGroupFilter([MatchFilter('east')])]))
         recs = ds.run_count_comm_rec_per_month(
             self.company, partners_filter, ['name', 'year', '-month'])
         data = [
@@ -220,7 +227,8 @@ class TestPartnersDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(
-                date=[datetime(2015, 9, 1), datetime(2015, 9, 30)]),
+                date=DateRangeFilter(
+                    [datetime(2015, 9, 1), datetime(2015, 9, 30)])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
@@ -232,7 +240,7 @@ class TestPartnersDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(
-                date=[None, datetime(2015, 9, 30)]),
+                date=DateRangeFilter([None, datetime(2015, 9, 30)])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
@@ -244,7 +252,7 @@ class TestPartnersDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(
-                date=[datetime(2015, 10, 1), None]),
+                date=DateRangeFilter([datetime(2015, 10, 1), None])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_b.name}
@@ -256,9 +264,9 @@ class TestPartnersDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(
-                locations={
-                    'state': 'CA'
-                }),
+                locations=CompositeAndFilter({
+                    'state': MatchFilter('CA'),
+                })),
             [])
         names = [r['name'] for r in recs]
         expected = [self.partner_b.name]
@@ -270,9 +278,9 @@ class TestPartnersDataSource(MyJobsBase):
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(
-                locations={
-                    'city': 'Los Angeles'
-                }),
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('Los Angeles'),
+                })),
             [])
         names = [r['name'] for r in recs]
         expected = [self.partner_b.name]
@@ -283,7 +291,8 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(tags=[['EaSt']]),
+            PartnersFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
@@ -294,7 +303,8 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(tags=[['EaSt', 'wEsT']]),
+            PartnersFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt'), MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name, self.partner_b.name}
@@ -305,7 +315,9 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(tags=[['EaSt'], ['wEsT']]),
+            PartnersFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = set()
@@ -315,7 +327,9 @@ class TestPartnersDataSource(MyJobsBase):
         self.partner_a.tags.add(self.west_tag)
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(tags=[['EaSt'], ['wEsT']]),
+            PartnersFilter(tags=AndGroupFilter([
+                OrGroupFilter([MatchFilter('EaSt')]),
+                OrGroupFilter([MatchFilter('wEsT')])])),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
@@ -326,7 +340,7 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(data_source="zap"),
+            PartnersFilter(data_source=MatchFilter("zap")),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_a.name}
@@ -337,22 +351,10 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
-            PartnersFilter(uri="http://www.asdf.com/"),
+            PartnersFilter(uri=MatchFilter("http://www.asdf.com/")),
             [])
         names = {r['name'] for r in recs}
         expected = {self.partner_b.name}
-        self.assertEqual(expected, names)
-
-    def test_filter_by_empty_things(self):
-        """Empty filters should not filter, just like missing filters."""
-        ds = PartnersDataSource()
-        recs = ds.run_unaggregated(
-            self.company,
-            PartnersFilter(
-                locations={'city': '', 'state': ''}),
-            [])
-        names = {r['name'] for r in recs}
-        expected = {self.partner_a.name, self.partner_b.name}
         self.assertEqual(expected, names)
 
     def test_help_city(self):
@@ -360,7 +362,8 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.help_city(
             self.company,
-            PartnersFilter(locations={'city': "zz"}),
+            PartnersFilter(locations=CompositeAndFilter({
+                'city': MatchFilter("zz")})),
             "angel")
         actual = {r['value'] for r in recs}
         self.assertEqual({'Los Angeles'}, actual)
@@ -370,7 +373,8 @@ class TestPartnersDataSource(MyJobsBase):
         ds = PartnersDataSource()
         recs = ds.help_state(
             self.company,
-            PartnersFilter(locations={'state': "zz"}),
+            PartnersFilter(locations=CompositeAndFilter({
+                'state': MatchFilter("zz")})),
             "i")
         actual = {r['value'] for r in recs}
         self.assertEqual({'IL', 'IN'}, actual)
@@ -419,39 +423,29 @@ class TestPartnersDataSource(MyJobsBase):
         expected = [self.partner_b.name, self.partner_a.name]
         self.assertEqual(expected, names)
 
-    def test_adorn_filter(self):
-        filter_spec = PartnersFilter(
-            locations={'city': 'Chicago', 'state': 'IL'},
-            tags=[['east'], ['west']],
-            data_source='zap',
-            uri='http://www.example.com/')
+    def test_adorn_filter_items(self):
+        found_filter_items = {
+            'tags': ['east', 'west'],
+            'uri': 'http://www.example.com/',
+        }
         expected = {
-            u'locations': {
-                u'city': u'Chicago',
-                u'state': u'IL',
+            u'tags': {
+                'east': {
+                    'value': u'east',
+                    'display': u'east',
+                    'hexColor': u'aaaaaa',
+                },
+                'west': {
+                    'value': u'west',
+                    'display': u'west',
+                    'hexColor': u'bbbbbb',
+                },
             },
-            u'tags': [
-                [
-                    {
-                        'value': u'east',
-                        'display': u'east',
-                        'hexColor': u'aaaaaa',
-                    }
-                ],
-                [
-                    {
-                        'value': u'west',
-                        'display': u'west',
-                        'hexColor': u'bbbbbb',
-                    }
-                ],
-            ],
-            u'data_source': u'zap',
-            u'uri': u'http://www.example.com/',
         }
 
         ds = PartnersDataSource()
-        adorned_filter = ds.adorn_filter(self.company, filter_spec)
+        adorned_filter = ds.adorn_filter_items(
+            self.company, found_filter_items)
         self.assertEqual(expected, adorned_filter)
 
     def test_default_filter(self):
@@ -460,12 +454,11 @@ class TestPartnersDataSource(MyJobsBase):
         default_filter = ds.get_default_filter(None, self.company)
         self.assertEquals(
             datetime.now().year,
-            default_filter['date'][1].year)
+            default_filter.date.dates[1].year)
         # Take out value dated today. Too hard to run through assertEquals.
-        default_filter['date'][1] = None
-        expected = {
-            'date': [datetime(2014, 1, 1), None],
-        }
+        default_filter.date.dates[1] = None
+        expected = PartnersFilter(
+            date=DateRangeFilter([datetime(2014, 1, 1), None]))
         self.assertEquals(expected, default_filter)
 
 
@@ -479,13 +472,20 @@ class TestPartnersFilterCloning(TestCase):
     def test_clone_without_full(self):
         """Cloning should remove certain fields."""
         filter = PartnersFilter(
-                tags=['C'],
-                locations={'city': 'A', 'state': 'B'})
+                tags=AndGroupFilter([
+                    OrGroupFilter([MatchFilter('C')])]),
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A'),
+                    'state': MatchFilter('B')}))
         expected_with_city = PartnersFilter(
-                tags=['C'],
-                locations={'city': 'A'})
+                tags=AndGroupFilter([
+                    OrGroupFilter([MatchFilter('C')])]),
+                locations=CompositeAndFilter({
+                    'city': MatchFilter('A')}))
         expected_with_state = PartnersFilter(
-                tags=['C'],
-                locations={'state': 'B'})
+                tags=AndGroupFilter([
+                    OrGroupFilter([MatchFilter('C')])]),
+                locations=CompositeAndFilter({
+                    'state': MatchFilter('B')}))
         self.assertEqual(expected_with_state, filter.clone_without_city())
         self.assertEqual(expected_with_city, filter.clone_without_state())
