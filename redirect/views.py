@@ -28,6 +28,7 @@ from redirect import helpers
 
 
 def home(request, guid, vsid=None, debug=None):
+    now = datetime.now(tz=timezone.utc)
     if vsid is None:
         vsid = '0'
     guid = '{%s}' % uuid.UUID(guid)
@@ -36,6 +37,7 @@ def home(request, guid, vsid=None, debug=None):
     enable_custom_queries = request.REQUEST.get('z') == '1'
     expired = False
     user_agent_vs = None
+    redirect_url = None
 
     if debug:
         # On localhost ip will always be empty unless you've got a setup
@@ -143,41 +145,42 @@ def home(request, guid, vsid=None, debug=None):
                vsid,
                aguid,
                myguid)
-        now = datetime.now(tz=timezone.utc)
         if expired:
             d_seconds = (now - guid_redirect.expired_date).total_seconds()
             d_hours = int(d_seconds / 60 / 60)
             qs += '%s&jcnlx.xhr=%s' % (err, d_hours)
 
-            hn = request.get_host()
-            pr = request.is_secure() and 'https:' or 'http:'
-            pn = request.path
-            se = request.META.get('QUERY_STRING', '')
-            if se:
-                se = '?' + se
-        else:
-            parsed = urlparse(redirect_url)
-            pn = parsed.path
-            pr = parsed.scheme + ':'
-            hn = parsed.netloc
-            analytics.update({
-                'pn': parsed.path, 'pr': parsed.scheme + ':',
-                'hn': parsed.netloc,
-                })
-            se = parsed.query
-            if se:
-                se = '?' + se
         response['X-REDIRECT'] = qs
-        analytics.update({
-            # Python doesn't have a method of easily creating a timestamp with
-            # Zulu at the end. Replace one ISO-8601 supported format (+00:00)
-            # with another (Z).
-            'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
-            'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
 
         response = helpers.set_aguid_cookie(response,
                                             request.get_host(),
                                             aguid)
+
+    if redirect_url and not expired:
+        parsed = urlparse(redirect_url)
+        pn = parsed.path
+        pr = parsed.scheme + ':'
+        hn = parsed.netloc
+        analytics.update({
+            'pn': parsed.path, 'pr': parsed.scheme + ':',
+            'hn': parsed.netloc,
+            })
+        se = parsed.query
+        if se:
+            se = '?' + se
+    else:
+        hn = request.get_host()
+        pr = request.is_secure() and 'https:' or 'http:'
+        pn = request.path
+        se = request.META.get('QUERY_STRING', '')
+        if se:
+            se = '?' + se
+    analytics.update({
+        # Python doesn't have a method of easily creating a timestamp with
+        # Zulu at the end. Replace one ISO-8601 supported format (+00:00)
+        # with another (Z).
+        'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
+        'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
 
     if debug and not user_agent_vs:
         data = {'debug_content': debug_content}
@@ -185,7 +188,6 @@ def home(request, guid, vsid=None, debug=None):
                                       data,
                                       context_instance=RequestContext(request))
 
-    response['X-JSON-Header'] = json.dumps(analytics)
     return response
 
 
