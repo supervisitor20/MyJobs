@@ -96,3 +96,20 @@ class RegistrationFormTests(MyJobsBase):
         form.save()
         self.assertEqual(self.alice.failed_login_count, 0)
         self.assertTrue(self.alice.check_password('82Ywe4$cc'))
+
+    def test_reset_history(self):
+        self.company.password_expiration = True
+        self.company.save()
+        self.user.set_password('oLd0000%%')
+        self.user.save()
+        self.user.userpasswordhistory_set = []
+        self.user = User.objects.get(pk=self.user.pk)
+        form = CustomSetPasswordForm(
+            self.user,
+            {
+                'new_password1': 'oLd1111%%',
+                'new_password2': 'oLd1111%%',
+            })
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertEqual(1, self.user.userpasswordhistory_set.count())

@@ -77,9 +77,8 @@ class CustomSetPasswordForm(SetPasswordForm):
         """
         Reset the user's failed password count.
         """
-        super(CustomSetPasswordForm, self).save()
         self.user.failed_login_count = 0
-        self.user.save()
+        super(CustomSetPasswordForm, self).save()
 
 
 class CustomAuthForm(AuthenticationForm):
