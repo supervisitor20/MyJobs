@@ -441,9 +441,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Check to see if this cleartext password matches any historical hashes.
         """
-        return any(
-            check_password(cleartext_password, entry.password_hash)
-            for entry in self.userpasswordhistory_set.all())
+        if self.has_password_expiration():
+            return any(
+                check_password(cleartext_password, entry.password_hash)
+                for entry in self.userpasswordhistory_set.all())
+        else:
+            return False
 
     def is_password_expired(self):
         """

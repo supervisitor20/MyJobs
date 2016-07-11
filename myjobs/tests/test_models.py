@@ -288,6 +288,20 @@ class TestPasswordExpiration(TestCase):
             entry = 'entry-%d' % i
             self.assertTrue(self.user.is_password_in_history(entry), entry)
 
+    def test_is_password_in_history_disabled(self):
+        """
+        Disable history checking if password expiration is off.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit):
+            self.user.set_password('entry-%d' % i)
+            self.user.save()
+        self.strict.password_expiration = False
+        self.strict.save()
+        for i in range(0, limit):
+            entry = 'entry-%d' % i
+            self.assertFalse(self.user.is_password_in_history(entry), entry)
+
     def test_lockout_counter(self):
         """
         Keep track of failed login attempts.
