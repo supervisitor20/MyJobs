@@ -1,8 +1,14 @@
 import React, {Component, PropTypes} from 'react';
-import {Col, Grid, Row} from 'react-bootstrap';
+import {Col, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
+import InboxManagementPage from './InboxManagementPage';
+import OutreachRecordPage from './OutreachRecordPage';
+import {markPageLoadingAction} from '../../common/actions/loading-actions';
+import {doGetInboxes} from '../actions/inbox-actions';
+import {doGetRecords} from '../actions/record-actions';
+import {setPageAction} from '../actions/navigation-actions';
 
 
 /* NonUserOutreachApp
@@ -11,10 +17,47 @@ import {Menu} from './Menu';
  * outreach record management page.
  */
 class NonUserOutreachApp extends Component {
+  componentDidMount() {
+    const {history} = this.props;
+    this.unsubscribeToHistory = history.listen(
+      (...args) => this.handleNewLocation(...args));
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeToHistory();
+  }
+
+  async handleNewLocation(_, loc) {
+    const {dispatch} = this.props;
+
+    const lastComponent = loc.components[loc.components.length - 1];
+    if (lastComponent === InboxManagementPage) {
+      // update the application's state with the current page and refresh the
+      // list of inboxes
+      dispatch(setPageAction('inboxes'));
+      dispatch(markPageLoadingAction(true));
+      await dispatch(doGetInboxes());
+      dispatch(markPageLoadingAction(false));
+      return;
+    } else if (lastComponent === OutreachRecordPage) {
+      // update the application's state with the current page and refresh the
+      // list of outreach records
+      dispatch(setPageAction('records'));
+      dispatch(markPageLoadingAction(true));
+      await dispatch(doGetRecords());
+      dispatch(markPageLoadingAction(false));
+      return;
+    }
+
+
+    // Allow other pages to mount.
+    dispatch(markPageLoadingAction(false));
+  }
+
   render() {
-    const {pageLoading, tips} = this.props;
+    const {loading, tips} = this.props;
     return (
-      <Grid>
+      <div>
         <Row>
           <Col sm={12}>
             <div className="breadcrumbs">
@@ -27,20 +70,22 @@ class NonUserOutreachApp extends Component {
 
         <Row>
           <Col xs={12} md={8}>
-            {pageLoading ? <Loading /> : this.props.children}
+            {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
             <Menu tips={tips} />
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
 }
 
 NonUserOutreachApp.propTypes = {
+  history: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
   // whether or not to show a page loading indicator in the content area
-  pageLoading: PropTypes.bool.isRequired,
+  loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
   // which page to show in the content area
@@ -48,7 +93,6 @@ NonUserOutreachApp.propTypes = {
 };
 
 export default connect(state => ({
-  // TODO: Add pageLoadingto navigation state and emit relevant actions
-  pageLoading: false,
+  loading: state.loading.mainPage,
   tips: state.navigation.tips,
 }))(NonUserOutreachApp);

@@ -8,7 +8,7 @@ export class Menu extends React.Component {
   render() {
     const {tips} = this.props;
     const pageTips = tips.length ? [
-      <h2>Tips</h2>,
+      <h2 key="title">Tips</h2>,
       tips.map((tip, i) => <p key={i}>{tip}</p>),
     ] : [];
 

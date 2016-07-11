@@ -59,8 +59,8 @@ class User extends React.Component {
     const {action} = this.props.location.query;
 
     if (action === 'Edit') {
-      const results = await api.get('/manage-users/api/users/' + this.props.params.userID + '/');
-      const userObject = results[this.props.params.userID];
+      const results = await api.get('/manage-users/api/users/' + this.props.params.userId + '/');
+      const userObject = results[this.props.params.userId];
 
       const userEmail = userObject.email;
 
@@ -113,8 +113,8 @@ class User extends React.Component {
     // Grab form fields and validate
     // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
     const {api, rolesAPIResults} = this.props;
-    const userID = this.props.params.userID;
-    const currentUserID = this.props.currentUserID;
+    const userId = this.props.params.userId;
+    const currentUserId = this.props.currentUserId;
 
     let assignedRoles = this.refs.roles.state.assignedRoles;
 
@@ -145,7 +145,7 @@ class User extends React.Component {
     // manage users.
 
     // Is user editing their own account?
-    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
+    if (parseInt(userId, 10) === parseInt(currentUserId, 10)) {
       // What roles are currently assigned?
       const assignedRolesAsStrings = _.map(assignedRoles, role => role.name);
 
@@ -190,7 +190,7 @@ class User extends React.Component {
 
     let url = '';
     if ( action === 'Edit' ) {
-      url = '/manage-users/api/users/edit/' + userID + '/';
+      url = '/manage-users/api/users/edit/' + userId + '/';
     } else {
       url = '/manage-users/api/users/create/';
     }
@@ -225,11 +225,11 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api, currentUserID, dispatch} = this.props;
-    const userID = this.props.params.userID;
+    const {history, api, currentUserId, dispatch} = this.props;
+    const userId = this.props.params.userId;
 
     // Is user trying to delete their own account?
-    if (parseInt(userID, 10) === parseInt(currentUserID, 10)) {
+    if (parseInt(userId, 10) === parseInt(currentUserId, 10)) {
       this.setState({
         roleMultiselectHelp: 'You cannot delete your own user.',
       });
@@ -243,7 +243,7 @@ class User extends React.Component {
 
     // Submit to server
     try {
-      await api.delete('/manage-users/api/users/delete/' + userID + '/');
+      await api.delete('/manage-users/api/users/delete/' + userId + '/');
       await this.props.callUsersAPI();
       history.pushState(null, '/users');
     } catch (e) {
@@ -324,7 +324,7 @@ User.propTypes = {
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
   rolesAPIResults: React.PropTypes.array,
-  currentUserID: React.PropTypes.number,
+  currentUserId: React.PropTypes.number,
 };
 
 export default connect()(User);

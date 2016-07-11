@@ -39,7 +39,9 @@
                 {% if special_case %}
                     <meta itemprop="addressCountry" content="{{ job.country }}" />
                 {% else %}
-                    <span itemprop="addressCountry">{{ job.country }}</span>
+                    {% if job.country %}
+                        <span itemprop="addressCountry">{{ job.country }}</span>
+                    {% endif %}
                 {% endif %}
             </span>
             {% endspaceless %}

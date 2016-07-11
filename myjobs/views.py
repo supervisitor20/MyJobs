@@ -1,4 +1,5 @@
 import base64
+from collections import defaultdict
 import datetime
 import json
 import logging
@@ -588,24 +589,15 @@ def api_get_activities(request):
 
     company = get_company_or_404(request)
 
-    activities = (Activity
-                 .objects
-                 .select_related('app_access')
-                 .filter(app_access__in = company.app_access.all()))
+    # group activities by their app access
+    activities = defaultdict(list)
+    for activity in company.activities.order_by('app_access__pk'):
+        activities[activity.app_access.name].append({
+            'id': activity.pk,
+            'name': unicode(activity),
+            'description': activity.description})
 
-    json_res = []
-    for activity in activities:
-        json_obj = dict(
-            activity_id = activity.id,
-            activity_name = unicode(activity),
-            activity_description = activity.description,
-            app_access_id = activity.app_access.id,
-            app_access_name = activity.app_access.name,
-        )
-        json_res.append(json_obj)
-
-    return HttpResponse(json.dumps(json_res),
-                        mimetype='application/json')
+    return HttpResponse(json.dumps(activities), mimetype='application/json')
 
 
 @requires("read role")
@@ -1011,9 +1003,6 @@ def api_get_users(request):
 
     company = get_company_or_404(request)
 
-    # Pass back the id of the user making this request
-    ctx['id'] = request.user.id
-
     # Retrieve users already assigned to roles associated with this company
     users_available = []
     roles = Role.objects.filter(company=company)
@@ -1061,16 +1050,6 @@ def api_get_users(request):
 
     return HttpResponse(json.dumps(ctx),
                         content_type="application/json")
-
-
-def api_get_current_user(request):
-
-    ctx = {}
-    ctx['id'] = request.user.id
-
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
-
 
 @requires('read user')
 def api_get_specific_user(request, user_id=0):

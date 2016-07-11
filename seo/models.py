@@ -19,6 +19,7 @@ from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
 from django.dispatch import Signal, receiver
+from django.template import loader
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
@@ -740,6 +741,11 @@ class Company(models.Model):
 
         return filter(bool, self.app_access.values_list('name', flat=True))
 
+    @property
+    def activities(self):
+        return Activity.objects.select_related('app_access').filter(
+            app_access__in=self.app_access.all())
+
 
 class FeaturedCompany(models.Model):
     """
@@ -969,6 +975,11 @@ class Configuration(models.Model):
         (3, 'Top')
     )
 
+    TEMPLATE_VERSION_CHOICES = (
+        ('v1', 'Version 1'),
+        ('v2', 'Version 2'),
+    )
+
     def __init__(self, *args, **kwargs):
         super(Configuration, self).__init__(*args, **kwargs)
         self._original_browse_moc_show = self.browse_moc_show
@@ -1020,6 +1031,27 @@ class Configuration(models.Model):
     def show_sites(self):
         return ", ".join(self.seosite_set.all().values_list("domain",
                                                             flat=True))
+
+    def get_template(self, template_string):
+        """
+        Determine if the current configuration is set to use v2 templates,
+        and if so, check whether or not the template provided in template_string
+        exists in the v2 directory.
+
+        :param template_string: Original path of desired template
+        :return: Original path or v2 path if exists and enabled
+
+        """
+        if self.template_version in ('v1', None):
+            return template_string
+
+        try:
+            version_string = '%s/%s' % (self.template_version, template_string)
+            loader.get_template(version_string)
+            return version_string
+        except loader.TemplateDoesNotExist:
+            return template_string
+
 
     title = models.CharField(max_length=50, null=True)
     # version control
@@ -1173,6 +1205,9 @@ class Configuration(models.Model):
     use_secure_blocks = models.BooleanField(default=False,
                                             help_text='Use secure blocks for '
                                                       'displaying widgets.')
+
+    template_version = models.CharField(max_length=5, default='v1',
+                                        choices=TEMPLATE_VERSION_CHOICES)
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)

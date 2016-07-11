@@ -3,7 +3,7 @@ import _ from 'lodash-compat';
 import {Link} from 'react-router';
 import Button from 'react-bootstrap/lib/Button';
 
-import {buildCurrentActivitiesObject} from './buildCurrentActivitiesObject';
+import {buildCurrentActivitiesObject} from '../buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
 import ActivitiesAccordion from './ActivitiesAccordion';

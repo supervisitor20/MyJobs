@@ -701,6 +701,11 @@ describe('getFilterValuesOnly', () => {
     expect(getFilterValuesOnly(filter)).toEqual(filter);
   });
 
+  it('passes through empty arrays', () => {
+    const filter = {a: []};
+    expect(getFilterValuesOnly(filter)).toEqual(filter);
+  });
+
   it('returns or filters stripped down to their values', () => {
     const filter = {a: [{value: 1}]};
     expect(getFilterValuesOnly(filter)).toEqual({a: [1]});

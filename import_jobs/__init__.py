@@ -86,11 +86,11 @@ def filter_current_jobs(jobs, bu):
 
        Returns: a generator of jobs which pass validation for indexing."""
 
-    hr_xml_include_in_index = ".//*[@schemeName='dbextras.tempjobwrappingjobs.includeinindex']"
+    hr_xml_include_in_index = "./includeinindex"
     for job in jobs:
         # Written using continues to allow easily adding multiple conditions to
         # remove jobs.
-        if bu.ignore_includeinindex is False and job.find(hr_xml_include_in_index).text == '0':
+        if bu.ignore_includeinindex is False and job.find(hr_xml_include_in_index).text != 'true':
             logger.info("A job was filtered for %s" % bu)
             continue
         yield job
@@ -156,7 +156,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
         zf.close()
 
     # Process the files.
-    active_directory = os.path.join(directory, 'ActiveDirectory_%s' % guid)
+    active_directory = os.path.join(directory, '%s' % guid)
     files = sorted(os.listdir(active_directory))
     logger.info("Found %s jobs for guid %s", len(files), guid)
     for f in files:

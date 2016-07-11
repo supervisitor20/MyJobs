@@ -1702,7 +1702,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
 
-        if not filters['facet_slug']:
+        if not filters.get('facet_slug', None):
             custom_facet_counts = cf_count_tup
         else:
             facet_slugs = filters['facet_slug'].split('/')
@@ -1765,7 +1765,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
-
     data_dict = {
         'breadbox': breadbox,
         'build_num': settings.BUILD,
@@ -1781,7 +1780,10 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'max_filter_settings': settings.ROBOT_FILTER_LEVEL,
         'moc_id_term': moc_id_term if moc_id_term else '\*',
         'moc_term': moc_term,
-        'num_filters': len([k for (k, v) in filters.iteritems() if v]),
+        # see how many active filters there are and then add total number of
+        # facet slugs as there may be multiple filters in the facet slug entry
+        'num_filters': len([k for (k, v) in filters.iteritems()
+                            if v and k != 'facet_slug']) + len(facet_slugs),
         'total_jobs_count': get_total_jobs_count(),
         'results_heading': results_heading,
         'search_url': request.path,
@@ -1800,8 +1802,8 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'widgets': widgets,
         'analytics_info': get_analytics_info()
     }
-    return render_to_response('job_listing.html', data_dict,
-                              context_instance=RequestContext(request))
+    return render_to_response(site_config.get_template('job_listing.html'),
+                              data_dict, context_instance=RequestContext(request))
 
 
 def get_analytics_info():

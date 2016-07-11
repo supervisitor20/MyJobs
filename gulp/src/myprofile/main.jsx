@@ -36,7 +36,7 @@ import {runConfirmInPlace} from 'common/actions/confirm-actions';
 installPolyfills();
 
 const reducer = combineReducers({
-  confirm: confirmReducer,
+  confirmation: confirmReducer,
 });
 
 const thunkExtra = {};
@@ -225,6 +225,8 @@ class Module extends React.Component {
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
               autoFocus={profileUnit.widget.attrs.autofocus}
+              numberOfYears={50}
+              pastOnly
               />
           );
         case 'select':
