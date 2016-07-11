@@ -58,6 +58,18 @@ class RegistrationFormTests(MyJobsBase):
         form = CustomPasswordResetForm({'email':user.email})
         self.assertTrue(form.is_valid())
 
+    def test_reset_ignores_history(self):
+        """
+        Initiating a password reset should not add to password history.
+
+        """
+        self.company.password_expiration = True
+        self.company.save()
+        form = CustomPasswordResetForm({'email': self.user.email})
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertEqual(0, self.user.userpasswordhistory_set.count())
+
     def test_invalid_password_reset(self):
         self.assertEqual(len(mail.outbox), 0)
         form = CustomPasswordResetForm({'email': 'doesnt_exist@example.com'})
