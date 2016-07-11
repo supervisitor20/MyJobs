@@ -2,7 +2,8 @@ from django.core import mail
 
 from myjobs.models import User
 from myjobs.tests.factories import UserFactory
-from registration.forms import RegistrationForm, CustomPasswordResetForm
+from registration.forms import (
+    RegistrationForm, CustomPasswordResetForm, CustomSetPasswordForm)
 from myjobs.tests.setup import MyJobsBase
 
 
@@ -64,3 +65,22 @@ class RegistrationFormTests(MyJobsBase):
         form.save()
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_reset_lockout(self):
+        """
+        The reset form zeros a password lockout on success.
+        """
+        (self.alice, _) = User.objects.create_user(**{
+            'email': 'alice1@example.com', 'password1': '5UuYquA@'})
+        self.alice.failed_login_count = 99999
+        self.alice.save()
+
+        form = CustomSetPasswordForm(
+            self.alice,
+            {
+                'new_password1': '82Ywe4$cc',
+                'new_password2': '82Ywe4$cc',
+            })
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertEqual(self.alice.failed_login_count, 0)
+        self.assertTrue(self.alice.check_password('82Ywe4$cc'))
