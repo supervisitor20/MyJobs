@@ -157,18 +157,19 @@ def home(request, guid, vsid=None, debug=None):
                                             aguid)
 
     if redirect_url and not expired:
+        # If redirect_url has a value and expired does not, we're probably
+        # going to redirect somewhere useful.
         parsed = urlparse(redirect_url)
         pn = parsed.path
         pr = parsed.scheme + ':'
         hn = parsed.netloc
-        analytics.update({
-            'pn': parsed.path, 'pr': parsed.scheme + ':',
-            'hn': parsed.netloc,
-            })
         se = parsed.query
         if se:
             se = '?' + se
     else:
+        # If redirect_url is blank or expired has a value, we're staying on the
+        # my.jobs domain. We may show a "job expired" page, Open Graph info, or
+        # something else.
         hn = request.get_host()
         pr = request.is_secure() and 'https:' or 'http:'
         pn = request.path
