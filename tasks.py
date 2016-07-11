@@ -35,6 +35,7 @@ from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
 import import_jobs
 from import_jobs.models import ImportRecord
+from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from postajob.models import Job
 from registration.models import ActivationProfile
 from solr import helpers
@@ -927,7 +928,7 @@ def task_etl_to_solr(guid, buid, name):
 @task(name='tasks.jobsfs_to_mongo', ingore_result=True, send_error_emails=False)
 def task_jobsfs_to_mongo(guid, buid, name):
     try:
-        import_jobs.mongo.jobsfs_to_mongo(guid, buid, name)
+        jobsfs_to_mongo(guid, buid, name)
     except Exception as e:
         logging.error("Error loading mongo from jobsfs for guid: %s", guid)
         logging.exception(e)
@@ -937,7 +938,7 @@ def task_jobsfs_to_mongo(guid, buid, name):
 @task(name='tasks.seoxml_to_mongo', ingore_result=True, send_error_emails=False)
 def task_seoxml_to_mongo(buid, **kwargs):
     try:
-        import_jobs.mongo.seoxml_to_mongo(buid)
+        seoxml_to_mongo(buid)
     except Exception as e:
         logging.error("Error loading mongo from seoxml for buid: %s", buid)
         logging.exception(e)
