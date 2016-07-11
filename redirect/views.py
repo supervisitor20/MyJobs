@@ -178,10 +178,11 @@ def home(request, guid, vsid=None, debug=None):
             se = '?' + se
     analytics.update({
         # Python doesn't have a method of easily creating a timestamp with
-        # Zulu at the end. Replace one ISO-8601 supported format (+00:00)
-        # with another (Z).
-        'to': now.isoformat()[:-6] + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
+        # Zulu at the end. Remove the timezone from this datetime (which would
+        # result in appending "+00:00") and append "Z".
+        'to': now.replace(tzinfo=None).isoformat() + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
         'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
+    response['X-JSON-Header'] = json.dumps(analytics)
 
     if debug and not user_agent_vs:
         data = {'debug_content': debug_content}
