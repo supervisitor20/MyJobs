@@ -113,3 +113,49 @@ class RegistrationFormTests(MyJobsBase):
         self.assertTrue(form.is_valid())
         form.save()
         self.assertEqual(1, self.user.userpasswordhistory_set.count())
+
+    def test_reset_history_allow_reuse(self):
+        """
+        The reset form allow users without expiration to reuse passwords.
+        """
+        self.user = User.objects.get(pk=self.user.pk)
+
+        self.user.set_password('oLd1111%%')
+        self.user.save()
+        self.user.set_password('oLd2222%%')
+        self.user.save()
+
+        form = CustomSetPasswordForm(
+            self.user,
+            {
+                'new_password1': 'oLd1111%%',
+                'new_password2': 'oLd1111%%',
+            })
+        self.assertTrue(form.is_valid())
+
+    def test_reset_history_prevent_reuse(self):
+        """
+        The reset form prevents users from reusing old passwords
+        """
+        self.company.password_expiration = True
+        self.company.save()
+        self.user.set_password('oLd0000%%')
+        self.user.save()
+        self.user.userpasswordhistory_set = []
+        self.user = User.objects.get(pk=self.user.pk)
+
+        self.user.set_password('oLd1111%%')
+        self.user.save()
+        self.user.set_password('oLd2222%%')
+        self.user.save()
+
+        form = CustomSetPasswordForm(
+            self.user,
+            {
+                'new_password1': 'oLd1111%%',
+                'new_password2': 'oLd1111%%',
+            })
+        self.assertFalse(form.is_valid())
+        self.assertRegexpMatches(
+            form.errors['new_password1'][0],
+            r'different from the previous')
