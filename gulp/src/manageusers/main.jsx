@@ -4,7 +4,11 @@ import {getCsrf} from '../common/cookie';
 import React from 'react';
 import _ from 'lodash-compat';
 import {render} from 'react-dom';
+import createReduxStore from '../common/create-redux-store';
+import {combineReducers} from 'redux';
+import {Provider} from 'react-redux';
 import {Router, Route, IndexRoute, Link} from 'react-router';
+import confirmReducer from 'common/reducers/confirm-reducer';
 
 import Overview from './Overview';
 import Roles from './Roles';
@@ -18,11 +22,29 @@ import AssociatedRolesList from './AssociatedRolesList';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Status from './Status';
+import Confirm from 'common/ui/Confirm';
 import {MyJobsApi} from 'common/myjobs-api';
+
+import activitiesListReducer from './reducers/activities-list-reducer';
+import {
+  doRefreshActivities,
+} from './actions/compound-actions';
 
 installPolyfills();
 
+const reducer = combineReducers({
+  activities: activitiesListReducer,
+  confirm: confirmReducer,
+});
+
 const api = new MyJobsApi(getCsrf());
+
+const thunkExtra = {
+  api: api,
+};
+
+const store = createReduxStore(reducer, undefined, thunkExtra);
+store.dispatch(doRefreshActivities());
 
 export class App extends React.Component {
   constructor(props) {
@@ -33,70 +55,26 @@ export class App extends React.Component {
       usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
       callUsersAPI: this.callUsersAPI,
+      confirmShow: false,
     };
-    this.callActivitiesAPI = this.callActivitiesAPI.bind(this);
     this.callRolesAPI = this.callRolesAPI.bind(this);
     this.callUsersAPI = this.callUsersAPI.bind(this);
   }
   componentDidMount() {
-    this.callActivitiesAPI();
     this.callRolesAPI();
     this.callUsersAPI();
   }
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
-      this.callActivitiesAPI();
       this.callRolesAPI();
       this.callUsersAPI();
     }
-  }
-  async callActivitiesAPI() {
-    // Get activities once, and only once
-    const results = await api.get('/manage-users/api/activities/');
-    // Create an array of tables, each a list of activities of a
-    // particular app_access
-    const activitiesGroupedByAppAccess = _.groupBy(results, 'app_access_name');
-    // Build a table for each app present
-    const tablesOfActivitiesByApp = [];
-    // First assemble rows needed for each table
-    _.forOwn(activitiesGroupedByAppAccess, function buildListOfTables(activityGroup, key) {
-      // For each app, build list of rows from results
-      const activityRows = [];
-      // Loop through all activities...
-      _.forOwn(activityGroup, function buildListOfRows(activity) {
-        activityRows.push(
-          <tr key={activity.activity_id}>
-            <td>{activity.activity_name}</td>
-            <td>{activity.activity_description}</td>
-          </tr>
-        );
-      });
-      // Assemble this app's table
-      tablesOfActivitiesByApp.push(
-        <span key={key}>
-          <h3>{key}</h3>
-          <table className="table table-striped table-activities">
-            <thead>
-              <tr>
-                <th>Activity</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activityRows}
-            </tbody>
-          </table>
-        </span>
-      );
-    });
-    this.setState({
-      tablesOfActivitiesByApp: tablesOfActivitiesByApp,
-    });
   }
   async callRolesAPI() {
     // Get roles once, but reload if needed
     const results = await api.get('/manage-users/api/roles/');
     const rolesTableRows = [];
+
     _.forOwn(results, function buildListOfRows(role) {
       let editRoleLink;
       if (role.role_name !== 'Admin') {
@@ -129,18 +107,18 @@ export class App extends React.Component {
       user.roles = JSON.parse(user.roles);
       usersTableRows.push(
         <tr key={key}>
-          <td data-title="User Email">{user.email}</td>
-          <td data-title="Associated Roles">
-            <AssociatedRolesList roles={user.roles}/>
-          </td>
-          <td data-title="Status">
-            <Status status={user.status} lastInvitation={user.lastInvitation}/>
-          </td>
-          <td data-title="Edit">
-            <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
-          </td>
-        </tr>
-      );
+         <td data-title="User Email">{user.email}</td>
+         <td data-title="Associated Roles">
+           <AssociatedRolesList roles={user.roles}/>
+         </td>
+         <td data-title="Status">
+           <Status status={user.status} lastInvitation={user.lastInvitation}/>
+         </td>
+         <td data-title="Edit">
+           <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+         </td>
+       </tr>
+     );
     });
     this.setState({
       usersTableRows: usersTableRows,
@@ -149,6 +127,7 @@ export class App extends React.Component {
   render() {
     return (
       <div>
+        <Confirm/>
         <div className="row">
           <div className="col-sm-12">
             <div className="breadcrumbs">
@@ -175,7 +154,6 @@ export class App extends React.Component {
             <div className="card-wrapper">
               {this.props.children && React.cloneElement(
                 this.props.children, {
-                  tablesOfActivitiesByApp: this.state.tablesOfActivitiesByApp,
                   rolesTableRows: this.state.rolesTableRows,
                   usersTableRows: this.state.usersTableRows,
                   callRolesAPI: this.callRolesAPI,
@@ -197,18 +175,20 @@ App.propTypes = {
 };
 
 render((
-  <Router>
-    <Route path="/" component={App}>
-      <IndexRoute component={Overview} />
-      <Route path="activities" component={Activities} />
-      <Route path="roles" component={Roles} />
-      <Route path="/role/add" component={Role} />
-      <Route path="/role/:roleId" component={Role} />
-      <Route path="users" component={Users} />
-      <Route path="/user/add" component={User} />
-      <Route path="/user/:userId" component={User} />
-      <Route path="help-and-tutorials" component={HelpAndTutorials} />
-      <Route path="*" component={NoMatch}/>
-    </Route>
-  </Router>
+  <Provider store={store}>
+    <Router>
+      <Route path="/" component={App}>
+        <IndexRoute component={Overview} />
+        <Route path="activities" component={Activities} />
+        <Route path="roles" component={Roles} />
+        <Route path="/role/add" component={Role} />
+        <Route path="/role/:roleId" component={Role} />
+        <Route path="users" component={Users} />
+        <Route path="/user/add" component={User} />
+        <Route path="/user/:userId" component={User} />
+        <Route path="help-and-tutorials" component={HelpAndTutorials} />
+        <Route path="*" component={NoMatch}/>
+      </Route>
+    </Router>
+  </Provider>
 ), document.getElementById('content'));

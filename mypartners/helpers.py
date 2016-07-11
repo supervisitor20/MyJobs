@@ -264,16 +264,30 @@ def get_records_from_request(request):
 
 def send_contact_record_email_response(created_records, created_contacts,
                                        attachment_failures, unmatched_contacts,
-                                       error, to_email):
+                                       error, to_email, is_nuo=False,
+                                       company=None, buckets=None):
+
+    # Multiple outreach email addresses may have been provided. We should have
+    # already ensured that they all belong to one company. Pick one to use in
+    # our return email.
+    bucket = ''
+    if buckets:
+        bucket = buckets[0]
     ctx = {
         'created_records': created_records,
         'created_contacts': created_contacts,
         'error': error,
         'unmatched_contacts': unmatched_contacts,
         'attachment_failures': attachment_failures,
+        'company': company,
+        'to_email': to_email,
+        'bucket': bucket,
     }
 
-    message = render_to_string('mypartners/email/email_response.html',
+    template = 'mypartners/email/email_response.html'
+    if is_nuo:
+        template = 'mypartners/email/nuo_email_response.html'
+    message = render_to_string(template,
                                ctx)
     headers = {
         'X-SMTPAPI': '{"category": "Communication Record %s"}' % (

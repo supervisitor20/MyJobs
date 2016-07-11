@@ -12,6 +12,7 @@ import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 import {MyJobsApi} from '../common/myjobs-api';
 import {getCsrf} from 'common/cookie';
 
+import loadingReducer from '../common/reducers/loading-reducer';
 import {
   initialInboxes,
   inboxManagementReducer,
@@ -33,6 +34,7 @@ const reducer = combineReducers({
   inboxes: inboxManagementReducer,
   records: recordManagementReducer,
   navigation: navigationReducer,
+  loading: loadingReducer,
 });
 
 // state to pass to our reducer when the app starts
@@ -40,6 +42,9 @@ export const initialState = {
   inboxes: initialInboxes,
   records: initialRecords,
   navigation: initialNavigation,
+  loading: {
+    mainPage: false,
+  },
 };
 
 const myJobsApi = new MyJobsApi(getCsrf());

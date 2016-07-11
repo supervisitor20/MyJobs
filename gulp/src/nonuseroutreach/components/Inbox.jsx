@@ -1,5 +1,5 @@
 import React from 'react';
-import {HelpText} from './HelpText';
+import HelpText from '../../common/ui/HelpText';
 import {
   Button,
   ButtonGroup,

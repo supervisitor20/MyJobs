@@ -1059,7 +1059,6 @@ def api_get_users(request):
     return HttpResponse(json.dumps(ctx),
                         content_type="application/json")
 
-
 @requires('read user')
 def api_get_specific_user(request, user_id=0):
     """

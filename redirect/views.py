@@ -16,6 +16,8 @@ from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.utils import text, timezone
 from django.views.decorators.csrf import csrf_exempt
+
+from mypartners.models import OutreachEmailAddress
 from redirect.helpers import get_job_from_solr
 
 from redirect.models import (Redirect, CanonicalMicrosite,
@@ -220,12 +222,17 @@ def email_redirect(request):
         # envelope was not valid JSON or was not provided
         pass
     else:
+        bcc_addresses = envelope.get('to', [])
+        bcc_local = set(address.rsplit('@', 1)[0] for address in bcc_addresses)
+        bcc_outreach = OutreachEmailAddress.objects.filter(email__in=bcc_local)
         if 'prm@my.jobs' in [env_email.lower()
                              for env_email
-                             in envelope.get('to', [])]:
+                             in bcc_addresses] or bcc_outreach.exists():
             prm_bcc = True
 
-    if prm_bcc or 'prm@my.jobs' in addresses:
+    local = set(address.rsplit('@', 1)[0] for address in addresses)
+    outreach = OutreachEmailAddress.objects.filter(email__in=local)
+    if prm_bcc or 'prm@my.jobs' in addresses or outreach.exists():
         # post to my.jobs
         helpers.repost_to_mj(request.POST.copy(),
                              attachment_data)

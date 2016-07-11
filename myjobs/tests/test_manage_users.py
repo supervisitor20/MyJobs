@@ -422,6 +422,7 @@ class ManageUsersTests(MyJobsBase):
         role_name = roles[0]['fields']['name']
         self.assertIsInstance(role_name, unicode)
 
+
     def test_get_users_with_unique_roles_list(self):
         """
         Given a user who has roles assigned through multiple companies, test

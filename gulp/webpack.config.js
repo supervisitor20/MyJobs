@@ -46,6 +46,10 @@ module.exports = {
       },
     ],
   },
+  eslint: {
+    failOnWarning: true,
+    failOnError: true,
+  },
   plugins: [
     // React is smaller, faster, and silent in this mode.
     // The warning module is also silent in this mode.

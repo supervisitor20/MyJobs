@@ -8,6 +8,9 @@ import {validateEmail} from 'common/email-validators';
 import RolesMultiselect from './RolesMultiselect';
 import HelpText from './HelpText';
 
+import {connect} from 'react-redux';
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
+
 class User extends React.Component {
   constructor(props) {
     super(props);
@@ -76,7 +79,6 @@ class User extends React.Component {
         role.name = obj.fields.name;
         return role;
       });
-
       this.setState({
         userEmail: userEmail,
         userEmailHelp: '',
@@ -188,13 +190,14 @@ class User extends React.Component {
     }
   }
   async handleDeleteUserClick() {
-    const {history, api} = this.props;
-
-    if (confirm('Are you sure you want to delete this user?') === false) {
-      return;
-    }
+    const {history, api, dispatch} = this.props;
 
     const userId = this.props.params.userId;
+
+    const message = 'Are you sure you want to delete this user?';
+    if (! await runConfirmInPlace(dispatch, message)) {
+      return;
+    }
 
     // Submit to server
     try {
@@ -272,6 +275,7 @@ class User extends React.Component {
 }
 
 User.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   location: React.PropTypes.object.isRequired,
   params: React.PropTypes.object.isRequired,
   callUsersAPI: React.PropTypes.func,
@@ -279,4 +283,4 @@ User.propTypes = {
   api: React.PropTypes.object,
 };
 
-export default User;
+export default connect()(User);

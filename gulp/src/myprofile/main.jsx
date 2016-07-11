@@ -14,6 +14,10 @@ import {getCsrf} from 'common/cookie';
 
 import {render} from 'react-dom';
 import {Router, Route, IndexRoute} from 'react-router';
+import confirmReducer from 'common/reducers/confirm-reducer';
+import createReduxStore from '../common/create-redux-store';
+import {combineReducers} from 'redux';
+import {Provider} from 'react-redux';
 
 import TextField from '../common/ui/TextField';
 import CheckBox from '../common/ui/CheckBox';
@@ -21,10 +25,23 @@ import Textarea from '../common/ui/Textarea';
 import DateField from '../common/ui/DateField';
 import Select from '../common/ui/Select';
 import FieldWrapper from '../common/ui/FieldWrapper';
+import Confirm from 'common/ui/Confirm';
 
 import {MyJobsApi} from '../common/myjobs-api';
 
+import {connect} from 'react-redux';
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
+
+
 installPolyfills();
+
+const reducer = combineReducers({
+  confirm: confirmReducer,
+});
+
+const thunkExtra = {};
+
+const store = createReduxStore(reducer, undefined, thunkExtra);
 
 class Module extends React.Component {
   constructor(props) {
@@ -94,7 +111,10 @@ class Module extends React.Component {
     });
   }
   async handleDelete() {
-    if (confirm('Are you sure you want to delete this item?') === false) {
+    const {dispatch} = this.props;
+
+    const message = 'Are you sure you want to delete this item?';
+    if (! await runConfirmInPlace(dispatch, message)) {
       return;
     }
 
@@ -205,6 +225,8 @@ class Module extends React.Component {
               isHidden={profileUnit.widget.is_hidden}
               placeholder={profileUnit.widget.attrs.placeholder}
               autoFocus={profileUnit.widget.attrs.autofocus}
+              numberOfYears={50}
+              pastOnly
               />
           );
         case 'select':
@@ -297,6 +319,7 @@ class Module extends React.Component {
 
     return (
       <div>
+        <Confirm/>
         <div className="row">
           <div className="col-sm-12">
             <h1>Edit <small>{moduleName}</small></h1>
@@ -334,6 +357,7 @@ class Module extends React.Component {
 }
 
 Module.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   location: React.PropTypes.shape({
     query: React.PropTypes.shape({
       module: React.PropTypes.string.isRequired,
@@ -348,12 +372,16 @@ Module.defaultProps = {
   params: {},
 };
 
+const connectedModule = connect()(Module);
+
 render((
-  <Router>
-    <Route path="/" component={Module}>
-      <IndexRoute component={Module} />
-      <Route path="/:moduleId" component={Module} />
-      <Route path="*" component={Module}/>
-    </Route>
-  </Router>
+  <Provider store={store}>
+    <Router>
+      <Route path="/" component={connectedModule}>
+        <IndexRoute component={connectedModule} />
+        <Route path="/:moduleId" component={connectedModule} />
+        <Route path="*" component={connectedModule}/>
+      </Route>
+    </Router>
+  </Provider>
 ), document.getElementById('content'));

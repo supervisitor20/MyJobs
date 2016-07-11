@@ -911,7 +911,6 @@ def task_update_solr(jsid, **kwargs):
         ImportRecord(buid=int(jsid), success=False).save()
         raise task_update_solr.retry(exc=e)
 
-
 @task(name='tasks.etl_to_solr', ignore_result=True, send_error_emails=True, soft_time_limit=3600)
 def task_etl_to_solr(guid, buid, name):
     try:
@@ -923,6 +922,26 @@ def task_etl_to_solr(guid, buid, name):
         logging.exception(e)
         ImportRecord(buid=int(buid), success=False).save()
         raise task_etl_to_solr.retry(exc=e)
+
+
+@task(name='tasks.jobsfs_to_mongo', ingore_result=True, send_error_emails=False)
+def task_jobsfs_to_mongo(guid, buid, name):
+    try:
+        import_jobs.mongo.jobsfs_to_mongo(guid, buid, name)
+    except Exception as e:
+        logging.error("Error loading mongo from jobsfs for guid: %s", guid)
+        logging.exception(e)
+        raise task_jobsfs_to_mongo.retry(exc=e)
+
+
+@task(name='tasks.seoxml_to_mongo', ingore_result=True, send_error_emails=False)
+def task_seoxml_to_mongo(buid, **kwargs):
+    try:
+        import_jobs.mongo.seoxml_to_mongo(buid)
+    except Exception as e:
+        logging.error("Error loading mongo from seoxml for buid: %s", buid)
+        logging.exception(e)
+        raise task_seoxml_to_mongo.retry(exc=e)
 
 
 @task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)

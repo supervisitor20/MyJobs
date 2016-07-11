@@ -9,6 +9,7 @@
 .btn {
     padding-top: 6px;
     padding-bottom: 7px;
+    background-image: linear-gradient(rgb(255, 255, 255), rgb(230, 230, 230));
 }
 
 .clear {
@@ -3277,6 +3278,7 @@ em.pendingText {
     font-size: .8em;
 }
 
+.select-element-menu-container .report-loader,
 .select-element-chosen-container .counter .report-loader,
 .tag-select-placeholder .counter .report-loader {
   display: inline-block;
@@ -5036,6 +5038,15 @@ a.btn.pull-right {
   .topbar-inner {
     height: 30px !important;
   }
+
+  .modal.fade .modal-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
 }
 @media(min-width:1200px){
 
@@ -5108,4 +5119,11 @@ a.btn.pull-right {
 
 .react-component input {
   margin: 0 0 10px 0;
+}
+
+.modal.fade .modal-dialog {
+  transition: none;
+  -moz-transition: none;
+  -ms-transition: none;
+  -webkit-transition: none;
 }

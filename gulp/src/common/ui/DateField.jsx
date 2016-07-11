@@ -77,6 +77,7 @@ class DateField extends React.Component {
     fakeEvent.target.value = month;
     onChange(fakeEvent);
   }
+
   updateYear(year) {
     const {onChange, value} = this.props;
 
@@ -91,13 +92,28 @@ class DateField extends React.Component {
     fakeEvent.target.value = year;
     onChange(fakeEvent);
   }
-  generateYearChoices(numberOfYears) {
+
+  // Create an array of choices to add to the year box. The choices will be
+  // such that the current year sits in the middle of the :numberOfYears:
+  // provided. For example, if this year is 2016 and 10 is passed in, you would
+  // get entries for 2011-2020.
+  generateYearChoices() {
+    const {pastOnly, numberOfYears} = this.props;
     const now = new Date();
-    const currentYear = now.getFullYear();
+    let offset = 0;
+    if (!pastOnly) {
+      // how many years should come before and after the current year
+      const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
+      offset = Math.floor(pivot / 2);
+    }
+    const startYear = now.getFullYear() + offset;
 
     const yearChoices = [];
     for (let i = 0; i < numberOfYears; i++) {
-      yearChoices.push({value: (currentYear - i), display: (currentYear - i).toString()});
+      yearChoices.push({
+        value: (startYear - i),
+        display: (startYear - i).toString(),
+      });
     }
     return yearChoices;
   }
@@ -149,7 +165,8 @@ class DateField extends React.Component {
       isHidden,
       value,
       placeholder,
-      error} = this.props;
+      error,
+    } = this.props;
 
     let momentObject = moment(value, 'MM/DD/YYYY');
     let day;
@@ -195,7 +212,7 @@ class DateField extends React.Component {
                       onMonthChange={m => this.updateMonth(m)}
                       onSelect={d => this.onDaySelect(d)}
                       closeCalendar={() => this.closeCalendar()}
-                      yearChoices={this.generateYearChoices(50)}
+                      yearChoices={this.generateYearChoices()}
                       />
                   </div>);
     }
@@ -264,6 +281,16 @@ DateField.propTypes = {
    * Validation error
    */
   error: React.PropTypes.string,
+
+  /**
+  * How many years to include in the year selection
+  */
+  numberOfYears: React.PropTypes.number,
+  /** Whether or not to only include past years. When false, the current year
+  * is used as a pivot and half of the selectable years will fall before, and
+  * half of them will fall after it.
+  */
+  pastOnly: React.PropTypes.bool,
 };
 
 DateField.defaultProps = {
@@ -274,6 +301,8 @@ DateField.defaultProps = {
   required: false,
   autoFocus: '',
   error: null,
+  numberOfYears: 10,
+  pastOnly: false,
 };
 
 export default DateField;
