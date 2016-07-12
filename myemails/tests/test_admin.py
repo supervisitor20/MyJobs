@@ -4,7 +4,7 @@ class TestAdminLoginForm(MyJobsBase):
     
     def test_admin_login_form_has_autocomplete_off(self):
         form = MyJobsAdminAuthenticationForm()
-        attributes = form.password.widget.attrs
+        attributes = form.fields['password'].widget.attrs
         self.assertDictContainsSubset(attributes, {'autocomlete': 'off'}, 
             "The widget of the password field of the admin login form should "\
             "have the attribute autocomplete set to 'off'.")
