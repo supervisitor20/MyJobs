@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash-compat';
-import {difference, union} from 'lodash-compat';
+import {difference} from 'lodash-compat';
+import unionBy from 'lodash.unionby';
 import {Button, Col, FormControl, Row} from 'react-bootstrap';
 import {Link} from 'react-router';
 import TagSelect from 'common/ui/tags/TagSelect';
@@ -243,7 +244,7 @@ class User extends React.Component {
 
   handleChoose(roles) {
     const {assignedRoles} = this.state;
-    this.setState({assignedRoles: union(roles, assignedRoles)});
+    this.setState({assignedRoles: unionBy(roles, assignedRoles, 'display')});
   }
 
   handleRemove(roles) {
