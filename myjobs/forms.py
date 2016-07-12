@@ -1,7 +1,8 @@
 import pytz
 
+from django import forms
 from django.forms import (ModelForm, ChoiceField, Select, Textarea,
-                          Form, CharField, PasswordInput, IntegerField, )
+                          Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
 from django.core.validators import ValidationError
 
@@ -10,6 +11,7 @@ from ajax_select.fields import AutoCompleteSelectField
 from myjobs.models import User, CompanyAccessRequest
 from myprofile.models import SecondaryEmail
 from universal.helpers import autofocus_input
+from django.contrib.admin.forms import AdminAuthenticationForm
 
 
 timezones = [('America/New_York', 'America/New_York'),
@@ -295,3 +297,9 @@ class AccessRequestForm(Form):
         if not self.cleaned_data['reason']:
             raise ValidationError('Reason is required')
         return self.cleaned_data['reason']
+
+
+class MyJobsAdminAuthenticationForm(AdminAuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(MyJobsAdminAuthenticationForm, self).__init__(*args, **kwargs)
+        self.fields['password'].widget.attrs.update({'autocomplete':'off'})
