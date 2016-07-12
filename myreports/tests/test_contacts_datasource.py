@@ -11,7 +11,7 @@ from myreports.datasources.util import (
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
-from mydashboard.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory
 from mypartners.tests.factories import (
     PartnerFactory, ContactFactory, LocationFactory, TagFactory)
 from mypartners.models import Status
