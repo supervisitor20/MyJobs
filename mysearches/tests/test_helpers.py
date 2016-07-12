@@ -11,8 +11,6 @@ from mysearches.helpers import (date_in_range, parse_feed,
                                 update_url_if_protected, url_sort_options,
                                 validate_dotjobs_url)
 
-from myjobs.tests.factories import UserFactory
-
 
 class SavedSearchHelperTests(MyJobsBase):
     def setUp(self):
