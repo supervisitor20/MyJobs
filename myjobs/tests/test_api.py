@@ -59,7 +59,6 @@ class UserManagementTestCase(MyJobsBase):
     def setUp(self):
         super(UserManagementTestCase, self).setUp()
         self.role.activities = self.activities
-        self.user.role = self.role
 
     def test_protect_admin(self):
         """
