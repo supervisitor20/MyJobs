@@ -1,9 +1,10 @@
 import React from 'react';
 import _ from 'lodash-compat';
 import {difference, union} from 'lodash-compat';
-import Button from 'react-bootstrap/lib/Button';
+import {Button, Col, FormControl, Row} from 'react-bootstrap';
 import {Link} from 'react-router';
-import TagSelect from '../../common/ui/tags/TagSelect';
+import TagSelect from 'common/ui/tags/TagSelect';
+import FieldWrapper from 'common/ui/FieldWrapper';
 
 import {validateEmail} from 'common/email-validators';
 
@@ -269,49 +270,61 @@ class User extends React.Component {
     const apiResponseHelp = this.state.apiResponseHelp;
 
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12">
-            <div className="wrapper-header">
-              <h2>{action} User</h2>
-            </div>
-            <div className="product-card-full no-highlight">
-
-              <div className="row no-gutter">
-                <label htmlFor="id_userEmail" className="col-sm-2 control-label">User Email* </label>
-                <input id="id_userEmail" className="col-sm-6" maxLength="255" name="id_userEmail" type="email" readOnly={userEmailEdit} autoFocus={!userEmailEdit} value={this.state.userEmail} onChange={this.onTextChange} size="35" />
-                <HelpText message={userEmailHelp} styleName="col-sm-4" />
-              </div>
-
-              <div className="row">
-                <div className="col-xs-12">
-                  <HelpText message={roleMultiselectHelp} />
-                  <TagSelect
-                    available={this.state.availableRoles}
-                    selected={this.state.assignedRoles}
-                    onChoose={roles => this.handleChoose(roles)}
-                    onRemove={roles => this.handleRemove(roles)}
-                    ref="roles" />
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-xs-12">
-                  <span className="primary pull-right">
-                    <HelpText message={apiResponseHelp} />
-                  </span>
-                </div>
-
-                <div className="col-xs-12">
-                  <Button className="primary pull-right" onClick={this.handleSaveUserClick}>Save User</Button>
-                  {deleteUserButton}
-                  <Link to="users" className="pull-right btn btn-default">Cancel</Link>
-                </div>
-              </div>
-            </div>
+      <Row>
+        <Col xs={12}>
+          <div className="wrapper-header">
+            <h2>{action} User</h2>
           </div>
-        </div>
-      </div>
+          <div className="product-card-full no-highlight">
+            <FieldWrapper
+              label="User Email"
+              helpText={userEmailHelp}
+              required>
+              <FormControl
+                id="id_userEmail"
+                maxLength="255"
+                name="id_userEmail"
+                type="email"
+                readOnly={userEmailEdit}
+                autoFocus={!userEmailEdit}
+                value={this.state.userEmail}
+                onChange={this.onTextChange}
+                size="35" />
+            </FieldWrapper>
+            <FieldWrapper
+              label="Roles"
+              helpText={roleMultiselectHelp}
+              required>
+              <TagSelect
+                available={this.state.availableRoles}
+                selected={this.state.assignedRoles}
+                onChoose={roles => this.handleChoose(roles)}
+                onRemove={roles => this.handleRemove(roles)}
+                ref="roles" />
+            </FieldWrapper>
+
+            <Row>
+              <Col xs={12}>
+                <span className="primary pull-right">
+                  <HelpText message={apiResponseHelp} />
+                </span>
+              </Col>
+
+              <Col xs={12}>
+                <Button
+                  className="primary pull-right"
+                  onClick={this.handleSaveUserClick}>
+                  Save User
+                </Button>
+                {deleteUserButton}
+                <Link to="users" className="pull-right btn btn-default">
+                  Cancel
+                </Link>
+              </Col>
+            </Row>
+          </div>
+        </Col>
+      </Row>
     );
   }
 }
