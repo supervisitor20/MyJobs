@@ -121,6 +121,16 @@ class CustomAuthForm(AuthenticationForm):
         super(CustomAuthForm, self).__init__(request, *args, **kwargs)
         autofocus_input(self, 'username')
 
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        user = User.objects.get(email__iexact=username)
+        if user and user.is_locked_out():
+            raise ValidationError(
+                'This account has been locked due to repeated login ' +
+                'failures. Please use the "lost password" link below to ' +
+                'reset your password.')
+        return username
+
     def clean(self):
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
