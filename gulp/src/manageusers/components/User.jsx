@@ -113,11 +113,10 @@ class User extends React.Component {
   }
 
   async handleSaveUserClick() {
-    // Grab form fields and validate
-    // TODO: Warn user? If they remove a user from all roles, they will have to reinvite him.
-    const {api, rolesAPIResults} = this.props;
+    // Grab form fields and validate TODO: Warn user? If they remove a user
+    // from all roles, they will have to reinvite him.
+    const {api} = this.props;
     const userId = this.props.params.userId;
-    const currentUserId = this.props.currentUserId;
     const userEmail = this.state.userEmail;
 
     let assignedRoles = this.state.assignedRoles;
@@ -130,44 +129,6 @@ class User extends React.Component {
       });
       return;
     }
-
-    // If a user is editing their own account, they must have at least one role
-    // with the 'read role' activity, otherwise they'll be kicked out of
-    // manage users.
-
-    // Is user editing their own account?
-    if (parseInt(userId, 10) === parseInt(currentUserId, 10)) {
-      // What roles are currently assigned?
-      const assignedRolesAsStrings = _.map(assignedRoles, role => role.display);
-
-      // Do any of the currently assigned roles contain the 'read role' activity?
-      let containsReadRoleActivity = false;
-      // Loop through all roles
-      containsReadRoleActivity = _.some(rolesAPIResults, role => {
-        // Identify the roles which are currently assigned
-        if (_.includes(assignedRolesAsStrings, role.role_name)) {
-          // For each currently assigned role, determine if the 'read role'
-          // activity is associated with it
-          return _.some(role.activities, activity => {
-            return _.some(activity.assigned_activities, assignedActivity => assignedActivity.name === 'read role');
-          });
-        }
-      }
-    );
-      if (containsReadRoleActivity === false) {
-        this.setState({
-          userEmailHelp: '',
-          roleMultiselectHelp: 'You must have at least one role that has the \'read role\' activity.',
-        });
-        return;
-      }
-    }
-
-    // No errors? Clear help text
-    this.setState({
-      userEmailHelp: '',
-      apiResponseHelp: '',
-    });
 
     // Format properly
     assignedRoles = assignedRoles.map( obj => {
@@ -212,16 +173,8 @@ class User extends React.Component {
   }
 
   async handleDeleteUserClick() {
-    const {history, api, currentUserId, dispatch} = this.props;
+    const {history, api, dispatch} = this.props;
     const userId = this.props.params.userId;
-
-    // Is user trying to delete their own account?
-    if (parseInt(userId, 10) === parseInt(currentUserId, 10)) {
-      this.setState({
-        roleMultiselectHelp: 'You cannot delete your own user.',
-      });
-      return;
-    }
 
     const message = 'Are you sure you want to delete this user?';
     if (! await runConfirmInPlace(dispatch, message)) {
@@ -337,8 +290,6 @@ User.propTypes = {
   callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
-  rolesAPIResults: React.PropTypes.array,
-  currentUserId: React.PropTypes.number,
 };
 
 export default connect()(User);
