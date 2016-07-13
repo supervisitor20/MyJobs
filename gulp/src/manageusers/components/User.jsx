@@ -58,10 +58,10 @@ class User extends React.Component {
 
   async initialApiLoad() {
     const {api} = this.props;
-    const {action} = this.props.location.query;
+    const {userId} = this.props.params;
 
-    if (action === 'Edit') {
-      const results = await api.get('/manage-users/api/users/' + this.props.params.userId + '/');
+    if (userId) {
+      const results = await api.get('/manage-users/api/users/' + userId + '/');
       const userObject = results[this.props.params.userId];
 
       const userEmail = userObject.email;
@@ -90,7 +90,6 @@ class User extends React.Component {
         assignedRoles: assignedRoles,
       });
     } else {
-      // action === 'Add'
       const results = await api.get('/manage-users/api/roles/');
       const availableRoles = [];
       _.forOwn(results, function buildListOfAvailableRoles(role) {
@@ -135,11 +134,8 @@ class User extends React.Component {
       return obj.display;
     });
 
-    // Determine URL based on action
-    const action = this.props.location.query.action;
-
     let url = '';
-    if ( action === 'Edit' ) {
+    if (userId) {
       url = '/manage-users/api/users/edit/' + userId + '/';
     } else {
       url = '/manage-users/api/users/create/';
@@ -209,10 +205,9 @@ class User extends React.Component {
     let deleteUserButton = '';
 
     let userEmailEdit = '';
+    const userId = this.props.params.userId;
 
-    const action = this.props.location.query.action;
-
-    if (action === 'Edit') {
+    if (userId) {
       userEmailEdit = true;
       deleteUserButton = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>;
     } else {
@@ -227,7 +222,7 @@ class User extends React.Component {
       <Row>
         <Col xs={12}>
           <div className="wrapper-header">
-            <h2>{action} User</h2>
+            <h2>{userId ? 'Edit' : 'Add'} User</h2>
           </div>
           <div className="product-card-full no-highlight">
             <FieldWrapper

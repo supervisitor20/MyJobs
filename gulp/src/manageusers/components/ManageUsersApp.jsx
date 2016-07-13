@@ -88,7 +88,7 @@ export default class ManageUsersApp extends React.Component {
               <Status status={user.status} lastInvitation={user.lastInvitation}/>
             </td>
             <td data-title="Edit">
-              <Link to={`/user/${key}`} action="Edit" query={{action: 'Edit'}} className="btn">Edit</Link>
+              <Link to={`/user/${key}`} action="Edit" className="btn">Edit</Link>
             </td>
           </tr>
         );

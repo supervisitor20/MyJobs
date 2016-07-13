@@ -18,8 +18,7 @@ class Users extends React.Component {
             <Row>
               <Link
                 className="primary pull-right btn btn-default"
-                to="user/add"
-                query={{action: 'Add'}}>
+                to="/user/add">
                 Add User
               </Link>
             </Row>
