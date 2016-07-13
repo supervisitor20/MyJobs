@@ -15,7 +15,6 @@ class Users extends React.Component {
           <div className="product-card-full no-highlight">
 
             <UsersList usersTableRows={this.props.usersTableRows} />
-            <hr/>
             <Row>
               <Link
                 className="primary pull-right btn btn-default"
