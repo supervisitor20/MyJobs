@@ -131,7 +131,7 @@ CELERY_QUEUES = {
     },
     'mongo': {
         'binding_key': 'mongo.#'
-    }
+    },
     'priority': {
         'binding_key': 'priority.#'
     },
