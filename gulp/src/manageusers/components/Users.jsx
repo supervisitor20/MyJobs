@@ -32,9 +32,9 @@ class Users extends React.Component {
                     <td data-title="User Email">{users[key].email}</td>
                     <td data-title="Associated Roles">
                       <ul>
-                        {users[key].roles.map((role, index) =>
-                          <li key={index}>
-                            {role}
+                        {users[key].roles.map(role =>
+                          <li key={role.value}>
+                            {role.display}
                           </li>
                         )}
                       </ul>

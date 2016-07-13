@@ -1,7 +1,5 @@
 import React from 'react';
 import _ from 'lodash-compat';
-import {difference} from 'lodash-compat';
-import unionBy from 'lodash.unionby';
 import {Button, Col, FormControl, Row} from 'react-bootstrap';
 import {Link} from 'react-router';
 import TagSelect from 'common/ui/tags/TagSelect';
@@ -12,22 +10,22 @@ import HelpText from './HelpText';
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
 import {doRefreshUsers} from '../actions/user-actions';
-import {validateEmailAction} from '../actions/validation-actions';
+import {
+  addRolesAction,
+  removeRolesAction,
+  validateEmailAction,
+} from '../actions/validation-actions';
 
 class User extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       apiResponseHelp: '',
-      userEmail: '',
-      roleMultiselectHelp: '',
       availableRoles: [],
-      assignedRoles: [],
       api_response_message: '',
     };
     // React components using ES6 no longer autobind 'this' to non React methods
     // Thank you: https://github.com/goatslacker/alt/issues/283
-    this.onTextChange = this.onTextChange.bind(this);
     this.handleSaveUserClick = this.handleSaveUserClick.bind(this);
     this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
   }
@@ -44,8 +42,6 @@ class User extends React.Component {
       const results = await api.get('/manage-users/api/users/' + userId + '/');
       const userObject = results[this.props.params.userId];
 
-      const userEmail = userObject.email;
-
       const availableRolesUnformatted = JSON.parse(userObject.roles.available);
       const availableRoles = availableRolesUnformatted.map( obj => {
         const role = {};
@@ -54,19 +50,9 @@ class User extends React.Component {
         return role;
       });
 
-      const assignedRolesUnformatted = JSON.parse(userObject.roles.assigned);
-      const assignedRoles = assignedRolesUnformatted.map( obj => {
-        const role = {};
-        role.value = obj.pk;
-        role.display = obj.fields.name;
-        return role;
-      });
       this.setState({
-        userEmail: userEmail,
-        roleMultiselectHelp: '',
         apiResponseHelp: '',
         availableRoles: availableRoles,
-        assignedRoles: assignedRoles,
       });
     } else {
       const results = await api.get('/manage-users/api/roles/');
@@ -80,11 +66,8 @@ class User extends React.Component {
         );
       });
       this.setState({
-        userEmail: '',
-        roleMultiselectHelp: '',
         apiResponseHelp: '',
         availableRoles: availableRoles,
-        assignedRoles: [],
       });
     }
   }
@@ -92,24 +75,14 @@ class User extends React.Component {
   async handleSaveUserClick() {
     // Grab form fields and validate TODO: Warn user? If they remove a user
     // from all roles, they will have to reinvite him.
-    const {api, dispatch} = this.props;
+    const {api, dispatch, validation} = this.props;
     const userId = this.props.params.userId;
-    const userEmail = this.state.userEmail;
-
-    let assignedRoles = this.state.assignedRoles;
-
-
-    if (assignedRoles.length < 1) {
-      this.setState({
-        roleMultiselectHelp: 'A user must be assigned to at least one role.',
-      });
-      return;
-    }
+    const userEmail = validation.email.value;
+    let assignedRoles = validation.roles.value;
 
     // Format properly
-    assignedRoles = assignedRoles.map( obj => {
-      return obj.display;
-    });
+    assignedRoles = Object.keys(assignedRoles).map(key =>
+      assignedRoles[key].display);
 
     let url = '';
     if (userId) {
@@ -168,20 +141,10 @@ class User extends React.Component {
     }
   }
 
-  handleChoose(roles) {
-    const {assignedRoles} = this.state;
-    this.setState({assignedRoles: unionBy(roles, assignedRoles, 'display')});
-  }
-
-  handleRemove(roles) {
-    const {assignedRoles} = this.state;
-    this.setState({assignedRoles: difference(assignedRoles, roles)});
-  }
-
   render() {
     const {dispatch, users, validation} = this.props;
     const userId = this.props.params.userId;
-    const user = users[userId];
+    const user = users[userId] || {};
 
     let deleteUserButton = '';
 
@@ -194,7 +157,6 @@ class User extends React.Component {
       userEmailEdit = false;
     }
 
-    const roleMultiselectHelp = this.state.roleMultiselectHelp;
     const apiResponseHelp = this.state.apiResponseHelp;
 
     return (
@@ -221,13 +183,13 @@ class User extends React.Component {
             </FieldWrapper>
             <FieldWrapper
               label="Roles"
-              helpText={roleMultiselectHelp}
+              errors={validation.roles.errors}
               required>
               <TagSelect
                 available={this.state.availableRoles}
-                selected={this.state.assignedRoles}
-                onChoose={roles => this.handleChoose(roles)}
-                onRemove={roles => this.handleRemove(roles)}
+                selected={validation.roles.value}
+                onChoose={roles => dispatch(addRolesAction(roles))}
+                onRemove={roles => dispatch(removeRolesAction(roles))}
                 ref="roles" />
             </FieldWrapper>
 

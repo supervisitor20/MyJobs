@@ -1016,8 +1016,10 @@ def api_get_users(request):
             'email': user.email,
             'isVerified': user.is_verified,
             'lastInvitation': last_invitation,
-            'roles': list(user.roles.filter(company=company).values_list(
-                'name', flat=True))
+            'roles': [{
+                'value': role.pk,
+                'display': role.name,
+            } for role in user.roles.filter(company=company)]
         }
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")

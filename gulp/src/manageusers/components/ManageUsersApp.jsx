@@ -8,7 +8,9 @@ import {Link} from 'react-router';
 
 import {Loading} from 'common/ui/Loading';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
+import {addRolesAction} from '../actions/validation-actions';
 import Users from './Users';
+import User from './User';
 import {doRefreshUsers} from '../actions/user-actions';
 import {clearValidationAction} from '../actions/validation-actions';
 import AssociatedUsersList from './AssociatedUsersList';
@@ -50,14 +52,24 @@ export class ManageUsersApp extends React.Component {
   }
 
   async handleNewLocation(_, loc) {
-    const {dispatch} = this.props;
+    const {dispatch, users} = this.props;
     const lastComponent = loc.components[loc.components.length - 1];
+    const params = loc.params;
+
     switch (lastComponent) {
     case Users:
       dispatch(markPageLoadingAction(true));
       dispatch(doRefreshUsers());
       dispatch(markPageLoadingAction(false));
       dispatch(clearValidationAction());
+      break;
+    case User:
+      if (users[params.userId]) {
+        const user = users[params.userId];
+        if (user) {
+          dispatch(addRolesAction(user.roles));
+        }
+      }
       break;
     default:
       dispatch(markPageLoadingAction(false));
@@ -144,11 +156,14 @@ export class ManageUsersApp extends React.Component {
 
 ManageUsersApp.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  params: React.PropTypes.object.isRequired,
   history: React.PropTypes.object.isRequired,
   loading: React.PropTypes.bool.isRequired,
   children: React.PropTypes.object.isRequired,
+  users: React.PropTypes.object.isRequired,
 };
 
 export default connect(state => ({
   loading: state.loading.mainPage,
+  users: state.users,
 }))(ManageUsersApp);
