@@ -9,8 +9,10 @@ from tastypie.api import Api
 from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
+from myjobs.forms import MyJobsAdminAuthenticationForm
 
 admin.autodiscover()
+admin.site.login_form = MyJobsAdminAuthenticationForm
 
 # API Resources
 v1_api = Api(api_name='v1')
