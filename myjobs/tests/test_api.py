@@ -92,7 +92,7 @@ class UserManagementTestCase(MyJobsBase):
 
 class SavedSearchResourceTestCase(MyJobsBase):
     def setUp(self):
-        super(SavedSearchResourceTests, self).setUp()
+        super(SavedSearchResourceTestCase, self).setUp()
         self.client = TestClient(
             path='/api/v1/savedsearch/',
             data={'email': 'alice@example.com',
