@@ -1,10 +1,12 @@
+import json
+
 from django.core import mail
 from django.core.urlresolvers import reverse
-from myjobs.models import User, AppAccess
-from myjobs.tests.factories import RoleFactory
+
+from myjobs.tests.factories import RoleFactory, UserFactory
+from myjobs.models import AppAccess
 from seo.tests.factories import CompanyFactory
 from setup import MyJobsBase
-import json
 
 
 class ManageUsersTests(MyJobsBase):
@@ -549,7 +551,17 @@ class ManageUsersTests(MyJobsBase):
         """
         Tests deleting a user
         """
+        # You can't delete the last admin; this should fail.
         expected_user_pk = self.user.pk
+        response = self.client.delete(reverse('api_delete_user',
+                                              args=[expected_user_pk]))
+        output = json.loads(response.content)
+        self.assertEqual(output["success"], "false")
+        self.assertTrue("You must add another admin" in output["message"])
+
+        # Create another admin and try again.
+        new_user = UserFactory(email='newuser@example.com')
+        new_user.roles.add(*list(self.user.roles.all()))
 
         response = self.client.delete(reverse('api_delete_user',
                                               args=[expected_user_pk]))
