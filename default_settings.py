@@ -109,6 +109,8 @@ AUTHENTICATION_BACKENDS = (
     'backends.CaseInsensitiveAuthBackend',
     'django.contrib.auth.backends.ModelBackend',  # default
     'django.contrib.auth.backends.RemoteUserBackend',  # http
+    'backends.CaseInsensitiveAuthFailCatcher',
+
 )
 
 # Celery settings
@@ -582,6 +584,11 @@ PASSWORD_COMPLEXITY = {
     'PUNCTUATION': 1
 }
 
+# Password expiration
+PASSWORD_EXPIRATION_DAYS = 90
+PASSWORD_HISTORY_ENTRIES = 4
+PASSWORD_ATTEMPT_LOCKOUT = 6
+
 # email types
 ACTIVATION = 1
 CREATE_CONTACT_RECORD = 3
@@ -712,3 +719,5 @@ IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
 
 # The email host used to parse communication records
 PRM_EMAIL_HOST = 'my.jobs'
+
+MONGO_HOST = "mongodb://mongo_server:27017/"

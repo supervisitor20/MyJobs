@@ -1,28 +1,32 @@
 import React from 'react';
+import {Col, Row} from 'react-bootstrap';
 
 import UsersList from './UsersList';
-import AddUserButton from './AddUserButton';
+import {Link} from 'react-router';
 
 class Users extends React.Component {
   render() {
     return (
-      <div className="row">
-        <div className="col-xs-12 ">
+      <Row>
+        <Col xs={12}>
           <div className="wrapper-header">
             <h2>Users</h2>
           </div>
           <div className="product-card-full no-highlight">
 
             <UsersList usersTableRows={this.props.usersTableRows} />
-
             <hr/>
-
-            <div className="row">
-              <AddUserButton />
-            </div>
+            <Row>
+              <Link
+                className="primary pull-right btn btn-default"
+                to="user/add"
+                query={{action: 'Add'}}>
+                Add User
+              </Link>
+            </Row>
           </div>
-        </div>
-      </div>
+        </Col>
+      </Row>
     );
   }
 }

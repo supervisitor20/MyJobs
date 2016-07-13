@@ -2,6 +2,7 @@ from email.utils import getaddresses
 from datetime import datetime
 import json
 from urllib import unquote
+from urlparse import urlparse
 import uuid
 
 from django.conf import settings
@@ -27,6 +28,7 @@ from redirect import helpers
 
 
 def home(request, guid, vsid=None, debug=None):
+    now = datetime.now(tz=timezone.utc)
     if vsid is None:
         vsid = '0'
     guid = '{%s}' % uuid.UUID(guid)
@@ -35,6 +37,7 @@ def home(request, guid, vsid=None, debug=None):
     enable_custom_queries = request.REQUEST.get('z') == '1'
     expired = False
     user_agent_vs = None
+    redirect_url = None
 
     if debug:
         # On localhost ip will always be empty unless you've got a setup
@@ -47,6 +50,12 @@ def home(request, guid, vsid=None, debug=None):
 
     guid_redirect = helpers.get_redirect_or_404(guid=guid)
     cleaned_guid = helpers.clean_guid(guid_redirect.guid).upper()
+
+    analytics = {
+        'gu': cleaned_guid, 've': '1.0', 'vs': vsid, 'ia': 'uk', 'ev': 'rd',
+        'cp': 'uk', 'tm': 'r', 'mo': '0',
+        'ua': request.META.get('HTTP_USER_AGENT', '')
+    }
 
     syndication_params = {'request': request, 'redirect': guid_redirect,
                           'guid': cleaned_guid, 'view_source': vsid}
@@ -127,6 +136,7 @@ def home(request, guid, vsid=None, debug=None):
         if '%' in aguid:
             aguid = uuid.UUID(unquote(aguid)).hex
         myguid = request.COOKIES.get('myguid', '')
+        analytics.update({'aguid': aguid, 'myguid': myguid})
         buid = helpers.get_Post_a_Job_buid(guid_redirect)
         qs = 'jcnlx.ref=%s&jcnlx.url=%s&jcnlx.buid=%s&jcnlx.vsid=%s&jcnlx.aguid=%s&jcnlx.myguid=%s'
         qs %= (helpers.quote_string(request.META.get('HTTP_REFERER', '')),
@@ -136,23 +146,51 @@ def home(request, guid, vsid=None, debug=None):
                aguid,
                myguid)
         if expired:
-            now = datetime.now(tz=timezone.utc)
             d_seconds = (now - guid_redirect.expired_date).total_seconds()
             d_hours = int(d_seconds / 60 / 60)
             qs += '%s&jcnlx.xhr=%s' % (err, d_hours)
+
         response['X-REDIRECT'] = qs
 
         response = helpers.set_aguid_cookie(response,
                                             request.get_host(),
                                             aguid)
 
+    if redirect_url and not expired:
+        # If redirect_url has a value and expired does not, we're probably
+        # going to redirect somewhere useful.
+        parsed = urlparse(redirect_url)
+        pn = parsed.path
+        pr = parsed.scheme + ':'
+        hn = parsed.netloc
+        se = parsed.query
+        if se:
+            se = '?' + se
+    else:
+        # If redirect_url is blank or expired has a value, we're staying on the
+        # my.jobs domain. We may show a "job expired" page, Open Graph info, or
+        # something else.
+        hn = request.get_host()
+        pr = request.is_secure() and 'https:' or 'http:'
+        pn = request.path
+        se = request.META.get('QUERY_STRING', '')
+        if se:
+            se = '?' + se
+    analytics.update({
+        # Python doesn't have a method of easily creating a timestamp with
+        # Zulu at the end. Remove the timezone from this datetime (which would
+        # result in appending "+00:00") and append "Z".
+        'to': now.replace(tzinfo=None).isoformat() + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
+        'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
+    response['X-JSON-Header'] = json.dumps(analytics)
+
     if debug and not user_agent_vs:
         data = {'debug_content': debug_content}
-        return render_to_response('redirect/debug.html',
-                                  data,
-                                  context_instance=RequestContext(request))
-    else:
-        return response
+        response = render_to_response('redirect/debug.html',
+                                      data,
+                                      context_instance=RequestContext(request))
+
+    return response
 
 
 def myjobs_redirect(request):

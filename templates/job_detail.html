@@ -50,7 +50,9 @@
                   {% if special_case %}
                       <meta itemprop="addressCountry" content="{{ the_job.country }}" />
                   {% else %}
-                      <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% if the_job.country %}
+                          <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% endif %}
                   {% endif %}
               </span>
               {% endspaceless %}
