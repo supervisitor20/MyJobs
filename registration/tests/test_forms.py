@@ -3,7 +3,8 @@ from django.core import mail
 from myjobs.models import User
 from myjobs.tests.factories import UserFactory
 from registration.forms import (
-    RegistrationForm, CustomPasswordResetForm, CustomSetPasswordForm)
+    RegistrationForm, CustomPasswordResetForm, CustomSetPasswordForm,
+    CustomAuthForm)
 from myjobs.tests.setup import MyJobsBase
 
 
@@ -58,6 +59,32 @@ class RegistrationFormTests(MyJobsBase):
         form = CustomPasswordResetForm({'email':user.email})
         self.assertTrue(form.is_valid())
 
+
+class CustomAuthFormTests(MyJobsBase):
+    def test_lockout_message(self):
+        """
+        User should get a message when locked out.
+
+        """
+        self.company.password_expiration = True
+        self.company.save()
+
+        (self.alice, _) = User.objects.create_user(**{
+            'email': 'alice1@example.com', 'password1': '5UuYquA@'})
+        self.alice.failed_login_count = 99999
+        self.alice.save()
+
+        form = CustomAuthForm(None, {
+            'username': 'alice1@example.com',
+            'password': 'a',
+            })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(any(
+            'locked' in m
+            for m in form.errors['username']))
+
+
+class ResetFormTests(MyJobsBase):
     def test_reset_ignores_history(self):
         """
         Initiating a password reset should not add to password history.
