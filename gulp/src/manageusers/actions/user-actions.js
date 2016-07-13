@@ -1,8 +1,7 @@
 import {createAction} from 'redux-actions';
+import {errorAction} from '../../common/actions/error-actions';
 
 export const updateUsersAction = createAction('UPDATE_USERS');
-
-import {errorAction} from '../../common/actions/error-actions';
 
 /**
  * Asynchronously fetches an updated users object where keys are user ids and

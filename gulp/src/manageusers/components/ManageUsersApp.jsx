@@ -10,6 +10,7 @@ import {Loading} from 'common/ui/Loading';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import Users from './Users';
 import {doRefreshUsers} from '../actions/user-actions';
+import {clearValidationAction} from '../actions/validation-actions';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Confirm from 'common/ui/Confirm';
@@ -56,6 +57,7 @@ export class ManageUsersApp extends React.Component {
       dispatch(markPageLoadingAction(true));
       dispatch(doRefreshUsers());
       dispatch(markPageLoadingAction(false));
+      dispatch(clearValidationAction());
       break;
     default:
       dispatch(markPageLoadingAction(false));

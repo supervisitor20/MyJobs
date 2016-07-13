@@ -7,13 +7,12 @@ import {Link} from 'react-router';
 import TagSelect from 'common/ui/tags/TagSelect';
 import FieldWrapper from 'common/ui/FieldWrapper';
 
-import {validateEmail} from 'common/email-validators';
-
 import HelpText from './HelpText';
 
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
 import {doRefreshUsers} from '../actions/user-actions';
+import {validateEmailAction} from '../actions/validation-actions';
 
 class User extends React.Component {
   constructor(props) {
@@ -21,7 +20,6 @@ class User extends React.Component {
     this.state = {
       apiResponseHelp: '',
       userEmail: '',
-      userEmailHelp: '',
       roleMultiselectHelp: '',
       availableRoles: [],
       assignedRoles: [],
@@ -36,25 +34,6 @@ class User extends React.Component {
 
   componentDidMount() {
     this.initialApiLoad();
-  }
-
-  onTextChange(event) {
-    this.state.userEmail = event.target.value;
-
-    const userEmail = this.state.userEmail;
-
-    if (validateEmail(userEmail) === false) {
-      this.setState({
-        userEmail: this.state.userEmail,
-        userEmailHelp: 'Invalid email',
-      });
-    } else {
-      this.setState({
-        userEmail: this.state.userEmail,
-        userEmailHelp: '',
-        api_response_message: '',
-      });
-    }
   }
 
   async initialApiLoad() {
@@ -84,7 +63,6 @@ class User extends React.Component {
       });
       this.setState({
         userEmail: userEmail,
-        userEmailHelp: '',
         roleMultiselectHelp: '',
         apiResponseHelp: '',
         availableRoles: availableRoles,
@@ -103,7 +81,6 @@ class User extends React.Component {
       });
       this.setState({
         userEmail: '',
-        userEmailHelp: '',
         roleMultiselectHelp: '',
         apiResponseHelp: '',
         availableRoles: availableRoles,
@@ -124,7 +101,6 @@ class User extends React.Component {
 
     if (assignedRoles.length < 1) {
       this.setState({
-        userEmailHelp: '',
         roleMultiselectHelp: 'A user must be assigned to at least one role.',
       });
       return;
@@ -203,10 +179,13 @@ class User extends React.Component {
   }
 
   render() {
+    const {dispatch, users, validation} = this.props;
+    const userId = this.props.params.userId;
+    const user = users[userId];
+
     let deleteUserButton = '';
 
     let userEmailEdit = '';
-    const userId = this.props.params.userId;
 
     if (userId) {
       userEmailEdit = true;
@@ -215,7 +194,6 @@ class User extends React.Component {
       userEmailEdit = false;
     }
 
-    const userEmailHelp = this.state.userEmailHelp;
     const roleMultiselectHelp = this.state.roleMultiselectHelp;
     const apiResponseHelp = this.state.apiResponseHelp;
 
@@ -228,7 +206,7 @@ class User extends React.Component {
           <div className="product-card-full no-highlight">
             <FieldWrapper
               label="User Email"
-              helpText={userEmailHelp}
+              errors={validation.email.errors}
               required>
               <FormControl
                 id="id_userEmail"
@@ -237,8 +215,8 @@ class User extends React.Component {
                 type="email"
                 readOnly={userEmailEdit}
                 autoFocus={!userEmailEdit}
-                value={this.state.userEmail}
-                onChange={this.onTextChange}
+                value={userId ? user.email : validation.email.value}
+                onChange={e => dispatch(validateEmailAction(e.target.value))}
                 size="35" />
             </FieldWrapper>
             <FieldWrapper
@@ -285,6 +263,11 @@ User.propTypes = {
   params: React.PropTypes.object.isRequired,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
+  validation: React.PropTypes.object.isRequired,
+  users: React.PropTypes.object.isRequired,
 };
 
-export default connect()(User);
+export default connect(state => ({
+  users: state.users,
+  validation: state.validation,
+}))(User);

@@ -14,6 +14,10 @@ import loadingReducer, {
   initialLoading,
 } from 'common/reducers/loading-reducer';
 
+import validationReducer, {
+  initialValidation,
+} from './reducers/validation-reducer';
+
 
 import {MyJobsApi} from 'common/myjobs-api';
 import ManageUsersRouter from './components/ManageUsersRouter';
@@ -32,6 +36,7 @@ const reducer = combineReducers({
   users: userReducer,
   loading: loadingReducer,
   confirmation: confirmReducer,
+  validation: validationReducer,
 });
 
 const api = new MyJobsApi(getCsrf());
@@ -45,6 +50,7 @@ const initialState = {
   users: initialUsers,
   confirmation: initialConfirmation,
   loading: initialLoading,
+  validation: initialValidation,
 };
 
 const store = createReduxStore(reducer, initialState, thunkExtra);
