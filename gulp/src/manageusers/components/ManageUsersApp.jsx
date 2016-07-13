@@ -1,47 +1,73 @@
 import React from 'react';
+import {connect} from 'react-redux';
+
 import {MyJobsApi} from 'common/myjobs-api';
 import {getCsrf} from 'common/cookie';
-import _ from 'lodash-compat';
+import {forOwn} from 'lodash-compat';
 import {Link} from 'react-router';
-import AssociatedRolesList from './AssociatedRolesList';
+
+import {Loading} from 'common/ui/Loading';
+import {markPageLoadingAction} from 'common/actions/loading-actions';
+import Users from './Users';
+import {doRefreshUsers} from '../actions/user-actions';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
-import Status from './Status';
 import Confirm from 'common/ui/Confirm';
+
 
 const api = new MyJobsApi(getCsrf());
 
-export default class ManageUsersApp extends React.Component {
+export class ManageUsersApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       rolesTableRows: [],
       currentUserID: null,
       rolesAPIResults: null,
-      usersTableRows: [],
       callRolesAPI: this.callRolesAPI,
-      callUsersAPI: this.callUsersAPI,
       confirmShow: false,
     };
     this.callRolesAPI = this.callRolesAPI.bind(this);
-    this.callUsersAPI = this.callUsersAPI.bind(this);
   }
+
   componentDidMount() {
+    const {history} = this.props;
+    this.unsubscribeFromHistory = history.listen((...args) =>
+      this.handleNewLocation(...args));
+
     this.callRolesAPI();
-    this.callUsersAPI();
   }
+
   componentWillReceiveProps(nextProps) {
     if ( nextProps.reloadAPIs === 'true' ) {
       this.callRolesAPI();
-      this.callUsersAPI();
     }
   }
+
+  componentWillUnmount() {
+    this.unsubscribeFromHistory();
+  }
+
+  async handleNewLocation(_, loc) {
+    const {dispatch} = this.props;
+    const lastComponent = loc.components[loc.components.length - 1];
+    switch (lastComponent) {
+    case Users:
+      dispatch(markPageLoadingAction(true));
+      dispatch(doRefreshUsers());
+      dispatch(markPageLoadingAction(false));
+      break;
+    default:
+      dispatch(markPageLoadingAction(false));
+    }
+  }
+
   async callRolesAPI() {
     // Get roles once, but reload if needed
     const results = await api.get('/manage-users/api/roles/');
     const rolesTableRows = [];
 
-    _.forOwn(results, function buildListOfRows(role) {
+    forOwn(results, function buildListOfRows(role) {
       let editRoleLink;
       if (role.role_name !== 'Admin') {
         editRoleLink = <Link to={`/role/${role.role_id}`} query={{action: 'Edit'}} className="btn">Edit</Link>;
@@ -66,39 +92,9 @@ export default class ManageUsersApp extends React.Component {
       rolesAPIResults: results,
     });
   }
-  async callUsersAPI() {
-    // Get users once, but reload if needed
-    const results = await api.get('/manage-users/api/users/');
-    const usersTableRows = [];
-    _.forOwn(results, (user, key) => {
-      // Identify userID of the logged in user
-      if (typeof user === 'number' ) {
-        this.setState({
-          currentUserID: user,
-        });
-      } else {
-        user.roles = JSON.parse(user.roles);
-        usersTableRows.push(
-          <tr key={key}>
-            <td data-title="User Email">{user.email}</td>
-            <td data-title="Associated Roles">
-              <AssociatedRolesList roles={user.roles}/>
-            </td>
-            <td data-title="Status">
-              <Status status={user.status} lastInvitation={user.lastInvitation}/>
-            </td>
-            <td data-title="Edit">
-              <Link to={`/user/${key}`} action="Edit" className="btn">Edit</Link>
-            </td>
-          </tr>
-        );
-      }
-    });
-    this.setState({
-      usersTableRows: usersTableRows,
-    });
-  }
+
   render() {
+    const {loading} = this.props;
     return (
       <div>
         <Confirm/>
@@ -126,13 +122,11 @@ export default class ManageUsersApp extends React.Component {
 
           <div className="col-sm-8 col-xs-12">
             <div className="card-wrapper">
-              {this.props.children && React.cloneElement(
+              {loading ? <Loading /> : this.props.children && React.cloneElement(
                 this.props.children, {
                   rolesTableRows: this.state.rolesTableRows,
-                  usersTableRows: this.state.usersTableRows,
                   currentUserID: this.state.currentUserID,
                   callRolesAPI: this.callRolesAPI,
-                  callUsersAPI: this.callUsersAPI,
                   api: api,
                   rolesAPIResults: this.state.rolesAPIResults,
                 })
@@ -147,5 +141,12 @@ export default class ManageUsersApp extends React.Component {
 }
 
 ManageUsersApp.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
+  history: React.PropTypes.object.isRequired,
+  loading: React.PropTypes.bool.isRequired,
   children: React.PropTypes.object.isRequired,
 };
+
+export default connect(() => ({
+  loading: false,
+}))(ManageUsersApp);

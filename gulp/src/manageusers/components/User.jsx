@@ -13,6 +13,7 @@ import HelpText from './HelpText';
 
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
+import {doRefreshUsers} from '../actions/user-actions';
 
 class User extends React.Component {
   constructor(props) {
@@ -114,7 +115,7 @@ class User extends React.Component {
   async handleSaveUserClick() {
     // Grab form fields and validate TODO: Warn user? If they remove a user
     // from all roles, they will have to reinvite him.
-    const {api} = this.props;
+    const {api, dispatch} = this.props;
     const userId = this.props.params.userId;
     const userEmail = this.state.userEmail;
 
@@ -151,7 +152,7 @@ class User extends React.Component {
       const response = await api.post(url, dataToSend);
       if ( response.success === 'true' ) {
         // Reload API
-        this.props.callUsersAPI();
+        dispatch(doRefreshUsers());
         // Redirect user
         this.props.history.pushState(null, '/users');
       } else if ( response.success === 'false' ) {
@@ -180,7 +181,7 @@ class User extends React.Component {
     // Submit to server
     try {
       await api.delete('/manage-users/api/users/delete/' + userId + '/');
-      await this.props.callUsersAPI();
+      await dispatch(doRefreshUsers());
       history.pushState(null, '/users');
     } catch (e) {
       if (e.response && e.response.status === 403) {
@@ -282,7 +283,6 @@ User.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   location: React.PropTypes.object.isRequired,
   params: React.PropTypes.object.isRequired,
-  callUsersAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
 };

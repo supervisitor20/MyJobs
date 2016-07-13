@@ -6,20 +6,25 @@ import {render} from 'react-dom';
 import createReduxStore from 'common/create-redux-store';
 import {combineReducers} from 'redux';
 import {Provider} from 'react-redux';
-import confirmReducer from 'common/reducers/confirm-reducer';
+import confirmReducer, {
+  initialConfirmation,
+} from 'common/reducers/confirm-reducer';
 
 import {MyJobsApi} from 'common/myjobs-api';
 import ManageUsersRouter from './components/ManageUsersRouter';
 
-import activitiesListReducer from './reducers/activities-list-reducer';
-import {
-  doRefreshActivities,
-} from './actions/activities-list-actions';
+import activitiesListReducer, {
+  initialActivities,
+} from './reducers/activities-list-reducer';
+import {doRefreshActivities} from './actions/activities-list-actions';
+
+import userReducer, {initialUsers} from './reducers/user-reducer';
 
 installPolyfills();
 
 const reducer = combineReducers({
   activities: activitiesListReducer,
+  users: userReducer,
   confirmation: confirmReducer,
 });
 
@@ -29,7 +34,13 @@ const thunkExtra = {
   api: api,
 };
 
-const store = createReduxStore(reducer, undefined, thunkExtra);
+const initialState = {
+  activities: initialActivities,
+  users: initialUsers,
+  confirmation: initialConfirmation,
+};
+
+const store = createReduxStore(reducer, initialState, thunkExtra);
 store.dispatch(doRefreshActivities());
 
 render((

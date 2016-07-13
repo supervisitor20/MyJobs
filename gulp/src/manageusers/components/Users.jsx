@@ -1,10 +1,16 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import {Col, Row, Table} from 'react-bootstrap';
 
 import {Link} from 'react-router';
 
+import AssociatedRolesList from './AssociatedRolesList';
+import Status from './Status';
+
 class Users extends React.Component {
   render() {
+    const {users} = this.props;
+
     return (
       <Row>
         <Col xs={12}>
@@ -22,7 +28,28 @@ class Users extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {this.props.usersTableRows}
+                {Object.keys(users).map(key =>
+                  <tr key={key}>
+                    <td data-title="User Email">{users[key].email}</td>
+                    <td data-title="Associated Roles">
+                      <AssociatedRolesList
+                        roles={JSON.parse(users[key].roles)}/>
+                    </td>
+                    <td data-title="Status">
+                      <Status
+                        status={users[key].status}
+                        lastInvitation={users[key].lastInvitation} />
+                    </td>
+                    <td data-title="Edit">
+                      <Link
+                        to={`/user/${key}`}
+                        action="Edit"
+                        className="btn">
+                        Edit
+                      </Link>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </Table>
             <Row>
@@ -40,11 +67,9 @@ class Users extends React.Component {
 }
 
 Users.propTypes = {
-  usersTableRows: React.PropTypes.array.isRequired,
+  users: React.PropTypes.object.isRequired,
 };
 
-Users.defaultProps = {
-  usersTableRows: [],
-};
-
-export default Users;
+export default connect(state => ({
+  users: state.users,
+}))(Users);
