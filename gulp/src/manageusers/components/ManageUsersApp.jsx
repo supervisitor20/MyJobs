@@ -147,6 +147,6 @@ ManageUsersApp.propTypes = {
   children: React.PropTypes.object.isRequired,
 };
 
-export default connect(() => ({
-  loading: false,
+export default connect(state => ({
+  loading: state.loading.mainPage,
 }))(ManageUsersApp);

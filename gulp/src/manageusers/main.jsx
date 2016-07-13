@@ -6,9 +6,14 @@ import {render} from 'react-dom';
 import createReduxStore from 'common/create-redux-store';
 import {combineReducers} from 'redux';
 import {Provider} from 'react-redux';
+
 import confirmReducer, {
   initialConfirmation,
 } from 'common/reducers/confirm-reducer';
+import loadingReducer, {
+  initialLoading,
+} from 'common/reducers/loading-reducer';
+
 
 import {MyJobsApi} from 'common/myjobs-api';
 import ManageUsersRouter from './components/ManageUsersRouter';
@@ -25,6 +30,7 @@ installPolyfills();
 const reducer = combineReducers({
   activities: activitiesListReducer,
   users: userReducer,
+  loading: loadingReducer,
   confirmation: confirmReducer,
 });
 
@@ -38,6 +44,7 @@ const initialState = {
   activities: initialActivities,
   users: initialUsers,
   confirmation: initialConfirmation,
+  loading: initialLoading,
 };
 
 const store = createReduxStore(reducer, initialState, thunkExtra);
