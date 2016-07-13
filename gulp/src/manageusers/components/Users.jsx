@@ -1,7 +1,6 @@
 import React from 'react';
-import {Col, Row} from 'react-bootstrap';
+import {Col, Row, Table} from 'react-bootstrap';
 
-import UsersList from './UsersList';
 import {Link} from 'react-router';
 
 class Users extends React.Component {
@@ -13,8 +12,19 @@ class Users extends React.Component {
             <h2>Users</h2>
           </div>
           <div className="product-card-full no-highlight">
-
-            <UsersList usersTableRows={this.props.usersTableRows} />
+            <Table striped id="no-more-tables">
+              <thead>
+                <tr>
+                  <th>User Email</th>
+                  <th>Associated Roles</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.props.usersTableRows}
+              </tbody>
+            </Table>
             <Row>
               <Link
                 className="primary pull-right btn btn-default"
