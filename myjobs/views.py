@@ -998,58 +998,29 @@ def api_get_users(request):
     """
     GET /manage-users/api/users/
     Retrieves all users associated with a company
+
     """
-    ctx = {}
-
     company = get_company_or_404(request)
-
-    # Retrieve users already assigned to roles associated with this company
-    users_available = []
-    roles = Role.objects.filter(company=company)
-    for role in roles:
-        role_id_temp = role.id
-        users = User.objects.filter(roles__id=role_id_temp)
-        for user in users:
-            if user not in users_available:
-                users_available.append(user)
-
-    # Build JSON response
-    for user in users_available:
-
-        ctx[user.id] = {}
-
-        # Email
-        ctx[user.id]["email"] = user.email
-
-        # Roles
-        roles_assigned_to_user = user.roles.filter(company=company)
-        ctx[user.id]["roles"] = serializers.serialize("json",
-                                                      roles_assigned_to_user,
-                                                      fields=('name'))
-
-        # Status
-        ctx[user.id]["status"] = user.is_verified
-
-        # Calculate pending since date
-        # Didn't use user.last_response because that 'denotes the last time
-        # they interacted with any email, not just invitations.' -Troy 1/13/16
-        # Instead 1) Find all invitations for this user
-        # 2) get the latest such invitation and 3) use that date
-        if user.is_verified == True:
-            lastInvitation = ''
-        else:
-            invitations = (Invitation
-                           .objects
-                           .filter(invitee_email=user.email)
-                           .order_by('-invited'))
+    users = User.objects.select_related('roles').filter(roles__company=company)
+    ctx = {}
+    for user in users:
+        last_invitation = ""
+        if not user.is_verified:
+            invitations = Invitation.objects.filter(
+                invitee_email=user.email).order_by("-invited")
             if invitations:
-                lastInvitation = invitations[0].invited.strftime('%Y-%m-%d')
-            else:
-                lastInvitation = ''
-        ctx[user.id]["lastInvitation"] = lastInvitation
+                last_invitation = invitations.first().invited.strftime(
+                    "%Y-%m-%d")
 
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
+        ctx[user.pk] = {
+            'email': user.email,
+            'isVerified': user.is_verified,
+            'lastInvitation': last_invitation,
+            'roles': list(user.roles.filter(company=company).values_list(
+                'name', flat=True))
+        }
+
+    return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 @requires('read user')
 def api_get_specific_user(request, user_id=0):

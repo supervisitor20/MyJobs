@@ -4,7 +4,6 @@ import {Col, Row, Table} from 'react-bootstrap';
 
 import {Link} from 'react-router';
 
-import AssociatedRolesList from './AssociatedRolesList';
 import Status from './Status';
 
 class Users extends React.Component {
@@ -32,18 +31,22 @@ class Users extends React.Component {
                   <tr key={key}>
                     <td data-title="User Email">{users[key].email}</td>
                     <td data-title="Associated Roles">
-                      <AssociatedRolesList
-                        roles={JSON.parse(users[key].roles)}/>
+                      <ul>
+                        {users[key].roles.map((role, index) =>
+                          <li key={index}>
+                            {role}
+                          </li>
+                        )}
+                      </ul>
                     </td>
                     <td data-title="Status">
                       <Status
-                        status={users[key].status}
+                        status={users[key].isVerified}
                         lastInvitation={users[key].lastInvitation} />
                     </td>
                     <td data-title="Edit">
                       <Link
                         to={`/user/${key}`}
-                        action="Edit"
                         className="btn">
                         Edit
                       </Link>
