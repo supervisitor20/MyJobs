@@ -1,6 +1,7 @@
 import pytz
 
 from django import forms
+from django.conf import settings
 from django.forms import (ModelForm, ChoiceField, Select, Textarea,
                           Form, CharField, PasswordInput)
 from passwords.fields import PasswordField
@@ -165,6 +166,17 @@ class ChangePasswordForm(Form):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(ChangePasswordForm, self).__init__(*args, **kwargs)
+
+    def clean_new_password1(self):
+        new_password = self.cleaned_data['new_password1']
+        if self.user.is_password_in_history(new_password):
+            limit = settings.PASSWORD_HISTORY_ENTRIES
+            raise ValidationError(
+                u'The new password must be different from the ' +
+                u'previous %(count)d passwords',
+                params={'count': limit})
+        else:
+            return self.cleaned_data['new_password1']
 
     def clean_password(self):
         password = self.cleaned_data['password']
