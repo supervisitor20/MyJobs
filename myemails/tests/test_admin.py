@@ -7,5 +7,5 @@ class TestAdminLoginForm(MyJobsBase):
         attributes = form.fields['password'].widget.attrs
         self.assertDictContainsSubset({'autocomplete': 'off'}, attributes,  
             "The widget of the password field of the admin login form should "\
-            "have the attribute autocomplete set to 'off'.  It's value \n%s\n"\
+            "have the attribute autocomplete set to 'off'.  Its value \n%s\n"\
             "does not contain {'autocomplete':'off'}" % attributes)
