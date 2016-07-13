@@ -15,7 +15,7 @@ from setup import MyJobsBase
 
 class UserResourceTestCase(MyJobsBase):
     def setUp(self):
-        super(UserResourceTests, self).setUp()
+        super(UserResourceTestCase, self).setUp()
         create_api_key(User, instance=self.user, created=True)
         self.client = TestClient(
             path='/api/v1/user/',

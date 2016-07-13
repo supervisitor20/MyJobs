@@ -1304,21 +1304,23 @@ def api_delete_user(request, user_id=0):
                                 content_type="application/json")
         if user.is_last_admin(company):
             ctx["success"] = "false"
-            ctx["message"] = (u"{email} is the last admin for {company}. "
-                    "You must add another admin before deleting "
-                    "{email}.").format(email=user.email, 
-                            company=company)
+            ctx["message"] = (
+                u"{email} is the last admin for {company}. "
+                "You must add another admin before deleting "
+                "{email}.").format(email=user.email,
+                                   company=company)
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
         roles = Role.objects.filter(company=company)
         for role in roles:
-            user[0].roles.remove(role.id)
+            user.roles.remove(role.id)
 
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
+
 
 def request_company_access(request):
     """
