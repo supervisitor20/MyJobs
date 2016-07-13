@@ -19,7 +19,8 @@ def presave_solr(sender, instance, *args, **kwargs):
 
     """
     ignore_fields = ['last_modified', 'last_response', 'last_sent',
-                     'date_updated', 'last_login', 'date_joined']
+                     'date_updated', 'last_login', 'date_joined',
+                     'password_last_modified', 'failed_login_count']
     setattr(instance, 'solr_update', False)
     if instance.pk:
         # The instance might have a pk but still not actually
@@ -138,7 +139,9 @@ def profileunits_to_dict(user_id):
             if (field_type != 'OneToOneField' and
                     not any(s in field.attname
                             for s in ['password', 'timezone',
-                                      'deactivate_type'])):
+                                      'deactivate_type',
+                                      'password_last_modified',
+                                      'failed_login_count'])):
                 field_name = "%s_%s" % (model_name, field.attname)
                 solr_dict[field_name] = filter(None, list(obj_list))
 
@@ -169,7 +172,9 @@ def object_to_dict(model, obj):
                 if (field_type != 'OneToOneField' and
                         not any(s in field.attname
                                 for s in ['password', 'timezone',
-                                          'deactivate_type'])):
+                                          'deactivate_type',
+                                          'password_last_modified',
+                                          'failed_login_count'])):
                     field_name = "User_%s" % field.attname
                     solr_dict[field_name] = getattr(obj.user, field.attname)
         else:
@@ -180,7 +185,9 @@ def object_to_dict(model, obj):
         if (field_type != 'OneToOneField' and
                 not any(s in field.attname
                         for s in ['password', 'timezone', 'text_only',
-                                  'deactivate_type', 'last_modified'])):
+                                  'deactivate_type', 'last_modified',
+                                  'password_last_modified',
+                                  'failed_login_count'])):
             field_name = "%s_%s" % (model.__name__, field.attname)
             solr_dict[field_name] = getattr(obj, field.attname)
     return solr_dict

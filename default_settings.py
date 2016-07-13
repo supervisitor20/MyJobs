@@ -109,6 +109,8 @@ AUTHENTICATION_BACKENDS = (
     'backends.CaseInsensitiveAuthBackend',
     'django.contrib.auth.backends.ModelBackend',  # default
     'django.contrib.auth.backends.RemoteUserBackend',  # http
+    'backends.CaseInsensitiveAuthFailCatcher',
+
 )
 
 # Celery settings
@@ -581,6 +583,11 @@ PASSWORD_COMPLEXITY = {
     'DIGITS': 1,
     'PUNCTUATION': 1
 }
+
+# Password expiration
+PASSWORD_EXPIRATION_DAYS = 90
+PASSWORD_HISTORY_ENTRIES = 4
+PASSWORD_ATTEMPT_LOCKOUT = 6
 
 # email types
 ACTIVATION = 1
