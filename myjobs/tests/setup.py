@@ -148,7 +148,7 @@ class MyJobsBase(TestCase):
 
     def assertRequires(self, view_name, *activities, **kwargs):
         """
-        Asserst that the given view is only accessible when a user has a role
+        Asserts that the given view is only accessible when a user has a role
         with the given activities.
 
         """

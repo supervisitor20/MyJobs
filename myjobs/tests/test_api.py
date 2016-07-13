@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from tastypie.models import create_api_key
 
+from myjobs.tests.factories import RoleFactory
 from myjobs.models import User
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.test_views import TestClient
@@ -12,9 +13,9 @@ from mysearches.models import SavedSearch
 from setup import MyJobsBase
 
 
-class UserResourceTests(MyJobsBase):
+class UserResourceTestCase(MyJobsBase):
     def setUp(self):
-        super(UserResourceTests, self).setUp()
+        super(UserResourceTestCase, self).setUp()
         create_api_key(User, instance=self.user, created=True)
         self.client = TestClient(
             path='/api/v1/user/',
@@ -54,10 +55,44 @@ class UserResourceTests(MyJobsBase):
             self.assertFalse(content['user_created'])
             self.assertEqual(content['email'].lower(), 'alice@example.com')
 
-
-class SavedSearchResourceTests(MyJobsBase):
+class UserManagementTestCase(MyJobsBase):
     def setUp(self):
-        super(SavedSearchResourceTests, self).setUp()
+        super(UserManagementTestCase, self).setUp()
+        self.role.activities = self.activities
+
+    def test_protect_admin(self):
+        """
+        Can't delete all roles for the last admin associated with a company
+
+        """
+        self.assertEqual(self.role.user_set.all().count(), 1)
+        empty_role = RoleFactory.build(company=self.company, name="Empty")
+
+        response = self.client.post(path='/manage-users/api/users/edit/%s/' % 
+                                    self.user.id,
+                data={'assigned_roles[]': ['Empty']})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.role.user_set.all().count(), 1, 
+                         "Removed last User from Admin Role")
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data['success'], "false")
+        self.assertIn("one user assigned to the Admin role",
+                      response_data['message'],
+                      "Unassigning an admin role failed for the wrong reason")
+
+        response = self.client.delete(path='/manage-users/api/users/delete/%s/' % self.user.id)
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.role.user_set.all().count(), 1, 
+                         "Removed last User from Admin Role")
+        self.assertEqual(response_data['success'], "false")
+        self.assertIn("You must add another admin before deleting",
+                      response_data['message'], "Delete user failed for the wrong reason")
+
+
+class SavedSearchResourceTestCase(MyJobsBase):
+    def setUp(self):
+        super(SavedSearchResourceTestCase, self).setUp()
         self.client = TestClient(
             path='/api/v1/savedsearch/',
             data={'email': 'alice@example.com',

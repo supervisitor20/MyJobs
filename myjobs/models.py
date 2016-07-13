@@ -357,6 +357,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
+    def is_last_admin(self, company):
+        return list(company.role_set.filter(name="Admin").values_list(
+            'user', flat=True)) == [self.id]
+
     natural_key = __unicode__
 
     def save(self, force_insert=False, force_update=False, using=None,
