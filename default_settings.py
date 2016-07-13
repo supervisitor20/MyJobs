@@ -129,6 +129,9 @@ CELERY_QUEUES = {
     'solr': {
         'binding_key': 'solr.#'
     },
+    'mongo': {
+        'binding_key': 'mongo.#'
+    },
     'priority': {
         'binding_key': 'priority.#'
     },
@@ -220,12 +223,12 @@ CELERY_ROUTES = {
         'routing_key': 'myjobs.clean_import_records'
     },
     'tasks.seoxml_to_mongo': {
-        'queue': 'solr',
-        'routing_key': 'solr.seoxml_to_mongo'
+        'queue': 'mongo',
+        'routing_key': 'mongo.seoxml_to_mongo'
     },
     'tasks.jobsfs_to_mongo': {
-        'queue': 'solr',
-        'routing_key': 'solr.jobsfs_to_mongo'
+        'queue': 'mongo',
+        'routing_key': 'mongo.jobsfs_to_mongo'
     },
 }
 CELERYBEAT_SCHEDULE = {

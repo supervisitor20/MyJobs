@@ -14,9 +14,6 @@ class Roles extends React.Component {
           <div className="product-card-full no-highlight">
 
             <RolesList rolesTableRows={this.props.rolesTableRows} />
-
-            <hr/>
-
             <div className="row">
               <Link to="role/add" query={{action: 'Add'}} className="primary pull-right btn btn-default">Add Role</Link>
             </div>
