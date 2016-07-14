@@ -18,9 +18,6 @@ import confirmReducer, {
 import loadingReducer, {
   initialLoading,
 } from 'common/reducers/loading-reducer';
-import validationReducer, {
-  initialValidation,
-} from './reducers/validation-reducer';
 import activitiesListReducer, {
   initialActivities,
 } from './reducers/activities-list-reducer';
@@ -32,9 +29,8 @@ installPolyfills();
 const reducer = combineReducers({
   activities: activitiesListReducer,
   company: companyReducer,
-  loading: loadingReducer,
   confirmation: confirmReducer,
-  validation: validationReducer,
+  loading: loadingReducer,
 });
 
 const initialState = {
@@ -42,7 +38,6 @@ const initialState = {
   company: initialCompany,
   confirmation: initialConfirmation,
   loading: initialLoading,
-  validation: initialValidation,
 };
 
 const myJobsApi = new MyJobsApi(getCsrf());

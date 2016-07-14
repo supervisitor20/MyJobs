@@ -8,11 +8,15 @@ import {Link} from 'react-router';
 
 import {Loading} from 'common/ui/Loading';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
-import {addRolesAction} from '../actions/validation-actions';
 import User from './User';
-import {doRefreshUsers, doRefreshRoles} from '../actions/company-actions';
+import {
+  addRolesAction,
+  clearValidationAction,
+  validateEmailAction,
+  doRefreshUsers,
+  doRefreshRoles,
+} from '../actions/company-actions';
 import {doRefreshActivities} from '../actions/activities-list-actions';
-import {clearValidationAction} from '../actions/validation-actions';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
 import Confirm from 'common/ui/Confirm';
@@ -59,9 +63,9 @@ export class ManageUsersApp extends React.Component {
     dispatch(markPageLoadingAction(true));
 
     // refresh company data, including roles, users, and available activities
-    await dispatch(doRefreshUsers());
-    await dispatch(doRefreshActivities());
-    await dispatch(doRefreshRoles());
+    dispatch(doRefreshUsers());
+    dispatch(doRefreshActivities());
+    dispatch(doRefreshRoles());
     dispatch(clearValidationAction());
 
     switch (lastComponent) {
@@ -69,7 +73,10 @@ export class ManageUsersApp extends React.Component {
       const {users} = this.props;
       if (users[params.userId]) {
         const user = users[params.userId];
-        await dispatch(addRolesAction(user.roles));
+        dispatch(addRolesAction(user.roles));
+      } else {
+        dispatch(validateEmailAction(''));
+        dispatch(addRolesAction([]));
       }
 
       break;

@@ -3,6 +3,10 @@ import {errorAction} from '../../common/actions/error-actions';
 
 export const updateUsersAction = createAction('UPDATE_USERS');
 export const updateRolesAction = createAction('UPDATE_ROLES');
+export const validateEmailAction = createAction('VALIDATE_EMAIL');
+export const addRolesAction = createAction('ADD_ROLES');
+export const removeRolesAction = createAction('REMOVE_ROLES');
+export const clearValidationAction = createAction('CLEAR_VALIDATION');
 
 /**
  * Asynchronously fetches an updated users object where keys are user ids and

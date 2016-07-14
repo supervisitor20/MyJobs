@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, Col, FormControl, Row} from 'react-bootstrap';
 import {Link} from 'react-router';
-import {difference} from 'lodash-compat';
+import {difference, flatten} from 'lodash-compat';
 import TagSelect from 'common/ui/tags/TagSelect';
 import FieldWrapper from 'common/ui/FieldWrapper';
 
@@ -10,16 +10,14 @@ import HelpText from './HelpText';
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
 import {
+  addRolesAction,
+  removeRolesAction,
+  validateEmailAction,
   doRefreshUsers,
   doUpdateUserRoles,
   doAddUser,
   doRemoveUser,
 } from '../actions/company-actions';
-import {
-  addRolesAction,
-  removeRolesAction,
-  validateEmailAction,
-} from '../actions/validation-actions';
 
 class User extends React.Component {
   constructor(props) {
@@ -103,6 +101,10 @@ class User extends React.Component {
 
     const userId = this.props.params.userId;
     const user = users[userId] || {};
+    const errors = flatten(Object.keys(validation).map(key =>
+      validation[key].errors));
+    const isLastAdmin = flatten(Object.keys(users).map(key =>
+      users[key].roles.filter(role => role === 'Admin'))).length < 2;
     const available = difference(Object.keys(roles), validation.roles.value)
       .map(role => ({
         value: role,
@@ -114,12 +116,6 @@ class User extends React.Component {
       value: role,
       display: role,
     }));
-
-    let deleteUserButton = '';
-
-    if (userId) {
-      deleteUserButton = <Button className="pull-right" onClick={() => this.handleDelete()}>Delete User</Button>;
-    }
 
     const apiResponseHelp = this.state.apiResponseHelp;
 
@@ -167,10 +163,17 @@ class User extends React.Component {
               <Col xs={12}>
                 <Button
                   className="primary pull-right"
+                  disabled={errors.length}
                   onClick={() => this.handleSave()}>
                   Save User
                 </Button>
-                {deleteUserButton}
+                { userId && !isLastAdmin ?
+                  <Button
+                    className="pull-right"
+                    onClick={() => this.handleDelete()}>
+                    Delete User
+                  </Button> : null
+                }
                 <Link to="users" className="pull-right btn btn-default">
                   Cancel
                 </Link>
@@ -197,5 +200,5 @@ User.propTypes = {
 export default connect(state => ({
   users: state.company.users,
   roles: state.company.roles,
-  validation: state.validation,
+  validation: state.company.validation,
 }))(User);
