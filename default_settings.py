@@ -712,3 +712,6 @@ IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
 
 # The email host used to parse communication records
 PRM_EMAIL_HOST = 'my.jobs'
+
+MONGO_HOST = "mongodb://mongo_server:27017/"
+
