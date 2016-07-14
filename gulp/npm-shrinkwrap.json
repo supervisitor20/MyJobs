@@ -1120,14 +1120,8 @@
     "lodash._baseindexof": {
       "version": "3.1.0"
     },
-    "lodash._baseiteratee": {
-      "version": "4.7.0"
-    },
     "lodash._basetostring": {
       "version": "3.0.1"
-    },
-    "lodash._baseuniq": {
-      "version": "4.6.0"
     },
     "lodash._basevalues": {
       "version": "3.0.0"
@@ -1143,9 +1137,6 @@
     },
     "lodash._createcache": {
       "version": "3.1.2"
-    },
-    "lodash._createset": {
-      "version": "4.0.3"
     },
     "lodash._getnative": {
       "version": "3.9.1"
@@ -1170,14 +1161,6 @@
     },
     "lodash._root": {
       "version": "3.0.1"
-    },
-    "lodash._stringtopath": {
-      "version": "4.8.0",
-      "dependencies": {
-        "lodash._basetostring": {
-          "version": "4.12.0"
-        }
-      }
     },
     "lodash.assign": {
       "version": "3.2.0"
@@ -1215,9 +1198,6 @@
     "lodash.pick": {
       "version": "3.1.0"
     },
-    "lodash.rest": {
-      "version": "4.0.3"
-    },
     "lodash.restparam": {
       "version": "3.6.1"
     },
@@ -1229,14 +1209,6 @@
     },
     "lodash.toplainobject": {
       "version": "3.0.0"
-    },
-    "lodash.unionby": {
-      "version": "4.6.0",
-      "dependencies": {
-        "lodash._baseflatten": {
-          "version": "4.2.1"
-        }
-      }
     },
     "longest": {
       "version": "1.0.1"

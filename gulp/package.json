@@ -37,8 +37,6 @@
     "jquery-param": "~0.2.0",
     "less": "~1.6.1",
     "lodash-compat": "~3.10.1",
-    "lodash.unionby": "^4.6.0",
-    "lodash.differenceby": "^4.6.0",
     "moment": "^2.13.0",
     "react": "^0.14.3",
     "react-addons-update": "^0.14.3",
