@@ -26,7 +26,6 @@ urlpatterns = patterns(
     '',
     url(r'^ajax/', include('automation.urls')),
     url('', include('myjobs.urls')),
-    url(r'^candidates/', include('mydashboard.urls')),
     url(r'^profile/', include('myprofile.urls')),
     url(r'^saved-search/', include('mysearches.urls')),
     url(r'^api/', include(v1_api.urls)),

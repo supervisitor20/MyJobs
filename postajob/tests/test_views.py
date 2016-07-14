@@ -5,11 +5,10 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.http import Http404
 
 from seo.tests.setup import DirectSEOBase
-from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
-                                         SeoSiteFactory)
+from seo.tests.factories import (BusinessUnitFactory, CompanyFactory,
+                                 SeoSiteFactory)
 from myjobs.decorators import MissingActivity
 from myjobs.tests.setup import TestClient
 from myjobs.tests.factories import (UserFactory, RoleFactory, AppAccessFactory,
@@ -30,7 +29,6 @@ from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
                                       RowFactory, RowOrderFactory,
                                       BlockOrderFactory)
 from seo.models import Company, SeoSite
-from universal.helpers import build_url
 
 
 class PostajobTestBase(DirectSEOBase):
@@ -67,7 +65,8 @@ class PostajobTestBase(DirectSEOBase):
             activities=self.posting_activities + self.marketplace_activities)
         self.user.roles.add(self.admin_role)
 
-        self.site = SeoSiteFactory(canonical_company=self.company)
+        self.site = SeoSiteFactory(canonical_company=self.company,
+                                   domain='test.jobs')
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
         self.company.job_source_ids.add(self.bu)

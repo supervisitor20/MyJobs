@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from mock import patch, Mock
 
 from myjobs.tests.setup import MyJobsBase
-from mydashboard.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.helpers import return_file
 from mymessages.models import MessageInfo

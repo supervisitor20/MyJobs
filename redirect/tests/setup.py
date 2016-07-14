@@ -16,7 +16,7 @@ class RedirectBase(TransactionTestCase):
         super(RedirectBase, self).setUp()
         self._middleware_classes = settings.MIDDLEWARE_CLASSES
         self._template_context = settings.TEMPLATE_CONTEXT_PROCESSORS
-        self._default_solr = settings.SOLR.get('default', None)
+        self._default_solr = getattr(settings, 'SOLR', None)
 
         # Set some settings that don't get set when not using redirect
         # settings.
@@ -25,7 +25,7 @@ class RedirectBase(TransactionTestCase):
         settings.MIDDLEWARE_CLASSES = redirect_settings.MIDDLEWARE_CLASSES
         settings.TEMPLATE_CONTEXT_PROCESSORS = (
             redirect_settings.TEMPLATE_CONTEXT_PROCESSORS)
-        settings.SOLR['default'] = 'http://127.0.0.1:8983/solr/seo/'
+        settings.SOLR = {'default': 'http://127.0.0.1:8983/solr/seo/'}
         settings.options = secrets.options
         settings.my_agent_auth = secrets.my_agent_auth
         clear_url_caches()
@@ -61,4 +61,4 @@ class RedirectBase(TransactionTestCase):
         settings.MIDDLEWARE_CLASSES = self._middleware_classes
         settings.TEMPLATE_CONTEXT_PROCESSORS = self._template_context
         if self._default_solr:
-            settings.SOLR['default'] = self._default_solr
+            settings.SOLR = self._default_solr
