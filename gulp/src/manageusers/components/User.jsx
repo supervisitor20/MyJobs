@@ -13,6 +13,7 @@ import {
   doRefreshUsers,
   doUpdateUserRoles,
   doAddUser,
+  doRemoveUser,
 } from '../actions/company-actions';
 import {
   addRolesAction,
@@ -29,12 +30,11 @@ class User extends React.Component {
     };
     // React components using ES6 no longer autobind 'this' to non React methods
     // Thank you: https://github.com/goatslacker/alt/issues/283
-    this.handleSaveUserClick = this.handleSaveUserClick.bind(this);
     this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
   }
 
   async handleSave() {
-    const {dispatch, users, validation} = this.props;
+    const {dispatch, history, users, validation} = this.props;
     const userId = this.props.params.userId;
     const user = users[userId] || {};
     // TODO: Error handling
@@ -49,52 +49,17 @@ class User extends React.Component {
       dispatch(doAddUser(validation.email.value, validation.roles.value));
     }
 
-    this.props.history.pushState(null, '/users');
+    history.pushState(null, '/users');
   }
 
-  async handleSaveUserClick() {
-    // Grab form fields and validate TODO: Warn user? If they remove a user
-    // from all roles, they will have to reinvite him.
-    const {api, dispatch, validation} = this.props;
-    const userId = this.props.params.userId;
-    const userEmail = validation.email.value;
-    let assignedRoles = validation.roles.value;
+  async handleDelete() {
+    const {history, dispatch} = this.props;
+    const {userId} = this.props.params;
+    const message = 'Are you sure you want to delete this user?';
+    if (await runConfirmInPlace(dispatch, message)) {
+      dispatch(doRemoveUser(userId));
 
-    // Format properly
-    assignedRoles = Object.keys(assignedRoles).map(key =>
-      assignedRoles[key].display);
-
-    let url = '';
-    if (userId) {
-      url = '/manage-users/api/users/edit/' + userId + '/';
-    } else {
-      url = '/manage-users/api/users/create/';
-    }
-
-    // Build data to send
-    const dataToSend = {};
-    dataToSend.assigned_roles = assignedRoles;
-    dataToSend.user_email = userEmail;
-
-    // Submit to server
-    try {
-      const response = await api.post(url, dataToSend);
-      if ( response.success === 'true' ) {
-        // Reload API
-        dispatch(doRefreshUsers());
-        // Redirect user
-        this.props.history.pushState(null, '/users');
-      } else if ( response.success === 'false' ) {
-        this.setState({
-          apiResponseHelp: response.message,
-        });
-      }
-    } catch (e) {
-      if (e.response && e.response.status === 403) {
-        this.setState({
-          apiResponseHelp: 'Unable to save user. Insufficient privileges.',
-        });
-      }
+      history.pushState(null, '/users');
     }
   }
 
@@ -153,7 +118,7 @@ class User extends React.Component {
     let deleteUserButton = '';
 
     if (userId) {
-      deleteUserButton = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>;
+      deleteUserButton = <Button className="pull-right" onClick={() => this.handleDelete()}>Delete User</Button>;
     }
 
     const apiResponseHelp = this.state.apiResponseHelp;

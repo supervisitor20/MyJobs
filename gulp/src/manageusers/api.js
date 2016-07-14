@@ -33,4 +33,11 @@ export default class Api {
 
     return (await promise);
   }
+
+  async removeUser(userId) {
+    const promise = this.api.delete(
+      '/manage-users/api/users/remove/' + userId + '/');
+
+    return (await promise);
+  }
 }

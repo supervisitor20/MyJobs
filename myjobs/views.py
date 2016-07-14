@@ -1066,68 +1066,6 @@ def api_update_user_roles(request, user_id=0):
     return HttpResponse('finished modifying roles.')
 
 
-@requires('read user')
-def api_get_specific_user(request, user_id=0):
-    """
-    GET /manage-users/api/users/NUMBER
-    Retrieves specific user
-    """
-    ctx = {}
-
-    company = get_company_or_404(request)
-    user = User.objects.select_related('roles').filter(id=user_id)
-
-    # Check if user exists
-    if user.exists() is False:
-        ctx["success"] = "false"
-        ctx["message"] = "User does not exist."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
-
-    # Check if the editor has the right to edit this user (i.e. is the user
-    # affiliated with any of the current company's roles?)
-    # 1. List current company's roles
-    current_companys_roles = Role.objects.filter(company=company)
-    # 2. List user's roles
-    roles_assigned_to_user = user[0].roles.all()
-    # 3. Overlap?
-    if bool(set(current_companys_roles)
-            & set(roles_assigned_to_user)) is "False":
-        ctx["success"] = "false"
-        ctx["message"] = "You do not have permission to view this user"
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-
-    # Return user
-    user_id = user[0].id
-
-    ctx[user_id] = {}
-
-    # Email
-    ctx[user_id]["email"] = user[0].email
-
-    # Available Roles (constrained by company)
-    ctx[user_id]["roles"] = {}
-
-    available_roles = current_companys_roles
-
-    ctx[user_id]["roles"]["available"] = serializers.serialize(
-        "json",
-        available_roles)
-
-    # Assigned Roles
-    roles_assigned_to_user = user[0].roles.filter(company=company)
-    ctx[user_id]["roles"]["assigned"] = serializers.serialize(
-        "json",
-        roles_assigned_to_user,
-        fields=('name'))
-
-    # Status
-    ctx[user_id]["status"] = user[0].is_verified
-
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
-
-
 @requires('create user')
 def api_add_user(request):
     """
@@ -1154,161 +1092,8 @@ def api_add_user(request):
     return HttpResponse("user added to company.")
 
 
-@requires('create user')
-def api_create_user(request):
-    """
-    POST /manage-users/api/user/create
-    Creates a new user
-
-    Inputs:
-    :user_email:                user email
-    :assigned_roles:            roles assigned to this user
-
-    Returns:
-    :success:                   boolean
-
-    """
-    ctx = {'success': 'true'}
-
-    if request.method != "POST":
-        ctx["success"] = "false"
-        ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
-    else:
-        company = get_company_or_404(request)
-        existing_roles = set()
-
-        if request.POST.get("user_email", ""):
-            user_email = request.POST['user_email']
-
-        assigned_roles = request.POST.getlist("assigned_roles[]", [])
-        new_roles = Role.objects.filter(company=company,
-                                        name__in=assigned_roles)
-        if not new_roles:
-            ctx["success"] = "false"
-            ctx["message"] = "Each user must be assigned to at least one role."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        user = User.objects.get_email_owner(email=user_email)
-        # Does user already exist?
-        if user:
-            existing_roles = set(user.roles.filter(company=company))
-            user.roles.add(*new_roles)
-
-            ctx["message"] = "User already exists. Role invitation email sent."
-        else:
-            ctx["message"] = "User created. Invitation email sent."
-
-        # Send one invitation per new role. This will handle creating the user
-        # if one doesn't exist.
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user_email, company, role.name)
-
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-
-
-@requires('update user')
-def api_edit_user(request, user_id=0):
-    """
-    POST /manage-users/api/users/edit
-    Edits an existing user
-
-    Inputs:
-    :user_id:                   unique id of user
-    :assigned_roles:            roles assigned to this role
-
-    Returns:
-    :success:                   boolean
-    """
-    ctx = {}
-
-    if request.method != "POST":
-        ctx["success"] = "false"
-        ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-    else:
-        company = get_company_or_404(request)
-
-        try:
-            user = User.objects.select_related('roles').get(pk=user_id)
-        except User.DoesNotExist:
-            ctx["success"] = "false"
-            ctx["message"] = "User does not exist."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # Check if the editor has the right to edit this user (i.e. is the user
-        # affiliated with any of the current company's roles?)
-        # 1. List current company's roles
-        company_roles = Role.objects.filter(company=company)
-        # 2. List user's roles
-        roles_assigned_to_user = user.roles.all()
-        # 3. Overlap?
-        if set(company_roles).isdisjoint(roles_assigned_to_user):
-            ctx["success"] = "false"
-            ctx["message"] = "You do not have permission to edit this user"
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # INPUT - assigned_roles
-        assigned_roles = request.POST.getlist("assigned_roles[]", "")
-
-        # Check that at least one role is selected
-        if assigned_roles == "" or assigned_roles[0] == "":
-            ctx["success"] = "false"
-            ctx["message"] = "A user must be assigned to at least one role."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # We shouldn't unassign the Admin role for the last company Admin
-        if "Admin" not in assigned_roles and user.is_last_admin(company):
-            ctx["success"] = "false"
-            ctx["message"] = ("To remove the Admin role from this "
-                              "user you must first assign the role to "
-                              "another user. Every company "
-                              "must have at least one user assigned "
-                              "to the Admin role.")
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # Update the user
-
-        # Create list of assigned_roles_ids from role names
-        assigned_roles_ids = []
-        for i, role in enumerate(assigned_roles):
-            role_object = Role.objects.filter(company=company).filter(name=role)
-            role_id = role_object[0].id
-            assigned_roles_ids.append(role_id)
-
-        existing_roles = set(user.roles.filter(company=company))
-
-        # Add new roles to user
-        for assigned_role in assigned_roles_ids:
-            user.roles.add(assigned_role)
-
-        # Remove roles from user if not in new list
-        for currently_assigned_role in user.roles.filter(company=company):
-            if currently_assigned_role.id not in assigned_roles_ids:
-                user.roles.remove(currently_assigned_role.id)
-
-        # Notify the user
-        new_roles = set(Role.objects.filter(company=company,
-                                            name__in=assigned_roles))
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user.email, company, role.name)
-
-        # # RETURN - boolean
-        ctx["success"] = "true"
-
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-
-
 @requires('delete user')
-def api_delete_user(request, user_id=0):
+def api_remove_user(request, user_id=0):
     """
     DELETE /manage-users/api/users/delete/NUMBER
     Removes user from roles managed by current company
@@ -1316,43 +1101,13 @@ def api_delete_user(request, user_id=0):
     Inputs:
     :user_id:                   id of user
 
-    Returns:
-    :success:                   boolean
     """
-    ctx = {}
+    company = get_company_or_404(request)
+    user = User.objects.filter(pk=user_id).first()
 
-    if request.method != "DELETE":
-        ctx["success"] = "false"
-        ctx["message"] = "DELETE method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
-    else:
-        company = get_company_or_404(request)
+    user.roles.remove(*user.roles.filter(company=company))
 
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            ctx["success"] = "false"
-            ctx["message"] = "User does not exist."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-        if user.is_last_admin(company):
-            ctx["success"] = "false"
-            ctx["message"] = (
-                u"{email} is the last admin for {company}. "
-                "You must add another admin before deleting "
-                "{email}.").format(email=user.email,
-                                   company=company)
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        roles = Role.objects.filter(company=company)
-        for role in roles:
-            user.roles.remove(role.id)
-
-        ctx["success"] = "true"
-        ctx["message"] = "User deleted."
-
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+    return HttpResponse("user removed from company.")
 
 
 def request_company_access(request):

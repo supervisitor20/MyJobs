@@ -57,3 +57,14 @@ export function doAddUser(email, roles) {
     }
   };
 }
+
+export function doRemoveUser(userId) {
+  return async (dispatch, _, {api}) => {
+    try {
+      await api.removeUser(userId);
+      dispatch(doRefreshUsers());
+    } catch (exc) {
+      dispatch(errorAction(exc.message));
+    }
+  };
+}
