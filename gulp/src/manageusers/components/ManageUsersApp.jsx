@@ -52,25 +52,24 @@ export class ManageUsersApp extends React.Component {
   }
 
   async handleNewLocation(_, loc) {
-    const {dispatch, users} = this.props;
+    const {dispatch} = this.props;
     const lastComponent = loc.components[loc.components.length - 1];
     const params = loc.params;
 
     dispatch(markPageLoadingAction(true));
 
     // refresh company data, including roles, users, and available activities
-    dispatch(doRefreshUsers());
-    dispatch(doRefreshActivities());
-    dispatch(doRefreshRoles());
+    await dispatch(doRefreshUsers());
+    await dispatch(doRefreshActivities());
+    await dispatch(doRefreshRoles());
     dispatch(clearValidationAction());
 
     switch (lastComponent) {
     case User:
+      const {users} = this.props;
       if (users[params.userId]) {
         const user = users[params.userId];
-        if (user) {
-          dispatch(addRolesAction(user.roles));
-        }
+        await dispatch(addRolesAction(user.roles));
       }
 
       break;
