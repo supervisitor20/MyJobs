@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 
 class Activities extends React.Component {
   render() {
-    const {activities} = this.props;
+    const activities = this.props.activities || {};
     return (
       <Row>
         <Col xs={12}>

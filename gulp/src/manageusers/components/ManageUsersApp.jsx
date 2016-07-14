@@ -9,9 +9,9 @@ import {Link} from 'react-router';
 import {Loading} from 'common/ui/Loading';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {addRolesAction} from '../actions/validation-actions';
-import Users from './Users';
 import User from './User';
-import {doRefreshUsers} from '../actions/user-actions';
+import {doRefreshUsers, doRefreshRoles} from '../actions/company-actions';
+import {doRefreshActivities} from '../actions/activities-list-actions';
 import {clearValidationAction} from '../actions/validation-actions';
 import AssociatedUsersList from './AssociatedUsersList';
 import AssociatedActivitiesList from './AssociatedActivitiesList';
@@ -56,13 +56,15 @@ export class ManageUsersApp extends React.Component {
     const lastComponent = loc.components[loc.components.length - 1];
     const params = loc.params;
 
+    dispatch(markPageLoadingAction(true));
+
+    // refresh company data, including roles, users, and available activities
+    dispatch(doRefreshUsers());
+    dispatch(doRefreshActivities());
+    dispatch(doRefreshRoles());
+    dispatch(clearValidationAction());
+
     switch (lastComponent) {
-    case Users:
-      dispatch(markPageLoadingAction(true));
-      dispatch(doRefreshUsers());
-      dispatch(markPageLoadingAction(false));
-      dispatch(clearValidationAction());
-      break;
     case User:
       if (users[params.userId]) {
         const user = users[params.userId];
@@ -70,10 +72,13 @@ export class ManageUsersApp extends React.Component {
           dispatch(addRolesAction(user.roles));
         }
       }
+
       break;
     default:
-      dispatch(markPageLoadingAction(false));
+      break;
     }
+
+    dispatch(markPageLoadingAction(false));
   }
 
   async callRolesAPI() {
@@ -139,7 +144,6 @@ export class ManageUsersApp extends React.Component {
               {loading ? <Loading /> : this.props.children && React.cloneElement(
                 this.props.children, {
                   rolesTableRows: this.state.rolesTableRows,
-                  currentUserID: this.state.currentUserID,
                   callRolesAPI: this.callRolesAPI,
                   api: api,
                   rolesAPIResults: this.state.rolesAPIResults,
@@ -165,5 +169,5 @@ ManageUsersApp.propTypes = {
 
 export default connect(state => ({
   loading: state.loading.mainPage,
-  users: state.users,
+  users: state.company.users,
 }))(ManageUsersApp);

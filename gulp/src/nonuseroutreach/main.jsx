@@ -8,9 +8,9 @@ import {combineReducers} from 'redux';
 import {installPolyfills} from '../common/polyfills';
 
 import Api from './api';
-import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 import {MyJobsApi} from '../common/myjobs-api';
 import {getCsrf} from 'common/cookie';
+import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 
 import loadingReducer, {
   initialLoading,

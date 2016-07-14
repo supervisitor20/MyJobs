@@ -1,7 +1,6 @@
 import {handleActions} from 'redux-actions';
 import {validateEmail} from '../../common/email-validators';
-import {difference} from 'lodash-compat';
-import unionBy from 'lodash.unionby';
+import {difference, union} from 'lodash-compat';
 
 export const initialValidation = {
   email: {
@@ -33,7 +32,7 @@ export default handleActions({
       ...state,
       roles: {
         ...state.roles,
-        value: unionBy(action.payload, state.roles.value, 'display'),
+        value: union(action.payload, state.roles.value),
         errors: [],
       },
     };

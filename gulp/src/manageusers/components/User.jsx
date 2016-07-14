@@ -1,7 +1,7 @@
 import React from 'react';
-import _ from 'lodash-compat';
 import {Button, Col, FormControl, Row} from 'react-bootstrap';
 import {Link} from 'react-router';
+import {difference} from 'lodash-compat';
 import TagSelect from 'common/ui/tags/TagSelect';
 import FieldWrapper from 'common/ui/FieldWrapper';
 
@@ -9,7 +9,7 @@ import HelpText from './HelpText';
 
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
-import {doRefreshUsers} from '../actions/user-actions';
+import {doRefreshUsers} from '../actions/company-actions';
 import {
   addRolesAction,
   removeRolesAction,
@@ -21,55 +21,12 @@ class User extends React.Component {
     super(props);
     this.state = {
       apiResponseHelp: '',
-      availableRoles: [],
       api_response_message: '',
     };
     // React components using ES6 no longer autobind 'this' to non React methods
     // Thank you: https://github.com/goatslacker/alt/issues/283
     this.handleSaveUserClick = this.handleSaveUserClick.bind(this);
     this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
-  }
-
-  componentDidMount() {
-    this.initialApiLoad();
-  }
-
-  async initialApiLoad() {
-    const {api} = this.props;
-    const {userId} = this.props.params;
-
-    if (userId) {
-      const results = await api.get('/manage-users/api/users/' + userId + '/');
-      const userObject = results[this.props.params.userId];
-
-      const availableRolesUnformatted = JSON.parse(userObject.roles.available);
-      const availableRoles = availableRolesUnformatted.map( obj => {
-        const role = {};
-        role.value = obj.pk;
-        role.display = obj.fields.name;
-        return role;
-      });
-
-      this.setState({
-        apiResponseHelp: '',
-        availableRoles: availableRoles,
-      });
-    } else {
-      const results = await api.get('/manage-users/api/roles/');
-      const availableRoles = [];
-      _.forOwn(results, function buildListOfAvailableRoles(role) {
-        availableRoles.push(
-          {
-            'value': role.role_id,
-            'display': role.role_name,
-          }
-        );
-      });
-      this.setState({
-        apiResponseHelp: '',
-        availableRoles: availableRoles,
-      });
-    }
   }
 
   async handleSaveUserClick() {
@@ -141,20 +98,39 @@ class User extends React.Component {
     }
   }
 
+  handleChoose(chosen) {
+    const {dispatch} = this.props;
+    const roles = chosen.map(role => role.display);
+    dispatch(addRolesAction(roles));
+  }
+
+  handleRemove(removed) {
+    const {dispatch} = this.props;
+    const roles = removed.map(role => role.display);
+    dispatch(removeRolesAction(roles));
+  }
+
   render() {
-    const {dispatch, users, validation} = this.props;
+    const {dispatch, users, roles, validation} = this.props;
+
     const userId = this.props.params.userId;
     const user = users[userId] || {};
+    const available = difference(Object.keys(roles), validation.roles.value)
+      .map(role => ({
+        value: role,
+        display: role,
+      })
+    );
+
+    const selected = validation.roles.value.map(role => ({
+      value: role,
+      display: role,
+    }));
 
     let deleteUserButton = '';
 
-    let userEmailEdit = '';
-
     if (userId) {
-      userEmailEdit = true;
       deleteUserButton = <Button className="pull-right" onClick={this.handleDeleteUserClick}>Delete User</Button>;
-    } else {
-      userEmailEdit = false;
     }
 
     const apiResponseHelp = this.state.apiResponseHelp;
@@ -175,8 +151,8 @@ class User extends React.Component {
                 maxLength="255"
                 name="id_userEmail"
                 type="email"
-                readOnly={userEmailEdit}
-                autoFocus={!userEmailEdit}
+                readOnly={!!userId}
+                autoFocus={!userId}
                 value={userId ? user.email : validation.email.value}
                 onChange={e => dispatch(validateEmailAction(e.target.value))}
                 size="35" />
@@ -186,10 +162,10 @@ class User extends React.Component {
               errors={validation.roles.errors}
               required>
               <TagSelect
-                available={this.state.availableRoles}
-                selected={validation.roles.value}
-                onChoose={roles => dispatch(addRolesAction(roles))}
-                onRemove={roles => dispatch(removeRolesAction(roles))}
+                available={available}
+                selected={selected}
+                onChoose={chosen => this.handleChoose(chosen)}
+                onRemove={removed => this.handleRemove(removed)}
                 ref="roles" />
             </FieldWrapper>
 
@@ -227,9 +203,11 @@ User.propTypes = {
   api: React.PropTypes.object,
   validation: React.PropTypes.object.isRequired,
   users: React.PropTypes.object.isRequired,
+  roles: React.PropTypes.object.isRequired,
 };
 
 export default connect(state => ({
-  users: state.users,
+  users: state.company.users,
+  roles: state.company.roles,
   validation: state.validation,
 }))(User);

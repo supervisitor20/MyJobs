@@ -611,18 +611,14 @@ def api_get_all_roles(request):
     company = get_company_or_404(request)
 
     ctx = {
-        'name': company.name,
-        'roles': {
-            role.pk: {
-                'name': role.name,
-                'activities': [{
-                    'name': activity.name,
-                    'appAccess': activity.app_access.name,
-                    'description': activity.description
-                } for activity in role.activities.all()]
-            }
-            for role in company.role_set.select_related('activities').all()
+        role.name: {
+            'activities': [{
+                'name': activity.name,
+                'appAccess': activity.app_access.name,
+                'description': activity.description
+            } for activity in role.activities.all()]
         }
+        for role in company.role_set.select_related('activities').all()
     }
 
     return HttpResponse(json.dumps(ctx), mimetype='application/json')
@@ -1044,10 +1040,8 @@ def api_get_users(request):
             'email': user.email,
             'isVerified': user.is_verified,
             'lastInvitation': last_invitation,
-            'roles': [{
-                'value': role.pk,
-                'display': role.name,
-            } for role in user.roles.filter(company=company)]
+            'roles': list(user.roles.filter(company=company).values_list(
+                'name', flat=True))
         }
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")

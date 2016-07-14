@@ -1,11 +1,16 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
+
 import 'babel/polyfill';
-import {installPolyfills} from 'common/polyfills.js';
-import {getCsrf} from 'common/cookie';
-import {render} from 'react-dom';
 import createReduxStore from 'common/create-redux-store';
-import {combineReducers} from 'redux';
 import {Provider} from 'react-redux';
+import {combineReducers} from 'redux';
+import {installPolyfills} from 'common/polyfills.js';
+
+import Api from './api';
+import {getCsrf} from 'common/cookie';
+import {MyJobsApi} from 'common/myjobs-api';
+import ManageUsersRouter from './components/ManageUsersRouter';
 
 import confirmReducer, {
   initialConfirmation,
@@ -13,50 +18,42 @@ import confirmReducer, {
 import loadingReducer, {
   initialLoading,
 } from 'common/reducers/loading-reducer';
-
 import validationReducer, {
   initialValidation,
 } from './reducers/validation-reducer';
-
-
-import {MyJobsApi} from 'common/myjobs-api';
-import ManageUsersRouter from './components/ManageUsersRouter';
-
 import activitiesListReducer, {
   initialActivities,
 } from './reducers/activities-list-reducer';
-import {doRefreshActivities} from './actions/activities-list-actions';
+import companyReducer, {initialCompany} from './reducers/company-reducer';
 
-import userReducer, {initialUsers} from './reducers/user-reducer';
 
 installPolyfills();
 
 const reducer = combineReducers({
   activities: activitiesListReducer,
-  users: userReducer,
+  company: companyReducer,
   loading: loadingReducer,
   confirmation: confirmReducer,
   validation: validationReducer,
 });
 
-const api = new MyJobsApi(getCsrf());
-
-const thunkExtra = {
-  api: api,
-};
-
 const initialState = {
   activities: initialActivities,
-  users: initialUsers,
+  company: initialCompany,
   confirmation: initialConfirmation,
   loading: initialLoading,
   validation: initialValidation,
 };
 
-const store = createReduxStore(reducer, initialState, thunkExtra);
-store.dispatch(doRefreshActivities());
+const myJobsApi = new MyJobsApi(getCsrf());
+const api = new Api(myJobsApi);
+const thunkExtra = {
+  api: api,
+};
 
-render((
+const store = createReduxStore(reducer, initialState, thunkExtra);
+
+ReactDOM.render((
   <Provider store={store}>
     <ManageUsersRouter />
   </Provider>
