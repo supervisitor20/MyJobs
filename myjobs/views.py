@@ -600,6 +600,34 @@ def api_get_activities(request):
     return HttpResponse(json.dumps(activities), mimetype='application/json')
 
 
+# TODO: rename this to api_get_roles once the roles page is converted
+@requires("read role")
+def api_get_all_roles(request):
+    """
+    GET /manage-users/api/roles/all/
+    Retrieves all roles associated with a company
+
+    """
+    company = get_company_or_404(request)
+
+    ctx = {
+        'name': company.name,
+        'roles': {
+            role.pk: {
+                'name': role.name,
+                'activities': [{
+                    'name': activity.name,
+                    'appAccess': activity.app_access.name,
+                    'description': activity.description
+                } for activity in role.activities.all()]
+            }
+            for role in company.role_set.select_related('activities').all()
+        }
+    }
+
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
+
+
 @requires("read role")
 def api_get_roles(request):
     """
