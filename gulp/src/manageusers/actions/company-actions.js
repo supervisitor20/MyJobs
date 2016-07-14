@@ -33,3 +33,27 @@ export function doRefreshRoles() {
     }
   };
 }
+
+export function doUpdateUserRoles(userId, added, removed) {
+  return async (dispatch, _, {api}) => {
+    try {
+      await api.updateUserRoles(userId, added, removed);
+      // TODO: Do we want to notify the user of the exact changes?
+      dispatch(doRefreshUsers());
+    } catch (exc) {
+      dispatch(errorAction(exc.message));
+    }
+  };
+}
+
+export function doAddUser(email, roles) {
+  return async (dispatch, _, {api}) => {
+    try {
+      await api.addUser(email, roles);
+      // TODO: Do we want to notify the user of the exact changes?
+      dispatch(doRefreshUsers());
+    } catch (exc) {
+      dispatch(errorAction(exc.message));
+    }
+  };
+}

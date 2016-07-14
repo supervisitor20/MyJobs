@@ -1046,6 +1046,26 @@ def api_get_users(request):
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
+
+@requires('update user')
+def api_update_user_roles(request, user_id=0):
+    """
+    GET /manage-users/api/users/NUMBER
+    Retrieves specific user
+
+    """
+    # TODO: restrict to post
+    company = get_company_or_404(request)
+    user = User.objects.filter(pk=user_id).first()
+    add = request.POST.getlist('add');
+    remove = request.POST.getlist('remove');
+
+    user.roles.add(*Role.objects.filter(company=company, name__in=add))
+    user.roles.remove(*Role.objects.filter(company=company, name__in=remove))
+
+    return HttpResponse('finished modifying roles.')
+
+
 @requires('read user')
 def api_get_specific_user(request, user_id=0):
     """
@@ -1106,6 +1126,32 @@ def api_get_specific_user(request, user_id=0):
 
     return HttpResponse(json.dumps(ctx),
                         content_type="application/json")
+
+
+@requires('create user')
+def api_add_user(request):
+    """
+    POST /manage-users/api/user/add/
+    Creates a new user
+
+    Inputs:
+        :email: user email
+        :roles: roles assigned to this user
+
+    """
+    # TODO: error handling
+    company = get_company_or_404(request)
+    email = request.POST.get('email')
+    roles = request.POST.getlist('roles')
+    user = User.objects.get_email_owner(email=email)
+
+    if user:
+        user.roles.add(*Role.objects.filter(company=company, name__in=roles))
+    else:
+        for role in roles:
+            request.user.send_invite(email, company, role)
+
+    return HttpResponse("user added to company.")
 
 
 @requires('create user')

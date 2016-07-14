@@ -9,7 +9,11 @@ import HelpText from './HelpText';
 
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
-import {doRefreshUsers} from '../actions/company-actions';
+import {
+  doRefreshUsers,
+  doUpdateUserRoles,
+  doAddUser,
+} from '../actions/company-actions';
 import {
   addRolesAction,
   removeRolesAction,
@@ -27,6 +31,25 @@ class User extends React.Component {
     // Thank you: https://github.com/goatslacker/alt/issues/283
     this.handleSaveUserClick = this.handleSaveUserClick.bind(this);
     this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
+  }
+
+  async handleSave() {
+    const {dispatch, users, validation} = this.props;
+    const userId = this.props.params.userId;
+    const user = users[userId] || {};
+    // TODO: Error handling
+
+    if (userId) {
+      // update user
+      const removed = difference(user.roles, validation.roles.value);
+      const added = difference(validation.roles.value, user.roles);
+      dispatch(doUpdateUserRoles(userId, added, removed));
+    } else {
+      // create user
+      dispatch(doAddUser(validation.email.value, validation.roles.value));
+    }
+
+    this.props.history.pushState(null, '/users');
   }
 
   async handleSaveUserClick() {
@@ -179,7 +202,7 @@ class User extends React.Component {
               <Col xs={12}>
                 <Button
                   className="primary pull-right"
-                  onClick={this.handleSaveUserClick}>
+                  onClick={() => this.handleSave()}>
                   Save User
                 </Button>
                 {deleteUserButton}

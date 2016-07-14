@@ -15,4 +15,22 @@ export default class Api {
   async getAllRoles() {
     return await this.api.get('/manage-users/api/roles/all/');
   }
+
+  async updateUserRoles(userId, add, remove) {
+    const promise = this.api.upload('/manage-users/api/users/' + userId + '/', {
+      add: add,
+      remove: remove,
+    });
+
+    return (await promise);
+  }
+
+  async addUser(email, roles) {
+    const promise = this.api.upload('/manage-users/api/users/add/', {
+      email: email,
+      roles: roles,
+    });
+
+    return (await promise);
+  }
 }
