@@ -51,7 +51,7 @@ export default handleActions({
       validation: {
         ...state.validation,
         roles: {
-          ...state.roles,
+          ...state.validation.roles,
           value: roles,
           errors: Object.keys(roles).length ? [] : [
             'A user must be assigned to at least one role.',
@@ -61,13 +61,13 @@ export default handleActions({
     };
   },
   'REMOVE_ROLES': (state, action) => {
-    const roles = difference(state.roles.value, action.payload);
+    const roles = difference(state.validation.roles.value, action.payload);
     return {
       ...state,
       validation: {
         ...state.validation,
         roles: {
-          ...state.roles,
+          ...state.validation.roles,
           value: roles,
           // TODO: account for last admin
           errors: Object.keys(roles).length ? [] : [

@@ -63,7 +63,7 @@ export class ManageUsersApp extends React.Component {
     dispatch(markPageLoadingAction(true));
 
     // refresh company data, including roles, users, and available activities
-    dispatch(doRefreshUsers());
+    await dispatch(doRefreshUsers());
     dispatch(doRefreshActivities());
     dispatch(doRefreshRoles());
     dispatch(clearValidationAction());
