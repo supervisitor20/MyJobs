@@ -12,7 +12,12 @@ export const clearErrorsAction = createAction('CLEAR_ERRORS');
 export const setCurrentUser = createAction('SET_CURRENT_USER');
 export const setLastAdmin = createAction('SET_LAST_ADMIN');
 
+// Note: Each of the asynchronous calls will dispatch an `errorAction` if an
+// exception was thrown.
+
 /**
+ * doRefreshUsers
+ *
  * Asynchronously fetches an updated users object where keys are user ids and
  * values represent pertinent user information.
  */
@@ -28,6 +33,8 @@ export function doRefreshUsers() {
 }
 
 /**
+ * doRefreshRoles
+ *
  * Asynchronously fetches an updated roles object where keys are role ids and
  * values represent pertinent role information.
  */
@@ -42,6 +49,11 @@ export function doRefreshRoles() {
   };
 }
 
+/**
+ * doEditUser
+ * Given a :userId:, array of roles :added:, and an array of roles :removed:,
+ * asynchronously edit a user and refresh the app's array of users.
+ */
 export function doUpdateUserRoles(userId, added, removed) {
   return async (dispatch, _, {api}) => {
     try {
@@ -54,6 +66,11 @@ export function doUpdateUserRoles(userId, added, removed) {
   };
 }
 
+/**
+ * doAddUser
+ * given an :email: address and an array of :roles:, associate a user with
+ * the company.
+ */
 export function doAddUser(email, roles) {
   return async (dispatch, _, {api}) => {
     try {
@@ -66,6 +83,11 @@ export function doAddUser(email, roles) {
   };
 }
 
+/**
+ * doRemoveUser
+ * Given a :userId: disassociate the user with a corresponding ID from the
+ * current company
+ */
 export function doRemoveUser(userId) {
   return async (dispatch, _, {api}) => {
     try {
