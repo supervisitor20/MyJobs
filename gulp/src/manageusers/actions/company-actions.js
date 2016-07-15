@@ -7,6 +7,7 @@ export const validateEmailAction = createAction('VALIDATE_EMAIL');
 export const addRolesAction = createAction('ADD_ROLES');
 export const removeRolesAction = createAction('REMOVE_ROLES');
 export const clearValidationAction = createAction('CLEAR_VALIDATION');
+export const setCurrentUser = createAction('SET_CURRENT_USER');
 
 /**
  * Asynchronously fetches an updated users object where keys are user ids and

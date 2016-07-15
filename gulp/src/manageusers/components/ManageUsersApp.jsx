@@ -12,6 +12,7 @@ import User from './User';
 import {
   addRolesAction,
   clearValidationAction,
+  setCurrentUser,
   validateEmailAction,
   doRefreshUsers,
   doRefreshRoles,
@@ -58,7 +59,7 @@ export class ManageUsersApp extends React.Component {
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
     const lastComponent = loc.components[loc.components.length - 1];
-    const params = loc.params;
+    const userId = loc.params.userId;
 
     dispatch(markPageLoadingAction(true));
 
@@ -71,9 +72,10 @@ export class ManageUsersApp extends React.Component {
     switch (lastComponent) {
     case User:
       const {users} = this.props;
-      if (users[params.userId]) {
-        const user = users[params.userId];
+      if (users[userId]) {
+        const user = users[userId];
         dispatch(addRolesAction(user.roles));
+        dispatch(setCurrentUser(userId));
       } else {
         dispatch(validateEmailAction(''));
         dispatch(addRolesAction([]));
@@ -81,7 +83,7 @@ export class ManageUsersApp extends React.Component {
 
       break;
     default:
-      break;
+      dispatch(setCurrentUser(null));
     }
 
     dispatch(markPageLoadingAction(false));

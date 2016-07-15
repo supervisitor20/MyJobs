@@ -14,12 +14,17 @@ export const initialValidation = {
 };
 
 export const initialCompany = {
+  currentUser: null,
   users: {},
   roles: {},
   validation: initialValidation,
 };
 
 export default handleActions({
+  'SET_CURRENT_USER': (state, action) => ({
+    ...state,
+    currentUser: action.payload,
+  }),
   'UPDATE_USERS': (state, action) => ({
     ...state,
     users: action.payload,
