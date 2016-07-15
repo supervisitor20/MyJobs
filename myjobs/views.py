@@ -21,6 +21,7 @@ from django.shortcuts import render_to_response, redirect, render, Http404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from django.views.decorators.http import require_http_methods
 
 from captcha.fields import ReCaptchaField
 from impersonate.decorators import allowed_user_required
@@ -580,6 +581,7 @@ def manage_users(request):
                               RequestContext(request))
 
 
+@require_http_methods(['GET'])
 @requires("read role")
 def api_get_activities(request):
     """
@@ -601,6 +603,7 @@ def api_get_activities(request):
 
 
 # TODO: rename this to api_get_roles once the roles page is converted
+@require_http_methods(['GET'])
 @requires("read role")
 def api_get_all_roles(request):
     """
@@ -715,6 +718,7 @@ def api_get_roles(request):
                         mimetype='application/json')
 
 
+@require_http_methods(['GET'])
 @requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
@@ -1017,6 +1021,7 @@ def api_delete_role(request, role_id=0):
                             content_type="application/json")
 
 
+@require_http_methods(['GET'])
 @requires('read user')
 def api_get_users(request):
     """
@@ -1047,6 +1052,7 @@ def api_get_users(request):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
+@require_http_methods(['POST'])
 @requires('update user')
 def api_edit_user(request, user_id=0):
     """
@@ -1087,6 +1093,7 @@ def api_edit_user(request, user_id=0):
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
+@require_http_methods(['POST'])
 @requires('create user')
 def api_add_user(request):
     """
@@ -1116,6 +1123,7 @@ def api_add_user(request):
     return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 
+@require_http_methods(['DELETE'])
 @requires('delete user')
 def api_remove_user(request, user_id=0):
     """
@@ -1128,10 +1136,16 @@ def api_remove_user(request, user_id=0):
     """
     company = get_company_or_404(request)
     user = User.objects.filter(pk=user_id).first()
+    ctx = {'errors': []}
 
-    user.roles.remove(*user.roles.filter(company=company))
+    if list(company.admins) == [user]:
+        ctx['errors'].append('Operation failed, as completing it would '
+                             'have removed the last Admin from the '
+                             'company. Is another Admin also editing '
+                             'users?')
+    else:
+        user.roles.remove(*user.roles.filter(company=company))
 
-    ctx = {"user": user.email}
     return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 

@@ -10,6 +10,7 @@ export const removeRolesAction = createAction('REMOVE_ROLES');
 export const clearValidationAction = createAction('CLEAR_VALIDATION');
 export const clearErrorsAction = createAction('CLEAR_ERRORS');
 export const setCurrentUser = createAction('SET_CURRENT_USER');
+export const setLastAdmin = createAction('SET_LAST_ADMIN');
 
 /**
  * Asynchronously fetches an updated users object where keys are user ids and
@@ -18,8 +19,8 @@ export const setCurrentUser = createAction('SET_CURRENT_USER');
 export function doRefreshUsers() {
   return async (dispatch, _, {api}) => {
     try {
-      const results = await api.getUsers();
-      dispatch(updateUsersAction(results));
+      const result = await api.getUsers();
+      dispatch(updateUsersAction(result));
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }
@@ -33,8 +34,8 @@ export function doRefreshUsers() {
 export function doRefreshRoles() {
   return async (dispatch, _, {api}) => {
     try {
-      const results = await api.getAllRoles();
-      dispatch(updateRolesAction(results));
+      const result = await api.getAllRoles();
+      dispatch(updateRolesAction(result));
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }
@@ -45,10 +46,8 @@ export function doUpdateUserRoles(userId, added, removed) {
   return async (dispatch, _, {api}) => {
     try {
       const result = await api.updateUserRoles(userId, added, removed);
-      dispatch(result.errors.length ?
-        setErrorsAction(result.errors) :
-        // TODO: Do we want to notify the user of the exact changes?
-        doRefreshUsers());
+      const action = result.errors.length ? setErrorsAction : doRefreshUsers;
+      dispatch(action(result.errors));
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }
@@ -70,8 +69,9 @@ export function doAddUser(email, roles) {
 export function doRemoveUser(userId) {
   return async (dispatch, _, {api}) => {
     try {
-      await api.removeUser(userId);
-      dispatch(doRefreshUsers());
+      const result = await api.removeUser(userId);
+      const action = result.errors.length ? setErrorsAction : doRefreshUsers;
+      dispatch(action(result.errors));
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }

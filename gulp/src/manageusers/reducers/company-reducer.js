@@ -19,6 +19,7 @@ export const initialCompany = {
   roles: {},
   // server-side errors
   errors: [],
+  lastAdmin: false,
   // user-level field errors
   validation: initialValidation,
 };
@@ -29,6 +30,7 @@ export default handleActions({
     ...state,
     currentUser: action.payload,
   }),
+  'SET_LAST_ADMIN': (state, action) => ({...state, lastAdmin: action.payload}),
   'UPDATE_USERS': (state, action) => ({
     ...state,
     users: action.payload,

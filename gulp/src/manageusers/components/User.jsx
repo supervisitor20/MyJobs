@@ -5,32 +5,18 @@ import {difference, flatten} from 'lodash-compat';
 import TagSelect from 'common/ui/tags/TagSelect';
 import FieldWrapper from 'common/ui/FieldWrapper';
 
-import HelpText from './HelpText';
-
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
 import {
   addRolesAction,
   removeRolesAction,
   validateEmailAction,
-  doRefreshUsers,
   doUpdateUserRoles,
   doAddUser,
   doRemoveUser,
 } from '../actions/company-actions';
 
 class User extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      apiResponseHelp: '',
-      api_response_message: '',
-    };
-    // React components using ES6 no longer autobind 'this' to non React methods
-    // Thank you: https://github.com/goatslacker/alt/issues/283
-    this.handleDeleteUserClick = this.handleDeleteUserClick.bind(this);
-  }
-
   async handleSave() {
     const {dispatch, history, users, validation} = this.props;
     const userId = this.props.params.userId;
@@ -47,7 +33,7 @@ class User extends React.Component {
       dispatch(doAddUser(validation.email.value, validation.roles.value));
     }
 
-    history.pushState(null, '/users');
+    history.pushState(null, '/users/');
   }
 
   async handleDelete() {
@@ -57,30 +43,7 @@ class User extends React.Component {
     if (await runConfirmInPlace(dispatch, message)) {
       dispatch(doRemoveUser(userId));
 
-      history.pushState(null, '/users');
-    }
-  }
-
-  async handleDeleteUserClick() {
-    const {history, api, dispatch} = this.props;
-    const userId = this.props.params.userId;
-
-    const message = 'Are you sure you want to delete this user?';
-    if (! await runConfirmInPlace(dispatch, message)) {
-      return;
-    }
-
-    // Submit to server
-    try {
-      await api.delete('/manage-users/api/users/delete/' + userId + '/');
-      await dispatch(doRefreshUsers());
-      history.pushState(null, '/users');
-    } catch (e) {
-      if (e.response && e.response.status === 403) {
-        this.setState({
-          apiResponseHelp: 'User not deleted. Insufficient privileges.',
-        });
-      }
+      history.pushState(null, '/users/');
     }
   }
 
@@ -97,14 +60,12 @@ class User extends React.Component {
   }
 
   render() {
-    const {dispatch, users, roles, validation} = this.props;
+    const {dispatch, users, lastAdmin, roles, validation} = this.props;
 
     const userId = this.props.params.userId;
     const user = users[userId] || {};
     const errors = flatten(Object.keys(validation).map(key =>
       validation[key].errors));
-    const isLastAdmin = flatten(Object.keys(users).map(key =>
-      users[key].roles.filter(role => role === 'Admin'))).length < 2;
     const available = difference(Object.keys(roles), validation.roles.value)
       .map(role => ({
         value: role,
@@ -116,8 +77,6 @@ class User extends React.Component {
       value: role,
       display: role,
     }));
-
-    const apiResponseHelp = this.state.apiResponseHelp;
 
     return (
       <Row>
@@ -155,24 +114,19 @@ class User extends React.Component {
 
             <Row>
               <Col xs={12}>
-                <span className="primary pull-right">
-                  <HelpText message={apiResponseHelp} />
-                </span>
-              </Col>
-
-              <Col xs={12}>
                 <Button
                   className="primary pull-right"
                   disabled={!!errors.length}
                   onClick={() => this.handleSave()}>
                   Save User
                 </Button>
-                { userId && !isLastAdmin ?
+                { lastAdmin ?
+                  null :
                   <Button
                     className="pull-right"
                     onClick={() => this.handleDelete()}>
                     Delete User
-                  </Button> : null
+                  </Button>
                 }
                 <Link to="users" className="pull-right btn btn-default">
                   Cancel
@@ -195,9 +149,11 @@ User.propTypes = {
   validation: React.PropTypes.object.isRequired,
   users: React.PropTypes.object.isRequired,
   roles: React.PropTypes.object.isRequired,
+  lastAdmin: React.PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
+  lastAdmin: state.company.lastAdmin,
   users: state.company.users,
   roles: state.company.roles,
   validation: state.company.validation,

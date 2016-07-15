@@ -12,6 +12,7 @@ import {markPageLoadingAction} from 'common/actions/loading-actions';
 import User from './User';
 import {
   addRolesAction,
+  setLastAdmin,
   clearValidationAction,
   clearErrorsAction,
   setCurrentUser,
@@ -76,6 +77,10 @@ export class ManageUsersApp extends React.Component {
       const {users} = this.props;
       if (users[userId]) {
         const user = users[userId];
+        const admins = Object.keys(users).filter(key =>
+          users[key].roles.indexOf('Admin') > -1);
+        const lastAdmin = admins.length === 1 && userId === admins[0];
+        dispatch(setLastAdmin(lastAdmin));
         dispatch(addRolesAction(user.roles));
         dispatch(setCurrentUser(userId));
       } else {
