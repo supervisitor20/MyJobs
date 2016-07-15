@@ -1059,11 +1059,16 @@ def api_update_user_roles(request, user_id=0):
     user = User.objects.filter(pk=user_id).first()
     add = request.POST.getlist('add');
     remove = request.POST.getlist('remove');
+    ctx = {
+        'user': user.email,
+        'added': add,
+        'removed': remove
+    }
 
     user.roles.add(*Role.objects.filter(company=company, name__in=add))
     user.roles.remove(*Role.objects.filter(company=company, name__in=remove))
 
-    return HttpResponse('finished modifying roles.')
+    return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
 @requires('create user')
@@ -1082,14 +1087,17 @@ def api_add_user(request):
     email = request.POST.get('email')
     roles = request.POST.getlist('roles')
     user = User.objects.get_email_owner(email=email)
+    ctx = {'roles': roles}
 
     if user:
         user.roles.add(*Role.objects.filter(company=company, name__in=roles))
+        ctx['invited'] = False
     else:
         for role in roles:
             request.user.send_invite(email, company, role)
+        ctx['invited'] = True
 
-    return HttpResponse("user added to company.")
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 
 @requires('delete user')
@@ -1107,7 +1115,8 @@ def api_remove_user(request, user_id=0):
 
     user.roles.remove(*user.roles.filter(company=company))
 
-    return HttpResponse("user removed from company.")
+    ctx = {"user": user.email}
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 
 def request_company_access(request):

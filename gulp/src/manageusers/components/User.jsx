@@ -163,7 +163,7 @@ class User extends React.Component {
               <Col xs={12}>
                 <Button
                   className="primary pull-right"
-                  disabled={errors.length}
+                  disabled={!!errors.length}
                   onClick={() => this.handleSave()}>
                   Save User
                 </Button>
