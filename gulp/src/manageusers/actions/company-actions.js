@@ -1,12 +1,14 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 
+export const setErrorsAction = createAction('SET_ERRORS');
 export const updateUsersAction = createAction('UPDATE_USERS');
 export const updateRolesAction = createAction('UPDATE_ROLES');
 export const validateEmailAction = createAction('VALIDATE_EMAIL');
 export const addRolesAction = createAction('ADD_ROLES');
 export const removeRolesAction = createAction('REMOVE_ROLES');
 export const clearValidationAction = createAction('CLEAR_VALIDATION');
+export const clearErrorsAction = createAction('CLEAR_ERRORS');
 export const setCurrentUser = createAction('SET_CURRENT_USER');
 
 /**
@@ -42,9 +44,11 @@ export function doRefreshRoles() {
 export function doUpdateUserRoles(userId, added, removed) {
   return async (dispatch, _, {api}) => {
     try {
-      await api.updateUserRoles(userId, added, removed);
-      // TODO: Do we want to notify the user of the exact changes?
-      dispatch(doRefreshUsers());
+      const result = await api.updateUserRoles(userId, added, removed);
+      dispatch(result.errors.length ?
+        setErrorsAction(result.errors) :
+        // TODO: Do we want to notify the user of the exact changes?
+        doRefreshUsers());
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }

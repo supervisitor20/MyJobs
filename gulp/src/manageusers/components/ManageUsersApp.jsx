@@ -1,5 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
+import {Alert, Button} from 'react-bootstrap';
 
 import {MyJobsApi} from 'common/myjobs-api';
 import {getCsrf} from 'common/cookie';
@@ -12,6 +13,7 @@ import User from './User';
 import {
   addRolesAction,
   clearValidationAction,
+  clearErrorsAction,
   setCurrentUser,
   validateEmailAction,
   doRefreshUsers,
@@ -121,9 +123,17 @@ export class ManageUsersApp extends React.Component {
   }
 
   render() {
-    const {loading} = this.props;
+    const {dispatch, errors, loading} = this.props;
+
     return (
       <div>
+        {errors.length ?
+        <Alert bsStyle="danger">
+          {errors.map(error => <p>{error}</p>)}
+          <Button onClick={() => dispatch(clearErrorsAction())}>OK</Button>
+        </Alert>
+          : null
+        }
         <Confirm/>
         <div className="row">
           <div className="col-sm-12">
@@ -173,9 +183,11 @@ ManageUsersApp.propTypes = {
   loading: React.PropTypes.bool.isRequired,
   children: React.PropTypes.object.isRequired,
   users: React.PropTypes.object.isRequired,
+  errors: React.PropTypes.array.isRequired,
 };
 
 export default connect(state => ({
   loading: state.loading.mainPage,
   users: state.company.users,
+  errors: state.company.errors,
 }))(ManageUsersApp);

@@ -17,10 +17,14 @@ export const initialCompany = {
   currentUser: null,
   users: {},
   roles: {},
+  // server-side errors
+  errors: [],
+  // user-level field errors
   validation: initialValidation,
 };
 
 export default handleActions({
+  'SET_ERRORS': (state, action) => ({...state, errors: action.payload}),
   'SET_CURRENT_USER': (state, action) => ({
     ...state,
     currentUser: action.payload,
@@ -34,6 +38,7 @@ export default handleActions({
     roles: action.payload,
   }),
   'CLEAR_VALIDATION': (state) => ({...state, validation: initialValidation}),
+  'CLEAR_ERRORS': (state) => ({...state, errors: []}),
   'VALIDATE_EMAIL': (state, action) => {
     const errors = validateEmail(action.payload) ? [] : [
       'Invalid email address',
@@ -50,18 +55,34 @@ export default handleActions({
     };
   },
   'ADD_ROLES': (state, action) => {
-    const {validation} = state;
-    const roles = union(action.payload, validation.roles.value);
+    const {validation, users, currentUser} = state;
+    const newRoles = union(action.payload, validation.roles.value);
+    const admins = {};
+
+    forOwn(users, (value, key) => {
+      const roles = key === currentUser ? newRoles : value.roles;
+      if (roles.indexOf('Admin') > -1) {
+        admins[key] = newRoles;
+      }
+    });
+    const errors = [];
+    if (!Object.keys(newRoles).length) {
+      errors.push('A user must be assigned to at least one role.');
+    }
+
+    if (!Object.keys(admins).length) {
+      errors.push('Each company must have at leat one user assigned to the ' +
+                  'Admin role.');
+    }
+
     return {
       ...state,
       validation: {
         ...validation,
         roles: {
           ...validation.roles,
-          value: roles,
-          errors: Object.keys(roles).length ? [] : [
-            'A user must be assigned to at least one role.',
-          ],
+          value: newRoles,
+          errors: errors,
         },
       },
     };

@@ -1048,25 +1048,41 @@ def api_get_users(request):
 
 
 @requires('update user')
-def api_update_user_roles(request, user_id=0):
+def api_edit_user(request, user_id=0):
     """
     GET /manage-users/api/users/NUMBER
     Retrieves specific user
 
     """
-    # TODO: restrict to post
     company = get_company_or_404(request)
     user = User.objects.filter(pk=user_id).first()
     add = request.POST.getlist('add');
     remove = request.POST.getlist('remove');
-    ctx = {
-        'user': user.email,
-        'added': add,
-        'removed': remove
-    }
 
-    user.roles.add(*Role.objects.filter(company=company, name__in=add))
-    user.roles.remove(*Role.objects.filter(company=company, name__in=remove))
+    ctx = {'errors': []}
+
+    current_roles = list(user.roles.values_list('name', flat=True))
+    new_roles = set(current_roles + add) - set(remove)
+    if not new_roles:
+        # Somehow, the API caused all roles to be removed from a user, which in
+        # effect removes that user from the company
+        ctx['errors'].append('Operation failed, as completing it would have '
+                             'removed the user from the company. Is another '
+                             'Admin also editing users?')
+        # Since new_roles is empty, if there is only one admin, we'd be
+        # removing them from the company, which would prevent anyone from
+        # modifying users for the company
+        if list(company.admins) == [user]:
+            ctx['errors'].append('Operation failed, as completing it would '
+                                 'have removed the last Admin from the '
+                                 'company. Is another Admin also editing '
+                                 'users?')
+    else:
+        ctx['added'] = add
+        ctx['removed'] = remove
+
+        user.roles = Role.objects.filter(
+            company=company, name__in=new_roles)
 
     return HttpResponse(json.dumps(ctx), content_type="application/json")
 
