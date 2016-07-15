@@ -1,4 +1,4 @@
-import {union, difference} from 'lodash-compat';
+import {difference, forOwn, union} from 'lodash-compat';
 import {handleActions} from 'redux-actions';
 import {validateEmail} from 'common/email-validators';
 
@@ -50,13 +50,14 @@ export default handleActions({
     };
   },
   'ADD_ROLES': (state, action) => {
-    const roles = union(action.payload, state.roles.value);
+    const {validation} = state;
+    const roles = union(action.payload, validation.roles.value);
     return {
       ...state,
       validation: {
-        ...state.validation,
+        ...validation,
         roles: {
-          ...state.validation.roles,
+          ...validation.roles,
           value: roles,
           errors: Object.keys(roles).length ? [] : [
             'A user must be assigned to at least one role.',
@@ -66,18 +67,35 @@ export default handleActions({
     };
   },
   'REMOVE_ROLES': (state, action) => {
-    const roles = difference(state.validation.roles.value, action.payload);
+    const {validation, users, currentUser} = state;
+    const newRoles = difference(validation.roles.value, action.payload);
+    const admins = {};
+
+    forOwn(users, (value, key) => {
+      const roles = key === currentUser ? newRoles : value.roles;
+      if (roles.indexOf('Admin') > -1) {
+        admins[key] = roles;
+      }
+    });
+
+    const errors = [];
+    if (!Object.keys(newRoles).length) {
+      errors.push('A user must be assigned to at least one role.');
+    }
+
+    if (!Object.keys(admins).length) {
+      errors.push('Each company must have at leat one user assigned to the ' +
+                  'Admin role.');
+    }
+
     return {
       ...state,
       validation: {
-        ...state.validation,
+        ...validation,
         roles: {
-          ...state.validation.roles,
-          value: roles,
-          // TODO: account for last admin
-          errors: Object.keys(roles).length ? [] : [
-            'A user must be assigned to at least one role.',
-          ],
+          ...validation.roles,
+          value: newRoles,
+          errors: errors,
         },
       },
     };
