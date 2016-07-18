@@ -1,4 +1,5 @@
 import base64
+from collections import defaultdict
 import datetime
 import json
 import logging
@@ -588,24 +589,15 @@ def api_get_activities(request):
 
     company = get_company_or_404(request)
 
-    activities = (Activity
-                 .objects
-                 .select_related('app_access')
-                 .filter(app_access__in = company.app_access.all()))
+    # group activities by their app access
+    activities = defaultdict(list)
+    for activity in company.activities.order_by('app_access__pk'):
+        activities[activity.app_access.name].append({
+            'id': activity.pk,
+            'name': unicode(activity),
+            'description': activity.description})
 
-    json_res = []
-    for activity in activities:
-        json_obj = dict(
-            activity_id = activity.id,
-            activity_name = unicode(activity),
-            activity_description = activity.description,
-            app_access_id = activity.app_access.id,
-            app_access_name = activity.app_access.name,
-        )
-        json_res.append(json_obj)
-
-    return HttpResponse(json.dumps(json_res),
-                        mimetype='application/json')
+    return HttpResponse(json.dumps(activities), mimetype='application/json')
 
 
 @requires("read role")
@@ -1230,28 +1222,16 @@ def api_edit_user(request, user_id=0):
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
-        # Companies must have at least one user assigned to an Admin role.
-        # Check that -- if this user is edited -- this will be the case.
-        # 1. Is Admin not in assigned_roles?
-        if "Admin" not in assigned_roles:
-            # 2. Does this company only have one user assigned to Admin role?
-            admin_role = (Role
-                          .objects
-                          .filter(company=company)
-                          .filter(name="Admin"))
-            users_with_admin = User.objects.filter(roles__id=admin_role[0].id)
-
-            if len(users_with_admin) <= 1:
-                # 3. Is that one user this user?
-                if unicode(users_with_admin[0].id) == user_id:
-                    ctx["success"] = "false"
-                    ctx["message"] = ("To remove the Admin role from this "
-                                      "user you must first assign the role to "
-                                      "another user. That is, every company "
-                                      "must have at least one user assigned "
-                                      "to the Admin role.")
-                    return HttpResponse(json.dumps(ctx),
-                                        content_type="application/json")
+        # We shouldn't unassign the Admin role for the last company Admin
+        if "Admin" not in assigned_roles and user.is_last_admin(company):
+            ctx["success"] = "false"
+            ctx["message"] = ("To remove the Admin role from this "
+                              "user you must first assign the role to "
+                              "another user. Every company "
+                              "must have at least one user assigned "
+                              "to the Admin role.")
+            return HttpResponse(json.dumps(ctx),
+                                content_type="application/json")
 
         # Update the user
 
@@ -1307,23 +1287,32 @@ def api_delete_user(request, user_id=0):
     else:
         company = get_company_or_404(request)
 
-        user = User.objects.filter(id=user_id)
-
-        # Check if user exists
-        if user.exists() is False:
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
             ctx["success"] = "false"
             ctx["message"] = "User does not exist."
+            return HttpResponse(json.dumps(ctx),
+                                content_type="application/json")
+        if user.is_last_admin(company):
+            ctx["success"] = "false"
+            ctx["message"] = (
+                u"{email} is the last admin for {company}. "
+                "You must add another admin before deleting "
+                "{email}.").format(email=user.email,
+                                   company=company)
             return HttpResponse(json.dumps(ctx),
                                 content_type="application/json")
 
         roles = Role.objects.filter(company=company)
         for role in roles:
-            user[0].roles.remove(role.id)
+            user.roles.remove(role.id)
 
         ctx["success"] = "true"
         ctx["message"] = "User deleted."
 
         return HttpResponse(json.dumps(ctx), content_type="application/json")
+
 
 def request_company_access(request):
     """

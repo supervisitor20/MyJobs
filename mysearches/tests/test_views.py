@@ -6,8 +6,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 
 from myjobs.tests.setup import MyJobsBase
-from mydashboard.tests.factories import CompanyFactory
-from myjobs.tests.test_views import TestClient
+from seo.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory, ContactFactory
 

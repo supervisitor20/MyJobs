@@ -109,6 +109,8 @@ AUTHENTICATION_BACKENDS = (
     'backends.CaseInsensitiveAuthBackend',
     'django.contrib.auth.backends.ModelBackend',  # default
     'django.contrib.auth.backends.RemoteUserBackend',  # http
+    'backends.CaseInsensitiveAuthFailCatcher',
+
 )
 
 # Celery settings
@@ -126,6 +128,9 @@ CELERY_QUEUES = {
     },
     'solr': {
         'binding_key': 'solr.#'
+    },
+    'mongo': {
+        'binding_key': 'mongo.#'
     },
     'priority': {
         'binding_key': 'priority.#'
@@ -185,14 +190,6 @@ CELERY_ROUTES = {
         'queue': 'solr',
         'routing_key': 'solr.expire_jobs'
     },
-    'tasks.update_solr_from_model': {
-        'queue': 'myjobs',
-        'routing_key': 'myjobs.expire_jobs'
-    },
-    'tasks.update_solr_from_log': {
-        'queue': 'myjobs',
-        'routing_key': 'myjobs.update_solr_from_log'
-    },
     'tasks.submit_all_sitemaps': {
         'queue': 'myjobs',
         'routing_key': 'dseo.submit_all_sitemaps'
@@ -218,12 +215,12 @@ CELERY_ROUTES = {
         'routing_key': 'myjobs.clean_import_records'
     },
     'tasks.seoxml_to_mongo': {
-        'queue': 'solr',
-        'routing_key': 'solr.seoxml_to_mongo'
+        'queue': 'mongo',
+        'routing_key': 'mongo.seoxml_to_mongo'
     },
     'tasks.jobsfs_to_mongo': {
-        'queue': 'solr',
-        'routing_key': 'solr.jobsfs_to_mongo'
+        'queue': 'mongo',
+        'routing_key': 'mongo.jobsfs_to_mongo'
     },
 }
 CELERYBEAT_SCHEDULE = {
@@ -246,14 +243,6 @@ CELERYBEAT_SCHEDULE = {
     'daily-job-expire': {
         'task': 'tasks.expire_jobs',
         'schedule': crontab(minute=0, hour=0),
-    },
-    'regular-solr-update': {
-        'task': 'tasks.update_solr_from_model',
-        'schedule': crontab(minute='*/5'),
-    },
-    'analytics-solr-update': {
-        'task': 'tasks.update_solr_from_log',
-        'schedule': crontab(hour='*/1', minute=0),
     },
     'morning-sitemap-ping': {
         'task': 'tasks.submit_all_sitemaps',
@@ -324,8 +313,8 @@ CAPTCHA_AJAX = True
 # Add all MyJobs apps here. This separation ensures that automated Jenkins tests
 # only run on these apps
 PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
-                'mydashboard', 'mysignon', 'mymessages', 'mypartners',
-                'solr', 'postajob', 'moc_coding', 'seo', 'social_links',
+                'mysignon', 'mymessages', 'mypartners',
+                'postajob', 'moc_coding', 'seo', 'social_links',
                 'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
                 'automation', 'universal', 'import_jobs')
 
@@ -459,14 +448,6 @@ PROFILE_COMPLETION_MODULES = (
     'education',
 )
 
-BOTS = ['agent', 'archive', 'ask', 'auto', 'bot', 'check', 'crawl',
-        'facebookexternalhit', 'flipdog', 'grub', 'harvest', 'heritrix',
-        'index', 'indy+library', 'infoseek', 'jakarta', 'java', 'job',
-        'keynote', 'larbin', 'libwww', 'mechani', 'nutch', 'panscient', 'perl',
-        'proximic', 'python', 'scan', 'scooter', 'scoutjet', 'search', 'slurp',
-        'spider', 'url+control', 'urllib', 'validator', 'watchfire',
-        'whizbang', 'wget', 'xenu', 'yahoo-fetch', 'yahooseeker']
-
 # A list of proected sites and the groups (by id) that are allowed
 # to access them. Copied from directseo.
 PROTECTED_SITES = {42751: [25803, ]}
@@ -483,7 +464,7 @@ FIXTURE_DIRS = (
 SITE_ID = 1
 SITE_NAME = ""
 SITE_BUIDS = []
-SITE_PACKAGES =[]
+SITE_PACKAGES = []
 DEFAULT_FACET = ""
 
 DEFAULT_PAGE_SIZE = 40
@@ -523,10 +504,6 @@ FEED_VIEW_SOURCES = {
 # Solr/Haystack
 HAYSTACK_LIMIT_TO_REGISTERED_MODELS = False
 FACET_RULE_DELIMITER = '#@#'
-TEST_SOLR_INSTANCE = {
-    'all': 'http://127.0.0.1:8983/solr/myjobs_test/',
-    'current': 'http://127.0.0.1:8983/solr/myjobs_test_current/'
-}
 
 
 # Caching
@@ -581,6 +558,11 @@ PASSWORD_COMPLEXITY = {
     'DIGITS': 1,
     'PUNCTUATION': 1
 }
+
+# Password expiration
+PASSWORD_EXPIRATION_DAYS = 90
+PASSWORD_HISTORY_ENTRIES = 4
+PASSWORD_ATTEMPT_LOCKOUT = 6
 
 # email types
 ACTIVATION = 1
@@ -712,3 +694,5 @@ IMPERSONATE_CUSTOM_ALLOW = 'myjobs.helpers.impersonate_access_function'
 
 # The email host used to parse communication records
 PRM_EMAIL_HOST = 'my.jobs'
+
+MONGO_HOST = "mongodb://mongo_server:27017/"
