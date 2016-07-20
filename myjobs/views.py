@@ -1062,28 +1062,36 @@ def api_edit_user(request, user_id=0):
     """
     company = get_company_or_404(request)
     user = User.objects.filter(pk=user_id).first()
-    add = request.POST.getlist('add');
-    remove = request.POST.getlist('remove');
+    add = request.POST.getlist('add')
+    remove = request.POST.getlist('remove')
+    new_roles = []
+    is_last_admin = False
 
     ctx = {'errors': []}
 
-    current_roles = list(user.roles.values_list('name', flat=True))
-    new_roles = set(current_roles + add) - set(remove)
-    if not new_roles:
+    if user:
+        current_roles = list(user.roles.values_list('name', flat=True))
+        new_roles = set(current_roles + add) - set(remove)
+        is_last_admin = list(company.admins) == [user]
+    else:
+        ctx['errors'].append('User does not exist.')
+
+    if not ctx['errors'] and not new_roles:
         # Somehow, the API caused all roles to be removed from a user, which in
         # effect removes that user from the company
         ctx['errors'].append('Operation failed, as completing it would have '
                              'removed the user from the company. Is another '
                              'Admin also editing users?')
-        # Since new_roles is empty, if there is only one admin, we'd be
-        # removing them from the company, which would prevent anyone from
-        # modifying users for the company
-        if list(company.admins) == [user]:
-            ctx['errors'].append('Operation failed, as completing it would '
-                                 'have removed the last Admin from the '
-                                 'company. Is another Admin also editing '
-                                 'users?')
-    else:
+
+    # Since new_roles is empty, if there is only one admin, we'd be
+    # removing them from the company, which would prevent anyone from
+    # modifying users for the company
+    if is_last_admin and 'Admin' not in new_roles:
+        ctx['errors'].append('Operation failed, as completing it would have '
+                             'removed the last Admin from the company. Is '
+                             'another Admin also editing users?')
+
+    if user and not ctx['errors']:
         ctx['added'] = add
         ctx['removed'] = remove
 
@@ -1105,20 +1113,31 @@ def api_add_user(request):
         :roles: roles assigned to this user
 
     """
-    # TODO: error handling
     company = get_company_or_404(request)
     email = request.POST.get('email')
     roles = request.POST.getlist('roles')
     user = User.objects.get_email_owner(email=email)
-    ctx = {'roles': roles}
+    ctx = {'errors': []}
 
-    if user:
-        user.roles.add(*Role.objects.filter(company=company, name__in=roles))
-        ctx['invited'] = False
-    else:
-        for role in roles:
+    if roles:
+        if user:
+            new_roles = set(roles) - set(user.roles.filter(
+                company=company).values_list('name', flat=True))
+
+            user.roles.add(*Role.objects.filter(
+                company=company, name__in=new_roles))
+        else:
+            new_roles = roles
+
+        for role in new_roles:
             request.user.send_invite(email, company, role)
-        ctx['invited'] = True
+
+        ctx['roles'] = list(new_roles)
+        ctx['invited'] = bool(new_roles)
+    else:
+        ctx['invited'] = False
+        ctx['errors'].append(
+            "Each user must be assigned to at least one role.")
 
     return HttpResponse(json.dumps(ctx), mimetype='application/json')
 

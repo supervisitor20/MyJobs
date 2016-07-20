@@ -64,7 +64,7 @@ urlpatterns = patterns(
     # TODO: Remove once roles page converted
     url(r'^manage-users/api/roles/all/$',
         'api_get_all_roles',
-        name='api_get_roles'),
+        name='api_get_all_roles'),
     url(r'^manage-users/api/roles/(?P<role_id>[0-9]+)/$',
         'api_get_specific_role',
         name='api_get_specific_role'),
@@ -86,7 +86,7 @@ urlpatterns = patterns(
         name='api_add_user'),
     url(r'^manage-users/api/users/remove/(?P<user_id>[0-9]+)/$',
         'api_remove_user',
-        name='api_delete_user'),
+        name='api_remove_user'),
     url(r'^manage-users/api/activities/$',
         'api_get_activities',
         name='api_get_activities'),

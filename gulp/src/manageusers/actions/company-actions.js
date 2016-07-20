@@ -74,9 +74,10 @@ export function doUpdateUserRoles(userId, added, removed) {
 export function doAddUser(email, roles) {
   return async (dispatch, _, {api}) => {
     try {
-      await api.addUser(email, roles);
+      const result = await api.addUser(email, roles);
+      const action = result.errors.length ? setErrorsAction : doRefreshUsers;
       // TODO: Do we want to notify the user of the exact changes?
-      dispatch(doRefreshUsers());
+      dispatch(action(result.errors));
     } catch (exc) {
       dispatch(errorAction(exc.message));
     }
