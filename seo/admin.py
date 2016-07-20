@@ -1167,15 +1167,15 @@ class CompanyAdmin(admin.ModelAdmin):
     list_filter = ('enhanced', 'digital_strategies_customer')
     search_fields = ['name', 'seosite__name', 'seosite__domain']
     fieldsets = [('Basics', {'fields': [('name'), ('company_slug'), ('member'),
-                                               ('posting_access'), ('enhanced'),
-                                               ('digital_strategies_customer'),
-                                               ('password_expiration'),
-                                               ('app_access'), ('admin_email')]}),
+                                        ('enhanced'),
+                                        ('digital_strategies_customer'),
+                                        ('password_expiration'),
+                                        ('app_access'), ('admin_email')]}),
                  ('User Roles', {'classes': ('collapse',),
                                  'fields': [('user_roles')]}),
-                 ('Company Info', {'fields':[('logo_url'), ('linkedin_id'),
-                                     ('canonical_microsite'),
-                                     ('og_img')]}),
+                 ('Company Info', {'fields': [('logo_url'), ('linkedin_id'),
+                                              ('canonical_microsite'),
+                                              ('og_img')]}),
                  ('Job Sources', {'fields': ['job_source_ids']}),
                  ('Featured on', {'fields': ['sites']}),
                  ('PRM', {'fields': ['prm_saved_search_sites']})

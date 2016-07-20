@@ -695,8 +695,6 @@ class Company(models.Model):
     app_access = models.ManyToManyField(
         'myjobs.AppAccess',
         blank=True, verbose_name="App-Level Access")
-    product_access = models.BooleanField(default=False)
-    posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
 
     def get_seo_sites(self):
