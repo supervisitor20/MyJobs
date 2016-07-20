@@ -9,8 +9,8 @@ export const addRolesAction = createAction('ADD_ROLES');
 export const removeRolesAction = createAction('REMOVE_ROLES');
 export const clearValidationAction = createAction('CLEAR_VALIDATION');
 export const clearErrorsAction = createAction('CLEAR_ERRORS');
-export const setCurrentUser = createAction('SET_CURRENT_USER');
-export const setLastAdmin = createAction('SET_LAST_ADMIN');
+export const setCurrentUserAction = createAction('SET_CURRENT_USER');
+export const setLastAdminAction = createAction('SET_LAST_ADMIN');
 
 // Note: Each of the asynchronous calls will dispatch an `errorAction` if an
 // exception was thrown.

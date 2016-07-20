@@ -1,6 +1,6 @@
 import {difference, forOwn, union} from 'lodash-compat';
 import {handleActions} from 'redux-actions';
-import {validateEmail} from 'common/email-validators';
+import {validateEmail} from '../../common/email-validators';
 
 // represents an unsaved user; each key represents a field on the user form
 // along with the current value and associated errors

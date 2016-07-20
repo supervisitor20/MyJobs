@@ -12,10 +12,10 @@ import {markPageLoadingAction} from 'common/actions/loading-actions';
 import User from './User';
 import {
   addRolesAction,
-  setLastAdmin,
+  setLastAdminAction,
   clearValidationAction,
   clearErrorsAction,
-  setCurrentUser,
+  setCurrentUserAction,
   validateEmailAction,
   doRefreshUsers,
   doRefreshRoles,
@@ -68,8 +68,8 @@ export class ManageUsersApp extends React.Component {
 
     // refresh company data, including roles, users, and available activities
     await dispatch(doRefreshUsers());
-    dispatch(doRefreshActivities());
-    dispatch(doRefreshRoles());
+    await dispatch(doRefreshActivities());
+    await dispatch(doRefreshRoles());
     dispatch(clearValidationAction());
 
     switch (lastComponent) {
@@ -80,9 +80,9 @@ export class ManageUsersApp extends React.Component {
         const admins = Object.keys(users).filter(key =>
           users[key].roles.indexOf('Admin') > -1);
         const lastAdmin = admins.length === 1 && userId === admins[0];
-        dispatch(setLastAdmin(lastAdmin));
+        dispatch(setLastAdminAction(lastAdmin));
         dispatch(addRolesAction(user.roles));
-        dispatch(setCurrentUser(userId));
+        dispatch(setCurrentUserAction(userId));
       } else {
         dispatch(validateEmailAction(''));
         dispatch(addRolesAction([]));
@@ -90,7 +90,7 @@ export class ManageUsersApp extends React.Component {
 
       break;
     default:
-      dispatch(setCurrentUser(null));
+      dispatch(setCurrentUserAction(null));
     }
 
     dispatch(markPageLoadingAction(false));
