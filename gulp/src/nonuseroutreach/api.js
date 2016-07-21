@@ -1,4 +1,4 @@
-class Api {
+export default class Api {
   constructor(api) {
     this.api = api;
   }
@@ -35,5 +35,3 @@ class Api {
     return (await promise);
   }
 }
-
-export {Api as default};

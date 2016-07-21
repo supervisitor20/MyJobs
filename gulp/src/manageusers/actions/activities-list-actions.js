@@ -12,7 +12,7 @@ import {errorAction} from '../../common/actions/error-actions';
 export function doRefreshActivities() {
   return async (dispatch, _, {api}) => {
     try {
-      const results = await api.get('/manage-users/api/activities/');
+      const results = await api.getActivities();
       dispatch(updateActivitiesAction(results));
     } catch (exc) {
       dispatch(errorAction(exc.message));

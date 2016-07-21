@@ -1,5 +1,7 @@
 import {handleActions} from 'redux-actions';
 
+export const initialActivities = {};
+
 export default handleActions({
   /** payload: An object whose keys are app-level access names and values are
    *           activities.
@@ -21,6 +23,4 @@ export default handleActions({
     };
     return result;
   },
-}, {
-  activities: {},
-});
+}, initialActivities);

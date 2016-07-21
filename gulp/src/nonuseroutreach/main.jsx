@@ -8,11 +8,13 @@ import {combineReducers} from 'redux';
 import {installPolyfills} from '../common/polyfills';
 
 import Api from './api';
-import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 import {MyJobsApi} from '../common/myjobs-api';
 import {getCsrf} from 'common/cookie';
+import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 
-import loadingReducer from '../common/reducers/loading-reducer';
+import loadingReducer, {
+  initialLoading,
+} from '../common/reducers/loading-reducer';
 import {
   initialInboxes,
   inboxManagementReducer,
@@ -42,9 +44,7 @@ export const initialState = {
   inboxes: initialInboxes,
   records: initialRecords,
   navigation: initialNavigation,
-  loading: {
-    mainPage: false,
-  },
+  loading: initialLoading,
 };
 
 const myJobsApi = new MyJobsApi(getCsrf());

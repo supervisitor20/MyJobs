@@ -60,34 +60,41 @@ class UserManagementTestCase(MyJobsBase):
         super(UserManagementTestCase, self).setUp()
         self.role.activities = self.activities
 
-    def test_protect_admin(self):
+    def test_removing_admin_role_from_last_admin(self):
         """
-        Can't delete all roles for the last admin associated with a company
+        Tests that it's not possible to remove the Admin role from a user if
+        that user is the last Admin for a company.
 
         """
         self.assertEqual(self.role.user_set.all().count(), 1)
         empty_role = RoleFactory.build(company=self.company, name="Empty")
 
-        response = self.client.post(path='/manage-users/api/users/edit/%s/' % 
-                                    self.user.id,
-                data={'assigned_roles[]': ['Empty']})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.role.user_set.all().count(), 1, 
+        response = self.client.post(
+            path='/manage-users/api/users/%s/' % self.user.id,
+            data={'add': ['Empty'], 'remove': ['Admin']})
+        self.assertEqual(self.role.user_set.all().count(), 1,
                          "Removed last User from Admin Role")
         response_data = json.loads(response.content)
-        self.assertEqual(response_data['success'], "false")
-        self.assertIn("one user assigned to the Admin role",
-                      response_data['message'],
-                      "Unassigning an admin role failed for the wrong reason")
+        self.assertIn(
+            'Operation failed, as completing it would have removed the last '
+            'Admin from the company. Is another Admin also editing users?',
+            response_data['errors'])
 
-        response = self.client.delete(path='/manage-users/api/users/delete/%s/' % self.user.id)
+    def test_delete_user_who_is_last_admin(self):
+        """
+        Tests that it is not possible to remove a user from a company if that
+        user is the last admin for a company.
+
+        """
+        response = self.client.delete(
+            path='/manage-users/api/users/remove/%s/' % self.user.id)
         response_data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.role.user_set.all().count(), 1, 
+        self.assertEqual(self.role.user_set.all().count(), 1,
                          "Removed last User from Admin Role")
-        self.assertEqual(response_data['success'], "false")
-        self.assertIn("You must add another admin before deleting",
-                      response_data['message'], "Delete user failed for the wrong reason")
+        self.assertIn('Operation failed, as completing it would have removed '
+                      'the last Admin from the company. Is another Admin also '
+                      'editing users?', response_data['errors'])
 
 
 class SavedSearchResourceTestCase(MyJobsBase):

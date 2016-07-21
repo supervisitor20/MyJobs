@@ -5,7 +5,7 @@ import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
-import {markPageLoadingAction} from '../../common/actions/loading-actions';
+import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
 import {setPageAction} from '../actions/navigation-actions';

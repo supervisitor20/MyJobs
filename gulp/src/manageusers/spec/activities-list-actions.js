@@ -7,7 +7,7 @@ import {combineReducers} from 'redux';
 import activitiesListReducer from '../reducers/activities-list-reducer';
 
 class FakeApi {
-  get() {}
+  getActivities() {}
 }
 
 describe('activities-list-actions', () => {
@@ -25,7 +25,7 @@ describe('activities-list-actions', () => {
 
   describe('doRefreshActivities', () => {
     beforeEach(promiseTest(async () => {
-      spyOn(api, 'get').and.returnValue(Promise.resolve({
+      spyOn(api, 'getActivities').and.returnValue(Promise.resolve({
         MarketPlace: [
           {
             name: "create product",
