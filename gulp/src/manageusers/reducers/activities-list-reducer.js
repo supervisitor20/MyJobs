@@ -16,11 +16,5 @@ export default handleActions({
    *     ]
    *   }
    */
-  'UPDATE_ACTIVITIES': (state, action) => {
-    const result = {
-      ...state,
-      activities: action.payload,
-    };
-    return result;
-  },
+  'UPDATE_ACTIVITIES': (state, action) => action.payload,
 }, initialActivities);

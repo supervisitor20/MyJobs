@@ -1,14 +1,13 @@
 import React from 'react';
-import _ from 'lodash-compat';
+import {forOwn, union} from 'lodash-compat';
 import {Link} from 'react-router';
-import Button from 'react-bootstrap/lib/Button';
+import {Button, Col, FormControl, Row} from 'react-bootstrap';
+import FieldWrapper from 'common/ui/FieldWrapper';
+import TagSelect from 'common/ui/tags/TagSelect';
 
 import {buildCurrentActivitiesObject} from '../buildCurrentActivitiesObject';
 
 import HelpText from './HelpText';
-import ActivitiesAccordion from './ActivitiesAccordion';
-
-import UsersMultiselect from './UsersMultiselect';
 
 import {connect} from 'react-redux';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
@@ -19,9 +18,9 @@ class Role extends React.Component {
     super(props);
     this.state = {
       apiResponseHelp: '',
-      activitiesMultiselectHelp: '',
+      activitiesHelp: [],
       roleName: '',
-      roleNameHelp: '',
+      roleNameHelp: [],
       availableUsers: [],
       assignedUsers: [],
       activities: [],
@@ -41,7 +40,7 @@ class Role extends React.Component {
 
     this.setState({
       apiResponseHelp: '',
-      roleNameHelp: '',
+      roleNameHelp: [],
       roleName: this.state.roleName,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
@@ -73,7 +72,7 @@ class Role extends React.Component {
 
       // Loop through all app_access's
       // Make sure there are no assigned_activities
-      _.forOwn(activities, function resetAssignedActivities(activity) {
+      forOwn(activities, function resetAssignedActivities(activity) {
         activity.assigned_activities = [];
       });
 
@@ -102,8 +101,8 @@ class Role extends React.Component {
 
       this.setState({
         apiResponseHelp: '',
-        roleNameHelp: 'Role name empty.',
-        activitiesMultiselectHelp: '',
+        roleNameHelp: ['Role name empty.'],
+        activitiesHelp: [],
         roleName: this.state.roleName,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
@@ -119,13 +118,13 @@ class Role extends React.Component {
     const assignedActivities = [];
     // Loop through all apps
     const refs = this.refs;
-    _.forOwn(this.state.activities, function loopThroughGroupedActivities(activity) {
+    forOwn(this.state.activities, function loopThroughGroupedActivities(activity) {
       // Now for each app, loop through all selected activities in its accordion
       // tempRef is the app_access_name without spaces (e.g. User Management
       // becomes UserManagement)
       const tempRef = activity.app_access_name.replace(/\s/g, '');
       const selected = refs.activities.refs[tempRef].state.assignedActivities;
-      _.forOwn(selected, function loopThroughEachSelectedActivity(item) {
+      forOwn(selected, function loopThroughEachSelectedActivity(item) {
         assignedActivities.push(item.id);
       });
     });
@@ -136,8 +135,10 @@ class Role extends React.Component {
 
       this.setState({
         apiResponseHelp: '',
-        roleNameHelp: '',
-        activitiesMultiselectHelp: 'No activities selected. Each role must have at least one activity.',
+        roleNameHelp: [],
+        activitiesHelp: [
+          'No activities selected. Each role must have at least one activity.',
+        ],
         roleName: this.state.roleName,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
@@ -152,7 +153,7 @@ class Role extends React.Component {
     // No errors? Clear help text
     this.setState({
       apiResponseHelp: '',
-      activitiesMultiselectHelp: '',
+      activitiesHelp: [],
       roleName: this.state.roleName,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
@@ -195,7 +196,7 @@ class Role extends React.Component {
       } else if ( response.success === 'false' ) {
         this.setState({
           apiResponseHelp: response.message,
-          activitiesMultiselectHelp: '',
+          activitiesHelp: [],
           roleName: this.state.roleName,
           availableUsers: this.refs.users.state.availableUsers,
           assignedUsers: this.refs.users.state.assignedUsers,
@@ -233,8 +234,26 @@ class Role extends React.Component {
       }
     }
   }
+
+  handleChoose(chosen) {
+    // TODO: handle duplicates (flattenChildren warning)
+    const assignedUsers = union(this.state.assignedUsers, chosen.map(user => ({
+      id: user.value,
+      name: user.display,
+    })));
+    this.setState({assignedUsers});
+  }
+
+  handleRemove(removed) {
+    const assignedUsers = this.state.assignedUsers.slice();
+    removed.forEach(user =>
+      assignedUsers.splice(assignedUsers.indexOf(user), 1));
+    this.setState({assignedUsers});
+  }
+
   render() {
     let action = this.props.location.query.action;
+    const {activities} = this.props;
 
     let deleteRoleButton = '';
     if (action === 'Edit') {
@@ -247,54 +266,78 @@ class Role extends React.Component {
 
     const apiResponseHelp = this.state.apiResponseHelp;
 
-    const activitiesMultiselectHelp = this.state.activitiesMultiselectHelp;
+    const activitiesHelp = this.state.activitiesHelp;
 
     return (
-      <div>
-        <div className="row">
-          <div className="col-xs-12 ">
-            <div className="wrapper-header">
-              <h2>{action} Role</h2>
-            </div>
-            <div className="product-card-full no-highlight">
-              <div className="row no-gutter">
-                  <label htmlFor="id_role_name" className="col-sm-3 control-label">Role Name* </label>
-                  <input id="id_role_name" className="col-sm-5" maxLength="255" name="name" type="text" value={this.state.roleName} size="35" onChange={this.onTextChange}/>
-                  <HelpText message={roleNameHelp} styleName="col-sm-4" />
-              </div>
-
-              <div className="row">
-                <div className="col-xs-12">
-
-                  <label>Activities:</label>
-
-                  <HelpText message={activitiesMultiselectHelp} />
-
-                  <ActivitiesAccordion activities={this.state.activities} ref="activities"/>
-
-                  <UsersMultiselect availableUsers={this.state.availableUsers} assignedUsers={this.state.assignedUsers} ref="users"/>
-
-                  <span className="help-text">To select multiple options on Windows, hold down the Ctrl key. On OS X, hold down the Command key.</span>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-xs-12">
-                  <span className="primary pull-right">
-                    <HelpText message={apiResponseHelp} />
-                  </span>
-                </div>
-
-                <div className="col-xs-12">
-                  <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
-                  {deleteRoleButton}
-                  <Link to="roles" className="pull-right btn btn-default">Cancel</Link>
-                </div>
-              </div>
-            </div>
+      <Row>
+        <Col xs={12}>
+          <div className="wrapper-header">
+            <h2>{action} Role</h2>
           </div>
-        </div>
-      </div>
+
+          <div className="product-card-full no-highlight">
+            <FieldWrapper
+              label="Role Name"
+              errors={roleNameHelp}
+              required>
+              <FormControl
+                id="id_role_name"
+                maxLength="255"
+                name="name"
+                type="text"
+                value={this.state.roleName}
+                size={35}
+                onChange={this.onTextChange} />
+            </FieldWrapper>
+
+            <section>Activities associated with this role</section>
+            <HelpText message={activitiesHelp} />
+            {Object.keys(activities).map(key =>
+              <FieldWrapper
+                label={key}>
+                <TagSelect
+                  available={activities[key].map(activity => ({
+                    display: activity.description,
+                    value: activity.id,
+                  }))}
+                  selected={[]}
+                  onChoose={() => console.log('choose')}
+                  onRemove={() => console.log('remove')} />
+              </FieldWrapper>
+            )}
+
+            <section>Users assigned to this role</section>
+            <FieldWrapper label="Users" required>
+              <TagSelect
+                available={this.state.availableUsers.map(user => ({
+                  display: user.name,
+                  value: user.id,
+                }))}
+                selected={this.state.assignedUsers.map(user => ({
+                  display: user.name,
+                  value: user.id,
+                }))}
+                onChoose={chosen => this.handleChoose(chosen)}
+                onRemove={removed => this.handleRemove(removed)}
+                ref="users" />
+            </FieldWrapper>
+
+            <Row>
+              <Col xs={12}>
+                <span className="primary pull-right">
+                  <HelpText message={apiResponseHelp} />
+                </span>
+              </Col>
+
+              <Col xs={12}>
+                <Button className="primary pull-right" onClick={this.handleSaveRoleClick}>Save Role</Button>
+                {deleteRoleButton}
+                <Link to="roles" className="pull-right btn btn-default">Cancel</Link>
+              </Col>
+            </Row>
+          </div>
+        </Col>
+      </Row>
     );
   }
 }
@@ -306,6 +349,9 @@ Role.propTypes = {
   callRolesAPI: React.PropTypes.func,
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
+  activities: React.PropTypes.object,
 };
 
-export default connect()(Role);
+export default connect(state => ({
+  activities: state.activities,
+}))(Role);
