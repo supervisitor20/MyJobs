@@ -614,8 +614,10 @@ def api_get_all_roles(request):
     company = get_company_or_404(request)
 
     ctx = {
-        role.name: {
+        role.id: {
+            'name': role.name,
             'activities': [{
+                'id': activity.pk,
                 'name': activity.name,
                 'appAccess': activity.app_access.name,
                 'description': activity.description
