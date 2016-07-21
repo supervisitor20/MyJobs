@@ -289,7 +289,17 @@ export default handleActions({
       currentFilterDirty: false,
     };
   },
+
   'SET_VALID': (state, action) => ({...state, isValid: action.payload}),
+
+  'UPDATE_RECORD_COUNT': (state, action) => {
+    const recordCount = action.payload;
+
+    return {
+      ...state,
+      recordCount,
+    };
+  },
 }, {
   currentFilter: {},
   filterInterface: [],

@@ -30,36 +30,46 @@ def contact_type_help_entry(contact_type):
 
 
 class CommRecordsDataSource(DataSource):
-    def run(self, data_type, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, values):
         return dispatch_run_by_data_type(
-            self, data_type, company, filter_spec, order)
+            self, data_type, company, filter_spec, values)
 
-    def run_unaggregated(self, company, filter_spec, order):
+    def run_unaggregated(self, company, filter_spec, values):
         qs_filtered = self.filtered_query_set(company, filter_spec)
-        qs_ordered = qs_filtered.order_by(*order)
-        qs_distinct = qs_ordered.distinct()
-        return [self.extract_record(r) for r in qs_distinct]
+        qs_distinct = qs_filtered.distinct()
+        return [self.extract_record(r, values) for r in qs_distinct]
 
-    def extract_record(self, record):
+    def extract_record(self, record, values):
+        fields = {
+            'contact': lambda r: extract_value(r, 'contact', 'name'),
+            'contact_email': lambda r: r.contact_email,
+            'contact_phone': lambda r: r.contact_phone,
+            'communication_type': lambda r: r.contact_type,
+            'created_on': lambda r: r.created_on,
+            'created_by': lambda r: extract_value(r, 'created_by', 'email'),
+            'date_time': lambda r: r.date_time,
+            'job_applications': lambda r: r.job_applications,
+            'job_hires': lambda r: r.job_hires,
+            'job_id': lambda r: r.job_id,
+            'job_interviews': lambda r: r.job_interviews,
+            'last_action_time': lambda r: r.last_action_time,
+            'length': lambda r: r.length,
+            'location': lambda r: r.location,
+            'notes': lambda r: self.normalize_html(r.notes),
+            'partner': lambda r: extract_value(r, 'partner', 'name'),
+            'subject': lambda r: r.subject,
+            'tags': lambda r: extract_tags(r.tags),
+        }
+
+        if values:
+            return_values = values
+        else:
+            return_values = fields.keys()
+
         return {
-            'contact': extract_value(record, 'contact', 'name'),
-            'contact_email': record.contact_email,
-            'contact_phone': record.contact_phone,
-            'communication_type': record.contact_type,
-            'created_on': record.created_on,
-            'created_by': extract_value(record, 'created_by', 'email'),
-            'date_time': record.date_time,
-            'job_applications': record.job_applications,
-            'job_hires': record.job_hires,
-            'job_id': record.job_id,
-            'job_interviews': record.job_interviews,
-            'last_action_time': record.last_action_time,
-            'length': record.length,
-            'location': record.location,
-            'notes': self.normalize_html(record.notes),
-            'partner': extract_value(record, 'partner', 'name'),
-            'subject': record.subject,
-            'tags': extract_tags(record.tags.all()),
+            k: v(record)
+            for k, v in fields.iteritems()
+            if k in return_values
         }
 
     def normalize_html(self, html):
@@ -206,7 +216,12 @@ class CommRecordsDataSource(DataSource):
             .filter(approval_status__code__iexact=Status.APPROVED)
             .filter(archived_on__isnull=True))
         qs_filtered = filter_spec.filter_query_set(qs_live)
-        return qs_filtered
+        qs_optimized = (
+            qs_filtered.prefetch_related('contact')
+            .prefetch_related('partner')
+            .prefetch_related('created_by')
+            .prefetch_related('tags'))
+        return qs_optimized
 
     def adorn_filter_items(self, company, found_filter_items):
         adorned = {}

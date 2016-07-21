@@ -453,16 +453,18 @@ class TestContactsDataSource(MyJobsBase):
             [{'value': self.partner_a.pk, 'display': 'aaa'}],
             recs)
 
-    def test_order(self):
-        """Check ordering results works at all."""
+    def test_values(self):
+        """Check limiting values works at all."""
         ds = ContactsDataSource()
         recs = ds.run_unaggregated(
             self.company,
             ContactsFilter(),
-            ["-name"])
-        names = [r['name'] for r in recs]
-        expected = [self.sue.name, self.john.name]
-        self.assertEqual(expected, names)
+            ["name", "email"])
+        expected = [
+            {'name': self.john.name, 'email': u'john@user.com'},
+            {'name': self.sue.name, 'email': u'sue@user.com'},
+        ]
+        self.assertEqual(expected, recs)
 
     def test_adorn_filter(self):
         self.maxDiff = 10000
