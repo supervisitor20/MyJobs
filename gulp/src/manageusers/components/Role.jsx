@@ -16,13 +16,16 @@ import {runConfirmInPlace} from 'common/actions/confirm-actions';
 class Role extends React.Component {
   constructor(props) {
     super(props);
+    const assignedActivities = {};
+    Object.keys(props.activities).forEach(key => assignedActivities[key] = []);
     this.state = {
       apiResponseHelp: '',
-      activitiesHelp: [],
+      activitiesHelp: '',
       roleName: '',
       roleNameHelp: [],
       availableUsers: [],
       assignedUsers: [],
+      assignedActivities: assignedActivities,
       activities: [],
     };
     this.onTextChange = this.onTextChange.bind(this);
@@ -102,7 +105,7 @@ class Role extends React.Component {
       this.setState({
         apiResponseHelp: '',
         roleNameHelp: ['Role name empty.'],
-        activitiesHelp: [],
+        activitiesHelp: '',
         roleName: this.state.roleName,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
@@ -136,9 +139,7 @@ class Role extends React.Component {
       this.setState({
         apiResponseHelp: '',
         roleNameHelp: [],
-        activitiesHelp: [
-          'No activities selected. Each role must have at least one activity.',
-        ],
+        activitiesHelp: 'No activities selected. Each role must have at least one activity.',
         roleName: this.state.roleName,
         availableUsers: this.refs.users.state.availableUsers,
         assignedUsers: this.refs.users.state.assignedUsers,
@@ -153,7 +154,7 @@ class Role extends React.Component {
     // No errors? Clear help text
     this.setState({
       apiResponseHelp: '',
-      activitiesHelp: [],
+      activitiesHelp: '',
       roleName: this.state.roleName,
       availableUsers: this.refs.users.state.availableUsers,
       assignedUsers: this.refs.users.state.assignedUsers,
@@ -196,7 +197,7 @@ class Role extends React.Component {
       } else if ( response.success === 'false' ) {
         this.setState({
           apiResponseHelp: response.message,
-          activitiesHelp: [],
+          activitiesHelp: '',
           roleName: this.state.roleName,
           availableUsers: this.refs.users.state.availableUsers,
           assignedUsers: this.refs.users.state.assignedUsers,
@@ -236,11 +237,14 @@ class Role extends React.Component {
   }
 
   handleChoose(chosen) {
-    // TODO: handle duplicates (flattenChildren warning)
-    const assignedUsers = union(this.state.assignedUsers, chosen.map(user => ({
-      id: user.value,
-      name: user.display,
-    })));
+    const {users} = this.props;
+    const chosenUsers = chosen.map(user => user.value);
+    const originalUsers = this.state.assignedUsers.map(user => user.id);
+    const assignedUsers = union(originalUsers, chosenUsers).map(key => ({
+      id: key,
+      name: users[key].email,
+    }));
+
     this.setState({assignedUsers});
   }
 
@@ -249,6 +253,34 @@ class Role extends React.Component {
     removed.forEach(user =>
       assignedUsers.splice(assignedUsers.indexOf(user), 1));
     this.setState({assignedUsers});
+  }
+
+  handleChooseActivities(app, chosen) {
+    const assignedActivities = this.state.assignedActivities[app].slice();
+    chosen.forEach(activity => {
+      if (assignedActivities.indexOf(activity) === -1) {
+        assignedActivities.push(activity);
+      } 
+    });
+
+    this.setState({
+      assignedActivities: {
+        ...this.state.assignedActivities,
+        [app]: assignedActivities,
+      },
+    });
+  }
+
+  handleRemoveActivities(app, removed) {
+    const assignedActivities = this.state.assignedActivities[app].slice();
+    removed.forEach(activity =>
+      assignedActivities.splice(assignedActivities.indexOf(activity), 1));
+    this.setState({
+      assignedActivities: {
+        ...this.state.assignedActivities,
+        [app]: assignedActivities,
+      },
+    });
   }
 
   render() {
@@ -292,17 +324,19 @@ class Role extends React.Component {
 
             <section>Activities associated with this role</section>
             <HelpText message={activitiesHelp} />
-            {Object.keys(activities).map(key =>
+            {Object.keys(activities).map((key, index) =>
               <FieldWrapper
-                label={key}>
+                label={key}
+                key={index}>
                 <TagSelect
                   available={activities[key].map(activity => ({
                     display: activity.description,
                     value: activity.id,
                   }))}
-                  selected={[]}
-                  onChoose={() => console.log('choose')}
-                  onRemove={() => console.log('remove')} />
+                  selected={this.state.assignedActivities[key]}
+                  onChoose={chosen => this.handleChooseActivities(key, chosen)}
+                  onRemove={removed =>
+                    this.handleRemoveActivities(key, removed)} />
               </FieldWrapper>
             )}
 
@@ -350,8 +384,10 @@ Role.propTypes = {
   history: React.PropTypes.object.isRequired,
   api: React.PropTypes.object,
   activities: React.PropTypes.object,
+  users: React.PropTypes.object,
 };
 
 export default connect(state => ({
+  users: state.company.users,
   activities: state.activities,
 }))(Role);
