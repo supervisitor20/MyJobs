@@ -12,7 +12,7 @@ from mypartners.tests.factories import (OutreachEmailAddressFactory,
 from myjobs.tests.factories import UserFactory
 from myjobs.models import Activity
 from mypartners.models import (OutreachEmailAddress, Partner, Contact,
-                               ContactRecord, Location)
+                               ContactRecord, Location, Tag)
 
 
 class NonUserOutreachTestCase(MyPartnersTestCase):
@@ -464,3 +464,84 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             objects_created.append("location")
         objects_missing = [x for x in total_objects if x not in objects_created]
         return objects_created, objects_missing
+
+
+class PRMAPITestCase(MyPartnersTestCase):
+    def setUp(self):
+        super(PRMAPITestCase, self).setUp()
+
+    def test_get_partner(self):
+        response = self.client.get(reverse('api_get_partner',
+                                           args=[self.partner.pk]))
+        payload = json.loads(response.content)
+        self.assertTrue(len(payload) > 0)
+        for key, value in payload.items():
+            self.assertEqual(getattr(self.partner, key), value)
+
+    def test_search_partner_list(self):
+        new_partners = 2
+        for i in range(new_partners):
+            PartnerFactory(owner=self.company, name="Partner %s" % i)
+
+        response = self.client.get(reverse('api_get_partners'))
+        payload = json.loads(response.content)
+        # There was one pre-existing partner before this test, named "Company",
+        # which will be returned when grabbing all partners.
+        self.assertEqual(len(payload), new_partners + 1)
+
+        response = self.client.post(reverse('api_get_partners'),
+                                    {'q': 'partner'})
+        payload = json.loads(response.content)
+        # The aforementioned pre-existing partner is missing here.
+        self.assertEqual(len(payload), new_partners)
+
+        response = self.client.post(reverse('api_get_partners'),
+                                    {'q': '0'})
+        payload = json.loads(response.content)
+        self.assertEqual(len(payload), 1)
+
+        # We place partners that start with our search query at the beginning.
+        # Given a partner named "Company" and two named "Partner X", searching
+        # for "p" results in all three results being returned and "Company"
+        # being located at the end.
+        response = self.client.post(reverse('api_get_partners'),
+                                    {'q': 'p'})
+        payload = json.loads(response.content)
+        self.assertFalse(payload[-1]['name'].startswith('P'))
+        for partner in payload[:-1]:
+            self.assertTrue(partner['name'].startswith('P'))
+
+    def test_create_partner(self):
+        # When creating a partner through the api, we can both add
+        # existing tags...
+        tag = Tag.objects.create(company=self.company, name='Indiana')
+        new_partner = {'name': 'New Partner', 'tags': [tag.name]}
+        response = self.client.post(reverse('api_create_partner'), new_partner)
+        payload = json.loads(response.content)
+        partner = Partner.objects.get(pk=payload['id'])
+        self.assertEqual(payload['name'], new_partner['name'])
+        self.assertEqual(partner.name, payload['name'])
+
+        # ... or create new tags.
+        tag_count = Tag.objects.count()
+        new_partner['name'] = 'New Partner 2'
+        new_partner['tags'].append('Diversity')
+        response = self.client.post(reverse('api_create_partner'), new_partner)
+        self.assertEqual(Tag.objects.count(), tag_count + 1)
+        payload = json.loads(response.content)
+        partner = Partner.objects.get(pk=payload['id'])
+        tag = partner.tags.last()
+        self.assertEqual(tag.name, new_partner['tags'][-1])
+
+        # We send a 403 response on an attempt to create tags if the user
+        # doesn't have permissions.
+        new_partner['name'] = 'New Partner 3'
+        new_partner['tags'].append('Minority')
+        role = self.user.roles.get()
+        role.activities.remove(Activity.objects.get(name='create tag'))
+        partner_count = Partner.objects.count()
+        tag_count = Tag.objects.count()
+        response = self.client.post(reverse('api_create_partner'), new_partner)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Tag.objects.count(), tag_count)
+        self.assertEqual(Partner.objects.count(), partner_count)
