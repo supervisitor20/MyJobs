@@ -34,7 +34,10 @@ export default class TagSelect extends Component {
   }
 
   closeSelectMenu() {
-    this.setState({selectDropped: false});
+    this.setState({
+      partial: '',
+      selectDropped: false,
+    });
   }
 
   toggleSelectMenu() {
@@ -50,14 +53,22 @@ export default class TagSelect extends Component {
   }
 
   selectAll() {
-    const {available} = this.props;
-    this.handleAdd(available);
+    this.handleAdd(this.filteredAvailable());
     this.closeSelectMenu();
+  }
+
+  filteredAvailable() {
+    const {available, selected} = this.props;
+    const {partial} = this.state;
+
+    return filter(available, at =>
+      (!partial ||
+       at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
+      !find(selected, st => st.value === at.value));
   }
 
   handleAdd(tags) {
     const {onChoose} = this.props;
-    this.setState({partial: ''});
     this.setHighlight(tags, false);
     onChoose(tags);
   }
@@ -95,13 +106,9 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {available, selected, placeholder, searchPlaceholder} = this.props;
+    const {selected, placeholder, searchPlaceholder} = this.props;
     const {selectDropped, partial} = this.state;
-    const filteredAvailable =
-      filter(available, at =>
-        (!partial ||
-         at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
-        !find(selected, st => st.value === at.value));
+    const filteredAvailable = this.filteredAvailable();
 
     return (
       <div className="tag-select-input-element"
