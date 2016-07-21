@@ -185,6 +185,7 @@ class ManageUsersTests(MyJobsBase):
         output = json.loads(response.content)
 
         role_shape = {
+            'name': unicode,
             'activities': list,
         }
         for role in output.values():
@@ -192,14 +193,16 @@ class ManageUsersTests(MyJobsBase):
                 self.assertEqual(type(value), role_shape[key])
 
                 activity_shape = {
+                    'id': int,
                     'name': unicode,
                     'appAccess': unicode,
                     'description': unicode
                 }
 
-                for activity in value:
-                    for k, v in activity.items():
-                        self.assertEqual(type(v), activity_shape[k])
+                if key == 'activities':
+                    for activity in value:
+                        for k, v in activity.items():
+                            self.assertEqual(type(v), activity_shape[k])
 
     def test_get_roles_contain_roles(self):
         """
