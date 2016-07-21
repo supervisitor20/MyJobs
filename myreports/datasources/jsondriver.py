@@ -11,13 +11,13 @@ class DataSourceJsonDriver(object):
     def __init__(self, ds):
         self.ds = ds
 
-    def run(self, data_type, company, filter_spec, order_spec):
+    def run(self, data_type, company, filter_spec, values_spec):
         """Run the report.
 
         data_type: name of query variant, i.e. unaggregated, per_year
         company: company model object for this run.
         filter_spec: string with json object representing the user filter
-        order_spec: string with json list of fields in "[+-]field" form
+        value_spec: string with json list of fields to include
 
         returns: list of relatively flat dictionaries.
         """
@@ -25,7 +25,7 @@ class DataSourceJsonDriver(object):
             data_type,
             company,
             self.build_filter(filter_spec),
-            self.build_order(order_spec))
+            self.build_values(values_spec))
 
     def help(self, company, filter_spec, field, partial):
         """Get help values for a particular field.
@@ -66,6 +66,10 @@ class DataSourceJsonDriver(object):
     def build_order(self, order_spec):
         """Build a list of order_by fields from the given order_spec."""
         return json.loads(order_spec)
+
+    def build_values(self, values_spec):
+        """Build a list of fields from the given values_spec."""
+        return json.loads(values_spec)
 
     def build_filter(self, filter_json):
         """

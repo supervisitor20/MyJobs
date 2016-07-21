@@ -341,6 +341,7 @@ class SetUpReport extends Component {
       hints,
       fieldsLoading,
       isValid,
+      recordCount,
     } = this.props;
 
     const rows = [];
@@ -439,9 +440,12 @@ class SetUpReport extends Component {
           <div className="col-xs-12 col-md-4"></div>
           <div className="col-xs-12 col-md-8">
             {!isValid ?
-            <HelpText
-              message="Current set of filters would result in an empty report"
-            /> : null}
+              <HelpText
+                message="Current set of filters would result in an empty report"
+              /> :
+              <p>
+                ({recordCount} records will be included in this report)
+              </p>}
             <button
               disabled={!isValid}
               className={'button' + (isValid ? ' primary' : '')}
@@ -466,6 +470,7 @@ SetUpReport.propTypes = {
   reportDataId: PropTypes.number,
   hints: PropTypes.object.isRequired,
   isValid: PropTypes.bool.isRequired,
+  recordCount: PropTypes.number.isRequired,
   currentFilter: PropTypes.object.isRequired,
   filterInterface: PropTypes.arrayOf(
     PropTypes.shape({
@@ -484,6 +489,7 @@ export default connect(s => ({
   reportName: s.reportState.reportName,
   hints: s.reportState.hints,
   isValid: s.reportState.isValid,
+  recordCount: s.reportState.recordCount,
   reportNameErrors: s.errors.currentErrors.name,
   intention: s.dataSetMenu.intention,
   category: s.dataSetMenu.category,
