@@ -43,7 +43,7 @@ describe('activities-list-actions', () => {
     }));
 
     it('should return activities grouped by app-level access', () => {
-      expect(store.getState().activities).toEqual({
+      expect(store.getState()).toEqual({
         MarketPlace:  [
           {
             name: "create product",

@@ -66,12 +66,12 @@ class User extends React.Component {
     const user = users[userId] || {};
     const errors = flatten(Object.keys(validation).map(key =>
       validation[key].errors));
-    const available = difference(Object.keys(roles), validation.roles.value)
-      .map(role => ({
-        value: role,
-        display: role,
-      })
-    );
+    const available = difference(Object.keys(roles)
+      .map(key => roles[key].name), validation.roles.value)
+        .map(role => ({
+          value: role,
+          display: role,
+        }));
 
     const selected = validation.roles.value.map(role => ({
       value: role,
