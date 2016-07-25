@@ -1802,8 +1802,8 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'widgets': widgets,
         'analytics_info': get_analytics_info()
     }
-    return render_to_response('job_listing.html', data_dict,
-                              context_instance=RequestContext(request))
+    return render_to_response(site_config.get_template('job_listing.html'),
+                              data_dict, context_instance=RequestContext(request))
 
 
 def get_analytics_info():
