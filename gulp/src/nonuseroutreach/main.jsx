@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import 'babel/polyfill';
+import IdGenerator from '../common/id-generator';
 import createReduxStore from '../common/create-redux-store';
 import {Provider} from 'react-redux';
 import {combineReducers} from 'redux';
@@ -27,6 +28,10 @@ import {
   initialRecords,
   recordManagementReducer,
 } from './reducers/record-management-reducer';
+import searchReducer from './reducers/search-or-add-reducer';
+import {
+  resetSearchOrAddAction,
+} from './actions/search-or-add-actions';
 
 // cross-browser support
 installPolyfills();
@@ -37,6 +42,7 @@ const reducer = combineReducers({
   records: recordManagementReducer,
   navigation: navigationReducer,
   loading: loadingReducer,
+  search: searchReducer,
 });
 
 // state to pass to our reducer when the app starts
@@ -49,11 +55,16 @@ export const initialState = {
 
 const myJobsApi = new MyJobsApi(getCsrf());
 const api = new Api(myJobsApi);
+const idGen = new IdGenerator();
+
 const thunkExtra = {
-  api: api,
+  api,
+  idGen,
 };
 
 const store = createReduxStore(reducer, initialState, thunkExtra);
+store.dispatch(resetSearchOrAddAction('PARTNER'));
+store.dispatch(resetSearchOrAddAction('CONTACT'));
 
 ReactDOM.render(
   <Provider store={store}>

@@ -5136,3 +5136,10 @@ a.btn.pull-right {
   -ms-transition: none;
   -webkit-transition: none;
 }
+
+.search-or-add-create-icon {
+  background-image: url('./svg/calendar.png');
+  background-image: url('./svg/calendar.svg'), none;
+  background-repeat: no-repeat;
+  background-position: 98% 50%;
+}
