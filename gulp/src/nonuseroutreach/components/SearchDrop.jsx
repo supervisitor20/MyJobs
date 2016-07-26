@@ -59,9 +59,24 @@ export default class SearchDrop extends Component {
   }
 
   handleSelect() {
-    const {dispatch, instance, results, activeIndex, searchString} = this.props;
-    const result = results[activeIndex] || {value: '', display: searchString};
-    dispatch(searchResultSelectedAction(instance, result));
+    const {
+      dispatch,
+      instance,
+      results,
+      activeIndex,
+      searchString,
+      onSelect,
+      onAdd,
+    } = this.props;
+    if(results && results.length) {
+      const result = results[activeIndex]
+      onSelect(result);
+      dispatch(searchResultSelectedAction(instance, result));
+    } else {
+      const result = {value: null, display: searchString};
+      onAdd(result);
+      dispatch(searchResultSelectedAction(instance, result));
+    }
   }
 
   handleLiRef(ref, i) {
@@ -225,6 +240,7 @@ SearchDrop.propTypes = {
   }),
   activeIndex: PropTypes.number,
   onAdd: PropTypes.func,
+  onSelect: PropTypes.func.isRequired,
 };
 
 export default connect((state, ownProps) => ({
