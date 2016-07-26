@@ -138,6 +138,7 @@ export default class SearchDrop extends Component {
               key={i}
               ref={ref => this.handleLiRef(ref, i)}
               onMouseEnter={() => this.handleMouseOver(i)}
+              onClick={() => this.handleSelect()}
               className={classnames(
                   {'active': i === activeIndex})}>
               {result.display}
