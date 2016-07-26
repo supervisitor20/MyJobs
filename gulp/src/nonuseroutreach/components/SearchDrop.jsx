@@ -44,7 +44,7 @@ export default class SearchDrop extends Component {
         this.springToActiveLi();
       } else {
         if (this.container) {
-          this.spring.setCurrentValue(this.container.scrollTop);
+          this.scroller.skipTo(this.container.scrollTop);
         }
       }
     }

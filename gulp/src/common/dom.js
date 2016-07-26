@@ -66,6 +66,13 @@ export class SmoothScroller {
   }
 
   /**
+   * Move spring position directly without updating.
+   */
+  skipTo(value) {
+    this.spring.setCurrentValue(value);
+  }
+
+  /**
    * Call update function to make ref visible in containerRef.
    *
    * ref: item which needs to be seen
