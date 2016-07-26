@@ -76,6 +76,13 @@ export const setActiveIndexAction =
   createAction('SEARCH_RESULT_SET_ACTIVE_INDEX',
     (instance, index) => ({instance, index}));
 
+/**
+ * Run the search API with the current search.
+ *
+ * Use this when the search term settles down to actually run the search.
+ *
+ *  instance: search instance to work with
+ */
 export function doSearch(instance) {
   return async (dispatch, getState, {idGen, api}) => {
     try {
