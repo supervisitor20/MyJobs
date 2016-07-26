@@ -3,10 +3,15 @@ import {map} from 'lodash-compat/collection';
 import {connect} from 'react-redux';
 import {typingDebounce} from 'common/debounce';
 import classnames from 'classnames';
+import {SmoothScroller} from 'common/dom';
 
 import {
   doSearch,
   searchUpdateAction,
+  resetSearchOrAddAction,
+  addToActiveIndexAction,
+  setActiveIndexAction,
+  searchResultSelectedAction,
 } from 'nonuseroutreach/actions/search-or-add-actions';
 
 export default class SearchDrop extends Component {
@@ -16,6 +21,28 @@ export default class SearchDrop extends Component {
     const {dispatch, instance} = props;
     this.debouncedOnSearch = typingDebounce(() =>
         dispatch(doSearch(instance)));
+    this.liRefs = {};
+    this.movedByKeyboard = false;
+  }
+
+  componentDidMount() {
+    this.scroller = new SmoothScroller(v => this.scrollTo(v));
+  }
+
+  componentDidUpdate(prevProps) {
+    const {activeIndex: prevActiveIndex} = prevProps;
+    const {activeIndex} = this.props;
+
+    if (prevActiveIndex !== activeIndex) {
+      if (this.movedByKeyboard) {
+        this.movedByKeyboard = false;
+        this.springToActiveLi();
+      } else {
+        if (this.container) {
+          this.spring.setCurrentValue(this.container.scrollTop);
+        }
+      }
+    }
   }
 
   handleSearchChange(e) {
@@ -26,14 +53,75 @@ export default class SearchDrop extends Component {
     this.debouncedOnSearch();
   }
 
+  handleMouseOver(i) {
+    const {dispatch, instance} = this.props;
+    dispatch(setActiveIndexAction(instance, i));
+  }
+
+  handleSelect() {
+    const {dispatch, instance, results, activeIndex} = this.props;
+    dispatch(searchResultSelectedAction(instance, results[activeIndex]));
+  }
+
+  handleLiRef(ref, i) {
+    if (ref) {
+      this.liRefs[i] = ref;
+    } else {
+      delete this.liRefs[i];
+    }
+  }
+
+  springToActiveLi() {
+    const {activeIndex} = this.props;
+    if (!activeIndex && activeIndex !== 0) {
+      return;
+    }
+
+    const ref = this.liRefs[activeIndex];
+    this.scroller.springToShow(ref, this.container);
+  }
+
+  scrollTo(offset) {
+    if (this.container) {
+      this.container.scrollTop = offset;
+    }
+  }
+
+  filterKeys(e) {
+    const {dispatch, instance} = this.props;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this.handleSelect();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      dispatch(resetSearchOrAddAction(instance));
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.movedByKeyboard = true;
+      dispatch(addToActiveIndexAction(instance, 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.movedByKeyboard = true;
+      dispatch(addToActiveIndexAction(instance, -1));
+    }
+  }
+
   renderResults() {
-    const {results, searchString} = this.props;
+    const {results, searchString, activeIndex} = this.props;
 
     if (results.length) {
       return (
         <ul>
-          {map(results, r => (
-            <li>{r.display}</li>
+          {map(results, (result, i) => (
+            <li
+              key={i}
+              ref={ref => this.handleLiRef(ref, i)}
+              onMouseEnter={() => this.handleMouseOver(i)}
+              className={classnames(
+                  {'active': i === activeIndex})}>
+              {result.display}
+            </li>
           ))}
         </ul>
       );
@@ -44,7 +132,10 @@ export default class SearchDrop extends Component {
 
   renderDropWrap(inner) {
     return (
-      <div className="select-element-menu-container">
+      <div
+        className="select-element-menu-container"
+        ref={r => {this.container = r;}}
+        >
         {inner}
       </div>
     );
@@ -60,21 +151,34 @@ export default class SearchDrop extends Component {
     return '';
   }
 
-  render() {
-    const {searchString, state} = this.props;
+  renderInput() {
+    const {searchString, state, selected} = this.props;
+
+    if (state === 'SELECTED') {
+      return (
+        <input
+          className="search-or-add-loading-icon"
+          value={selected.display}/>
+      );
+    }
 
     return (
-      <div className={classnames(
-          'dropdown',
-        )}>
-        <input
-          className={classnames({
-            'search-or-add-create-icon': state === 'RECEIVED',
-          })}
-          type="search"
-          value={searchString}
-          onChange={e => this.handleSearchChange(e)}
-          />
+      <input
+        className={classnames({
+          'search-or-add-create-icon': state === 'RECEIVED',
+        })}
+        onKeyDown={e => this.filterKeys(e)}
+        type="search"
+        value={searchString}
+        onChange={e => this.handleSearchChange(e)}
+        />
+    );
+  }
+
+  render() {
+    return (
+      <div className="dropdown">
+        {this.renderInput()}
         {this.renderDrop()}
       </div>
     );
@@ -95,6 +199,11 @@ SearchDrop.propTypes = {
       value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     })),
+  selected: PropTypes.shape({
+    value: PropTypes.any.isRequired,
+    display: PropTypes.string.isRequired,
+  }),
+  activeIndex: PropTypes.number,
   onAdd: PropTypes.func,
 };
 
@@ -103,4 +212,5 @@ export default connect((state, ownProps) => ({
   searchString: state.search[ownProps.instance].searchString,
   results: state.search[ownProps.instance].results,
   selected: state.search[ownProps.instance].selected,
+  activeIndex: state.search[ownProps.instance].activeIndex,
 }))(SearchDrop);

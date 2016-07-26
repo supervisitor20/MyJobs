@@ -56,6 +56,26 @@ export const searchResultSelectedAction =
   createAction('SEARCH_RESULT_SELECTED',
     (instance, selected) => ({instance, selected}));
 
+/**
+ * The user moved their active item up or down.
+ *
+ *  instance: search instance to work with
+ *  delta: number to add to the index. e.g. 1, or -1
+ */
+export const addToActiveIndexAction =
+  createAction('SEARCH_RESULT_ADD_TO_ACTIVE_INDEX',
+    (instance, delta) => ({instance, delta}));
+
+/**
+ * The user made a particular item active.
+ *
+ *  instance: search instance to work with
+ *  delta: number to add to the index. e.g. 1, or -1
+ */
+export const setActiveIndexAction =
+  createAction('SEARCH_RESULT_SET_ACTIVE_INDEX',
+    (instance, index) => ({instance, index}));
+
 export function doSearch(instance) {
   return async (dispatch, getState, {idGen, api}) => {
     try {

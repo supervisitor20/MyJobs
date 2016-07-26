@@ -74,6 +74,7 @@ export default handleActions({
           ...state[instance],
           state: 'RECEIVED',
           results,
+          activeIndex: 0,
         },
       };
     }
@@ -90,6 +91,79 @@ export default handleActions({
         ...state[instance],
         state: 'SELECTED',
         selected,
+      },
+    };
+  },
+
+  'SEARCH_RESULT_ADD_TO_ACTIVE_INDEX': (state, action) => {
+    const {instance, delta} = action.payload;
+    const {results} = state[instance];
+
+    // Disable active index if results are gone.
+    if (!results || !results.length) {
+      return {
+        ...state,
+        [instance]: {
+          activeIndex: null,
+        },
+      };
+    }
+
+    const prevIndex = state[instance].activeIndex;
+    if (!prevIndex && prevIndex !== 0) {
+      return {
+        ...state,
+        [instance]: {
+          ...state[instance],
+          activeIndex: 0,
+        },
+      };
+    }
+
+    let newIndex = prevIndex + delta || 0;
+    if (newIndex < 0) {
+      newIndex = 0;
+    }
+    if (newIndex >= results.length) {
+      newIndex = results.length - 1;
+    }
+
+    return {
+      ...state,
+      [instance]: {
+        ...state[instance],
+        activeIndex: newIndex,
+      },
+    };
+  },
+
+  'SEARCH_RESULT_SET_ACTIVE_INDEX': (state, action) => {
+    const {instance, index} = action.payload;
+    const {results} = state[instance];
+
+    // Disable active index if results are gone.
+    if (!results || !results.length) {
+      return {
+        ...state,
+        [instance]: {
+          activeIndex: null,
+        },
+      };
+    }
+
+    let newIndex = index;
+    if (newIndex < 0) {
+      newIndex = 0;
+    }
+    if (newIndex >= results.length) {
+      newIndex = results.length - 1;
+    }
+
+    return {
+      ...state,
+      [instance]: {
+        ...state[instance],
+        activeIndex: newIndex,
       },
     };
   },

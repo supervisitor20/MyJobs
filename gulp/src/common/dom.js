@@ -1,3 +1,5 @@
+import {SpringSystem} from 'rebound';
+
 /* scrollUp(increment : Number, position: Number) => null
  * Given an increment and a position, repeatedly scrolls the viewport upward
  * `increment` pixels until the viewport is at `position`.
@@ -26,3 +28,54 @@ export const scrollUp = (increment = 250, position = 0) => {
  * the assumption that the addEventListener DOM method isn't available on IE 8.
  */
 export const isIE8 = !Boolean(window.addEventListener);
+
+export class SmoothScroller {
+  constructor(update) {
+    this.system = new SpringSystem();
+    this.spring = this.system.createSpring(87, 8);
+    this.spring.setOvershootClampingEnabled(true);
+    this.update = update;
+    this.spring.addListener({
+      onSpringUpdate: spring => this.update(spring.getCurrentValue()),
+    });
+    this.system.loop();
+  }
+
+  springTo(value) {
+    this.spring.setEndValue(value);
+  }
+
+  springToShow(ref, containerRef) {
+    if (ref.offsetTop < containerRef.scrollTop) {
+      this.springTo(ref.offsetTop);
+      return;
+    }
+
+    if (ref.offsetTop + ref.clientHeight >
+        containerRef.scrollTop + containerRef.clientHeight) {
+      this.springTo(ref.offsetTop + ref.clientHeight
+        - containerRef.clientHeight);
+      return;
+    }
+  }
+}
+
+/**
+ * Scroll an item vertically so that it is visible within a container.
+ *
+ * ref: item which needs to be seen
+ * containerRef: scrollable container.
+ */
+export function scrollToVisible(ref, containerRef) {
+  if (ref.offsetTop < containerRef.scrollTop) {
+    containerRef.scrollTop = ref.offsetTop;
+    return;
+  }
+
+  if (ref.offsetTop + ref.clientHeight >
+      containerRef.scrollTop + containerRef.clientHeight) {
+    containerRef.scrollTop = ref.offsetTop + ref.clientHeight -
+      containerRef.clientHeight;
+    return;
+  }
+}

@@ -5138,8 +5138,14 @@ a.btn.pull-right {
 }
 
 .search-or-add-create-icon {
-  background-image: url('./svg/calendar.png');
-  background-image: url('./svg/calendar.svg'), none;
+  background-image: url('./svg/arrow-right.png');
+  background-image: url('./svg/arrow-right.svg'), none;
+  background-repeat: no-repeat;
+  background-position: 98% 50%;
+}
+
+.search-or-add-loading-icon {
+  background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_ms/files/images/ajax-loader.gif');
   background-repeat: no-repeat;
   background-position: 98% 50%;
 }
