@@ -5142,10 +5142,22 @@ a.btn.pull-right {
   background-image: url('./svg/arrow-right.svg'), none;
   background-repeat: no-repeat;
   background-position: 98% 50%;
+  background-size: 20px;
+}
+
+.search-drop-action {
+    padding: 10px 10px 20px 10px;
+    text-align: center;
+}
+
+.search-drop-action p {
+    padding: 0px 0px 2px 0px;
+    text-align: center;
 }
 
 .search-or-add-loading-icon {
   background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_ms/files/images/ajax-loader.gif');
   background-repeat: no-repeat;
   background-position: 98% 50%;
+  background-size: 20px;
 }

@@ -19,6 +19,7 @@ export default class OutreachRecordTable extends React.Component {
       <BootstrapTable data={records}
                       hover
                       search
+                      striped
                       pagination={!isIE8}
                       height={isIE8 ? '600px' : undefined}
                       options={{paginationSize: 3,

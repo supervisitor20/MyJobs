@@ -180,18 +180,18 @@ export default class SearchDrop extends Component {
       return this.renderDropWrap(this.renderResults());
     } else if (state === 'RECEIVED') {
       return this.renderDropWrap(
-        <div>
-          <div>{searchString}</div>
-          <div>was not found in our database</div>
-          <div>
+        <div className="search-drop-action">
+          <p>{searchString}</p>
+          <p>was not found in our database</p>
+          <div className='search-drop-controls'>
             <button
               onClick={() => dispatch(resetSearchOrAddAction(instance))}
-              className="button wide">
+              className="btn">
               Cancel
             </button>
             <button
               onClick={() => this.handleSelect()}
-              className="button wide primary">
+              className="btn primary">
               Create
             </button>
           </div>
