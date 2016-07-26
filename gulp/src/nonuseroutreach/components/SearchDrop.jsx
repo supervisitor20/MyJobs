@@ -84,7 +84,7 @@ export default class SearchDrop extends Component {
       const result = results[activeIndex]
       onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
-    } else {
+    } else if (onAdd) {
       const result = {value: null, display: searchString};
       onAdd(result);
       dispatch(searchResultSelectedAction(instance, result));
@@ -173,7 +173,15 @@ export default class SearchDrop extends Component {
   }
 
   renderDrop() {
-    const {dispatch, instance, state, searchString, results} = this.props;
+    const {
+      dispatch,
+      instance,
+      state,
+      searchString,
+      results,
+      onAdd,
+    } = this.props;
+
     if (state === 'PRELOADING' || state === 'LOADING') {
       return this.renderDropWrap('Loading...');
     } else if (state === 'RECEIVED' && results.length) {
@@ -183,18 +191,20 @@ export default class SearchDrop extends Component {
         <div className="search-drop-action">
           <p>{searchString}</p>
           <p>was not found in our database</p>
-          <div className='search-drop-controls'>
-            <button
-              onClick={() => dispatch(resetSearchOrAddAction(instance))}
-              className="btn">
-              Cancel
-            </button>
-            <button
-              onClick={() => this.handleSelect()}
-              className="btn primary">
-              Create
-            </button>
-          </div>
+          {onAdd ?
+            <div className='search-drop-controls'>
+              <button
+                onClick={() => dispatch(resetSearchOrAddAction(instance))}
+                className="btn">
+                Cancel
+              </button>
+              <button
+                onClick={() => this.handleSelect()}
+                className="btn primary">
+                Create
+              </button>
+            </div>
+          : ''}
         </div>
       );
     }
