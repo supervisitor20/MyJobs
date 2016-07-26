@@ -23,6 +23,7 @@ export default class SearchDrop extends Component {
         dispatch(doSearch(instance)));
     this.liRefs = {};
     this.movedByKeyboard = false;
+    this.mouseInDrop = false;
   }
 
   componentDidMount() {
@@ -46,6 +47,13 @@ export default class SearchDrop extends Component {
           this.spring.setCurrentValue(this.container.scrollTop);
         }
       }
+    }
+  }
+
+  handleBlur() {
+    if (!this.mouseInDrop) {
+      const {dispatch, instance} = this.props;
+      dispatch(resetSearchOrAddAction(instance));
     }
   }
 
@@ -156,6 +164,8 @@ export default class SearchDrop extends Component {
       <div
         className="select-element-menu-container"
         ref={r => {this.container = r;}}
+        onMouseEnter={() => {this.mouseInDrop = true;}}
+        onMouseLeave={() => {this.mouseInDrop = false;}}
         >
         {inner}
       </div>
@@ -207,6 +217,7 @@ export default class SearchDrop extends Component {
         className={classnames({
           'search-or-add-create-icon': state === 'RECEIVED',
         })}
+        onBlur={() => this.handleBlur()}
         onKeyDown={e => this.filterKeys(e)}
         type="search"
         value={searchString}
