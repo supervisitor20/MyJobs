@@ -59,8 +59,9 @@ export default class SearchDrop extends Component {
   }
 
   handleSelect() {
-    const {dispatch, instance, results, activeIndex} = this.props;
-    dispatch(searchResultSelectedAction(instance, results[activeIndex]));
+    const {dispatch, instance, results, activeIndex, searchString} = this.props;
+    const result = results[activeIndex] || {value: '', display: searchString};
+    dispatch(searchResultSelectedAction(instance, result));
   }
 
   handleLiRef(ref, i) {
@@ -142,11 +143,30 @@ export default class SearchDrop extends Component {
   }
 
   renderDrop() {
-    const {state} = this.props;
+    const {dispatch, instance, state, searchString, results} = this.props;
     if (state === 'PRELOADING' || state === 'LOADING') {
       return this.renderDropWrap('Loading...');
-    } else if (state === 'RECEIVED') {
+    } else if (state === 'RECEIVED' && results.length) {
       return this.renderDropWrap(this.renderResults());
+    } else if (state === 'RECEIVED') {
+      return this.renderDropWrap(
+        <div>
+          <div>{searchString}</div>
+          <div>was not found in our database</div>
+          <div>
+            <button
+              onClick={() => dispatch(resetSearchOrAddAction(instance))}
+              className="button wide">
+              Cancel
+            </button>
+            <button
+              onClick={() => this.handleSelect()}
+              className="button wide primary">
+              Create
+            </button>
+          </div>
+        </div>
+      );
     }
     return '';
   }
