@@ -30,10 +30,6 @@ export default class SearchDrop extends Component {
     this.scroller = new SmoothScroller(v => this.scrollTo(v));
   }
 
-  componentWillUnmount() {
-    this.scroller.destroy()
-  }
-
   componentDidUpdate(prevProps) {
     const {activeIndex: prevActiveIndex} = prevProps;
     const {activeIndex} = this.props;
@@ -48,6 +44,10 @@ export default class SearchDrop extends Component {
         }
       }
     }
+  }
+
+  componentWillUnmount() {
+    this.scroller.destroy();
   }
 
   handleBlur() {
@@ -80,8 +80,8 @@ export default class SearchDrop extends Component {
       onSelect,
       onAdd,
     } = this.props;
-    if(results && results.length) {
-      const result = results[activeIndex]
+    if (results && results.length) {
+      const result = results[activeIndex];
       onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
     } else if (onAdd) {
@@ -192,7 +192,7 @@ export default class SearchDrop extends Component {
           <p>{searchString}</p>
           <p>was not found in our database</p>
           {onAdd ?
-            <div className='search-drop-controls'>
+            <div className="search-drop-controls">
               <button
                 onClick={() => dispatch(resetSearchOrAddAction(instance))}
                 className="btn">
