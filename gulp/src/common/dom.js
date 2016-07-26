@@ -29,6 +29,16 @@ export const scrollUp = (increment = 250, position = 0) => {
  */
 export const isIE8 = !Boolean(window.addEventListener);
 
+/**
+ * Utility for scrolling smoothly.
+ *
+ *  update: a function which is called frequenly with new scroll values
+ *    when scrolling.
+ *
+ *  const scroller = new SmoothScroller(h => {container.scrollTop = h;});
+ *
+ *  scroller.springToShow(someItem, container); // Smoothly scrolls.
+ */
 export class SmoothScroller {
   constructor(update) {
     this.system = new SpringSystem();
@@ -41,10 +51,26 @@ export class SmoothScroller {
     this.system.loop();
   }
 
+  /**
+   * Clean up resources associated with this object.
+   */
+  destroy() {
+    this.spring.destroy();
+  }
+
+  /**
+   * Call update function to scroll to a specific location.
+   */
   springTo(value) {
     this.spring.setEndValue(value);
   }
 
+  /**
+   * Call update function to make ref visible in containerRef.
+   *
+   * ref: item which needs to be seen
+   * containerRef: scrollable container.
+   */
   springToShow(ref, containerRef) {
     if (ref.offsetTop < containerRef.scrollTop) {
       this.springTo(ref.offsetTop);

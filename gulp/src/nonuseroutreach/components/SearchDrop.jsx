@@ -29,6 +29,10 @@ export default class SearchDrop extends Component {
     this.scroller = new SmoothScroller(v => this.scrollTo(v));
   }
 
+  componentWillUnmount() {
+    this.scroller.destroy()
+  }
+
   componentDidUpdate(prevProps) {
     const {activeIndex: prevActiveIndex} = prevProps;
     const {activeIndex} = this.props;
