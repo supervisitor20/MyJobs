@@ -23,16 +23,16 @@ class ProcessRecordPage extends React.Component {
 
   render() {
     return this.renderCard('Partner Data', ([
-      <div className="product-card no-highlight clearfix">
-        <FieldWrapper key="partner" label="Partner Organization">
+      <div key="partner" className="product-card no-highlight clearfix">
+        <FieldWrapper label="Partner Organization">
           <SearchDrop
             instance="PARTNER"
             onAdd={obj => obj}
             onSelect={obj => obj}/>
         </FieldWrapper>
       </div>,
-      <div className="product-card no-highlight clearfix">
-        <FieldWrapper key="contact" label="Contact Search">
+      <div key="contact" className="product-card no-highlight clearfix">
+        <FieldWrapper label="Contact Search">
           <SearchDrop
             instance="CONTACT"
             onSelect={obj => obj}/>

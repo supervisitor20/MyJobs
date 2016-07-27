@@ -5153,6 +5153,7 @@ a.btn.pull-right {
 
 .tray-container {
   position: relative;
+  background-color: #fff;
   border-radius: 3px;
   border: 1px solid #999;
   margin: 0 0 10px 0;
