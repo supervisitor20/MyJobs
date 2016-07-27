@@ -9,9 +9,9 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
  */
 
 export default class OutreachRecordTable extends React.Component {
-  reviewFormatter(record_id) {
+  reviewFormatter(recordId) {
     // Add OnClick when a function is created to swap to form view/wizard
-    return <Button className="btn" key={record_id}>Review</Button>;
+    return <Button className="btn" key={recordId}>Review</Button>;
   }
   render() {
     const {records} = this.props;
