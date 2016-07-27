@@ -22,20 +22,20 @@ class ProcessRecordPage extends React.Component {
 
 
   render() {
-    return this.renderCard("Partner Data", ([
+    return this.renderCard('Partner Data', ([
       <div className="product-card no-highlight clearfix">
         <FieldWrapper key="partner" label="Partner Organization">
           <SearchDrop
             instance="PARTNER"
-            onAdd={a => console.log('PARTNER add', a)}
-            onSelect={a => console.log('PARTNER select', a)}/>
+            onAdd={obj => obj}
+            onSelect={obj => obj}/>
         </FieldWrapper>
       </div>,
       <div className="product-card no-highlight clearfix">
         <FieldWrapper key="contact" label="Contact Search">
           <SearchDrop
             instance="CONTACT"
-            onSelect={a => console.log('CONTACT select', a)}/>
+            onSelect={obj => obj}/>
         </FieldWrapper>
       </div>,
     ]));

@@ -51,8 +51,6 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
       // selected record
-      console.log('handleNewLocation', loc);
-      console.log('handleNewLocation query', loc.location.query);
       dispatch(setPageAction('process', loc.location.query));
       dispatch(markPageLoadingAction(true));
       // TODO: Get record here.
