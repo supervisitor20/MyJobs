@@ -22,10 +22,13 @@ export const navigationReducer = handleActions({
    * state changes: currentPage is set to that page
    */
   'SET_PAGE': (state, action) => {
+    const {page, query, args} = action.payload;
     return {
       ...state,
-      currentPage: action.payload,
-      tips: pageTips[action.payload] || [],
+      currentPage: page,
+      currentArgs: args,
+      currentQuery: query,
+      tips: pageTips[page] || [],
     };
   },
 }, initialNavigation);
