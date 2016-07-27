@@ -1,9 +1,10 @@
 import React, {Component, PropTypes} from 'react';
-import {map} from 'lodash-compat/collection';
+import {map, contains} from 'lodash-compat/collection';
 import {connect} from 'react-redux';
 import {typingDebounce} from 'common/debounce';
 import classnames from 'classnames';
 import {SmoothScroller} from 'common/dom';
+import {expandStaticUrl} from 'common/assets';
 
 import {
   doSearch,
@@ -23,7 +24,7 @@ export default class SearchDrop extends Component {
         dispatch(doSearch(instance)));
     this.liRefs = {};
     this.movedByKeyboard = false;
-    this.mouseInDrop = false;
+    this.mouseInControl = false;
   }
 
   componentDidMount() {
@@ -51,7 +52,7 @@ export default class SearchDrop extends Component {
   }
 
   handleBlur() {
-    if (!this.mouseInDrop) {
+    if (!this.mouseInControl) {
       const {dispatch, instance} = this.props;
       dispatch(resetSearchOrAddAction(instance));
     }
@@ -164,8 +165,6 @@ export default class SearchDrop extends Component {
       <div
         className="select-element-menu-container"
         ref={r => {this.container = r;}}
-        onMouseEnter={() => {this.mouseInDrop = true;}}
-        onMouseLeave={() => {this.mouseInDrop = false;}}
         >
         {inner}
       </div>
@@ -183,7 +182,9 @@ export default class SearchDrop extends Component {
     } = this.props;
 
     if (state === 'PRELOADING' || state === 'LOADING') {
-      return this.renderDropWrap('Loading...');
+      return this.renderDropWrap(
+        <div className="search-drop-empty"></div>
+      );
     } else if (state === 'RECEIVED' && results.length) {
       return this.renderDropWrap(this.renderResults());
     } else if (state === 'RECEIVED') {
@@ -211,6 +212,59 @@ export default class SearchDrop extends Component {
     return '';
   }
 
+  renderTrayIcon(key, children) {
+    return (
+      <div
+        key={key}
+        className="tray-item">
+        {children}
+      </div>
+    );
+  }
+
+  renderLoadingIcon() {
+    const {state} = this.props;
+
+    if (contains(['SELECTED', 'LOADING'], state)) {
+      return (
+        <img
+          alt="[loading]"
+          src={expandStaticUrl('images/ajax-loader.gif')}/>
+      );
+    }
+
+    return null;
+  }
+
+  renderCreateIcon() {
+    const {state, onAdd} = this.props;
+
+    if (state === 'RECEIVED' && onAdd) {
+      return (
+        <img
+          alt="[create]"
+          src={expandStaticUrl('svg/arrow-right.svg')}
+          onClick={() => this.handleSelect()}
+          />
+      );
+    }
+
+    return null;
+  }
+
+  renderTrayItems() {
+    const items = [
+      this.renderTrayIcon('loading', this.renderLoadingIcon()),
+      this.renderTrayIcon('create', this.renderCreateIcon()),
+    ];
+
+    return (
+      <div className="tray-items">
+        {items}
+      </div>
+    );
+  }
+
   renderInput() {
     const {searchString, state, selected} = this.props;
 
@@ -224,9 +278,6 @@ export default class SearchDrop extends Component {
 
     return (
       <input
-        className={classnames({
-          'search-or-add-create-icon': state === 'RECEIVED',
-        })}
         onBlur={() => this.handleBlur()}
         onKeyDown={e => this.filterKeys(e)}
         type="search"
@@ -238,8 +289,16 @@ export default class SearchDrop extends Component {
 
   render() {
     return (
-      <div className="dropdown">
-        {this.renderInput()}
+      <div
+        className="dropdown"
+        onMouseEnter={() => {this.mouseInControl = true;}}
+        onMouseLeave={() => {this.mouseInControl = false;}}>
+        <div className="tray-container">
+          {this.renderTrayItems()}
+          <div className="tray-content">
+            {this.renderInput()}
+          </div>
+        </div>
         {this.renderDrop()}
       </div>
     );
