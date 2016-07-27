@@ -1793,6 +1793,7 @@ def api_get_nuo_records_list(request):
         'outreachEmail': record.outreach_email.email + '@my.jobs',
         'fromEmail': record.from_email,
         'currentWorkflowState': record.current_workflow_state.state,
+        'id': record.id,
     } for record in records]
 
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
