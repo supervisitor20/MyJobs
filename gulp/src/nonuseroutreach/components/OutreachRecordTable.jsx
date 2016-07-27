@@ -1,13 +1,18 @@
 import React from 'react';
 import {isIE8} from '../../common/dom';
+import {Button} from 'react-bootstrap';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 /* OutreachRecordTable
  * Component which displays a list of outreach records (the OutreachRecord model
  * in Django).
  */
-export default class OutreachRecordTable extends React.Component {
 
+export default class OutreachRecordTable extends React.Component {
+  reviewFormatter(cell) {
+    // Add OnClick when a function is created to swap to form view/wizard
+    return <Button className="btn" key={cell}>Review</Button>;
+  }
   render() {
     const {records} = this.props;
     return (
@@ -35,6 +40,9 @@ export default class OutreachRecordTable extends React.Component {
                            dataAlign="center"
                            dataSort>Action State
         </TableHeaderColumn>
+        <TableHeaderColumn dataField="id"
+                           dataAlign="center"
+                           dataFormat={this.reviewFormatter} />
       </BootstrapTable>
     );
   }
