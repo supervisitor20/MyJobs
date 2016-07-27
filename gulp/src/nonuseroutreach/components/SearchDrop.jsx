@@ -71,7 +71,7 @@ export default class SearchDrop extends Component {
     dispatch(setActiveIndexAction(instance, i));
   }
 
-  handleSelect() {
+  handleSelect(forceAdd) {
     const {
       dispatch,
       instance,
@@ -81,7 +81,7 @@ export default class SearchDrop extends Component {
       onSelect,
       onAdd,
     } = this.props;
-    if (results && results.length) {
+    if (!forceAdd && results && results.length) {
       const result = results[activeIndex];
       onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
@@ -244,7 +244,7 @@ export default class SearchDrop extends Component {
         <img
           alt="[create]"
           src={expandStaticUrl('svg/arrow-right.svg')}
-          onClick={() => this.handleSelect()}
+          onClick={() => this.handleSelect(true)}
           />
       );
     }
