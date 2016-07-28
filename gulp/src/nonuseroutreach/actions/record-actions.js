@@ -2,7 +2,8 @@ import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 
 export const getRecordsAction = createAction('GET_RECORDS');
-
+export const updateTermFilterAction = createAction('TERM_FILTER');
+export const updateWorkflowFilterAction = createAction('WORKFLOW_FILTER');
 export const filterRecordsAction = createAction('FILTER_RECORDS');
 
 // Note: Each of the asynchronous calls will dispatch an `errorAction` if an
@@ -21,6 +22,23 @@ export function doGetRecords() {
       dispatch(errorAction(exception.message));
     }
   };
+}
+
+/* doUpdateTermFilter
+  Updates the term filter applied to NUO Records table
+ */
+export function doUpdateTermFilter(term_filter) {
+  return (dispatch) =>
+    dispatch(updateTermFilterAction(term_filter))
+}
+
+/* doUpdateWorkflowFilter
+  Updates the workflow filter applied to the NUO Records table
+ */
+
+export function doUpdateWorkflowFilter(workflow_filter) {
+  return (dispatch) =>
+    dispatch(updateWorkflowFilterAction(workflow_filter))
 }
 
 /* doFilterRecords

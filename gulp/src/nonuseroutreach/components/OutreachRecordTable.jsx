@@ -1,5 +1,4 @@
 import React from 'react';
-import {isIE8} from '../../common/dom';
 import {Button} from 'react-bootstrap';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
@@ -18,9 +17,8 @@ export default class OutreachRecordTable extends React.Component {
     return (
       <BootstrapTable data={records}
                       hover
-                      search
-                      pagination={!isIE8}
-                      height={isIE8 ? '600px' : undefined}
+                      height='600px'
+                      tableStyle={{marginTop: '0px'}}
                       options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
         <TableHeaderColumn dataField="dateAdded"
