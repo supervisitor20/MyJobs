@@ -2181,3 +2181,10 @@ def api_create_partner(request):
     if tags:
         partner.tags = tags
     return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_get_workflow_states(request):
+    return HttpResponse(json.dumps(
+        [{'id': ows.pk, 'name': ows.state}
+         for ows in OutreachWorkflowState.objects.all()]))
