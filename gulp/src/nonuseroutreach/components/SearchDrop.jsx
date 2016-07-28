@@ -100,6 +100,12 @@ export default class SearchDrop extends Component {
     }
   }
 
+  handleCancel() {
+    const {dispatch, instance} = this.props;
+    dispatch(resetSearchOrAddAction(instance));
+    this.input.focus();
+  }
+
   springToActiveLi() {
     const {activeIndex} = this.props;
     if (!activeIndex && activeIndex !== 0) {
@@ -173,8 +179,6 @@ export default class SearchDrop extends Component {
 
   renderDrop() {
     const {
-      dispatch,
-      instance,
       state,
       searchString,
       results,
@@ -195,7 +199,7 @@ export default class SearchDrop extends Component {
           {onAdd ?
             <div className="search-drop-controls">
               <button
-                onClick={() => dispatch(resetSearchOrAddAction(instance))}
+                onClick={() => this.handleCancel()}
                 className="btn">
                 Cancel
               </button>
@@ -278,6 +282,7 @@ export default class SearchDrop extends Component {
 
     return (
       <input
+        ref={r => this.input = r}
         onBlur={() => this.handleBlur()}
         onKeyDown={e => this.filterKeys(e)}
         type="search"
