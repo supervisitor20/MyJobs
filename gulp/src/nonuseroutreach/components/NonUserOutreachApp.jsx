@@ -2,7 +2,7 @@ import React, {Component, PropTypes} from 'react';
 import {Col, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
-import {Menu} from './Menu';
+import Menu from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
@@ -73,7 +73,7 @@ class NonUserOutreachApp extends Component {
             {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
-            <Menu tips={tips} />
+            <Menu tips={tips} history={history} />
           </Col>
         </Row>
       </div>
