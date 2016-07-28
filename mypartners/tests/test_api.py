@@ -583,7 +583,6 @@ class PRMAPITestCase(MyPartnersTestCase):
         response = self.client.post(reverse('api_get_contacts'),
                                     {'q': 'contact'})
         payload = json.loads(response.content)
-        print payload
         self.assertEqual(len(payload), new_contacts + 1)
         for contact in payload[:-1]:
             self.assertTrue(
