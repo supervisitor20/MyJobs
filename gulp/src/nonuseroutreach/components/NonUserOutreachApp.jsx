@@ -6,9 +6,11 @@ import {Menu} from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
 import ProcessRecordPage from './ProcessRecordPage.jsx';
+import Email from './Email.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
+import {doLoadEmail} from '../actions/process-email-actions';
 import {setPageAction} from '../actions/navigation-actions';
 
 
@@ -51,9 +53,10 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
       // selected record
-      dispatch(setPageAction('process', loc.location.query));
+      const recordId = loc.location.query.id;
       dispatch(markPageLoadingAction(true));
-      // TODO: Get record here.
+      await dispatch(doLoadEmail(recordId));
+      dispatch(setPageAction('process', loc.location.query));
       dispatch(markPageLoadingAction(false));
       return;
     }
@@ -62,8 +65,17 @@ class NonUserOutreachApp extends Component {
     dispatch(markPageLoadingAction(false));
   }
 
+  renderSidebar() {
+    const {page, tips} = this.props;
+
+    if (page === 'process') {
+      return <Email/>;
+    }
+
+    return <Menu tips={tips} />;
+  }
   render() {
-    const {loading, tips} = this.props;
+    const {loading} = this.props;
     return (
       <div>
         <Row>
@@ -81,7 +93,7 @@ class NonUserOutreachApp extends Component {
             {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
-            <Menu tips={tips} />
+            {this.renderSidebar()}
           </Col>
         </Row>
       </div>
@@ -96,6 +108,8 @@ NonUserOutreachApp.propTypes = {
   loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
+  // the current page
+  page: React.PropTypes.string.isRequired,
   // which page to show in the content area
   children: PropTypes.node,
 };
@@ -103,4 +117,5 @@ NonUserOutreachApp.propTypes = {
 export default connect(state => ({
   loading: state.loading.mainPage,
   tips: state.navigation.tips,
+  page: state.navigation.currentPage,
 }))(NonUserOutreachApp);

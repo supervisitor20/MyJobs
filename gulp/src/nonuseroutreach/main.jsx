@@ -29,6 +29,7 @@ import {
   recordManagementReducer,
 } from './reducers/record-management-reducer';
 import searchReducer from './reducers/search-or-add-reducer';
+import processEmailReducer from './reducers/process-email-reducer';
 import {
   resetSearchOrAddAction,
 } from './actions/search-or-add-actions';
@@ -43,6 +44,7 @@ const reducer = combineReducers({
   navigation: navigationReducer,
   loading: loadingReducer,
   search: searchReducer,
+  process: processEmailReducer,
 });
 
 // state to pass to our reducer when the app starts
