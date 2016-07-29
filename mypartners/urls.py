@@ -12,6 +12,8 @@ nuo_api = patterns('mypartners.views',
         name='api_delete_nuo_inbox'),
     url(r'^inbox/update', 'api_update_nuo_inbox',
         name='api_update_nuo_inbox'),
+    url(r'^workflowstate$', 'api_get_workflow_states',
+        name='api_get_workflow_states'),
 )
 
 api = patterns('mypartners.views',

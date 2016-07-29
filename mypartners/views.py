@@ -2268,3 +2268,10 @@ def api_create_contact(request):
     return HttpResponse(json.dumps({'id': contact.pk,
                                     'name': contact.name,
                                     'email': contact.email}))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_get_workflow_states(request):
+    return HttpResponse(json.dumps(
+        [{'id': ows.pk, 'name': ows.state}
+         for ows in OutreachWorkflowState.objects.all()]))
