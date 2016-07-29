@@ -719,11 +719,11 @@ class MyJobsViewsTests(MyJobsBase):
             self.client.get(reverse('auth_logout'))
 
     def test_log_into_nonexistent_account(self):
-        with self.assertRaises(User.DoesNotExist):
-            self.client.post(reverse('home'),
-                             data={'username': 'fake@fake.fake',
-                                   'password': self.password,
-                                   'action': 'login'})
+        response = self.client.post(reverse('home'),
+                                    data={'username': 'fake@fake.fake',
+                                          'password': self.password,
+                                          'action': 'login'})
+        self.assertEqual(response.status_code, 200)
 
     def test_guid_cookies_login_and_off(self):
         """
