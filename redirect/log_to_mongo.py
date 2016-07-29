@@ -7,11 +7,9 @@ import sys
 import boto
 from pymongo import MongoClient
 
-from django.conf import settings
-
 sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
 
-from secrets import MONGO_HOST
+from secrets import MONGO_HOST, AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
 
 
 def get_log_lines(file_name):
@@ -20,8 +18,8 @@ def get_log_lines(file_name):
     is unquoted and split into lines.
     """
     boto_connection = boto.connect_s3(
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_KEY)
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_KEY)
     log_bucket = boto_connection.get_bucket('my-jobs-logs', validate=False)
     log = log_bucket.get_key(file_name)
     contents = log.get_contents_as_string().decode('string_escape')
