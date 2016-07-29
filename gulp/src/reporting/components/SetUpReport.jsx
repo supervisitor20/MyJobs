@@ -5,7 +5,7 @@ import warning from 'warning';
 import {scrollUp} from 'common/dom';
 import {forEach, map} from 'lodash-compat/collection';
 import {keys} from 'lodash-compat/object';
-import {debounce} from 'lodash-compat/function';
+import {typingDebounce} from 'common/debounce';
 import {blendControls} from './util';
 import {
   setSimpleFilterAction,
@@ -34,10 +34,6 @@ import TextField from 'common/ui/TextField';
 import SelectControls from 'common/ui/SelectControls';
 import TagSelect from 'common/ui/tags/TagSelect';
 import TagAnd from 'common/ui/tags/TagAnd';
-
-function hintDebounce(fn) {
-  return debounce(fn, 300, {leading: false, trailing: true});
-}
 
 class SetUpReport extends Component {
   onIntentionChange(intention) {
@@ -388,7 +384,7 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={hintDebounce(v => this.getHints(col.filter, v))}
+                getHints={typingDebounce(v => this.getHints(col.filter, v))}
                 loading={fieldsLoading[col.filter]}
                 hints={hints[col.filter]}/>
             </FieldWrapper>
@@ -404,7 +400,7 @@ class SetUpReport extends Component {
                 updateFilter={v =>
                   this.dispatchFilterAction(
                     setSimpleFilterAction(col.filter, v))}
-                getHints={hintDebounce((f, v) => this.getHints(f, v))}
+                getHints={typingDebounce((f, v) => this.getHints(f, v))}
                 cityLoading={fieldsLoading.city}
                 stateLoading={fieldsLoading.state}
                 hints={hints}/>

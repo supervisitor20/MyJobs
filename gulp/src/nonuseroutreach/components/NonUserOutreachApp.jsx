@@ -5,6 +5,7 @@ import {Loading} from 'common/ui/Loading';
 import {Menu} from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
+import ProcessRecordPage from './ProcessRecordPage.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
@@ -47,8 +48,15 @@ class NonUserOutreachApp extends Component {
       await dispatch(doGetRecords());
       dispatch(markPageLoadingAction(false));
       return;
+    } else if (lastComponent === ProcessRecordPage) {
+      // update the application's state with the current page and refresh the
+      // selected record
+      dispatch(setPageAction('process', loc.location.query));
+      dispatch(markPageLoadingAction(true));
+      // TODO: Get record here.
+      dispatch(markPageLoadingAction(false));
+      return;
     }
-
 
     // Allow other pages to mount.
     dispatch(markPageLoadingAction(false));

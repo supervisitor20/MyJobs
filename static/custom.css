@@ -5136,3 +5136,61 @@ a.btn.pull-right {
   -ms-transition: none;
   -webkit-transition: none;
 }
+
+.search-drop-action {
+    padding: 10px 10px 20px 10px;
+    text-align: center;
+}
+
+.search-drop-action p {
+    padding: 0px 0px 2px 0px;
+    text-align: center;
+}
+
+.search-drop-empty {
+  height: 50px;
+}
+
+.tray-container {
+  position: relative;
+  background-color: #fff;
+  border-radius: 3px;
+  border: 1px solid #999;
+  margin: 0 0 10px 0;
+}
+
+.tray-content {
+  overflow: hidden;
+}
+
+.row .tray-container .tray-content input {
+  height: 33px;
+  line-height: 33px;
+  padding: 0 5px;
+  margin: 0;
+  border: none;
+}
+
+.tray-items {
+  float: right;
+}
+
+.tray-items .tray-item {
+  display: inline-block;
+}
+
+.tray-items .tray-item img {
+  height: auto;
+  width: auto;
+  max-height: 20px;
+  max-width: 20px;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
+.tray-items .tray-item .tray-icon-blank {
+  height: 20px;
+  width: 20px;
+  margin-top: 5px;
+  margin-right: 5px;
+}

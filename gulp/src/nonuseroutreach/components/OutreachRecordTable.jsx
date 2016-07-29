@@ -1,6 +1,6 @@
 import React from 'react';
 import {isIE8} from '../../common/dom';
-import {Button} from 'react-bootstrap';
+import {Link} from 'react-router';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 /* OutreachRecordTable
@@ -10,15 +10,23 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 export default class OutreachRecordTable extends React.Component {
   reviewFormatter(recordId) {
-    // Add OnClick when a function is created to swap to form view/wizard
-    return <Button className="btn" key={recordId}>Review</Button>;
+    return (
+      <Link
+        className="btn"
+        to={`/process?id=${recordId}`}
+        >
+        Review
+      </Link>
+    );
   }
+
   render() {
     const {records} = this.props;
     return (
       <BootstrapTable data={records}
                       hover
                       search
+                      striped
                       pagination={!isIE8}
                       height={isIE8 ? '600px' : undefined}
                       options={{paginationSize: 3,
