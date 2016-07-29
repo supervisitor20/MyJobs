@@ -8,8 +8,7 @@ import OutreachRecordPage from './OutreachRecordPage';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
-import {setPageAction} from '../actions/navigation-actions';
-
+import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 
 /* NonUserOutreachApp
  * An app for managing nonuser outreach, providing a sidebar for navigation and
@@ -18,7 +17,8 @@ import {setPageAction} from '../actions/navigation-actions';
  */
 class NonUserOutreachApp extends Component {
   componentDidMount() {
-    const {history} = this.props;
+    const {history, dispatch} = this.props;
+    dispatch(doGetWorkflowStateChoices());
     this.unsubscribeToHistory = history.listen(
       (...args) => this.handleNewLocation(...args));
   }

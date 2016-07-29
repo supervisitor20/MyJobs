@@ -13,11 +13,12 @@ export default class OutreachRecordTable extends React.Component {
     return <Button className="btn" key={recordId}>Review</Button>;
   }
   render() {
-    const {records} = this.props;
+    const {records, filteredRecords, filtersActive} = this.props;
+    const displayData = filtersActive ? filteredRecords : records;
     return (
-      <BootstrapTable data={records}
+      <BootstrapTable data={displayData}
                       hover
-                      height='600px'
+                      height="600px"
                       tableStyle={{marginTop: '0px'}}
                       options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
@@ -60,4 +61,18 @@ OutreachRecordTable.propTypes = {
       currentWorkflowState: React.PropTypes.string.isRequired,
     }).isRequired,
   ).isRequired,
+  filteredRecords: React.PropTypes.arrayOf(
+    React.PropTypes.shape({
+      // date teh record was created
+      dateAdded: React.PropTypes.string.isRequired,
+      // the inbox the record went to
+      outreachEmail: React.PropTypes.string.isRequired,
+      // the email the record was created from
+      fromEmail: React.PropTypes.string.isRequired,
+      // denotes what action, if any, was taken on the record (pending,
+      // unprocessed, etc)
+      currentWorkflowState: React.PropTypes.string.isRequired,
+    }).isRequired,
+  ).isRequired,
+  filtersActive: React.PropTypes.bool.isRequired,
 };

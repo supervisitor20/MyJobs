@@ -10,11 +10,13 @@ import OutreachRecordTable from './OutreachRecordTable';
  */
 class OutreachRecordPage extends React.Component {
   render() {
-    const {records} = this.props;
+    const {records, filteredRecords, filtersActive} = this.props;
     return (
       <Row>
         <Col xs={12}>
-          <OutreachRecordTable records={records} />
+          <OutreachRecordTable records={records}
+                               filteredRecords={filteredRecords}
+                               filtersActive={filtersActive} />
         </Col>
       </Row>
     );
@@ -27,8 +29,14 @@ OutreachRecordPage.propTypes = {
   records: React.PropTypes.arrayOf(
     React.PropTypes.object.isRequired,
   ).isRequired,
+  filteredRecords: React.PropTypes.arrayOf(
+    React.PropTypes.object.isRequired,
+  ),
+  filtersActive: React.PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
   records: state.records,
+  filteredRecords: state.navigation.filteredRecords,
+  filtersActive: state.navigation.filtersActive,
 }))(OutreachRecordPage);

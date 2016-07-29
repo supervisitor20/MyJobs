@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router';
 import {connect} from 'react-redux';
-import {FilterMenu} from './FilterMenu';
+import FilterMenu from './FilterMenu';
 
 /* Menu
  * Component for displaying navigation and tips relevant to the current page.
