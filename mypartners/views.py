@@ -21,7 +21,7 @@ from django.db.models import Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
-                         HttpResponseNotAllowed, HttpResponseBadRequest)
+                         HttpResponseNotAllowed)
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
@@ -29,6 +29,7 @@ from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django_remote_forms.forms import RemoteForm
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
@@ -1801,7 +1802,7 @@ def api_get_nuo_records_list(request):
 
 @restrict_to_staff()
 @requires("read outreach record")
-def api_get_individual_nuo_record(request):
+def api_get_individual_nuo_record(request, record_id=None):
     """
     GET /prm/api/nonuseroutreach/records/record
 
@@ -1809,7 +1810,6 @@ def api_get_individual_nuo_record(request):
 
     """
     company = get_company_or_404(request)
-    record_id = request.GET.get('record_id', None)
     if not record_id:
         raise Http404("No record id provided")
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
@@ -2100,6 +2100,55 @@ def add_tags(request):
     data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_form(request, item_id=None, form_name=None):
+    company = get_company_or_404(request)
+    new_form_class = {
+        'partner': NewPartnerForm,
+    }[form_name]
+    form_class = {
+        'partner': PartnerForm,
+    }[form_name]
+    model_class = {
+        'partner': Partner,
+    }[form_name]
+
+    def assert_user_can(activity):
+        if not request.user.can(company, activity):
+            return MissingActivity('cannot: ' + activity)
+        else:
+            return None
+
+    if form_name == 'partner' and item_id is None:
+        required_activity = 'create partner'
+    elif form_name == 'partner' and item_id is not None:
+        required_activity = 'update partner22'
+    else:
+        raise Http404()
+
+    if not request.user.can(company, required_activity):
+        return MissingActivity('cannot: ' + required_activity)
+
+    if item_id:
+        item = model_class.objects.get(**{
+            model_class.company_ref: company,
+            'pk': item_id
+        })
+    else:
+        item = None
+        form_class = new_form_class
+
+    if request.method == 'GET':
+        if item is not None:
+            form_instance = form_class(auto_id=False, instance=item)
+        else:
+            form_instance = form_class(auto_id=False)
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
 
 
 @require_http_methods(['GET', 'POST'])

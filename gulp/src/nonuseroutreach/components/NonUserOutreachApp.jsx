@@ -33,7 +33,12 @@ class NonUserOutreachApp extends Component {
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
 
+    if (!loc) {
+      return;
+    }
+
     const lastComponent = loc.components[loc.components.length - 1];
+
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
       // list of inboxes
@@ -45,18 +50,18 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === OutreachRecordPage) {
       // update the application's state with the current page and refresh the
       // list of outreach records
-      dispatch(setPageAction('records'));
       dispatch(markPageLoadingAction(true));
+      dispatch(setPageAction('records'));
       await dispatch(doGetRecords());
       dispatch(markPageLoadingAction(false));
       return;
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
-      // selected record
+      // email
       const recordId = loc.location.query.id;
       dispatch(markPageLoadingAction(true));
       await dispatch(doLoadEmail(recordId));
-      dispatch(setPageAction('process', loc.location.query));
+      dispatch(setPageAction('process'));
       dispatch(markPageLoadingAction(false));
       return;
     }

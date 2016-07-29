@@ -86,7 +86,7 @@ export default class SearchDrop extends Component {
       onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
     } else if (onAdd) {
-      const result = {value: null, display: searchString};
+      const result = {value: '', display: searchString};
       onAdd(result);
       dispatch(searchResultSelectedAction(instance, result));
     }

@@ -2,8 +2,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.util import ErrorList
 from django.utils.timezone import get_current_timezone_name
+from django.utils.datastructures import SortedDict
 
-from collections import OrderedDict
 import pytz
 
 from postajob.location_data import states
@@ -160,7 +160,7 @@ class NewPartnerForm(NormalizedModelForm):
         for field in self.fields.itervalues():
             # primary contact information isn't required to create a partner
             field.required = False
-        model_fields = OrderedDict(self.fields)
+        model_fields = SortedDict(self.fields)
 
         new_fields = {
             'partnername': forms.CharField(
@@ -187,7 +187,7 @@ class NewPartnerForm(NormalizedModelForm):
                                               'placeholder': 'Tags'}))
         }
 
-        ordered_fields = OrderedDict(new_fields)
+        ordered_fields = SortedDict(new_fields)
         ordered_fields.update(model_fields)
         self.fields = ordered_fields
         autofocus_input(self, 'partnername')
@@ -259,7 +259,7 @@ class NewPartnerForm(NormalizedModelForm):
     def get_field_sets(self):
         """
         NewPartnerForm is a combination Partner and Contact form. As
-        self.fields has already been turned into an OrderedDict in __init__,
+        self.fields has already been turned into an SortedDict in __init__,
         we can easily segment our form into fieldsets.
         """
         sections = self.fields.keys()[:4], self.fields.keys()[4:]

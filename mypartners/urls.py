@@ -4,7 +4,9 @@ from django.views.generic import RedirectView
 nuo_api = patterns('mypartners.views',
     url(r'^inbox/list$', 'api_get_nuo_inbox_list', name='api_get_nuo_inbox_list'),
     url(r'^records/list$', 'api_get_nuo_records_list', name='api_get_nuo_records_list'),
-    url(r'^records/record', 'api_get_individual_nuo_record', name='api_get_individual_nuo_record'),
+    url(r'^records/(?P<record_id>\d+)',
+        'api_get_individual_nuo_record',
+        name='api_get_individual_nuo_record'),
     url(r'^records/convert', 'api_convert_outreach_record', name='api_convert_outreach_record'),
     url(r'^inbox/add', 'api_add_nuo_inbox',
         name='api_add_nuo_inbox'),
@@ -30,6 +32,13 @@ api = patterns('mypartners.views',
     url(r'^contact/(?P<contact_id>\d+)$', 'api_get_contact',
         name='api_get_contact'),
     url(r'^contact/create$', 'api_create_contact', name='api_create_contact'),
+
+    # Partner form
+    url(r'^partner/(?P<item_id>\d+)/form$', 'api_form',
+        {'form_name': 'partner'}, name='api_form'),
+    url(r'^partner/new/form$', 'api_form',
+        {'form_name': 'partner', 'item_id': None}, name='api_form'),
+
 )
 
 urlpatterns = patterns('mypartners.views',

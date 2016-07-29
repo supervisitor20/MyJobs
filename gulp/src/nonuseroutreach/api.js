@@ -52,4 +52,12 @@ export default class Api {
   async getEmail(recordId) {
     return await this.api.get('/prm/api/nonuseroutreach/records/' + recordId);
   }
+
+  async getPartner(partnerId) {
+    return await this.api.get('/prm/api/partner/' + partnerId);
+  }
+
+  async getForm(formName, id) {
+    return await this.api.get('/prm/api/' + formName + '/' + id + '/form');
+  }
 }
