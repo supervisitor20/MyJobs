@@ -41,9 +41,7 @@ class FilterMenu extends React.Component {
 FilterMenu.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   workflowChoices: React.PropTypes.arrayOf(
-    React.PropTypes.string.isRequired,
-    React.PropTypes.string.isRequired,
-    React.PropTypes.func.isRequired,
+    React.PropTypes.object.isRequired,
   ).isRequired,
   termFilter: React.PropTypes.string.isRequired,
   workflowFilter: React.PropTypes.string.isRequired,

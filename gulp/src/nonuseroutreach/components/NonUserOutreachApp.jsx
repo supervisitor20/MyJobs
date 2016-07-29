@@ -18,8 +18,7 @@ import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-ac
  */
 class NonUserOutreachApp extends Component {
   componentDidMount() {
-    const {history, dispatch} = this.props;
-    dispatch(doGetWorkflowStateChoices());
+    const {history} = this.props;
     this.unsubscribeToHistory = history.listen(
       (...args) => this.handleNewLocation(...args));
   }
@@ -30,7 +29,6 @@ class NonUserOutreachApp extends Component {
 
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
-
     const lastComponent = loc.components[loc.components.length - 1];
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
@@ -46,6 +44,7 @@ class NonUserOutreachApp extends Component {
       dispatch(setPageAction('records'));
       dispatch(markPageLoadingAction(true));
       await dispatch(doGetRecords());
+      await dispatch(doGetWorkflowStateChoices());
       dispatch(markPageLoadingAction(false));
       return;
     } else if (lastComponent === ProcessRecordPage) {

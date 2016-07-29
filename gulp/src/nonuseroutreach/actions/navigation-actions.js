@@ -12,7 +12,7 @@ export const filterRecordsAction = createAction('FILTER_RECORDS');
 
 export function doGetWorkflowStateChoices() {
   return async (dispatch, _, {api}) => {
-    const rawChoices = api.getWorkflowStates();
+    const rawChoices = await api.getWorkflowStates();
     const formattedChoices = [
       {
         value: 'All',
@@ -57,4 +57,3 @@ export function doFilterRecords() {
     await dispatch(setFiltersActiveAction(filtersActive));
   };
 }
-
