@@ -12,14 +12,24 @@ nuo_api = patterns('mypartners.views',
         name='api_delete_nuo_inbox'),
     url(r'^inbox/update', 'api_update_nuo_inbox',
         name='api_update_nuo_inbox'),
+    url(r'^workflowstate$', 'api_get_workflow_states',
+        name='api_get_workflow_states'),
 )
 
 api = patterns('mypartners.views',
     url(r'^nonuseroutreach/', include(nuo_api)),
+
+    # Partner API
     url(r'^partner$', 'api_get_partners', name='api_get_partners'),
     url(r'^partner/(?P<partner_id>\d+)$', 'api_get_partner',
         name='api_get_partner'),
     url(r'^partner/create$', 'api_create_partner', name='api_create_partner'),
+
+    # Contact API
+    url(r'^contact$', 'api_get_contacts', name='api_get_contacts'),
+    url(r'^contact/(?P<contact_id>\d+)$', 'api_get_contact',
+        name='api_get_contact'),
+    url(r'^contact/create$', 'api_create_contact', name='api_create_contact'),
 )
 
 urlpatterns = patterns('mypartners.views',

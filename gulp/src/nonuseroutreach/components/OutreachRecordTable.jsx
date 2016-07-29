@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button} from 'react-bootstrap';
+import {Link} from 'react-router';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 /* OutreachRecordTable
@@ -9,9 +9,16 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 export default class OutreachRecordTable extends React.Component {
   reviewFormatter(recordId) {
-    // Add OnClick when a function is created to swap to form view/wizard
-    return <Button className="btn" key={recordId}>Review</Button>;
+    return (
+      <Link
+        className="btn"
+        to={`/process?id=${recordId}`}
+        >
+        Review
+      </Link>
+    );
   }
+
   render() {
     const {records, filteredRecords, filtersActive} = this.props;
     const displayData = filtersActive ? filteredRecords : records;

@@ -1,6 +1,9 @@
 import {createAction} from 'redux-actions';
 
-export const setPageAction = createAction('SET_PAGE');
+export const setPageAction = createAction(
+  'SET_PAGE',
+  (page, query, args) => ({page, query, args}));
+
 export const setWorkflowStateChoicesAction = createAction('SET_WORKFLOW_CHOICES');
 export const updateTermFilterAction = createAction('SET_TERM_FILTER');
 export const updateWorkflowFilterAction = createAction('SET_WORKFLOW_FILTER');
@@ -54,3 +57,4 @@ export function doFilterRecords() {
     await dispatch(setFiltersActiveAction(filtersActive));
   };
 }
+

@@ -1,3 +1,5 @@
+import {map} from 'lodash-compat/collection';
+
 export default class Api {
   constructor(api) {
     this.api = api;
@@ -37,5 +39,17 @@ export default class Api {
       '/prm/api/nonuseroutreach/inbox/delete/', {'id': id}
     );
     return (await promise);
+  }
+
+  search(instance, searchString) {
+    return {
+      PARTNER: s => this.searchPartner(s),
+    }[instance](searchString);
+  }
+
+  async searchPartner(searchString) {
+    const results =
+      await this.api.post('/prm/api/partner', {'q': searchString});
+    return map(results, r => ({value: r.id, display: r.name}));
   }
 }

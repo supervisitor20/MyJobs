@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
+from django.db.models import Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
@@ -2181,3 +2182,96 @@ def api_create_partner(request):
     if tags:
         partner.tags = tags
     return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('read contact')
+def api_get_contacts(request):
+    """
+    GET /prm/api/contact/
+    POST /prm/api/contact/
+
+    Returns a list of contacts. If a parameter named "q" is provided,
+    we filter for contacts whose name contain that value. If a parameter named
+    "partner_id" is provided, we only search that partner's contacts. The
+    contacts whose name start with "q", if any exist, are moved to the
+    beginning of the returned list.
+    """
+    company = get_company_or_404(request)
+
+    q = request.GET.get('q') or request.POST.get('q')
+    partner_id = (request.GET.get('partner_id')
+                  or request.POST.get('partner_id'))
+    if partner_id:
+        contact_args = {'partner__id': partner_id}
+    else:
+        contact_args = {'partner__owner': company}
+
+    contacts = Contact.objects.filter(**contact_args)
+    if q:
+        q_obj = Q(email__icontains=q) | Q(name__icontains=q)
+        contacts = list(contacts.filter(q_obj))
+        sorted_contacts = filter(
+            lambda contact: (contact.name.lower().startswith(q.lower())
+                             or contact.email.lower().startswith(q.lower())),
+            contacts)
+        sorted_contacts.extend(set(contacts).difference(sorted_contacts))
+    else:
+        sorted_contacts = contacts
+    return HttpResponse(json.dumps([{'id': contact.pk,
+                                     'name': contact.name,
+                                     'email': contact.email}
+                                    for contact in sorted_contacts]))
+
+
+@require_http_methods(['GET'])
+@requires('read contact')
+def api_get_contact(request, contact_id):
+    """
+    GET /prm/api/contact/1/
+
+    Returns the contact with an ID of 1. Results in a 404 if that contact
+    doesn't exist or is owned by a different company.
+    """
+    company = get_company_or_404(request)
+    contact = get_object_or_404(Contact, pk=contact_id, partner__owner=company)
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['POST'])
+@requires('create contact')
+def api_create_contact(request):
+    """
+    POST /prm/api/contact/create/
+
+    Creates and returns a contact based on the provided POST data.
+    """
+    company = get_company_or_404(request)
+    partner = get_object_or_404(company.partner_set,
+                                pk=request.POST['partner_id'])
+    contact = Contact.objects.create(
+        name=request.POST['name'],
+        email=request.POST.get('email', ''),
+        phone=request.POST.get('phone', ''),
+        notes=request.POST.get('notes', ''),
+        partner=partner
+    )
+    location = Location.objects.create(
+        **{key: request.POST.get('key', '')
+           for key in ['address_line_one', 'address_line_two', 'city', 'state',
+                       'postal_code', 'label']}
+    )
+    contact.locations.add(location)
+
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_get_workflow_states(request):
+    return HttpResponse(json.dumps(
+        [{'id': ows.pk, 'name': ows.state}
+         for ows in OutreachWorkflowState.objects.all()]))
