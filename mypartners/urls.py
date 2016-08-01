@@ -37,7 +37,7 @@ api = patterns('mypartners.views',
     url(r'^partner/(?P<item_id>\d+)/form$', 'api_form',
         {'form_name': 'partner'}, name='api_form'),
     url(r'^partner/new/form$', 'api_form',
-        {'form_name': 'partner', 'item_id': None}, name='api_form'),
+        {'form_name': 'partner', 'item_id': None}),
 
 )
 

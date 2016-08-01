@@ -157,8 +157,8 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
         """
         # test to ensure current company's record will return
-        response = self.client.get(reverse('api_get_individual_nuo_record'),
-                                   {"record_id": self.outreach_record.pk})
+        response = self.client.get(reverse('api_get_individual_nuo_record',
+                                           args=[self.outreach_record.pk]))
         self.assertEqual(response.status_code, 200, msg="expected status 200, "
                                                         "got %s, may be roles "
                                                         "or perms issue" %
@@ -180,8 +180,8 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                self.inbox.email + "@my.jobs"))
 
         # test to ensure other company's record will not return
-        response = self.client.get(reverse('api_get_individual_nuo_record'),
-                                   {"record_id": self.other_record.pk})
+        response = self.client.get(reverse('api_get_individual_nuo_record',
+                                           args=[self.other_record.pk]))
 
         response_json = json.loads(response.content)
 
