@@ -9,6 +9,8 @@ from pymongo import MongoClient
 
 from django.conf import settings
 
+sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
+
 from secrets import MONGO_HOST
 
 

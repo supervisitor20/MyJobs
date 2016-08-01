@@ -16,6 +16,7 @@ import {
   receiveHintsAction,
   clearHintsAction,
   resetCurrentFilterDirty,
+  updateRecordCount,
 } from '../actions/report-state-actions';
 
 describe('reportStateReducer', () => {
@@ -69,6 +70,12 @@ describe('reportStateReducer', () => {
       },
       currentFilterDirty: true,
     });
+  });
+
+  it('can update the record count', () => {
+    const action = updateRecordCount(3);
+    const result = reportStateReducer({recordCount: 0}, action);
+    expect(result).toEqual({recordCount: 3});
   });
 
   it('deletes simple filters set to undefined', () => {

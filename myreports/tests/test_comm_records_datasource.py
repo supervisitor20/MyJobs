@@ -492,23 +492,23 @@ class TestCommRecordsDataSource(MyJobsBase):
             [{'value': self.sue.pk, 'display': self.sue.name}],
             recs)
 
-    def test_order(self):
+    def test_values(self):
         """
-        Check ordering results works at all.
+        Check limiting values works at all
 
         """
+        self.maxDiff = 10000
         ds = CommRecordsDataSource()
         recs = ds.run_unaggregated(
             self.company,
             CommRecordsFilter(),
-            ["-subject"])
-        subjects = [r['subject'] for r in recs]
+            ["partner", "subject"])
         expected = [
-            self.record_3.subject,
-            self.record_2.subject,
-            self.record_1.subject,
+            {'partner': u'aaa', 'subject': u'record 1'},
+            {'partner': u'aaa', 'subject': u'record 2'},
+            {'partner': u'bbb', 'subject': u'record 3'},
         ]
-        self.assertEqual(expected, subjects)
+        self.assertEqual(expected, recs)
 
     def test_adorn_filter(self):
         self.maxDiff = 10000

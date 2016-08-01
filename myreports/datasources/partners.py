@@ -31,25 +31,24 @@ class PartnersDataSource(DataSource):
         DjangoField('tags', transform=extract_tags),
         DjangoField('uri')])
 
-    def run(self, data_type, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, values):
         return dispatch_run_by_data_type(
-            self, data_type, company, filter_spec, order)
+            self, data_type, company, filter_spec, values)
 
     def filtered_partners(self, company, filter_spec):
         qs_filtered = filter_spec.filter_partners(company)
         qs_distinct = qs_filtered.distinct()
         return qs_distinct
 
-    def run_unaggregated(self, company, filter_spec, order):
+    def run_unaggregated(self, company, filter_spec, values):
         qs_filtered = filter_spec.filter_partners(company)
-        qs_ordered = qs_filtered.order_by(*order)
-        qs_optimized = qs_ordered.prefetch_related(
+        qs_optimized = qs_filtered.prefetch_related(
             'tags', 'primary_contact')
 
-        partners = from_django(self.partner_row_builder, qs_optimized)
+        partners = from_django(self.partner_row_builder, qs_optimized, values)
         return list(partners)
 
-    def run_count_comm_rec_per_month(self, company, filter_spec, order):
+    def run_count_comm_rec_per_month(self, company, filter_spec, values):
         # Get a list of valid partners (according to our filter).
         qs_filtered = filter_spec.filter_partners(company)
         partner_ids = list(qs_filtered.values_list('id', flat=True))
@@ -122,9 +121,7 @@ class PartnersDataSource(DataSource):
                 joined_data.append(joined_record)
         joined = from_list(joined_fields, joined_data)
 
-        sorted_stream = sort_stream(order, joined)
-
-        return list(sorted_stream)
+        return list(joined)
 
     def filter_type(self):
         return PartnersFilter

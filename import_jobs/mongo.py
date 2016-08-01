@@ -32,13 +32,15 @@ def jobsfs_to_mongo(guid, buid, name, mongo=settings.MONGO_HOST):
     jobs = get_jobs_from_zipfile(zf, guid)
     jobs = filter_current_jobs(jobs, bu)
     jobs = (hr_xml_to_json(job, bu) for job in jobs)
-    
-    client = MongoClient(mongo, w="majority")
-    collection = client.analytics.jobs
-    bulk = collection.initialize_unordered_bulk_op()
-    for job in jobs:
-        bulk.find({'guid': job['guid']}).upsert().replace_one(job)
-    bulk.execute()
+    jobs = list(jobs)
+
+    if len(jobs) > 0:
+        client = MongoClient(mongo, w="majority")
+        collection = client.analytics.jobs
+        bulk = collection.initialize_unordered_bulk_op()
+        for job in jobs:
+            bulk.find({'guid': job['guid']}).upsert().replace_one(job)
+        bulk.execute()
 
 
 def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=settings.MONGO_HOST):

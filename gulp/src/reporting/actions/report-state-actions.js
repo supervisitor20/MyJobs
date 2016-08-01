@@ -142,3 +142,10 @@ export const unlinkFilterAction = createAction('UNLINK_FILTER',
  * payload: bool, whether or not the report is valid
  */
 export const setValidAction = createAction('SET_VALID');
+
+/**
+ * Update the known record count for this report.
+ *
+ * payload: number, the new record count
+ */
+export const updateRecordCount = createAction('UPDATE_RECORD_COUNT');

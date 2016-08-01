@@ -1,12 +1,24 @@
 import React from 'react';
 import {isIE8} from '../../common/dom';
+import {Link} from 'react-router';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 /* OutreachRecordTable
  * Component which displays a list of outreach records (the OutreachRecord model
  * in Django).
  */
+
 export default class OutreachRecordTable extends React.Component {
+  reviewFormatter(recordId) {
+    return (
+      <Link
+        className="btn"
+        to={`/process?id=${recordId}`}
+        >
+        Review
+      </Link>
+    );
+  }
 
   render() {
     const {records} = this.props;
@@ -14,6 +26,7 @@ export default class OutreachRecordTable extends React.Component {
       <BootstrapTable data={records}
                       hover
                       search
+                      striped
                       pagination={!isIE8}
                       height={isIE8 ? '600px' : undefined}
                       options={{paginationSize: 3,
@@ -35,6 +48,9 @@ export default class OutreachRecordTable extends React.Component {
                            dataAlign="center"
                            dataSort>Action State
         </TableHeaderColumn>
+        <TableHeaderColumn dataField="id"
+                           dataAlign="center"
+                           dataFormat={this.reviewFormatter} />
       </BootstrapTable>
     );
   }

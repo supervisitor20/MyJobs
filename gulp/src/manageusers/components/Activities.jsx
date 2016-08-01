@@ -48,5 +48,5 @@ Activities.propTypes = {
 };
 
 export default connect(state => ({
-  ...state.activities,
+  activities: state.activities,
 }))(Activities);
