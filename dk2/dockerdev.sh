@@ -126,7 +126,6 @@ restartmicrosites() {
 maint() {
     docker run \
         --rm \
-        --net=host \
         --volumes-from solrdata \
         --volumes-from mysqldata \
         -v $(pwd)/..:/MyJobs \
@@ -146,7 +145,6 @@ doruncd() {
     dir="$1"
     shift
     docker run \
-        --net=host \
         --rm \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
