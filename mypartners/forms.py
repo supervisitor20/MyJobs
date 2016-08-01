@@ -354,12 +354,15 @@ class ContactRecordForm(NormalizedModelForm):
                   'tags', 'notes', 'attachment')
 
     def __init__(self, *args, **kwargs):
-        partner = kwargs.pop('partner')
+        partner = None
+        if 'partner' in kwargs:
+            partner = kwargs.pop('partner')
         super(ContactRecordForm, self).__init__(*args, **kwargs)
 
         instance = kwargs.get('instance')
-        self.fields["contact"].queryset = Contact.objects.filter(
-            partner=partner, archived_on__isnull=True)
+        if partner:
+            self.fields["contact"].queryset = Contact.objects.filter(
+                partner=partner, archived_on__isnull=True)
 
         if not instance or instance.contact_type != 'pssemail':
             # Remove Partner Saved Search from the list of valid
@@ -371,7 +374,7 @@ class ContactRecordForm(NormalizedModelForm):
                 self.fields["contact_type"].choices = contact_type_choices
 
         # If there are attachments create a checkbox option to delete them.
-        if instance:
+        if instance and partner:
             attachments = PRMAttachment.objects.filter(contact_record=instance)
             if attachments:
                 choices = [(a.pk, get_attachment_link(partner.id, a.id,

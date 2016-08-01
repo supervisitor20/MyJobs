@@ -150,6 +150,32 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             msg=return_msg.format(response_json[0]["outreachEmail"],
                                   self.inbox.email + "@my.jobs"))
 
+    def test_form_api(self):
+        """
+        Various form api endpoints work
+        """
+
+        response = self.client.get(
+            reverse('new_partner_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('partnername', data['ordered_fields'])
+
+        response = self.client.get(
+            reverse('new_contact_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('phone', data['ordered_fields'])
+
+        response = self.client.get(
+            reverse('new_communicationrecord_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('job_applications', data['ordered_fields'])
+
     def test_individual_record_api(self):
         """
         Test the record API given the logged in user is a member of the same

@@ -2103,16 +2103,12 @@ def add_tags(request):
 
 
 @require_http_methods(['GET', 'POST'])
-def api_form(request, item_id=None, form_name=None):
+def api_form(request, form_name=None):
     company = get_company_or_404(request)
-    new_form_class = {
-        'partner': NewPartnerForm,
-    }[form_name]
     form_class = {
-        'partner': PartnerForm,
-    }[form_name]
-    model_class = {
-        'partner': Partner,
+        'partner': NewPartnerForm,
+        'contact': ContactForm,
+        'communicationrecord': ContactRecordForm,
     }[form_name]
 
     def assert_user_can(activity):
@@ -2121,30 +2117,20 @@ def api_form(request, item_id=None, form_name=None):
         else:
             return None
 
-    if form_name == 'partner' and item_id is None:
+    if form_name == 'partner':
         required_activity = 'create partner'
-    elif form_name == 'partner' and item_id is not None:
-        required_activity = 'update partner22'
+    elif form_name == 'contact':
+        required_activity = 'create contact'
+    elif form_name == 'communicationrecord':
+        required_activity = 'create communication record'
     else:
         raise Http404()
 
     if not request.user.can(company, required_activity):
         return MissingActivity('cannot: ' + required_activity)
 
-    if item_id:
-        item = model_class.objects.get(**{
-            model_class.company_ref: company,
-            'pk': item_id
-        })
-    else:
-        item = None
-        form_class = new_form_class
-
     if request.method == 'GET':
-        if item is not None:
-            form_instance = form_class(auto_id=False, instance=item)
-        else:
-            form_instance = form_class(auto_id=False)
+        form_instance = form_class(auto_id=False)
         remote_form = RemoteForm(form_instance)
         return HttpResponse(
             content_type='application/json',
