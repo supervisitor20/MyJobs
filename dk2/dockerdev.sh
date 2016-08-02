@@ -146,7 +146,6 @@ doruncd() {
     if [ -z ${port+x} ]; then
      nethost="--net=host"
     fi
-    echo $nethost
     dir="$1"
     shift
     docker run \
