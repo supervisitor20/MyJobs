@@ -10,6 +10,9 @@ export const updateWorkflowFilterAction = createAction('SET_WORKFLOW_FILTER');
 export const setFiltersActiveAction = createAction('SET_FILTERS_ACTIVE');
 export const filterRecordsAction = createAction('FILTER_RECORDS');
 
+/* doGetWorkflowStateChoices
+  Retrieves possible workflow states for use in dropdowns
+ */
 export function doGetWorkflowStateChoices() {
   return async (dispatch, _, {api}) => {
     const rawChoices = await api.getWorkflowStates();

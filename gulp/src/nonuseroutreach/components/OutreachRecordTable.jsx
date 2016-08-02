@@ -25,29 +25,28 @@ export default class OutreachRecordTable extends React.Component {
     return (
       <BootstrapTable data={displayData}
                       hover
+                      striped
+                      bordered={false}
                       height="600px"
                       tableStyle={{marginTop: '0px'}}
                       options={{paginationSize: 3,
                                 noDataText: 'No records found'}}>
+         <TableHeaderColumn dataField="fromEmail"
+                           dataAlign="left"
+                           width="225"
+                           dataSort>From
+        </TableHeaderColumn>
         <TableHeaderColumn dataField="dateAdded"
-                           dataAlign="center"
+                           dataAlign="left"
                            dataSort
                            isKey>Date
-        </TableHeaderColumn>
-        <TableHeaderColumn dataField="outreachEmail"
-                           dataAlign="center"
-                           dataSort>Inbox
-        </TableHeaderColumn>
-        <TableHeaderColumn dataField="fromEmail"
-                           dataAlign="center"
-                           dataSort>From
         </TableHeaderColumn>
         <TableHeaderColumn dataField="currentWorkflowState"
                            dataAlign="center"
                            dataSort>Action State
         </TableHeaderColumn>
         <TableHeaderColumn dataField="id"
-                           dataAlign="center"
+                           dataAlign="left"
                            dataFormat={this.reviewFormatter} />
       </BootstrapTable>
     );
