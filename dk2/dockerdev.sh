@@ -126,6 +126,7 @@ restartmicrosites() {
 maint() {
     docker run \
         --rm \
+        --net=host \
         --volumes-from solrdata \
         --volumes-from mysqldata \
         -v $(pwd)/..:/MyJobs \
@@ -142,9 +143,14 @@ rebuilddev() {
 }
 
 doruncd() {
+    if [ -z ${port+x} ]; then
+     nethost="--net=host"
+    fi
+    echo $nethost
     dir="$1"
     shift
     docker run \
+        $nethost \
         --rm \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
