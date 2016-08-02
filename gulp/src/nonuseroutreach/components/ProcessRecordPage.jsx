@@ -69,7 +69,7 @@ class ProcessRecordPage extends Component {
     return this.renderCard('Add Contact', ([
       <div key="partner" className="product-card no-highlight clearfix">
         <FieldWrapper label="Partner">
-          {partnerName}
+          <span>{partnerName}</span>
         </FieldWrapper>
       </div>,
       <div key="contact" className="product-card no-highlight clearfix">
