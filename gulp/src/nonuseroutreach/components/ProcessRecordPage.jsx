@@ -64,19 +64,14 @@ class ProcessRecordPage extends Component {
   }
 
   renderKnownPartner() {
-    const {partnerName, partnerId} = this.props;
+    const {partnerId} = this.props;
 
     return this.renderCard('Add Contact', ([
-      <div key="partner" className="product-card no-highlight clearfix">
-        <FieldWrapper label="Partner">
-          <span>{partnerName}</span>
-        </FieldWrapper>
-      </div>,
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
           <SearchDrop
             instance="CONTACT"
-            partnerId={partnerId}
+            extraParams={{partner_id: partnerId}}
             onSelect={obj => obj}/>
         </FieldWrapper>
       </div>,

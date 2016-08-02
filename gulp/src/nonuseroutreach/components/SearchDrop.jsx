@@ -16,12 +16,13 @@ import {
 } from 'nonuseroutreach/actions/search-or-add-actions';
 
 export default class SearchDrop extends Component {
-  constructor(props) {
+  constructor() {
     super();
 
-    const {dispatch, instance, extraParams} = props;
-    this.debouncedOnSearch = typingDebounce(() =>
-        dispatch(doSearch(instance, extraParams)));
+    this.debouncedOnSearch = typingDebounce(() => {
+      const {dispatch, instance, extraParams} = this.props;
+      dispatch(doSearch(instance, extraParams));
+    });
     this.liRefs = {};
     this.movedByKeyboard = false;
     this.mouseInControl = false;
