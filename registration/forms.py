@@ -123,7 +123,7 @@ class CustomAuthForm(AuthenticationForm):
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        user = User.objects.get(email__iexact=username)
+        user = User.objects.get_email_owner(email=username)
         if user and user.is_locked_out():
             raise ValidationError(
                 'This account has been locked due to repeated login ' +
