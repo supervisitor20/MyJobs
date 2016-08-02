@@ -2,15 +2,14 @@ import React, {Component, PropTypes} from 'react';
 import {Col, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {Loading} from 'common/ui/Loading';
-import {Menu} from './Menu';
+import Menu from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
 import ProcessRecordPage from './ProcessRecordPage.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
-import {setPageAction} from '../actions/navigation-actions';
-
+import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 
 /* NonUserOutreachApp
  * An app for managing nonuser outreach, providing a sidebar for navigation and
@@ -30,7 +29,6 @@ class NonUserOutreachApp extends Component {
 
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
-
     const lastComponent = loc.components[loc.components.length - 1];
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
@@ -46,6 +44,7 @@ class NonUserOutreachApp extends Component {
       dispatch(setPageAction('records'));
       dispatch(markPageLoadingAction(true));
       await dispatch(doGetRecords());
+      await dispatch(doGetWorkflowStateChoices());
       dispatch(markPageLoadingAction(false));
       return;
     } else if (lastComponent === ProcessRecordPage) {
@@ -81,7 +80,7 @@ class NonUserOutreachApp extends Component {
             {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
-            <Menu tips={tips} />
+            <Menu tips={tips} history={history} />
           </Col>
         </Row>
       </div>
