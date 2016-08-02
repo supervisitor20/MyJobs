@@ -42,7 +42,7 @@ export default class OutreachRecordTable extends React.Component {
                            isKey>Date
         </TableHeaderColumn>
         <TableHeaderColumn dataField="currentWorkflowState"
-                           dataAlign="center"
+                           dataAlign="left"
                            dataSort>Action State
         </TableHeaderColumn>
         <TableHeaderColumn dataField="id"
