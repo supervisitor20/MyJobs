@@ -34,7 +34,7 @@ export default class OutreachRecordTable extends React.Component {
          <TableHeaderColumn dataField="fromEmail"
                            dataAlign="left"
                            width="225"
-                           dataSort>From
+                           dataSort>Email
         </TableHeaderColumn>
         <TableHeaderColumn dataField="dateAdded"
                            dataAlign="left"
@@ -43,7 +43,7 @@ export default class OutreachRecordTable extends React.Component {
         </TableHeaderColumn>
         <TableHeaderColumn dataField="currentWorkflowState"
                            dataAlign="left"
-                           dataSort>Action State
+                           dataSort>Status
         </TableHeaderColumn>
         <TableHeaderColumn dataField="id"
                            dataAlign="left"
