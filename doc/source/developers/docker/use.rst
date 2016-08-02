@@ -63,7 +63,7 @@ Follow the prompts to install.
 Open the application. An icon of a whale will apear in the top bar and will
 animate until docker has successfully started.
 
-Once the animated has stopped, run ``docker ps`` in a terminal.
+Once the animation has stopped, run ``docker ps`` in a terminal.
 It should run without errors.
 
 Know your local ip address. We'll call it $myip from now on.
