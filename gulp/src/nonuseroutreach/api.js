@@ -41,11 +41,11 @@ export default class Api {
     return (await promise);
   }
 
-  search(instance, searchString) {
+  search(instance, searchString, extraParams) {
     return {
-      PARTNER: s => this.searchPartner(s),
-      CONTACT: s => this.searchContact(s),
-    }[instance](searchString);
+      PARTNER: (s, e) => this.searchPartner(s, e),
+      CONTACT: (s, e) => this.searchContact(s, e),
+    }[instance](searchString, extraParams);
   }
 
   async searchPartner(searchString) {
@@ -54,9 +54,12 @@ export default class Api {
     return map(results, r => ({value: r.id, display: r.name}));
   }
 
-  async searchContact(searchString) {
+  async searchContact(searchString, extraParams) {
     const results =
-      await this.api.post('/prm/api/contact', {'q': searchString});
+      await this.api.post('/prm/api/contact', {
+        ...extraParams,
+        'q': searchString,
+      });
     return map(results, r => ({value: r.id, display: r.name}));
   }
 

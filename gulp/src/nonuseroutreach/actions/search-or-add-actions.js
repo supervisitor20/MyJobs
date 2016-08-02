@@ -82,14 +82,16 @@ export const setActiveIndexAction =
  * Use this when the search term settles down to actually run the search.
  *
  *  instance: search instance to work with
+ *  extraParams: {key: value} additional parameters to pass to the api.
+ *    i.e. {partner_id: '3'}
  */
-export function doSearch(instance) {
+export function doSearch(instance, extraParams) {
   return async (dispatch, getState, {idGen, api}) => {
     try {
       const {searchString} = getState().search[instance];
       const loadingId = idGen.nextId();
       dispatch(searchSettledAction(instance, loadingId));
-      const results = await api.search(instance, searchString);
+      const results = await api.search(instance, searchString, extraParams);
       dispatch(searchResultsReceivedAction(instance, results, loadingId));
     } catch (e) {
       dispatch(errorAction(e.message));
