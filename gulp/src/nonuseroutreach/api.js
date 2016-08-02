@@ -44,12 +44,19 @@ export default class Api {
   search(instance, searchString) {
     return {
       PARTNER: s => this.searchPartner(s),
+      CONTACT: s => this.searchContact(s),
     }[instance](searchString);
   }
 
   async searchPartner(searchString) {
     const results =
       await this.api.post('/prm/api/partner', {'q': searchString});
+    return map(results, r => ({value: r.id, display: r.name}));
+  }
+
+  async searchContact(searchString) {
+    const results =
+      await this.api.post('/prm/api/contact', {'q': searchString});
     return map(results, r => ({value: r.id, display: r.name}));
   }
 
