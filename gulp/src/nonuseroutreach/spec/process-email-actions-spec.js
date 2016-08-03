@@ -47,8 +47,8 @@ describe('doSearch', () => {
       expect(store.getState().process.emailId).toEqual(2);
     });
 
-    it('it should be in the reset state', () => {
-      expect(store.getState().process.state).toEqual('RESET');
+    it('it should be in the right state', () => {
+      expect(store.getState().process.state).toEqual('SELECT_PARTNER');
     });
   });
 

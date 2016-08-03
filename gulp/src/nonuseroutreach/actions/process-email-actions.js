@@ -34,12 +34,31 @@ export const newPartnerAction = createAction('NUO_NEW_PARTNER',
     (partnerName) => ({partnerName}));
 
 /**
+ * Use chose to create a new contact
+ *
+ *  contactName: Name chosen to start creating the new contact.
+ */
+export const newContactAction = createAction('NUO_NEW_CONTACT',
+    (contactName) => ({contactName}));
+
+/**
  * Form information arrived.
  *
  *  form: form data
  */
 export const receiveFormAction = createAction('NUO_RECEIVE_FORM',
     (form) => ({form}));
+
+/**
+ * User edited a form.
+ *
+ * form: Which form the user edited, e.g. partner, contact, communciationrecord
+ * field: field name, e.g. name, address, etc.
+ * value: new value for the form field.
+ * formIndex: For contact, an index to the form.
+ */
+export const editFormAction = createAction('NUO_EDIT_FORM',
+  (form, field, value, formIndex) => ({form, field, value, formIndex}));
 
 /**
  * Start the process by loading an email record.
@@ -71,5 +90,20 @@ export function doLoadForm(formName, id) {
     } catch (e) {
       dispatch(errorAction(e.message));
     }
+  };
+}
+
+/**
+ * Submit data to create a communication record.
+ */
+export function doSubmit() {
+  return async (dispatch, getState, {api}) => {
+    const request = {
+      partner: getState().process.formContents.PARTNER,
+      contact: getState().process.formContents.CONTACT,
+      contactrecord: getState().process.formContents.COMMUNICATIONRECORD,
+    };
+    const response = await api.submitContactRecord(request);
+    console.log('doSubmit response', response);
   };
 }

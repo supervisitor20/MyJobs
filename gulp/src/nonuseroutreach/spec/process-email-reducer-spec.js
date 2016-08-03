@@ -5,7 +5,9 @@ import {
   choosePartnerAction,
   chooseContactAction,
   newPartnerAction,
+  newContactAction,
   receiveFormAction,
+  editFormAction,
 } from '../actions/process-email-actions';
 
 describe('processEmailReducer', () => {
@@ -17,7 +19,7 @@ describe('processEmailReducer', () => {
     const result = reducer({}, resetProcessAction(2, email));
 
     it('should set the default state.', () => {
-      expect(result.state).toEqual('RESET');
+      expect(result.state).toEqual('SELECT_PARTNER');
     });
 
     it('should remember the given email', () => {
@@ -36,7 +38,7 @@ describe('processEmailReducer', () => {
     const result = reducer({}, choosePartnerAction(4, partner));
 
     it('should set the right state', () => {
-      expect(result.state).toEqual('KNOWN_PARTNER');
+      expect(result.state).toEqual('SELECT_CONTACT');
     });
 
     it('should have the partner id', () => {
@@ -59,7 +61,7 @@ describe('processEmailReducer', () => {
     const result = reducer(state, chooseContactAction(3, contact));
 
     it('should set the right state', () => {
-      expect(result.state).toEqual('KNOWN_CONTACT');
+      expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
     });
 
     it('should have the contact id', () => {
@@ -107,6 +109,37 @@ describe('processEmailReducer', () => {
 
   });
 
+  describe('handling newContactAction', () => {
+    const state = {
+      contactId: 3,
+      contact: {},
+      partnerId: 4,
+      partner: {},
+    };
+    const result = reducer(state, newContactAction('Some Person'));
+
+    it('should set the right state', () => {
+      expect(result.state).toEqual('NEW_CONTACT');
+    });
+
+    it('should have a blank contactId', () => {
+      expect(result.contactId).toEqual('');
+    });
+
+    it('should have a contact name', () => {
+      expect(result.contact.name).toEqual('Some Person');
+    });
+
+    it('should keep partnerId', () => {
+      expect(result.partnerId).toEqual(4);
+    });
+
+    it('should keep partner', () => {
+      expect(result.partner).toEqual({});
+    });
+
+  });
+
   describe('handling receiveFormAction', () => {
     const result = reducer({}, receiveFormAction({some: 'form'}));
 
@@ -114,6 +147,50 @@ describe('processEmailReducer', () => {
       expect(result.form).toEqual({some: 'form'});
     });
   });
+
+  describe('handling editFormAction', () => {
+
+    describe('unindexed', () => {
+      const action = editFormAction('PARTNER', 'name', 'Bob');
+
+      it('should create and store the field', () => {
+        const result = reducer({}, action);
+
+        expect(result.formContents.PARTNER.name).toEqual('Bob');
+      });
+
+      it('should preserve other values', () => {
+        const initialFormContents = {
+          PARTNER: {
+            city: 'somewhere',
+          },
+          OTHER: {
+            a: 'b',
+          },
+        };
+
+        const result = reducer({formContents: initialFormContents}, action);
+
+        expect(result.formContents).toDiffEqual({
+          PARTNER: {
+            city: 'somewhere',
+            name: 'Bob',
+          },
+          OTHER: {
+            a: 'b',
+          },
+        });
+      });
+    });
+
+    describe('indexed', () => {
+      const action = editFormAction('CONTACT', 'name', 'Bob', 0);
+
+      it('should create and store the field', () => {
+        const result = reducer({}, action);
+
+        expect(result.formContents.CONTACT[0].name).toEqual('Bob');
+      });
+    });
+  });
 });
-
-

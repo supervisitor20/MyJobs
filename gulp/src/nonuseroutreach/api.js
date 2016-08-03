@@ -74,4 +74,10 @@ export default class Api {
   async getForm(formName, id) {
     return await this.api.get('/prm/api/' + formName + '/' + id + '/form');
   }
+
+  async submitContactRecord(request) {
+    return await this.api.post(
+      '/prm/api/nonuseroutreach/records/convert',
+      {request: JSON.stringify(request)});
+  }
 }

@@ -2123,6 +2123,50 @@ def add_tags(request):
 
 
 @require_http_methods(['GET', 'POST'])
+@requires('create partner')
+def new_partner_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = NewPartnerForm(auto_id=False)
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create contact')
+def new_contact_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create communication record')
+def new_communicationrecord_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactRecordForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+        response_data = remote_form.as_dict()
+        response_data['ordered_fields'].remove('contact')
+        response_data['ordered_fields'].remove('length')
+        response_data['ordered_fields'].remove('date_time')
+        response_data['ordered_fields'].remove('attachment')
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(response_data))
+
+
+@require_http_methods(['GET', 'POST'])
 def api_form(request, form_name=None):
     company = get_company_or_404(request)
     form_class = {
