@@ -1674,7 +1674,7 @@ def make_records(request, date_time, possible_contacts, created_contacts,
             for email in nuo_hosts:
                 record = OutreachRecord.objects.create(
                     outreach_email=email, from_email=admin_email,
-                    email_body=email_text,
+                    email_body=email_text, subject=subject,
                     current_workflow_state=workflow_state)
                 record.partners.add(contact.partner)
                 record.contacts.add(contact)
