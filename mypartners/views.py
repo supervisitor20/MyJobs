@@ -17,7 +17,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
@@ -2118,16 +2118,17 @@ def api_get_partners(request):
 
     q = request.GET.get('q') or request.POST.get('q')
     if q:
-        partners = list(company.partner_set.filter(name__icontains=q))
+        partners = list(company.partner_set.filter(name__icontains=q).annotate(Count('contact')))
         sorted_partners = filter(
             lambda partner: partner.name.lower().startswith(q.lower()),
             partners)
         sorted_partners.extend(set(partners).difference(
             sorted_partners))
     else:
-        sorted_partners = company.partner_set.all()
+        sorted_partners = company.partner_set.all().annotate(Count('contact'))
     return HttpResponse(json.dumps([{'id': partner.pk,
-                                     'name': partner.name}
+                                     'name': partner.name,
+                                     'contact_count': partner.contact__count}
                                     for partner in sorted_partners]))
 
 

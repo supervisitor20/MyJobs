@@ -39,12 +39,12 @@ module.exports = {
       },
     ],
     // ie8 catchall. Some imported react components need this.
-    postLoaders: [
-      {
-        test: /\.js$/,
-        loaders: ['es3ify'],
-      },
-    ],
+//    postLoaders: [
+//      {
+//        test: /\.js$/,
+//        loaders: ['es3ify'],
+//      },
+//    ],
   },
   eslint: {
     failOnWarning: true,

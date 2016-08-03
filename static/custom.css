@@ -5194,3 +5194,7 @@ a.btn.pull-right {
   margin-top: 5px;
   margin-right: 5px;
 }
+
+.partner-count {
+  float:right;
+}

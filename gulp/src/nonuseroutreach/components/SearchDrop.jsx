@@ -157,6 +157,9 @@ export default class SearchDrop extends Component {
               className={classnames(
                   {'active': i === activeIndex})}>
               {result.display}
+              <span className="partner-count">
+                {result.count}
+              </span>
             </li>
           ))}
         </ul>
