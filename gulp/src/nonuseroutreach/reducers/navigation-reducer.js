@@ -15,6 +15,17 @@ const pageTips = {
 export const initialNavigation = {
   currentPage: 'overview',
   tips: [],
+  workflowChoices: [
+    {
+      value: 'All',
+      display: 'All',
+      render: () => '',
+    },
+  ],
+  termFilter: '',
+  workflowFilter: 'All',
+  filteredRecords: [],
+  filtersActive: false,
 };
 
 export const navigationReducer = handleActions({
@@ -27,6 +38,36 @@ export const navigationReducer = handleActions({
       ...state,
       currentPage: page,
       tips: pageTips[page] || [],
+    };
+  },
+  'SET_WORKFLOW_CHOICES': (state, action) => {
+    return {
+      ...state,
+      workflowChoices: action.payload,
+    };
+  },
+  'SET_WORKFLOW_FILTER': (state, action) => {
+    return {
+      ...state,
+      workflowFilter: action.payload,
+    };
+  },
+  'SET_TERM_FILTER': (state, action) => {
+    return {
+      ...state,
+      termFilter: action.payload,
+    };
+  },
+  'FILTER_RECORDS': (state, action) => {
+    return {
+      ...state,
+      filteredRecords: action.payload,
+    };
+  },
+  'SET_FILTERS_ACTIVE': (state, action) => {
+    return {
+      ...state,
+      filtersActive: action.payload,
     };
   },
 }, initialNavigation);
