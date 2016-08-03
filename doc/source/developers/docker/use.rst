@@ -54,21 +54,19 @@ Our goal here is to get Docker installed and our shell aliases working.
 First Time (OSX)
 ----------------
 
-Install `Docker Toolbox <https://www.docker.com/docker-toolbox>`_.
-1.9.1b is known to work
+Install `Docker for Mac <https://download.docker.com/mac/stable/Docker.dmg>`_.
 
-Run the terminal which the installer offers after the install completes.
-(This creates the default virtual machine.)
+Open the dmg file and place the application in your Applications folder.
 
-Run ``docker ps`` in this terminal. It should run without errors.
+Follow the prompts to install.
 
-Run ``docker-machine ip default``. Note this ip. We'll call it $myip from now
-on.
+Open the application. An icon of a whale will apear in the top bar and will
+animate until docker has successfully started.
 
-After Boot (OSX)
-----------------
+Once the animation has stopped, run ``docker ps`` in a terminal.
+It should run without errors.
 
-Run ``docker-machine start default``. This will be needed after every reboot.
+Know your local ip address. We'll call it $myip from now on.
 
 First Time (Linux)
 ------------------
@@ -80,13 +78,6 @@ Make sure your user is added to the docker group.
 docker should be shown when you run ``groups``
 
 Know your local ip address. We'll call it $myip from now on.
-
-Terminal Setup (OSX)
---------------------
-
-Run these commands in every shell:
-
-``eval "$(docker-machine env default)"``
 
 Terminal Setup (Both)
 ---------------------
@@ -131,7 +122,7 @@ docker virtual machine.
 
 If needed on Linux: ``systemctl restart docker``
 
-If needed on OSX: ``docker-machine restart default``
+If needed on OSX: Click the whale icon and press "reset" on the drop down.
 
 Keep trying until ``docker ps`` shows no running machines.
 
