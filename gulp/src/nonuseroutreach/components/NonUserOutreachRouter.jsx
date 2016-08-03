@@ -6,7 +6,6 @@ import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage.jsx';
 import ProcessRecordPage from './ProcessRecordPage.jsx';
 
-
 /* NonUserOutreachRouter
  * Component which manages browser history and assigns components to URLs
  */

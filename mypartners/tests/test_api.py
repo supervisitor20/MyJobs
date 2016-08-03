@@ -150,6 +150,32 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
             msg=return_msg.format(response_json[0]["outreachEmail"],
                                   self.inbox.email + "@my.jobs"))
 
+    def test_form_api(self):
+        """
+        Various form api endpoints work
+        """
+
+        response = self.client.get(
+            reverse('new_partner_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('partnername', data['ordered_fields'])
+
+        response = self.client.get(
+            reverse('new_contact_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('phone', data['ordered_fields'])
+
+        response = self.client.get(
+            reverse('new_communicationrecord_form'))
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertIn('ordered_fields', data)
+        self.assertIn('job_applications', data['ordered_fields'])
+
     def test_individual_record_api(self):
         """
         Test the record API given the logged in user is a member of the same
@@ -157,8 +183,8 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
 
         """
         # test to ensure current company's record will return
-        response = self.client.get(reverse('api_get_individual_nuo_record'),
-                                   {"record_id": self.outreach_record.pk})
+        response = self.client.get(reverse('api_get_individual_nuo_record',
+                                           args=[self.outreach_record.pk]))
         self.assertEqual(response.status_code, 200, msg="expected status 200, "
                                                         "got %s, may be roles "
                                                         "or perms issue" %
@@ -180,8 +206,8 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                self.inbox.email + "@my.jobs"))
 
         # test to ensure other company's record will not return
-        response = self.client.get(reverse('api_get_individual_nuo_record'),
-                                   {"record_id": self.other_record.pk})
+        response = self.client.get(reverse('api_get_individual_nuo_record',
+                                           args=[self.other_record.pk]))
 
         response_json = json.loads(response.content)
 

@@ -52,4 +52,16 @@ export default class Api {
       await this.api.post('/prm/api/partner', {'q': searchString});
     return map(results, r => ({value: r.id, display: r.name}));
   }
+
+  async getEmail(recordId) {
+    return await this.api.get('/prm/api/nonuseroutreach/records/' + recordId);
+  }
+
+  async getPartner(partnerId) {
+    return await this.api.get('/prm/api/partner/' + partnerId);
+  }
+
+  async getForm(formName, id) {
+    return await this.api.get('/prm/api/' + formName + '/' + id + '/form');
+  }
 }
