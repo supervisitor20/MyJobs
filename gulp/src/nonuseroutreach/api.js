@@ -50,7 +50,7 @@ export default class Api {
   async searchPartner(searchString) {
     const results =
       await this.api.post('/prm/api/partner', {'q': searchString});
-    return map(results, r => ({value: r.id, display: r.name}));
+    return map(results, r => ({value: r.id, display: r.name, count: r.contact_count}));
   }
 
   async getEmail(recordId) {
