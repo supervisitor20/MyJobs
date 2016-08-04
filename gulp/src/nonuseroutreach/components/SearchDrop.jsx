@@ -19,9 +19,9 @@ export default class SearchDrop extends Component {
   constructor(props) {
     super();
 
-    const {dispatch, instance} = props;
+    const {dispatch, instance, extraParams} = props;
     this.debouncedOnSearch = typingDebounce(() =>
-        dispatch(doSearch(instance)));
+        dispatch(doSearch(instance, extraParams)));
     this.liRefs = {};
     this.movedByKeyboard = false;
     this.mouseInControl = false;
@@ -315,6 +315,7 @@ export default class SearchDrop extends Component {
 
 SearchDrop.defaultProps = {
   searchString: '',
+  extraParams: {},
 };
 
 SearchDrop.propTypes = {
@@ -332,6 +333,7 @@ SearchDrop.propTypes = {
     display: PropTypes.string.isRequired,
   }),
   activeIndex: PropTypes.number,
+  extraParams: PropTypes.object,
   onAdd: PropTypes.func,
   onSelect: PropTypes.func.isRequired,
 };
