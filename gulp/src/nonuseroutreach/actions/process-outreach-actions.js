@@ -116,9 +116,9 @@ export function doLoadForm(formName, id) {
 export function doSubmit() {
   return async (dispatch, getState, {api}) => {
     const request = {
-      partner: getState().process.formContents.PARTNER,
-      contact: getState().process.formContents.CONTACT,
-      contactrecord: getState().process.formContents.COMMUNICATIONRECORD,
+      partner: getState().process.record.partner,
+      contact: getState().process.record.contact,
+      contactrecord: getState().process.record.communicationrecord,
     };
     const response = await api.submitContactRecord(request);
     console.log('doSubmit response', response);

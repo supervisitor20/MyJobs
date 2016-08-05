@@ -151,32 +151,32 @@ describe('processEmailReducer', () => {
   describe('handling editFormAction', () => {
 
     describe('unindexed', () => {
-      const action = editFormAction('PARTNER', 'name', 'Bob');
+      const action = editFormAction('partner', 'name', 'Bob');
 
       it('should create and store the field', () => {
         const result = reducer({}, action);
 
-        expect(result.formContents.PARTNER.name).toEqual('Bob');
+        expect(result.record.partner.name).toEqual('Bob');
       });
 
       it('should preserve other values', () => {
         const initialFormContents = {
-          PARTNER: {
+          partner: {
             city: 'somewhere',
           },
-          OTHER: {
+          other: {
             a: 'b',
           },
         };
 
-        const result = reducer({formContents: initialFormContents}, action);
+        const result = reducer({record: initialFormContents}, action);
 
-        expect(result.formContents).toDiffEqual({
-          PARTNER: {
+        expect(result.record).toDiffEqual({
+          partner: {
             city: 'somewhere',
             name: 'Bob',
           },
-          OTHER: {
+          other: {
             a: 'b',
           },
         });
@@ -184,12 +184,12 @@ describe('processEmailReducer', () => {
     });
 
     describe('indexed', () => {
-      const action = editFormAction('CONTACT', 'name', 'Bob', 0);
+      const action = editFormAction('contact', 'name', 'Bob', 0);
 
       it('should create and store the field', () => {
         const result = reducer({}, action);
 
-        expect(result.formContents.CONTACT[0].name).toEqual('Bob');
+        expect(result.record.contact[0].name).toEqual('Bob');
       });
     });
   });

@@ -66,7 +66,7 @@ class ProcessRecordPage extends Component {
       <div key="partner" className="product-card no-highlight clearfix">
         <FieldWrapper label="Partner Organization">
           <SearchDrop
-            instance="PARTNER"
+            instance="partner"
             onAdd={obj => this.handleNewPartner(obj)}
             onSelect={obj => this.handleChoosePartner(obj)}/>
         </FieldWrapper>
@@ -74,7 +74,7 @@ class ProcessRecordPage extends Component {
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
           <SearchDrop
-            instance="CONTACT"
+            instance="contact"
             onSelect={obj => this.handleChooseContact(obj)}/>
         </FieldWrapper>
       </div>,
@@ -88,7 +88,7 @@ class ProcessRecordPage extends Component {
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
           <SearchDrop
-            instance="CONTACT"
+            instance="contact"
             extraParams={{partner_id: partnerId}}
             onSelect={obj => this.handleChooseContact(obj)}
             onAdd={obj => this.handleNewContact(obj)}
@@ -109,7 +109,7 @@ class ProcessRecordPage extends Component {
         value={communicationRecordFormContents[fieldName] || ''}
         onChange={e =>
           dispatch(editFormAction(
-            'COMMUNICATIONRECORD', fieldName, e.target.value))}/>
+            'communicationrecord', fieldName, e.target.value))}/>
     ));
     const button = (
       <button
@@ -129,7 +129,7 @@ class ProcessRecordPage extends Component {
         fieldName={fieldName}
         value={partnerFormContents[fieldName] || ''}
         onChange={e =>
-          dispatch(editFormAction('PARTNER', fieldName, e.target.value))}/>
+          dispatch(editFormAction('partner', fieldName, e.target.value))}/>
     ));
     return this.renderCard('Partner Data', fields);
   }
@@ -147,7 +147,7 @@ class ProcessRecordPage extends Component {
         value={contactFormContents[fieldName] || ''}
         onChange={e =>
           dispatch(editFormAction(
-            'CONTACT', fieldName, e.target.value, formIndex))}/>
+            'contact', fieldName, e.target.value, formIndex))}/>
     ));
     return this.renderCard('Contact Details', fields);
   }
@@ -191,8 +191,8 @@ export default connect(state => ({
   contactName: get(state.process, 'contact.name'),
   contactId: state.process.contactId,
   form: state.process.form,
-  partnerFormContents: state.process.formContents.PARTNER,
-  contactFormsContents: state.process.formContents.CONTACT,
+  partnerFormContents: state.process.record.partner,
+  contactFormsContents: state.process.record.contact,
   communicationRecordFormContents:
-    state.process.formContents.COMMUNICATIONRECORD,
+    state.process.record.communicationrecord,
 }))(ProcessRecordPage);

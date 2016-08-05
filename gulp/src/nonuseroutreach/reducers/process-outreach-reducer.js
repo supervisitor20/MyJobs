@@ -1,10 +1,10 @@
 import {handleActions} from 'redux-actions';
 
 const defaultState = {
-  formContents: {
-    PARTNER: {},
-    CONTACT: [],
-    COMMUNICATIONRECORD: {},
+  record: {
+    partner: {},
+    contact: [],
+    communicationrecord: {},
   },
 };
 
@@ -26,10 +26,11 @@ const defaultState = {
  *  contacts: info for selected contacts
  *  contactIds: ids for selected contacts
  *  form: when editing, information for the form fields
- *  formContents: {
- *    PARTNER: field contents for new partner
- *    CONTACTS: [{ field contents for new contacts}]
- *    COMMUNICATIONRECORD: field contents for record
+ *  record: The record which will be submitted {
+ *    outreachrecord: the outreach record we are working on
+ *    partner: field contents for new partner
+ *    contacts: [{ field contents for new contacts}]
+ *    communicationrecord: field contents for record
  *  }
  */
 export default handleActions({
@@ -112,7 +113,7 @@ export default handleActions({
     const {form: formName, formIndex, field, value} = action.payload;
 
     if (formIndex || formIndex === 0) {
-      const formSet = (state.formContents || {})[formName] || [];
+      const formSet = (state.record || {})[formName] || [];
       const form = formSet[formIndex] || {};
 
       const newForm = {
@@ -125,19 +126,19 @@ export default handleActions({
 
       return {
         ...state,
-        formContents: {
-          ...state.formContents,
+        record: {
+          ...state.record,
           [formName]: newFormSet,
         },
       };
     }
 
-    const form = (state.formContents || {})[formName] || {};
+    const form = (state.record || {})[formName] || {};
 
     return {
       ...state,
-      formContents: {
-        ...state.formContents,
+      record: {
+        ...state.record,
         [formName]: {
           ...form,
           [field]: value,
