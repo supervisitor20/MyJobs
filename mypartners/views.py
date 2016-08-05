@@ -1953,12 +1953,11 @@ def api_convert_outreach_record(request):
         return HttpResponseNotAllowed(['POST'])
 
     user_company = get_company_or_404(request)
-    # data_object = request.POST.get('request', '{}')
-    data_object = request.body
+    data_object = request.POST.get('request', '{}')
     valid_keys = ['outreachrecord', 'contactrecord', 'contacts', 'partner']
     validator = MultiFormApiValidator(valid_keys)
 
-    if not data_object:
+    if not data_object or data_object == '{}':
         validator.api_error('data object not provided')
         return validator.build_error_response()
 
