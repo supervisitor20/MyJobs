@@ -2028,13 +2028,13 @@ def api_convert_outreach_record(request):
             validator.form_error("contacts", "User does not have permission to"
                                              " create a contact.")
         # parse locations for contact, create where necessary
-        if contact_location:
+        if contact_location and not contact_pk:
             location_pk = contact_location.pop('pk', None)
             contact_info['location'] = return_or_create_object(Location,
                                                               location_pk,
                                                               contact_location,
                                                               'contact')
-        else:
+        elif not contact_pk:
             validator.form_error("contacts", "Location object missing from contact")
         contacts.append(contact_info)
 
@@ -2077,8 +2077,9 @@ def api_convert_outreach_record(request):
     for contact in contacts:
         contact['contact'].partner = partner
         contact['contact'].save()
-        contact['location'].save()
-        contact['contact'].locations.add(contact['location'])
+        if contact.get('location', None):
+            contact['location'].save()
+            contact['contact'].locations.add(contact['location'])
         add_tags_to_object(contact['contact'], contact['tags'])
 
         contact_record.partner = partner
