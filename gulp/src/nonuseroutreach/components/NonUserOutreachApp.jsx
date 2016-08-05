@@ -10,7 +10,7 @@ import OutreachDetails from './OutreachDetails.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
-import {doLoadEmail} from '../actions/process-email-actions';
+import {doLoadEmail} from '../actions/process-outreach-actions';
 import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 
 /* NonUserOutreachApp

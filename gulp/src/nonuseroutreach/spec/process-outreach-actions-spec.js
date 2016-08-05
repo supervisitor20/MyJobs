@@ -1,4 +1,4 @@
-import processEmailReducer from '../reducers/process-email-reducer';
+import processEmailReducer from '../reducers/process-outreach-reducer';
 import errorReducer from '../../common/reducers/error-reducer';
 
 import {
@@ -6,7 +6,7 @@ import {
   doLoadForm,
   resetProcessAction,
   convertOutreach,
-} from '../actions/process-email-actions';
+} from '../actions/process-outreach-actions';
 
 import {promiseTest} from '../../common/spec';
 

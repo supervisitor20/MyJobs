@@ -1,4 +1,4 @@
-import reducer, {defaultState} from '../reducers/process-email-reducer';
+import reducer, {defaultState} from '../reducers/process-outreach-reducer';
 
 import {
   resetProcessAction,
@@ -8,7 +8,7 @@ import {
   newContactAction,
   receiveFormAction,
   editFormAction,
-} from '../actions/process-email-actions';
+} from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
   describe('handling resetProcessAction', () => {

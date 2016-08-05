@@ -15,7 +15,7 @@ import {
   editFormAction,
   doLoadForm,
   doSubmit,
-} from '../actions/process-email-actions';
+} from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
   handleChoosePartner(obj) {
