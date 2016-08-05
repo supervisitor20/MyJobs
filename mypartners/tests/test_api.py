@@ -242,6 +242,19 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         )
         self.check_status_code_and_objects(response, 200, 6)
 
+    def test_outreach_conversion_api_validate_only(self):
+        """
+        Test that the conversion API creates no objects when run on validate
+        only mode, though it returns a success message and verifies fields.
+
+        """
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data),
+                    'validate_only':'1'}
+        )
+        self.check_status_code_and_objects(response, 200, 0)
+
     def test_outreach_api_all_fields_required(self):
         """
         Test that the outreach conversion API forces the inbound data object
