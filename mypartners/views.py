@@ -1954,6 +1954,7 @@ def api_convert_outreach_record(request):
 
     user_company = get_company_or_404(request)
     data_object = request.POST.get('request', '{}')
+    validate_only = request.POST.get('validate_only', 0)
     valid_keys = ['outreachrecord', 'contactrecord', 'contacts', 'partner']
     validator = MultiFormApiValidator(valid_keys)
 
@@ -2066,6 +2067,9 @@ def api_convert_outreach_record(request):
     # if there are any errors at this point, return them to the UI
     if validator.has_errors():
         return validator.build_error_response()
+
+    if validate_only:
+        return HttpResponse("success, nosave")
 
     partner.save()
     add_tags_to_object(partner, partner_tags)
