@@ -2072,11 +2072,13 @@ def api_convert_outreach_record(request):
         return HttpResponse("success, nosave")
 
     partner.save()
+    outreach_record.partners.add(partner)
     add_tags_to_object(partner, partner_tags)
 
     for contact in contacts:
         contact['contact'].partner = partner
         contact['contact'].save()
+        outreach_record.contacts.add(contact_record)
         if contact.get('location', None):
             contact['location'].save()
             contact['contact'].locations.add(contact['location'])
@@ -2085,6 +2087,7 @@ def api_convert_outreach_record(request):
         contact_record.partner = partner
         contact_record.contact = contact['contact']
         contact_record.save()
+        outreach_record.communication_records.add(contact_record)
         add_tags_to_object(contact_record, contact_record_tags)
 
     outreach_record.current_workflow_state = workflow_status
