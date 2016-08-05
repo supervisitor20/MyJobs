@@ -236,9 +236,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         when used.
 
         """
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 200, 6)
 
     def test_outreach_api_all_fields_required(self):
@@ -248,9 +249,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         self.request_data.pop('partner')
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 400, 0)
 
     def test_outreach_api_rejects_non_post_calls(self):
@@ -269,9 +271,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         existing_partner = PartnerFactory(owner=self.company)
         self.request_data['partner']['pk'] = existing_partner.pk
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
 
         self.check_status_code_and_objects(response, 200, 5)
 
@@ -289,10 +292,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         existing_location = LocationFactory()
         self.request_data['contacts'][0]['location'] = {"pk":existing_location.pk}
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 200, 6)
 
     def test_outreach_api_contact_no_locations(self):
@@ -302,10 +305,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         self.request_data['contacts'][0].pop('location')
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 400, 0)
 
     def test_outreach_api_no_data(self):
@@ -314,23 +317,22 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         data dict
 
         """
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps({}),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record')
+        )
         self.check_status_code_and_objects(response, 400, 0)
 
     def test_outreach_api_invalid_data(self):
         """
-        Test that the outreach conversion API does nothing if not given a
-        data dict
+        Test that the outreach conversion API does nothing if given invalid
+        data
 
         """
         self.request_data['dummystuff'] = "invalid stuff"
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 400, 0)
 
     def test_outreach_api_invalid_field_data(self):
@@ -340,10 +342,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         self.request_data['contactrecord']['date_time'] = "invalid dt"
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 400, 0)
 
     def test_convert_permission(self):
@@ -354,10 +356,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         convert = Activity.objects.get(name="convert outreach record")
         self.role.activities.remove(convert)
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         self.check_status_code_and_objects(response, 403, 0)
 
     def test_contact_permission(self):
@@ -368,10 +370,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         create = Activity.objects.get(name="create contact")
         self.role.activities.remove(create)
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         parsed_content = json.loads(response.content)
         contact_errors = [i['message'] for i in
                           parsed_content['form_errors']['contacts']]
@@ -393,10 +395,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         create = Activity.objects.get(name="create partner")
         self.role.activities.remove(create)
-        response = self.client.post(reverse('api_convert_outreach_record'),
-                                    json.dumps(self.request_data),
-                                    content_type='application/json')
-
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
         parsed_content = json.loads(response.content)
         partner_errors = [i['message'] for i in
                           parsed_content['form_errors']['partner']]
