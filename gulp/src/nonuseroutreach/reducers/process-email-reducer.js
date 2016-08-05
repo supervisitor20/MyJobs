@@ -9,7 +9,7 @@ const defaultState = {
 };
 
 /**
- * Represents the state of processing an NUO email. {
+ * Represents the state of processing an NUO outreach record. {
  *
  *  state: string constant, What the user is doing right now.
  *    SELECT_PARTNER: the user is selecting a partner (or contact)
@@ -19,8 +19,8 @@ const defaultState = {
  *    NEW_COMMUNICATIONRECORD: the user is editing the new record
  *    SELECT_WORKFLOW_STATE: the user is picking the new workflow state
  *
- *  email: information for the current email
- *  emailId: id for the current email
+ *  outreach: information for the current outreach record
+ *  outreachId: id for the current outreach record
  *  partner: information for the selected partner
  *  partnerId: id for the selected partner
  *  contacts: info for selected contacts
@@ -34,13 +34,13 @@ const defaultState = {
  */
 export default handleActions({
   'NUO_RESET_PROCESS': (state, action) => {
-    const {email, emailId} = action.payload;
+    const {outreach, outreachId} = action.payload;
 
     return {
       ...defaultState,
       state: 'SELECT_PARTNER',
-      email,
-      emailId,
+      outreach,
+      outreachId,
     };
   },
 

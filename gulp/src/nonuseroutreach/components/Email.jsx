@@ -3,14 +3,14 @@ import {connect} from 'react-redux';
 
 class Email extends Component {
   render() {
-    const {emailBody, dateAdded, emailFrom} = this.props;
+    const {outreachBody, dateAdded, outreachFrom} = this.props;
     return (
       <div className="sidebar">
         <h2 className="top">Communication Details</h2>
         <div style={{overflowWrap: 'break-word'}}>
           <div>Date Recieved: {dateAdded}</div>
-          <div>From: {emailFrom}</div>
-          <div>Body: {emailBody}</div>
+          <div>From: {outreachFrom}</div>
+          <div>Body: {outreachBody}</div>
         </div>
       </div>
     );
@@ -19,12 +19,12 @@ class Email extends Component {
 
 Email.propTypes = {
   dateAdded: PropTypes.string.isRequired,
-  emailBody: PropTypes.string.isRequired,
-  emailFrom: PropTypes.string.isRequired,
+  outreachBody: PropTypes.string.isRequired,
+  outreachFrom: PropTypes.string.isRequired,
 };
 
 export default connect(state => ({
-  dateAdded: state.process.email.date_added,
-  emailBody: state.process.email.email_body,
-  emailFrom: state.process.email.from_email,
+  dateAdded: state.process.outreach.dateAdded,
+  outreachBody: state.process.outreach.outreachBody,
+  outreachFrom: state.process.outreach.outreachFrom,
 }))(Email);

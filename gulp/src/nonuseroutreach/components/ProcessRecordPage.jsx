@@ -173,7 +173,7 @@ class ProcessRecordPage extends Component {
 ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
   form: PropTypes.object,
-  recordId: PropTypes.string.isRequired,
+  outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
   partnerName: PropTypes.string,
   partnerId: PropTypes.any,
@@ -184,7 +184,7 @@ ProcessRecordPage.propTypes = {
 };
 
 export default connect(state => ({
-  recordId: state.process.emailId,
+  outreachId: state.process.outreachId,
   processState: state.process.state,
   partnerName: get(state.process, 'partner.name'),
   partnerId: state.process.partnerId,

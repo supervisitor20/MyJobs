@@ -63,8 +63,9 @@ export default class Api {
     return map(results, r => ({value: r.id, display: r.name}));
   }
 
-  async getEmail(recordId) {
-    return await this.api.get('/prm/api/nonuseroutreach/records/' + recordId);
+  async getOutreach(outreachId) {
+    return await this.api.get(
+      '/prm/api/nonuseroutreach/records/' + outreachId);
   }
 
   async getPartner(partnerId) {

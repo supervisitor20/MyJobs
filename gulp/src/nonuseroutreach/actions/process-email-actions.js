@@ -5,7 +5,7 @@ import {errorAction} from '../../common/actions/error-actions';
  * We have a new search field or we are starting over.
  */
 export const resetProcessAction = createAction('NUO_RESET_PROCESS',
-  (emailId, email) => ({emailId, email}));
+  (outreachId, outreach) => ({outreachId, outreach}));
 
 /**
  * Use chose a partner.
@@ -61,15 +61,32 @@ export const editFormAction = createAction('NUO_EDIT_FORM',
   (form, field, value, formIndex) => ({form, field, value, formIndex}));
 
 /**
- * Start the process by loading an email record.
+ * convert an outreach record to have more js friendly keys
  *
- * recordId: id for the email to load.
+ * record: record from api
+ *
+ * returns: the same record with friendlier keys.
  */
-export function doLoadEmail(recordId) {
+export function convertOutreach(record) {
+  return {
+    dateAdded: record.date_added,
+    outreachBody: record.email_body,
+    outreachFrom: record.from_email,
+    outreachInbox: record.outreach_email,
+    workflowState: record.current_workflow_state,
+  };
+}
+
+/**
+ * Start the process by loading an outreach record.
+ *
+ * outreachId: id for the outreach to load.
+ */
+export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
-      const email = await api.getEmail(recordId);
-      dispatch(resetProcessAction(recordId, email));
+      const outreach = await api.getOutreach(outreachId);
+      dispatch(resetProcessAction(outreachId, convertOutreach(outreach)));
     } catch (e) {
       dispatch(errorAction(e.message));
     }

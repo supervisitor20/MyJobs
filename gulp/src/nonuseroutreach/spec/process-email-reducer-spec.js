@@ -12,22 +12,22 @@ import {
 
 describe('processEmailReducer', () => {
   describe('handling resetProcessAction', () => {
-    const email = {
+    const outreach = {
       summary: 'some title',
       body: 'some info',
     };
-    const result = reducer({}, resetProcessAction(2, email));
+    const result = reducer({}, resetProcessAction(2, outreach));
 
     it('should set the default state.', () => {
       expect(result.state).toEqual('SELECT_PARTNER');
     });
 
-    it('should remember the given email', () => {
-      expect(result.email).toDiffEqual(email);
+    it('should remember the given outreach', () => {
+      expect(result.outreach).toDiffEqual(outreach);
     });
 
-    it('should remember the given emailId', () => {
-      expect(result.emailId).toDiffEqual(2);
+    it('should remember the given outreach Id', () => {
+      expect(result.outreachId).toDiffEqual(2);
     });
   });
 
