@@ -1847,38 +1847,63 @@ def api_convert_outreach_record(request):
         "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
 
         "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-        "tags":["12", "68"], "approval_status": "3"},
+        "tags":["12", "68"]},
 
-        "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-        "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
+        "contacts": [{"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
+        "location":{"pk":"", "address_line_one":"", "address_line_two":"",
         "city":"Newtoneous", "state":"AZ", "country_code":"1",
-        "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
-        "approval_status":"3"},
+        "label":"new place"}, "tags":["54", "12", "newone"],
+        "notes": "long note left here"}, {"pk":"", "name":"Markus Johnson",
+        "email":"markiej@test.com", "phone":"1231231234",
+        "location":{"pk":"", "address_line_one":"boopie", "address_line_two":"",
+        "city":"Blampitity", "state":"NY", "country_code":"1",
+        "label":"newish place"}, "tags":["54", "12", "newone"],
+        "notes": "another long note left here"}],
 
         "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
         "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
         "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-        "tags":["10", "15", "3"], "approval_status":"1a"}
+        "tags":["10", "15", "3"]}
     }
 
     :return: status code 200 on success, 400, 405 indicates error
 
     """
-    def add_tags_to_object(tagged_object, tags_list):
+    def retrieve_tags_objects(tagged_object, tags_list):
         """
-        add tags from list of tags to the object
+        retrieve a list of tags to add to an object
 
         :param tagged_object: object to add tags
-        :param tags_list: list of tag PKs
+        :param tags_list: list of tag PKs or strings
         :return: None
 
         """
+        tags = []
         try:
-            tags = Tag.objects.filter(pk__in=tags_list)
-            tagged_object.tags.add(*list(tags))
-        except ValueError as ve:
+            for tag in tags_list:
+                try:
+                    tag_pk = int(tag)
+                    tag_object = Tag.objects.get(pk=tag_pk)
+                except ValueError:
+                    tag_object = Tag(name=tag, company=user_company,
+                                created_by=request.user)
+                tags.append(tag_object)
+            return tags
+        except Tag.DoesNotExist:
             validator.form_field_error(tagged_object.__class__.__name__.lower(),
-                                       'tags', 'invalid pk provided for tag')
+                                       'tags', 'invalid input provided for tag')
+
+    def add_tags_to_object(object_to_tag, tags_list):
+        """
+        save any new tags and add them to the provided object
+
+        :param object_to_tag: object which should have tags added to it
+        :param tags_list: list of tags
+        :return:
+        """
+        for tag in tags_list:
+            tag.save()
+        object_to_tag.tags.add(*list(tags_list))
 
     def return_or_create_object(target_model, object_pk, data_dict={},
                                 parent_field=None):
@@ -1899,15 +1924,6 @@ def api_convert_outreach_record(request):
         """
         return_object = None
         field_name = parent_field or target_model.__name__.lower()
-        if data_dict.get('approval_status'):
-            try:
-                approval = Status(code=data_dict['approval_status'],
-                                  approved_by=request.user)
-                data_dict['approval_status'] = approval
-            except ValueError:
-                validator.form_field_error(field_name,
-                                           'approval_status',
-                                           'approval status %s invalid' % object_pk)
 
         if object_pk:
             try:
@@ -1926,7 +1942,7 @@ def api_convert_outreach_record(request):
                 for key, value in ve.message_dict.iteritems():
                     validator.form_field_error(field_name,
                                                key, value)
-            except TypeError as te:
+            except TypeError:
                 validator.form_error(field_name,
                                      "erroneous field detected in data dict")
                 return None
@@ -1937,11 +1953,11 @@ def api_convert_outreach_record(request):
         return HttpResponseNotAllowed(['POST'])
 
     user_company = get_company_or_404(request)
-    data_object = request.body
-    valid_keys = ['outreachrecord', 'contactrecord', 'contact', 'partner']
+    data_object = request.POST.get('request', '{}')
+    valid_keys = ['outreachrecord', 'contactrecord', 'contacts', 'partner']
     validator = MultiFormApiValidator(valid_keys)
 
-    if not data_object:
+    if not data_object or data_object == '{}':
         validator.api_error('data object not provided')
         return validator.build_error_response()
 
@@ -1963,9 +1979,6 @@ def api_convert_outreach_record(request):
             validator.api_error('%s is an invalid key' % key)
             continue
         valid_keys.pop(index_of_key)
-        if not isinstance(value, dict):
-            validator.api_error('error in key %s, expected dict, got %s.'
-                                % (key, type(value)))
 
     # if any keys remain in the list, they were not in the data dict.
     if valid_keys:
@@ -1998,31 +2011,37 @@ def api_convert_outreach_record(request):
     # subsequent object creation. from here, we mold the dict to be used
     # as a keyword dict to create a contact from the model
     # during this step, the models are VALIDATED, but NOT SAVED
-    contact_pk = data_object['contact'].pop('pk', None)
-    contact_tags = data_object['contact'].pop('tags', [])
-    contact_locations = data_object['contact'].pop('locations', [])
-    contact_location_objects = []
+    contacts = [] #container for contact, location, and tags objects
     create_contact = request.user.can(user_company, "create contact")
-    if contact_pk or create_contact:
-        contact = return_or_create_object(Contact,
-                                          contact_pk,
-                                          data_object['contact'])
-    else:
-        validator.form_error("contact", "User does not have permission to"
-                                        " create a contact.")
-
-
-    # parse locations for contact, create where necessary
-    for location in contact_locations:
-        location_pk = location.pop('pk', None)
-        location_object = return_or_create_object(Location,
-                                                  location_pk,
-                                                  location,
-                                                  'contact')
-        contact_location_objects.append(location_object)
+    for contact in data_object['contacts']:
+        contact_info = {}
+        contact_pk = contact.pop('pk', None)
+        contact_info['tags'] = retrieve_tags_objects(contact,
+                                                     contact.pop('tags', []))
+        contact_location = contact.pop('location', None)
+        if contact_pk or create_contact:
+            contact_info['contact'] = return_or_create_object(Contact,
+                                                              contact_pk,
+                                                              contact)
+        else:
+            validator.form_error("contacts", "User does not have permission to"
+                                             " create a contact.")
+        # parse locations for contact, create where necessary
+        if contact_location:
+            location_pk = contact_location.pop('pk', None)
+            contact_info['location'] = return_or_create_object(Location,
+                                                              location_pk,
+                                                              contact_location,
+                                                              'contact')
+        else:
+            validator.form_error("contacts", "Location object missing from contact")
+        contacts.append(contact_info)
 
     partner_pk = data_object['partner'].pop('pk', None)
-    partner_tags = data_object['partner'].pop('tags', [])
+    partner_tags = retrieve_tags_objects(
+        data_object['partner'],
+        data_object['partner'].pop('tags', [])
+    )
     data_object['partner']['owner'] = user_company
     create_partner = request.user.can(user_company, "create partner")
     if partner_pk or create_partner:
@@ -2034,7 +2053,11 @@ def api_convert_outreach_record(request):
                                         " create a partner.")
 
 
-    contactrecord_tags = data_object['contactrecord'].pop('tags', [])
+    contact_record_tags = retrieve_tags_objects(
+        data_object['contactrecord'],
+        data_object['contactrecord'].pop('tags', [])
+    )
+
     data_object['contactrecord']['created_by'] = request.user
     contact_record = return_or_create_object(ContactRecord,
                                              None,
@@ -2044,31 +2067,24 @@ def api_convert_outreach_record(request):
     if validator.has_errors():
         return validator.build_error_response()
 
-    # save all objects
-    contact.save()
-    add_tags_to_object(contact, contact_tags)
-    for c_location in contact_location_objects:
-        c_location.save()
-        contact.locations.add(c_location)
-
-    partner.primary_contact = contact
     partner.save()
     add_tags_to_object(partner, partner_tags)
 
-    # partner had to be linked after partner was saved, so add and re-save
-    contact.partner = partner
-    contact.save()
+    for contact in contacts:
+        contact['contact'].partner = partner
+        contact['contact'].save()
+        contact['location'].save()
+        contact['contact'].locations.add(contact['location'])
+        add_tags_to_object(contact['contact'], contact['tags'])
 
-    contact_record.partner = partner
-    contact_record.contact = contact
-    contact_record.save()
-    add_tags_to_object(contact_record, contactrecord_tags)
+        contact_record.partner = partner
+        contact_record.contact = contact['contact']
+        contact_record.save()
+        add_tags_to_object(contact_record, contact_record_tags)
 
     outreach_record.current_workflow_state = workflow_status
     outreach_record.save()
 
-    if validator.has_errors():
-        return validator.build_error_response()
     return HttpResponse("success")
 
 @requires('read tag')
