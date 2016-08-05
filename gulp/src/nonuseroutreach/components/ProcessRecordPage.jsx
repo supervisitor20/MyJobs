@@ -66,7 +66,7 @@ class ProcessRecordPage extends Component {
       <div key="partner" className="product-card no-highlight clearfix">
         <FieldWrapper label="Partner Organization">
           <SearchDrop
-            instance="partner"
+            instance="PARTNER"
             onAdd={obj => this.handleNewPartner(obj)}
             onSelect={obj => this.handleChoosePartner(obj)}/>
         </FieldWrapper>
@@ -74,7 +74,7 @@ class ProcessRecordPage extends Component {
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
           <SearchDrop
-            instance="contact"
+            instance="CONTACT"
             onSelect={obj => this.handleChooseContact(obj)}/>
         </FieldWrapper>
       </div>,
@@ -88,7 +88,7 @@ class ProcessRecordPage extends Component {
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
           <SearchDrop
-            instance="contact"
+            instance="CONTACT"
             extraParams={{partner_id: partnerId}}
             onSelect={obj => this.handleChooseContact(obj)}
             onAdd={obj => this.handleNewContact(obj)}
