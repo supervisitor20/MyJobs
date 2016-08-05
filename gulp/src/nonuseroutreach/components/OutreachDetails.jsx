@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 
-class Email extends Component {
+class OutreachDetails extends Component {
   render() {
     const {outreachBody, dateAdded, outreachFrom} = this.props;
     return (
@@ -17,7 +17,7 @@ class Email extends Component {
   }
 }
 
-Email.propTypes = {
+OutreachDetails.propTypes = {
   dateAdded: PropTypes.string.isRequired,
   outreachBody: PropTypes.string.isRequired,
   outreachFrom: PropTypes.string.isRequired,
@@ -27,4 +27,4 @@ export default connect(state => ({
   dateAdded: state.process.outreach.dateAdded,
   outreachBody: state.process.outreach.outreachBody,
   outreachFrom: state.process.outreach.outreachFrom,
-}))(Email);
+}))(OutreachDetails);

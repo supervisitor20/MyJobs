@@ -6,7 +6,7 @@ import Menu from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
 import ProcessRecordPage from './ProcessRecordPage.jsx';
-import Email from './Email.jsx';
+import OutreachDetails from './OutreachDetails.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
@@ -72,7 +72,7 @@ class NonUserOutreachApp extends Component {
     const {page, tips} = this.props;
 
     if (page === 'process') {
-      return <Email/>;
+      return <OutreachDetails/>;
     }
 
     return <Menu tips={tips} />;
