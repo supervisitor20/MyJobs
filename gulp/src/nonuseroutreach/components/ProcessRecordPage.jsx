@@ -98,7 +98,7 @@ class ProcessRecordPage extends Component {
     ]));
   }
 
-  renderKnownContact() {
+  renderNewCommunicationRecord() {
     const {dispatch, form, communicationRecordFormContents} = this.props;
 
     const fields = map(form.ordered_fields, fieldName => (
@@ -160,7 +160,7 @@ class ProcessRecordPage extends Component {
     } else if (processState === 'SELECT_CONTACT') {
       return this.renderSelectContact();
     } else if (processState === 'NEW_COMMUNICATIONRECORD') {
-      return this.renderKnownContact();
+      return this.renderNewCommunicationRecord();
     } else if (processState === 'NEW_PARTNER') {
       return this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
