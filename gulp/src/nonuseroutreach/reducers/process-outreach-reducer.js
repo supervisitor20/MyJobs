@@ -21,10 +21,7 @@ const defaultState = {
  *
  *  outreach: information for the current outreach record
  *  outreachId: id for the current outreach record
- *  partner: information for the selected partner
- *  partnerId: id for the selected partner
- *  contacts: info for selected contacts
- *  contactIds: ids for selected contacts
+ *  contactIndex: if editing a contact, which one is the user concerned with?
  *  form: when editing, information for the form fields
  *  record: The record which will be submitted {
  *    outreachrecord: the outreach record we are working on
@@ -46,24 +43,37 @@ export default handleActions({
   },
 
   'NUO_CHOOSE_PARTNER': (state, action) => {
-    const {partner, partnerId} = action.payload;
+    const {name, partnerId} = action.payload;
 
     return {
       ...state,
       state: 'SELECT_CONTACT',
-      partnerId,
-      partner,
+      record: {
+        ...state.record,
+        partner: {
+          pk: partnerId,
+          partnername: name,
+        },
+      },
     };
   },
 
   'NUO_CHOOSE_CONTACT': (state, action) => {
-    const {contact, contactId} = action.payload;
+    const {name, contactId} = action.payload;
 
     return {
       ...state,
       state: 'NEW_COMMUNICATIONRECORD',
-      contactId,
-      contact,
+      record: {
+        ...state.record,
+        contacts: [
+          ...state.record.contacts,
+          {
+            pk: contactId,
+            name,
+          },
+        ],
+      },
     };
   },
 
@@ -73,9 +83,12 @@ export default handleActions({
     const newState = {
       ...state,
       state: 'NEW_PARTNER',
-      partnerId: '',
-      partner: {
-        name: partnerName,
+      record: {
+        ...state.record,
+        partner: {
+          pk: '',
+          name: partnerName,
+        },
       },
     };
 
@@ -87,13 +100,22 @@ export default handleActions({
 
   'NUO_NEW_CONTACT': (state, action) => {
     const {contactName} = action.payload;
+    const {contacts} = state.record;
+    const newIndex = contacts.length;
 
     const newState = {
       ...state,
       state: 'NEW_CONTACT',
-      contactId: '',
-      contact: {
-        name: contactName,
+      contactIndex: newIndex,
+      record: {
+        ...state.record,
+        contacts: [
+          ...state.record.contacts,
+          {
+            pk: '',
+            name: contactName,
+          },
+        ],
       },
     };
 

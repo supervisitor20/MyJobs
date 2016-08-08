@@ -15,7 +15,7 @@ export const resetProcessAction = createAction('NUO_RESET_PROCESS',
  *  partner: partner data
  */
 export const choosePartnerAction = createAction('NUO_CHOOSE_PARTNER',
-    (partnerId, partner) => ({partnerId, partner}));
+    (partnerId, name) => ({partnerId, name}));
 
 /**
  * Use chose a contact.
@@ -24,7 +24,7 @@ export const choosePartnerAction = createAction('NUO_CHOOSE_PARTNER',
  *  contact: contact data
  */
 export const chooseContactAction = createAction('NUO_CHOOSE_CONTACT',
-    (contactId, contact) => ({contactId, contact}));
+    (contactId, name) => ({contactId, name}));
 
 /**
  * Use chose to create a new partner

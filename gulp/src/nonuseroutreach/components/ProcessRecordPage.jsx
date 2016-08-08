@@ -21,7 +21,7 @@ class ProcessRecordPage extends Component {
   handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
-    dispatch(choosePartnerAction(obj.value, {value: '', name: obj.display}));
+    dispatch(choosePartnerAction(obj.value, obj.display));
   }
 
   async handleChooseContact(obj) {
@@ -186,13 +186,13 @@ ProcessRecordPage.propTypes = {
 export default connect(state => ({
   outreachId: state.process.outreachId,
   processState: state.process.state,
-  partnerName: get(state.process, 'partner.name'),
-  partnerId: state.process.partnerId,
+  partnerName: get(state.process, 'record.partner.partnername'),
+  partnerId: get(state.process, 'record.partner.pk'),
   contactName: get(state.process, 'contact.name'),
   contactId: state.process.contactId,
   form: state.process.form,
   partnerFormContents: state.process.record.partner,
-  contactFormsContents: state.process.record.contacts[0],
+  contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
     state.process.record.communicationrecord,
 }))(ProcessRecordPage);
