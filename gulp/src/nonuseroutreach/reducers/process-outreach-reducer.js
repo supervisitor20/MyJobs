@@ -3,7 +3,7 @@ import {handleActions} from 'redux-actions';
 const defaultState = {
   record: {
     partner: {},
-    contact: [],
+    contacts: [],
     communicationrecord: {},
   },
 };

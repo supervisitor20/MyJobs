@@ -184,12 +184,12 @@ describe('processEmailReducer', () => {
     });
 
     describe('indexed', () => {
-      const action = editFormAction('contact', 'name', 'Bob', 0);
+      const action = editFormAction('contacts', 'name', 'Bob', 0);
 
       it('should create and store the field', () => {
         const result = reducer({}, action);
 
-        expect(result.record.contact[0].name).toEqual('Bob');
+        expect(result.record.contacts[0].name).toEqual('Bob');
       });
     });
   });

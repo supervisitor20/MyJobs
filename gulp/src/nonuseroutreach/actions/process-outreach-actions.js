@@ -1,5 +1,6 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
+import {find} from 'lodash-compat/collection';
 
 /**
  * We have a new search field or we are starting over.
@@ -115,10 +116,23 @@ export function doLoadForm(formName, id) {
  */
 export function doSubmit() {
   return async (dispatch, getState, {api}) => {
+    const process = getState().process;
+    const record = process.record;
+    const workflowStates = await api.getWorkflowStates();
+    const reviewed = find(workflowStates, s => s.name === 'Reviewed');
+    console.log('doSubmit workflowStates', workflowStates, reviewed);
     const request = {
-      partner: getState().process.record.partner,
-      contact: getState().process.record.contact,
-      contactrecord: getState().process.record.communicationrecord,
+      outreachrecord: {
+        pk: process.outreachId,
+        current_workflow_state: reviewed.id,
+      },
+      partner: {pk: process.partnerId},
+      contacts: [{pk: process.contactId}],
+      contactrecord: {
+        ...record.communicationrecord,
+        date_time: '2016-1-1',
+        contact_type: 'phone',
+      },
     };
     const response = await api.submitContactRecord(request);
     console.log('doSubmit response', response);

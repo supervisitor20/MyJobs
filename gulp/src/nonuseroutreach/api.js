@@ -81,4 +81,8 @@ export default class Api {
       '/prm/api/nonuseroutreach/records/convert',
       {request: JSON.stringify(request)});
   }
+
+  async getWorkflowStates() {
+    return await this.api.get('/prm/api/nonuseroutreach/workflowstate');
+  }
 }

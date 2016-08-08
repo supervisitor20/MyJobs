@@ -192,7 +192,7 @@ export default connect(state => ({
   contactId: state.process.contactId,
   form: state.process.form,
   partnerFormContents: state.process.record.partner,
-  contactFormsContents: state.process.record.contact,
+  contactFormsContents: state.process.record.contacts[0],
   communicationRecordFormContents:
     state.process.record.communicationrecord,
 }))(ProcessRecordPage);
