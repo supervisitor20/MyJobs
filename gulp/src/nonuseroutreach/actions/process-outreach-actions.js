@@ -120,7 +120,6 @@ export function doSubmit() {
     const record = process.record;
     const workflowStates = await api.getWorkflowStates();
     const reviewed = find(workflowStates, s => s.name === 'Reviewed');
-    console.log('doSubmit workflowStates', workflowStates, reviewed);
     const request = {
       outreachrecord: {
         pk: process.outreachId,
@@ -134,7 +133,7 @@ export function doSubmit() {
         contact_type: 'phone',
       },
     };
-    const response = await api.submitContactRecord(request);
-    console.log('doSubmit response', response);
+    await api.submitContactRecord(request);
+    // TODO: do something with response.
   };
 }
