@@ -216,12 +216,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             "location":{"pk":"", "address_line_one":"", "address_line_two":"",
             "city":"Newtoneous", "state":"AZ", "country_code":"1",
             "label":"new place"}, "tags":[a_tag.pk],
-            "notes": "long note left here"}, {"pk":"", "name":"Markus Johnson",
-            "email":"markiej@test.com", "phone":"1231231234",
-            "location":{"pk":"", "address_line_one":"boopie", "address_line_two":"",
-            "city":"Blampitity", "state":"NY", "country_code":"1",
-            "label":"newish place"}, "tags":["newoneaa"],
-            "notes": "another long note left here"}],
+            "notes": "long note left here"}, {"pk":self.contact.pk, "notes":"new notes"}],
 
             "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
             "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
@@ -324,6 +319,22 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         )
         self.check_status_code_and_objects(response, 400, 0)
 
+    def test_outreach_api_contact_append_notes(self):
+        """
+        Test that the outreach conversion API allows appending of notes
+        to existing contacts
+
+        """
+        self.contact.notes = 'first part'
+        self.contact.save()
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data = {'request': json.dumps(self.request_data)}
+        )
+        self.check_status_code_and_objects(response, 200, 6)
+        self.contact = Contact.objects.get(id=self.contact.id)
+        self.assertEqual(self.contact.notes, "first part\nnew notes")
+
     def test_outreach_api_no_data(self):
         """
         Test that the outreach conversion API does nothing if not given a
@@ -391,8 +402,8 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         contact_errors = [i['message'] for i in
                           parsed_content['form_errors']['contacts']]
 
-        self.assertEqual(len(contact_errors), 2,
-                         msg="Expected 2 errors in contact form, got %s, "
+        self.assertEqual(len(contact_errors), 1,
+                         msg="Expected 1 errors in contact form, got %s, "
                              "errors: %s" % (len(contact_errors),
                                              ', '.join(contact_errors)))
 
@@ -456,27 +467,38 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
     def check_objects_created(self):
         """
-        Check how many of the objects from the data dict were created.
+        Check how many of the objects from the data dict were created and
+        linked to the outreach record.
 
         :return: tuple of (objects created, objected missing)
 
         """
-        total_objects = ['partner', 'contact1', 'contact2', 'location1',
-                         'location2', 'contactrecord']
+        total_objects = ['partner', 'contact1', 'contact2', 'contact2notes',
+                         'location1', 'contactrecord']
         objects_created = []
-        contact1 = Contact.objects.filter(name="Nicole J")
-        contact2 = Contact.objects.filter(name="Markus Johnson")
-        if Partner.objects.filter(name="James B"):
+        partner = Partner.objects.filter(name="James B").first()
+        contact1 = Contact.objects.filter(name="Nicole J").first()
+        contact2 = Contact.objects.filter(id=self.contact.id).first()
+        contact_record = ContactRecord.objects.filter(notes="dude was chill").first()
+        if partner and (self.outreach_record.partners
+                                .filter(id=partner.id)
+                                .exists()):
             objects_created.append("partner")
-        if contact1:
+        if contact1 and (self.outreach_record.contacts
+                                .filter(id=contact1.id)
+                                .exists()):
             objects_created.append("contact1")
-            if contact1[0].locations.all().count() > 0:
+            if contact1.locations.all().count() > 0:
                 objects_created.append("location1")
-        if contact2:
+        if contact2 and (self.outreach_record.contacts
+                                .filter(id=contact2.id)
+                                .exists()):
             objects_created.append("contact2")
-            if contact2[0].locations.all().count() > 0:
-                objects_created.append("location2")
-        if ContactRecord.objects.filter(notes="dude was chill"):
+            if "new notes" in contact2.notes:
+                objects_created.append("contact2notes")
+        if contact_record and (self.outreach_record.communication_records
+                                .filter(id=contact_record.id)
+                                .exists()):
             objects_created.append("contactrecord")
         objects_missing = [x for x in total_objects if x not in objects_created]
         return objects_created, objects_missing

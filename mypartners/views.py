@@ -2017,6 +2017,7 @@ def api_convert_outreach_record(request):
     for contact in data_object['contacts']:
         contact_info = {}
         contact_pk = contact.pop('pk', None)
+        contact_info['notes'] = contact.pop('notes', None)
         contact_info['tags'] = retrieve_tags_objects(contact,
                                                      contact.pop('tags', []))
         contact_location = contact.pop('location', None)
@@ -2077,8 +2078,13 @@ def api_convert_outreach_record(request):
 
     for contact in contacts:
         contact['contact'].partner = partner
+        if contact['contact'].notes:
+            contact['contact'].notes = '%s\n%s' % (contact['contact'].notes,
+                                                   contact['notes'])
+        else:
+            contact['contact'].notes = contact['notes']
         contact['contact'].save()
-        outreach_record.contacts.add(contact_record)
+        outreach_record.contacts.add(contact['contact'])
         if contact.get('location', None):
             contact['location'].save()
             contact['contact'].locations.add(contact['location'])
