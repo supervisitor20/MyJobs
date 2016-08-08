@@ -54,6 +54,8 @@
         <b>{% if product.num_jobs_allowed == 0 %}Unlimited{%else%}{{ product.num_jobs_allowed }}{%endif%}</b>
         <label>Expires:</label>
         <b>{{ product.expiration_date }}</b>
+        <label>Price:</label>
+        <b>${{ product.cost }}</b>
         <br />
         <small>Based on today's date of {% now "M j\, Y" %}</small>
     </div>

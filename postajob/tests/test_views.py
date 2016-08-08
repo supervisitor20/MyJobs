@@ -893,7 +893,7 @@ class ViewTests(PostajobTestBase):
         response = self.client.get(reverse('product_listing'))
 
         for text in [productgrouping.display_title, productgrouping.explanation,
-                     unicode(self.product)]:
+                     unicode(self.product), unicode(self.product.cost)]:
             # When the entire chain of objects exists, the return HTML should
             # include elements from the relevant ProductGrouping and Product
             # instances
