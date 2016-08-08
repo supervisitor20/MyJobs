@@ -1,17 +1,24 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
-import {Col, Row} from 'react-bootstrap';
 import FieldWrapper from 'common/ui/FieldWrapper';
-import RemoteFormField from 'common/ui/RemoteFormField';
+import Card from './Card';
+import Form from './Form';
 import SearchDrop from './SearchDrop';
 import {get} from 'lodash-compat/object';
-import {map} from 'lodash-compat/collection';
+
+import {
+  partnerForm,
+  contactForm,
+  communicationRecordForm,
+} from 'nonuseroutreach/forms';
 
 import {
   choosePartnerAction,
   chooseContactAction,
   newPartnerAction,
   newContactAction,
+  savePartnerAction,
+  saveContactAction,
   editFormAction,
   doLoadForm,
   doSubmit,
@@ -47,19 +54,11 @@ class ProcessRecordPage extends Component {
 
   renderCard(title, children) {
     return (
-      <div className="cardWrapper">
-        <Row>
-          <Col xs={12}>
-            <div className="wrapper-header">
-              <h2>{title}</h2>
-            </div>
-            {children}
-          </Col>
-        </Row>
-      </div>
+      <Card title={title}>
+        {children}
+      </Card>
     );
   }
-
 
   renderInitialSearch() {
     return this.renderCard('Partner Data', ([
@@ -99,57 +98,50 @@ class ProcessRecordPage extends Component {
   }
 
   renderNewCommunicationRecord() {
-    const {dispatch, form, communicationRecordFormContents} = this.props;
+    const {dispatch, communicationRecordFormContents} = this.props;
 
-    const fields = map(form.ordered_fields, fieldName => (
-      <RemoteFormField
-        key={fieldName}
-        form={form}
-        fieldName={fieldName}
-        value={communicationRecordFormContents[fieldName] || ''}
-        onChange={e =>
-          dispatch(editFormAction(
-            'communicationrecord', fieldName, e.target.value))}/>
-    ));
-    const button = (
-      <button
-        key="submitbutton"
-        onClick={() => dispatch(doSubmit())}>Submit</button>
+    return (
+      <Form
+        form={communicationRecordForm}
+        title="Communication Record"
+        submitTitle="Add Record"
+        formContents={communicationRecordFormContents}
+        onEdit={(n, v) =>
+          dispatch(editFormAction('communicationrecord', n, v))}
+        onSubmit={() => dispatch(doSubmit())}
+        />
     );
-    return this.renderCard('Communication Record', [...fields, button]);
   }
 
   renderNewPartner() {
-    const {dispatch, form, partnerFormContents} = this.props;
-
-    const fields = map(form.ordered_fields, fieldName => (
-      <RemoteFormField
-        key={fieldName}
-        form={form}
-        fieldName={fieldName}
-        value={partnerFormContents[fieldName] || ''}
-        onChange={e =>
-          dispatch(editFormAction('partner', fieldName, e.target.value))}/>
-    ));
-    return this.renderCard('Partner Data', fields);
+    const {dispatch, partnerFormContents} = this.props;
+    return (
+      <Form
+        form={partnerForm}
+        title="Partner Data"
+        submitTitle="Add Partner"
+        formContents={partnerFormContents}
+        onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
+        onSubmit={() => dispatch(savePartnerAction())}
+        />
+    );
   }
 
   renderNewContact() {
-    const {dispatch, form, contactFormsContents} = this.props;
-    const formIndex = 0;
-    const contactFormContents = contactFormsContents[formIndex] || {};
+    const {dispatch, contactIndex, contactFormsContents} = this.props;
+    const contactFormContents = contactFormsContents[contactIndex] || {};
 
-    const fields = map(form.ordered_fields, fieldName => (
-      <RemoteFormField
-        key={fieldName}
-        form={form}
-        fieldName={fieldName}
-        value={contactFormContents[fieldName] || ''}
-        onChange={e =>
-          dispatch(editFormAction(
-            'contact', fieldName, e.target.value, formIndex))}/>
-    ));
-    return this.renderCard('Contact Details', fields);
+    return (
+      <Form
+        form={contactForm}
+        title="Contact Details"
+        submitTitle="Add Contact"
+        formContents={contactFormContents}
+        onEdit={(n, v) =>
+          dispatch(editFormAction('contact', n, v, contactIndex))}
+        onSubmit={() => dispatch(saveContactAction())}
+        />
+    );
   }
 
   render() {
@@ -172,7 +164,6 @@ class ProcessRecordPage extends Component {
 
 ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  form: PropTypes.object,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
   partnerName: PropTypes.string,
@@ -180,6 +171,7 @@ ProcessRecordPage.propTypes = {
   partnerFormContents: PropTypes.object.isRequired,
   contactFormsContents: PropTypes.arrayOf(
     PropTypes.object.isRequired).isRequired,
+  contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
 };
 
@@ -190,7 +182,7 @@ export default connect(state => ({
   partnerId: get(state.process, 'record.partner.pk'),
   contactName: get(state.process, 'contact.name'),
   contactId: state.process.contactId,
-  form: state.process.form,
+  contactIndex: state.process.contactIndex,
   partnerFormContents: state.process.record.partner,
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:

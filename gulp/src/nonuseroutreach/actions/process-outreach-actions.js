@@ -43,6 +43,16 @@ export const newContactAction = createAction('NUO_NEW_CONTACT',
     (contactName) => ({contactName}));
 
 /**
+ * User is done editing a new partner.
+ */
+export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
+
+/**
+ * User is done editing a new contact.
+ */
+export const saveContactAction = createAction('NUO_SAVE_CONTACT');
+
+/**
  * Form information arrived.
  *
  *  form: form data

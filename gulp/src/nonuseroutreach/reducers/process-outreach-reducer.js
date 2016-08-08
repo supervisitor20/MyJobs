@@ -168,4 +168,18 @@ export default handleActions({
       },
     };
   },
+
+  'NUO_SAVE_PARTNER': (state) => {
+    return {
+      ...state,
+      state: 'SELECT_CONTACT',
+    };
+  },
+
+  'NUO_SAVE_CONTACT': (state) => {
+    return {
+      ...state,
+      state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
 }, defaultState);
