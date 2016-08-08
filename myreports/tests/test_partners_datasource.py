@@ -6,7 +6,7 @@ from myreports.datasources.partners import PartnersDataSource, PartnersFilter
 
 from myreports.datasources.util import (
     DateRangeFilter, CompositeAndFilter, MatchFilter,
-    OrGroupFilter, AndGroupFilter, UnlinkedFilter)
+    OrGroupFilter, AndGroupFilter)
 
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.factories import UserFactory
@@ -133,36 +133,36 @@ class TestPartnersDataSource(MyJobsBase):
 
         ds = PartnersDataSource()
         recs = ds.run_count_comm_rec_per_month(
-            self.company, PartnersFilter(), ['name', 'year', '-month'])
+            self.company, PartnersFilter(), [])
         data = [
             (r['name'], r['year'], r['month'], r['comm_rec_count'])
             for r in recs
         ]
         expected = [
-            (self.partner_a.name, 2015, 12, 0),
-            (self.partner_a.name, 2015, 11, 0),
-            (self.partner_a.name, 2015, 10, 0),
-            (self.partner_a.name, 2015, 9, 0),
-            (self.partner_a.name, 2015, 8, 0),
-            (self.partner_a.name, 2015, 7, 0),
-            (self.partner_a.name, 2015, 6, 0),
-            (self.partner_a.name, 2015, 5, 0),
-            (self.partner_a.name, 2015, 4, 0),
-            (self.partner_a.name, 2015, 3, 0),
-            (self.partner_a.name, 2015, 2, 0),
             (self.partner_a.name, 2015, 1, 0),
-            (self.partner_b.name, 2015, 12, 0),
-            (self.partner_b.name, 2015, 11, 0),
-            (self.partner_b.name, 2015, 10, 0),
-            (self.partner_b.name, 2015, 9, 0),
-            (self.partner_b.name, 2015, 8, 0),
-            (self.partner_b.name, 2015, 7, 0),
-            (self.partner_b.name, 2015, 6, 0),
-            (self.partner_b.name, 2015, 5, 0),
-            (self.partner_b.name, 2015, 4, 3),
-            (self.partner_b.name, 2015, 3, 3),
-            (self.partner_b.name, 2015, 2, 3),
+            (self.partner_a.name, 2015, 2, 0),
+            (self.partner_a.name, 2015, 3, 0),
+            (self.partner_a.name, 2015, 4, 0),
+            (self.partner_a.name, 2015, 5, 0),
+            (self.partner_a.name, 2015, 6, 0),
+            (self.partner_a.name, 2015, 7, 0),
+            (self.partner_a.name, 2015, 8, 0),
+            (self.partner_a.name, 2015, 9, 0),
+            (self.partner_a.name, 2015, 10, 0),
+            (self.partner_a.name, 2015, 11, 0),
+            (self.partner_a.name, 2015, 12, 0),
             (self.partner_b.name, 2015, 1, 0),
+            (self.partner_b.name, 2015, 2, 3),
+            (self.partner_b.name, 2015, 3, 3),
+            (self.partner_b.name, 2015, 4, 3),
+            (self.partner_b.name, 2015, 5, 0),
+            (self.partner_b.name, 2015, 6, 0),
+            (self.partner_b.name, 2015, 7, 0),
+            (self.partner_b.name, 2015, 8, 0),
+            (self.partner_b.name, 2015, 9, 0),
+            (self.partner_b.name, 2015, 10, 0),
+            (self.partner_b.name, 2015, 11, 0),
+            (self.partner_b.name, 2015, 12, 0),
         ]
         self.assertEqual(expected, data)
 
@@ -411,16 +411,18 @@ class TestPartnersDataSource(MyJobsBase):
         actual = {r['value'] for r in recs}
         self.assertEqual({'zap'}, actual)
 
-    def test_order(self):
-        """Check ordering results works at all."""
+    def test_values(self):
+        """Check limiting values works at all."""
         ds = PartnersDataSource()
         recs = ds.run_unaggregated(
             self.company,
             PartnersFilter(),
-            ["-name"])
-        names = [r['name'] for r in recs]
-        expected = [self.partner_b.name, self.partner_a.name]
-        self.assertEqual(expected, names)
+            ["name", "uri"])
+        expected = [
+            {'name': self.partner_a.name, 'uri': 'http://www.example.com/'},
+            {'name': self.partner_b.name, 'uri': 'http://www.asdf.com/'},
+        ]
+        self.assertEqual(expected, recs)
 
     def test_adorn_filter_items(self):
         found_filter_items = {

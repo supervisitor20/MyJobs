@@ -21,6 +21,7 @@ import {
   removeFromOrFilterAction,
   resetCurrentFilterDirty,
   setValidAction,
+  updateRecordCount,
 } from './report-state-actions';
 import {
   replaceDataSetMenu,
@@ -68,6 +69,20 @@ export function getFilterValuesOnly(currentFilter) {
   });
   return result;
 }
+
+
+/**
+ * Run a trial report and return a promise of the report result.
+ *
+ * api: an api object
+ * filter: the current (adorned) filter
+ * values: the values to query
+ */
+export async function runTrialReport(api, reportDataId, filter, values) {
+  return await api.runTrialReport(
+    reportDataId, getFilterValuesOnly(filter), values);
+}
+
 
 /**
  * Do the initial setup for the app.
@@ -270,6 +285,11 @@ export function doLoadReportSetUp(reportDataId, reportFilter, reportName) {
         name: finalReportName,
       }));
 
+      const trialReport = await runTrialReport(
+        api, reportDataId, finalDefaultFilter, ['']);
+      const recordCount = trialReport.length;
+      dispatch(updateRecordCount(recordCount));
+
       // Ugly hack.
       // Preload hints for interface types that need it.
       await Promise.all(map(filterInfo.filters, async f => {
@@ -354,7 +374,7 @@ export function doRefreshReport(reportId) {
  * filterInterface: interface used at filter time
  */
 export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
-  return async (dispatch, getState) => {
+  return async (dispatch, getState, {api}) => {
     function latestFilter() {
       return getState().reportState.currentFilter;
     }
@@ -363,6 +383,11 @@ export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
     if (!getState().reportState.currentFilterDirty) {
       return;
     }
+
+    const trialReport = await runTrialReport(
+      api, reportDataId, latestFilter(), ['']);
+    const recordCount = trialReport.length;
+    dispatch(updateRecordCount(recordCount));
 
     // TODO: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {

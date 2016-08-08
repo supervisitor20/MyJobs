@@ -370,7 +370,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(resp.status_code, 404)
 
     def test_update_email_domain(self):
-        company = factories.CompanyFactory(product_access=True)
+        company = factories.CompanyFactory()
         site = factories.SeoSiteFactory(canonical_company=company)
         site2 = factories.SeoSiteFactory(canonical_company=company)
 

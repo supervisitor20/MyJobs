@@ -13,22 +13,22 @@ from validate_email import validate_email
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
-from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
-from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
-                        HttpResponseNotAllowed, HttpResponseBadRequest)
+                         HttpResponseNotAllowed, HttpResponseBadRequest)
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
 from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
@@ -40,6 +40,7 @@ from universal.api_validation import MultiFormApiValidator
 from myjobs.models import User
 
 from myjobs.decorators import requires
+from myjobs.models import MissingActivity
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
@@ -1793,6 +1794,7 @@ def api_get_nuo_records_list(request):
         'outreachEmail': record.outreach_email.email + '@my.jobs',
         'fromEmail': record.from_email,
         'currentWorkflowState': record.current_workflow_state.state,
+        'id': record.id,
     } for record in records]
 
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
@@ -2098,3 +2100,178 @@ def add_tags(request):
     data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('read partner')
+def api_get_partners(request):
+    """
+    GET /prm/api/partner/
+    POST /prm/api/partner/
+
+    Returns a list of partners. If a parameter named "q" is provided,
+    we filter for partners whose name contain that value. The partners
+    whose name start with that value, if any exist, are moved to the
+    beginning of the returned list.
+    """
+    company = get_company_or_404(request)
+
+    q = request.GET.get('q') or request.POST.get('q')
+    if q:
+        partners = list(company.partner_set.filter(name__icontains=q))
+        sorted_partners = filter(
+            lambda partner: partner.name.lower().startswith(q.lower()),
+            partners)
+        sorted_partners.extend(set(partners).difference(
+            sorted_partners))
+    else:
+        sorted_partners = company.partner_set.all()
+    return HttpResponse(json.dumps([{'id': partner.pk,
+                                     'name': partner.name}
+                                    for partner in sorted_partners]))
+
+
+@require_http_methods(['GET'])
+@requires('read partner')
+def api_get_partner(request, partner_id):
+    """
+    GET /prm/api/partner/1/
+
+    Returns the partner with an ID of 1. Results in a 404 if that partner
+    doesn't exist or is owned by a different company.
+    """
+    company = get_company_or_404(request)
+
+    partner = get_object_or_404(company.partner_set, pk=partner_id)
+    return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['POST'])
+@requires('create partner')  # Possible dependency on "create tag" - see below
+def api_create_partner(request):
+    """
+    POST /prm/api/partner/create/
+
+    Creates and returns a partner based on the provided POST data. Adds/creates
+    tags as appropriate.
+    """
+    company = get_company_or_404(request)
+    names = request.POST.getlist('tags')
+    tags = []
+    if names:
+        tags = list(company.tag_set.filter(name__in=names))
+        existing_tags = [tag.name for tag in tags]
+        new_tags = set(names).difference(existing_tags)
+        if new_tags:
+            if request.user.can(company, 'create tag'):
+                for new_tag in set(names).difference(existing_tags):
+                    tags.append(company.tag_set.create(name=new_tag,
+                                created_by=request.user))
+            else:
+                return MissingActivity('mypartners.views.api_create_partner: '
+                                       'user does not have "create tag" '
+                                       'permissions')
+
+    partner = Partner.objects.create(
+        name=request.POST['name'],
+        uri=request.POST.get('uri', ''),
+        data_source=request.POST.get('data_source', ''),
+        owner=company
+    )
+
+    if tags:
+        partner.tags = tags
+    return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('read contact')
+def api_get_contacts(request):
+    """
+    GET /prm/api/contact/
+    POST /prm/api/contact/
+
+    Returns a list of contacts. If a parameter named "q" is provided,
+    we filter for contacts whose name contain that value. If a parameter named
+    "partner_id" is provided, we only search that partner's contacts. The
+    contacts whose name start with "q", if any exist, are moved to the
+    beginning of the returned list.
+    """
+    company = get_company_or_404(request)
+
+    q = request.GET.get('q') or request.POST.get('q')
+    partner_id = (request.GET.get('partner_id')
+                  or request.POST.get('partner_id'))
+    if partner_id:
+        contact_args = {'partner__id': partner_id}
+    else:
+        contact_args = {'partner__owner': company}
+
+    contacts = Contact.objects.filter(**contact_args)
+    if q:
+        q_obj = Q(email__icontains=q) | Q(name__icontains=q)
+        contacts = list(contacts.filter(q_obj))
+        sorted_contacts = filter(
+            lambda contact: (contact.name.lower().startswith(q.lower())
+                             or contact.email.lower().startswith(q.lower())),
+            contacts)
+        sorted_contacts.extend(set(contacts).difference(sorted_contacts))
+    else:
+        sorted_contacts = contacts
+    return HttpResponse(json.dumps([{'id': contact.pk,
+                                     'name': contact.name,
+                                     'email': contact.email}
+                                    for contact in sorted_contacts]))
+
+
+@require_http_methods(['GET'])
+@requires('read contact')
+def api_get_contact(request, contact_id):
+    """
+    GET /prm/api/contact/1/
+
+    Returns the contact with an ID of 1. Results in a 404 if that contact
+    doesn't exist or is owned by a different company.
+    """
+    company = get_company_or_404(request)
+    contact = get_object_or_404(Contact, pk=contact_id, partner__owner=company)
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['POST'])
+@requires('create contact')
+def api_create_contact(request):
+    """
+    POST /prm/api/contact/create/
+
+    Creates and returns a contact based on the provided POST data.
+    """
+    company = get_company_or_404(request)
+    partner = get_object_or_404(company.partner_set,
+                                pk=request.POST['partner_id'])
+    contact = Contact.objects.create(
+        name=request.POST['name'],
+        email=request.POST.get('email', ''),
+        phone=request.POST.get('phone', ''),
+        notes=request.POST.get('notes', ''),
+        partner=partner
+    )
+    location = Location.objects.create(
+        **{key: request.POST.get('key', '')
+           for key in ['address_line_one', 'address_line_two', 'city', 'state',
+                       'postal_code', 'label']}
+    )
+    contact.locations.add(location)
+
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_get_workflow_states(request):
+    return HttpResponse(json.dumps(
+        [{'id': ows.pk, 'name': ows.state}
+         for ows in OutreachWorkflowState.objects.all()]))

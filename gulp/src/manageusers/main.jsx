@@ -1,38 +1,54 @@
 import React from 'react';
-import 'babel/polyfill';
-import {installPolyfills} from 'common/polyfills.js';
-import {getCsrf} from 'common/cookie';
-import {render} from 'react-dom';
-import createReduxStore from 'common/create-redux-store';
-import {combineReducers} from 'redux';
-import {Provider} from 'react-redux';
-import confirmReducer from 'common/reducers/confirm-reducer';
+import ReactDOM from 'react-dom';
 
+import 'babel/polyfill';
+import createReduxStore from 'common/create-redux-store';
+import {Provider} from 'react-redux';
+import {combineReducers} from 'redux';
+import {installPolyfills} from 'common/polyfills.js';
+
+import Api from './api';
+import {getCsrf} from 'common/cookie';
 import {MyJobsApi} from 'common/myjobs-api';
 import ManageUsersRouter from './components/ManageUsersRouter';
 
-import activitiesListReducer from './reducers/activities-list-reducer';
-import {
-  doRefreshActivities,
-} from './actions/activities-list-actions';
+import confirmReducer, {
+  initialConfirmation,
+} from 'common/reducers/confirm-reducer';
+import loadingReducer, {
+  initialLoading,
+} from 'common/reducers/loading-reducer';
+import activitiesListReducer, {
+  initialActivities,
+} from './reducers/activities-list-reducer';
+import companyReducer, {initialCompany} from './reducers/company-reducer';
+
 
 installPolyfills();
 
 const reducer = combineReducers({
   activities: activitiesListReducer,
+  company: companyReducer,
   confirmation: confirmReducer,
+  loading: loadingReducer,
 });
 
-const api = new MyJobsApi(getCsrf());
+const initialState = {
+  activities: initialActivities,
+  company: initialCompany,
+  confirmation: initialConfirmation,
+  loading: initialLoading,
+};
 
+const myJobsApi = new MyJobsApi(getCsrf());
+const api = new Api(myJobsApi);
 const thunkExtra = {
   api: api,
 };
 
-const store = createReduxStore(reducer, undefined, thunkExtra);
-store.dispatch(doRefreshActivities());
+const store = createReduxStore(reducer, initialState, thunkExtra);
 
-render((
+ReactDOM.render((
   <Provider store={store}>
     <ManageUsersRouter />
   </Provider>

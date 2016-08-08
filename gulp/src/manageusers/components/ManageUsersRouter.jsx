@@ -1,5 +1,5 @@
 import React from 'react';
-import {Router, Route, IndexRoute} from 'react-router';
+import {Router, Route, IndexRoute, hashHistory} from 'react-router';
 
 import Activities from './Activities';
 import HelpAndTutorials from './HelpAndTutorials';
@@ -14,7 +14,7 @@ import Users from './Users';
 export default class ManageUsersRouter extends React.Component {
   render() {
     return (
-      <Router>
+      <Router history={hashHistory}>
         <Route path="/" component={ManageUsersApp}>
           <IndexRoute component={Overview} />
           <Route path="activities" component={Activities} />
