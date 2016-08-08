@@ -235,7 +235,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 6)
+        self.check_status_code_and_objects(response, 200, 7)
 
     def test_outreach_conversion_api_validate_only(self):
         """
@@ -284,7 +284,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             data = {'request': json.dumps(self.request_data)}
         )
 
-        self.check_status_code_and_objects(response, 200, 5)
+        self.check_status_code_and_objects(response, 200, 6)
 
         dict_contact = Contact.objects.get(name="Nicole J")
         self.assertEqual(dict_contact.partner.pk, existing_partner.pk,
@@ -304,7 +304,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 6)
+        self.check_status_code_and_objects(response, 200, 7)
 
     def test_outreach_api_contact_no_locations(self):
         """
@@ -331,7 +331,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 6)
+        self.check_status_code_and_objects(response, 200, 7)
         self.contact = Contact.objects.get(id=self.contact.id)
         self.assertEqual(self.contact.notes, "first part\nnew notes")
 
@@ -473,8 +473,8 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         :return: tuple of (objects created, objected missing)
 
         """
-        total_objects = ['partner', 'contact1', 'contact2', 'contact2notes',
-                         'location1', 'contactrecord']
+        total_objects = ['partner', 'contact1', 'contact1notes' 'contact2', 'contact2notes',
+                         'contact1location', 'contactrecord']
         objects_created = []
         partner = Partner.objects.filter(name="James B").first()
         contact1 = Contact.objects.filter(name="Nicole J").first()
@@ -488,8 +488,10 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                                 .filter(id=contact1.id)
                                 .exists()):
             objects_created.append("contact1")
+            if contact1.notes == "long note left here":
+                objects_created.append("contact1note")
             if contact1.locations.all().count() > 0:
-                objects_created.append("location1")
+                objects_created.append("contact1location")
         if contact2 and (self.outreach_record.contacts
                                 .filter(id=contact2.id)
                                 .exists()):
