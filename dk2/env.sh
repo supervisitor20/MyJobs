@@ -11,8 +11,7 @@ dkr() {
 }
 
 dkg() {
-    echo "$@"
-    dk doruncd gulp "$@"
+    dk -p 8080 doruncd gulp "$@"
 }
 
 dkgg() {

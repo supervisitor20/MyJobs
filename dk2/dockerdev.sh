@@ -143,10 +143,13 @@ rebuilddev() {
 }
 
 doruncd() {
+    if [ -z ${port+x} ]; then
+     nethost="--net=host"
+    fi
     dir="$1"
     shift
     docker run \
-        --net=host \
+        $nethost \
         --rm \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
