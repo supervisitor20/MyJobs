@@ -32,58 +32,64 @@ describe('processEmailReducer', () => {
   });
 
   describe('handling choosePartnerAction', () => {
-    const partner = {
-      name: 'acme',
-    };
-    const result = reducer({}, choosePartnerAction(4, partner));
+    const result = reducer(
+      {record: {partner: {}}},
+      choosePartnerAction(4, 'acme'));
 
     it('should set the right state', () => {
       expect(result.state).toEqual('SELECT_CONTACT');
     });
 
     it('should have the partner id', () => {
-      expect(result.partnerId).toEqual(4);
+      expect(result.record.partner.pk).toEqual(4);
     });
 
-    it('should have the partner', () => {
-      expect(result.partner).toEqual(partner);
+    it('should have the partner name', () => {
+      expect(result.record.partner.partnername).toEqual('acme');
     });
   });
 
   describe('handling chooseContactAction', () => {
     const state = {
-      partnerId: 4,
-      partner: {name: 'acme'},
+      record: {
+        partner: {
+          pk: 4,
+          name: 'acme',
+        },
+        contacts: [
+          {pk: 99},
+        ],
+      },
     };
-    const contact = {
-      name: 'bob',
-    };
-    const result = reducer(state, chooseContactAction(3, contact));
+    const result = reducer(state, chooseContactAction(3, 'bob'));
 
     it('should set the right state', () => {
       expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
     });
 
-    it('should have the contact id', () => {
-      expect(result.contactId).toEqual(3);
+    it('should have the previous contacts', () => {
+      expect(result.record.contacts[0]).toEqual(state.record.contacts[0]);
     });
 
-    it('should have the contact', () => {
-      expect(result.contact).toEqual(contact);
+    it('should have the contact id', () => {
+      expect(result.record.contacts[1].pk).toEqual(3);
+    });
+
+    it('should have the contact name', () => {
+      expect(result.record.contacts[1].name).toEqual('bob');
     });
 
     it('should retain the partner', () => {
-      expect(result.partnerId).toEqual(4);
-      expect(result.partner).toEqual(state.partner);
+      expect(result.record.partner).toEqual(state.record.partner);
     });
   });
 
   describe('handling newPartnerAction', () => {
     const state = {
-      contactId: 3,
-      contact: {},
-      partnerId: 4,
-      partner: {},
+      record: {
+        contacts: [{pk: 3}],
+        partner: {pk: 4},
+      },
     };
     const result = reducer(state, newPartnerAction('Partner Name Inc.'));
 
@@ -91,53 +97,49 @@ describe('processEmailReducer', () => {
       expect(result.state).toEqual('NEW_PARTNER');
     });
 
-    it('should have no contactId', () => {
-      expect(result.contactId).not.toBeDefined();
-    });
-
-    it('should have no contact', () => {
-      expect(result.contact).not.toBeDefined();
+    it('should retain contacts', () => {
+      expect(result.record.contacts).toEqual(state.record.contacts);
     });
 
     it('should have a blank partnerId', () => {
-      expect(result.partnerId).toEqual('');
+      expect(result.record.partner.pk).toEqual('');
     });
 
     it('should have a partner name', () => {
-      expect(result.partner.name).toEqual('Partner Name Inc.');
+      expect(result.record.partner.name).toEqual('Partner Name Inc.');
     });
 
   });
 
   describe('handling newContactAction', () => {
     const state = {
-      contactId: 3,
-      contact: {},
-      partnerId: 4,
-      partner: {},
+      record: {
+        contacts: [{pk: 3}],
+        partner: {pk: 4},
+      },
     };
     const result = reducer(state, newContactAction('Some Person'));
 
     it('should set the right state', () => {
       expect(result.state).toEqual('NEW_CONTACT');
+      expect(result.contactIndex).toEqual(1);
     });
 
     it('should have a blank contactId', () => {
-      expect(result.contactId).toEqual('');
+      expect(result.record.contacts[1].pk).toEqual('');
     });
 
     it('should have a contact name', () => {
-      expect(result.contact.name).toEqual('Some Person');
+      expect(result.record.contacts[1].name).toEqual('Some Person');
     });
 
-    it('should keep partnerId', () => {
-      expect(result.partnerId).toEqual(4);
+    it('should keep the previous contacts', () => {
+      expect(result.record.contacts[0]).toEqual(state.record.contacts[0]);
     });
 
-    it('should keep partner', () => {
-      expect(result.partner).toEqual({});
+    it('should keep the partner', () => {
+      expect(result.record.partner).toEqual(state.record.partner);
     });
-
   });
 
   describe('handling receiveFormAction', () => {
