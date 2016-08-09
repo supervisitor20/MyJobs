@@ -50,11 +50,11 @@
         <h2 class="top">Product Details</h2>
         <label>Site(s):</label>
         <b>{{ product.seosite|join:', ' }}</b>
-        <label>Job Limit:</label>
+        <br /><label>Job Limit:</label>
         <b>{% if product.num_jobs_allowed == 0 %}Unlimited{%else%}{{ product.num_jobs_allowed }}{%endif%}</b>
-        <label>Expires:</label>
+        <br /><label>Expires:</label>
         <b>{{ product.expiration_date }}</b>
-        <label>Price:</label>
+        <br /><label>Price:</label>
         <b>${{ product.cost }}</b>
         <br />
         <small>Based on today's date of {% now "M j\, Y" %}</small>
