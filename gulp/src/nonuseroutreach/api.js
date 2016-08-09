@@ -63,8 +63,9 @@ export default class Api {
     return map(results, r => ({value: r.id, display: r.name}));
   }
 
-  async getEmail(recordId) {
-    return await this.api.get('/prm/api/nonuseroutreach/records/' + recordId);
+  async getOutreach(outreachId) {
+    return await this.api.get(
+      '/prm/api/nonuseroutreach/records/' + outreachId);
   }
 
   async getPartner(partnerId) {
@@ -73,5 +74,15 @@ export default class Api {
 
   async getForm(formName, id) {
     return await this.api.get('/prm/api/' + formName + '/' + id + '/form');
+  }
+
+  async submitContactRecord(request) {
+    return await this.api.post(
+      '/prm/api/nonuseroutreach/records/convert',
+      {request: JSON.stringify(request)});
+  }
+
+  async getWorkflowStates() {
+    return await this.api.get('/prm/api/nonuseroutreach/workflowstate');
   }
 }

@@ -2028,13 +2028,13 @@ def api_convert_outreach_record(request):
             validator.form_error("contacts", "User does not have permission to"
                                              " create a contact.")
         # parse locations for contact, create where necessary
-        if contact_location:
+        if contact_location and not contact_pk:
             location_pk = contact_location.pop('pk', None)
             contact_info['location'] = return_or_create_object(Location,
                                                               location_pk,
                                                               contact_location,
                                                               'contact')
-        else:
+        elif not contact_pk:
             validator.form_error("contacts", "Location object missing from contact")
         contacts.append(contact_info)
 
@@ -2077,8 +2077,9 @@ def api_convert_outreach_record(request):
     for contact in contacts:
         contact['contact'].partner = partner
         contact['contact'].save()
-        contact['location'].save()
-        contact['contact'].locations.add(contact['location'])
+        if contact.get('location', None):
+            contact['location'].save()
+            contact['contact'].locations.add(contact['location'])
         add_tags_to_object(contact['contact'], contact['tags'])
 
         contact_record.partner = partner
@@ -2120,6 +2121,50 @@ def add_tags(request):
     data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create partner')
+def new_partner_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = NewPartnerForm(auto_id=False)
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create contact')
+def new_contact_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create communication record')
+def new_communicationrecord_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactRecordForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+        response_data = remote_form.as_dict()
+        response_data['ordered_fields'].remove('contact')
+        response_data['ordered_fields'].remove('length')
+        response_data['ordered_fields'].remove('date_time')
+        response_data['ordered_fields'].remove('attachment')
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(response_data))
 
 
 @require_http_methods(['GET', 'POST'])

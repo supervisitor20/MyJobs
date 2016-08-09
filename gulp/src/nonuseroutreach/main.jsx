@@ -29,7 +29,7 @@ import {
   recordManagementReducer,
 } from './reducers/record-management-reducer';
 import searchReducer from './reducers/search-or-add-reducer';
-import processEmailReducer from './reducers/process-email-reducer';
+import processEmailReducer from './reducers/process-outreach-reducer';
 import {
   resetSearchOrAddAction,
 } from './actions/search-or-add-actions';

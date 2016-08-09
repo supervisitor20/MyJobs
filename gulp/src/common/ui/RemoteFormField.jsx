@@ -26,7 +26,9 @@ export default class RemoteFormField extends Component {
       );
     }
 
-    switch (field.widget.input_type) {
+    const inputType = (field.widget || {}).input_type || 'unspecified';
+
+    switch (inputType) {
     case 'text':
       return wrap(
         <TextField
@@ -91,7 +93,8 @@ export default class RemoteFormField extends Component {
           />
       );
     default:
-      warning(false, 'Unknown field type: ' + field.widget.input_type);
+      warning(false, `Unknown field type for ${fieldName}: ${inputType}`);
+      return <span/>;
     }
   }
 }
