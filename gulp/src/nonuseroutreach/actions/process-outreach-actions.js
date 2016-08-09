@@ -125,8 +125,8 @@ export function doSubmit() {
         pk: process.outreachId,
         current_workflow_state: reviewed.id,
       },
-      partner: {pk: process.partnerId},
-      contacts: [{pk: process.contactId}],
+      partner: record.partner,
+      contacts: record.contacts,
       contactrecord: {
         ...record.communicationrecord,
         date_time: '2016-1-1',
