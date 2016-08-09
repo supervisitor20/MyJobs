@@ -14,16 +14,6 @@ describe('navigationReducer', () => {
         'Use this page to view outreach records from non-users.',
       ]);
     });
-
-    it('should update query.', () => {
-      const result = reducer(state, setPageAction('records', {1: 2}));
-      expect(result.currentQuery).toEqual({1: 2});
-    });
-
-    it('should update args.', () => {
-      const result = reducer(state, setPageAction('records', null, [1, 2]));
-      expect(result.currentArgs).toEqual([1, 2]);
-    });
   });
 });
 

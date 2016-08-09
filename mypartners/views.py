@@ -17,11 +17,11 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
-                         HttpResponseNotAllowed, HttpResponseBadRequest)
+                         HttpResponseNotAllowed)
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
@@ -29,6 +29,7 @@ from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django_remote_forms.forms import RemoteForm
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
@@ -1670,11 +1671,11 @@ def make_records(request, date_time, possible_contacts, created_contacts,
             created_records.append(record)
         else:
             workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
-                state='new')
+                state='New')
             for email in nuo_hosts:
                 record = OutreachRecord.objects.create(
                     outreach_email=email, from_email=admin_email,
-                    email_body=email_text,
+                    email_body=email_text, subject=subject,
                     current_workflow_state=workflow_state)
                 record.partners.add(contact.partner)
                 record.contacts.add(contact)
@@ -1801,7 +1802,7 @@ def api_get_nuo_records_list(request):
 
 @restrict_to_staff()
 @requires("read outreach record")
-def api_get_individual_nuo_record(request):
+def api_get_individual_nuo_record(request, record_id=None):
     """
     GET /prm/api/nonuseroutreach/records/record
 
@@ -1809,7 +1810,6 @@ def api_get_individual_nuo_record(request):
 
     """
     company = get_company_or_404(request)
-    record_id = request.GET.get('record_id', None)
     if not record_id:
         raise Http404("No record id provided")
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
@@ -2133,6 +2133,85 @@ def add_tags(request):
 
 
 @require_http_methods(['GET', 'POST'])
+@requires('create partner')
+def new_partner_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = NewPartnerForm(auto_id=False)
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create contact')
+def new_contact_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('create communication record')
+def new_communicationrecord_form_api(request, form_name=None):
+    if request.method == 'GET':
+        form_instance = ContactRecordForm(auto_id=False)
+        remote_form = RemoteForm(
+            form_instance,
+            exclude=['contact'])
+        response_data = remote_form.as_dict()
+        response_data['ordered_fields'].remove('contact')
+        response_data['ordered_fields'].remove('length')
+        response_data['ordered_fields'].remove('date_time')
+        response_data['ordered_fields'].remove('attachment')
+
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(response_data))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_form(request, form_name=None):
+    company = get_company_or_404(request)
+    form_class = {
+        'partner': NewPartnerForm,
+        'contact': ContactForm,
+        'communicationrecord': ContactRecordForm,
+    }[form_name]
+
+    def assert_user_can(activity):
+        if not request.user.can(company, activity):
+            return MissingActivity('cannot: ' + activity)
+        else:
+            return None
+
+    if form_name == 'partner':
+        required_activity = 'create partner'
+    elif form_name == 'contact':
+        required_activity = 'create contact'
+    elif form_name == 'communicationrecord':
+        required_activity = 'create communication record'
+    else:
+        raise Http404()
+
+    if not request.user.can(company, required_activity):
+        return MissingActivity('cannot: ' + required_activity)
+
+    if request.method == 'GET':
+        form_instance = form_class(auto_id=False)
+        remote_form = RemoteForm(form_instance)
+        return HttpResponse(
+            content_type='application/json',
+            content=json.dumps(remote_form.as_dict()))
+
+
+@require_http_methods(['GET', 'POST'])
 @requires('read partner')
 def api_get_partners(request):
     """
@@ -2148,16 +2227,17 @@ def api_get_partners(request):
 
     q = request.GET.get('q') or request.POST.get('q')
     if q:
-        partners = list(company.partner_set.filter(name__icontains=q))
+        partners = list(company.partner_set.filter(name__icontains=q).annotate(Count('contact')))
         sorted_partners = filter(
             lambda partner: partner.name.lower().startswith(q.lower()),
             partners)
         sorted_partners.extend(set(partners).difference(
             sorted_partners))
     else:
-        sorted_partners = company.partner_set.all()
+        sorted_partners = company.partner_set.all().annotate(Count('contact'))
     return HttpResponse(json.dumps([{'id': partner.pk,
-                                     'name': partner.name}
+                                     'name': partner.name,
+                                     'contact_count': partner.contact__count}
                                     for partner in sorted_partners]))
 
 

@@ -2,7 +2,7 @@ import {createAction} from 'redux-actions';
 
 export const setPageAction = createAction(
   'SET_PAGE',
-  (page, query, args) => ({page, query, args}));
+  (page) => ({page}));
 
 export const setWorkflowStateChoicesAction = createAction('SET_WORKFLOW_CHOICES');
 export const updateTermFilterAction = createAction('SET_TERM_FILTER');
@@ -49,10 +49,11 @@ export function doFilterRecords() {
     }
     if (termFilter) {
       filtersActive = true;
+      const filterRegex = new RegExp(termFilter, 'i');
       filteredRecords = filteredRecords.filter(record => (
-        record.outreachEmail.indexOf(termFilter) !== -1 ||
-          record.fromEmail.indexOf(termFilter) !== -1 ||
-          record.dateAdded.indexOf(termFilter) !== -1
+        record.outreachEmail.search(filterRegex) !== -1 ||
+          record.fromEmail.search(filterRegex) !== -1 ||
+          record.dateAdded.search(filterRegex) !== -1
         )
       );
     }

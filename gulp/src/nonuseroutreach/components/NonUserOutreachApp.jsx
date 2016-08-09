@@ -6,9 +6,11 @@ import Menu from './Menu';
 import InboxManagementPage from './InboxManagementPage';
 import OutreachRecordPage from './OutreachRecordPage';
 import ProcessRecordPage from './ProcessRecordPage.jsx';
+import OutreachDetails from './OutreachDetails.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
+import {doLoadEmail} from '../actions/process-outreach-actions';
 import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 
 /* NonUserOutreachApp
@@ -29,7 +31,11 @@ class NonUserOutreachApp extends Component {
 
   async handleNewLocation(_, loc) {
     const {dispatch} = this.props;
+    if (!loc) {
+      return;
+    }
     const lastComponent = loc.components[loc.components.length - 1];
+
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
       // list of inboxes
@@ -41,18 +47,19 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === OutreachRecordPage) {
       // update the application's state with the current page and refresh the
       // list of outreach records
-      dispatch(setPageAction('records'));
       dispatch(markPageLoadingAction(true));
+      dispatch(setPageAction('records'));
       await dispatch(doGetRecords());
       await dispatch(doGetWorkflowStateChoices());
       dispatch(markPageLoadingAction(false));
       return;
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
-      // selected record
-      dispatch(setPageAction('process', loc.location.query));
+      // email
+      const recordId = loc.location.query.id;
       dispatch(markPageLoadingAction(true));
-      // TODO: Get record here.
+      await dispatch(doLoadEmail(recordId));
+      dispatch(setPageAction('process'));
       dispatch(markPageLoadingAction(false));
       return;
     }
@@ -61,8 +68,17 @@ class NonUserOutreachApp extends Component {
     dispatch(markPageLoadingAction(false));
   }
 
+  renderSidebar() {
+    const {page, tips} = this.props;
+
+    if (page === 'process') {
+      return <OutreachDetails/>;
+    }
+
+    return <Menu tips={tips} />;
+  }
   render() {
-    const {loading, tips} = this.props;
+    const {loading} = this.props;
     return (
       <div>
         <Row>
@@ -80,7 +96,7 @@ class NonUserOutreachApp extends Component {
             {loading ? <Loading /> : this.props.children}
           </Col>
           <Col xs={12} md={4}>
-            <Menu tips={tips} history={history} />
+            {this.renderSidebar()}
           </Col>
         </Row>
       </div>
@@ -95,6 +111,8 @@ NonUserOutreachApp.propTypes = {
   loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
   tips: React.PropTypes.arrayOf(React.PropTypes.string.isRequired).isRequired,
+  // the current page
+  page: React.PropTypes.string.isRequired,
   // which page to show in the content area
   children: PropTypes.node,
 };
@@ -102,4 +120,5 @@ NonUserOutreachApp.propTypes = {
 export default connect(state => ({
   loading: state.loading.mainPage,
   tips: state.navigation.tips,
+  page: state.navigation.currentPage,
 }))(NonUserOutreachApp);
