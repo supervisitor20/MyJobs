@@ -1816,13 +1816,14 @@ def api_get_individual_nuo_record(request, record_id=None):
     try:
         record = OutreachRecord.objects.get(outreach_email__in=outreach_emails,
                                             pk=record_id)
-        json_obj = dict(
-            date_added = record.date_added.strftime('%m-%d-%Y'),
-            outreach_email = record.outreach_email.email + '@my.jobs',
-            from_email = record.from_email,
-            email_body = record.email_body,
-            current_workflow_state = record.current_workflow_state.state,
-        )
+        json_obj = {
+            "date_added": record.date_added.strftime('%m-%d-%Y'),
+            "outreach_email": record.outreach_email.email + '@my.jobs',
+            "from_email": record.from_email,
+            "subject": record.subject,
+            "email_body": record.email_body,
+            "current_workflow_state": record.current_workflow_state.state,
+        }
     except OutreachRecord.DoesNotExist:
         json_obj = {}
 
