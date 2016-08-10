@@ -1,3 +1,10 @@
+const communicationTypes = [
+  {display: 'Email', value: 'email'},
+  {display: 'Phone', value: 'phone'},
+  {display: 'Meeting or Event', value: 'meetingorevent'},
+  {display: 'Job Followup', value: 'job'},
+];
+
 const states = [
   {display: 'Select a State', value: ''},
   {display: 'Alabama', value: 'AL'},
@@ -424,52 +431,10 @@ export const communicationRecordForm = {
         attrs: {
           autofocus: 'autofocus',
         },
-        choices: [
-          {
-            display: '---------',
-            value: '',
-          },
-          {
-            display: 'Email',
-            value: 'email',
-          },
-          {
-            display: 'Phone',
-            value: 'phone',
-          },
-          {
-            display: 'Meeting or Event',
-            value: 'meetingorevent',
-          },
-          {
-            display: 'Job Followup',
-            value: 'job',
-          },
-        ],
+        choices: communicationTypes,
         input_type: 'select',
       },
-      choices: [
-        {
-          display: '---------',
-          value: '',
-        },
-        {
-          display: 'Email',
-          value: 'email',
-        },
-        {
-          display: 'Phone',
-          value: 'phone',
-        },
-        {
-          display: 'Meeting or Event',
-          value: 'meetingorevent',
-        },
-        {
-          display: 'Job Followup',
-          value: 'job',
-        },
-      ],
+      choices: communicationTypes,
       coerce: 'to_python',
       empty_value: '',
     },
@@ -557,9 +522,11 @@ export const communicationRecordForm = {
       max_length: 255,
     },
     date_time: {
-      label: 'Date & Time',
+      label: 'Date & Time *',
+      required: true,
       widget: {
         input_type: 'text',
+        is_required: true,
         attrs: {},
       },
     },
