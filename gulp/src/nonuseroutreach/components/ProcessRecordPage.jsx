@@ -134,7 +134,7 @@ class ProcessRecordPage extends Component {
         submitTitle="Add Contact"
         formContents={contactFormContents}
         onEdit={(n, v) =>
-          dispatch(editFormAction('contact', n, v, contactIndex))}
+          dispatch(editFormAction('contacts', n, v, contactIndex))}
         onSubmit={() => dispatch(saveContactAction())}
         />
     );

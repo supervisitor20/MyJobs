@@ -1,6 +1,6 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {find} from 'lodash-compat/collection';
+import {find, map} from 'lodash-compat/collection';
 
 /**
  * We have a new search field or we are starting over.
@@ -119,7 +119,23 @@ export function doSubmit() {
         current_workflow_state: reviewed.id,
       },
       partner: record.partner,
-      contacts: record.contacts,
+      contacts: map(record.contacts, c => ({
+        pk: '',
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        location: {
+          pk: '',
+          address_line_one: c.address_line_one,
+          address_line_two: c.address_line_two,
+          city: c.city,
+          state: c.state,
+          label: c.label,
+        },
+        // TODO: fix tags
+        tags: [],
+        notes: c.notes,
+      })),
       contactrecord: record.communicationrecord,
     };
     await api.submitContactRecord(request);

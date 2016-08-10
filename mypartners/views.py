@@ -2091,7 +2091,7 @@ def api_convert_outreach_record(request):
             contact_info['location'] = return_or_create_object(Location,
                                                               location_pk,
                                                               contact_location,
-                                                              'contact')
+                                                              'contacts')
         elif not contact_pk:
             validator.form_error("contacts", "Location object missing from contact")
         contacts.append(contact_info)
