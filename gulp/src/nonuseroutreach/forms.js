@@ -84,7 +84,7 @@ export const partnerForm = {
       min_length: null,
       max_length: 255,
     },
-    partnersource: {
+    data_source: {
       title: 'CharField',
       required: false,
       label: 'Source',
@@ -106,7 +106,7 @@ export const partnerForm = {
       min_length: null,
       max_length: 255,
     },
-    partnerurl: {
+    uri: {
       title: 'URLField',
       required: false,
       label: 'URL',
@@ -127,7 +127,7 @@ export const partnerForm = {
       min_length: null,
       max_length: 255,
     },
-    'partner-tags': {
+    tags: {
       title: 'CharField',
       required: false,
       label: 'Tags',
@@ -150,43 +150,12 @@ export const partnerForm = {
       min_length: null,
       max_length: 255,
     },
-    label: {
-      title: 'CharField',
-      required: false,
-      label: 'Address Name',
-      help_text: 'ie Main Office, Corporate, Regional',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          placeholder: 'Address Name',
-          id: 'id_location-label',
-          maxlength: '60',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 60,
-    },
   },
   orderedFields: [
     'name',
-    'partnersource',
-    'partnerurl',
-    'partner-tags',
-    'name',
-    'email',
-    'phone',
-    'address_line_one',
-    'address_line_two',
-    'city',
-    'state',
-    'postal_code',
-    'label',
-    'notes',
+    'data_source',
+    'uri',
+    'tags',
   ],
 };
 
