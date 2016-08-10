@@ -3,7 +3,6 @@ import errorReducer from '../../common/reducers/error-reducer';
 
 import {
   doLoadEmail,
-  doLoadForm,
   resetProcessAction,
   convertOutreach,
 } from '../actions/process-outreach-actions';
@@ -85,41 +84,3 @@ describe('doSearch', () => {
     });
   });
 });
-
-describe('doLoadForm', () => {
-  let store;
-  let api;
-
-  beforeEach(() => {
-    api = new FakeApi();
-    store = createReduxStore(
-      combineReducers({process: processEmailReducer, error: errorReducer}),
-      {}, {api});
-  });
-
-  describe('after load', () => {
-    const form = {
-      some: 'info',
-    };
-    beforeEach(promiseTest(async () => {
-      spyOn(api, 'getForm').and.returnValue(Promise.resolve(form));
-      await store.dispatch(doLoadForm('partner', 'new'));
-    }));
-
-    it('should have the form', () => {
-      expect(store.getState().process.form).toEqual(form);
-    });
-  });
-
-  describe('after an error', () => {
-    beforeEach(promiseTest(async () => {
-      spyOn(api, 'getForm').and.throwError('some error');
-      await store.dispatch(doLoadForm());
-    }));
-
-    it('should remember the error', () => {
-      expect(store.getState().error.lastMessage).toEqual('some error');
-    });
-  });
-});
-

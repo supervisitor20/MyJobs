@@ -1845,26 +1845,81 @@ def api_convert_outreach_record(request):
     object would be populated, ex. {... contact:{pk:"12"} ...}
 
     {
-        "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
-
-        "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-        "tags":["12", "68"]},
-
-        "contacts": [{"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-        "location":{"pk":"", "address_line_one":"", "address_line_two":"",
-        "city":"Newtoneous", "state":"AZ", "country_code":"1",
-        "label":"new place"}, "tags":["54", "12", "newone"],
-        "notes": "long note left here"}, {"pk":"", "name":"Markus Johnson",
-        "email":"markiej@test.com", "phone":"1231231234",
-        "location":{"pk":"", "address_line_one":"boopie", "address_line_two":"",
-        "city":"Blampitity", "state":"NY", "country_code":"1",
-        "label":"newish place"}, "tags":["54", "12", "newone"],
-        "notes": "another long note left here"}],
-
-        "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
-        "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
-        "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-        "tags":["10", "15", "3"]}
+        "outreachrecord": {
+            "pk": "101",
+            "current_workflow_state": "33"
+        },
+        "partner": {
+            "pk": "",
+            "name": "James B",
+            "data_source": "email",
+            "uri": "http://www.example.com",
+            "tags": [
+                "12",
+                "68"
+            ]
+        },
+        "contacts": [
+            {
+                "pk": "",
+                "name": "Nicole J",
+                "email": "nicolej@test.com",
+                "phone": "7651234123",
+                "location": {
+                    "pk": "",
+                    "address_line_one": "",
+                    "address_line_two": "",
+                    "city": "Newtoneous",
+                    "state": "AZ",
+                    "country_code": "1",
+                    "label": "new place"
+                },
+                "tags": [
+                    "54",
+                    "12",
+                    "newone"
+                ],
+                "notes": "long note left here"
+            },
+            {
+                "pk": "",
+                "name": "Markus Johnson",
+                "email": "markiej@test.com",
+                "phone": "1231231234",
+                "location": {
+                    "pk": "",
+                    "address_line_one": "boopie",
+                    "address_line_two": "",
+                    "city": "Blampitity",
+                    "state": "NY",
+                    "country_code": "1",
+                    "label": "newish place"
+                },
+                "tags": [
+                    "54",
+                    "12",
+                    "newone"
+                ],
+                "notes": "another long note left here"
+            }
+        ],
+        "contactrecord": {
+            "contact_type": "phone",
+            "location": "dining hall",
+            "length": "10:30",
+            "subject": "new job",
+            "date_time": "2016-01-01 05:10",
+            "notes": "dude was chill",
+            "job_id": "10",
+            "job_applications": "20",
+            "job_interviews": "10",
+            "job_hires": "0",
+            "tags": [
+                "10",
+                "15",
+                "3"
+            ]
+        }
     }
 
     :return: status code 200 on success, 400, 405 indicates error
@@ -1943,9 +1998,10 @@ def api_convert_outreach_record(request):
                 for key, value in ve.message_dict.iteritems():
                     validator.form_field_error(field_name,
                                                key, value)
-            except TypeError:
-                validator.form_error(field_name,
-                                     "erroneous field detected in data dict")
+            except TypeError as te:
+                validator.form_error(
+                    field_name,
+                    "erroneous field detected in data dict: %s" % te)
                 return None
 
         return return_object
@@ -2035,7 +2091,7 @@ def api_convert_outreach_record(request):
             contact_info['location'] = return_or_create_object(Location,
                                                               location_pk,
                                                               contact_location,
-                                                              'contact')
+                                                              'contacts')
         elif not contact_pk:
             validator.form_error("contacts", "Location object missing from contact")
         contacts.append(contact_info)
@@ -2131,85 +2187,6 @@ def add_tags(request):
     data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
-
-
-@require_http_methods(['GET', 'POST'])
-@requires('create partner')
-def new_partner_form_api(request, form_name=None):
-    if request.method == 'GET':
-        form_instance = NewPartnerForm(auto_id=False)
-        remote_form = RemoteForm(form_instance)
-        return HttpResponse(
-            content_type='application/json',
-            content=json.dumps(remote_form.as_dict()))
-
-
-@require_http_methods(['GET', 'POST'])
-@requires('create contact')
-def new_contact_form_api(request, form_name=None):
-    if request.method == 'GET':
-        form_instance = ContactForm(auto_id=False)
-        remote_form = RemoteForm(
-            form_instance,
-            exclude=['contact'])
-
-        return HttpResponse(
-            content_type='application/json',
-            content=json.dumps(remote_form.as_dict()))
-
-
-@require_http_methods(['GET', 'POST'])
-@requires('create communication record')
-def new_communicationrecord_form_api(request, form_name=None):
-    if request.method == 'GET':
-        form_instance = ContactRecordForm(auto_id=False)
-        remote_form = RemoteForm(
-            form_instance,
-            exclude=['contact'])
-        response_data = remote_form.as_dict()
-        response_data['ordered_fields'].remove('contact')
-        response_data['ordered_fields'].remove('length')
-        response_data['ordered_fields'].remove('date_time')
-        response_data['ordered_fields'].remove('attachment')
-
-        return HttpResponse(
-            content_type='application/json',
-            content=json.dumps(response_data))
-
-
-@require_http_methods(['GET', 'POST'])
-def api_form(request, form_name=None):
-    company = get_company_or_404(request)
-    form_class = {
-        'partner': NewPartnerForm,
-        'contact': ContactForm,
-        'communicationrecord': ContactRecordForm,
-    }[form_name]
-
-    def assert_user_can(activity):
-        if not request.user.can(company, activity):
-            return MissingActivity('cannot: ' + activity)
-        else:
-            return None
-
-    if form_name == 'partner':
-        required_activity = 'create partner'
-    elif form_name == 'contact':
-        required_activity = 'create contact'
-    elif form_name == 'communicationrecord':
-        required_activity = 'create communication record'
-    else:
-        raise Http404()
-
-    if not request.user.can(company, required_activity):
-        return MissingActivity('cannot: ' + required_activity)
-
-    if request.method == 'GET':
-        form_instance = form_class(auto_id=False)
-        remote_form = RemoteForm(form_instance)
-        return HttpResponse(
-            content_type='application/json',
-            content=json.dumps(remote_form.as_dict()))
 
 
 @require_http_methods(['GET', 'POST'])

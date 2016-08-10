@@ -32,18 +32,6 @@ api = patterns('mypartners.views',
     url(r'^contact/(?P<contact_id>\d+)$', 'api_get_contact',
         name='api_get_contact'),
     url(r'^contact/create$', 'api_create_contact', name='api_create_contact'),
-
-    # Forms
-    # If an edit endpoint is ever needed, it can live at:
-    # r'^partner/(?P<item_id>\d+)/form$'
-    url(r'^partner/new/form$', 'new_partner_form_api',
-        name="new_partner_form"),
-    url(r'^contact/new/form$', 'new_contact_form_api',
-        name="new_contact_form"),
-    url(r'^communicationrecord/new/form$',
-        'new_communicationrecord_form_api',
-        name="new_communicationrecord_form"),
-
 )
 
 urlpatterns = patterns('mypartners.views',

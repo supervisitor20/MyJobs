@@ -8,6 +8,8 @@ import {
   newContactAction,
   receiveFormAction,
   editFormAction,
+  savePartnerAction,
+  saveContactAction,
 } from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
@@ -194,5 +196,21 @@ describe('processEmailReducer', () => {
         expect(result.record.contacts[0].name).toEqual('Bob');
       });
     });
+  });
+});
+
+describe('handling savePartnerAction', () => {
+  const result = reducer({}, savePartnerAction());
+
+  it('should have the right state', () => {
+    expect(result.state).toEqual('SELECT_CONTACT');
+  });
+});
+
+describe('handling saveContactAction', () => {
+  const result = reducer({}, saveContactAction());
+
+  it('should have the right state', () => {
+    expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
   });
 });

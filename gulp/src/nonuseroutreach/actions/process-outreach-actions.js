@@ -1,6 +1,6 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {find} from 'lodash-compat/collection';
+import {find, map} from 'lodash-compat/collection';
 
 /**
  * We have a new search field or we are starting over.
@@ -41,6 +41,16 @@ export const newPartnerAction = createAction('NUO_NEW_PARTNER',
  */
 export const newContactAction = createAction('NUO_NEW_CONTACT',
     (contactName) => ({contactName}));
+
+/**
+ * User is done editing a new partner.
+ */
+export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
+
+/**
+ * User is done editing a new contact.
+ */
+export const saveContactAction = createAction('NUO_SAVE_CONTACT');
 
 /**
  * Form information arrived.
@@ -95,23 +105,6 @@ export function doLoadEmail(outreachId) {
 }
 
 /**
- * Load a form definition from the api.
- *
- * formName: e.g. partner, contact, contactrecord, etc.
- * id: optional, id of item to prefill the form with.
- */
-export function doLoadForm(formName, id) {
-  return async (dispatch, _, {api}) => {
-    try {
-      const form = await api.getForm(formName, id);
-      dispatch(receiveFormAction(form));
-    } catch (e) {
-      dispatch(errorAction(e.message));
-    }
-  };
-}
-
-/**
  * Submit data to create a communication record.
  */
 export function doSubmit() {
@@ -119,19 +112,31 @@ export function doSubmit() {
     const process = getState().process;
     const record = process.record;
     const workflowStates = await api.getWorkflowStates();
-    const reviewed = find(workflowStates, s => s.name === 'Reviewed');
+    const reviewed = find(workflowStates, s => s.name === 'Complete');
     const request = {
       outreachrecord: {
         pk: process.outreachId,
         current_workflow_state: reviewed.id,
       },
       partner: record.partner,
-      contacts: record.contacts,
-      contactrecord: {
-        ...record.communicationrecord,
-        date_time: '2016-1-1',
-        contact_type: 'phone',
-      },
+      contacts: map(record.contacts, c => ({
+        pk: '',
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        location: {
+          pk: '',
+          address_line_one: c.address_line_one,
+          address_line_two: c.address_line_two,
+          city: c.city,
+          state: c.state,
+          label: c.label,
+        },
+        // TODO: fix tags
+        tags: [],
+        notes: c.notes,
+      })),
+      contactrecord: record.communicationrecord,
     };
     await api.submitContactRecord(request);
     // TODO: do something with response.
