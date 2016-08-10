@@ -105,23 +105,6 @@ export function doLoadEmail(outreachId) {
 }
 
 /**
- * Load a form definition from the api.
- *
- * formName: e.g. partner, contact, contactrecord, etc.
- * id: optional, id of item to prefill the form with.
- */
-export function doLoadForm(formName, id) {
-  return async (dispatch, _, {api}) => {
-    try {
-      const form = await api.getForm(formName, id);
-      dispatch(receiveFormAction(form));
-    } catch (e) {
-      dispatch(errorAction(e.message));
-    }
-  };
-}
-
-/**
  * Submit data to create a communication record.
  */
 export function doSubmit() {
@@ -137,11 +120,7 @@ export function doSubmit() {
       },
       partner: record.partner,
       contacts: record.contacts,
-      contactrecord: {
-        ...record.communicationrecord,
-        date_time: '2016-1-1',
-        contact_type: 'phone',
-      },
+      contactrecord: record.communicationrecord,
     };
     await api.submitContactRecord(request);
     // TODO: do something with response.

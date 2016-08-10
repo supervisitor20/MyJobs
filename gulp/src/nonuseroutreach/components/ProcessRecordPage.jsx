@@ -20,7 +20,6 @@ import {
   savePartnerAction,
   saveContactAction,
   editFormAction,
-  doLoadForm,
   doSubmit,
 } from '../actions/process-outreach-actions';
 
@@ -34,21 +33,18 @@ class ProcessRecordPage extends Component {
   async handleChooseContact(obj) {
     const {dispatch} = this.props;
 
-    await dispatch(doLoadForm('communicationrecord', 'new'));
     dispatch(chooseContactAction(obj.value, {value: '', name: obj.display}));
   }
 
   async handleNewPartner(obj) {
     const {dispatch} = this.props;
 
-    await dispatch(doLoadForm('partner', 'new'));
     dispatch(newPartnerAction(obj.display));
   }
 
   async handleNewContact(obj) {
     const {dispatch} = this.props;
 
-    await dispatch(doLoadForm('contact', 'new'));
     dispatch(newContactAction(obj.display));
   }
 
