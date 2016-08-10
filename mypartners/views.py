@@ -1943,9 +1943,10 @@ def api_convert_outreach_record(request):
                 for key, value in ve.message_dict.iteritems():
                     validator.form_field_error(field_name,
                                                key, value)
-            except TypeError:
-                validator.form_error(field_name,
-                                     "erroneous field detected in data dict")
+            except TypeError as te:
+                validator.form_error(
+                    field_name,
+                    "erroneous field detected in data dict: %s" % te)
                 return None
 
         return return_object
