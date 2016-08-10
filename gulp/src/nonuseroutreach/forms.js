@@ -522,7 +522,7 @@ export const communicationRecordForm = {
       max_length: 255,
     },
     date_time: {
-      label: 'Date & Time *',
+      label: 'Date & Time',
       required: true,
       widget: {
         input_type: 'text',
