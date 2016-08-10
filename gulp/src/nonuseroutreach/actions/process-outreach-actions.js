@@ -112,7 +112,7 @@ export function doSubmit() {
     const process = getState().process;
     const record = process.record;
     const workflowStates = await api.getWorkflowStates();
-    const reviewed = find(workflowStates, s => s.name === 'Reviewed');
+    const reviewed = find(workflowStates, s => s.name === 'Complete');
     const request = {
       outreachrecord: {
         pk: process.outreachId,
