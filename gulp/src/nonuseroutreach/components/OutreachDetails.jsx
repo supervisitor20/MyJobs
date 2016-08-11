@@ -1,7 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
-
-import OutreachCardContainer from 'nonuseroutreach/components/OutreachCardContainer'
+import OutreachCardContainer from 'nonuseroutreach/components/OutreachCardContainer';
 
 class OutreachDetails extends Component {
   render() {

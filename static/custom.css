@@ -5163,6 +5163,10 @@ a.btn.pull-right {
   overflow: hidden;
 }
 
+.tray-content.ellipses {
+    text-overflow: ellipsis;
+}
+
 .row .tray-container .tray-content input {
   height: 33px;
   line-height: 33px;
@@ -5173,6 +5177,10 @@ a.btn.pull-right {
 
 .tray-items {
   float: right;
+}
+
+.tray-items-left {
+  float: left;
 }
 
 .tray-items .tray-item {
@@ -5207,7 +5215,11 @@ div.progress-card {
   margin: 0px -4px 5px -4px;
 }
 
-.progress-card h4 {
+.progress-card h5 {
+    display: inline;
     margin:0px;
-
+    padding-left:5px;
+    padding-top:1px;
+    white-space: nowrap;
+    vertical-align: middle;
 }

@@ -1,13 +1,14 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
-import OutreachCard from 'nonuseroutreach/components/OutreachCard'
+import OutreachCard from 'nonuseroutreach/components/OutreachCard';
+import {isEmpty} from 'lodash-compat';
 
 class OutreachCardContainer extends Component {
   propsToCards() {
-    let cardsReturn = []
-    for (let key in this.props) {
-      if (this.props.hasOwnProperty(key)) {
-          cardsReturn.push(this.switchCards(this.props[key], key));
+    const cardsReturn = [];
+    for (const key in this.props) {
+      if (this.props.hasOwnProperty(key) && !isEmpty(this.props[key])) {
+        cardsReturn.push(this.switchCards(this.props[key], key));
       }
     }
     return cardsReturn;
@@ -15,41 +16,34 @@ class OutreachCardContainer extends Component {
 
   switchCards(stateObject, type) {
     switch (type) {
-      case 'contacts':
-        let contactsReturn = [];
-        for (let contact in stateObject) {
-          if (typeof contact === 'object') {
-            console.log('cnt')
-            contactsReturn.push(this.handleContact(contact));
-          }
+    case 'contacts':
+      const contactsReturn = [];
+      for (const contact in stateObject) {
+        if (!isEmpty(contact)) {
+          contactsReturn.push(this.handleContact(contact));
         }
-        return contactsReturn;
-        break;
-      case 'partner':
-        if (typeof stateObject === 'object') {
-          console.log('prt')
-          return this.handlePartner(stateObject);
-        }
-        break;
-      case 'communicationrecord':
-        if (typeof stateObject === 'object') {
-          console.log('cmrec')
-          return this.handleCommunicationRecord(stateObject)
-        }
-        break;
+      }
+      return contactsReturn;
+    case 'partner':
+      return this.handlePartner(stateObject);
+    case 'communicationrecord':
+      return this.handleCommunicationRecord(stateObject);
+    default:
+      break;
     }
   }
 
   handleContact(contact) {
-    return <OutreachCard displayText={contact.name} />;
+    return <OutreachCard displayText={contact} key={contact} />;
   }
 
   handlePartner(partner) {
-    return <OutreachCard displayText={partner.partnername} />;
+    return <OutreachCard displayText={partner.partnername} key={partner.pk}/>;
   }
 
   handleCommunicationRecord(communicationRecord) {
-    return false;
+    return (<OutreachCard displayText={communicationRecord}
+                         key={communicationRecord} />);
   }
 
   render() {
@@ -63,7 +57,8 @@ class OutreachCardContainer extends Component {
 }
 
 OutreachCardContainer.propTypes = {
-
+  partner: PropTypes.object.isRequired,
+  contacts: PropTypes.array.isRequired,
 };
 
 export default connect(state => ({
