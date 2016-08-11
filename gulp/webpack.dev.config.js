@@ -6,4 +6,6 @@ prodConfig.plugins = [];
 // complaining.
 prodConfig.eslint = {};
 
+prodConfig.watchOptions = {poll: 1000};
+
 module.exports = prodConfig;

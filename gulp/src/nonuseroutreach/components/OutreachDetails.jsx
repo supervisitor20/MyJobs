@@ -1,10 +1,13 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
+import OutreachCardContainer from 'nonuseroutreach/components/OutreachCardContainer';
 
 class OutreachDetails extends Component {
   render() {
     const {outreachBody, dateAdded, outreachFrom, outreachSubject} = this.props;
     return (
+      <div>
+      <OutreachCardContainer />
       <div className="sidebar">
         <h2 className="top">Communication Details</h2>
         <div style={{overflowWrap: 'break-word'}}>
@@ -13,6 +16,7 @@ class OutreachDetails extends Component {
           <div>Subject: {outreachSubject}</div>
           <div>Body: {outreachBody}</div>
         </div>
+      </div>
       </div>
     );
   }
