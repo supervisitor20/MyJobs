@@ -122,6 +122,29 @@ export default handleActions({
     return newState;
   },
 
+  'NUO_EDIT_PARTNER': (state) => {
+    return {
+      ...state,
+      state: 'NEW_PARTNER',
+    };
+  },
+
+  'NUO_EDIT_CONTACT': (state, action) => {
+    const {contactIndex} = action.payload;
+    return {
+      ...state,
+      state: 'NEW_CONTACT',
+      contactIndex,
+    };
+  },
+
+  'NUO_EDIT_COMMUNICATIONRECORD': (state) => {
+    return {
+      ...state,
+      state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
   'NUO_RECEIVE_FORM': (state, action) => {
     const {form} = action.payload;
 
@@ -180,6 +203,15 @@ export default handleActions({
     return {
       ...state,
       state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
+  'NUO_NOTE_ERRORS': (state, action) => {
+    const errors = action.payload;
+
+    return {
+      ...state,
+      errors,
     };
   },
 }, defaultState);

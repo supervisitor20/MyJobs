@@ -10,6 +10,10 @@ import {
   editFormAction,
   savePartnerAction,
   saveContactAction,
+  noteErrorsAction,
+  editPartnerAction,
+  editContactAction,
+  editCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
@@ -211,6 +215,42 @@ describe('handling saveContactAction', () => {
   const result = reducer({}, saveContactAction());
 
   it('should have the right state', () => {
+    expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
+  });
+});
+
+describe('handling noteErrorsAction', () => {
+  const result = reducer({}, noteErrorsAction({1: 2}));
+
+  it('should place errors', () => {
+    expect(result.errors).toEqual({1: 2});
+  });
+});
+
+describe('handling editPartnerAction', () => {
+  const result = reducer({}, editPartnerAction());
+
+  it('should switch state', () => {
+    expect(result.state).toEqual('NEW_PARTNER');
+  });
+});
+
+describe('handling editContactAction', () => {
+  const result = reducer({}, editContactAction(3));
+
+  it('should switch state', () => {
+    expect(result.state).toEqual('NEW_CONTACT');
+  });
+
+  it('should set the contact index', () => {
+    expect(result.contactIndex).toEqual(3);
+  });
+});
+
+describe('handling editCommunicationRecordAction', () => {
+  const result = reducer({}, editCommunicationRecordAction());
+
+  it('should switch state', () => {
     expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
   });
 });

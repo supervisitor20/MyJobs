@@ -16,6 +16,7 @@ import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 import loadingReducer, {
   initialLoading,
 } from '../common/reducers/loading-reducer';
+import errorReducer from '../common/reducers/error-reducer';
 import {
   initialInboxes,
   inboxManagementReducer,
@@ -43,6 +44,7 @@ const reducer = combineReducers({
   records: recordManagementReducer,
   navigation: navigationReducer,
   loading: loadingReducer,
+  errors: errorReducer,
   search: searchReducer,
   process: processEmailReducer,
 });

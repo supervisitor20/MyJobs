@@ -12,12 +12,10 @@ class Form extends Component {
       submitTitle,
       onSubmit,
       onEdit,
+      errors,
     } = this.props;
 
-    const localForm = {...form};
-
-    // TODO: add errors to localForm.
-    localForm.errors = {};
+    const localForm = {...form, errors};
 
     const fields = map(localForm.orderedFields, fieldName => (
       <RemoteFormField
@@ -40,8 +38,13 @@ class Form extends Component {
   }
 }
 
+Form.defaultProps = {
+  errors: {},
+};
+
 Form.propTypes = {
   form: PropTypes.object.isRequired,
+  errors: PropTypes.objectOf(PropTypes.string),
   formContents: PropTypes.object.isRequired,
   title: PropTypes.string.isRequired,
   submitTitle: PropTypes.string.isRequired,
