@@ -5198,3 +5198,16 @@ a.btn.pull-right {
 .partner-count {
   float:right;
 }
+
+div.progress-card {
+  background-color: #FFF;
+  border: 1px solid #d5d4d0;
+  border-radius:5px;
+  padding: 10px 15px;
+  margin: 0px -4px 5px -4px;
+}
+
+.progress-card h4 {
+    margin:0px;
+
+}
