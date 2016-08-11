@@ -4,6 +4,7 @@ import json
 import os
 import sys
 
+from dateutil import parser
 import boto
 from pymongo import MongoClient
 
@@ -70,6 +71,19 @@ def to_mongo(file_name):
             # dictionaries. If "json_line" is a string, it's not a
             # document we wish to keep.
             if not isinstance(json_line, basestring):
+                for key, value in json_line.items():
+                    if key in ['to', 'sv', 'nv', 'fv'] and value:
+                        # parser.parse('') results in today's date; we probably
+                        # don't want that. Ensure the parameter has a value.
+                        try:
+                            json_line[key] = parser.parse(value)
+                        except (ValueError, TypeError):
+                            pass
+                    elif isinstance(value, basestring) and value.isdigit():
+                        json_line[key] = int(value)
+                        if key == 'time':
+                            json_line[key] = datetime.fromtimestamp(
+                                json_line[key])
                 json_line['file_id'] = file_id
                 json_lines.append(json_line)
 
