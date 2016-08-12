@@ -5,6 +5,7 @@ import {
   doLoadEmail,
   resetProcessAction,
   convertOutreach,
+  extractErrorObject,
 } from '../actions/process-outreach-actions';
 
 import {promiseTest} from '../../common/spec';
@@ -81,6 +82,29 @@ describe('doSearch', () => {
 
     it('should remember the error', () => {
       expect(store.getState().error.lastMessage).toEqual('some error');
+    });
+  });
+});
+
+describe('extractErrorObject', () => {
+  it('handles undefined', () => {
+    const result = extractErrorObject();
+    expect(result).toEqual({});
+  });
+
+  it('handles empty list', () => {
+    const result = extractErrorObject([]);
+    expect(result).toEqual({});
+  });
+
+  it('handles entries', () => {
+    const result = extractErrorObject([
+      {field: 'a', message: 'aa'},
+      {field: 'b', message: 'bb'},
+    ]);
+    expect(result).toEqual({
+      a: 'aa',
+      b: 'bb',
     });
   });
 });

@@ -1,6 +1,7 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 import {find, map} from 'lodash-compat/collection';
+import {get, assign} from 'lodash-compat/object';
 
 /**
  * We have a new search field or we are starting over.
@@ -53,12 +54,23 @@ export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
 export const saveContactAction = createAction('NUO_SAVE_CONTACT');
 
 /**
- * Form information arrived.
- *
- *  form: form data
+ * User wants to see a the new partner.
  */
-export const receiveFormAction = createAction('NUO_RECEIVE_FORM',
-    (form) => ({form}));
+export const editPartnerAction = createAction('NUO_EDIT_PARTNER');
+
+/**
+ * User wants to see a new contact.
+ *
+ * contactIndex: which one
+ */
+export const editContactAction = createAction('NUO_EDIT_CONTACT',
+  contactIndex => ({contactIndex}));
+
+/**
+ * User wants to see the new communication record.
+ */
+export const editCommunicationRecordAction =
+  createAction('NUO_EDIT_COMMUNICATIONRECORD');
 
 /**
  * User edited a form.
@@ -89,6 +101,13 @@ export function convertOutreach(record) {
 }
 
 /**
+ * We have learned about some errors present.
+ *
+ * errors: Errors from the api.
+ */
+export const noteErrorsAction = createAction('NUO_NOTE_ERRORS');
+
+/**
  * Start the process by loading an outreach record.
  *
  * outreachId: id for the outreach to load.
@@ -104,41 +123,65 @@ export function doLoadEmail(outreachId) {
   };
 }
 
+
+/**
+ * Convert [{field: '', message: ''}, ...] to {field: message, ...}
+ */
+export function extractErrorObject(fieldArray) {
+  return assign({}, ...map(fieldArray, p => ({[p.field]: p.message})));
+}
+
 /**
  * Submit data to create a communication record.
  */
-export function doSubmit() {
+export function doSubmit(validateOnly) {
   return async (dispatch, getState, {api}) => {
-    const process = getState().process;
-    const record = process.record;
-    const workflowStates = await api.getWorkflowStates();
-    const reviewed = find(workflowStates, s => s.name === 'Complete');
-    const request = {
-      outreachrecord: {
-        pk: process.outreachId,
-        current_workflow_state: reviewed.id,
-      },
-      partner: record.partner,
-      contacts: map(record.contacts, c => ({
-        pk: '',
-        name: c.name,
-        email: c.email,
-        phone: c.phone,
-        location: {
-          pk: '',
-          address_line_one: c.address_line_one,
-          address_line_two: c.address_line_two,
-          city: c.city,
-          state: c.state,
-          label: c.label,
+    try {
+      const process = getState().process;
+      const record = process.record;
+      const workflowStates = await api.getWorkflowStates();
+      const reviewed = find(workflowStates, s => s.name === 'Complete');
+      const request = {
+        outreachrecord: {
+          pk: process.outreachId,
+          current_workflow_state: reviewed.id,
         },
-        // TODO: fix tags
-        tags: [],
-        notes: c.notes,
-      })),
-      contactrecord: record.communicationrecord,
-    };
-    await api.submitContactRecord(request);
-    // TODO: do something with response.
+        partner: record.partner,
+        contacts: map(record.contacts, c => ({
+          pk: '',
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          location: {
+            pk: '',
+            address_line_one: c.address_line_one,
+            address_line_two: c.address_line_two,
+            city: c.city,
+            state: c.state,
+            label: c.label,
+          },
+          // TODO: fix tags
+          tags: [],
+          notes: c.notes,
+        })),
+        contactrecord: record.communicationrecord,
+      };
+      await api.submitContactRecord(request, validateOnly);
+      // TODO: do something with response.
+    } catch (e) {
+      if (e.data) {
+        const formErrors = e.data.form_errors;
+        const errors = {
+          partner: extractErrorObject(get(formErrors, 'partner', [])),
+          contacts: map(get(formErrors, 'contacts', []), ce =>
+            extractErrorObject(ce)),
+          communicationrecord: extractErrorObject(
+            get(formErrors, 'contactrecord', [])),
+        };
+        dispatch(noteErrorsAction(errors));
+      } else {
+        dispatch(errorAction(e.message));
+      }
+    }
   };
 }

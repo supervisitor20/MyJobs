@@ -33,7 +33,7 @@ class ProcessRecordPage extends Component {
   async handleChooseContact(obj) {
     const {dispatch} = this.props;
 
-    dispatch(chooseContactAction(obj.value, {value: '', name: obj.display}));
+    dispatch(chooseContactAction(obj.value, obj.display));
   }
 
   async handleNewPartner(obj) {
@@ -94,31 +94,44 @@ class ProcessRecordPage extends Component {
   }
 
   renderNewCommunicationRecord() {
-    const {dispatch, communicationRecordFormContents} = this.props;
+    const {
+      dispatch,
+      communicationRecordFormContents,
+      communicationRecordErrors,
+    } = this.props;
 
     return (
       <Form
         form={communicationRecordForm}
+        errors={communicationRecordErrors}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
         onEdit={(n, v) =>
           dispatch(editFormAction('communicationrecord', n, v))}
-        onSubmit={() => dispatch(doSubmit())}
+        onSubmit={async () => {
+          await dispatch(doSubmit(true));
+          dispatch(doSubmit());
+        }}
         />
     );
   }
 
   renderNewPartner() {
-    const {dispatch, partnerFormContents} = this.props;
+    const {dispatch, partnerFormContents, partnerErrors} = this.props;
+
     return (
       <Form
         form={partnerForm}
+        errors={partnerErrors}
         title="Partner Data"
         submitTitle="Add Partner"
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
-        onSubmit={() => dispatch(savePartnerAction())}
+        onSubmit={async () => {
+          await dispatch(doSubmit(true));
+          dispatch(savePartnerAction());
+        }}
         />
     );
   }
@@ -135,7 +148,10 @@ class ProcessRecordPage extends Component {
         formContents={contactFormContents}
         onEdit={(n, v) =>
           dispatch(editFormAction('contacts', n, v, contactIndex))}
-        onSubmit={() => dispatch(saveContactAction())}
+        onSubmit={async () => {
+          await dispatch(doSubmit(true));
+          dispatch(saveContactAction());
+        }}
         />
     );
   }
@@ -169,6 +185,9 @@ ProcessRecordPage.propTypes = {
     PropTypes.object.isRequired).isRequired,
   contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
+  partnerErrors: PropTypes.objectOf(PropTypes.string),
+  contactsErrors: PropTypes.objectOf(PropTypes.string),
+  communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
 };
 
 export default connect(state => ({
@@ -183,4 +202,8 @@ export default connect(state => ({
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
     state.process.record.communicationrecord,
+  partnerErrors: get(state.process, 'errors.partner', {}),
+  contactsErrors: get(state.process, 'errors.contacts', {}),
+  communicationRecordErrors:
+    get(state.process, 'errors.communicationrecord', {}),
 }))(ProcessRecordPage);
