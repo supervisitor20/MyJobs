@@ -189,7 +189,6 @@ def home(request, guid, vsid=None, debug=None):
             'to': now_iso, 'referrer': request.META.get('HTTP_REFERER', ''),
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se, 'nv': nv})
 
-        print analytics
         response['X-JSON-Header'] = json.dumps(analytics)
 
     if debug and not user_agent_vs:
