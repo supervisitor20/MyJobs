@@ -1,7 +1,13 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty} from 'lodash-compat';
+import {isEmpty, map, filter} from 'lodash-compat';
+import {
+  editPartnerAction,
+  editContactAction,
+  editCommunicationRecordAction,
+} from '../actions/process-outreach-actions';
+
 
 class OutreachCardContainer extends Component {
   propsToCards() {
@@ -17,13 +23,8 @@ class OutreachCardContainer extends Component {
   switchCards(stateObject, type) {
     switch (type) {
     case 'contacts':
-      const contactsReturn = [];
-      for (const contact in stateObject) {
-        if (!isEmpty(contact)) {
-          contactsReturn.push(this.handleContact(contact));
-        }
-      }
-      return contactsReturn;
+      return map(filter(stateObject, c => !isEmpty(c)),
+        (contact, i) => this.handleContact(contact, i));
     case 'partner':
       return this.handlePartner(stateObject);
     case 'communicationrecord':
@@ -33,12 +34,26 @@ class OutreachCardContainer extends Component {
     }
   }
 
-  handleContact(contact) {
-    return <OutreachCard displayText={contact} key={contact} />;
+  handleContact(contact, index) {
+    const {dispatch} = this.props;
+
+    return (
+      <OutreachCard
+        key={contact}
+        displayText={contact}
+        onNav={() => dispatch(editContactAction(index))}/>
+    );
   }
 
   handlePartner(partner) {
-    return <OutreachCard displayText={partner.partnername} key={partner.pk}/>;
+    const {dispatch} = this.props;
+
+    return (
+      <OutreachCard
+        key={partner.pk}
+        displayText={partner.partnername}
+        onNav={() => dispatch(editPartnerAction())}/>
+    );
   }
 
   handleCommunicationRecord(communicationRecord) {
@@ -57,6 +72,7 @@ class OutreachCardContainer extends Component {
 }
 
 OutreachCardContainer.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   partner: PropTypes.object.isRequired,
   contacts: PropTypes.array.isRequired,
 };

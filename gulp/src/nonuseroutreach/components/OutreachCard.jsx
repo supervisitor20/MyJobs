@@ -5,9 +5,14 @@ import {expandStaticUrl} from 'common/assets';
 
 class OutreachCard extends Component {
   render() {
-    const {displayText} = this.props;
+    const {
+      displayText,
+      onNav,
+    } = this.props;
     return (
-      <div className="tray-container progress-card">
+      <div
+        className="tray-container progress-card"
+        onClick={() => onNav()}>
         <div className="tray-items-left">
           <img
           alt="[partner]"
@@ -27,7 +32,12 @@ class OutreachCard extends Component {
 }
 
 OutreachCard.propTypes = {
+  // Text to show in the card.
   displayText: PropTypes.string.isRequired,
+  // User clicked on the card to navigate to the item.
+  onNav: PropTypes.func.isRequired,
+  // TODO: add icon choice
+  // TODO: add onDelete.
 };
 
 export default connect()(OutreachCard);

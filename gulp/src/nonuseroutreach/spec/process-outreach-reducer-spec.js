@@ -6,7 +6,6 @@ import {
   chooseContactAction,
   newPartnerAction,
   newContactAction,
-  receiveFormAction,
   editFormAction,
   savePartnerAction,
   saveContactAction,
@@ -145,14 +144,6 @@ describe('processEmailReducer', () => {
 
     it('should keep the partner', () => {
       expect(result.record.partner).toEqual(state.record.partner);
-    });
-  });
-
-  describe('handling receiveFormAction', () => {
-    const result = reducer({}, receiveFormAction({some: 'form'}));
-
-    it('should have the form', () => {
-      expect(result.form).toEqual({some: 'form'});
     });
   });
 
