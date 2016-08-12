@@ -170,7 +170,7 @@ def home(request, guid, vsid=None, debug=None):
                 se = '?' + se
         else:
             hn = request.get_host()
-            pr = request.is_secure() and 'https:' or 'http:'
+            pr = "https:" if request.is_secure() else "http:"
             pn = request.path
             se = request.META.get('QUERY_STRING', '')
             if se:
