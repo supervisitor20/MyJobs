@@ -34,16 +34,21 @@ class OutreachCardContainer extends Component {
   }
 
   handleContact(contact) {
-    return <OutreachCard displayText={contact} key={contact} />;
+    return (<OutreachCard displayText={contact.name}
+                         key={contact}
+                         type="contact" />);
   }
 
   handlePartner(partner) {
-    return <OutreachCard displayText={partner.partnername} key={partner.pk}/>;
+    return (<OutreachCard displayText={partner.partnername}
+                         key={partner.pk}
+                         type="partner" />);
   }
 
   handleCommunicationRecord(communicationRecord) {
     return (<OutreachCard displayText={communicationRecord}
-                         key={communicationRecord} />);
+                          key={communicationRecord}
+                          type="communicationrecord" />);
   }
 
   render() {

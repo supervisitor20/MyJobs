@@ -4,20 +4,34 @@ import {expandStaticUrl} from 'common/assets';
 
 
 class OutreachCard extends Component {
-  render() {
-    const {displayText} = this.props;
+  constructor() {
+    super();
+    this.state = {
+      showDelete: false,
+    };
+  }
+  getDeleteField() {
     return (
-      <div className="tray-container progress-card">
+      <div className="tray-items">
+        <img
+         alt="[delete]"
+         ref="deleteImg"
+         src={expandStaticUrl('svg/delete.svg')} />
+      </div>
+    );
+  }
+  render() {
+    const {displayText, type} = this.props;
+    return (
+      <div className="tray-container progress-card"
+           onMouseEnter={() => this.setState({showDelete: true})}
+           onMouseLeave={() => this.setState({showDelete: false})}>
         <div className="tray-items-left">
           <img
-          alt="[partner]"
-          src={expandStaticUrl('svg/partner-card.svg')} />
+          alt={type}
+          src={expandStaticUrl('svg/' + type + '-card.svg')} />
         </div>
-        <div className="tray-items">
-            <img
-             alt="[delete]"
-             src={expandStaticUrl('svg/delete.svg')} />
-        </div>
+        {this.state.showDelete ? this.getDeleteField() : ''}
         <div className="tray-content ellipses">
           <h5>{displayText}</h5>
         </div>
@@ -28,6 +42,7 @@ class OutreachCard extends Component {
 
 OutreachCard.propTypes = {
   displayText: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
 };
 
 export default connect()(OutreachCard);
