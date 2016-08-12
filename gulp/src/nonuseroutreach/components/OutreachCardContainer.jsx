@@ -5,6 +5,7 @@ import {isEmpty, map, filter} from 'lodash-compat';
 import {
   editPartnerAction,
   editContactAction,
+  editCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 
@@ -58,8 +59,12 @@ class OutreachCardContainer extends Component {
   }
 
   handleCommunicationRecord(communicationRecord) {
-    return (<OutreachCard displayText={communicationRecord}
-                          type="communicationrecord"
+    const {dispatch} = this.props;
+
+    return (<OutreachCard displayText={communicationRecord.contact_type}
+                          type="contactrecord"
+                          onNav={() =>
+                            dispatch(editCommunicationRecordAction())}
                           key="commrec" />);
   }
 
@@ -82,5 +87,5 @@ OutreachCardContainer.propTypes = {
 export default connect(state => ({
   partner: state.process.record.partner,
   contacts: state.process.record.contacts,
-  // communication record..
+  communicationrecord: state.process.record.communicationrecord,
 }))(OutreachCardContainer);
