@@ -792,8 +792,7 @@ def requeue_failures():
         send_mail(recipient_list=["matt@apps.directemployers.org"],
                   from_email="solr_count_monitoring@apps.directemployers.org",
                   subject="More than %s tasks failed last night." % FAILURE_COUNT,
-                  message="For BUID: %s, we expected %s jobs, but have %s jobs.  Check imports for this buid." %
-                          (buid, count, hits),
+                  message="We had %s tasks fail last night.  Check imports and requeue as needed." % len(failed_tasks),
                   fail_silently=False)
 
 
