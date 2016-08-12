@@ -1,4 +1,5 @@
 import {handleActions} from 'redux-actions';
+import {get} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -122,6 +123,38 @@ export default handleActions({
     return newState;
   },
 
+  'NUO_EDIT_PARTNER': (state) => {
+    if (get(state, 'record.partner.pk')) {
+      return {
+        ...state,
+        state: 'SELECT_PARTNER',
+      };
+    }
+    return {
+      ...state,
+      state: 'NEW_PARTNER',
+    };
+  },
+
+  'NUO_EDIT_CONTACT': (state, action) => {
+    const {contactIndex} = action.payload;
+
+    const pk = get(state, `record.contact.${contactIndex}.pk`);
+    const newState = pk ? 'SELECT_CONTACT' : 'NEW_CONTACT';
+    return {
+      ...state,
+      state: newState,
+      contactIndex,
+    };
+  },
+
+  'NUO_EDIT_COMMUNICATIONRECORD': (state) => {
+    return {
+      ...state,
+      state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
   'NUO_RECEIVE_FORM': (state, action) => {
     const {form} = action.payload;
 
@@ -166,6 +199,29 @@ export default handleActions({
           [field]: value,
         },
       },
+    };
+  },
+
+  'NUO_SAVE_PARTNER': (state) => {
+    return {
+      ...state,
+      state: 'SELECT_CONTACT',
+    };
+  },
+
+  'NUO_SAVE_CONTACT': (state) => {
+    return {
+      ...state,
+      state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
+  'NUO_NOTE_ERRORS': (state, action) => {
+    const errors = action.payload;
+
+    return {
+      ...state,
+      errors,
     };
   },
 }, defaultState);

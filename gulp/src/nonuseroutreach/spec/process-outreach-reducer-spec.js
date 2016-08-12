@@ -6,8 +6,13 @@ import {
   chooseContactAction,
   newPartnerAction,
   newContactAction,
-  receiveFormAction,
   editFormAction,
+  savePartnerAction,
+  saveContactAction,
+  noteErrorsAction,
+  editPartnerAction,
+  editContactAction,
+  editCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
@@ -142,14 +147,6 @@ describe('processEmailReducer', () => {
     });
   });
 
-  describe('handling receiveFormAction', () => {
-    const result = reducer({}, receiveFormAction({some: 'form'}));
-
-    it('should have the form', () => {
-      expect(result.form).toEqual({some: 'form'});
-    });
-  });
-
   describe('handling editFormAction', () => {
 
     describe('unindexed', () => {
@@ -194,5 +191,83 @@ describe('processEmailReducer', () => {
         expect(result.record.contacts[0].name).toEqual('Bob');
       });
     });
+  });
+});
+
+describe('handling savePartnerAction', () => {
+  const result = reducer({}, savePartnerAction());
+
+  it('should have the right state', () => {
+    expect(result.state).toEqual('SELECT_CONTACT');
+  });
+});
+
+describe('handling saveContactAction', () => {
+  const result = reducer({}, saveContactAction());
+
+  it('should have the right state', () => {
+    expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
+  });
+});
+
+describe('handling noteErrorsAction', () => {
+  const result = reducer({}, noteErrorsAction({1: 2}));
+
+  it('should place errors', () => {
+    expect(result.errors).toEqual({1: 2});
+  });
+});
+
+describe('handling editPartnerAction', () => {
+  it('should switch state to new if there is no pk', () => {
+    const result = reducer({}, editPartnerAction());
+    expect(result.state).toEqual('NEW_PARTNER');
+  });
+
+  it('should switch state to select if there is a pk', () => {
+    const result = reducer({
+      record: {
+        partner: {pk: 3},
+      },
+    }, editPartnerAction());
+    expect(result.state).toEqual('SELECT_PARTNER');
+  });
+});
+
+describe('handling editContactAction', () => {
+  describe('when there is no pk', () => {
+    const result = reducer({}, editContactAction(3));
+
+    it('should switch state to new if there is no pk', () => {
+      expect(result.state).toEqual('NEW_CONTACT');
+    });
+
+    it('should set the contact index', () => {
+      expect(result.contactIndex).toEqual(3);
+    });
+  });
+
+  describe('when there is no pk', () => {
+    const result = reducer({
+      record: {
+        contact: [{pk: 3}],
+      },
+    }, editContactAction(0));
+
+    it('should switch state to select if there is a pk', () => {
+      expect(result.state).toEqual('SELECT_CONTACT');
+    });
+
+    it('should set the contact index', () => {
+      expect(result.contactIndex).toEqual(0);
+    });
+  });
+});
+
+describe('handling editCommunicationRecordAction', () => {
+  const result = reducer({}, editCommunicationRecordAction());
+
+  it('should switch state', () => {
+    expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
   });
 });

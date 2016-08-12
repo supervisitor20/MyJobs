@@ -76,10 +76,10 @@ export default class Api {
     return await this.api.get('/prm/api/' + formName + '/' + id + '/form');
   }
 
-  async submitContactRecord(request) {
-    return await this.api.post(
-      '/prm/api/nonuseroutreach/records/convert',
-      {request: JSON.stringify(request)});
+  async submitContactRecord(request, validateOnly) {
+    const uri = '/prm/api/nonuseroutreach/records/convert';
+    const fullUri = validateOnly ? uri + '?validate_only=1' : uri;
+    return await this.api.post(fullUri, {request: JSON.stringify(request)});
   }
 
   async getWorkflowStates() {

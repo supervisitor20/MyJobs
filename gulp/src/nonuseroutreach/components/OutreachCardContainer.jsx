@@ -1,7 +1,12 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty} from 'lodash-compat';
+import {isEmpty, map, filter} from 'lodash-compat';
+import {
+  editPartnerAction,
+  editContactAction,
+} from '../actions/process-outreach-actions';
+
 
 class OutreachCardContainer extends Component {
   propsToCards() {
@@ -17,13 +22,8 @@ class OutreachCardContainer extends Component {
   switchCards(stateObject, type) {
     switch (type) {
     case 'contacts':
-      const contactsReturn = [];
-      for (const contact in stateObject) {
-        if (!isEmpty(contact)) {
-          contactsReturn.push(this.handleContact(contact));
-        }
-      }
-      return contactsReturn;
+      return map(filter(stateObject, c => !isEmpty(c)),
+        (contact, i) => this.handleContact(contact, i));
     case 'partner':
       return this.handlePartner(stateObject);
     case 'communicationrecord':
@@ -33,22 +33,34 @@ class OutreachCardContainer extends Component {
     }
   }
 
-  handleContact(contact) {
-    return (<OutreachCard displayText={contact.name}
-                         key={contact}
-                         type="contact" />);
+  handleContact(contact, index) {
+    const {dispatch} = this.props;
+
+    return (
+      <OutreachCard
+        key={contact}
+        displayText={contact.name}
+        type="contact"
+        onNav={() => dispatch(editContactAction(index))}/>
+    );
   }
 
   handlePartner(partner) {
-    return (<OutreachCard displayText={partner.partnername}
-                         key={partner.pk}
-                         type="partner" />);
+    const {dispatch} = this.props;
+
+    return (
+      <OutreachCard
+        key={partner.pk}
+        type="partner"
+        displayText={partner.partnername}
+        onNav={() => dispatch(editPartnerAction())}/>
+    );
   }
 
   handleCommunicationRecord(communicationRecord) {
     return (<OutreachCard displayText={communicationRecord}
-                          key={communicationRecord}
-                          type="communicationrecord" />);
+                          type="communicationrecord"
+                          key={communicationRecord} />);
   }
 
   render() {
@@ -62,6 +74,7 @@ class OutreachCardContainer extends Component {
 }
 
 OutreachCardContainer.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   partner: PropTypes.object.isRequired,
   contacts: PropTypes.array.isRequired,
 };

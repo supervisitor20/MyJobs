@@ -3,9 +3,9 @@ import errorReducer from '../../common/reducers/error-reducer';
 
 import {
   doLoadEmail,
-  doLoadForm,
   resetProcessAction,
   convertOutreach,
+  extractErrorObject,
 } from '../actions/process-outreach-actions';
 
 import {promiseTest} from '../../common/spec';
@@ -86,40 +86,25 @@ describe('doSearch', () => {
   });
 });
 
-describe('doLoadForm', () => {
-  let store;
-  let api;
-
-  beforeEach(() => {
-    api = new FakeApi();
-    store = createReduxStore(
-      combineReducers({process: processEmailReducer, error: errorReducer}),
-      {}, {api});
+describe('extractErrorObject', () => {
+  it('handles undefined', () => {
+    const result = extractErrorObject();
+    expect(result).toEqual({});
   });
 
-  describe('after load', () => {
-    const form = {
-      some: 'info',
-    };
-    beforeEach(promiseTest(async () => {
-      spyOn(api, 'getForm').and.returnValue(Promise.resolve(form));
-      await store.dispatch(doLoadForm('partner', 'new'));
-    }));
-
-    it('should have the form', () => {
-      expect(store.getState().process.form).toEqual(form);
-    });
+  it('handles empty list', () => {
+    const result = extractErrorObject([]);
+    expect(result).toEqual({});
   });
 
-  describe('after an error', () => {
-    beforeEach(promiseTest(async () => {
-      spyOn(api, 'getForm').and.throwError('some error');
-      await store.dispatch(doLoadForm());
-    }));
-
-    it('should remember the error', () => {
-      expect(store.getState().error.lastMessage).toEqual('some error');
+  it('handles entries', () => {
+    const result = extractErrorObject([
+      {field: 'a', message: 'aa'},
+      {field: 'b', message: 'bb'},
+    ]);
+    expect(result).toEqual({
+      a: 'aa',
+      b: 'bb',
     });
   });
 });
-
