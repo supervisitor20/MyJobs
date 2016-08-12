@@ -1,4 +1,5 @@
 import {handleActions} from 'redux-actions';
+import {get} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -123,6 +124,12 @@ export default handleActions({
   },
 
   'NUO_EDIT_PARTNER': (state) => {
+    if (get(state, 'record.partner.pk')) {
+      return {
+        ...state,
+        state: 'SELECT_PARTNER',
+      };
+    }
     return {
       ...state,
       state: 'NEW_PARTNER',
@@ -131,9 +138,12 @@ export default handleActions({
 
   'NUO_EDIT_CONTACT': (state, action) => {
     const {contactIndex} = action.payload;
+
+    const pk = get(state, `record.contact.${contactIndex}.pk`);
+    const newState = pk ? 'SELECT_CONTACT' : 'NEW_CONTACT';
     return {
       ...state,
-      state: 'NEW_CONTACT',
+      state: newState,
       contactIndex,
     };
   },

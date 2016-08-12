@@ -40,7 +40,7 @@ class OutreachCardContainer extends Component {
     return (
       <OutreachCard
         key={contact}
-        displayText={contact}
+        displayText={contact.name}
         onNav={() => dispatch(editContactAction(index))}/>
     );
   }

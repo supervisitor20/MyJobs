@@ -33,7 +33,7 @@ class ProcessRecordPage extends Component {
   async handleChooseContact(obj) {
     const {dispatch} = this.props;
 
-    dispatch(chooseContactAction(obj.value, {value: '', name: obj.display}));
+    dispatch(chooseContactAction(obj.value, obj.display));
   }
 
   async handleNewPartner(obj) {
