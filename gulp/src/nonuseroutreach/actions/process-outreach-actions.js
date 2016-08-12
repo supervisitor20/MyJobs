@@ -166,7 +166,7 @@ export function doSubmit(validateOnly) {
         })),
         contactrecord: record.communicationrecord,
       };
-      await api.submitContactRecord(request);
+      await api.submitContactRecord(request, validateOnly);
       // TODO: do something with response.
     } catch (e) {
       if (e.data) {
