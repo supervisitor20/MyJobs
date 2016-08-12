@@ -9,6 +9,7 @@ import {
   editFormAction,
   savePartnerAction,
   saveContactAction,
+  saveCommunicationRecordAction,
   noteErrorsAction,
   editPartnerAction,
   editContactAction,
@@ -21,7 +22,8 @@ describe('processEmailReducer', () => {
       summary: 'some title',
       body: 'some info',
     };
-    const result = reducer({}, resetProcessAction(2, outreach));
+    const states = [{1: 2}];
+    const result = reducer({}, resetProcessAction(2, outreach, states));
 
     it('should set the default state.', () => {
       expect(result.state).toEqual('SELECT_PARTNER');
@@ -33,6 +35,10 @@ describe('processEmailReducer', () => {
 
     it('should remember the given outreach Id', () => {
       expect(result.outreachId).toDiffEqual(2);
+    });
+
+    it('should remember the given workflow states', () => {
+      expect(result.workflowStates).toDiffEqual(states);
     });
   });
 
@@ -207,6 +213,14 @@ describe('handling saveContactAction', () => {
 
   it('should have the right state', () => {
     expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
+  });
+});
+
+describe('handling saveCommunicationRecordAction', () => {
+  const result = reducer({}, saveCommunicationRecordAction());
+
+  it('should have the right state', () => {
+    expect(result.state).toEqual('SELECT_WORKFLOW_STATE');
   });
 });
 

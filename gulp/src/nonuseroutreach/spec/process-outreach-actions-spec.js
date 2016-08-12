@@ -15,6 +15,7 @@ import {combineReducers} from 'redux';
 
 class FakeApi {
   getOutreach() {}
+  getWorkflowStates() {}
   getForm() {}
 }
 
@@ -41,7 +42,7 @@ describe('convertOutreach', () => {
   });
 });
 
-describe('doSearch', () => {
+describe('initial load', () => {
   let store;
   let api;
 
@@ -52,13 +53,19 @@ describe('doSearch', () => {
       {}, {api});
   });
 
-  describe('after a search', () => {
+  describe('after load', () => {
     const outreach = {
       from_email: "bob@example.com",
       email_body: "some text",
     };
+    const workflowStates = [
+      {id: 1, name: 'a'},
+      {id: 2, name: 'b'},
+    ];
     beforeEach(promiseTest(async () => {
       spyOn(api, 'getOutreach').and.returnValue(Promise.resolve(outreach));
+      spyOn(api, 'getWorkflowStates').and.returnValue(
+        Promise.resolve(workflowStates));
       await store.dispatch(doLoadEmail(2));
     }));
 
@@ -69,6 +76,13 @@ describe('doSearch', () => {
 
     it('should have the outreachId', () => {
       expect(store.getState().process.outreachId).toEqual(2);
+    });
+
+    it('should have the workflow states', () => {
+      expect(store.getState().process.workflowStates).toEqual([
+        {value: 1, display: 'a'},
+        {value: 2, display: 'b'},
+      ]);
     });
 
     it('should be in the right state', () => {
