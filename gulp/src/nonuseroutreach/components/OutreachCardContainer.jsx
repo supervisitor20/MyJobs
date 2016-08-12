@@ -5,7 +5,6 @@ import {isEmpty, map, filter} from 'lodash-compat';
 import {
   editPartnerAction,
   editContactAction,
-  editCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 
