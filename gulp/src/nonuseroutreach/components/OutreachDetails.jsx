@@ -33,5 +33,5 @@ export default connect(state => ({
   dateAdded: state.process.outreach.dateAdded,
   outreachBody: state.process.outreach.outreachBody,
   outreachFrom: state.process.outreach.outreachFrom,
-  outreachSubject: state.process.outreach.subject,
+  outreachSubject: state.process.outreach.outreachSubject,
 }))(OutreachDetails);
