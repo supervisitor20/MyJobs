@@ -97,6 +97,7 @@ export function convertOutreach(record) {
     outreachFrom: record.from_email,
     outreachInbox: record.outreach_email,
     workflowState: record.current_workflow_state,
+    outreachSubject: record.subject,
   };
 }
 
