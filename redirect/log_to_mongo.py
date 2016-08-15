@@ -4,14 +4,13 @@ import json
 import os
 import sys
 
+from dateutil import parser
 import boto
 from pymongo import MongoClient
 
-from django.conf import settings
-
 sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
 
-from secrets import MONGO_HOST
+from secrets import MONGO_HOST, AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
 
 
 def get_log_lines(file_name):
@@ -20,8 +19,8 @@ def get_log_lines(file_name):
     is unquoted and split into lines.
     """
     boto_connection = boto.connect_s3(
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_KEY)
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_KEY)
     log_bucket = boto_connection.get_bucket('my-jobs-logs', validate=False)
     log = log_bucket.get_key(file_name)
     contents = log.get_contents_as_string().decode('string_escape')
@@ -72,6 +71,19 @@ def to_mongo(file_name):
             # dictionaries. If "json_line" is a string, it's not a
             # document we wish to keep.
             if not isinstance(json_line, basestring):
+                for key, value in json_line.items():
+                    if key in ['to', 'sv', 'nv', 'fv'] and value:
+                        # parser.parse('') results in today's date; we probably
+                        # don't want that. Ensure the parameter has a value.
+                        try:
+                            json_line[key] = parser.parse(value)
+                        except (ValueError, TypeError):
+                            pass
+                    elif isinstance(value, basestring) and value.isdigit():
+                        json_line[key] = int(value)
+                        if key == 'time':
+                            json_line[key] = datetime.fromtimestamp(
+                                json_line[key])
                 json_line['file_id'] = file_id
                 json_lines.append(json_line)
 

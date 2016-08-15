@@ -38,16 +38,20 @@ describe('doSearch', () => {
 
   describe('after a search', () => {
     beforeEach(promiseTest(async () => {
-      spyOn(api, 'search').and.callFake((instance, searchString) =>
-        Promise.resolve(['results:' + instance + ' ' + searchString]));
+      spyOn(api, 'search').and.callFake(
+          (instance, searchString, extraParams) =>
+            Promise.resolve([
+              'results:' + instance + ' ' +
+              searchString, extraParams]));
       // do the search
       await store.dispatch(
-        doSearch('a'));
+        doSearch('a', {1: 2}));
     }));
 
     it('has search results', () => {
       expect(store.getState().search.a.state).toEqual('RECEIVED');
-      expect(store.getState().search.a.results).toEqual(['results:a asdf']);
+      expect(store.getState().search.a.results).toDiffEqual([
+        'results:a asdf', {1: 2}]);
     });
   });
 

@@ -990,6 +990,8 @@ class OutreachRecord(models.Model):
         max_length=255, verbose_name="Email",
         help_text="Email outreach effort sent from.")
     email_body = models.TextField()
+    # RFC 5322: subjects don't have length restrictions
+    subject = models.TextField()
     current_workflow_state = models.ForeignKey("OutreachWorkflowState")
     partners = models.ManyToManyField("Partner")
     contacts = models.ManyToManyField("Contact")

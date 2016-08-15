@@ -6,7 +6,6 @@ prodConfig.plugins = [];
 // complaining.
 prodConfig.eslint = {};
 
-// Linux users not using docker can do without this.
 prodConfig.watchOptions = {poll: 1000};
 
 module.exports = prodConfig;
