@@ -25,6 +25,7 @@ describe('convertOutreach', () => {
     email_body: "some text",
     outreach_email: "testemail@my.jobs",
     current_workflow_state: "Reviewed",
+    subject: "Subject",
   };
   const result = convertOutreach(record);
 
@@ -35,6 +36,7 @@ describe('convertOutreach', () => {
       outreachBody: "some text",
       outreachInbox: "testemail@my.jobs",
       workflowState: "Reviewed",
+      outreachSubject: "Subject",
     });
   });
 });
