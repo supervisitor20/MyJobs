@@ -33,8 +33,6 @@ class OutreachCard extends Component {
         onClick={() => onNav()}>
         <div className="tray-items-left">
           <img
-          style={{width: '20px',
-                  height: '20px'}}
           alt={'[' + type + ']'}
           src={expandStaticUrl('svg/' + type + '-card.svg')} />
         </div>

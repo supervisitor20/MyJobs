@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="71px" height="89px" viewBox="0 0 71 89" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="15px" height="20px" viewBox="0 0 15 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
     <title>Group 10</title>
     <desc>Created with Sketch.</desc>
     <defs>
-        <path d="M42.7975545,48.4383562 L30.000046,48.4383562 C27.2399464,48.4383562 25,50.6730646 25,53.4297172 L25,89.8180762 L95.3084437,89.8180762 L95.3084437,53.4297172 C95.3084437,50.6777815 93.0698468,48.4383562 90.3083977,48.4383562 L77.5108892,48.4383562 C73.133523,53.9185053 66.9754683,57.3298663 60.1542218,57.3298663 C53.3329753,57.3298663 47.1749207,53.9185053 42.7975545,48.4383562 Z" id="path-1"></path>
-        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="70.3084437" height="41.3797201" fill="white">
+        <path d="M8.97341021,10.8393004 C6.8387825,11.2311237 5.20833333,13.1069064 5.20833333,15.3618258 L5.20833333,19.9595725 L19.8559258,19.9595725 L19.8559258,15.3618258 C19.8559258,13.1105924 18.2325282,11.2306443 16.0910802,10.8390013 C15.183057,12.0129042 13.9238495,12.7399703 12.5321295,12.7399703 C11.1405278,12.7399703 9.8814159,12.0130277 8.97341021,10.8393004 Z" id="path-1"></path>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="14.6475924" height="9.19549335" fill="white">
             <use xlink:href="#path-1"></use>
         </mask>
     </defs>
     <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Group-10" transform="translate(-25.000000, -1.000000)">
-            <rect id="Rectangle-4" x="0" y="0" width="120" height="90"></rect>
-            <ellipse id="Oval-1" stroke="#444545" stroke-width="4.5" cx="59.8248644" cy="25.6117408" rx="17.9913554" ry="21.6117408"></ellipse>
-            <use id="Combined-Shape" stroke="#444545" mask="url(#mask-2)" stroke-width="9" xlink:href="#path-1"></use>
+        <g id="Group-10" transform="translate(-5.000000, 0.000000)">
+            <rect id="Rectangle-4" x="0" y="0" width="25" height="20"></rect>
+            <ellipse id="Oval-1" stroke="#444545" stroke-width="1.2" cx="12.4635134" cy="5.69149795" rx="3.74819905" ry="4.80260907"></ellipse>
+            <use id="Combined-Shape" stroke="#444545" mask="url(#mask-2)" stroke-width="2.4" xlink:href="#path-1"></use>
         </g>
     </g>
 </svg>
