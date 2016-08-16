@@ -35,7 +35,7 @@ class OutreachCard extends Component {
           <img
           style={{width: '20px',
                   height: '20px'}}
-          alt={type}
+          alt={'[' + type + ']'}
           src={expandStaticUrl('svg/' + type + '-card.svg')} />
         </div>
           {this.state.showDelete ? this.getDeleteField() : ''}
