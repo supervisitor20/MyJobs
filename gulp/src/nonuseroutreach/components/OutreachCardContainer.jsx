@@ -38,8 +38,9 @@ class OutreachCardContainer extends Component {
 
     return (
       <OutreachCard
-        key={contact}
+        key={index}
         displayText={contact.name}
+        type="contact"
         onNav={() => dispatch(editContactAction(index))}/>
     );
   }
@@ -49,7 +50,8 @@ class OutreachCardContainer extends Component {
 
     return (
       <OutreachCard
-        key={partner.pk}
+        key="partner"
+        type="partner"
         displayText={partner.partnername}
         onNav={() => dispatch(editPartnerAction())}/>
     );
@@ -57,7 +59,8 @@ class OutreachCardContainer extends Component {
 
   handleCommunicationRecord(communicationRecord) {
     return (<OutreachCard displayText={communicationRecord}
-                         key={communicationRecord} />);
+                          type="communicationrecord"
+                          key="commrec" />);
   }
 
   render() {
