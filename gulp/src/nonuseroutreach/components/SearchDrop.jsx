@@ -158,9 +158,9 @@ export default class SearchDrop extends Component {
               className={classnames(
                   {'active': i === activeIndex})}>
               {result.display}
-              <span className="partner-count">
-                ({result.count} contacts)
-              </span>
+              {result.count ?
+                <span className="partner-count">({result.count} contacts)</span>
+                : ''}
             </li>
           ))}
         </ul>
