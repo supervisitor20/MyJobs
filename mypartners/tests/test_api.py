@@ -207,22 +207,55 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         self.outreach_workflow = OutreachWorkflowStateFactory()
         a_tag = TagFactory()
         self.request_data = {
-            "outreachrecord":{"pk":self.outreach_record.pk, "current_workflow_state":self.outreach_workflow.pk},
-
-            "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-            "tags":[a_tag.pk], "owner": self.company.pk},
-
-            "contacts": [{"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-            "location":{"pk":"", "address_line_one":"", "address_line_two":"",
-            "city":"Newtoneous", "state":"AZ", "country_code":"1",
-            "label":"new place"}, "tags":[a_tag.pk],
-            "notes": "long note left here"}, {"pk":self.contact.pk, "notes":"new notes"}],
-
-            "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
-            "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
-            "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-            "tags":[]}
-    }
+            "outreachrecord": {
+                "pk": self.outreach_record.pk,
+                "current_workflow_state": self.outreach_workflow.pk,
+            },
+            "partner": {
+                "pk": "",
+                "name": "James B",
+                "data_source": "email",
+                "uri": "http://www.example.com",
+                "tags": [a_tag.pk],
+                "owner": self.company.pk,
+            },
+            "contacts": [
+                {
+                    "pk": "",
+                    "name": "Nicole J",
+                    "email": "nicolej@test.com",
+                    "phone": "7651234123",
+                    "location": {
+                        "pk": "",
+                        "address_line_one": "",
+                        "address_line_two": "",
+                        "city": "Newtoneous",
+                        "state": "AZ",
+                        "country_code": "1",
+                        "label": "new place",
+                        },
+                    "tags": [a_tag.pk],
+                    "notes": "long note left here",
+                },
+                {
+                    "pk": self.contact.pk,
+                    "notes": "new notes",
+                },
+            ],
+            "contactrecord": {
+                "contact_type": "phone",
+                "location": "dining hall",
+                "length": "10:30",
+                "subject": "new job",
+                "date_time": "2016-01-01 05:10",
+                "notes": "dude was chill",
+                "job_id": "10",
+                "job_applications": "20",
+                "job_interviews": "10",
+                "job_hires": "0",
+                "tags": [],
+            }
+        }
 
     def test_outreach_conversion_api(self):
         """
