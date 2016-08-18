@@ -207,53 +207,56 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         self.outreach_workflow = OutreachWorkflowStateFactory()
         a_tag = TagFactory()
         self.request_data = {
-            "outreachrecord": {
-                "pk": self.outreach_record.pk,
-                "current_workflow_state": self.outreach_workflow.pk,
-            },
-            "partner": {
-                "pk": "",
-                "name": "James B",
-                "data_source": "email",
-                "uri": "http://www.example.com",
-                "tags": [a_tag.pk],
-                "owner": self.company.pk,
-            },
-            "contacts": [
-                {
-                    "pk": "",
-                    "name": "Nicole J",
-                    "email": "nicolej@test.com",
-                    "phone": "7651234123",
-                    "location": {
-                        "pk": "",
-                        "address_line_one": "",
-                        "address_line_two": "",
-                        "city": "Newtoneous",
-                        "state": "AZ",
-                        "country_code": "1",
-                        "label": "new place",
-                        },
-                    "tags": [a_tag.pk],
-                    "notes": "long note left here",
+            "forms": {
+                "outreachrecord": {
+                    "pk": {'value': self.outreach_record.pk},
+                    "current_workflow_state":
+                        {'value': self.outreach_workflow.pk},
                 },
-                {
-                    "pk": self.contact.pk,
-                    "notes": "new notes",
+                "partner": {
+                    "pk": {'value': ""},
+                    "name": {'value': "James B"},
+                    "data_source": {'value': "email"},
+                    "uri": {'value': "http://www.example.com"},
+                    "tags": {'value': [a_tag.pk]},
+                    "owner": {'value': self.company.pk},
                 },
-            ],
-            "contactrecord": {
-                "contact_type": "phone",
-                "location": "dining hall",
-                "length": "10:30",
-                "subject": "new job",
-                "date_time": "2016-01-01 05:10",
-                "notes": "dude was chill",
-                "job_id": "10",
-                "job_applications": "20",
-                "job_interviews": "10",
-                "job_hires": "0",
-                "tags": [],
+                "contacts": [
+                    {
+                        "pk": {'value': ""},
+                        "name": {'value': "Nicole J"},
+                        "email": {'value': "nicolej@test.com"},
+                        "phone": {'value': "7651234123"},
+                        "location": {
+                            "pk": {'value': ""},
+                            "address_line_one": {'value': ""},
+                            "address_line_two": {'value': ""},
+                            "city": {'value': "Newtoneous"},
+                            "state": {'value': "AZ"},
+                            "country_code": {'value': "1"},
+                            "label": {'value': "new place"},
+                            },
+                        "tags": {'value': [a_tag.pk]},
+                        "notes": {'value': "long note left here"},
+                    },
+                    {
+                        "pk": {'value': self.contact.pk},
+                        "notes": {'value': "new notes"},
+                    },
+                ],
+                "contactrecord": {
+                    "contact_type": {'value': "phone"},
+                    "location": {'value': "dining hall"},
+                    "length": {'value': "10:30"},
+                    "subject": {'value': "new job"},
+                    "date_time": {'value': "2016-01-01 05:10"},
+                    "notes": {'value': "dude was chill"},
+                    "job_id": {'value': "10"},
+                    "job_applications": {'value': "20"},
+                    "job_interviews": {'value': "10"},
+                    "job_hires": {'value': "0"},
+                    "tags": {'value': []},
+                }
             }
         }
 
@@ -289,7 +292,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         to have all relevant fields
 
         """
-        self.request_data.pop('partner')
+        self.request_data['forms'].pop('partner')
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -311,7 +314,8 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         existing_partner = PartnerFactory(owner=self.company)
-        self.request_data['partner']['pk'] = existing_partner.pk
+        record= self.request_data['forms']['partner']
+        record['pk'] = {'value': existing_partner.pk}
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -332,7 +336,8 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         existing_location = LocationFactory()
-        self.request_data['contacts'][0]['location'] = {"pk":existing_location.pk}
+        record = self.request_data['forms']['contacts']
+        record[0]['location'] = {"pk": {'value': existing_location.pk}}
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -345,7 +350,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         without a location.
 
         """
-        self.request_data['contacts'][0].pop('location')
+        self.request_data['forms']['contacts'][0].pop('location')
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -385,7 +390,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         data
 
         """
-        self.request_data['dummystuff'] = "invalid stuff"
+        self.request_data['forms']['dummystuff'] = "invalid stuff"
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -398,7 +403,8 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         if a model fails form validation
 
         """
-        self.request_data['contactrecord']['date_time'] = "invalid dt"
+        record = self.request_data['forms']['contactrecord']
+        record['date_time'] = {'value': "invalid dt"}
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -432,17 +438,16 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             data = {'request': json.dumps(self.request_data)}
         )
         parsed_content = json.loads(response.content)
-        contact_errors = [i['message'] for i in
-                          parsed_content['form_errors']['contacts']]
+        api_errors = parsed_content['api_errors']
 
-        self.assertEqual(len(contact_errors), 1,
+        self.assertEqual(len(api_errors), 1,
                          msg="Expected 1 errors in contact form, got %s, "
-                             "errors: %s" % (len(contact_errors),
-                                             ', '.join(contact_errors)))
+                             "errors: %s" % (len(api_errors),
+                                             ', '.join(api_errors)))
 
-        self.assertEqual(contact_errors[0],
+        self.assertEqual(api_errors[0],
                          "User does not have permission to create a contact.",
-                         msg="Unexpected error msg: %s " % contact_errors[0])
+                         msg="Unexpected error msg: %s " % api_errors[0])
 
     def test_partner_permission(self):
         """
@@ -457,17 +462,16 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             data = {'request': json.dumps(self.request_data)}
         )
         parsed_content = json.loads(response.content)
-        partner_errors = [i['message'] for i in
-                          parsed_content['form_errors']['partner']]
+        api_errors = parsed_content['api_errors']
 
-        self.assertEqual(len(partner_errors), 1,
+        self.assertEqual(len(api_errors), 1,
                          msg="Expected 1 error in partner form, got %s, "
-                             "errors: %s" % (len(partner_errors),
-                                             ', '.join(partner_errors)))
+                             "errors: %s" % (len(api_errors),
+                                             ', '.join(api_errors)))
 
-        self.assertEqual(partner_errors[0],
+        self.assertEqual(api_errors[0],
                          "User does not have permission to create a partner.",
-                         msg="Unexpected error msg: %s " % partner_errors[0])
+                         msg="Unexpected error msg: %s " % api_errors[0])
 
 
         self.check_status_code_and_objects(response, 400, 0)
@@ -494,9 +498,9 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         self.assertEqual(len(objects_created), expected_count,
                          msg="unexpected behavior, status code %s but objects "
                              "created: %s, missing: %s" %
-                                                 (expected_code,
-                                                 ', '.join(objects_created),
-                                                 ', '.join(objects_missing)))
+                             (expected_code,
+                              ', '.join(objects_created),
+                              ', '.join(objects_missing)))
 
     def check_objects_created(self):
         """
