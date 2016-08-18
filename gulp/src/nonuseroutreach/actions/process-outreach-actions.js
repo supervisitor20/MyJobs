@@ -54,7 +54,7 @@ export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
 export const saveContactAction = createAction('NUO_SAVE_CONTACT');
 
 /**
- * User wants to see a the new partner.
+ * User wants to edit selected partner.
  */
 export const editPartnerAction = createAction('NUO_EDIT_PARTNER');
 
@@ -71,6 +71,22 @@ export const editContactAction = createAction('NUO_EDIT_CONTACT',
  */
 export const editCommunicationRecordAction =
   createAction('NUO_EDIT_COMMUNICATIONRECORD');
+
+/**
+ * User wants to remove partner from the record
+ */
+export const deletePartnerAction = createAction('NUO_DELETE_PARTNER');
+
+/**
+ * User wants to remove contact from the record
+ *
+ * contactIndex: which one
+ */
+export const deleteContactAction = createAction('NUO_DELETE_CONTACT',
+  contactIndex => ({contactIndex}));
+
+export const deleteCommunicationRecordAction =
+  createAction('NUO_DELETE_COMMUNICATIONRECORD');
 
 /**
  * User edited a form.

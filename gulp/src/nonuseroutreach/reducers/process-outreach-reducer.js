@@ -1,5 +1,5 @@
 import {handleActions} from 'redux-actions';
-import {get} from 'lodash-compat';
+import {isEmpty, get} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -148,10 +148,57 @@ export default handleActions({
     };
   },
 
+
   'NUO_EDIT_COMMUNICATIONRECORD': (state) => {
     return {
       ...state,
       state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
+  'NUO_DELETE_PARTNER': (state) => {
+    const newContacts = state.record.contacts.filter(contact => !contact.pk);
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        partner: {},
+        contacts: newContacts,
+      },
+      state: 'SELECT_PARTNER',
+    };
+  },
+
+  'NUO_DELETE_CONTACT': (state, action) => {
+    const {contactIndex} = action.payload;
+    const splicedContacts = state.record.contacts.slice();
+    let stateAssign = state.state;
+    splicedContacts.splice(contactIndex, 1);
+    if (isEmpty(splicedContacts)) {
+      if (isEmpty(state.record.partner)) {
+        stateAssign = 'SELECT_PARTNER';
+      } else {
+        stateAssign = 'SELECT_CONTACT';
+      }
+    }
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        contacts: splicedContacts,
+      },
+      state: stateAssign,
+    };
+  },
+
+
+  'NUO_DELETE_COMMUNICATIONRECORD': (state) => {
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        communicationrecord: {},
+      },
     };
   },
 

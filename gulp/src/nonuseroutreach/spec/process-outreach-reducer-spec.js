@@ -1,5 +1,4 @@
 import reducer, {defaultState} from '../reducers/process-outreach-reducer';
-
 import {
   resetProcessAction,
   choosePartnerAction,
@@ -13,6 +12,9 @@ import {
   editPartnerAction,
   editContactAction,
   editCommunicationRecordAction,
+  deletePartnerAction,
+  deleteContactAction,
+  deleteCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
@@ -270,4 +272,76 @@ describe('handling editCommunicationRecordAction', () => {
   it('should switch state', () => {
     expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
   });
+});
+
+describe('handling deleteContactAction', () => {
+  const result = reducer({
+    record: {
+      contacts:[{pk: 3}, {pk: 4}],
+    },
+    state:'oldstate',
+  }, deleteContactAction(0));
+
+  it ('should remove contact by index', () => {
+    expect(result.record.contacts).toEqual([{pk: 4}]);
+  });
+
+  it ('should leave state alone if there are > 1 contacts', () => {
+    expect(result.state).toEqual('oldstate');
+  });
+
+  const result2 = reducer({
+    record: {
+      partner: {},
+      contacts: ['item1'],
+    },
+    state:'oldstate',
+  }, deleteContactAction(0));
+
+  it ('should direct to select partner if last contact and partner = {}',
+    () => { expect(result2.state).toEqual('SELECT_PARTNER') });
+
+  it ('should allow last contact to be removed', () => {
+  expect(result2.record.contacts).toEqual([]);
+  });
+
+  const result3 = reducer({
+    record: {
+      partner: {pk: '1'},
+      contacts: ['item1'],
+    },
+    state:'oldstate',
+  }, deleteContactAction(0));
+
+  it ('should direct to select contact if last contact and partner exists',
+    () => { expect(result3.state).toEqual('SELECT_CONTACT') });
+});
+
+describe('handling deletePartnerAction', () => {
+  const result = reducer({
+    record: {
+      partner: {pk: 1},
+      contacts: [{pk: 1}, {pk: ''}],
+    },
+    state: 'oldstate',
+  }, deletePartnerAction(0));
+
+  it ('should remove partner', () => {
+  expect(result.record.partner).toEqual({});
+
+  it ('should remove any selected contacts that are linked to that partner'),
+    () => {expect(result.record.contacts).toEqual([{pk: ''}])};
+
+  it ('should redirect to select partner afterward'), () => {
+    expect(result.state).toEqual('SELECT_PARTNER');
+  };});
+});
+
+describe('handling deleteCommunicationRecordAction', () => {
+  const result = reducer({record: {communicationrecord: {stuff:'stuff'}}},
+    deleteCommunicationRecordAction());
+
+  it ('should delete communication record'), () => {
+    expect(result.record.communicationrecord).toEqual({});
+  }
 });

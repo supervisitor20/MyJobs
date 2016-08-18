@@ -4,7 +4,11 @@ import OutreachCard from 'nonuseroutreach/components/OutreachCard';
 import {isEmpty, map, filter} from 'lodash-compat';
 import {
   editPartnerAction,
+  deletePartnerAction,
   editContactAction,
+  deleteContactAction,
+  editCommunicationRecordAction,
+  deleteCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 
@@ -41,7 +45,8 @@ class OutreachCardContainer extends Component {
         key={index}
         displayText={contact.name}
         type="contact"
-        onNav={() => dispatch(editContactAction(index))}/>
+        onNav={() => dispatch(editContactAction(index))}
+        onDel={() => dispatch(deleteContactAction(index))} />
     );
   }
 
@@ -53,14 +58,18 @@ class OutreachCardContainer extends Component {
         key="partner"
         type="partner"
         displayText={partner.partnername}
-        onNav={() => dispatch(editPartnerAction())}/>
+        onNav={() => dispatch(editPartnerAction())}
+        onDel={() => dispatch(deletePartnerAction())} />
     );
   }
 
   handleCommunicationRecord(communicationRecord) {
+    const {dispatch} = this.props;
     return (<OutreachCard displayText={communicationRecord}
                           type="communicationrecord"
-                          key="commrec" />);
+                          key="commrec"
+                          onNav={() => dispatch(editCommunicationRecordAction())}
+                          onDel={() => dispatch(deleteCommunicationRecordAction())}/>);
   }
 
   render() {
