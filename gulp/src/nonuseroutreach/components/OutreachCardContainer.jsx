@@ -40,7 +40,7 @@ class OutreachCardContainer extends Component {
     return (
       <OutreachCard
         key={index}
-        displayText={contact.name}
+        displayText={contact.name.value}
         type="contact"
         onNav={() => dispatch(editContactAction(index))}/>
     );
@@ -53,7 +53,7 @@ class OutreachCardContainer extends Component {
       <OutreachCard
         key="partner"
         type="partner"
-        displayText={partner.partnername}
+        displayText={partner.name.value}
         onNav={() => dispatch(editPartnerAction())}/>
     );
   }
@@ -61,7 +61,7 @@ class OutreachCardContainer extends Component {
   handleCommunicationRecord(communicationRecord) {
     const {dispatch} = this.props;
 
-    return (<OutreachCard displayText={communicationRecord.contact_type}
+    return (<OutreachCard displayText={communicationRecord.contact_type.value}
                           type="contactrecord"
                           onNav={() =>
                             dispatch(editCommunicationRecordAction())}
@@ -78,10 +78,15 @@ class OutreachCardContainer extends Component {
   }
 }
 
+OutreachCardContainer.defaultProps = {
+  contacts: [],
+};
+
 OutreachCardContainer.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  partner: PropTypes.object.isRequired,
-  contacts: PropTypes.array.isRequired,
+  partner: PropTypes.object,
+  contacts: PropTypes.array,
+  communicationrecord: PropTypes.object,
 };
 
 export default connect(state => ({

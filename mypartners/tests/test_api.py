@@ -218,7 +218,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                     "name": {'value': "James B"},
                     "data_source": {'value': "email"},
                     "uri": {'value': "http://www.example.com"},
-                    "tags": {'value': [a_tag.pk]},
+                    "tags": [{'pk': {'value': a_tag.pk}}],
                     "owner": {'value': self.company.pk},
                 },
                 "contacts": [
@@ -236,7 +236,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                             "country_code": {'value': "1"},
                             "label": {'value': "new place"},
                             },
-                        "tags": {'value': [a_tag.pk]},
+                        "tags": [{'pk': {'value': a_tag.pk}}],
                         "notes": {'value': "long note left here"},
                     },
                     {
@@ -255,7 +255,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                     "job_applications": {'value': "20"},
                     "job_interviews": {'value': "10"},
                     "job_hires": {'value': "0"},
-                    "tags": {'value': []},
+                    "tags": [],
                 }
             }
         }
@@ -272,6 +272,21 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             data = {'request': json.dumps(self.request_data)}
         )
         self.check_status_code_and_objects(response, 200, 7)
+
+    def test_create_tag(self):
+        """
+        Create a new tag as part of conversion.
+        """
+        self.request_data['forms']['partner']['tags'].append(
+            {'pk': {'value': ''}, 'name': {'value': 'SOMENEWTAG'}})
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data={'request': json.dumps(self.request_data)}
+        )
+        self.check_status_code_and_objects(response, 200, 7)
+        partner = Partner.objects.filter(name="James B").first()
+        partner_tags = list(partner.tags.all())
+        self.assertEqual('SOMENEWTAG', partner_tags[-1].name)
 
     def test_outreach_conversion_api_validate_only(self):
         """

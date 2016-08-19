@@ -149,6 +149,8 @@ def collapse_values(data):
     for (k, v) in data.iteritems():
         if isinstance(v, dict) and 'value' in data[k]:
             result[k] = v['value']
+        elif isinstance(v, list):
+            result[k] = [collapse_values(inner) for inner in v]
         else:
             result[k] = collapse_values(v)
     return result
@@ -164,7 +166,8 @@ class IsolatedFormValidator(object):
 
     def note_field_error(self, field_name, message):
         self.parent.note_has_form_errors()
-        field = self.form_root[field_name]
+        field = self.form_root.get(field_name, {})
         if 'errors' not in field:
             field['errors'] = []
         field['errors'].append(message)
+        self.form_root[field_name] = field

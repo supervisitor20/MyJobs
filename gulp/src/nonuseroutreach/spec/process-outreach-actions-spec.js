@@ -6,6 +6,7 @@ import {
   resetProcessAction,
   convertOutreach,
   extractErrorObject,
+  formatContact,
 } from '../actions/process-outreach-actions';
 
 import {promiseTest} from '../../common/spec';
@@ -122,5 +123,47 @@ describe('extractErrorObject', () => {
       a: 'aa',
       b: 'bb',
     });
+  });
+});
+
+describe('formatContact', () => {
+  it('moves location data', () => {
+    const contact = {
+      pk: {value: ''},
+      name: {value: 'a'},
+      email: {value: 'b'},
+      phone: {value: 'c'},
+      address_line_one: {value: 'd'},
+      address_line_two: {value: 'e'},
+      city: {value: 'f'},
+      state: {value: 'g'},
+      label: {value: 'h'},
+      tags: [],
+      notes: {value: 'i'},
+    };
+    expect(formatContact(contact)).toDiffEqual({
+      pk: {value: ''},
+      name: {value: 'a'},
+      email: {value: 'b'},
+      phone: {value: 'c'},
+      location: {
+        pk: {value: ''},
+        address_line_one: {value: 'd'},
+        address_line_two: {value: 'e'},
+        city: {value: 'f'},
+        state: {value: 'g'},
+        label: {value: 'h'},
+      },
+      tags: [],
+      notes: {value: 'i'},
+    });
+  });
+
+  it('leaves out location when linking', () => {
+    const contact = {
+      pk: {value: 333},
+      name: {value: 'a'},
+    };
+    expect(formatContact(contact)).toDiffEqual({pk: {value: 333}});
   });
 });

@@ -4,6 +4,11 @@ import RemoteFormField from 'common/ui/RemoteFormField';
 import Card from './Card';
 
 class Form extends Component {
+  getValue(formContents, fieldName) {
+    const valueData = formContents[fieldName] || {};
+    return valueData.value;
+  }
+
   render() {
     const {
       form,
@@ -22,7 +27,7 @@ class Form extends Component {
         key={fieldName}
         form={localForm}
         fieldName={fieldName}
-        value={formContents[fieldName] || ''}
+        value={this.getValue(formContents, fieldName)}
         onChange={e => onEdit(fieldName, e.target.value)}/>
     ));
 

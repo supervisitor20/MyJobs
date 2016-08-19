@@ -102,13 +102,71 @@ class TestFormsApiValidator(TestCase):
                         'city': {'value': 'somewhere'},
                     },
                 },
+                'contacts': [
+                    {'name': {'value': 'alice'}},
+                    {'name': {'value': 'bob'}},
+                ]
             },
         })
-        isolated_validator = validator.isolate_validator('partner')
+        partner_validator = validator.isolate_validator('partner')
         self.assertEqual({
             'name': 'someone',
             'zip': '90000',
             'location': {
                 'city': 'somewhere',
             },
-        }, isolated_validator.get_values())
+        }, partner_validator.get_values())
+
+        alice_validator = validator.isolate_validator('contacts', 0)
+        self.assertEqual({'name': 'alice'}, alice_validator.get_values())
+
+        bob_validator = validator.isolate_validator('contacts', 1)
+        self.assertEqual({'name': 'bob'}, bob_validator.get_values())
+
+    def test_list_of_links(self):
+        '''
+        We can handle nested lists of linked objects in get_values
+        '''
+        validator = FormsApiValidator({
+            'forms': {
+                'partner': {
+                    'name': {'value': 'someone'},
+                    'tags': [
+                        {'pk': {'value': 1}},
+                        {'pk': {'value': 2}},
+                    ],
+                },
+            },
+        })
+        partner_validator = validator.isolate_validator('partner')
+        self.assertEqual({
+            'name': 'someone',
+            'tags': [{'pk': 1}, {'pk': 2}],
+        }, partner_validator.get_values())
+
+    def test_note_missing_field(self):
+        '''
+        We can isolate a particular form and work on it.
+        '''
+        validator = FormsApiValidator({
+            'forms': {
+                'partner': {
+                    'zip': {'value': '90000'},
+                },
+            },
+        })
+        self.assertEqual(False, validator.has_errors())
+        partner_validator = validator.isolate_validator('partner')
+
+        partner_validator.note_field_error('city', 'missing field city')
+
+        self.assertEqual(True, validator.has_errors())
+        self.assertEqual({
+            'api_errors': [],
+            'forms': {
+                'partner': {
+                    'zip': {'value': '90000'},
+                    'city': {'errors': ['missing field city']},
+                },
+            },
+        }, validator.build_document())

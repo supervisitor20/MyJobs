@@ -160,6 +160,34 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Move fields of contact objects around to make the api happy.
+ */
+export function formatContact(contact) {
+  if (contact.pk.value) {
+    return {
+      pk: contact.pk,
+    };
+  }
+  return {
+    pk: {value: ''},
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    location: {
+      pk: {value: ''},
+      address_line_one: contact.address_line_one,
+      address_line_two: contact.address_line_two,
+      city: contact.city,
+      state: contact.state,
+      label: contact.label,
+    },
+    // TODO: fix tags
+    tags: [],
+    notes: contact.notes,
+  }
+}
+
+/**
  * Submit data to create a communication record.
  */
 export function doSubmit(validateOnly) {
@@ -169,31 +197,16 @@ export function doSubmit(validateOnly) {
       const record = process.record;
       const workflowStates = await api.getWorkflowStates();
       const reviewed = find(workflowStates, s => s.name === 'Complete');
-      const request = {
+      const forms = {
         outreachrecord: {
-          pk: process.outreachId,
-          current_workflow_state: reviewed.id,
+          pk: {value: process.outreachId},
+          current_workflow_state: {value: reviewed.id},
         },
         partner: record.partner,
-        contacts: map(record.contacts, c => ({
-          pk: '',
-          name: c.name,
-          email: c.email,
-          phone: c.phone,
-          location: {
-            pk: '',
-            address_line_one: c.address_line_one,
-            address_line_two: c.address_line_two,
-            city: c.city,
-            state: c.state,
-            label: c.label,
-          },
-          // TODO: fix tags
-          tags: [],
-          notes: c.notes,
-        })),
+        contacts: map(record.contacts, c => formatContact(c)),
         contactrecord: record.communicationrecord,
       };
+      const request = {forms};
       await api.submitContactRecord(request, validateOnly);
       // TODO: do something with response.
     } catch (e) {

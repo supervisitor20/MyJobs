@@ -229,7 +229,6 @@ ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
-  partnerName: PropTypes.string,
   partnerId: PropTypes.any,
   partnerFormContents: PropTypes.object.isRequired,
   contactFormsContents: PropTypes.arrayOf(
@@ -240,19 +239,18 @@ ProcessRecordPage.propTypes = {
   contactsErrors: PropTypes.objectOf(PropTypes.string),
   communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
   workflowState: PropTypes.number,
-  workflowStates: PropTypes.shape({
-    value: PropTypes.number.isRequired,
-    display: PropTypes.string.isRequired,
-  }).isRequired,
+  workflowStates: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired,
 };
 
 export default connect(state => ({
   outreachId: state.process.outreachId,
   processState: state.process.state,
-  partnerName: get(state.process, 'record.partner.partnername'),
-  partnerId: get(state.process, 'record.partner.pk'),
-  contactName: get(state.process, 'contact.name'),
-  contactId: state.process.contactId,
+  partnerId: get(state.process, 'record.partner.pk.value'),
   contactIndex: state.process.contactIndex,
   partnerFormContents: state.process.record.partner,
   contactFormsContents: state.process.record.contacts,

@@ -1937,12 +1937,12 @@ def api_convert_outreach_record(request):
         tags = []
         try:
             for tag in tags_list:
-                try:
-                    tag_pk = int(tag)
+                if 'pk' in tag and tag['pk']:
+                    tag_pk = int(tag['pk'])
                     tag_object = Tag.objects.get(pk=tag_pk)
-                except ValueError:
+                elif 'name' in tag:
                     tag_object = Tag(
-                        name=tag, company=user_company,
+                        name=tag['name'], company=user_company,
                         created_by=request.user)
                 tags.append(tag_object)
             return tags
