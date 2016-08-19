@@ -99,6 +99,73 @@ class ApiValidator(object):
 
 
 class FormsApiValidator(object):
+    """
+    Record request errors for communication to a client in a standard form.
+
+    Intended for use in Django views. Construct this object, record errors
+    found, then return the error response if there are errors.
+
+    Example:
+        def some_api_view(request):
+            validator = FormsApiValidator({
+                'forms': {
+                    'partner': {
+                        'name': {'value': 'Outreach Co.'},
+                        'address': {'value': '...'},
+                    },
+                    'contacts': [
+                        {
+                            'name': {'value': 'Alice'},
+                        },
+                        {
+                            'name': {'value': 'Bob'},
+                        },
+                    ],
+                },
+            })
+
+            # note top level errors
+            validator.note_api_error('Something is wrong...')
+
+            # take apart request and note errors
+            partner_validator = validator.isolate_validator('partner')
+            partner_validator.note_field_error('name', 'Do not punctuate')
+
+            # deeper paths
+            partner_validator = validator.isolate_validator('contact', 0)
+            partner_validator.note_field_error('name', 'Letter A forbidden.')
+
+
+            if validator.has_errors():
+                # if we found any errors, bail with this error response.
+                return validator.build_error_response()
+
+            Error response will be a copy of the input document annotated
+            with errors. e.g.:
+            {
+                'api_errors': ['Something is wrong...'],
+                'forms': {
+                    'partner': {
+                        'name': {
+                            'value': 'Outreach Co.',
+                            'errors': ['Do not punctuate'],
+                        },
+                        'address': {'value': '...'},
+                    },
+                    'contacts': [
+                        {
+                            'name': {
+                                'value': 'Alice',
+                                'errors': ['Letter A forbidden'],
+                            },
+                        },
+                        {
+                            'name': {'value': 'Bob'},
+                        },
+                    ],
+                },
+            }
+    """
     def __init__(self, input_doc):
         self.input_doc = input_doc
         self.output_doc = deepcopy(input_doc)
@@ -107,18 +174,31 @@ class FormsApiValidator(object):
         self.has_form_errors = False
 
     def forms(self):
+        """
+        Set of names of forms in the request.
+        """
         return set(self.output_doc['forms'].keys())
 
     def note_has_form_errors(self):
         self.has_form_errors = True
 
     def has_errors(self):
+        """
+        Have we found any errors?
+        """
         return self.has_form_errors or bool(self.output_doc['api_errors'])
 
     def note_api_error(self, error):
+        """
+        Note a top level api error.
+        """
         self.output_doc['api_errors'].append(error)
 
     def build_document(self):
+        """
+        Build just the data structures for the error response.
+
+        """
         return self.output_doc
 
     def descend(self, form_path):
@@ -128,15 +208,30 @@ class FormsApiValidator(object):
         return isolated
 
     def isolate_validator(self, *form_path):
+        """
+        Get an isolated validator for the form found at the given path.
+        Path can be arbitrarily deep and contain strings for dict keys and
+        ints for list indicies.
+        """
         isolated = self.descend(form_path)
         return IsolatedFormValidator(isolated, self)
 
     def iter_validators(self, *form_path):
+        """
+        For cases where we have lists of similar forms under a key,
+        iterate through each one, yielding an isolated validator for each
+        one.
+        """
         iterable = self.descend(form_path)
         for isolated in iterable:
             yield IsolatedFormValidator(isolated, self)
 
     def build_error_response(self):
+        """
+        Send an error response to a client.
+
+        For an example see class docstring.
+        """
         resp = HttpResponse(content_type='application/json',
                             content=json.dumps(self.output_doc))
         resp.status_code = 400
@@ -145,6 +240,15 @@ class FormsApiValidator(object):
 
 
 def collapse_values(data):
+    """
+    Convert deep hiearchies of objects like: {
+        'name': {'value': 'Alice',
+    }
+
+    to:
+
+    {'name': 'Alice'}
+    """
     result = {}
     for (k, v) in data.iteritems():
         if isinstance(v, dict) and 'value' in data[k]:
@@ -157,14 +261,23 @@ def collapse_values(data):
 
 
 class IsolatedFormValidator(object):
+    """Validator pertaining to just a portion of a FormsApiValidator"""
     def __init__(self, form_root, parent):
         self.form_root = form_root
         self.parent = parent
 
     def get_values(self):
+        """
+        Get data with values stripped of {'value': ...} wrappers.
+
+        see collapse_values
+        """
         return collapse_values(self.form_root)
 
     def note_field_error(self, field_name, message):
+        """
+        Note an error on a field in this validator.
+        """
         self.parent.note_has_form_errors()
         field = self.form_root.get(field_name, {})
         if 'errors' not in field:
