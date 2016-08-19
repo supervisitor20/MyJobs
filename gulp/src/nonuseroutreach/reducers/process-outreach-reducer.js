@@ -237,12 +237,12 @@ export default handleActions({
     };
   },
 
-  'NUO_NOTE_ERRORS': (state, action) => {
-    const errors = action.payload;
+  'NUO_NOTE_FORMS': (state, action) => {
+    const record = action.payload;
 
     return {
       ...state,
-      errors,
+      record,
     };
   },
 }, defaultState);

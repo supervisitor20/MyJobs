@@ -10,7 +10,7 @@ import {
   savePartnerAction,
   saveContactAction,
   saveCommunicationRecordAction,
-  noteErrorsAction,
+  noteFormsAction,
   editPartnerAction,
   editContactAction,
   editCommunicationRecordAction,
@@ -234,11 +234,11 @@ describe('handling saveCommunicationRecordAction', () => {
   });
 });
 
-describe('handling noteErrorsAction', () => {
-  const result = reducer({}, noteErrorsAction({1: 2}));
+describe('handling noteFormsAction', () => {
 
-  it('should place errors', () => {
-    expect(result.errors).toEqual({1: 2});
+  it('should replace the whole record', () => {
+    const result = reducer({record: {3: 4}}, noteFormsAction({1: 2}));
+    expect(result.record).toEqual({1: 2});
   });
 });
 

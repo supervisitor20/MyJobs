@@ -127,13 +127,11 @@ class ProcessRecordPage extends Component {
     const {
       dispatch,
       communicationRecordFormContents,
-      communicationRecordErrors,
     } = this.props;
 
     return (
       <Form
         form={communicationRecordForm}
-        errors={communicationRecordErrors}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
@@ -145,12 +143,11 @@ class ProcessRecordPage extends Component {
   }
 
   renderNewPartner() {
-    const {dispatch, partnerFormContents, partnerErrors} = this.props;
+    const {dispatch, partnerFormContents} = this.props;
 
     return (
       <Form
         form={partnerForm}
-        errors={partnerErrors}
         title="Partner Data"
         submitTitle="Add Partner"
         formContents={partnerFormContents}
@@ -235,9 +232,6 @@ ProcessRecordPage.propTypes = {
     PropTypes.object.isRequired).isRequired,
   contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
-  partnerErrors: PropTypes.objectOf(PropTypes.string),
-  contactsErrors: PropTypes.objectOf(PropTypes.string),
-  communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
   workflowState: PropTypes.number,
   workflowStates: PropTypes.arrayOf(
     PropTypes.shape({
@@ -256,10 +250,6 @@ export default connect(state => ({
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
     state.process.record.communicationrecord,
-  partnerErrors: get(state.process, 'errors.partner', {}),
-  contactsErrors: get(state.process, 'errors.contacts', {}),
-  communicationRecordErrors:
-    get(state.process, 'errors.communicationrecord', {}),
   workflowState:
     get(state.process.record, 'outreachrecord.current_workflow_state.value'),
   workflowStates: state.process.workflowStates,

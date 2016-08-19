@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {map} from 'lodash-compat/collection';
+import {assign} from 'lodash-compat/object';
 import RemoteFormField from 'common/ui/RemoteFormField';
 import Card from './Card';
 
@@ -17,9 +18,11 @@ class Form extends Component {
       submitTitle,
       onSubmit,
       onEdit,
-      errors,
     } = this.props;
 
+    const errors = assign({},
+      ...map(formContents, (v, k) =>
+        ({[k]: v.errors})));
     const localForm = {...form, errors};
 
     const fields = map(localForm.orderedFields, fieldName => (
@@ -27,7 +30,7 @@ class Form extends Component {
         key={fieldName}
         form={localForm}
         fieldName={fieldName}
-        value={this.getValue(formContents, fieldName)}
+        value={this.getValue(formContents, fieldName) || ''}
         onChange={e => onEdit(fieldName, e.target.value)}/>
     ));
 
@@ -43,13 +46,8 @@ class Form extends Component {
   }
 }
 
-Form.defaultProps = {
-  errors: {},
-};
-
 Form.propTypes = {
   form: PropTypes.object.isRequired,
-  errors: PropTypes.objectOf(PropTypes.string),
   formContents: PropTypes.object.isRequired,
   title: PropTypes.string.isRequired,
   submitTitle: PropTypes.string.isRequired,

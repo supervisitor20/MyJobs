@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty, map, filter} from 'lodash-compat';
+import {isEmpty, map, filter, get} from 'lodash-compat';
 import {
   editPartnerAction,
   editContactAction,
@@ -40,7 +40,7 @@ class OutreachCardContainer extends Component {
     return (
       <OutreachCard
         key={index}
-        displayText={contact.name.value}
+        displayText={get(contact, 'name.value')}
         type="contact"
         onNav={() => dispatch(editContactAction(index))}/>
     );
@@ -53,7 +53,7 @@ class OutreachCardContainer extends Component {
       <OutreachCard
         key="partner"
         type="partner"
-        displayText={partner.name.value}
+        displayText={get(partner, 'name.value')}
         onNav={() => dispatch(editPartnerAction())}/>
     );
   }
@@ -61,11 +61,14 @@ class OutreachCardContainer extends Component {
   handleCommunicationRecord(communicationRecord) {
     const {dispatch} = this.props;
 
-    return (<OutreachCard displayText={communicationRecord.contact_type.value}
-                          type="contactrecord"
-                          onNav={() =>
-                            dispatch(editCommunicationRecordAction())}
-                          key="commrec" />);
+    return (
+      <OutreachCard
+        displayText={get(communicationRecord, 'contact_type.value', 'unknown')}
+        type="contactrecord"
+        onNav={() =>
+          dispatch(editCommunicationRecordAction())}
+        key="commrec" />
+    );
   }
 
   render() {
