@@ -2019,6 +2019,11 @@ def api_convert_outreach_record(request):
         validator.note_api_error('data object not provided')
         return validator.build_error_response()
 
+    if 'forms' not in data_object:
+        validator = FormsApiValidator({})
+        validator.note_api_error('forms key missing')
+        return validator.build_error_response()
+
     try:
         data_object = json.loads(data_object)
     except (TypeError, ValueError):

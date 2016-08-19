@@ -384,6 +384,20 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         )
         self.check_status_code_and_objects(response, 400, 0)
 
+    def test_outreach_api_no_forms_key(self):
+        """
+        Test that we catch the lack of a forms key.
+
+        """
+        for (key, value) in self.request_data['forms'].iteritems():
+            self.request_data[key] = value
+        del self.request_data['forms']
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data={'request': json.dumps(self.request_data)}
+        )
+        self.check_status_code_and_objects(response, 400, 0)
+
     def test_outreach_api_invalid_data(self):
         """
         Test that the outreach conversion API does nothing if given invalid
