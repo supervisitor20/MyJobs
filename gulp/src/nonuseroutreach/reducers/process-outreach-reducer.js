@@ -22,6 +22,7 @@ const defaultState = {
  *
  *  outreach: information for the current outreach record
  *  outreachId: id for the current outreach record
+ *  workflowStates: list of known workflow states {value:.., display:..}
  *  contactIndex: if editing a contact, which one is the user concerned with?
  *  form: when editing, information for the form fields
  *  record: The record which will be submitted {

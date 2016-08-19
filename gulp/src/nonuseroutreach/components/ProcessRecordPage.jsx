@@ -261,6 +261,6 @@ export default connect(state => ({
   communicationRecordErrors:
     get(state.process, 'errors.communicationrecord', {}),
   workflowState:
-    get(state.process.record, 'outreachrecord.current_workflow_state'),
+    get(state.process.record, 'outreachrecord.current_workflow_state.value'),
   workflowStates: state.process.workflowStates,
 }))(ProcessRecordPage);

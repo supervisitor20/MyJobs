@@ -184,7 +184,7 @@ export function formatContact(contact) {
     // TODO: fix tags
     tags: [],
     notes: contact.notes,
-  }
+  };
 }
 
 /**
@@ -195,12 +195,10 @@ export function doSubmit(validateOnly) {
     try {
       const process = getState().process;
       const record = process.record;
-      const workflowStates = await api.getWorkflowStates();
-      const reviewed = find(workflowStates, s => s.name === 'Complete');
       const forms = {
         outreachrecord: {
+          ...record.outreachrecord,
           pk: {value: process.outreachId},
-          current_workflow_state: {value: reviewed.id},
         },
         partner: record.partner,
         contacts: map(record.contacts, c => formatContact(c)),
