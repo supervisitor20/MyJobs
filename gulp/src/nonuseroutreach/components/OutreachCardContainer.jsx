@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
 import {isEmpty, map, filter} from 'lodash-compat';
 import {
+  determineProcessStateAction,
   editPartnerAction,
   deletePartnerAction,
   editContactAction,
@@ -46,7 +47,10 @@ class OutreachCardContainer extends Component {
         displayText={contact.name}
         type="contact"
         onNav={() => dispatch(editContactAction(index))}
-        onDel={() => dispatch(deleteContactAction(index))} />
+        onDel={() => {
+          dispatch(deleteContactAction(index));
+          dispatch(determineProcessStateAction());
+        }} />
     );
   }
 
@@ -59,11 +63,14 @@ class OutreachCardContainer extends Component {
         type="partner"
         displayText={partner.partnername}
         onNav={() => dispatch(editPartnerAction())}
-        onDel={() => dispatch(deletePartnerAction())} />
+        onDel={() => {
+          dispatch(deletePartnerAction());
+          dispatch(determineProcessStateAction());
+        }} />
     );
   }
 
-  handleCommunicationRecord(communicationRecord) {
+  handleCommunicationRecord() {
     const {dispatch} = this.props;
     return (<OutreachCard displayText="Communication Record"
                           type="communicationrecord"

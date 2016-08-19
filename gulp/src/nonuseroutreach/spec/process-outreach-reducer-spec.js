@@ -1,6 +1,7 @@
 import reducer, {defaultState} from '../reducers/process-outreach-reducer';
 import {
   resetProcessAction,
+  determineProcessStateAction,
   choosePartnerAction,
   chooseContactAction,
   newPartnerAction,
@@ -49,10 +50,6 @@ describe('processEmailReducer', () => {
       {record: {partner: {}}},
       choosePartnerAction(4, 'acme'));
 
-    it('should set the right state', () => {
-      expect(result.state).toEqual('SELECT_CONTACT');
-    });
-
     it('should have the partner id', () => {
       expect(result.record.partner.pk).toEqual(4);
     });
@@ -75,10 +72,6 @@ describe('processEmailReducer', () => {
       },
     };
     const result = reducer(state, chooseContactAction(3, 'bob'));
-
-    it('should set the right state', () => {
-      expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
-    });
 
     it('should have the previous contacts', () => {
       expect(result.record.contacts[0]).toEqual(state.record.contacts[0]);
@@ -202,30 +195,6 @@ describe('processEmailReducer', () => {
   });
 });
 
-describe('handling savePartnerAction', () => {
-  const result = reducer({}, savePartnerAction());
-
-  it('should have the right state', () => {
-    expect(result.state).toEqual('SELECT_CONTACT');
-  });
-});
-
-describe('handling saveContactAction', () => {
-  const result = reducer({}, saveContactAction());
-
-  it('should have the right state', () => {
-    expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
-  });
-});
-
-describe('handling saveCommunicationRecordAction', () => {
-  const result = reducer({}, saveCommunicationRecordAction());
-
-  it('should have the right state', () => {
-    expect(result.state).toEqual('SELECT_WORKFLOW_STATE');
-  });
-});
-
 describe('handling noteErrorsAction', () => {
   const result = reducer({}, noteErrorsAction({1: 2}));
 
@@ -293,42 +262,11 @@ describe('handling deleteContactAction', () => {
     record: {
       contacts:[{pk: 3}, {pk: 4}],
     },
-    state:'oldstate',
   }, deleteContactAction(0));
 
   it ('should remove contact by index', () => {
     expect(result.record.contacts).toEqual([{pk: 4}]);
   });
-
-  it ('should leave state alone if there are > 1 contacts', () => {
-    expect(result.state).toEqual('oldstate');
-  });
-
-  const result2 = reducer({
-    record: {
-      partner: {},
-      contacts: ['item1'],
-    },
-    state:'oldstate',
-  }, deleteContactAction(0));
-
-  it ('should direct to select partner if last contact and partner = {}',
-    () => { expect(result2.state).toEqual('SELECT_PARTNER') });
-
-  it ('should allow last contact to be removed', () => {
-  expect(result2.record.contacts).toEqual([]);
-  });
-
-  const result3 = reducer({
-    record: {
-      partner: {pk: '1'},
-      contacts: ['item1'],
-    },
-    state:'oldstate',
-  }, deleteContactAction(0));
-
-  it ('should direct to select contact if last contact and partner exists',
-    () => { expect(result3.state).toEqual('SELECT_CONTACT') });
 });
 
 describe('handling deletePartnerAction', () => {
@@ -337,25 +275,58 @@ describe('handling deletePartnerAction', () => {
       partner: {pk: 1},
       contacts: [{pk: 1}, {pk: ''}],
     },
-    state: 'oldstate',
   }, deletePartnerAction(0));
 
   it ('should remove partner', () => {
-  expect(result.record.partner).toEqual({});
+    expect(result.record.partner).toEqual({});
+  })
 
-  it ('should remove any selected contacts that are linked to that partner'),
-    () => {expect(result.record.contacts).toEqual([{pk: ''}])};
+  it ('should remove any selected contacts that are linked to that partner',
+    () => { expect(result.record.contacts).toEqual([{pk: ''}])
+  });
 
-  it ('should redirect to select partner afterward'), () => {
-    expect(result.state).toEqual('SELECT_PARTNER');
-  };});
 });
 
 describe('handling deleteCommunicationRecordAction', () => {
   const result = reducer({record: {communicationrecord: {stuff:'stuff'}}},
     deleteCommunicationRecordAction());
 
-  it ('should delete communication record'), () => {
+  it ('should delete communication record', () => {
     expect(result.record.communicationrecord).toEqual({});
+  });
+});
+
+describe('handling determineProcessStateAction', () => {
+  let originalState = {
+      partner: {pk:1},
+      contacts: [{pk:1}, {pk:2}],
+      communicationrecord: {this:'that'},
   }
+  describe('without a partner' , () => {
+    const result = reducer(
+      {record: {...originalState, partner:{}}},
+      determineProcessStateAction());
+
+    it ('should direct to SELECT_PARTNER', () => {
+      expect(result.state).toEqual('SELECT_PARTNER');
+    })
+  });
+  describe('without any contacts but with a partner' , () => {
+    const result = reducer(
+      {record: {...originalState, contacts:[]}},
+      determineProcessStateAction());
+
+    it ('should direct to SELECT_CONTACT', () => {
+      expect(result.state).toEqual('SELECT_CONTACT');
+    })
+  });
+  describe('without a comm rec but with a partner and contacts' , () => {
+    const result = reducer(
+      {record: {...originalState, communicationrecord:{}}},
+      determineProcessStateAction());
+
+    it ('should direct to NEW_COMMUNICATIONRECORD', () => {
+      expect(result.state).toEqual('NEW_COMMUNICATIONRECORD');
+    })
+  });
 });

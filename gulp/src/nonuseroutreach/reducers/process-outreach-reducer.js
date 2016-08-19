@@ -44,12 +44,28 @@ export default handleActions({
     };
   },
 
+  'NUO_DETERMINE_STATE': (state) => {
+    let currentState;
+    if (isEmpty(state.record.partner)) {
+      currentState = 'SELECT_PARTNER';
+    } else if (isEmpty(state.record.contacts)) {
+      currentState = 'SELECT_CONTACT';
+    } else if (isEmpty(state.record.communicationrecord)) {
+      currentState = 'NEW_COMMUNICATIONRECORD';
+    } else {
+      currentState = 'SELECT_WORKFLOW_STATE';
+    }
+    return {
+      ...state,
+      state: currentState,
+    };
+  },
+
   'NUO_CHOOSE_PARTNER': (state, action) => {
     const {name, partnerId} = action.payload;
 
     return {
       ...state,
-      state: 'SELECT_CONTACT',
       record: {
         ...state.record,
         partner: {
@@ -65,7 +81,6 @@ export default handleActions({
 
     return {
       ...state,
-      state: 'NEW_COMMUNICATIONRECORD',
       record: {
         ...state.record,
         contacts: [
@@ -166,29 +181,20 @@ export default handleActions({
         partner: {},
         contacts: newContacts,
       },
-      state: 'SELECT_PARTNER',
     };
   },
 
   'NUO_DELETE_CONTACT': (state, action) => {
     const {contactIndex} = action.payload;
     const splicedContacts = state.record.contacts.slice();
-    let stateAssign = state.state;
     splicedContacts.splice(contactIndex, 1);
-    if (isEmpty(splicedContacts)) {
-      if (isEmpty(state.record.partner)) {
-        stateAssign = 'SELECT_PARTNER';
-      } else {
-        stateAssign = 'SELECT_CONTACT';
-      }
-    }
+
     return {
       ...state,
       record: {
         ...state.record,
         contacts: splicedContacts,
       },
-      state: stateAssign,
     };
   },
 
@@ -247,27 +253,6 @@ export default handleActions({
           [field]: value,
         },
       },
-    };
-  },
-
-  'NUO_SAVE_PARTNER': (state) => {
-    return {
-      ...state,
-      state: 'SELECT_CONTACT',
-    };
-  },
-
-  'NUO_SAVE_CONTACT': (state) => {
-    return {
-      ...state,
-      state: 'NEW_COMMUNICATIONRECORD',
-    };
-  },
-
-  'NUO_SAVE_COMMUNICATIONRECORD': (state) => {
-    return {
-      ...state,
-      state: 'SELECT_WORKFLOW_STATE',
     };
   },
 
