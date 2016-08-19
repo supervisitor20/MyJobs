@@ -1,9 +1,11 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
+import {getDisplayForValue} from 'common/array.js';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import Card from './Card';
 import Form from './Form';
 import SearchDrop from './SearchDrop';
+import Select from 'common/ui/Select';
 import {get} from 'lodash-compat/object';
 
 import {
@@ -19,6 +21,7 @@ import {
   newContactAction,
   savePartnerAction,
   saveContactAction,
+  saveCommunicationRecordAction,
   editFormAction,
   doSubmit,
 } from '../actions/process-outreach-actions';
@@ -46,6 +49,33 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     dispatch(newContactAction(obj.display));
+  }
+
+  async handleSavePartner() {
+    const {dispatch} = this.props;
+
+    await dispatch(doSubmit(true));
+    dispatch(savePartnerAction());
+  }
+
+  async handleSaveContact() {
+    const {dispatch} = this.props;
+
+    await dispatch(doSubmit(true));
+    dispatch(saveContactAction());
+  }
+
+  async handleSaveCommunicationRecord() {
+    const {dispatch} = this.props;
+
+    await dispatch(doSubmit(true));
+    dispatch(saveCommunicationRecordAction());
+  }
+
+  async handleSubmit() {
+    const {dispatch} = this.props;
+
+    await dispatch(doSubmit());
   }
 
   renderCard(title, children) {
@@ -109,10 +139,7 @@ class ProcessRecordPage extends Component {
         formContents={communicationRecordFormContents}
         onEdit={(n, v) =>
           dispatch(editFormAction('communicationrecord', n, v))}
-        onSubmit={async () => {
-          await dispatch(doSubmit(true));
-          dispatch(doSubmit());
-        }}
+        onSubmit={() => this.handleSaveCommunicationRecord()}
         />
     );
   }
@@ -128,10 +155,7 @@ class ProcessRecordPage extends Component {
         submitTitle="Add Partner"
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
-        onSubmit={async () => {
-          await dispatch(doSubmit(true));
-          dispatch(savePartnerAction());
-        }}
+        onSubmit={() => this.handleSavePartner()}
         />
     );
   }
@@ -148,11 +172,35 @@ class ProcessRecordPage extends Component {
         formContents={contactFormContents}
         onEdit={(n, v) =>
           dispatch(editFormAction('contacts', n, v, contactIndex))}
-        onSubmit={async () => {
-          await dispatch(doSubmit(true));
-          dispatch(saveContactAction());
-        }}
+        onSubmit={() => this.handleSaveContact()}
         />
+    );
+  }
+
+  renderSelectWorkflow() {
+    const {dispatch,
+      workflowState,
+      workflowStates,
+    } = this.props;
+
+    return (
+      <Card title="Form Ready for Submission">
+        <FieldWrapper label="Workflow Status">
+          <Select
+            name="workflow"
+            value={getDisplayForValue(workflowStates, workflowState)}
+            choices={workflowStates}
+            onChange={e => dispatch(
+              editFormAction(
+                'outreachrecord',
+                'current_workflow_state',
+                e.target.value))}
+            />
+        </FieldWrapper>
+        <button onClick={() => this.handleSubmit()}>
+          Submit
+        </button>
+      </Card>
     );
   }
 
@@ -169,7 +217,10 @@ class ProcessRecordPage extends Component {
       return this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
       return this.renderNewContact();
+    } else if (processState === 'SELECT_WORKFLOW_STATE') {
+      return this.renderSelectWorkflow();
     }
+
     return <span/>;
   }
 }
@@ -188,6 +239,11 @@ ProcessRecordPage.propTypes = {
   partnerErrors: PropTypes.objectOf(PropTypes.string),
   contactsErrors: PropTypes.objectOf(PropTypes.string),
   communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
+  workflowState: PropTypes.number,
+  workflowStates: PropTypes.shape({
+    value: PropTypes.number.isRequired,
+    display: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default connect(state => ({
@@ -206,4 +262,7 @@ export default connect(state => ({
   contactsErrors: get(state.process, 'errors.contacts', {}),
   communicationRecordErrors:
     get(state.process, 'errors.communicationrecord', {}),
+  workflowState:
+    get(state.process.record, 'outreachrecord.current_workflow_state'),
+  workflowStates: state.process.workflowStates,
 }))(ProcessRecordPage);

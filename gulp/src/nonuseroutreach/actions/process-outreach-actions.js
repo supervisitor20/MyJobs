@@ -4,10 +4,19 @@ import {find, map} from 'lodash-compat/collection';
 import {get, assign} from 'lodash-compat/object';
 
 /**
+ * We have learned about workflow states.
+ *
+ * states: e.g. [{value: nn, display: Reviewed}]
+ */
+export const receivedWorkflowStates =
+  createAction('NUO_RECEIVED_WORKFLOW_STATES');
+
+/**
  * We have a new search field or we are starting over.
  */
 export const resetProcessAction = createAction('NUO_RESET_PROCESS',
-  (outreachId, outreach) => ({outreachId, outreach}));
+  (outreachId, outreach, workflowStates) =>
+    ({outreachId, outreach, workflowStates}));
 
 /**
  * Use chose a partner.
@@ -54,7 +63,13 @@ export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
 export const saveContactAction = createAction('NUO_SAVE_CONTACT');
 
 /**
- * User wants to edit selected partner.
+ * User is done editing the communication record.
+ */
+export const saveCommunicationRecordAction =
+  createAction('NUO_SAVE_COMMUNICATIONRECORD');
+
+/**
+ * User wants to see a the new partner.
  */
 export const editPartnerAction = createAction('NUO_EDIT_PARTNER');
 
@@ -125,7 +140,14 @@ export function convertOutreach(record) {
 export const noteErrorsAction = createAction('NUO_NOTE_ERRORS');
 
 /**
- * Start the process by loading an outreach record.
+ * Convert [{id: vv, name: nn}, ...] to [{value: vv, display: nn}]
+ */
+export function convertWorkflowStates(states) {
+  return map(states, s => ({value: s.id, display: s.name}));
+}
+
+/**
+ * Start the process by loading an outreach record and workflow states.
  *
  * outreachId: id for the outreach to load.
  */
@@ -133,7 +155,12 @@ export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
       const outreach = await api.getOutreach(outreachId);
-      dispatch(resetProcessAction(outreachId, convertOutreach(outreach)));
+      const states = await api.getWorkflowStates();
+      dispatch(
+        resetProcessAction(
+          outreachId,
+          convertOutreach(outreach),
+          convertWorkflowStates(states)));
     } catch (e) {
       dispatch(errorAction(e.message));
     }

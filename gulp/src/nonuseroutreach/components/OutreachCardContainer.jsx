@@ -65,7 +65,7 @@ class OutreachCardContainer extends Component {
 
   handleCommunicationRecord(communicationRecord) {
     const {dispatch} = this.props;
-    return (<OutreachCard displayText={communicationRecord}
+    return (<OutreachCard displayText="Communication Record"
                           type="communicationrecord"
                           key="commrec"
                           onNav={() => dispatch(editCommunicationRecordAction())}
@@ -91,5 +91,5 @@ OutreachCardContainer.propTypes = {
 export default connect(state => ({
   partner: state.process.record.partner,
   contacts: state.process.record.contacts,
-  // communication record..
+  communicationrecord: state.process.record.communicationrecord,
 }))(OutreachCardContainer);

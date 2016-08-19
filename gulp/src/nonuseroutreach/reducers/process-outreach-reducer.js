@@ -33,13 +33,14 @@ const defaultState = {
  */
 export default handleActions({
   'NUO_RESET_PROCESS': (state, action) => {
-    const {outreach, outreachId} = action.payload;
+    const {outreach, outreachId, workflowStates} = action.payload;
 
     return {
       ...defaultState,
       state: 'SELECT_PARTNER',
       outreach,
       outreachId,
+      workflowStates,
     };
   },
 
@@ -260,6 +261,13 @@ export default handleActions({
     return {
       ...state,
       state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
+  'NUO_SAVE_COMMUNICATIONRECORD': (state) => {
+    return {
+      ...state,
+      state: 'SELECT_WORKFLOW_STATE',
     };
   },
 
