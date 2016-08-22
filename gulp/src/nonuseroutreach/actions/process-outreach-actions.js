@@ -248,7 +248,7 @@ export function doSubmit(validateOnly) {
         pk: {value: process.outreachId},
       },
     };
-    const forms = formsToApi(withOutreach)
+    const forms = formsToApi(withOutreach);
     try {
       const request = {forms};
       await api.submitContactRecord(request, validateOnly);
