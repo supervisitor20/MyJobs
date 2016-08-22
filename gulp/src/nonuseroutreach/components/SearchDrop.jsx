@@ -16,12 +16,13 @@ import {
 } from 'nonuseroutreach/actions/search-or-add-actions';
 
 export default class SearchDrop extends Component {
-  constructor(props) {
+  constructor() {
     super();
 
-    const {dispatch, instance} = props;
-    this.debouncedOnSearch = typingDebounce(() =>
-        dispatch(doSearch(instance)));
+    this.debouncedOnSearch = typingDebounce(() => {
+      const {dispatch, instance, extraParams} = this.props;
+      dispatch(doSearch(instance, extraParams));
+    });
     this.liRefs = {};
     this.movedByKeyboard = false;
     this.mouseInControl = false;
@@ -86,7 +87,7 @@ export default class SearchDrop extends Component {
       onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
     } else if (onAdd) {
-      const result = {value: null, display: searchString};
+      const result = {value: '', display: searchString};
       onAdd(result);
       dispatch(searchResultSelectedAction(instance, result));
     }
@@ -157,6 +158,9 @@ export default class SearchDrop extends Component {
               className={classnames(
                   {'active': i === activeIndex})}>
               {result.display}
+              <span className="partner-count">
+                ({result.count} contacts)
+              </span>
             </li>
           ))}
         </ul>
@@ -312,6 +316,7 @@ export default class SearchDrop extends Component {
 
 SearchDrop.defaultProps = {
   searchString: '',
+  extraParams: {},
 };
 
 SearchDrop.propTypes = {
@@ -329,6 +334,7 @@ SearchDrop.propTypes = {
     display: PropTypes.string.isRequired,
   }),
   activeIndex: PropTypes.number,
+  extraParams: PropTypes.object,
   onAdd: PropTypes.func,
   onSelect: PropTypes.func.isRequired,
 };

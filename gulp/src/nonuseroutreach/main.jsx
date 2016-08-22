@@ -16,6 +16,7 @@ import NonUserOutreachRouter from './components/NonUserOutreachRouter';
 import loadingReducer, {
   initialLoading,
 } from '../common/reducers/loading-reducer';
+import errorReducer from '../common/reducers/error-reducer';
 import {
   initialInboxes,
   inboxManagementReducer,
@@ -29,6 +30,7 @@ import {
   recordManagementReducer,
 } from './reducers/record-management-reducer';
 import searchReducer from './reducers/search-or-add-reducer';
+import processEmailReducer from './reducers/process-outreach-reducer';
 import {
   resetSearchOrAddAction,
 } from './actions/search-or-add-actions';
@@ -42,7 +44,9 @@ const reducer = combineReducers({
   records: recordManagementReducer,
   navigation: navigationReducer,
   loading: loadingReducer,
+  errors: errorReducer,
   search: searchReducer,
+  process: processEmailReducer,
 });
 
 // state to pass to our reducer when the app starts

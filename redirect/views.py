@@ -52,9 +52,10 @@ def home(request, guid, vsid=None, debug=None):
     cleaned_guid = helpers.clean_guid(guid_redirect.guid).upper()
 
     analytics = {
-        'gu': cleaned_guid, 've': '1.0', 'vs': vsid, 'ia': 'uk', 'ev': 'rd',
-        'cp': 'uk', 'tm': 'r', 'mo': '0',
-        'ua': request.META.get('HTTP_USER_AGENT', '')
+        'gu': cleaned_guid.lower(), 've': '1.0', 'vs': vsid, 'ia': 'uk',
+        'ev': 'rd', 'cp': 'uk', 'tm': 'r', 'mo': 0,
+        'ua': request.META.get('HTTP_USER_AGENT', ''),
+        'ip': request.META.get('HTTP_X_REAL_IP', '')
     }
 
     syndication_params = {'request': request, 'redirect': guid_redirect,
@@ -156,33 +157,39 @@ def home(request, guid, vsid=None, debug=None):
                                             request.get_host(),
                                             aguid)
 
-    if redirect_url and not expired:
-        # If redirect_url has a value and expired does not, we're probably
-        # going to redirect somewhere useful.
-        parsed = urlparse(redirect_url)
-        pn = parsed.path
-        pr = parsed.scheme + ':'
-        hn = parsed.netloc
-        se = parsed.query
-        if se:
-            se = '?' + se
-    else:
-        # If redirect_url is blank or expired has a value, we're staying on the
-        # my.jobs domain. We may show a "job expired" page, Open Graph info, or
-        # something else.
-        hn = request.get_host()
-        pr = request.is_secure() and 'https:' or 'http:'
-        pn = request.path
-        se = request.META.get('QUERY_STRING', '')
-        if se:
-            se = '?' + se
-    analytics.update({
+        if not expired:
+            # If expired has a value, we're staying on the my.jobs domain and
+            # showing an expired job page. If not, we're probably going
+            # to an external site.
+            parsed = urlparse(redirect_url)
+            pn = parsed.path
+            pr = parsed.scheme + ':'
+            hn = parsed.netloc
+            se = parsed.query
+            if se:
+                se = '?' + se
+        else:
+            hn = request.get_host()
+            pr = "https:" if request.is_secure() else "http:"
+            pn = request.path
+            se = request.META.get('QUERY_STRING', '')
+            if se:
+                se = '?' + se
+
         # Python doesn't have a method of easily creating a timestamp with
-        # Zulu at the end. Remove the timezone from this datetime (which would
-        # result in appending "+00:00") and append "Z".
-        'to': now.replace(tzinfo=None).isoformat() + 'Z', 'referrer': request.META.get('HTTP_REFERER', ''),
-        'pn': pn, 'pr': pr, 'hn': hn, 'se': se})
-    response['X-JSON-Header'] = json.dumps(analytics)
+        # Zulu at the end. Remove the timezone and append "Z".
+        now_iso = now.replace(tzinfo=None).isoformat() + 'Z'
+
+        nv = request.COOKIES.get('de_nv') or now_iso
+        response.set_cookie('de_nv', nv, expires=30*60,
+                            domain=request.get_host())
+        analytics.update({
+            # Python tacks microseconds onto the end while JavaScript does
+            # milliseconds. JS can handle parsing both, as can python-dateutil.
+            'to': now_iso, 'referrer': request.META.get('HTTP_REFERER', ''),
+            'pn': pn, 'pr': pr, 'hn': hn, 'se': se, 'nv': nv})
+
+        response['X-JSON-Header'] = json.dumps(analytics)
 
     if debug and not user_agent_vs:
         data = {'debug_content': debug_content}

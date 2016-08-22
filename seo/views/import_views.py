@@ -12,8 +12,8 @@ import logging
 # Our Imports
 from seo import helpers
 from seo.decorators import sns_json_message
-from tasks import task_check_solr_count, task_etl_to_solr, task_update_solr,\
-    task_priority_etl_to_solr,task_jobsfs_to_mongo, task_seoxml_to_mongo
+from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr,task_jobsfs_to_mongo, \
+    task_seoxml_to_mongo
 
 
 
@@ -93,12 +93,6 @@ def confirm_load_jobs_from_etl(response):
             if jsid.lower() in blocked_jsids:
                 logger.info("Ignoring sns for %s", jsid)
                 return None
-
-            # Setup a check on this business unit down the road.
-            if 'count' in msg:
-                logger.info("Creating check_solr_count task (%s, %s)"%(buid, msg['count']))
-                eta=timezone.now() + timedelta(minutes=20)
-                task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
 
             logger.info("Creating ETL Task (%s, %s, %s)"%(jsid, buid, name))
             if int(prio)==1:
