@@ -252,11 +252,18 @@ def collapse_values(data):
     result = {}
     for (k, v) in data.iteritems():
         if isinstance(v, dict) and 'value' in v:
+            # We are looking at a value dictionary.
             result[k] = v['value']
         elif isinstance(v, list):
+            # We are looking at a list of collapsible items.
             result[k] = [collapse_values(inner) for inner in v]
-        else:
+        elif isinstance(v, dict):
+            # Keep descending. This is an embedded dict of value dicts.
             result[k] = collapse_values(v)
+        else:
+            raise ValueError(
+                'Expected key %s to be a valid root of form data. got %r'
+                % (k, v))
     return result
 
 
