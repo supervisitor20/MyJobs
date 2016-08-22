@@ -173,6 +173,8 @@ export default handleActions({
   },
 
   'NUO_DELETE_PARTNER': (state) => {
+    // filter out contacts with a PK (i.e. existing contacts that would be
+    // linked to the soon-to-be-removed parter
     const newContacts = state.record.contacts.filter(contact => !contact.pk);
     return {
       ...state,

@@ -90,6 +90,10 @@ export const deletePartnerAction = createAction('NUO_DELETE_PARTNER');
 export const deleteContactAction = createAction('NUO_DELETE_CONTACT',
   contactIndex => ({contactIndex}));
 
+/**
+ * User wants to remove the communication record object
+ */
+
 export const deleteCommunicationRecordAction =
   createAction('NUO_DELETE_COMMUNICATIONRECORD');
 
