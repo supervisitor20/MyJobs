@@ -255,7 +255,7 @@ export function doSubmit(validateOnly) {
       // TODO: do something with response.
     } catch (e) {
       if (e.data) {
-        const apiErrors = e.data.forms;
+        const apiErrors = e.data.api_errors;
         if (apiErrors) {
           dispatch(errorAction(apiErrors[0]));
         }
