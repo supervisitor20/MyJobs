@@ -1997,8 +1997,9 @@ def api_convert_outreach_record(request):
                 return_object = target_model(**data_dict)
                 return_object.full_clean()
             except ValidationError as ve:
-                for key, value in ve.message_dict.iteritems():
-                    class_validator.note_field_error(key, value)
+                for key, messages in ve.message_dict.iteritems():
+                    for message in messages:
+                        class_validator.note_field_error(key, message)
             except TypeError as te:
                 validator.note_api_error(
                     "erroneous field detected in data dict: %s for %s"
@@ -2091,9 +2092,10 @@ def api_convert_outreach_record(request):
                 "User does not have permission to create a contact.")
         # parse locations for contact, create where necessary
         if contact_location and not contact_pk:
+            location_validator = contact_validator.get_subvalidator('location')
             location_pk = contact_location.pop('pk', None)
             contact_info['location'] = return_or_create_object(
-                Location, location_pk, validator, contact_validator,
+                Location, location_pk, validator, location_validator,
                 contact_location, 'contacts')
         elif not contact_pk:
             validator.note_api_error("Location object missing from contact")

@@ -152,21 +152,36 @@ class TestFormsApiValidator(TestCase):
             'forms': {
                 'partner': {
                     'zip': {'value': '90000'},
+                    'location': {
+                        'state': {'value': 'NO'},
+                    },
                 },
             },
         })
         self.assertEqual(False, validator.has_errors())
         partner_validator = validator.isolate_validator('partner')
 
-        partner_validator.note_field_error('city', 'missing field city')
+        partner_validator.note_field_error('zip', 'must be odd')
+        location_validator = partner_validator.get_subvalidator('location')
+        location_validator.note_field_error('city', 'missing field city')
+        location_validator.note_field_error('state', 'not there')
 
         self.assertEqual(True, validator.has_errors())
         self.assertEqual({
             'api_errors': [],
             'forms': {
                 'partner': {
-                    'zip': {'value': '90000'},
-                    'city': {'errors': ['missing field city']},
+                    'zip': {
+                        'value': '90000',
+                        'errors': ['must be odd'],
+                        },
+                    'location': {
+                        'state': {
+                            'value': 'NO',
+                            'errors': ['not there'],
+                        },
+                        'city': {'errors': ['missing field city']},
+                    },
                 },
             },
         }, validator.build_document())

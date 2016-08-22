@@ -284,3 +284,7 @@ class IsolatedFormValidator(object):
             field['errors'] = []
         field['errors'].append(message)
         self.form_root[field_name] = field
+
+    def get_subvalidator(self, key):
+        """Get a validator for a subform within this one"""
+        return IsolatedFormValidator(self.form_root[key], self.parent)

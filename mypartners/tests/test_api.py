@@ -388,6 +388,43 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         self.contact = Contact.objects.get(id=self.contact.id)
         self.assertEqual(self.contact.notes, "first part\nnew notes")
 
+    def test_outreach_api_contact_errors(self):
+        """
+        Test that errors are in the right places when processing contacts
+
+        """
+        self.request_data['forms']['contacts'][0] = {
+            'location': {
+                'pk': {'value': ''},
+            },
+        }
+        response = self.client.post(
+            reverse('api_convert_outreach_record'),
+            data={'request': json.dumps(self.request_data)}
+        )
+        self.check_status_code_and_objects(response, 400, 0)
+        output_doc = json.loads(response.content)
+        self.assert_in_message(
+            'blank', output_doc, 'forms', 'contacts', 0, 'name')
+        self.assert_in_message(
+            'blank', output_doc, 'forms', 'contacts', 0, 'location', 'city')
+        self.assert_in_message(
+            'blank', output_doc, 'forms', 'contacts', 0, 'location', 'state')
+
+
+    def assert_in_message(self, expected, root, *path):
+        try:
+            ref = root
+            for p in path:
+                ref = ref[p]
+        except KeyError:
+            self.fail("Could not follow path %r, failed at %s" % (path, p))
+
+        self.assertTrue(
+            any(expected in m for m in ref['errors']),
+            "%s should appear in %r" % (expected, ref['errors']))
+
+
     def test_outreach_api_no_data(self):
         """
         Test that the outreach conversion API does nothing if not given a
