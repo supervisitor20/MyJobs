@@ -251,7 +251,7 @@ def collapse_values(data):
     """
     result = {}
     for (k, v) in data.iteritems():
-        if isinstance(v, dict) and 'value' in data[k]:
+        if isinstance(v, dict) and 'value' in v:
             result[k] = v['value']
         elif isinstance(v, list):
             result[k] = [collapse_values(inner) for inner in v]
