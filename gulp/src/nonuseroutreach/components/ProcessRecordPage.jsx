@@ -197,7 +197,7 @@ class ProcessRecordPage extends Component {
                 e.target.value))}
             />
         </FieldWrapper>
-        <button onClick={() => this.handleSubmit()}>
+        <button className="nuo-button" onClick={() => this.handleSubmit()}>
           Submit
         </button>
       </Card>
@@ -207,21 +207,30 @@ class ProcessRecordPage extends Component {
   render() {
     const {processState} = this.props;
 
+    var contents = ""
+
     if (processState === 'SELECT_PARTNER') {
-      return this.renderInitialSearch();
+      contents = this.renderInitialSearch();
     } else if (processState === 'SELECT_CONTACT') {
-      return this.renderSelectContact();
+      contents = this.renderSelectContact();
     } else if (processState === 'NEW_COMMUNICATIONRECORD') {
-      return this.renderNewCommunicationRecord();
+      contents = this.renderNewCommunicationRecord();
     } else if (processState === 'NEW_PARTNER') {
-      return this.renderNewPartner();
+      contents = this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
-      return this.renderNewContact();
+      contents = this.renderNewContact();
     } else if (processState === 'SELECT_WORKFLOW_STATE') {
-      return this.renderSelectWorkflow();
+      contents = this.renderSelectWorkflow();
     }
 
-    return <span/>;
+    return (
+      <div>
+        <button className="nuo-button">
+          <a href="/prm/view/nonuseroutreach/#/records">Back to record list</a>
+        </button>
+        {contents}
+      </div>
+    )
   }
 }
 
