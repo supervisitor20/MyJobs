@@ -254,6 +254,9 @@ def collapse_values(data):
         if isinstance(v, dict) and 'value' in v:
             # We are looking at a value dictionary.
             result[k] = v['value']
+        elif isinstance(v, dict) and 'errors' in v:
+            # We are looking at a dictionary with only errors in it.
+            pass
         elif isinstance(v, list):
             # We are looking at a list of collapsible items.
             result[k] = [collapse_values(inner) for inner in v]

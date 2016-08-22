@@ -100,6 +100,7 @@ class TestFormsApiValidator(TestCase):
                     'zip': {'value': '90000'},
                     'location': {
                         'city': {'value': 'somewhere'},
+                        'state': {'errors': ['not here']},
                     },
                 },
                 'contacts': [
