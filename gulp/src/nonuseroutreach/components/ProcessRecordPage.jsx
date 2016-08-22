@@ -207,7 +207,7 @@ class ProcessRecordPage extends Component {
   render() {
     const {processState} = this.props;
 
-    var contents = ""
+    let contents = '';
 
     if (processState === 'SELECT_PARTNER') {
       contents = this.renderInitialSearch();
