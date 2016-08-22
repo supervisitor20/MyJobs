@@ -230,7 +230,7 @@ class ProcessRecordPage extends Component {
         </button>
         {contents}
       </div>
-    )
+    );
   }
 }
 
