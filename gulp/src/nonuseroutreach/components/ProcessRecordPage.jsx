@@ -15,13 +15,11 @@ import {
 } from 'nonuseroutreach/forms';
 
 import {
+  determineProcessStateAction,
   choosePartnerAction,
   chooseContactAction,
   newPartnerAction,
   newContactAction,
-  savePartnerAction,
-  saveContactAction,
-  saveCommunicationRecordAction,
   editFormAction,
   doSubmit,
 } from '../actions/process-outreach-actions';
@@ -31,12 +29,14 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
+    dispatch(determineProcessStateAction());
   }
 
   async handleChooseContact(obj) {
     const {dispatch} = this.props;
 
     dispatch(chooseContactAction(obj.value, obj.display));
+    dispatch(determineProcessStateAction());
   }
 
   async handleNewPartner(obj) {
@@ -55,21 +55,21 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(savePartnerAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSaveContact() {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(saveContactAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(saveCommunicationRecordAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSubmit() {
