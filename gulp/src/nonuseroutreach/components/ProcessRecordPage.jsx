@@ -15,13 +15,11 @@ import {
 } from 'nonuseroutreach/forms';
 
 import {
+  determineProcessStateAction,
   choosePartnerAction,
   chooseContactAction,
   newPartnerAction,
   newContactAction,
-  savePartnerAction,
-  saveContactAction,
-  saveCommunicationRecordAction,
   editFormAction,
   doSubmit,
 } from '../actions/process-outreach-actions';
@@ -31,12 +29,14 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
+    dispatch(determineProcessStateAction());
   }
 
   async handleChooseContact(obj) {
     const {dispatch} = this.props;
 
     dispatch(chooseContactAction(obj.value, obj.display));
+    dispatch(determineProcessStateAction());
   }
 
   async handleNewPartner(obj) {
@@ -55,21 +55,21 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(savePartnerAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSaveContact() {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(saveContactAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
-    dispatch(saveCommunicationRecordAction());
+    dispatch(determineProcessStateAction());
   }
 
   async handleSubmit() {
@@ -194,7 +194,7 @@ class ProcessRecordPage extends Component {
                 e.target.value))}
             />
         </FieldWrapper>
-        <button onClick={() => this.handleSubmit()}>
+        <button className="nuo-button" onClick={() => this.handleSubmit()}>
           Submit
         </button>
       </Card>
@@ -204,21 +204,30 @@ class ProcessRecordPage extends Component {
   render() {
     const {processState} = this.props;
 
+    let contents = '';
+
     if (processState === 'SELECT_PARTNER') {
-      return this.renderInitialSearch();
+      contents = this.renderInitialSearch();
     } else if (processState === 'SELECT_CONTACT') {
-      return this.renderSelectContact();
+      contents = this.renderSelectContact();
     } else if (processState === 'NEW_COMMUNICATIONRECORD') {
-      return this.renderNewCommunicationRecord();
+      contents = this.renderNewCommunicationRecord();
     } else if (processState === 'NEW_PARTNER') {
-      return this.renderNewPartner();
+      contents = this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
-      return this.renderNewContact();
+      contents = this.renderNewContact();
     } else if (processState === 'SELECT_WORKFLOW_STATE') {
-      return this.renderSelectWorkflow();
+      contents = this.renderSelectWorkflow();
     }
 
-    return <span/>;
+    return (
+      <div>
+        <button className="nuo-button">
+          <a href="/prm/view/nonuseroutreach/#/records">Back to record list</a>
+        </button>
+        {contents}
+      </div>
+    );
   }
 }
 

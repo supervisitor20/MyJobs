@@ -3,9 +3,13 @@ import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
 import {isEmpty, map, filter, get} from 'lodash-compat';
 import {
+  determineProcessStateAction,
   editPartnerAction,
+  deletePartnerAction,
   editContactAction,
+  deleteContactAction,
   editCommunicationRecordAction,
+  deleteCommunicationRecordAction,
 } from '../actions/process-outreach-actions';
 
 
@@ -42,7 +46,11 @@ class OutreachCardContainer extends Component {
         key={index}
         displayText={get(contact, 'name.value')}
         type="contact"
-        onNav={() => dispatch(editContactAction(index))}/>
+        onNav={() => dispatch(editContactAction(index))}
+        onDel={() => {
+          dispatch(deleteContactAction(index));
+          dispatch(determineProcessStateAction());
+        }} />
     );
   }
 
@@ -54,19 +62,24 @@ class OutreachCardContainer extends Component {
         key="partner"
         type="partner"
         displayText={get(partner, 'name.value')}
-        onNav={() => dispatch(editPartnerAction())}/>
+        onNav={() => dispatch(editPartnerAction())}
+        onDel={() => {
+          dispatch(deletePartnerAction());
+          dispatch(determineProcessStateAction());
+        }} />
     );
   }
 
-  handleCommunicationRecord(communicationRecord) {
-    const {dispatch} = this.props;
+  handleCommunicationRecord() {
+    const {dispatch, communicationrecord} = this.props;
 
     return (
       <OutreachCard
-        displayText={get(communicationRecord, 'contact_type.value', 'unknown')}
-        type="contactrecord"
+        displayText={get(communicationrecord, 'contact_type.value', 'unknown')}
+        type="communicationrecord"
         onNav={() =>
           dispatch(editCommunicationRecordAction())}
+        onDel={() => dispatch(deleteCommunicationRecordAction())}
         key="commrec" />
     );
   }

@@ -18,6 +18,12 @@ export const receivedWorkflowStates =
   createAction('NUO_RECEIVED_WORKFLOW_STATES');
 
 /**
+ *  Determine what the state of the process view should be
+ */
+export const determineProcessStateAction =
+  createAction('NUO_DETERMINE_STATE');
+
+/**
  * We have a new search field or we are starting over.
  */
 export const resetProcessAction = createAction('NUO_RESET_PROCESS',
@@ -59,22 +65,6 @@ export const newContactAction = createAction('NUO_NEW_CONTACT',
     (contactName) => ({contactName}));
 
 /**
- * User is done editing a new partner.
- */
-export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
-
-/**
- * User is done editing a new contact.
- */
-export const saveContactAction = createAction('NUO_SAVE_CONTACT');
-
-/**
- * User is done editing a new contact.
- */
-export const saveCommunicationRecordAction =
-  createAction('NUO_SAVE_COMMUNICATIONRECORD');
-
-/**
  * User wants to see a the new partner.
  */
 export const editPartnerAction = createAction('NUO_EDIT_PARTNER');
@@ -92,6 +82,26 @@ export const editContactAction = createAction('NUO_EDIT_CONTACT',
  */
 export const editCommunicationRecordAction =
   createAction('NUO_EDIT_COMMUNICATIONRECORD');
+
+/**
+ * User wants to remove partner from the record
+ */
+export const deletePartnerAction = createAction('NUO_DELETE_PARTNER');
+
+/**
+ * User wants to remove contact from the record
+ *
+ * contactIndex: which one
+ */
+export const deleteContactAction = createAction('NUO_DELETE_CONTACT',
+  contactIndex => ({contactIndex}));
+
+/**
+ * User wants to remove the communication record object
+ */
+
+export const deleteCommunicationRecordAction =
+  createAction('NUO_DELETE_COMMUNICATIONRECORD');
 
 /**
  * User edited a form.
