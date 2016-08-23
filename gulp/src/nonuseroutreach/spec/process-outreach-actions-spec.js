@@ -284,20 +284,27 @@ describe('formsToApi', () => {
   it('formats contact forms', () => {
     const flatContact = {
       pk: {value: ''},
-      name: {value: 'a'},
+      name: {value: 'a', errors: ['a']},
       email: {value: 'e'},
       phone: {value: 'p'},
-      address_line_one: {value: 'a1'},
+      address_line_one: {value: 'a1', errors: ['a']},
       address_line_two: {value: 'a2'},
       label: {value: 'll'},
       city: {value: 'f'},
       state: {value: 'g'},
       notes: {value: 'n'},
     };
-    const partner = {1: 2};
+    const hasErrors = {
+      name: {
+        value: 'someone',
+        errors: ['b'],
+      },
+    };
     const input = {
-      partner,
+      partner: hasErrors,
       contacts: [flatContact, flatContact],
+      outreachrecord: hasErrors,
+      communicationrecord: hasErrors,
     };
     const output = formsToApi(input);
     const contact = {
@@ -316,11 +323,14 @@ describe('formsToApi', () => {
       tags: [],
       notes: {value: 'n'},
     };
+    const noErrors = {
+      name: {value: 'someone'},
+    };
     expect(output).toDiffEqual({
-      outreachrecord: {},
-      partner,
+      outreachrecord: noErrors,
+      partner: noErrors,
       contacts: [contact, contact],
-      contactrecord: {},
+      contactrecord: noErrors,
     });
   });
 

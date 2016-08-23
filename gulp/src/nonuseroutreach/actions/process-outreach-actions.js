@@ -1,6 +1,13 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {map, flatten, assign} from 'lodash-compat';
+import {
+  map,
+  flatten,
+  assign,
+  omit,
+  mapValues,
+  isPlainObject,
+} from 'lodash-compat';
 
 /**
  * We have learned about workflow states.
@@ -159,6 +166,13 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object with the "errors" key removed.
+ */
+function omitErrors(obj) {
+  return mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+}
+
+/**
  * Move fields of contact objects around to make the api happy.
  */
 export function formatContact(contact) {
@@ -167,23 +181,23 @@ export function formatContact(contact) {
       pk: contact.pk,
     };
   }
-  return {
+  return omitErrors({
     pk: {value: ''},
     name: contact.name,
     email: contact.email,
     phone: contact.phone,
-    location: {
+    location: omitErrors({
       pk: {value: ''},
       address_line_one: contact.address_line_one,
       address_line_two: contact.address_line_two,
       city: contact.city,
       state: contact.state,
       label: contact.label,
-    },
+    }),
     // TODO: fix tags
     tags: [],
     notes: contact.notes,
-  };
+  });
 }
 
 /**
@@ -227,10 +241,10 @@ export function formsFromApi(forms) {
  */
 export function formsToApi(forms) {
   return {
-    outreachrecord: {...forms.outreachrecord},
-    partner: {...forms.partner},
+    outreachrecord: omitErrors({...forms.outreachrecord}),
+    partner: omitErrors({...forms.partner}),
     contacts: map(forms.contacts, c => formatContact(c)),
-    contactrecord: {...forms.communicationrecord},
+    contactrecord: omitErrors({...forms.communicationrecord}),
   };
 }
 
