@@ -127,13 +127,11 @@ class ProcessRecordPage extends Component {
     const {
       dispatch,
       communicationRecordFormContents,
-      communicationRecordErrors,
     } = this.props;
 
     return (
       <Form
         form={communicationRecordForm}
-        errors={communicationRecordErrors}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
@@ -145,12 +143,11 @@ class ProcessRecordPage extends Component {
   }
 
   renderNewPartner() {
-    const {dispatch, partnerFormContents, partnerErrors} = this.props;
+    const {dispatch, partnerFormContents} = this.props;
 
     return (
       <Form
         form={partnerForm}
-        errors={partnerErrors}
         title="Partner Data"
         submitTitle="Add Partner"
         formContents={partnerFormContents}
@@ -238,40 +235,31 @@ ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
-  partnerName: PropTypes.string,
   partnerId: PropTypes.any,
   partnerFormContents: PropTypes.object.isRequired,
   contactFormsContents: PropTypes.arrayOf(
     PropTypes.object.isRequired).isRequired,
   contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
-  partnerErrors: PropTypes.objectOf(PropTypes.string),
-  contactsErrors: PropTypes.objectOf(PropTypes.string),
-  communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
   workflowState: PropTypes.number,
-  workflowStates: PropTypes.shape({
-    value: PropTypes.number.isRequired,
-    display: PropTypes.string.isRequired,
-  }).isRequired,
+  workflowStates: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired,
 };
 
 export default connect(state => ({
   outreachId: state.process.outreachId,
   processState: state.process.state,
-  partnerName: get(state.process, 'record.partner.partnername'),
-  partnerId: get(state.process, 'record.partner.pk'),
-  contactName: get(state.process, 'contact.name'),
-  contactId: state.process.contactId,
+  partnerId: get(state.process, 'record.partner.pk.value'),
   contactIndex: state.process.contactIndex,
   partnerFormContents: state.process.record.partner,
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
     state.process.record.communicationrecord,
-  partnerErrors: get(state.process, 'errors.partner', {}),
-  contactsErrors: get(state.process, 'errors.contacts', {}),
-  communicationRecordErrors:
-    get(state.process, 'errors.communicationrecord', {}),
   workflowState:
-    get(state.process.record, 'outreachrecord.current_workflow_state'),
+    get(state.process.record, 'outreachrecord.current_workflow_state.value'),
   workflowStates: state.process.workflowStates,
 }))(ProcessRecordPage);

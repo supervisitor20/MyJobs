@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty, map, filter} from 'lodash-compat';
+import {isEmpty, map, filter, get} from 'lodash-compat';
 import {
   determineProcessStateAction,
   editPartnerAction,
@@ -44,7 +44,7 @@ class OutreachCardContainer extends Component {
     return (
       <OutreachCard
         key={index}
-        displayText={contact.name}
+        displayText={get(contact, 'name.value')}
         type="contact"
         onNav={() => dispatch(editContactAction(index))}
         onDel={() => {
@@ -61,7 +61,7 @@ class OutreachCardContainer extends Component {
       <OutreachCard
         key="partner"
         type="partner"
-        displayText={partner.partnername}
+        displayText={get(partner, 'name.value')}
         onNav={() => dispatch(editPartnerAction())}
         onDel={() => {
           dispatch(deletePartnerAction());
@@ -71,12 +71,17 @@ class OutreachCardContainer extends Component {
   }
 
   handleCommunicationRecord() {
-    const {dispatch} = this.props;
-    return (<OutreachCard displayText="Communication Record"
-                          type="communicationrecord"
-                          key="commrec"
-                          onNav={() => dispatch(editCommunicationRecordAction())}
-                          onDel={() => dispatch(deleteCommunicationRecordAction())}/>);
+    const {dispatch, communicationrecord} = this.props;
+
+    return (
+      <OutreachCard
+        displayText={get(communicationrecord, 'contact_type.value', 'unknown')}
+        type="communicationrecord"
+        onNav={() =>
+          dispatch(editCommunicationRecordAction())}
+        onDel={() => dispatch(deleteCommunicationRecordAction())}
+        key="commrec" />
+    );
   }
 
   render() {
@@ -89,10 +94,15 @@ class OutreachCardContainer extends Component {
   }
 }
 
+OutreachCardContainer.defaultProps = {
+  contacts: [],
+};
+
 OutreachCardContainer.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  partner: PropTypes.object.isRequired,
-  contacts: PropTypes.array.isRequired,
+  partner: PropTypes.object,
+  contacts: PropTypes.array,
+  communicationrecord: PropTypes.object,
 };
 
 export default connect(state => ({

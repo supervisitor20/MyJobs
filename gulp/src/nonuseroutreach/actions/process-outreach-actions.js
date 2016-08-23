@@ -1,7 +1,13 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {find, map} from 'lodash-compat/collection';
-import {get, assign} from 'lodash-compat/object';
+import {
+  map,
+  flatten,
+  assign,
+  omit,
+  mapValues,
+  isPlainObject,
+} from 'lodash-compat';
 
 /**
  * We have learned about workflow states.
@@ -127,11 +133,11 @@ export function convertOutreach(record) {
 }
 
 /**
- * We have learned about some errors present.
+ * We have new form data from the API
  *
- * errors: Errors from the api.
+ * forms: new forms from the API
  */
-export const noteErrorsAction = createAction('NUO_NOTE_ERRORS');
+export const noteFormsAction = createAction('NUO_NOTE_FORMS');
 
 /**
  * Convert [{id: vv, name: nn}, ...] to [{value: vv, display: nn}]
@@ -170,53 +176,116 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object with the "errors" key removed.
+ */
+function omitErrors(obj) {
+  return mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+}
+
+/**
+ * Move fields of contact objects around to make the api happy.
+ */
+export function formatContact(contact) {
+  if (contact.pk.value) {
+    return {
+      pk: contact.pk,
+    };
+  }
+  return omitErrors({
+    pk: {value: ''},
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    location: omitErrors({
+      pk: {value: ''},
+      address_line_one: contact.address_line_one,
+      address_line_two: contact.address_line_two,
+      city: contact.city,
+      state: contact.state,
+      label: contact.label,
+    }),
+    // TODO: fix tags
+    tags: [],
+    notes: contact.notes,
+  });
+}
+
+/**
+ * Flatten fields of contact data received from API
+ */
+export function flattenContact(contact) {
+  return assign({}, ...flatten(map(contact, (v, k) => {
+    if (k === 'location') {
+      return v;
+    }
+    return {[k]: v};
+  })));
+}
+
+/**
+ * Prepare an api forms object for merging with local record object.
+ */
+export function formsFromApi(forms) {
+  const result = {};
+  if (forms.outreachrecord) {
+    result.outreachrecord = {...forms.outreachrecord};
+  }
+
+  if (forms.partner) {
+    result.partner = {...forms.partner};
+  }
+
+  if (forms.contacts) {
+    result.contacts = map(forms.contacts, c => flattenContact(c));
+  }
+
+  if (forms.contactrecord) {
+    result.communicationrecord = {...forms.contactrecord};
+  }
+
+  return result;
+}
+
+/**
+ * Prepare local record object for sending to the api.
+ */
+export function formsToApi(forms) {
+  return {
+    outreachrecord: omitErrors({...forms.outreachrecord}),
+    partner: omitErrors({...forms.partner}),
+    contacts: map(forms.contacts, c => formatContact(c)),
+    contactrecord: omitErrors({...forms.communicationrecord}),
+  };
+}
+
+/**
  * Submit data to create a communication record.
  */
 export function doSubmit(validateOnly) {
   return async (dispatch, getState, {api}) => {
+    const process = getState().process;
+    const record = process.record;
+    const withOutreach = {
+      ...record,
+      outreachrecord: {
+        ...record.outreachrecord,
+        pk: {value: process.outreachId},
+      },
+    };
+    const forms = formsToApi(withOutreach);
     try {
-      const process = getState().process;
-      const record = process.record;
-      const workflowStates = await api.getWorkflowStates();
-      const reviewed = find(workflowStates, s => s.name === 'Complete');
-      const request = {
-        outreachrecord: {
-          pk: process.outreachId,
-          current_workflow_state: reviewed.id,
-        },
-        partner: record.partner,
-        contacts: map(record.contacts, c => ({
-          pk: '',
-          name: c.name,
-          email: c.email,
-          phone: c.phone,
-          location: {
-            pk: '',
-            address_line_one: c.address_line_one,
-            address_line_two: c.address_line_two,
-            city: c.city,
-            state: c.state,
-            label: c.label,
-          },
-          // TODO: fix tags
-          tags: [],
-          notes: c.notes,
-        })),
-        contactrecord: record.communicationrecord,
-      };
+      const request = {forms};
       await api.submitContactRecord(request, validateOnly);
       // TODO: do something with response.
     } catch (e) {
       if (e.data) {
-        const formErrors = e.data.form_errors;
-        const errors = {
-          partner: extractErrorObject(get(formErrors, 'partner', [])),
-          contacts: map(get(formErrors, 'contacts', []), ce =>
-            extractErrorObject(ce)),
-          communicationrecord: extractErrorObject(
-            get(formErrors, 'contactrecord', [])),
-        };
-        dispatch(noteErrorsAction(errors));
+        const apiErrors = e.data.api_errors;
+        if (apiErrors) {
+          dispatch(errorAction(apiErrors[0]));
+        }
+        if (e.data.forms) {
+          dispatch(noteFormsAction(formsFromApi(e.data.forms)));
+        }
       } else {
         dispatch(errorAction(e.message));
       }
