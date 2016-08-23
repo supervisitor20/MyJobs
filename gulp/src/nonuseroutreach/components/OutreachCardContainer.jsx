@@ -28,17 +28,17 @@ class OutreachCardContainer extends Component {
     switch (type) {
     case 'contacts':
       return map(filter(stateObject, c => !isEmpty(c)),
-        (contact, i) => this.handleContact(contact, i));
+        (contact, i) => this.renderContact(contact, i));
     case 'partner':
-      return this.handlePartner(stateObject);
+      return this.renderPartner(stateObject);
     case 'communicationrecord':
-      return this.handleCommunicationRecord(stateObject);
+      return this.renderCommunicationRecord(stateObject);
     default:
       break;
     }
   }
 
-  handleContact(contact, index) {
+  renderContact(contact, index) {
     const {dispatch} = this.props;
 
     return (
@@ -54,7 +54,7 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handlePartner(partner) {
+  renderPartner(partner) {
     const {dispatch} = this.props;
 
     return (
@@ -70,7 +70,7 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handleCommunicationRecord() {
+  renderCommunicationRecord() {
     const {dispatch, communicationrecord} = this.props;
 
     return (
