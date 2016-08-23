@@ -629,6 +629,12 @@ h1 > small > a:hover {
 	cursor: pointer;
 }
 
+.list-result {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .sidebar {
     background-color: #F7F7F7;
     border: 1px solid #E5E5E5;
