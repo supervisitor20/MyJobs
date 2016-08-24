@@ -163,12 +163,12 @@ describe('formatContact', () => {
     });
   });
 
-  it('leaves out location when linking', () => {
+  it('does not introduce a location key when linking', () => {
     const contact = {
       pk: {value: 333},
       name: {value: 'a'},
     };
-    expect(formatContact(contact)).toDiffEqual({pk: {value: 333}});
+    expect(formatContact(contact)).toDiffEqual(contact);
   });
 });
 
