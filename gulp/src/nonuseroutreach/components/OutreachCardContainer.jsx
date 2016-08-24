@@ -14,6 +14,14 @@ import {
 
 
 class OutreachCardContainer extends Component {
+  handlePartnerNav() {
+    const {dispatch, partner} = this.props;
+
+    if (!get(partner, 'pk.value')) {
+      dispatch(editPartnerAction())
+    }
+  }
+
   propsToCards() {
     const cardsReturn = [];
     for (const key in this.props) {
@@ -62,7 +70,7 @@ class OutreachCardContainer extends Component {
         key="partner"
         type="partner"
         displayText={get(partner, 'name.value')}
-        onNav={() => dispatch(editPartnerAction())}
+        onNav={() => this.handlePartnerNav()}
         onDel={() => {
           dispatch(deletePartnerAction());
           dispatch(determineProcessStateAction());
