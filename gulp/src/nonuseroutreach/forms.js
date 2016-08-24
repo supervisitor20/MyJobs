@@ -431,7 +431,6 @@ export const contactNotesOnlyForm = {
   fields: mapValues(contactForm.fields, (f, key) =>
     key === 'notes' ? f : readonlyField(f)),
 };
-console.log('contactNotesOnlyForm', contactNotesOnlyForm);
 
 export const communicationRecordForm = {
   fields: {
