@@ -674,7 +674,7 @@ class ContactRecord(ArchivedModel):
                               null=True)
     subject = models.CharField(verbose_name="Subject or Topic", max_length=255,
                                blank=True, default="")
-    date_time = models.DateTimeField(verbose_name="Date & Time", blank=True)
+    date_time = models.DateTimeField(verbose_name="Date & Time")
     notes = models.TextField(max_length=1000,
                              verbose_name='Details, Notes or Transcripts',
                              blank=True, default="")
