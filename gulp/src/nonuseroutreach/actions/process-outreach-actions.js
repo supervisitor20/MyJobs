@@ -187,9 +187,7 @@ function omitErrors(obj) {
  */
 export function formatContact(contact) {
   if (contact.pk.value) {
-    return {
-      pk: contact.pk,
-    };
+    return contact;
   }
   return omitErrors({
     pk: {value: ''},
