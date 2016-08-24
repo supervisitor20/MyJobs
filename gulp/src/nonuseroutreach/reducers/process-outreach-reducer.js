@@ -142,12 +142,6 @@ export default handleActions({
   },
 
   'NUO_EDIT_PARTNER': (state) => {
-    if (get(state, 'record.partner.pk')) {
-      return {
-        ...state,
-        state: 'SELECT_PARTNER',
-      };
-    }
     return {
       ...state,
       state: 'NEW_PARTNER',

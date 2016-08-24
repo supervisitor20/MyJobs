@@ -210,18 +210,9 @@ describe('handling noteFormsAction', () => {
 });
 
 describe('handling editPartnerAction', () => {
-  it('should switch state to new if there is no pk', () => {
+  it('should switch state to new', () => {
     const result = reducer({}, editPartnerAction());
     expect(result.state).toEqual('NEW_PARTNER');
-  });
-
-  it('should switch state to select if there is a pk', () => {
-    const result = reducer({
-      record: {
-        partner: {pk: 3},
-      },
-    }, editPartnerAction());
-    expect(result.state).toEqual('SELECT_PARTNER');
   });
 });
 

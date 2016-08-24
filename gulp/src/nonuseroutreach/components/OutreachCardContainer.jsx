@@ -18,7 +18,7 @@ class OutreachCardContainer extends Component {
     const {dispatch, partner} = this.props;
 
     if (!get(partner, 'pk.value')) {
-      dispatch(editPartnerAction())
+      dispatch(editPartnerAction());
     }
   }
 
