@@ -1,3 +1,5 @@
+import {mapValues} from 'lodash-compat';
+
 const communicationTypes = [
   {display: 'Email', value: 'email'},
   {display: 'Phone', value: 'phone'},
@@ -416,6 +418,20 @@ export const contactForm = {
     'notes',
   ],
 };
+
+function readonlyField(field) {
+  return {
+    ...field,
+    readonly: true,
+  };
+}
+
+export const contactNotesOnlyForm = {
+  ...contactForm,
+  fields: mapValues(contactForm.fields, (f, key) =>
+    key === 'notes' ? f : readonlyField(f)),
+};
+console.log('contactNotesOnlyForm', contactNotesOnlyForm);
 
 export const communicationRecordForm = {
   fields: {

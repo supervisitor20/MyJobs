@@ -11,6 +11,7 @@ import {get} from 'lodash-compat/object';
 import {
   partnerForm,
   contactForm,
+  contactNotesOnlyForm,
   communicationRecordForm,
 } from 'nonuseroutreach/forms';
 
@@ -174,6 +175,23 @@ class ProcessRecordPage extends Component {
     );
   }
 
+  renderAppendContactNotes() {
+    const {dispatch, contactIndex, contactFormsContents} = this.props;
+    const contactFormContents = contactFormsContents[contactIndex] || {};
+
+    return (
+      <Form
+        form={contactNotesOnlyForm}
+        title="Contact Details"
+        submitTitle="Add Contact"
+        formContents={contactFormContents}
+        onEdit={(n, v) =>
+          dispatch(editFormAction('contacts', n, v, contactIndex))}
+        onSubmit={() => this.handleSaveContact()}
+        />
+    );
+  }
+
   renderSelectWorkflow() {
     const {dispatch,
       workflowState,
@@ -216,6 +234,8 @@ class ProcessRecordPage extends Component {
       contents = this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
       contents = this.renderNewContact();
+    } else if (processState === 'CONTACT_APPEND') {
+      contents = this.renderAppendContactNotes();
     } else if (processState === 'SELECT_WORKFLOW_STATE') {
       contents = this.renderSelectWorkflow();
     }

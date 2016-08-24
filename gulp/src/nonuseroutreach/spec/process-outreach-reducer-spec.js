@@ -229,7 +229,7 @@ describe('handling editContactAction', () => {
   describe('when there is no pk', () => {
     const result = reducer({}, editContactAction(3));
 
-    it('should switch state to new if there is no pk', () => {
+    it('should switch state', () => {
       expect(result.state).toEqual('NEW_CONTACT');
     });
 
@@ -238,15 +238,15 @@ describe('handling editContactAction', () => {
     });
   });
 
-  describe('when there is no pk', () => {
+  describe('when there is a pk', () => {
     const result = reducer({
       record: {
-        contact: [{pk: 3}],
+        contacts: [{pk: {value: 3}}],
       },
     }, editContactAction(0));
 
-    it('should switch state to select if there is a pk', () => {
-      expect(result.state).toEqual('SELECT_CONTACT');
+    it('should switch state', () => {
+      expect(result.state).toEqual('CONTACT_APPEND');
     });
 
     it('should set the contact index', () => {
