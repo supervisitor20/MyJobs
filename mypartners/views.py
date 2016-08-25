@@ -2178,6 +2178,23 @@ def tag_names(request):
 
 
 @requires('read tag')
+def tag_names_and_pks(request):
+    if request.method == 'GET':
+        company = get_company_or_404(request)
+        value = request.GET.get('value', "")
+        names_and_pks = list(
+            map(lambda tag: {'value': tag.pk, 'display': tag.name},
+                Tag.objects.filter(company=company, name__icontains=value))
+        )
+        names_and_pks = sorted(
+            names_and_pks,
+            key=lambda x: x['display']
+                if not x['display'].startswith(value)
+                else "-" + x['display']
+        )
+        return HttpResponse(json.dumps(names_and_pks))
+
+@requires('read tag')
 def tag_color(request):
     if request.method == 'GET':
         company = get_company_or_404(request)

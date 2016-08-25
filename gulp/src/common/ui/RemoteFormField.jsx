@@ -7,6 +7,7 @@ import Textarea from 'common/ui/Textarea';
 import DateField from 'common/ui/DateField';
 import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
+import TagSelect from 'common/ui/tags/TagSelect';
 
 export default class RemoteFormField extends Component {
   render() {
@@ -86,6 +87,22 @@ export default class RemoteFormField extends Component {
           onChange={e => onChange(e, fieldName)}
           required={field.required}
           initial={field.initial}
+          maxLength={field.widget.maxlength}
+          isHidden={field.widget.is_hidden}
+          placeholder={field.widget.attrs.placeholder}
+          autoFocus={field.widget.attrs.autofocus}
+          />
+      );
+    case 'tags':
+      return wrap(
+          <TagSelect
+          name={fieldName}
+          onChoose={() => ''}
+          onRemove={() => ''}
+          onChange={e => onChange(e, fieldName)}
+          required={field.required}
+          selected={[{value:1, display:"Hello"}]}
+          available={[{value:1, display:"Hello"}]}
           maxLength={field.widget.maxlength}
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}

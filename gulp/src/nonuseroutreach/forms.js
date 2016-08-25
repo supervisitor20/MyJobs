@@ -142,9 +142,9 @@ export const partnerForm = {
       label: 'Tags',
       help_text:
         'ie \'Disability\', \'veteran-outreach\', etc. ' +
-        'Separate tags with a comma.',
+        'Select existing or add new tags',
       widget: {
-        title: 'TextInput',
+        title: 'TagSelect',
         is_hidden: false,
         needs_multipart_form: false,
         is_localized: false,
@@ -154,7 +154,7 @@ export const partnerForm = {
           id: 'p-tags',
           maxlength: '255',
         },
-        input_type: 'text',
+        input_type: 'tags',
       },
       min_length: null,
       max_length: 255,
