@@ -32,9 +32,12 @@ class ProcessRecordPage extends Component {
     dispatch(determineProcessStateAction());
   }
 
-  async handleChooseContact(obj) {
+  async handleChooseContact(obj, addPartner) {
     const {dispatch} = this.props;
 
+    if (addPartner) {
+      dispatch(choosePartnerAction(obj.partner.pk, obj.partner.name));
+    }
     dispatch(chooseContactAction(obj.value, obj.display));
     dispatch(determineProcessStateAction());
   }
@@ -100,7 +103,7 @@ class ProcessRecordPage extends Component {
         <FieldWrapper label="Contact Search">
           <SearchDrop
             instance="CONTACT"
-            onSelect={obj => this.handleChooseContact(obj)}/>
+            onSelect={obj => this.handleChooseContact(obj, true)}/>
         </FieldWrapper>
       </div>,
     ]));
@@ -115,7 +118,7 @@ class ProcessRecordPage extends Component {
           <SearchDrop
             instance="CONTACT"
             extraParams={{partner_id: partnerId}}
-            onSelect={obj => this.handleChooseContact(obj)}
+            onSelect={obj => this.handleChooseContact(obj, false)}
             onAdd={obj => this.handleNewContact(obj)}
             />
         </FieldWrapper>
