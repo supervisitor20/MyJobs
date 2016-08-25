@@ -156,11 +156,14 @@ export default class SearchDrop extends Component {
               onMouseEnter={() => this.handleMouseOver(i)}
               onClick={() => this.handleSelect()}
               className={classnames(
-                  {'active': i === activeIndex})}>
-              {result.display}
+                  {'active': i === activeIndex, 'list-result': true})}>
               {typeof result.count !== 'undefined' ?
                 <span className="partner-count">({result.count} contact{result.count === 1 ? '' : 's'})</span>
                 : ''}
+              {result.partner ?
+                <span className="partner-count">({result.partner.name})</span>
+                : ''}
+              {result.display}
             </li>
           ))}
         </ul>

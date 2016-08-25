@@ -32,9 +32,12 @@ class ProcessRecordPage extends Component {
     dispatch(determineProcessStateAction());
   }
 
-  async handleChooseContact(obj) {
+  async handleChooseContact(obj, addPartner) {
     const {dispatch} = this.props;
 
+    if (addPartner) {
+      dispatch(choosePartnerAction(obj.partner.pk, obj.partner.name));
+    }
     dispatch(chooseContactAction(obj.value, obj.display));
     dispatch(determineProcessStateAction());
   }
@@ -100,7 +103,7 @@ class ProcessRecordPage extends Component {
         <FieldWrapper label="Contact Search">
           <SearchDrop
             instance="CONTACT"
-            onSelect={obj => this.handleChooseContact(obj)}/>
+            onSelect={obj => this.handleChooseContact(obj, true)}/>
         </FieldWrapper>
       </div>,
     ]));
@@ -115,7 +118,7 @@ class ProcessRecordPage extends Component {
           <SearchDrop
             instance="CONTACT"
             extraParams={{partner_id: partnerId}}
-            onSelect={obj => this.handleChooseContact(obj)}
+            onSelect={obj => this.handleChooseContact(obj, false)}
             onAdd={obj => this.handleNewContact(obj)}
             />
         </FieldWrapper>
@@ -127,13 +130,11 @@ class ProcessRecordPage extends Component {
     const {
       dispatch,
       communicationRecordFormContents,
-      communicationRecordErrors,
     } = this.props;
 
     return (
       <Form
         form={communicationRecordForm}
-        errors={communicationRecordErrors}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
@@ -145,12 +146,11 @@ class ProcessRecordPage extends Component {
   }
 
   renderNewPartner() {
-    const {dispatch, partnerFormContents, partnerErrors} = this.props;
+    const {dispatch, partnerFormContents} = this.props;
 
     return (
       <Form
         form={partnerForm}
-        errors={partnerErrors}
         title="Partner Data"
         submitTitle="Add Partner"
         formContents={partnerFormContents}
@@ -239,40 +239,31 @@ ProcessRecordPage.propTypes = {
   history: PropTypes.object.isRequired,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
-  partnerName: PropTypes.string,
   partnerId: PropTypes.any,
   partnerFormContents: PropTypes.object.isRequired,
   contactFormsContents: PropTypes.arrayOf(
     PropTypes.object.isRequired).isRequired,
   contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
-  partnerErrors: PropTypes.objectOf(PropTypes.string),
-  contactsErrors: PropTypes.objectOf(PropTypes.string),
-  communicationRecordErrors: PropTypes.objectOf(PropTypes.string),
   workflowState: PropTypes.number,
-  workflowStates: PropTypes.shape({
-    value: PropTypes.number.isRequired,
-    display: PropTypes.string.isRequired,
-  }).isRequired,
+  workflowStates: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired,
 };
 
 export default connect(state => ({
   outreachId: state.process.outreachId,
   processState: state.process.state,
-  partnerName: get(state.process, 'record.partner.partnername'),
-  partnerId: get(state.process, 'record.partner.pk'),
-  contactName: get(state.process, 'contact.name'),
-  contactId: state.process.contactId,
+  partnerId: get(state.process, 'record.partner.pk.value'),
   contactIndex: state.process.contactIndex,
   partnerFormContents: state.process.record.partner,
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
     state.process.record.communicationrecord,
-  partnerErrors: get(state.process, 'errors.partner', {}),
-  contactsErrors: get(state.process, 'errors.contacts', {}),
-  communicationRecordErrors:
-    get(state.process, 'errors.communicationrecord', {}),
   workflowState:
-    get(state.process.record, 'outreachrecord.current_workflow_state'),
+    get(state.process.record, 'outreachrecord.current_workflow_state.value'),
   workflowStates: state.process.workflowStates,
 }))(ProcessRecordPage);

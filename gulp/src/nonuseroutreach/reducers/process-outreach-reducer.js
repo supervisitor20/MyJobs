@@ -22,6 +22,7 @@ const defaultState = {
  *
  *  outreach: information for the current outreach record
  *  outreachId: id for the current outreach record
+ *  workflowStates: list of known workflow states {value:.., display:..}
  *  contactIndex: if editing a contact, which one is the user concerned with?
  *  form: when editing, information for the form fields
  *  record: The record which will be submitted {
@@ -69,8 +70,8 @@ export default handleActions({
       record: {
         ...state.record,
         partner: {
-          pk: partnerId,
-          partnername: name,
+          pk: {value: partnerId},
+          name: {value: name},
         },
       },
     };
@@ -86,8 +87,8 @@ export default handleActions({
         contacts: [
           ...state.record.contacts,
           {
-            pk: contactId,
-            name,
+            pk: {value: contactId},
+            name: {value: name},
           },
         ],
       },
@@ -103,8 +104,8 @@ export default handleActions({
       record: {
         ...state.record,
         partner: {
-          pk: '',
-          name: partnerName,
+          pk: {value: ''},
+          name: {value: partnerName},
         },
       },
     };
@@ -129,8 +130,8 @@ export default handleActions({
         contacts: [
           ...state.record.contacts,
           {
-            pk: '',
-            name: contactName,
+            pk: {value: ''},
+            name: {value: contactName},
           },
         ],
       },
@@ -226,10 +227,16 @@ export default handleActions({
     if (formIndex || formIndex === 0) {
       const formSet = (state.record || {})[formName] || [];
       const form = formSet[formIndex] || {};
+      const valueData = form[field] || {};
+
+      const newValueData = {
+        ...valueData,
+        value,
+      };
 
       const newForm = {
         ...form,
-        [field]: value,
+        [field]: newValueData,
       };
 
       const newFormSet = [...form];
@@ -245,6 +252,12 @@ export default handleActions({
     }
 
     const form = (state.record || {})[formName] || {};
+    const valueData = form[field] || {};
+
+    const newValueData = {
+      ...valueData,
+      value,
+    };
 
     return {
       ...state,
@@ -252,18 +265,18 @@ export default handleActions({
         ...state.record,
         [formName]: {
           ...form,
-          [field]: value,
+          [field]: newValueData,
         },
       },
     };
   },
 
-  'NUO_NOTE_ERRORS': (state, action) => {
-    const errors = action.payload;
+  'NUO_NOTE_FORMS': (state, action) => {
+    const record = action.payload;
 
     return {
       ...state,
-      errors,
+      record,
     };
   },
 }, defaultState);

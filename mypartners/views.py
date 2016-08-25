@@ -37,7 +37,7 @@ import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
 from universal.decorators import warn_when_inactive, restrict_to_staff
-from universal.api_validation import MultiFormApiValidator
+from universal.api_validation import FormsApiValidator
 from myjobs.models import User
 
 from myjobs.decorators import requires
@@ -1925,7 +1925,7 @@ def api_convert_outreach_record(request):
     :return: status code 200 on success, 400, 405 indicates error
 
     """
-    def retrieve_tags_objects(tagged_object, tags_list):
+    def retrieve_tags_objects(tagged_object, tags_list, validator):
         """
         retrieve a list of tags to add to an object
 
@@ -1937,17 +1937,18 @@ def api_convert_outreach_record(request):
         tags = []
         try:
             for tag in tags_list:
-                try:
-                    tag_pk = int(tag)
+                if 'pk' in tag and tag['pk']:
+                    tag_pk = int(tag['pk'])
                     tag_object = Tag.objects.get(pk=tag_pk)
-                except ValueError:
-                    tag_object = Tag(name=tag, company=user_company,
-                                created_by=request.user)
+                elif 'name' in tag:
+                    tag_object = Tag(
+                        name=tag['name'], company=user_company,
+                        created_by=request.user)
                 tags.append(tag_object)
             return tags
         except Tag.DoesNotExist:
-            validator.form_field_error(tagged_object.__class__.__name__.lower(),
-                                       'tags', 'invalid input provided for tag')
+            validator.note_field_error(
+                'tags', 'invalid input provided for tag')
 
     def add_tags_to_object(object_to_tag, tags_list):
         """
@@ -1961,7 +1962,8 @@ def api_convert_outreach_record(request):
             tag.save()
         object_to_tag.tags.add(*list(tags_list))
 
-    def return_or_create_object(target_model, object_pk, data_dict={},
+    def return_or_create_object(target_model, object_pk, validator,
+                                class_validator, data_dict={},
                                 parent_field=None):
         """
         retrieve or create an object based on the inputs. if pk provided,
@@ -1979,29 +1981,29 @@ def api_convert_outreach_record(request):
 
         """
         return_object = None
-        field_name = parent_field or target_model.__name__.lower()
+        form_name = parent_field or target_model.__name__.lower()
 
         if object_pk:
             try:
                 return_object = target_model.objects.get(pk=object_pk)
             except target_model.DoesNotExist:
-                validator.form_error(field_name,
-                                     'object not found for PK %s' % object_pk)
+                validator.note_api_error(
+                    'object %s not found for PK %s' % (form_name, object_pk))
             except ValueError:
-                validator.form_error(field_name,
-                                     '%s is not a valid pk' % object_pk)
+                validator.note_api_error(
+                    '%s is not a valid %s pk' % (object_pk, form_name))
         else:
             try:
                 return_object = target_model(**data_dict)
                 return_object.full_clean()
             except ValidationError as ve:
-                for key, value in ve.message_dict.iteritems():
-                    validator.form_field_error(field_name,
-                                               key, value)
+                for key, messages in ve.message_dict.iteritems():
+                    for message in messages:
+                        class_validator.note_field_error(key, message)
             except TypeError as te:
-                validator.form_error(
-                    field_name,
-                    "erroneous field detected in data dict: %s" % te)
+                validator.note_api_error(
+                    "erroneous field detected in data dict: %s for %s"
+                    % (te, form_name))
                 return None
 
         return return_object
@@ -2012,115 +2014,118 @@ def api_convert_outreach_record(request):
     user_company = get_company_or_404(request)
     data_object = request.POST.get('request', '{}')
     validate_only = request.POST.get('validate_only', 0)
-    valid_keys = ['outreachrecord', 'contactrecord', 'contacts', 'partner']
-    validator = MultiFormApiValidator(valid_keys)
 
     if not data_object or data_object == '{}':
-        validator.api_error('data object not provided')
+        validator = FormsApiValidator({})
+        validator.note_api_error('data object not provided')
+        return validator.build_error_response()
+
+    if 'forms' not in data_object:
+        validator = FormsApiValidator({})
+        validator.note_api_error('forms key missing')
         return validator.build_error_response()
 
     try:
         data_object = json.loads(data_object)
     except (TypeError, ValueError):
-        validator.api_error('data object not formatted for JSON')
+        validator = FormsApiValidator({})
+        validator.note_api_error('data object not formatted for JSON')
         return validator.build_error_response()
+
+    validator = FormsApiValidator(data_object)
+    valid_keys = {'outreachrecord', 'contactrecord', 'contacts', 'partner'}
 
     # verify that data object has correct keys, no additional keys and
     # that the value is a dict
-    for key, value in data_object.iteritems():
-        try:
-            index_of_key = valid_keys.index(key)
-        except ValueError:
-            index_of_key = None
+    extra_keys = validator.forms() - valid_keys
+    missing_keys = valid_keys - validator.forms()
 
-        if index_of_key is None:
-            validator.api_error('%s is an invalid key' % key)
-            continue
-        valid_keys.pop(index_of_key)
+    if extra_keys:
+        for key in extra_keys:
+            validator.note_api_error('%s is an invalid key' % key)
 
-    # if any keys remain in the list, they were not in the data dict.
-    if valid_keys:
-        validator.api_error('object missing keys %s' % ', '.join(valid_keys))
+    if missing_keys:
+        validator.note_api_error(
+            'object missing keys %s' % ', '.join(missing_keys))
 
     # if there are any errors at this point, end processing
-    if validator.api_errors:
+    if validator.has_errors():
         return validator.build_error_response()
 
-
     # pull outreach record, validate it belongs to member's company
-    outreach_pk = data_object['outreachrecord'].get('pk', None)
-    workflow_pk = data_object['outreachrecord'].get('current_workflow_state',
-                                                    None)
+    outreach_validator = validator.isolate_validator('outreachrecord')
+    outreach_data = outreach_validator.get_values()
+    outreach_pk = outreach_data.get('pk', None)
+    workflow_pk = outreach_data.get('current_workflow_state', None)
     try:
         outreach_record = OutreachRecord.objects.get(
             pk=outreach_pk, outreach_email__company=user_company
         )
     except OutreachRecord.DoesNotExist:
-        validator.form_error('outreachrecord', "invalid outreach record pk")
+        validator.note_api_error("invalid outreach record pk")
 
     try:
         workflow_status = OutreachWorkflowState.objects.get(pk=workflow_pk)
     except OutreachWorkflowState.DoesNotExist:
-        validator.form_error('outreachrecord', "invalid outreach workflow pk")
-
+        validator.note_api_error("invalid outreach workflow pk")
 
     # parse contact information
     # pop is used to pull out necessary information and remove it from
     # subsequent object creation. from here, we mold the dict to be used
     # as a keyword dict to create a contact from the model
     # during this step, the models are VALIDATED, but NOT SAVED
-    contacts = [] #container for contact, location, and tags objects
+    contacts = []  # container for contact, location, and tags objects
     create_contact = request.user.can(user_company, "create contact")
-    for contact in data_object['contacts']:
+    for contact_validator in validator.iter_validators('contacts'):
+        contact = contact_validator.get_values()
         contact_info = {}
         contact_pk = contact.pop('pk', None)
         contact_info['notes'] = contact.pop('notes', None)
-        contact_info['tags'] = retrieve_tags_objects(contact,
-                                                     contact.pop('tags', []))
+        contact_info['tags'] = retrieve_tags_objects(
+            contact, contact.pop('tags', []), contact_validator)
         contact_location = contact.pop('location', None)
         if contact_pk or create_contact:
-            contact_info['contact'] = return_or_create_object(Contact,
-                                                              contact_pk,
-                                                              contact)
+            contact_info['contact'] = return_or_create_object(
+                Contact, contact_pk, validator, contact_validator, contact)
         else:
-            validator.form_error("contacts", "User does not have permission to"
-                                             " create a contact.")
+            validator.note_api_error(
+                "User does not have permission to create a contact.")
         # parse locations for contact, create where necessary
         if contact_location and not contact_pk:
+            location_validator = contact_validator.get_subvalidator('location')
             location_pk = contact_location.pop('pk', None)
-            contact_info['location'] = return_or_create_object(Location,
-                                                              location_pk,
-                                                              contact_location,
-                                                              'contacts')
+            contact_info['location'] = return_or_create_object(
+                Location, location_pk, validator, location_validator,
+                contact_location, 'contacts')
         elif not contact_pk:
-            validator.form_error("contacts", "Location object missing from contact")
+            validator.note_api_error("Location object missing from contact")
         contacts.append(contact_info)
 
-    partner_pk = data_object['partner'].pop('pk', None)
+    partner_validator = validator.isolate_validator('partner')
+    partner_data = partner_validator.get_values()
+    partner_pk = partner_data.pop('pk', None)
     partner_tags = retrieve_tags_objects(
-        data_object['partner'],
-        data_object['partner'].pop('tags', [])
-    )
-    data_object['partner']['owner'] = user_company
+        partner_data, partner_data.pop('tags', []), partner_validator)
+    partner_data['owner'] = user_company
     create_partner = request.user.can(user_company, "create partner")
     if partner_pk or create_partner:
-        partner = return_or_create_object(Partner,
-                                          partner_pk,
-                                          data_object['partner'])
+        partner = return_or_create_object(
+            Partner, partner_pk, validator, partner_validator, partner_data)
     else:
-        validator.form_error("partner", "User does not have permission to"
-                                        " create a partner.")
+        validator.note_api_error(
+            "User does not have permission to create a partner.")
 
-
+    contact_record_validator = validator.isolate_validator('contactrecord')
+    contact_record_data = contact_record_validator.get_values()
     contact_record_tags = retrieve_tags_objects(
-        data_object['contactrecord'],
-        data_object['contactrecord'].pop('tags', [])
-    )
+        contact_record_data,
+        contact_record_data.pop('tags', []),
+        contact_record_validator)
 
-    data_object['contactrecord']['created_by'] = request.user
-    contact_record = return_or_create_object(ContactRecord,
-                                             None,
-                                             data_object['contactrecord'])
+    contact_record_data['created_by'] = request.user
+    contact_record = return_or_create_object(
+        ContactRecord, None, validator, contact_record_validator,
+        contact_record_data)
 
     # if there are any errors at this point, return them to the UI
     if validator.has_errors():
@@ -2157,6 +2162,7 @@ def api_convert_outreach_record(request):
     outreach_record.save()
 
     return HttpResponse('"success"')
+
 
 @requires('read tag')
 def tag_names(request):
@@ -2295,7 +2301,8 @@ def api_get_contacts(request):
     else:
         contact_args = {'partner__owner': company}
 
-    contacts = Contact.objects.filter(**contact_args)
+    contacts = (
+        Contact.objects.filter(**contact_args).prefetch_related('partner'))
     if q:
         q_obj = Q(email__icontains=q) | Q(name__icontains=q)
         contacts = list(contacts.filter(q_obj))
@@ -2306,10 +2313,16 @@ def api_get_contacts(request):
         sorted_contacts.extend(set(contacts).difference(sorted_contacts))
     else:
         sorted_contacts = contacts
-    return HttpResponse(json.dumps([{'id': contact.pk,
-                                     'name': contact.name,
-                                     'email': contact.email}
-                                    for contact in sorted_contacts]))
+    return HttpResponse(json.dumps([
+        {
+            'id': contact.pk,
+            'name': contact.name,
+            'email': contact.email,
+            'partner': {
+                'pk': contact.partner.pk,
+                'name': contact.partner.name,
+            },
+        } for contact in sorted_contacts]))
 
 
 @require_http_methods(['GET'])
