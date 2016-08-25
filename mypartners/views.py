@@ -2156,7 +2156,7 @@ def api_convert_outreach_record(request):
     outreach_record.current_workflow_state = workflow_status
     outreach_record.save()
 
-    return HttpResponse("success")
+    return HttpResponse('"success"')
 
 @requires('read tag')
 def tag_names(request):

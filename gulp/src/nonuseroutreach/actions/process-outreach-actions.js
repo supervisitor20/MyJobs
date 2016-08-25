@@ -172,7 +172,7 @@ export function extractErrorObject(fieldArray) {
 /**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly) {
+export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
     try {
       const process = getState().process;
@@ -205,7 +205,9 @@ export function doSubmit(validateOnly) {
         contactrecord: record.communicationrecord,
       };
       await api.submitContactRecord(request, validateOnly);
-      // TODO: do something with response.
+      if (!validateOnly && onSuccess) {
+        onSuccess();
+      }
     } catch (e) {
       if (e.data) {
         const formErrors = e.data.form_errors;

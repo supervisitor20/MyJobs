@@ -75,7 +75,7 @@ class ProcessRecordPage extends Component {
   async handleSubmit() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit());
+    await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
   }
 
   renderCard(title, children) {
