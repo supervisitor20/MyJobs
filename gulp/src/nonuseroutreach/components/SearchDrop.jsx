@@ -160,6 +160,9 @@ export default class SearchDrop extends Component {
               {typeof result.count !== 'undefined' ?
                 <span className="partner-count">({result.count} contact{result.count === 1 ? '' : 's'})</span>
                 : ''}
+              {result.partner ?
+                <span className="partner-count">({result.partner.name})</span>
+                : ''}
               {result.display}
             </li>
           ))}
