@@ -7,6 +7,8 @@ import {
   omit,
   mapValues,
   isPlainObject,
+  isEmpty,
+  isUndefined,
 } from 'lodash-compat';
 
 /**
@@ -178,8 +180,11 @@ export function extractErrorObject(fieldArray) {
 /**
  * Return object with the "errors" key removed.
  */
-function omitErrors(obj) {
-  return mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+function withoutEmptyValuesOrErrors(obj) {
+  const withoutErrors =
+    mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+  return omit(withoutErrors, o =>
+    isPlainObject(o) && isEmpty(o) || isUndefined(o));
 }
 
 /**
@@ -191,12 +196,12 @@ export function formatContact(contact) {
       pk: contact.pk,
     };
   }
-  return omitErrors({
+  return withoutEmptyValuesOrErrors({
     pk: {value: ''},
     name: contact.name,
     email: contact.email,
     phone: contact.phone,
-    location: omitErrors({
+    location: withoutEmptyValuesOrErrors({
       pk: {value: ''},
       address_line_one: contact.address_line_one,
       address_line_two: contact.address_line_two,
@@ -251,10 +256,10 @@ export function formsFromApi(forms) {
  */
 export function formsToApi(forms) {
   return {
-    outreachrecord: omitErrors({...forms.outreachrecord}),
-    partner: omitErrors({...forms.partner}),
+    outreachrecord: withoutEmptyValuesOrErrors({...forms.outreachrecord}),
+    partner: withoutEmptyValuesOrErrors({...forms.partner}),
     contacts: map(forms.contacts, c => formatContact(c)),
-    contactrecord: omitErrors({...forms.communicationrecord}),
+    contactrecord: withoutEmptyValuesOrErrors({...forms.communicationrecord}),
   };
 }
 
