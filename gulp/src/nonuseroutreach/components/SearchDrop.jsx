@@ -84,12 +84,12 @@ export default class SearchDrop extends Component {
     } = this.props;
     if (!forceAdd && results && results.length) {
       const result = results[activeIndex];
-      onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
+      onSelect(result);
     } else if (onAdd) {
       const result = {value: '', display: searchString};
-      onAdd(result);
       dispatch(searchResultSelectedAction(instance, result));
+      onAdd(result);
     }
   }
 

@@ -15,6 +15,10 @@ import {
 } from 'nonuseroutreach/forms';
 
 import {
+  resetSearchOrAddAction,
+} from '../actions/search-or-add-actions';
+
+import {
   determineProcessStateAction,
   choosePartnerAction,
   chooseContactAction,
@@ -25,10 +29,18 @@ import {
 } from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
+  resetSearches() {
+    const {dispatch} = this.props;
+
+    dispatch(resetSearchOrAddAction('PARTNER'));
+    dispatch(resetSearchOrAddAction('CONTACT'));
+  }
+
   handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -39,6 +51,7 @@ class ProcessRecordPage extends Component {
       dispatch(choosePartnerAction(obj.partner.pk, obj.partner.name));
     }
     dispatch(chooseContactAction(obj.value, obj.display));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -58,6 +71,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -65,6 +79,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -72,6 +87,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -79,6 +95,7 @@ class ProcessRecordPage extends Component {
     const {dispatch, history} = this.props;
 
     await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
+    this.resetSearches();
   }
 
   renderCard(title, children) {
@@ -208,18 +225,21 @@ class ProcessRecordPage extends Component {
     const {processState} = this.props;
 
     let contents = '';
+    let extraAddContact = '';
 
     if (processState === 'SELECT_PARTNER') {
       contents = this.renderInitialSearch();
     } else if (processState === 'SELECT_CONTACT') {
       contents = this.renderSelectContact();
     } else if (processState === 'NEW_COMMUNICATIONRECORD') {
+      extraAddContact = this.renderSelectContact();
       contents = this.renderNewCommunicationRecord();
     } else if (processState === 'NEW_PARTNER') {
       contents = this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
       contents = this.renderNewContact();
     } else if (processState === 'SELECT_WORKFLOW_STATE') {
+      extraAddContact = this.renderSelectContact();
       contents = this.renderSelectWorkflow();
     }
 
@@ -228,6 +248,7 @@ class ProcessRecordPage extends Component {
         <button className="nuo-button">
           <a href="/prm/view/nonuseroutreach/#/records">Back to record list</a>
         </button>
+        {extraAddContact}
         {contents}
       </div>
     );
