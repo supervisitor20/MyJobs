@@ -178,13 +178,20 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object various kinds of empty keys removed.
+ */
+function withoutEmptyValues(obj) {
+  return omit(obj, o =>
+    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+}
+
+/**
  * Return object with the "errors" key removed.
  */
 function withoutEmptyValuesOrErrors(obj) {
   const withoutErrors =
     mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
-  return omit(withoutErrors, o =>
-    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+  return withoutEmptyValues(withoutErrors);
 }
 
 /**
@@ -230,20 +237,26 @@ export function flattenContact(contact) {
  */
 export function formsFromApi(forms) {
   const result = {};
-  if (forms.outreachrecord) {
-    result.outreachrecord = {...forms.outreachrecord};
+
+  const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
+  if (cleanOutreachRecord) {
+    result.outreachrecord = cleanOutreachRecord;
   }
 
-  if (forms.partner) {
-    result.partner = {...forms.partner};
+  const cleanPartner = withoutEmptyValues(forms.partner);
+  if (cleanPartner) {
+    result.partner = cleanPartner;
   }
 
+  const flatContacts = map(forms.contacts, c => flattenContact(c));
+  const cleanContacts = map(flatContacts, withoutEmptyValues);
   if (forms.contacts) {
-    result.contacts = map(forms.contacts, c => flattenContact(c));
+    result.contacts = cleanContacts;
   }
 
-  if (forms.contactrecord) {
-    result.communicationrecord = {...forms.contactrecord};
+  const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
+  if (cleanCommunicationRecord) {
+    result.communicationrecord = cleanCommunicationRecord;
   }
 
   return result;
