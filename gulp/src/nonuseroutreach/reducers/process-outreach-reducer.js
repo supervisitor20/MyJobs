@@ -233,7 +233,7 @@ export default handleActions({
         [field]: newValueData,
       };
 
-      const newFormSet = [...form];
+      const newFormSet = [...formSet];
       newFormSet[formIndex] = newForm;
 
       return {

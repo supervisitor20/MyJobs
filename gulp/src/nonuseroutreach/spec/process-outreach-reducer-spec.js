@@ -191,12 +191,60 @@ describe('processEmailReducer', () => {
     });
 
     describe('indexed', () => {
-      const action = editFormAction('contacts', 'name', 'Bob', 0);
 
       it('should create and store the field', () => {
+        const action = editFormAction('contacts', 'name', 'Bob', 0);
         const result = reducer({}, action);
 
         expect(result.record.contacts[0].name.value).toEqual('Bob');
+      });
+
+      it('should should leave other indexed objects alone', () => {
+        const initialFormContents = {
+          contacts: [
+            {
+              city: {value: 'somewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+            {
+              city: {value: 'elsewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+          ],
+          other: {
+            a: {value: 'b'},
+          },
+        };
+        const action = editFormAction('contacts', 'city', 'elsewhere2', 1);
+        const result = reducer({record: initialFormContents}, action);
+
+        expect(result.record).toDiffEqual({
+          contacts: [
+            {
+              city: {value: 'somewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+            {
+              city: {value: 'elsewhere2'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+          ],
+          other: {
+            a: {value: 'b'},
+          },
+        });
       });
     });
   });
