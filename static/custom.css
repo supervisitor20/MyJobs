@@ -1,5 +1,4 @@
 
-
 /*Document level classes*/
 
 .topbar h3 a {
@@ -623,7 +622,7 @@ h1 > small > a:hover {
     display:block;
     background-color: #DDDDDD;
 	padding: 8px 8px;
-	margin: 8px; 8px;
+	margin: 8px 8px;
 	border: 0 none;
 	border-radius: 3px;
 	cursor: pointer;
@@ -632,7 +631,7 @@ h1 > small > a:hover {
 .list-result {
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .sidebar {
