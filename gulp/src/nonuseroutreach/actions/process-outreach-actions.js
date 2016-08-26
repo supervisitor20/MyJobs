@@ -239,12 +239,12 @@ export function formsFromApi(forms) {
   const result = {};
 
   const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
-  if (cleanOutreachRecord) {
+  if (!isEmpty(cleanOutreachRecord)) {
     result.outreachrecord = cleanOutreachRecord;
   }
 
   const cleanPartner = withoutEmptyValues(forms.partner);
-  if (cleanPartner) {
+  if (!isEmpty(cleanPartner)) {
     result.partner = cleanPartner;
   }
 
@@ -255,7 +255,7 @@ export function formsFromApi(forms) {
   }
 
   const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
-  if (cleanCommunicationRecord) {
+  if (!isEmpty(cleanCommunicationRecord)) {
     result.communicationrecord = cleanCommunicationRecord;
   }
 
