@@ -19,11 +19,6 @@ class OutreachCard extends Component {
       showActions,
     } = this.state;
 
-    console.log('renderIcons', showActions ?
-          <img
-          alt="[delete]"
-          src={expandStaticUrl('svg/delete.svg')}
-          onClick={() => this.props.onDel()} /> : null);
     return (
       <div className="tray-items">
         {showActions ?
