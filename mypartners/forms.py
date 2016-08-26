@@ -359,6 +359,8 @@ class ContactRecordForm(NormalizedModelForm):
             partner = kwargs.pop('partner')
         super(ContactRecordForm, self).__init__(*args, **kwargs)
         self.fields['contact'].required = True
+        if not hasattr(self.instance, 'contact'):
+            self.fields['contact'].required = False
 
         instance = kwargs.get('instance')
         if partner:
