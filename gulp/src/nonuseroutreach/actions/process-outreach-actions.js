@@ -2,6 +2,7 @@ import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 import {
   map,
+  get,
   flatten,
   assign,
   omit,
@@ -198,7 +199,7 @@ function withoutEmptyValuesOrErrors(obj) {
  * Move fields of contact objects around to make the api happy.
  */
 export function formatContact(contact) {
-  if (contact.pk.value) {
+  if (get(contact, 'pk.value')) {
     return contact;
   }
   return withoutEmptyValuesOrErrors({
