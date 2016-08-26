@@ -14,6 +14,14 @@ import {
 
 
 class OutreachCardContainer extends Component {
+  handlePartnerNav() {
+    const {dispatch, partner} = this.props;
+
+    if (!get(partner, 'pk.value')) {
+      dispatch(editPartnerAction());
+    }
+  }
+
   propsToCards() {
     const cardsReturn = [];
     for (const key in this.props) {
@@ -28,17 +36,17 @@ class OutreachCardContainer extends Component {
     switch (type) {
     case 'contacts':
       return map(filter(stateObject, c => !isEmpty(c)),
-        (contact, i) => this.handleContact(contact, i));
+        (contact, i) => this.renderContact(contact, i));
     case 'partner':
-      return this.handlePartner(stateObject);
+      return this.renderPartner(stateObject);
     case 'communicationrecord':
-      return this.handleCommunicationRecord(stateObject);
+      return this.renderCommunicationRecord(stateObject);
     default:
       break;
     }
   }
 
-  handleContact(contact, index) {
+  renderContact(contact, index) {
     const {dispatch} = this.props;
 
     return (
@@ -54,7 +62,7 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handlePartner(partner) {
+  renderPartner(partner) {
     const {dispatch} = this.props;
 
     return (
@@ -62,7 +70,7 @@ class OutreachCardContainer extends Component {
         key="partner"
         type="partner"
         displayText={get(partner, 'name.value')}
-        onNav={() => dispatch(editPartnerAction())}
+        onNav={() => this.handlePartnerNav()}
         onDel={() => {
           dispatch(deletePartnerAction());
           dispatch(determineProcessStateAction());
@@ -70,7 +78,7 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handleCommunicationRecord() {
+  renderCommunicationRecord() {
     const {dispatch, communicationrecord} = this.props;
 
     return (
