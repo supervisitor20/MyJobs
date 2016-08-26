@@ -261,7 +261,7 @@ export function formsToApi(forms) {
 /**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly) {
+export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
     const record = process.record;
@@ -276,7 +276,9 @@ export function doSubmit(validateOnly) {
     try {
       const request = {forms};
       await api.submitContactRecord(request, validateOnly);
-      // TODO: do something with response.
+      if (!validateOnly && onSuccess) {
+        onSuccess();
+      }
     } catch (e) {
       if (e.data) {
         const apiErrors = e.data.api_errors;

@@ -76,9 +76,9 @@ class ProcessRecordPage extends Component {
   }
 
   async handleSubmit() {
-    const {dispatch} = this.props;
+    const {dispatch, history} = this.props;
 
-    await dispatch(doSubmit());
+    await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
   }
 
   renderCard(title, children) {
@@ -236,6 +236,7 @@ class ProcessRecordPage extends Component {
 
 ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
   partnerId: PropTypes.any,
