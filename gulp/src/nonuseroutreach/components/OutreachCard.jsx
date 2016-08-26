@@ -7,41 +7,61 @@ class OutreachCard extends Component {
   constructor() {
     super();
     this.state = {
-      showDelete: false,
+      showActions: false,
     };
   }
-  getDeleteField() {
+
+  renderIcons() {
+    const {
+      hasErrors,
+    } = this.props;
+    const {
+      showActions,
+    } = this.state;
+
+    console.log('renderIcons', showActions ?
+          <img
+          alt="[delete]"
+          src={expandStaticUrl('svg/delete.svg')}
+          onClick={() => this.props.onDel()} /> : null);
     return (
       <div className="tray-items">
-        <img
-         alt="[delete]"
-         src={expandStaticUrl('svg/delete.svg')}
-         onClick={() => this.props.onDel()} />
+        {showActions ?
+          <img
+          alt="[delete]"
+          src={expandStaticUrl('svg/delete.svg')}
+          onClick={() => this.props.onDel()} /> : null}
+        {hasErrors ?
+          <img
+          alt="[error]"
+          src={expandStaticUrl('svg/error.svg')} /> : null}
       </div>
     );
   }
+
   render() {
     const {
       displayText,
       onNav,
       type,
     } = this.props;
+
     return (
       <div
         className="tray-container progress-card"
-        onMouseEnter={() => this.setState({showDelete: true})}
-        onMouseLeave={() => this.setState({showDelete: false})}>
+        onMouseEnter={() => this.setState({showActions: true})}
+        onMouseLeave={() => this.setState({showActions: false})}>
         <div className="tray-items-left">
           <img
           alt={'[' + type + ']'}
           src={expandStaticUrl('svg/' + type + '-card.svg')} />
         </div>
-          {this.state.showDelete ? this.getDeleteField() : ''}
+        {this.renderIcons()}
         <div className="tray-content ellipses">
           <h5 onClick={() => onNav()}>{displayText}</h5>
         </div>
       </div>
-  );
+    );
   }
 }
 
@@ -52,8 +72,7 @@ OutreachCard.propTypes = {
   onNav: PropTypes.func.isRequired,
   onDel: PropTypes.func.isRequired,
   type: PropTypes.string.isRequired,
-  // TODO: add icon choice
-  // TODO: add onDelete.
+  hasErrors: PropTypes.bool,
 };
 
 export default connect()(OutreachCard);
