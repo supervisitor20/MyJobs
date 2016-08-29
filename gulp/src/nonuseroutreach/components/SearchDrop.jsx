@@ -84,12 +84,12 @@ export default class SearchDrop extends Component {
     } = this.props;
     if (!forceAdd && results && results.length) {
       const result = results[activeIndex];
-      onSelect(result);
       dispatch(searchResultSelectedAction(instance, result));
+      onSelect(result);
     } else if (onAdd) {
       const result = {value: '', display: searchString};
-      onAdd(result);
       dispatch(searchResultSelectedAction(instance, result));
+      onAdd(result);
     }
   }
 
@@ -156,11 +156,14 @@ export default class SearchDrop extends Component {
               onMouseEnter={() => this.handleMouseOver(i)}
               onClick={() => this.handleSelect()}
               className={classnames(
-                  {'active': i === activeIndex})}>
+                  {'active': i === activeIndex, 'list-result': true})}>
+              {typeof result.count !== 'undefined' ?
+                <span className="partner-count">({result.count} contact{result.count === 1 ? '' : 's'})</span>
+                : ''}
+              {result.partner ?
+                <span className="partner-count">({result.partner.name})</span>
+                : ''}
               {result.display}
-              <span className="partner-count">
-                ({result.count} contacts)
-              </span>
             </li>
           ))}
         </ul>

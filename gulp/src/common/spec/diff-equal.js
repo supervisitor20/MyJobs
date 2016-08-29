@@ -20,7 +20,18 @@ function toDiffEqual(util, customEqualityTesters) {
         if (typeof object === 'undefined') {
           return 'undefined';
         }
-        return JSON.stringify(object, null, 2);
+        // JSON.stringify censors keys with undefined values by default.
+        // This behavior results in isEqual returning false, but the json
+        // diff not having any differences. This function puts a placeholder
+        // string in those keys.
+        function replacer(key, value) {
+          if (typeof value === 'undefined') {
+            return '--undefined--';
+          } else {
+            return value;
+          }
+        }
+        return JSON.stringify(object, replacer, 2);
       }
 
       const expectedString = stringify(expected);

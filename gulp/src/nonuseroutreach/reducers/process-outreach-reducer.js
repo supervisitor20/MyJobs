@@ -1,5 +1,5 @@
 import {handleActions} from 'redux-actions';
-import {get} from 'lodash-compat';
+import {isEmpty, get} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -17,11 +17,13 @@ const defaultState = {
  *    NEW_PARTNER: the user is editing a new partner
  *    SELECT_CONTACT: the user is selecting a contact AFTER selecting a partner
  *    NEW_CONTACT: the user is editng a new contact
+ *    CONTACT_APPEND: the user is adding notes to an existing contact
  *    NEW_COMMUNICATIONRECORD: the user is editing the new record
  *    SELECT_WORKFLOW_STATE: the user is picking the new workflow state
  *
  *  outreach: information for the current outreach record
  *  outreachId: id for the current outreach record
+ *  workflowStates: list of known workflow states {value:.., display:..}
  *  contactIndex: if editing a contact, which one is the user concerned with?
  *  form: when editing, information for the form fields
  *  record: The record which will be submitted {
@@ -33,13 +35,31 @@ const defaultState = {
  */
 export default handleActions({
   'NUO_RESET_PROCESS': (state, action) => {
-    const {outreach, outreachId} = action.payload;
+    const {outreach, outreachId, workflowStates} = action.payload;
 
     return {
       ...defaultState,
       state: 'SELECT_PARTNER',
       outreach,
       outreachId,
+      workflowStates,
+    };
+  },
+
+  'NUO_DETERMINE_STATE': (state) => {
+    let currentState;
+    if (isEmpty(state.record.partner)) {
+      currentState = 'SELECT_PARTNER';
+    } else if (isEmpty(state.record.contacts)) {
+      currentState = 'SELECT_CONTACT';
+    } else if (isEmpty(state.record.communicationrecord)) {
+      currentState = 'NEW_COMMUNICATIONRECORD';
+    } else {
+      currentState = 'SELECT_WORKFLOW_STATE';
+    }
+    return {
+      ...state,
+      state: currentState,
     };
   },
 
@@ -48,12 +68,11 @@ export default handleActions({
 
     return {
       ...state,
-      state: 'SELECT_CONTACT',
       record: {
         ...state.record,
         partner: {
-          pk: partnerId,
-          partnername: name,
+          pk: {value: partnerId},
+          name: {value: name},
         },
       },
     };
@@ -64,14 +83,13 @@ export default handleActions({
 
     return {
       ...state,
-      state: 'NEW_COMMUNICATIONRECORD',
       record: {
         ...state.record,
         contacts: [
           ...state.record.contacts,
           {
-            pk: contactId,
-            name,
+            pk: {value: contactId},
+            name: {value: name},
           },
         ],
       },
@@ -87,8 +105,8 @@ export default handleActions({
       record: {
         ...state.record,
         partner: {
-          pk: '',
-          name: partnerName,
+          pk: {value: ''},
+          name: {value: partnerName},
         },
       },
     };
@@ -113,8 +131,8 @@ export default handleActions({
         contacts: [
           ...state.record.contacts,
           {
-            pk: '',
-            name: contactName,
+            pk: {value: ''},
+            name: {value: contactName},
           },
         ],
       },
@@ -124,12 +142,6 @@ export default handleActions({
   },
 
   'NUO_EDIT_PARTNER': (state) => {
-    if (get(state, 'record.partner.pk')) {
-      return {
-        ...state,
-        state: 'SELECT_PARTNER',
-      };
-    }
     return {
       ...state,
       state: 'NEW_PARTNER',
@@ -139,8 +151,8 @@ export default handleActions({
   'NUO_EDIT_CONTACT': (state, action) => {
     const {contactIndex} = action.payload;
 
-    const pk = get(state, `record.contact.${contactIndex}.pk`);
-    const newState = pk ? 'SELECT_CONTACT' : 'NEW_CONTACT';
+    const pk = get(state, `record.contacts[${contactIndex}].pk.value`);
+    const newState = pk ? 'CONTACT_APPEND' : 'NEW_CONTACT';
     return {
       ...state,
       state: newState,
@@ -152,6 +164,45 @@ export default handleActions({
     return {
       ...state,
       state: 'NEW_COMMUNICATIONRECORD',
+    };
+  },
+
+  'NUO_DELETE_PARTNER': (state) => {
+    // filter out contacts with a PK (i.e. existing contacts that would be
+    // linked to the soon-to-be-removed parter
+    const newContacts = state.record.contacts.filter(contact => !contact.pk);
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        partner: {},
+        contacts: newContacts,
+      },
+    };
+  },
+
+  'NUO_DELETE_CONTACT': (state, action) => {
+    const {contactIndex} = action.payload;
+    const splicedContacts = state.record.contacts.slice();
+    splicedContacts.splice(contactIndex, 1);
+
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        contacts: splicedContacts,
+      },
+    };
+  },
+
+
+  'NUO_DELETE_COMMUNICATIONRECORD': (state) => {
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        communicationrecord: {},
+      },
     };
   },
 
@@ -170,13 +221,19 @@ export default handleActions({
     if (formIndex || formIndex === 0) {
       const formSet = (state.record || {})[formName] || [];
       const form = formSet[formIndex] || {};
+      const valueData = form[field] || {};
+
+      const newValueData = {
+        ...valueData,
+        value,
+      };
 
       const newForm = {
         ...form,
-        [field]: value,
+        [field]: newValueData,
       };
 
-      const newFormSet = [...form];
+      const newFormSet = [...formSet];
       newFormSet[formIndex] = newForm;
 
       return {
@@ -189,6 +246,12 @@ export default handleActions({
     }
 
     const form = (state.record || {})[formName] || {};
+    const valueData = form[field] || {};
+
+    const newValueData = {
+      ...valueData,
+      value,
+    };
 
     return {
       ...state,
@@ -196,32 +259,18 @@ export default handleActions({
         ...state.record,
         [formName]: {
           ...form,
-          [field]: value,
+          [field]: newValueData,
         },
       },
     };
   },
 
-  'NUO_SAVE_PARTNER': (state) => {
-    return {
-      ...state,
-      state: 'SELECT_CONTACT',
-    };
-  },
-
-  'NUO_SAVE_CONTACT': (state) => {
-    return {
-      ...state,
-      state: 'NEW_COMMUNICATIONRECORD',
-    };
-  },
-
-  'NUO_NOTE_ERRORS': (state, action) => {
-    const errors = action.payload;
+  'NUO_NOTE_FORMS': (state, action) => {
+    const record = action.payload;
 
     return {
       ...state,
-      errors,
+      record,
     };
   },
 }, defaultState);
