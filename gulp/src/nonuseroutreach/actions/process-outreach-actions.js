@@ -10,12 +10,12 @@ import {
 } from 'lodash-compat';
 
 /**
- * We have learned about workflow states.
+ * Retrieve available tags for company
  *
- * states: e.g. [{value: nn, display: Reviewed}]
+ * availableTags: e.g. [{value: nn, display: Reviewed}]
  */
-export const receivedWorkflowStates =
-  createAction('NUO_RECEIVED_WORKFLOW_STATES');
+export const setAvailableTagsAction =
+  createAction('NUO_SET_AVAILABLE_TAGS');
 
 /**
  *  Determine what the state of the process view should be
@@ -290,5 +290,15 @@ export function doSubmit(validateOnly) {
         dispatch(errorAction(e.message));
       }
     }
+  };
+}
+
+/* doGetAvailableTags
+  Retrieves all existing tags for a company
+ */
+export function doGetAvailableTags() {
+  return async (dispatch, _, {api}) => {
+    const availableTags = await api.getAvailableTags();
+    dispatch(setAvailableTagsAction(availableTags));
   };
 }

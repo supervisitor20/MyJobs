@@ -1,4 +1,5 @@
 import React, {PropTypes, Component} from 'react';
+import {connect} from 'react-redux';
 import warning from 'warning';
 import {getDisplayForValue} from 'common/array.js';
 import TextField from 'common/ui/TextField';
@@ -9,7 +10,7 @@ import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import TagSelect from 'common/ui/tags/TagSelect';
 
-export default class RemoteFormField extends Component {
+class RemoteFormField extends Component {
   render() {
     const {fieldName, form, value, onChange} = this.props;
     const field = form.fields[fieldName];
@@ -99,10 +100,9 @@ export default class RemoteFormField extends Component {
           name={fieldName}
           onChoose={() => ''}
           onRemove={() => ''}
-          onChange={e => onChange(e, fieldName)}
           required={field.required}
-          selected={[{value:1, display:"Hello"}]}
-          available={[{value:1, display:"Hello"}]}
+          selected={[]}
+          available={this.props.availableTags}
           maxLength={field.widget.maxlength}
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}
@@ -121,4 +121,13 @@ RemoteFormField.propTypes = {
   fieldName: PropTypes.string.isRequired,
   value: PropTypes.any.isRequired,
   onChange: PropTypes.func.isRequired,
+  availableTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired),
 };
+
+export default connect(state => ({
+  availableTags: state.process.availableTags,
+}))(RemoteFormField);

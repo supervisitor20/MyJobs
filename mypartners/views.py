@@ -2163,6 +2163,24 @@ def api_convert_outreach_record(request):
 
     return HttpResponse("success")
 
+@requires('read tag')
+def api_get_available_tags(request):
+    if request.method == 'GET':
+        company = get_company_or_404(request)
+        value = request.GET.get('value', "")
+        tag_info = list(
+            map(lambda tag: {'value': tag.pk,
+                             'display': tag.name,
+                             'hexColor': tag.hex_color},
+                Tag.objects.filter(company=company, name__icontains=value))
+        )
+        tag_info = sorted(
+            tag_info,
+            key=lambda x: x['display']
+                if not x['display'].startswith(value)
+                else "-" + x['display']
+        )
+        return HttpResponse(json.dumps(tag_info))
 
 @requires('read tag')
 def tag_names(request):
@@ -2176,23 +2194,6 @@ def tag_names(request):
             names, key=lambda x: x if not x.startswith(value) else "-" + x)
         return HttpResponse(json.dumps(names))
 
-
-@requires('read tag')
-def tag_names_and_pks(request):
-    if request.method == 'GET':
-        company = get_company_or_404(request)
-        value = request.GET.get('value', "")
-        names_and_pks = list(
-            map(lambda tag: {'value': tag.pk, 'display': tag.name},
-                Tag.objects.filter(company=company, name__icontains=value))
-        )
-        names_and_pks = sorted(
-            names_and_pks,
-            key=lambda x: x['display']
-                if not x['display'].startswith(value)
-                else "-" + x['display']
-        )
-        return HttpResponse(json.dumps(names_and_pks))
 
 @requires('read tag')
 def tag_color(request):

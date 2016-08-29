@@ -22,6 +22,7 @@ import {
   newContactAction,
   editFormAction,
   doSubmit,
+  doGetAvailableTags,
 } from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
@@ -41,13 +42,13 @@ class ProcessRecordPage extends Component {
 
   async handleNewPartner(obj) {
     const {dispatch} = this.props;
-
+    dispatch(doGetAvailableTags());
     dispatch(newPartnerAction(obj.display));
   }
 
   async handleNewContact(obj) {
     const {dispatch} = this.props;
-
+    dispatch(doGetAvailableTags());
     dispatch(newContactAction(obj.display));
   }
 

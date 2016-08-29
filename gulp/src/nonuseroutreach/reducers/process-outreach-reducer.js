@@ -45,6 +45,13 @@ export default handleActions({
     };
   },
 
+  'NUO_SET_AVAILABLE_TAGS': (state, action) => {
+    return {
+      ...state,
+      availableTags: action.payload,
+    }
+  },
+
   'NUO_DETERMINE_STATE': (state) => {
     let currentState;
     if (isEmpty(state.record.partner)) {
