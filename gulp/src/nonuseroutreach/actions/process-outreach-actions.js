@@ -2,6 +2,7 @@ import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 import {
   map,
+  get,
   flatten,
   assign,
   omit,
@@ -178,20 +179,27 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object various kinds of empty keys removed.
+ */
+function withoutEmptyValues(obj) {
+  return omit(obj, o =>
+    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+}
+
+/**
  * Return object with the "errors" key removed.
  */
 function withoutEmptyValuesOrErrors(obj) {
   const withoutErrors =
     mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
-  return omit(withoutErrors, o =>
-    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+  return withoutEmptyValues(withoutErrors);
 }
 
 /**
  * Move fields of contact objects around to make the api happy.
  */
 export function formatContact(contact) {
-  if (contact.pk.value) {
+  if (get(contact, 'pk.value')) {
     return contact;
   }
   return withoutEmptyValuesOrErrors({
@@ -230,20 +238,26 @@ export function flattenContact(contact) {
  */
 export function formsFromApi(forms) {
   const result = {};
-  if (forms.outreachrecord) {
-    result.outreachrecord = {...forms.outreachrecord};
+
+  const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
+  if (!isEmpty(cleanOutreachRecord)) {
+    result.outreachrecord = cleanOutreachRecord;
   }
 
-  if (forms.partner) {
-    result.partner = {...forms.partner};
+  const cleanPartner = withoutEmptyValues(forms.partner);
+  if (!isEmpty(cleanPartner)) {
+    result.partner = cleanPartner;
   }
 
+  const flatContacts = map(forms.contacts, c => flattenContact(c));
+  const cleanContacts = map(flatContacts, withoutEmptyValues);
   if (forms.contacts) {
-    result.contacts = map(forms.contacts, c => flattenContact(c));
+    result.contacts = cleanContacts;
   }
 
-  if (forms.contactrecord) {
-    result.communicationrecord = {...forms.contactrecord};
+  const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
+  if (!isEmpty(cleanCommunicationRecord)) {
+    result.communicationrecord = cleanCommunicationRecord;
   }
 
   return result;

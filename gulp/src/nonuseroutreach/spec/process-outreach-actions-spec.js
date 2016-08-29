@@ -170,6 +170,18 @@ describe('formatContact', () => {
     };
     expect(formatContact(contact)).toDiffEqual(contact);
   });
+
+
+  it('handles an empty object', () => {
+    const contact = {};
+    expect(formatContact(contact)).toDiffEqual({
+      pk: {value: ''},
+      location: {
+        pk: {value: ''},
+      },
+      tags: [],
+    });
+  });
 });
 
 describe('flattenContact', () => {

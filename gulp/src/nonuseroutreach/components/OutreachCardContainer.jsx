@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty, map, filter, get} from 'lodash-compat';
+import {isEmpty, map, filter, get, any} from 'lodash-compat';
 import {
   determineProcessStateAction,
   editPartnerAction,
@@ -46,11 +46,16 @@ class OutreachCardContainer extends Component {
     }
   }
 
+  hasErrors(record) {
+    return any(record, v => !isEmpty(v.errors));
+  }
+
   renderContact(contact, index) {
     const {dispatch} = this.props;
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(contact)}
         key={index}
         displayText={get(contact, 'name.value')}
         type="contact"
@@ -67,6 +72,7 @@ class OutreachCardContainer extends Component {
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(partner)}
         key="partner"
         type="partner"
         displayText={get(partner, 'name.value')}
@@ -83,6 +89,7 @@ class OutreachCardContainer extends Component {
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(communicationrecord)}
         displayText={get(communicationrecord, 'contact_type.value', 'unknown')}
         type="communicationrecord"
         onNav={() =>
