@@ -2,7 +2,6 @@ import React from 'react';
 import {connect} from 'react-redux';
 import Inbox from './Inbox';
 import {Col, Row} from 'react-bootstrap';
-import Confirm from 'common/ui/Confirm';
 
 /* InboxManagementPage
  * Component which allows the user to configure new and existing outreach
@@ -14,7 +13,6 @@ class InboxManagementPage extends React.Component {
 
     return (
       <div className="cardWrapper">
-        <Confirm/>
         <Row>
           <Col xs={12}>
             <div className="wrapper-header">
