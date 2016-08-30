@@ -71,25 +71,31 @@ class ProcessRecordPage extends Component {
   async handleSavePartner() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    const success = await dispatch(doSubmit(true));
     this.resetSearches();
-    dispatch(determineProcessStateAction());
+    if (success) {
+      dispatch(determineProcessStateAction());
+    }
   }
 
   async handleSaveContact() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    const success = await dispatch(doSubmit(true));
     this.resetSearches();
-    dispatch(determineProcessStateAction());
+    if (success) {
+      dispatch(determineProcessStateAction());
+    }
   }
 
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    const success = await dispatch(doSubmit(true));
     this.resetSearches();
-    dispatch(determineProcessStateAction());
+    if (success) {
+      dispatch(determineProcessStateAction());
+    }
   }
 
   async handleSubmit() {
