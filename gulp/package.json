@@ -5,11 +5,9 @@
   "main": "index.js",
   "scripts": {
     "clean-shrinkwrap": "babel-node clean-shrinkwrap.js",
-    "compile-minify-sass": "node-sass --output-style compressed --output ../static src/sass",
     "compile-sass": "node-sass --output ../static src/sass",
     "devserver": "webpack-dev-server -d --progress --config=webpack.dev.config.js --inline",
-    "tests": "gulp watch-tasks watch",
-    "watch-sass": "onchange 'src/sass/*.scss' -- npm run compile-sass"
+    "tests": "gulp watch-tasks watch"
   },
   "author": "DirectEmployers Association",
   "license": "(GPL-2.0 OR GPL-3.0 OR MIT)",
@@ -43,7 +41,6 @@
     "lodash-compat": "~3.10.1",
     "moment": "^2.13.0",
     "node-sass": "^3.8.0",
-    "onchange": "^3.0.0",
     "react": "^0.14.3",
     "react-addons-update": "^0.14.3",
     "react-bootstrap": "^0.29.4",
