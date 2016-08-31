@@ -1246,21 +1246,27 @@ def process_email(request):
     logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
                 unmatched_contacts)))
 
-    attachments, error = make_attachments(request, contact_emails, admin_email)
-    if error is not None:
-        return error
-    created_records, attachment_failures, error = make_records(
-        request, date_time, possible_contacts, created_contacts,
-        contact_emails, admin_email, admin_user, subject, email_text,
-        attachments, NUO_HOSTS)
-    if error is not None:
-        return error
-    send_contact_record_email_response(created_records, created_contacts,
-                                       attachment_failures, unmatched_contacts,
-                                       None, admin_email,
-                                       is_nuo=not bool(admin_user),
-                                       company=company,
-                                       buckets=NUO_LOCAL)
+    attachment_failures = []
+    if is_nuo:
+        created_records = make_outreach_record(
+            possible_contacts, created_contacts, admin_email, subject,
+            email_text, NUO_HOSTS, partners)
+    else:
+        attachments, error = make_attachments(request, contact_emails,
+                                              admin_email)
+        if error is not None:
+            return error
+        (created_records, attachment_failures,
+         error) = make_communication_records(
+            request, date_time, possible_contacts, created_contacts,
+            contact_emails, admin_email, admin_user, subject, email_text,
+            attachments, NUO_HOSTS)
+        if error is not None:
+            return error
+        send_contact_record_email_response(
+            created_records, created_contacts, attachment_failures,
+            unmatched_contacts, None, admin_email, is_nuo=not bool(admin_user),
+            company=company, buckets=NUO_LOCAL)
     return HttpResponse(status=200)
 
 
@@ -1602,9 +1608,27 @@ def make_attachments(request, contact_emails, admin_email):
     return attachments, None
 
 
-def make_records(request, date_time, possible_contacts, created_contacts,
-                 contact_emails, admin_email, admin_user, subject, email_text,
-                 attachments, nuo_hosts):
+def make_outreach_record(possible_contacts, created_contacts, admin_email,
+                         subject, email_text, nuo_hosts, partners):
+    contacts = possible_contacts + created_contacts
+    workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
+        state='New')
+    records = []
+    for email in nuo_hosts:
+        record = OutreachRecord.objects.create(
+            outreach_email=email, from_email=admin_email,
+            email_body=email_text, subject=subject,
+            current_workflow_state=workflow_state)
+        record.partners = partners
+        record.contacts = contacts
+        records.append(record)
+    return records
+
+
+def make_communication_records(request, date_time, possible_contacts,
+                               created_contacts, contact_emails, admin_email,
+                               admin_user, subject, email_text, attachments,
+                               nuo_hosts):
     """
     Creates communication/outreach records as appropriate from the information
     provided.
@@ -1641,45 +1665,33 @@ def make_records(request, date_time, possible_contacts, created_contacts,
         return None, None, HttpResponse(200)
 
     for contact in all_contacts:
-        if admin_user:
-            change_msg = "Email was sent by %s to %s" % \
-                         (admin_user.get_full_name(), contact.name)
-            record = ContactRecord.objects.create(partner=contact.partner,
-                                                  contact_type='email',
-                                                  contact=contact,
-                                                  contact_email=contact.email,
-                                                  contact_phone=contact.phone,
-                                                  created_by=admin_user,
-                                                  date_time=date_time,
-                                                  subject=subject,
-                                                  notes=force_text(email_text))
-            try:
-                for attachment in attachments:
-                    prm_attachment = PRMAttachment()
-                    prm_attachment.attachment = attachment
-                    prm_attachment.contact_record = record
-                    prm_attachment._partner = contact.partner
-                    prm_attachment.save()
-                    # The file pointer for this attachment is now at the end of
-                    # the file; reset it to the beginning for future use.
-                    attachment.seek(0)
-            except AttributeError:
-                attachment_failures.append(record)
-            log_change(record, None, admin_user, contact.partner, contact.name,
-                       action_type=ADDITION, change_msg=change_msg,
-                       impersonator=request.impersonator)
-            created_records.append(record)
-        else:
-            workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
-                state='New')
-            for email in nuo_hosts:
-                record = OutreachRecord.objects.create(
-                    outreach_email=email, from_email=admin_email,
-                    email_body=email_text, subject=subject,
-                    current_workflow_state=workflow_state)
-                record.partners.add(contact.partner)
-                record.contacts.add(contact)
-                created_records.append(record)
+        change_msg = "Email was sent by %s to %s" % \
+                     (admin_user.get_full_name(), contact.name)
+        record = ContactRecord.objects.create(partner=contact.partner,
+                                              contact_type='email',
+                                              contact=contact,
+                                              contact_email=contact.email,
+                                              contact_phone=contact.phone,
+                                              created_by=admin_user,
+                                              date_time=date_time,
+                                              subject=subject,
+                                              notes=force_text(email_text))
+        try:
+            for attachment in attachments:
+                prm_attachment = PRMAttachment()
+                prm_attachment.attachment = attachment
+                prm_attachment.contact_record = record
+                prm_attachment._partner = contact.partner
+                prm_attachment.save()
+                # The file pointer for this attachment is now at the end of
+                # the file; reset it to the beginning for future use.
+                attachment.seek(0)
+        except AttributeError:
+            attachment_failures.append(record)
+        log_change(record, None, admin_user, contact.partner, contact.name,
+                   action_type=ADDITION, change_msg=change_msg,
+                   impersonator=request.impersonator)
+        created_records.append(record)
     return created_records, attachment_failures, None
 
 
