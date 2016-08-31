@@ -2848,7 +2848,6 @@ em.pendingText {
 
 .tag-select-menu {
   background-color: #fff;
-  /*display: none;*/
   display: block;
   font-size: 14px;
   color: #555;
@@ -2880,7 +2879,7 @@ em.pendingText {
   padding: 3px 8px 3px 8px;
   margin: 0 5px 5px 0;
   position: relative;
-  cursor: default;
+  cursor: pointer;
   -webkit-touch-callout: none;
   /* iOS Safari */
   -webkit-user-select: none;
