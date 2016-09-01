@@ -1263,10 +1263,10 @@ def process_email(request):
             attachments, NUO_HOSTS)
         if error is not None:
             return error
-        send_contact_record_email_response(
-            created_records, created_contacts, attachment_failures,
-            unmatched_contacts, None, admin_email, is_nuo=not bool(admin_user),
-            company=company, buckets=NUO_LOCAL)
+    send_contact_record_email_response(
+        created_records, created_contacts, attachment_failures,
+        unmatched_contacts, None, admin_email, is_nuo=not bool(admin_user),
+        company=company, buckets=NUO_LOCAL)
     return HttpResponse(status=200)
 
 

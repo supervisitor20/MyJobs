@@ -1206,13 +1206,22 @@ class EmailTests(MyPartnersTestCase):
             self.assert_contact_info_in_email(email)
 
     def test_outreach_record_and_log_creation(self):
+        """
+        Outreach records don't require existing contacts (or even the ability
+        for contacts to be automatically created). Ideally the message body
+        will contain adequate information for a MyJobs user to create one.
+
+        If multiple potential existing contacts are found, link them to the
+        generated record.
+        """
         new_contact = ContactFactory(partner=self.partner,
                                      user=UserFactory(email='new@user.com'),
                                      email='new@user.com')
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = ', '.join([self.full_outreach_address,
-                                     self.contact.email])
+                                     self.contact.email,
+                                     'new2@user.com'])
         self.data['from'] = 'non-user@good.com'
         self.data['cc'] = new_contact.email
         response = self.client.post(reverse('process_email'), self.data)
@@ -1232,20 +1241,15 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(record.email_body, self.data['text'])
         self.assertEqual(self.data['subject'], self.data['subject'])
 
-        record = OutreachRecord.objects.get(contacts__email=new_contact.email)
-        self.assertEqual(record.email_body, self.data['text'])
-        self.assertEqual(self.data['subject'], self.data['subject'])
+        self.assertEqual(record.contacts.count(), 2)
 
     def test_outreach_record_with_wrong_email_domain(self):
-        new_contact = ContactFactory(partner=self.partner,
-                                     user=UserFactory(email='new@user.com'),
-                                     email='new@user.com')
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = ', '.join([self.full_outreach_address,
                                      self.contact.email])
         self.data['from'] = 'non-user@bad.com'
-        self.data['cc'] = new_contact.email
+        self.data['cc'] = 'new@user.com'
 
         response = self.client.post(reverse('process_email'), self.data)
 
@@ -1253,20 +1257,19 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_outreach_record_can_be_bcc(self):
-        new_contact = ContactFactory(partner=self.partner,
-                                     user=UserFactory(email='new@user.com'),
-                                     email='new@user.com')
+        record_count = OutreachRecord.objects.count()
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = self.contact.email
         self.data['from'] = 'non-user@good.com'
-        self.data['cc'] = new_contact.email
+        self.data['cc'] = 'new@user.com'
         self.data['envelope'] = json.dumps(
             {'to': [self.full_outreach_address]})
         response = self.client.post(reverse('process_email'), self.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(OutreachRecord.objects.count(), record_count + 1)
 
     def test_contact_record_and_log_creation(self):
         new_contact = ContactFactory(partner=self.partner,
