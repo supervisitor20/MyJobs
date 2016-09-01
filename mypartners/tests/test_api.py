@@ -706,6 +706,8 @@ class PRMAPITestCase(MyPartnersTestCase):
         response = self.client.get(reverse('api_get_contacts'))
         payload = json.loads(response.content)
         self.assertEqual(len(payload), new_contacts + 1)
+        self.assertEqual(self.partner.pk, payload[1]['partner']['pk'])
+        self.assertEqual(self.partner.name, payload[1]['partner']['name'])
 
     def test_search_contact_by_q(self):
         """

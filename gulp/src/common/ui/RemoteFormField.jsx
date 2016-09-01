@@ -13,9 +13,9 @@ export default class RemoteFormField extends Component {
   render() {
     const {fieldName, form, value, onChange,
       tagActions, selectedTags, availableTags} = this.props;
-
-    const field = form.fields[fieldName];
+    const field = form.fields[fieldName] || {};
     const errors = form.errors[fieldName];
+    const fieldDisable = field.readonly;
 
     function wrap(child) {
       return (
@@ -43,6 +43,7 @@ export default class RemoteFormField extends Component {
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
+          disable={fieldDisable}
           />
       );
     case 'textarea':
@@ -56,6 +57,7 @@ export default class RemoteFormField extends Component {
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
+          disable={fieldDisable}
           />
       );
     case 'date':
@@ -70,6 +72,7 @@ export default class RemoteFormField extends Component {
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
           numberOfYears={50}
+          disable={fieldDisable}
           pastOnly
           />
       );
@@ -80,6 +83,7 @@ export default class RemoteFormField extends Component {
           onChange={e => onChange(e, fieldName)}
           value={getDisplayForValue(field.choices, value)}
           choices={field.choices}
+          disable={fieldDisable}
           />
       );
     case 'checkbox':
@@ -93,6 +97,7 @@ export default class RemoteFormField extends Component {
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
+          disable={fieldDisable}
           />
       );
     case 'tags':

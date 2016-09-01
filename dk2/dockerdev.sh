@@ -95,15 +95,22 @@ background() {
         -v $(pwd)/revproxy/certs:/etc/nginx/certs \
         -v /var/run/docker.sock:/tmp/docker.sock:ro \
         darrint/revproxy
+    docker run \
+        --name mongo \
+        -d \
+        -p 27017:27017 \
+        mongo:3.2
 }
 
 backgroundstop() {
     docker stop mysql || true
     docker stop solr || true
     docker stop revproxy || true
+    docker stop mongo || true
     docker rm mysql || true
     docker rm solr || true
     docker rm revproxy || true
+    docker rm mongo || true
 }
 
 bgrst() {

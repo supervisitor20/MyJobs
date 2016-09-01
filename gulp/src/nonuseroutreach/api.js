@@ -64,7 +64,11 @@ export default class Api {
         ...extraParams,
         'q': searchString,
       });
-    return map(results, r => ({value: r.id, display: r.name}));
+    return map(results, r => ({
+      value: r.id,
+      display: r.name,
+      partner: r.partner,
+    }));
   }
 
   async getOutreach(outreachId) {

@@ -11,8 +11,13 @@ import {get, forEach, includes, forOwn} from 'lodash-compat';
 import {
   partnerForm,
   contactForm,
+  contactNotesOnlyForm,
   communicationRecordForm,
 } from 'nonuseroutreach/forms';
+
+import {
+  resetSearchOrAddAction,
+} from '../actions/search-or-add-actions';
 
 import {
   determineProcessStateAction,
@@ -92,31 +97,43 @@ class ProcessRecordPage extends Component {
 
   tagActionRouter(action, form, tagNameOrObjects) {
     switch (action) {
-    case 'remove':
-      this.handleRemoveTag(form, tagNameOrObjects);
-      break;
-    case 'select':
-      this.handleSelectTag(form, tagNameOrObjects);
-      break;
-    case 'new':
-      this.handleNewTag(form, tagNameOrObjects);
-      break;
-    default:
-      break;
+      case 'remove':
+        this.handleRemoveTag(form, tagNameOrObjects);
+        break;
+      case 'select':
+        this.handleSelectTag(form, tagNameOrObjects);
+        break;
+      case 'new':
+        this.handleNewTag(form, tagNameOrObjects);
+        break;
+      default:
+        break;
     }
+  }
+
+  resetSearches() {
+    const {dispatch} = this.props;
+
+    dispatch(resetSearchOrAddAction('PARTNER'));
+    dispatch(resetSearchOrAddAction('CONTACT'));
   }
 
   handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
-  async handleChooseContact(obj) {
+  async handleChooseContact(obj, addPartner) {
     const {dispatch} = this.props;
 
+    if (addPartner) {
+      dispatch(choosePartnerAction(obj.partner.pk, obj.partner.name));
+    }
     dispatch(chooseContactAction(obj.value, obj.display));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -136,6 +153,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -143,6 +161,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
@@ -150,13 +169,15 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
 
     await dispatch(doSubmit(true));
+    this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
   async handleSubmit() {
-    const {dispatch} = this.props;
+    const {dispatch, history} = this.props;
 
-    await dispatch(doSubmit());
+    await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
+    this.resetSearches();
   }
 
   renderCard(title, children) {
@@ -181,7 +202,7 @@ class ProcessRecordPage extends Component {
         <FieldWrapper label="Contact Search">
           <SearchDrop
             instance="CONTACT"
-            onSelect={obj => this.handleChooseContact(obj)}/>
+            onSelect={obj => this.handleChooseContact(obj, true)}/>
         </FieldWrapper>
       </div>,
     ]));
@@ -196,7 +217,7 @@ class ProcessRecordPage extends Component {
           <SearchDrop
             instance="CONTACT"
             extraParams={{partner_id: partnerId}}
-            onSelect={obj => this.handleChooseContact(obj)}
+            onSelect={obj => this.handleChooseContact(obj, false)}
             onAdd={obj => this.handleNewContact(obj)}
             />
         </FieldWrapper>
@@ -268,6 +289,23 @@ class ProcessRecordPage extends Component {
     );
   }
 
+  renderAppendContactNotes() {
+    const {dispatch, contactIndex, contactFormsContents} = this.props;
+    const contactFormContents = contactFormsContents[contactIndex] || {};
+
+    return (
+      <Form
+        form={contactNotesOnlyForm}
+        title="Contact Details"
+        submitTitle="Add Contact"
+        formContents={contactFormContents}
+        onEdit={(n, v) =>
+          dispatch(editFormAction('contacts', n, v, contactIndex))}
+        onSubmit={() => this.handleSaveContact()}
+        />
+    );
+  }
+
   renderSelectWorkflow() {
     const {dispatch,
       workflowState,
@@ -299,18 +337,23 @@ class ProcessRecordPage extends Component {
     const {processState} = this.props;
 
     let contents = '';
+    let extraAddContact = '';
 
     if (processState === 'SELECT_PARTNER') {
       contents = this.renderInitialSearch();
     } else if (processState === 'SELECT_CONTACT') {
       contents = this.renderSelectContact();
     } else if (processState === 'NEW_COMMUNICATIONRECORD') {
+      extraAddContact = this.renderSelectContact();
       contents = this.renderNewCommunicationRecord();
     } else if (processState === 'NEW_PARTNER') {
       contents = this.renderNewPartner();
     } else if (processState === 'NEW_CONTACT') {
       contents = this.renderNewContact();
+    } else if (processState === 'CONTACT_APPEND') {
+      contents = this.renderAppendContactNotes();
     } else if (processState === 'SELECT_WORKFLOW_STATE') {
+      extraAddContact = this.renderSelectContact();
       contents = this.renderSelectWorkflow();
     }
 
@@ -319,6 +362,7 @@ class ProcessRecordPage extends Component {
         <button className="nuo-button">
           <a href="/prm/view/nonuseroutreach/#/records">Back to record list</a>
         </button>
+        {extraAddContact}
         {contents}
       </div>
     );
@@ -327,6 +371,7 @@ class ProcessRecordPage extends Component {
 
 ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired,
   outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
   partnerId: PropTypes.any,

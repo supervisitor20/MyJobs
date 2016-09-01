@@ -122,14 +122,16 @@ def home(request, guid, vsid=None, debug=None):
                 else:
                     err = '&jcnlx.err=XST'
 
-            if browse_url:
-                data['browse_url'] = browse_url
-            else:
-                data['browse_url'] = 'http://www.my.jobs/%s/careers/' % \
-                    text.slugify(guid_redirect.company_name)
-            response = HttpResponseGone(
-                render_to_string('redirect/expired.html', data))
-        else:
+            if vsid != '99':
+                if browse_url:
+                    data['browse_url'] = browse_url
+                else:
+                    data['browse_url'] = 'http://www.my.jobs/%s/careers/' % \
+                        text.slugify(guid_redirect.company_name)
+                response = HttpResponseGone(
+                    render_to_string('redirect/expired.html', data))
+
+        if response is None:
             response = HttpResponsePermanentRedirect(redirect_url)
 
         aguid = request.COOKIES.get('aguid') or \
@@ -157,7 +159,7 @@ def home(request, guid, vsid=None, debug=None):
                                             request.get_host(),
                                             aguid)
 
-        if not expired:
+        if vsid == '99' or not expired:
             # If expired has a value, we're staying on the my.jobs domain and
             # showing an expired job page. If not, we're probably going
             # to an external site.

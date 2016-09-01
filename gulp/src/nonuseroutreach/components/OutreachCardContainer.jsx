@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
 import OutreachCard from 'nonuseroutreach/components/OutreachCard';
-import {isEmpty, map, filter, get} from 'lodash-compat';
+import {isEmpty, map, filter, get, any} from 'lodash-compat';
 import {
   determineProcessStateAction,
   editPartnerAction,
@@ -15,6 +15,14 @@ import {
 
 
 class OutreachCardContainer extends Component {
+  handlePartnerNav() {
+    const {dispatch, partner} = this.props;
+
+    if (!get(partner, 'pk.value')) {
+      dispatch(editPartnerAction());
+    }
+  }
+
   propsToCards() {
     const cardsReturn = [];
     for (const key in this.props) {
@@ -29,21 +37,26 @@ class OutreachCardContainer extends Component {
     switch (type) {
     case 'contacts':
       return map(filter(stateObject, c => !isEmpty(c)),
-        (contact, i) => this.handleContact(contact, i));
+        (contact, i) => this.renderContact(contact, i));
     case 'partner':
-      return this.handlePartner(stateObject);
+      return this.renderPartner(stateObject);
     case 'communicationrecord':
-      return this.handleCommunicationRecord(stateObject);
+      return this.renderCommunicationRecord(stateObject);
     default:
       break;
     }
   }
 
-  handleContact(contact, index) {
+  hasErrors(record) {
+    return any(record, v => !isEmpty(v.errors));
+  }
+
+  renderContact(contact, index) {
     const {dispatch} = this.props;
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(contact)}
         key={index}
         displayText={get(contact, 'name.value')}
         type="contact"
@@ -56,15 +69,16 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handlePartner(partner) {
+  renderPartner(partner) {
     const {dispatch} = this.props;
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(partner)}
         key="partner"
         type="partner"
         displayText={get(partner, 'name.value')}
-        onNav={() => dispatch(editPartnerAction())}
+        onNav={() => this.handlePartnerNav()}
         onDel={() => {
           dispatch(deletePartnerAction());
           dispatch(cleanUpNewTags('partner'));
@@ -73,11 +87,12 @@ class OutreachCardContainer extends Component {
     );
   }
 
-  handleCommunicationRecord() {
+  renderCommunicationRecord() {
     const {dispatch, communicationrecord} = this.props;
 
     return (
       <OutreachCard
+        hasErrors={this.hasErrors(communicationrecord)}
         displayText={get(communicationrecord, 'contact_type.value', 'unknown')}
         type="communicationrecord"
         onNav={() =>

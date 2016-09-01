@@ -34,6 +34,8 @@ import processEmailReducer from './reducers/process-outreach-reducer';
 import {
   resetSearchOrAddAction,
 } from './actions/search-or-add-actions';
+import confirmReducer from 'common/reducers/confirm-reducer';
+
 
 // cross-browser support
 installPolyfills();
@@ -47,6 +49,7 @@ const reducer = combineReducers({
   errors: errorReducer,
   search: searchReducer,
   process: processEmailReducer,
+  confirmation: confirmReducer,
 });
 
 // state to pass to our reducer when the app starts

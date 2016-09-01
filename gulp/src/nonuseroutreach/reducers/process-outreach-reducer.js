@@ -18,6 +18,7 @@ const defaultState = {
  *    NEW_PARTNER: the user is editing a new partner
  *    SELECT_CONTACT: the user is selecting a contact AFTER selecting a partner
  *    NEW_CONTACT: the user is editng a new contact
+ *    CONTACT_APPEND: the user is adding notes to an existing contact
  *    NEW_COMMUNICATIONRECORD: the user is editing the new record
  *    SELECT_WORKFLOW_STATE: the user is picking the new workflow state
  *
@@ -149,12 +150,6 @@ export default handleActions({
   },
 
   'NUO_EDIT_PARTNER': (state) => {
-    if (get(state, 'record.partner.pk')) {
-      return {
-        ...state,
-        state: 'SELECT_PARTNER',
-      };
-    }
     return {
       ...state,
       state: 'NEW_PARTNER',
@@ -164,15 +159,14 @@ export default handleActions({
   'NUO_EDIT_CONTACT': (state, action) => {
     const {contactIndex} = action.payload;
 
-    const pk = get(state, `record.contact.${contactIndex}.pk`);
-    const newState = pk ? 'SELECT_CONTACT' : 'NEW_CONTACT';
+    const pk = get(state, `record.contacts[${contactIndex}].pk.value`);
+    const newState = pk ? 'CONTACT_APPEND' : 'NEW_CONTACT';
     return {
       ...state,
       state: newState,
       contactIndex,
     };
   },
-
 
   'NUO_EDIT_COMMUNICATIONRECORD': (state) => {
     return {
@@ -247,7 +241,7 @@ export default handleActions({
         [field]: newValueData,
       };
 
-      const newFormSet = [...form];
+      const newFormSet = [...formSet];
       newFormSet[formIndex] = newForm;
 
       return {

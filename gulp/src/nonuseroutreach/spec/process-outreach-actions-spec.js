@@ -163,12 +163,24 @@ describe('formatContact', () => {
     });
   });
 
-  it('leaves out location when linking', () => {
+  it('does not introduce a location key when linking', () => {
     const contact = {
       pk: {value: 333},
       name: {value: 'a'},
     };
-    expect(formatContact(contact)).toDiffEqual({pk: {value: 333}});
+    expect(formatContact(contact)).toDiffEqual(contact);
+  });
+
+
+  it('handles an empty object', () => {
+    const contact = {};
+    expect(formatContact(contact)).toDiffEqual({
+      pk: {value: ''},
+      location: {
+        pk: {value: ''},
+      },
+      tags: [],
+    });
   });
 });
 
@@ -333,6 +345,49 @@ describe('formsToApi', () => {
       contactrecord: noErrors,
     });
   });
+
+  it('removes empty value objects', () => {
+    const flatContact = {
+      pk: {value: ''},
+      name: {value: 'a', errors: ['a']},
+      email: {value: 'e'},
+      city: {errors: ['a']},
+      state: {errors: ['b']},
+      notes: {value: 'n'},
+    };
+    const hasErrors = {
+      name: {
+        value: 'someone',
+        errors: ['b'],
+      },
+    };
+    const input = {
+      partner: hasErrors,
+      contacts: [flatContact, flatContact],
+      outreachrecord: hasErrors,
+      communicationrecord: hasErrors,
+    };
+    const output = formsToApi(input);
+    const contact = {
+      pk: {value: ''},
+      name: {value: 'a'},
+      email: {value: 'e'},
+      location: {
+        pk: {value: ''},
+      },
+      tags: [],
+      notes: {value: 'n'},
+    };
+    const noErrors = {
+      name: {value: 'someone'},
+    };
+    expect(output).toDiffEqual({
+      outreachrecord: noErrors,
+      partner: noErrors,
+      contacts: [contact, contact],
+      contactrecord: noErrors,
+    });
+  })
 
   it('renames commrec', () => {
     const input = {

@@ -2161,7 +2161,7 @@ def api_convert_outreach_record(request):
     outreach_record.current_workflow_state = workflow_status
     outreach_record.save()
 
-    return HttpResponse("success")
+    return HttpResponse('"success"')
 
 @requires('read tag')
 def api_get_available_tags(request):
@@ -2319,7 +2319,8 @@ def api_get_contacts(request):
     else:
         contact_args = {'partner__owner': company}
 
-    contacts = Contact.objects.filter(**contact_args)
+    contacts = (
+        Contact.objects.filter(**contact_args).prefetch_related('partner'))
     if q:
         q_obj = Q(email__icontains=q) | Q(name__icontains=q)
         contacts = list(contacts.filter(q_obj))
@@ -2330,10 +2331,16 @@ def api_get_contacts(request):
         sorted_contacts.extend(set(contacts).difference(sorted_contacts))
     else:
         sorted_contacts = contacts
-    return HttpResponse(json.dumps([{'id': contact.pk,
-                                     'name': contact.name,
-                                     'email': contact.email}
-                                    for contact in sorted_contacts]))
+    return HttpResponse(json.dumps([
+        {
+            'id': contact.pk,
+            'name': contact.name,
+            'email': contact.email,
+            'partner': {
+                'pk': contact.partner.pk,
+                'name': contact.partner.name,
+            },
+        } for contact in sorted_contacts]))
 
 
 @require_http_methods(['GET'])

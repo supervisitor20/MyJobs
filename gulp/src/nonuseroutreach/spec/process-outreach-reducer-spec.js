@@ -191,12 +191,60 @@ describe('processEmailReducer', () => {
     });
 
     describe('indexed', () => {
-      const action = editFormAction('contacts', 'name', 'Bob', 0);
 
       it('should create and store the field', () => {
+        const action = editFormAction('contacts', 'name', 'Bob', 0);
         const result = reducer({}, action);
 
         expect(result.record.contacts[0].name.value).toEqual('Bob');
+      });
+
+      it('should should leave other indexed objects alone', () => {
+        const initialFormContents = {
+          contacts: [
+            {
+              city: {value: 'somewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+            {
+              city: {value: 'elsewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+          ],
+          other: {
+            a: {value: 'b'},
+          },
+        };
+        const action = editFormAction('contacts', 'city', 'elsewhere2', 1);
+        const result = reducer({record: initialFormContents}, action);
+
+        expect(result.record).toDiffEqual({
+          contacts: [
+            {
+              city: {value: 'somewhere'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+            {
+              city: {value: 'elsewhere2'},
+              suffix: {
+                value: 'jr',
+                errors: ['some error'],
+              },
+            },
+          ],
+          other: {
+            a: {value: 'b'},
+          },
+        });
       });
     });
   });
@@ -210,18 +258,9 @@ describe('handling noteFormsAction', () => {
 });
 
 describe('handling editPartnerAction', () => {
-  it('should switch state to new if there is no pk', () => {
+  it('should switch state to new', () => {
     const result = reducer({}, editPartnerAction());
     expect(result.state).toEqual('NEW_PARTNER');
-  });
-
-  it('should switch state to select if there is a pk', () => {
-    const result = reducer({
-      record: {
-        partner: {pk: 3},
-      },
-    }, editPartnerAction());
-    expect(result.state).toEqual('SELECT_PARTNER');
   });
 });
 
@@ -229,7 +268,7 @@ describe('handling editContactAction', () => {
   describe('when there is no pk', () => {
     const result = reducer({}, editContactAction(3));
 
-    it('should switch state to new if there is no pk', () => {
+    it('should switch state', () => {
       expect(result.state).toEqual('NEW_CONTACT');
     });
 
@@ -238,15 +277,15 @@ describe('handling editContactAction', () => {
     });
   });
 
-  describe('when there is no pk', () => {
+  describe('when there is a pk', () => {
     const result = reducer({
       record: {
-        contact: [{pk: 3}],
+        contacts: [{pk: {value: 3}}],
       },
     }, editContactAction(0));
 
-    it('should switch state to select if there is a pk', () => {
-      expect(result.state).toEqual('SELECT_CONTACT');
+    it('should switch state', () => {
+      expect(result.state).toEqual('CONTACT_APPEND');
     });
 
     it('should set the contact index', () => {

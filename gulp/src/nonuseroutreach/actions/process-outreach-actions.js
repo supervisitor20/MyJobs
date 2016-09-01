@@ -2,11 +2,14 @@ import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 import {
   map,
+  get,
   flatten,
   assign,
   omit,
   mapValues,
   isPlainObject,
+  isEmpty,
+  isUndefined,
 } from 'lodash-compat';
 
 /**
@@ -190,27 +193,35 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object various kinds of empty keys removed.
+ */
+function withoutEmptyValues(obj) {
+  return omit(obj, o =>
+    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+}
+
+/**
  * Return object with the "errors" key removed.
  */
-function omitErrors(obj) {
-  return mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+function withoutEmptyValuesOrErrors(obj) {
+  const withoutErrors =
+    mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+  return withoutEmptyValues(withoutErrors);
 }
 
 /**
  * Move fields of contact objects around to make the api happy.
  */
 export function formatContact(contact) {
-  if (contact.pk.value) {
-    return {
-      pk: contact.pk,
-    };
+  if (get(contact, 'pk.value')) {
+    return contact;
   }
-  return omitErrors({
+  return withoutEmptyValuesOrErrors({
     pk: {value: ''},
     name: contact.name,
     email: contact.email,
     phone: contact.phone,
-    location: omitErrors({
+    location: withoutEmptyValuesOrErrors({
       pk: {value: ''},
       address_line_one: contact.address_line_one,
       address_line_two: contact.address_line_two,
@@ -241,20 +252,26 @@ export function flattenContact(contact) {
  */
 export function formsFromApi(forms) {
   const result = {};
-  if (forms.outreachrecord) {
-    result.outreachrecord = {...forms.outreachrecord};
+
+  const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
+  if (!isEmpty(cleanOutreachRecord)) {
+    result.outreachrecord = cleanOutreachRecord;
   }
 
-  if (forms.partner) {
-    result.partner = {...forms.partner};
+  const cleanPartner = withoutEmptyValues(forms.partner);
+  if (!isEmpty(cleanPartner)) {
+    result.partner = cleanPartner;
   }
 
+  const flatContacts = map(forms.contacts, c => flattenContact(c));
+  const cleanContacts = map(flatContacts, withoutEmptyValues);
   if (forms.contacts) {
-    result.contacts = map(forms.contacts, c => flattenContact(c));
+    result.contacts = cleanContacts;
   }
 
-  if (forms.contactrecord) {
-    result.communicationrecord = {...forms.contactrecord};
+  const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
+  if (!isEmpty(cleanCommunicationRecord)) {
+    result.communicationrecord = cleanCommunicationRecord;
   }
 
   return result;
@@ -265,17 +282,17 @@ export function formsFromApi(forms) {
  */
 export function formsToApi(forms) {
   return {
-    outreachrecord: omitErrors({...forms.outreachrecord}),
-    partner: omitErrors({...forms.partner}),
+    outreachrecord: withoutEmptyValuesOrErrors({...forms.outreachrecord}),
+    partner: withoutEmptyValuesOrErrors({...forms.partner}),
     contacts: map(forms.contacts, c => formatContact(c)),
-    contactrecord: omitErrors({...forms.communicationrecord}),
+    contactrecord: withoutEmptyValuesOrErrors({...forms.communicationrecord}),
   };
 }
 
 /**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly) {
+export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
     const record = process.record;
@@ -290,7 +307,9 @@ export function doSubmit(validateOnly) {
     try {
       const request = {forms};
       await api.submitContactRecord(request, validateOnly);
-      // TODO: do something with response.
+      if (!validateOnly && onSuccess) {
+        onSuccess();
+      }
     } catch (e) {
       if (e.data) {
         const apiErrors = e.data.api_errors;
