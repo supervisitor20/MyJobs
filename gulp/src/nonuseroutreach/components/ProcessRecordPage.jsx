@@ -97,17 +97,17 @@ class ProcessRecordPage extends Component {
 
   tagActionRouter(action, form, tagNameOrObjects) {
     switch (action) {
-      case 'remove':
-        this.handleRemoveTag(form, tagNameOrObjects);
-        break;
-      case 'select':
-        this.handleSelectTag(form, tagNameOrObjects);
-        break;
-      case 'new':
-        this.handleNewTag(form, tagNameOrObjects);
-        break;
-      default:
-        break;
+    case 'remove':
+      this.handleRemoveTag(form, tagNameOrObjects);
+      break;
+    case 'select':
+      this.handleSelectTag(form, tagNameOrObjects);
+      break;
+    case 'new':
+      this.handleNewTag(form, tagNameOrObjects);
+      break;
+    default:
+      break;
     }
   }
 
