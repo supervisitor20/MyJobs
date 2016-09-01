@@ -20,19 +20,31 @@ import {
 export const setAvailableTagsAction =
   createAction('NUO_SET_AVAILABLE_TAGS');
 
-export const selectTagForPartner =
-  createAction('NUO_ADD_PARTNER_TAG');
-
+/**
+ * add a new tag to the state
+ */
 export const addNewTag =
   createAction('NUO_ADD_NEW_TAG',
     (form, tagName) => ({form, tagName}));
 
+/**
+ * remove association between a single tag and a single form
+ */
 export const removeTagAssociation =
   createAction('NUO_REMOVE_NEW_TAG_ASSOCIATION',
   (form, tagName) => ({form, tagName}));
 
-export const cleanUpTags =
-  createAction('NUO_CLEANUP_NEW_TAGS');
+/**
+ * remove all associations new tags have to a given form
+ */
+export const removeNewTagsFromForm =
+  createAction('NUO_REMOVE_NEW_TAGS_FROM_FORM');
+
+/**
+ * remove any new tags that are not associated with a form
+ */
+export const cleanUpOrphanTags =
+  createAction('NUO_CLEANUP_ORPHAN_TAGS');
 
 /**
  *  Determine what the state of the process view should be

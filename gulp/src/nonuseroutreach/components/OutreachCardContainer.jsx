@@ -10,7 +10,7 @@ import {
   deleteContactAction,
   editCommunicationRecordAction,
   deleteCommunicationRecordAction,
-  cleanUpNewTags,
+  removeNewTagsFromForm,
 } from '../actions/process-outreach-actions';
 
 
@@ -63,7 +63,7 @@ class OutreachCardContainer extends Component {
         onNav={() => dispatch(editContactAction(index))}
         onDel={() => {
           dispatch(deleteContactAction(index));
-          dispatch(cleanUpNewTags('contact' + index));
+          dispatch(removeNewTagsFromForm('contact' + index));
           dispatch(determineProcessStateAction());
         }} />
     );
@@ -81,7 +81,7 @@ class OutreachCardContainer extends Component {
         onNav={() => this.handlePartnerNav()}
         onDel={() => {
           dispatch(deletePartnerAction());
-          dispatch(cleanUpNewTags('partner'));
+          dispatch(removeNewTagsFromForm('partner'));
           dispatch(determineProcessStateAction());
         }} />
     );
@@ -99,7 +99,7 @@ class OutreachCardContainer extends Component {
           dispatch(editCommunicationRecordAction())}
         onDel={() => {
           dispatch(deleteCommunicationRecordAction());
-          dispatch(cleanUpNewTags('communicationrecord'));
+          dispatch(removeNewTagsFromForm('communicationrecord'));
         }
         }
         key="commrec" />

@@ -308,15 +308,28 @@ export default handleActions({
     };
   },
 
-  'NUO_CLEANUP_NEW_TAGS': (state, action) => {
-    const {form} = action.payload;
+  'NUO_REMOVE_NEW_TAGS_FROM_FORM': (state, action) => {
+    const form = action.payload;
     const {newTags} = state;
-
-    const remainingTags = {};
+    const returnTags = {};
     forOwn(newTags, (value, key) => {
       if (includes(value, form)) {
         value.splice(value.indexOf(form), 1);
       }
+      returnTags[key] = value;
+    });
+    return {
+      ...state,
+      newTags: {
+        ...returnTags,
+      },
+    };
+  },
+
+  'NUO_CLEANUP_ORPHAN_TAGS': (state) => {
+    const {newTags} = state;
+    const remainingTags = {};
+    forOwn(newTags, (value, key) => {
       if (!isEmpty(value)) remainingTags[key] = value;
     });
     return {

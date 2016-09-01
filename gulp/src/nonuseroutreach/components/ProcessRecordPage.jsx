@@ -30,6 +30,7 @@ import {
   addNewTag,
   doSubmit,
   doGetAvailableTags,
+  cleanUpOrphanTags,
 } from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
@@ -175,7 +176,7 @@ class ProcessRecordPage extends Component {
 
   async handleSubmit() {
     const {dispatch, history} = this.props;
-
+    dispatch(cleanUpOrphanTags());
     await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
     this.resetSearches();
   }
