@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean-shrinkwrap": "babel-node clean-shrinkwrap.js",
+    "compile-sass": "node-sass --output ../static src/sass",
     "devserver": "webpack-dev-server -d --progress --config=webpack.dev.config.js --inline",
     "tests": "gulp watch-tasks watch"
   },
@@ -39,6 +40,7 @@
     "less": "~1.6.1",
     "lodash-compat": "~3.10.1",
     "moment": "^2.13.0",
+    "node-sass": "^3.8.0",
     "react": "^0.14.3",
     "react-addons-update": "^0.14.3",
     "react-bootstrap": "^0.29.4",
