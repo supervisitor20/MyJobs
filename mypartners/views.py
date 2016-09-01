@@ -1812,6 +1812,7 @@ def api_get_nuo_records_list(request):
 
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
+
 @restrict_to_staff()
 @requires("read outreach record")
 def api_get_individual_nuo_record(request, record_id=None):
@@ -1835,11 +1836,14 @@ def api_get_individual_nuo_record(request, record_id=None):
             "subject": record.subject,
             "email_body": record.email_body,
             "current_workflow_state": record.current_workflow_state.state,
+            "to_emails": record.to_emails,
+            "cc_emails": record.cc_emails,
         }
     except OutreachRecord.DoesNotExist:
         json_obj = {}
 
     return HttpResponse(json.dumps(json_obj), mimetype='application/json')
+
 
 @csrf_exempt
 @restrict_to_staff()
