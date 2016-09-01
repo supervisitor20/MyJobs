@@ -6,7 +6,7 @@ import Card from './Card';
 import Form from './Form';
 import SearchDrop from './SearchDrop';
 import Select from 'common/ui/Select';
-import {get} from 'lodash-compat/object';
+import {get, forEach, includes, forOwn} from 'lodash-compat';
 
 import {
   partnerForm,
@@ -21,11 +21,91 @@ import {
   newPartnerAction,
   newContactAction,
   editFormAction,
+  removeTagAssociation,
+  addNewTag,
   doSubmit,
   doGetAvailableTags,
 } from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
+
+  getAvailableTags() {
+    const {newTags} = this.props;
+    const tags = []; // add logic for retrieving actual tags from API
+    // begin logic for appending "new" tags
+
+    forOwn(newTags, (associations, tagName) => {
+      tags.push({value: tagName, display: tagName});
+    });
+    return tags;
+  }
+
+  getTagsForForm(form) {
+    const {newTags} = this.props;
+    const tags = []; // add logic for retrieving actual tags from API
+    // begin logic for appending "new" tags
+
+    forEach(newTags, (associations, tagName) => {
+      if (includes(associations, form)) {
+        tags.push({value: tagName, display: tagName});
+      }
+    });
+
+    return tags;
+  }
+
+  handleNewTag(form, tagName) {
+    const {dispatch} = this.props;
+    dispatch(addNewTag(form, tagName));
+  }
+
+  handleRemoveTag(form, tags) {
+    const {dispatch} = this.props;
+    forEach(tags, (tag) => {
+      if (tag.value === tag.display) {
+        dispatch(removeTagAssociation(form, tag.display));
+      } else {
+        return; // logic for removing existing tag selection
+      }
+    });
+  }
+
+  handleSelectTag(form, tags) {
+    const {dispatch} = this.props;
+    forEach(tags, (tag) => {
+      if (tag.value === tag.display) {
+        dispatch(addNewTag(form, tag.display));
+      } else {
+        return; // logic for removing existing tag selection
+      }
+    });
+  }
+
+  /**
+   * router for tag related action. reduces number of prop types provided to
+   * form, remoteformfield
+   *
+   * @param action - what action is taking place, added via curried function
+   * @param form - the name of the form being accessed
+   * @param tagNameOrObject - either a tag name or tag object
+   */
+
+  tagActionRouter(action, form, tagNameOrObjects) {
+    switch (action) {
+    case 'remove':
+      this.handleRemoveTag(form, tagNameOrObjects);
+      break;
+    case 'select':
+      this.handleSelectTag(form, tagNameOrObjects);
+      break;
+    case 'new':
+      this.handleNewTag(form, tagNameOrObjects);
+      break;
+    default:
+      break;
+    }
+  }
+
   handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
@@ -139,6 +219,11 @@ class ProcessRecordPage extends Component {
         onEdit={(n, v) =>
           dispatch(editFormAction('communicationrecord', n, v))}
         onSubmit={() => this.handleSaveCommunicationRecord()}
+        tagActions={(action, tag) => {
+          this.tagActionRouter(action, 'communicationrecord', tag);
+        }}
+        availableTags={this.getAvailableTags()}
+        selectedTags={this.getTagsForForm('communicationrecord')}
         />
     );
   }
@@ -154,6 +239,9 @@ class ProcessRecordPage extends Component {
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
         onSubmit={() => this.handleSavePartner()}
+        tagActions={(action, tag) => this.tagActionRouter(action, 'partner', tag)}
+        availableTags={this.getAvailableTags()}
+        selectedTags={this.getTagsForForm('partner')}
         />
     );
   }
@@ -171,6 +259,11 @@ class ProcessRecordPage extends Component {
         onEdit={(n, v) =>
           dispatch(editFormAction('contacts', n, v, contactIndex))}
         onSubmit={() => this.handleSaveContact()}
+        tagActions={(action, tag) => {
+          this.tagActionRouter(action, 'contact' + contactIndex, tag);
+        }}
+        availableTags={this.getAvailableTags()}
+        selectedTags={this.getTagsForForm('contact' + contactIndex)}
         />
     );
   }
@@ -249,6 +342,9 @@ ProcessRecordPage.propTypes = {
       display: PropTypes.string.isRequired,
     }).isRequired
   ).isRequired,
+  newTags: PropTypes.arrayOf(
+    PropTypes.object.isRequired
+  ).isRequired,
 };
 
 export default connect(state => ({
@@ -263,4 +359,5 @@ export default connect(state => ({
   workflowState:
     get(state.process.record, 'outreachrecord.current_workflow_state.value'),
   workflowStates: state.process.workflowStates,
+  newTags: state.process.newTags,
 }))(ProcessRecordPage);

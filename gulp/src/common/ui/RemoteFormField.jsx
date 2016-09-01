@@ -1,5 +1,4 @@
 import React, {PropTypes, Component} from 'react';
-import {connect} from 'react-redux';
 import warning from 'warning';
 import {getDisplayForValue} from 'common/array.js';
 import TextField from 'common/ui/TextField';
@@ -10,9 +9,11 @@ import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import TagSelect from 'common/ui/tags/TagSelect';
 
-class RemoteFormField extends Component {
+export default class RemoteFormField extends Component {
   render() {
-    const {fieldName, form, value, onChange} = this.props;
+    const {fieldName, form, value, onChange,
+      tagActions, selectedTags, availableTags} = this.props;
+
     const field = form.fields[fieldName];
     const errors = form.errors[fieldName];
 
@@ -98,15 +99,16 @@ class RemoteFormField extends Component {
       return wrap(
           <TagSelect
           name={fieldName}
-          onChoose={() => ''}
-          onRemove={() => ''}
+          onChoose={(tags) => tagActions('select', tags)}
+          onRemove={(tags) => tagActions('remove', tags)}
           required={field.required}
-          selected={[]}
-          available={this.props.availableTags}
+          selected={selectedTags || []}
+          available={availableTags || []}
           maxLength={field.widget.maxlength}
           isHidden={field.widget.is_hidden}
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
+          onNew={(tags) => tagActions('new', tags)}
           />
       );
     default:
@@ -121,13 +123,17 @@ RemoteFormField.propTypes = {
   fieldName: PropTypes.string.isRequired,
   value: PropTypes.any.isRequired,
   onChange: PropTypes.func.isRequired,
+  tagActions: PropTypes.func,
   availableTags: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.number.isRequired,
       display: PropTypes.string.isRequired,
-    }).isRequired),
+    }).isRequired
+  ),
+  selectedTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ),
 };
-
-export default connect(state => ({
-  availableTags: state.process.availableTags,
-}))(RemoteFormField);

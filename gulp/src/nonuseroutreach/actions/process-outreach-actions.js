@@ -17,6 +17,20 @@ import {
 export const setAvailableTagsAction =
   createAction('NUO_SET_AVAILABLE_TAGS');
 
+export const selectTagForPartner =
+  createAction('NUO_ADD_PARTNER_TAG');
+
+export const addNewTag =
+  createAction('NUO_ADD_NEW_TAG',
+    (form, tagName) => ({form, tagName}));
+
+export const removeTagAssociation =
+  createAction('NUO_REMOVE_NEW_TAG_ASSOCIATION',
+  (form, tagName) => ({form, tagName}));
+
+export const cleanUpTags =
+  createAction('NUO_CLEANUP_NEW_TAGS');
+
 /**
  *  Determine what the state of the process view should be
  */
