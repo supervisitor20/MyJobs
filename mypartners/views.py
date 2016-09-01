@@ -1248,7 +1248,7 @@ def process_email(request):
 
     attachment_failures = []
     if is_nuo:
-        created_records = make_outreach_record(
+        created_records = make_outreach_records(
             possible_contacts, created_contacts, admin_email, to, cc, subject,
             email_text, NUO_HOSTS, partners)
     else:
@@ -1608,8 +1608,8 @@ def make_attachments(request, contact_emails, admin_email):
     return attachments, None
 
 
-def make_outreach_record(possible_contacts, created_contacts, admin_email,
-                         to, cc, subject, email_text, nuo_hosts, partners):
+def make_outreach_records(possible_contacts, created_contacts, admin_email,
+                          to, cc, subject, email_text, nuo_hosts, partners):
     contacts = possible_contacts + created_contacts
     workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
         state='New')
