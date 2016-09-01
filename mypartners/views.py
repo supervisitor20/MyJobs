@@ -1249,7 +1249,7 @@ def process_email(request):
     attachment_failures = []
     if is_nuo:
         created_records = make_outreach_record(
-            possible_contacts, created_contacts, admin_email, subject,
+            possible_contacts, created_contacts, admin_email, to, cc, subject,
             email_text, NUO_HOSTS, partners)
     else:
         attachments, error = make_attachments(request, contact_emails,
@@ -1260,7 +1260,7 @@ def process_email(request):
          error) = make_communication_records(
             request, date_time, possible_contacts, created_contacts,
             contact_emails, admin_email, admin_user, subject, email_text,
-            attachments, NUO_HOSTS)
+            attachments)
         if error is not None:
             return error
     send_contact_record_email_response(
@@ -1609,7 +1609,7 @@ def make_attachments(request, contact_emails, admin_email):
 
 
 def make_outreach_record(possible_contacts, created_contacts, admin_email,
-                         subject, email_text, nuo_hosts, partners):
+                         to, cc, subject, email_text, nuo_hosts, partners):
     contacts = possible_contacts + created_contacts
     workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
         state='New')
@@ -1618,7 +1618,8 @@ def make_outreach_record(possible_contacts, created_contacts, admin_email,
         record = OutreachRecord.objects.create(
             outreach_email=email, from_email=admin_email,
             email_body=email_text, subject=subject,
-            current_workflow_state=workflow_state)
+            current_workflow_state=workflow_state,
+            to_emails=to, cc_emails=cc)
         record.partners = partners
         record.contacts = contacts
         records.append(record)
@@ -1627,8 +1628,7 @@ def make_outreach_record(possible_contacts, created_contacts, admin_email,
 
 def make_communication_records(request, date_time, possible_contacts,
                                created_contacts, contact_emails, admin_email,
-                               admin_user, subject, email_text, attachments,
-                               nuo_hosts):
+                               admin_user, subject, email_text, attachments):
     """
     Creates communication/outreach records as appropriate from the information
     provided.

@@ -1242,6 +1242,7 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(self.data['subject'], self.data['subject'])
 
         self.assertEqual(record.contacts.count(), 2)
+        self.assertTrue('new2@user.com' in record.to_emails)
 
     def test_outreach_record_with_wrong_email_domain(self):
         OutreachEmailDomain.objects.create(company=self.company,
