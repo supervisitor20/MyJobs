@@ -29,7 +29,6 @@ import {
   removeTagAssociation,
   addNewTag,
   doSubmit,
-  doGetAvailableTags,
   cleanUpOrphanTags,
 } from '../actions/process-outreach-actions';
 
@@ -140,13 +139,11 @@ class ProcessRecordPage extends Component {
 
   async handleNewPartner(obj) {
     const {dispatch} = this.props;
-    dispatch(doGetAvailableTags());
     dispatch(newPartnerAction(obj.display));
   }
 
   async handleNewContact(obj) {
     const {dispatch} = this.props;
-    dispatch(doGetAvailableTags());
     dispatch(newContactAction(obj.display));
   }
 
@@ -388,9 +385,7 @@ ProcessRecordPage.propTypes = {
       display: PropTypes.string.isRequired,
     }).isRequired
   ).isRequired,
-  newTags: PropTypes.arrayOf(
-    PropTypes.object.isRequired
-  ).isRequired,
+  newTags: PropTypes.object,
 };
 
 export default connect(state => ({

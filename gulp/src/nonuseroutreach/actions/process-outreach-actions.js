@@ -13,14 +13,6 @@ import {
 } from 'lodash-compat';
 
 /**
- * Retrieve available tags for company
- *
- * availableTags: e.g. [{value: nn, display: Reviewed}]
- */
-export const setAvailableTagsAction =
-  createAction('NUO_SET_AVAILABLE_TAGS');
-
-/**
  * add a new tag to the state
  */
 export const addNewTag =
@@ -335,15 +327,5 @@ export function doSubmit(validateOnly, onSuccess) {
         dispatch(errorAction(e.message));
       }
     }
-  };
-}
-
-/* doGetAvailableTags
-  Retrieves all existing tags for a company
- */
-export function doGetAvailableTags() {
-  return async (dispatch, _, {api}) => {
-    const availableTags = await api.getAvailableTags();
-    dispatch(setAvailableTagsAction(availableTags));
   };
 }

@@ -17,10 +17,6 @@ export default class Api {
     return await this.api.get('/prm/api/nonuseroutreach/workflowstate');
   }
 
-  async getAvailableTags() {
-    return await this.api.get('/prm/api/nonuseroutreach/get-tags');
-  }
-
   async createNewInbox(email) {
     const promise = this.api.post('/prm/api/nonuseroutreach/inbox/add', {
       email: email,
