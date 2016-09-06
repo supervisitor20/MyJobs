@@ -1,5 +1,5 @@
 import {handleActions} from 'redux-actions';
-import {isEmpty, get} from 'lodash-compat';
+import {isEmpty, get, has, includes, forOwn} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -7,6 +7,7 @@ const defaultState = {
     contacts: [],
     communicationrecord: {},
   },
+  newTags: {},
 };
 
 /**
@@ -260,6 +261,91 @@ export default handleActions({
         [formName]: {
           ...form,
           [field]: newValueData,
+        },
+      },
+    };
+  },
+
+  'NUO_ADD_NEW_TAG': (state, action) => {
+    const {form, tagName} = action.payload;
+    const {newTags} = state;
+    if (has(newTags, tagName)) {
+      if (!includes(newTags[tagName], form)) {
+        newTags[tagName].push(form);
+      }
+    } else {
+      newTags[tagName] = [form];
+    }
+    return {
+      ...state,
+      newTags: {
+        ...newTags,
+      },
+    };
+  },
+
+  'NUO_REMOVE_NEW_TAG_ASSOCIATION': (state, action) => {
+    const {form, tagName} = action.payload;
+    const {newTags} = state;
+
+    if (has(newTags, tagName)) {
+      if (includes(newTags[tagName], form)) {
+        newTags[tagName].splice(newTags[tagName].indexOf(form), 1);
+      }
+    }
+    return {
+      ...state,
+      newTags: {
+        ...newTags,
+      },
+    };
+  },
+
+  'NUO_REMOVE_NEW_TAGS_FROM_FORM': (state, action) => {
+    const form = action.payload;
+    const {newTags} = state;
+    const returnTags = {};
+    forOwn(newTags, (value, key) => {
+      if (includes(value, form)) {
+        value.splice(value.indexOf(form), 1);
+      }
+      returnTags[key] = value;
+    });
+    return {
+      ...state,
+      newTags: {
+        ...returnTags,
+      },
+    };
+  },
+
+  'NUO_CLEANUP_ORPHAN_TAGS': (state) => {
+    const {newTags} = state;
+    const remainingTags = {};
+    forOwn(newTags, (value, key) => {
+      if (!isEmpty(value)) remainingTags[key] = value;
+    });
+    return {
+      ...state,
+      newTags: {
+        ...remainingTags,
+      },
+    };
+  },
+
+  'NUO_ADD_PARTNER_TAG': (state, action) => {
+    const newTag = action.payload;
+
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        partner: {
+          ...state.record.partner,
+          tags: {
+            ...state.record.partner.tags,
+            newTag,
+          },
         },
       },
     };

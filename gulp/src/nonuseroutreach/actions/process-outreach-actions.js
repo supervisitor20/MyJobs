@@ -13,12 +13,30 @@ import {
 } from 'lodash-compat';
 
 /**
- * We have learned about workflow states.
- *
- * states: e.g. [{value: nn, display: Reviewed}]
+ * add a new tag to the state
  */
-export const receivedWorkflowStates =
-  createAction('NUO_RECEIVED_WORKFLOW_STATES');
+export const addNewTag =
+  createAction('NUO_ADD_NEW_TAG',
+    (form, tagName) => ({form, tagName}));
+
+/**
+ * remove association between a single tag and a single form
+ */
+export const removeTagAssociation =
+  createAction('NUO_REMOVE_NEW_TAG_ASSOCIATION',
+  (form, tagName) => ({form, tagName}));
+
+/**
+ * remove all associations new tags have to a given form
+ */
+export const removeNewTagsFromForm =
+  createAction('NUO_REMOVE_NEW_TAGS_FROM_FORM');
+
+/**
+ * remove any new tags that are not associated with a form
+ */
+export const cleanUpOrphanTags =
+  createAction('NUO_CLEANUP_ORPHAN_TAGS');
 
 /**
  *  Determine what the state of the process view should be

@@ -2163,7 +2163,6 @@ def api_convert_outreach_record(request):
 
     return HttpResponse('"success"')
 
-
 @requires('read tag')
 def tag_names(request):
     if request.method == 'GET':
