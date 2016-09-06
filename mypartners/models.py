@@ -989,6 +989,8 @@ class OutreachRecord(models.Model):
     from_email = models.EmailField(
         max_length=255, verbose_name="Email",
         help_text="Email outreach effort sent from.")
+    to_emails = models.TextField(verbose_name="To", blank=True)
+    cc_emails = models.TextField(verbose_name="CC", blank=True)
     email_body = models.TextField()
     # RFC 5322: subjects don't have length restrictions
     subject = models.TextField()

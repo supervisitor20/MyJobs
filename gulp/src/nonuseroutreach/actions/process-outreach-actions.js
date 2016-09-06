@@ -150,6 +150,8 @@ export function convertOutreach(record) {
     outreachInbox: record.outreach_email,
     workflowState: record.current_workflow_state,
     outreachSubject: record.subject,
+    outreachTo: record.to_emails,
+    outreachCC: record.cc_emails,
   };
 }
 
