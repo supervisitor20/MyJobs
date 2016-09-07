@@ -247,14 +247,17 @@ class ProcessRecordPage extends Component {
           this.tagActionRouter(
             action,
             'communicationrecord',
-            communicationRecordFormContents.tags,
+            'communication_record',
+            undefined,
+            communicationRecordFormContents,
             tag);
         }}
         availableTags={this.getAvailableTags(communicationRecordForm)}
         selectedTags={
           this.getSelectedTagsForForm(
             'communicationrecord',
-            communicationRecordFormContents.tags)}
+            communicationRecordForm,
+            communicationRecordFormContents)}
         />
     );
   }
@@ -270,13 +273,14 @@ class ProcessRecordPage extends Component {
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
         onSubmit={() => this.handleSavePartner()}
-        tagActions={(action, tag) => this.tagActionRouter(
-          action,
-          'partner',
-          'partner',
-          undefined,
-          partnerFormContents,
-          tag)}
+        tagActions={(action, tag) =>
+          this.tagActionRouter(
+            action,
+            'partner',
+            'partner',
+            undefined,
+            partnerFormContents,
+            tag)}
         availableTags={this.getAvailableTags(partnerForm)}
         selectedTags={
           this.getSelectedTagsForForm(
@@ -306,10 +310,18 @@ class ProcessRecordPage extends Component {
           dispatch(editFormAction('contacts', n, v, contactIndex))}
         onSubmit={() => this.handleSaveContact()}
         tagActions={(action, tag) => {
-          this.tagActionRouter(action, 'contact' + contactIndex, tag);
+          this.tagActionRouter(
+            action,
+            'contact' + contactIndex,
+            'contacts',
+            contactIndex,
+            contactFormContents,
+            tag);
         }}
         availableTags={this.getAvailableTags(contactForm)}
-        selectedTags={this.getSelectedTagsForForm('contact' + contactIndex)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'contact' + contactIndex, contactForm, contactFormContents)}
         />
     );
   }
