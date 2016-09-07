@@ -32,6 +32,8 @@ describe('convertOutreach', () => {
     outreach_email: "testemail@my.jobs",
     current_workflow_state: "Reviewed",
     subject: "Subject",
+    cc_emails: "cc@example.com",
+    to_emails: "to@example.com"
   };
   const result = convertOutreach(record);
 
@@ -43,6 +45,8 @@ describe('convertOutreach', () => {
       outreachInbox: "testemail@my.jobs",
       workflowState: "Reviewed",
       outreachSubject: "Subject",
+      outreachCC: "cc@example.com",
+      outreachTo: "to@example.com",
     });
   });
 });

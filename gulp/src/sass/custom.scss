@@ -3376,7 +3376,6 @@ em.pendingText {
 
 .tag-select-menu {
   background-color: #fff;
-  /*display: none;*/
   display: block;
   font-size: 14px;
   color: #555;
@@ -3409,7 +3408,7 @@ em.pendingText {
   padding: 3px 8px 3px 8px;
   margin: 0 5px 5px 0;
   position: relative;
-  cursor: default;
+  cursor: pointer;
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Chrome/Safari/Opera */
   -khtml-user-select: none; /* Konqueror */
@@ -4327,7 +4326,7 @@ table td, table th {
   margin-top: 1px;
   line-height: 14px;
   vertical-align: text-top;
-  background-image: url("../img/glyphicons-halflings.png");
+  background-image: url("//d2e48ltfsb5exy.cloudfront.net/content_mj/files/images/glyphicons-halflings.png");
   background-position: 14px 14px;
   background-repeat: no-repeat;
 }
@@ -5055,8 +5054,8 @@ a.btn.pull-right {
 /* React Datepicker */
 
 .datepicker-input {
-  background-image: url('./svg/calendar.png');
-  background-image: url('./svg/calendar.svg'), none;
+  background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_mj/files/svg/calendar.png');
+  background-image: url('//d2e48ltfsb5exy.cloudfront.net/content_mj/files/svg/calendar.svg'), none;
   background-repeat: no-repeat;
   background-position: 98% 50%;
 }
