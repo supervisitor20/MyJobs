@@ -12,8 +12,6 @@ class OutreachDetails extends Component {
         <h2 className="top">Communication Details</h2>
 
         <div style={{overflowWrap: 'break-word', wordWrap: 'break-word'}}>
-          <div>Date Recieved: {dateAdded}</div>
-        <div style={{overflowWrap: 'break-word'}}>
           <div>Date Received: {dateAdded}</div>
           <div>From: {outreachFrom}</div>
           <div>To: {outreachTo}</div>
