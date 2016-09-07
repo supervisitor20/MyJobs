@@ -28,6 +28,17 @@ class NonUserOutreachApp extends Component {
 
   componentWillUnmount() {
     this.unsubscribeToHistory();
+    this.unsubscribeToListenBefore();
+  }
+
+  async handleBeforeListen(_location, cb) {
+    if (this.preventHistory) {
+      const {dispatch} = this.props;
+      const message = 'Are you sure you want to leave this page?';
+      cb(await runConfirmInPlace(dispatch, message));
+    } else {
+      cb(true);
+    }
   }
 
   async handleNewLocation(_, loc) {
