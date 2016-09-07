@@ -4,30 +4,59 @@ import {expandStaticUrl} from 'common/assets';
 
 
 class OutreachCard extends Component {
+  constructor() {
+    super();
+    this.state = {
+      showActions: false,
+    };
+  }
+
+  renderIcons() {
+    const {
+      hasErrors,
+    } = this.props;
+    const {
+      showActions,
+    } = this.state;
+
+    return (
+      <div className="tray-items">
+        {showActions ?
+          <img
+          alt="[delete]"
+          src={expandStaticUrl('svg/delete.svg')}
+          onClick={() => this.props.onDel()} /> : null}
+        {hasErrors ?
+          <img
+          alt="[error]"
+          src={expandStaticUrl('svg/error.svg')} /> : null}
+      </div>
+    );
+  }
+
   render() {
     const {
       displayText,
       onNav,
+      type,
     } = this.props;
+
     return (
       <div
         className="tray-container progress-card"
-        onClick={() => onNav()}>
+        onMouseEnter={() => this.setState({showActions: true})}
+        onMouseLeave={() => this.setState({showActions: false})}>
         <div className="tray-items-left">
           <img
-          alt="[partner]"
-          src={expandStaticUrl('svg/partner-card.svg')} />
+          alt={'[' + type + ']'}
+          src={expandStaticUrl('svg/' + type + '-card.svg')} />
         </div>
-        <div className="tray-items">
-            <img
-             alt="[delete]"
-             src={expandStaticUrl('svg/delete.svg')} />
-        </div>
+        {this.renderIcons()}
         <div className="tray-content ellipses">
-          <h5>{displayText}</h5>
+          <h5 onClick={() => onNav()}>{displayText}</h5>
         </div>
       </div>
-  );
+    );
   }
 }
 
@@ -36,8 +65,9 @@ OutreachCard.propTypes = {
   displayText: PropTypes.string.isRequired,
   // User clicked on the card to navigate to the item.
   onNav: PropTypes.func.isRequired,
-  // TODO: add icon choice
-  // TODO: add onDelete.
+  onDel: PropTypes.func.isRequired,
+  type: PropTypes.string.isRequired,
+  hasErrors: PropTypes.bool,
 };
 
 export default connect()(OutreachCard);

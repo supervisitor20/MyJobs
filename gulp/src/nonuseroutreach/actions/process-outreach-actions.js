@@ -1,13 +1,37 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {find, map} from 'lodash-compat/collection';
-import {get, assign} from 'lodash-compat/object';
+import {
+  map,
+  get,
+  flatten,
+  assign,
+  omit,
+  mapValues,
+  isPlainObject,
+  isEmpty,
+  isUndefined,
+} from 'lodash-compat';
+
+/**
+ * We have learned about workflow states.
+ *
+ * states: e.g. [{value: nn, display: Reviewed}]
+ */
+export const receivedWorkflowStates =
+  createAction('NUO_RECEIVED_WORKFLOW_STATES');
+
+/**
+ *  Determine what the state of the process view should be
+ */
+export const determineProcessStateAction =
+  createAction('NUO_DETERMINE_STATE');
 
 /**
  * We have a new search field or we are starting over.
  */
 export const resetProcessAction = createAction('NUO_RESET_PROCESS',
-  (outreachId, outreach) => ({outreachId, outreach}));
+  (outreachId, outreach, workflowStates) =>
+    ({outreachId, outreach, workflowStates}));
 
 /**
  * Use chose a partner.
@@ -44,16 +68,6 @@ export const newContactAction = createAction('NUO_NEW_CONTACT',
     (contactName) => ({contactName}));
 
 /**
- * User is done editing a new partner.
- */
-export const savePartnerAction = createAction('NUO_SAVE_PARTNER');
-
-/**
- * User is done editing a new contact.
- */
-export const saveContactAction = createAction('NUO_SAVE_CONTACT');
-
-/**
  * User wants to see a the new partner.
  */
 export const editPartnerAction = createAction('NUO_EDIT_PARTNER');
@@ -71,6 +85,26 @@ export const editContactAction = createAction('NUO_EDIT_CONTACT',
  */
 export const editCommunicationRecordAction =
   createAction('NUO_EDIT_COMMUNICATIONRECORD');
+
+/**
+ * User wants to remove partner from the record
+ */
+export const deletePartnerAction = createAction('NUO_DELETE_PARTNER');
+
+/**
+ * User wants to remove contact from the record
+ *
+ * contactIndex: which one
+ */
+export const deleteContactAction = createAction('NUO_DELETE_CONTACT',
+  contactIndex => ({contactIndex}));
+
+/**
+ * User wants to remove the communication record object
+ */
+
+export const deleteCommunicationRecordAction =
+  createAction('NUO_DELETE_COMMUNICATIONRECORD');
 
 /**
  * User edited a form.
@@ -102,14 +136,21 @@ export function convertOutreach(record) {
 }
 
 /**
- * We have learned about some errors present.
+ * We have new form data from the API
  *
- * errors: Errors from the api.
+ * forms: new forms from the API
  */
-export const noteErrorsAction = createAction('NUO_NOTE_ERRORS');
+export const noteFormsAction = createAction('NUO_NOTE_FORMS');
 
 /**
- * Start the process by loading an outreach record.
+ * Convert [{id: vv, name: nn}, ...] to [{value: vv, display: nn}]
+ */
+export function convertWorkflowStates(states) {
+  return map(states, s => ({value: s.id, display: s.name}));
+}
+
+/**
+ * Start the process by loading an outreach record and workflow states.
  *
  * outreachId: id for the outreach to load.
  */
@@ -117,7 +158,12 @@ export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
       const outreach = await api.getOutreach(outreachId);
-      dispatch(resetProcessAction(outreachId, convertOutreach(outreach)));
+      const states = await api.getWorkflowStates();
+      dispatch(
+        resetProcessAction(
+          outreachId,
+          convertOutreach(outreach),
+          convertWorkflowStates(states)));
     } catch (e) {
       dispatch(errorAction(e.message));
     }
@@ -133,53 +179,132 @@ export function extractErrorObject(fieldArray) {
 }
 
 /**
+ * Return object various kinds of empty keys removed.
+ */
+function withoutEmptyValues(obj) {
+  return omit(obj, o =>
+    isPlainObject(o) && isEmpty(o) || isUndefined(o));
+}
+
+/**
+ * Return object with the "errors" key removed.
+ */
+function withoutEmptyValuesOrErrors(obj) {
+  const withoutErrors =
+    mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
+  return withoutEmptyValues(withoutErrors);
+}
+
+/**
+ * Move fields of contact objects around to make the api happy.
+ */
+export function formatContact(contact) {
+  if (get(contact, 'pk.value')) {
+    return contact;
+  }
+  return withoutEmptyValuesOrErrors({
+    pk: {value: ''},
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    location: withoutEmptyValuesOrErrors({
+      pk: {value: ''},
+      address_line_one: contact.address_line_one,
+      address_line_two: contact.address_line_two,
+      city: contact.city,
+      state: contact.state,
+      label: contact.label,
+    }),
+    // TODO: fix tags
+    tags: [],
+    notes: contact.notes,
+  });
+}
+
+/**
+ * Flatten fields of contact data received from API
+ */
+export function flattenContact(contact) {
+  return assign({}, ...flatten(map(contact, (v, k) => {
+    if (k === 'location') {
+      return v;
+    }
+    return {[k]: v};
+  })));
+}
+
+/**
+ * Prepare an api forms object for merging with local record object.
+ */
+export function formsFromApi(forms) {
+  const result = {};
+
+  const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
+  if (!isEmpty(cleanOutreachRecord)) {
+    result.outreachrecord = cleanOutreachRecord;
+  }
+
+  const cleanPartner = withoutEmptyValues(forms.partner);
+  if (!isEmpty(cleanPartner)) {
+    result.partner = cleanPartner;
+  }
+
+  const flatContacts = map(forms.contacts, c => flattenContact(c));
+  const cleanContacts = map(flatContacts, withoutEmptyValues);
+  if (forms.contacts) {
+    result.contacts = cleanContacts;
+  }
+
+  const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
+  if (!isEmpty(cleanCommunicationRecord)) {
+    result.communicationrecord = cleanCommunicationRecord;
+  }
+
+  return result;
+}
+
+/**
+ * Prepare local record object for sending to the api.
+ */
+export function formsToApi(forms) {
+  return {
+    outreachrecord: withoutEmptyValuesOrErrors({...forms.outreachrecord}),
+    partner: withoutEmptyValuesOrErrors({...forms.partner}),
+    contacts: map(forms.contacts, c => formatContact(c)),
+    contactrecord: withoutEmptyValuesOrErrors({...forms.communicationrecord}),
+  };
+}
+
+/**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly) {
+export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
+    const process = getState().process;
+    const record = process.record;
+    const withOutreach = {
+      ...record,
+      outreachrecord: {
+        ...record.outreachrecord,
+        pk: {value: process.outreachId},
+      },
+    };
+    const forms = formsToApi(withOutreach);
     try {
-      const process = getState().process;
-      const record = process.record;
-      const workflowStates = await api.getWorkflowStates();
-      const reviewed = find(workflowStates, s => s.name === 'Complete');
-      const request = {
-        outreachrecord: {
-          pk: process.outreachId,
-          current_workflow_state: reviewed.id,
-        },
-        partner: record.partner,
-        contacts: map(record.contacts, c => ({
-          pk: '',
-          name: c.name,
-          email: c.email,
-          phone: c.phone,
-          location: {
-            pk: '',
-            address_line_one: c.address_line_one,
-            address_line_two: c.address_line_two,
-            city: c.city,
-            state: c.state,
-            label: c.label,
-          },
-          // TODO: fix tags
-          tags: [],
-          notes: c.notes,
-        })),
-        contactrecord: record.communicationrecord,
-      };
+      const request = {forms};
       await api.submitContactRecord(request, validateOnly);
-      // TODO: do something with response.
+      if (!validateOnly && onSuccess) {
+        onSuccess();
+      }
     } catch (e) {
       if (e.data) {
-        const formErrors = e.data.form_errors;
-        const errors = {
-          partner: extractErrorObject(get(formErrors, 'partner', [])),
-          contacts: map(get(formErrors, 'contacts', []), ce =>
-            extractErrorObject(ce)),
-          communicationrecord: extractErrorObject(
-            get(formErrors, 'contactrecord', [])),
-        };
-        dispatch(noteErrorsAction(errors));
+        const apiErrors = e.data.api_errors;
+        if (apiErrors) {
+          dispatch(errorAction(apiErrors[0]));
+        }
+        if (e.data.forms) {
+          dispatch(noteFormsAction(formsFromApi(e.data.forms)));
+        }
       } else {
         dispatch(errorAction(e.message));
       }

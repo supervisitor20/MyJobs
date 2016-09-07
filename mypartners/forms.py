@@ -358,6 +358,9 @@ class ContactRecordForm(NormalizedModelForm):
         if 'partner' in kwargs:
             partner = kwargs.pop('partner')
         super(ContactRecordForm, self).__init__(*args, **kwargs)
+        self.fields['contact'].required = True
+        if not hasattr(self.instance, 'contact'):
+            self.fields['contact'].required = False
 
         instance = kwargs.get('instance')
         if partner:
@@ -444,7 +447,12 @@ class ContactRecordForm(NormalizedModelForm):
         PRMAttachment.objects.filter(
             pk__in=self.cleaned_data.get('attach_delete', [])).delete()
 
-        identifier = instance.contact.name
+        if instance.contact:
+            identifier = instance.contact.name
+        else:
+            identifier = {'email': instance.contact_email,
+                          'phone': instance.contact_phone}.get(
+                              instance.contact_type, 'unknown contact')
         log_change(instance, self, request.user, partner, identifier,
                    action_type=new_or_change,
                    impersonator=request.impersonator)
