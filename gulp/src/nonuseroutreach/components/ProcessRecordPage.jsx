@@ -22,8 +22,8 @@ import {
   newPartnerAction,
   newContactAction,
   editFormAction,
-  removeTagAssociation,
-  addNewTag,
+  removeNewTagAction,
+  addNewTagAction,
   doSubmit,
   cleanUpOrphanTags,
 } from '../actions/process-outreach-actions';
@@ -57,14 +57,14 @@ class ProcessRecordPage extends Component {
 
   handleNewTag(form, tagName) {
     const {dispatch} = this.props;
-    dispatch(addNewTag(form, tagName));
+    dispatch(addNewTagAction(form, tagName));
   }
 
   handleRemoveTag(form, tags) {
     const {dispatch} = this.props;
     forEach(tags, (tag) => {
       if (tag.value === tag.display) {
-        dispatch(removeTagAssociation(form, tag.display));
+        dispatch(removeNewTagAction(form, tag.display));
       } else {
         return; // logic for removing existing tag selection
       }
@@ -75,7 +75,7 @@ class ProcessRecordPage extends Component {
     const {dispatch} = this.props;
     forEach(tags, (tag) => {
       if (tag.value === tag.display) {
-        dispatch(addNewTag(form, tag.display));
+        dispatch(addNewTagAction(form, tag.display));
       } else {
         return; // logic for removing existing tag selection
       }

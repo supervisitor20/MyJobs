@@ -301,7 +301,7 @@ export default handleActions({
     };
   },
 
-  'NUO_REMOVE_NEW_TAG_ASSOCIATION': (state, action) => {
+  'NUO_REMOVE_NEW_TAG': (state, action) => {
     const {form, tagName} = action.payload;
     const {newTags} = state;
 

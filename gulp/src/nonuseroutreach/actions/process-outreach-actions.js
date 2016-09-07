@@ -5,15 +5,15 @@ import {map} from 'lodash-compat';
 /**
  * add a new tag to the state
  */
-export const addNewTag =
+export const addNewTagAction =
   createAction('NUO_ADD_NEW_TAG',
     (form, tagName) => ({form, tagName}));
 
 /**
  * remove association between a single tag and a single form
  */
-export const removeTagAssociation =
-  createAction('NUO_REMOVE_NEW_TAG_ASSOCIATION',
+export const removeNewTagAction =
+  createAction('NUO_REMOVE_NEW_TAG',
   (form, tagName) => ({form, tagName}));
 
 /**
