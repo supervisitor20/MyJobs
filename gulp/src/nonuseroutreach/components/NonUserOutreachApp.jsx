@@ -34,7 +34,7 @@ class NonUserOutreachApp extends Component {
   async handleBeforeListen(_location, cb) {
     if (this.preventHistory) {
       const {dispatch} = this.props;
-      const message = 'All form data will be lost if you navigate away form this page!';
+      const message = 'All your information will be lost if you navigate away from this page.';
       cb(await runConfirmInPlace(dispatch, message));
     } else {
       cb(true);
