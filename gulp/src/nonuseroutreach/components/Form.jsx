@@ -18,6 +18,9 @@ class Form extends Component {
       submitTitle,
       onSubmit,
       onEdit,
+      tagActions,
+      availableTags,
+      selectedTags,
     } = this.props;
 
     const errors = assign({},
@@ -31,7 +34,10 @@ class Form extends Component {
         form={localForm}
         fieldName={fieldName}
         value={this.getValue(formContents, fieldName) || ''}
-        onChange={e => onEdit(fieldName, e.target.value)}/>
+        onChange={e => onEdit(fieldName, e.target.value)}
+        tagActions={tagActions}
+        availableTags={availableTags}
+        selectedTags={selectedTags} />
     ));
 
     return (
@@ -53,6 +59,19 @@ Form.propTypes = {
   submitTitle: PropTypes.string.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
+  tagActions: PropTypes.func,
+  availableTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ),
+  selectedTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ),
 };
 
 export default Form;
