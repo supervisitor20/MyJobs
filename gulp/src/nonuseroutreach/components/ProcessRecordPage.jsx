@@ -12,7 +12,8 @@ import {
   map,
   keys,
   pick,
-  filter,
+  without,
+  indexBy,
 } from 'lodash-compat';
 
 
@@ -49,13 +50,13 @@ class ProcessRecordPage extends Component {
     ], 'display');
   }
 
-  getSelectedTagsForForm(formIndex, form, value) {
+  getSelectedTagsForForm(formName, form, formContents) {
     const {newTags} = this.props;
-    const existingTags = form.fields.tags.choices;
+    const existingTags = indexBy(form.fields.tags.choices, 'value');
 
     return sortBy([
-      ...filter(existingTags, et => includes(value, et.value)),
-      ...map(keys(pick(newTags, assoc => includes(assoc, formIndex))), v =>
+      ...map(formContents.tags || [], v => existingTags[v]),
+      ...map(keys(pick(newTags, assoc => includes(assoc, formName))), v =>
         ({value: v, display: v})),
     ], 'display');
   }
@@ -65,24 +66,26 @@ class ProcessRecordPage extends Component {
     dispatch(addNewTagAction(form, tagName));
   }
 
-  handleRemoveTag(form, tags) {
+  handleRemoveTag(formName, formKey, formIndex, formContents, tags) {
     const {dispatch} = this.props;
     forEach(tags, (tag) => {
       if (tag.value === tag.display) {
-        dispatch(removeNewTagAction(form, tag.display));
+        dispatch(removeNewTagAction(formName, tag.display));
       } else {
-        return; // logic for removing existing tag selection
+        const value = without(formContents.tags, ...map(tags, t => t.value));
+        dispatch(editFormAction(formKey, 'tags', value, formIndex));
       }
     });
   }
 
-  handleSelectTag(form, tags) {
+  handleSelectTag(formName, formKey, formIndex, formContents, tags) {
     const {dispatch} = this.props;
     forEach(tags, (tag) => {
       if (tag.value === tag.display) {
-        dispatch(addNewTagAction(form, tag.display));
+        dispatch(addNewTagAction(formName, tag.display));
       } else {
-        return; // logic for removing existing tag selection
+        const value = [...formContents.tags || [], tag.value];
+        dispatch(editFormAction(formKey, 'tags', value, formIndex));
       }
     });
   }
@@ -96,16 +99,16 @@ class ProcessRecordPage extends Component {
    * @param tagNameOrObject - either a tag name or tag object
    */
 
-  tagActionRouter(action, form, tagNameOrObjects) {
+  tagActionRouter(action, formName, formKey, formIndex, formContents, tagNameOrObjects) {
     switch (action) {
     case 'remove':
-      this.handleRemoveTag(form, tagNameOrObjects);
+      this.handleRemoveTag(formName, formKey, formIndex, formContents, tagNameOrObjects);
       break;
     case 'select':
-      this.handleSelectTag(form, tagNameOrObjects);
+      this.handleSelectTag(formName, formKey, formIndex, formContents, tagNameOrObjects);
       break;
     case 'new':
-      this.handleNewTag(form, tagNameOrObjects);
+      this.handleNewTag(formName, tagNameOrObjects);
       break;
     default:
       break;
@@ -241,7 +244,11 @@ class ProcessRecordPage extends Component {
           dispatch(editFormAction('communication_record', n, v))}
         onSubmit={() => this.handleSaveCommunicationRecord()}
         tagActions={(action, tag) => {
-          this.tagActionRouter(action, 'communicationrecord', tag);
+          this.tagActionRouter(
+            action,
+            'communicationrecord',
+            communicationRecordFormContents.tags,
+            tag);
         }}
         availableTags={this.getAvailableTags(communicationRecordForm)}
         selectedTags={
@@ -263,7 +270,13 @@ class ProcessRecordPage extends Component {
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
         onSubmit={() => this.handleSavePartner()}
-        tagActions={(action, tag) => this.tagActionRouter(action, 'partner', tag)}
+        tagActions={(action, tag) => this.tagActionRouter(
+          action,
+          'partner',
+          'partner',
+          undefined,
+          partnerFormContents,
+          tag)}
         availableTags={this.getAvailableTags(partnerForm)}
         selectedTags={
           this.getSelectedTagsForForm(
