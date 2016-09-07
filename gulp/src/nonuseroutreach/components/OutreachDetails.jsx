@@ -10,7 +10,7 @@ class OutreachDetails extends Component {
       <OutreachCardContainer />
       <div className="sidebar">
         <h2 className="top">Communication Details</h2>
-        <div style={{overflowWrap: 'break-word'}}>
+        <div style={{overflowWrap: 'break-word', wordWrap: 'break-word'}}>
           <div>Date Recieved: {dateAdded}</div>
           <div>From: {outreachFrom}</div>
           <div>Subject: {outreachSubject}</div>
