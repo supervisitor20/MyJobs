@@ -4,7 +4,16 @@ import FieldWrapper from 'common/ui/FieldWrapper';
 import Card from './Card';
 import Form from './Form';
 import SearchDrop from './SearchDrop';
-import {get, forEach, includes, forOwn} from 'lodash-compat';
+import {
+  get,
+  forEach,
+  includes,
+  sortBy,
+  map,
+  keys,
+  pick,
+  filter,
+} from 'lodash-compat';
 
 
 import {
@@ -30,29 +39,25 @@ import {
 
 class ProcessRecordPage extends Component {
 
-  getAvailableTags() {
+  getAvailableTags(form) {
     const {newTags} = this.props;
-    const tags = []; // add logic for retrieving actual tags from API
-    // begin logic for appending "new" tags
+    const existingTags = form.fields.tags.choices;
 
-    forOwn(newTags, (associations, tagName) => {
-      tags.push({value: tagName, display: tagName});
-    });
-    return tags;
+    return sortBy([
+      ...existingTags,
+      ...map(keys(newTags), tagName => ({value: tagName, display: tagName})),
+    ], 'display');
   }
 
-  getTagsForForm(form) {
+  getSelectedTagsForForm(formIndex, form, value) {
     const {newTags} = this.props;
-    const tags = []; // add logic for retrieving actual tags from API
-    // begin logic for appending "new" tags
+    const existingTags = form.fields.tags.choices;
 
-    forEach(newTags, (associations, tagName) => {
-      if (includes(associations, form)) {
-        tags.push({value: tagName, display: tagName});
-      }
-    });
-
-    return tags;
+    return sortBy([
+      ...filter(existingTags, et => includes(value, et.value)),
+      ...map(keys(pick(newTags, assoc => includes(assoc, formIndex))), v =>
+        ({value: v, display: v})),
+    ], 'display');
   }
 
   handleNewTag(form, tagName) {
@@ -238,8 +243,11 @@ class ProcessRecordPage extends Component {
         tagActions={(action, tag) => {
           this.tagActionRouter(action, 'communicationrecord', tag);
         }}
-        availableTags={this.getAvailableTags()}
-        selectedTags={this.getTagsForForm('communicationrecord')}
+        availableTags={this.getAvailableTags(communicationRecordForm)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'communicationrecord',
+            communicationRecordFormContents.tags)}
         />
     );
   }
@@ -256,8 +264,10 @@ class ProcessRecordPage extends Component {
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
         onSubmit={() => this.handleSavePartner()}
         tagActions={(action, tag) => this.tagActionRouter(action, 'partner', tag)}
-        availableTags={this.getAvailableTags()}
-        selectedTags={this.getTagsForForm('partner')}
+        availableTags={this.getAvailableTags(partnerForm)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'partner', partnerForm, partnerFormContents)}
         />
     );
   }
@@ -285,8 +295,8 @@ class ProcessRecordPage extends Component {
         tagActions={(action, tag) => {
           this.tagActionRouter(action, 'contact' + contactIndex, tag);
         }}
-        availableTags={this.getAvailableTags()}
-        selectedTags={this.getTagsForForm('contact' + contactIndex)}
+        availableTags={this.getAvailableTags(contactForm)}
+        selectedTags={this.getSelectedTagsForForm('contact' + contactIndex)}
         />
     );
   }

@@ -51,13 +51,13 @@ Form.propTypes = {
   tagActions: PropTypes.func,
   availableTags: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.number.isRequired,
+      value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired
   ),
   selectedTags: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.number.isRequired,
+      value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired
   ),
