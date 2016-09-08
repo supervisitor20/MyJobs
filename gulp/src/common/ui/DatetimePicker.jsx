@@ -70,7 +70,7 @@ export default class DateTimePicker extends Component {
     const {onChange} = this.props;
     this.setState({
       [field]: value,
-    }, () => onChange({target: {value: this.stateToString()}}))
+    }, () => onChange({target: {value: this.stateToString()}}));
   }
 
   stateToString() {
