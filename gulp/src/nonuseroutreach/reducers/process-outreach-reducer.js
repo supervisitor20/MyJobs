@@ -1,5 +1,5 @@
 import {handleActions} from 'redux-actions';
-import {isEmpty, get, has, includes, forOwn} from 'lodash-compat';
+import {isEmpty, get, has, includes, forOwn, map} from 'lodash-compat';
 
 const defaultState = {
   record: {
@@ -53,13 +53,38 @@ export default handleActions({
   },
 
   'NUO_DETERMINE_STATE': (state) => {
+    function getErrorsForForm(forms, key) {
+      return !isEmpty(get(forms, [key, 'errors']));
+    }
+
+    function getErrorsForForms(forms, key) {
+      return map(get(forms, key), f => !isEmpty(get(f, 'errors')));
+    }
+
     let currentState;
     let newForms = state.forms;
-    if (isEmpty(state.record.partner)) {
+    let contactIndex = state.contactIndex;
+
+    // Test if your current form has errors, if so stay there.
+    if (state.state === 'NEW_PARTNER' && getErrorsForForm(state.forms, 'partner')) {
+      currentState = state.state;
+    } else if (['CONTACT_APPEND', 'NEW_CONTACT'].indexOf(state.state) !== -1 &&
+               getErrorsForForms(state.forms, 'contacts')[contactIndex]) {
+      currentState = state.state;
+    } else if (state.state === 'NEW_COMMUNICATIONRECORD' && getErrorsForForm(state.forms, 'communication_record')) {
+      currentState = state.state;
+    }
+    // Traverse through forms looking for the first one that does not have data, or has errors.
+    else if (isEmpty(state.record.partner)) {
       currentState = 'SELECT_PARTNER';
+    } else if (getErrorsForForm(state.forms, 'partner')) {
+      currentState = 'NEW_PARTNER';
     } else if (isEmpty(state.record.contacts)) {
       currentState = 'SELECT_CONTACT';
-    } else if (isEmpty(state.record.communication_record)) {
+    } else if (getErrorsForForms(state.forms, 'contacts').indexOf(true) !== -1) {
+      currentState = 'NEW_CONTACT';
+      contactIndex = getErrorsForForms(state.forms, 'contacts').indexOf(true);
+    } else if (isEmpty(state.record.communication_record) || getErrorsForForm(state.forms, 'communication_record')) {
       currentState = 'NEW_COMMUNICATIONRECORD';
       newForms = {
         ...state.forms,
@@ -72,6 +97,7 @@ export default handleActions({
       ...state,
       state: currentState,
       forms: newForms,
+      contactIndex: contactIndex,
     };
   },
 

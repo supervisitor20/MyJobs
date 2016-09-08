@@ -231,7 +231,6 @@ export function doSubmit(validateOnly, onSuccess) {
         dispatch(noteFormsAction(formsFromApi(response)));
       } else if (onSuccess) {
         onSuccess();
-        return true;
       }
     } catch (e) {
       if (e.data) {
@@ -246,6 +245,5 @@ export function doSubmit(validateOnly, onSuccess) {
         dispatch(errorAction(e.message));
       }
     }
-    return false;
   };
 }
