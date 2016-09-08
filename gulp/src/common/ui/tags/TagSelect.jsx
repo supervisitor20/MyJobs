@@ -29,6 +29,18 @@ export default class TagSelect extends Component {
     return this.state[key];
   }
 
+  getAddButton() {
+    const {onNew} = this.props;
+
+    if (onNew) {
+      return (
+        <div className="col-xs-12 col-md-3">
+          <div className="button" onClick={() => this.handleNewTag()}>Add New</div>
+        </div>
+      );
+    }
+  }
+
   openSelectMenu() {
     this.setState({selectDropped: true});
   }
@@ -50,6 +62,15 @@ export default class TagSelect extends Component {
     } else {
       this.setState({partial: null});
     }
+  }
+
+  handleNewTag() {
+    if (!this.state.partial) {
+      return;
+    }
+    const {onNew} = this.props;
+    onNew(this.state.partial);
+    this.setState({partial: null});
   }
 
   selectAll() {
@@ -106,7 +127,7 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {selected, placeholder, searchPlaceholder} = this.props;
+    const {selected, placeholder, searchPlaceholder, onNew} = this.props;
     const {selectDropped, partial} = this.state;
     const filteredAvailable = this.filteredAvailable();
 
@@ -136,14 +157,15 @@ export default class TagSelect extends Component {
             <div className="tag-select-menu">
               <div className="container-fluid">
                 <div className="row">
-                  <div className="col-xs-12 col-md-8">
+                  <div className={'col-xs-12 col-md-' + (onNew ? '6' : '8') }>
                     <TextField
                       name="name"
                       value={partial}
                       onChange={e => this.handleFilterChange(e.target.value)}
                       placeholder={searchPlaceholder} />
                   </div>
-                  <div className="col-xs-12 col-md-4">
+                  { this.getAddButton() }
+                  <div className={'col-xs-12 col-md-' + (onNew ? '3' : '4' )}>
                     <div className="button" onClick={() => this.selectAll()}>Select All</div>
                   </div>
                 </div>
@@ -205,4 +227,10 @@ TagSelect.propTypes = {
    * placeholder text for select input
    */
   placeholder: PropTypes.any,
+
+   /**
+   *  function to handle adding a new tag, otherwise the "add new" button is
+   *  hidden.
+   */
+  onNew: PropTypes.func,
 };

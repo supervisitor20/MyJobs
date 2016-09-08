@@ -12,6 +12,7 @@ import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
 import {doLoadEmail} from '../actions/process-outreach-actions';
 import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
+import Confirm from 'common/ui/Confirm';
 
 /* NonUserOutreachApp
  * An app for managing nonuser outreach, providing a sidebar for navigation and
@@ -81,6 +82,7 @@ class NonUserOutreachApp extends Component {
     const {loading} = this.props;
     return (
       <div>
+        <Confirm/>
         <Row>
           <Col sm={12}>
             <div className="breadcrumbs">

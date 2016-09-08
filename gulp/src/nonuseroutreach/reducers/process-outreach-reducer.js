@@ -1,12 +1,13 @@
 import {handleActions} from 'redux-actions';
-import {isEmpty, get} from 'lodash-compat';
+import {isEmpty, get, has, includes, forOwn} from 'lodash-compat';
 
 const defaultState = {
   record: {
     partner: {},
     contacts: [],
-    communicationrecord: {},
+    communication_record: {},
   },
+  newTags: {},
 };
 
 /**
@@ -22,44 +23,55 @@ const defaultState = {
  *    SELECT_WORKFLOW_STATE: the user is picking the new workflow state
  *
  *  outreach: information for the current outreach record
- *  outreachId: id for the current outreach record
  *  workflowStates: list of known workflow states {value:.., display:..}
  *  contactIndex: if editing a contact, which one is the user concerned with?
- *  form: when editing, information for the form fields
+ *  blankForms: form data from Django defining available form fields.
+ *  forms: form data from Django defining state of entered data, errors, etc.
  *  record: The record which will be submitted {
  *    outreachrecord: the outreach record we are working on
  *    partner: field contents for new partner
  *    contacts: [{ field contents for new contacts}]
- *    communicationrecord: field contents for record
+ *    communication_record: field contents for record
  *  }
  */
 export default handleActions({
   'NUO_RESET_PROCESS': (state, action) => {
-    const {outreach, outreachId, workflowStates} = action.payload;
+    const {
+      outreach,
+      blankForms,
+    } = action.payload;
 
     return {
       ...defaultState,
       state: 'SELECT_PARTNER',
+      blankForms,
+      forms: {
+        contacts: [],
+      },
       outreach,
-      outreachId,
-      workflowStates,
     };
   },
 
   'NUO_DETERMINE_STATE': (state) => {
     let currentState;
+    let newForms = state.forms;
     if (isEmpty(state.record.partner)) {
       currentState = 'SELECT_PARTNER';
     } else if (isEmpty(state.record.contacts)) {
       currentState = 'SELECT_CONTACT';
-    } else if (isEmpty(state.record.communicationrecord)) {
+    } else if (isEmpty(state.record.communication_record)) {
       currentState = 'NEW_COMMUNICATIONRECORD';
+      newForms = {
+        ...state.forms,
+        communication_record: state.blankForms.communication_record,
+      };
     } else {
       currentState = 'SELECT_WORKFLOW_STATE';
     }
     return {
       ...state,
       state: currentState,
+      forms: newForms,
     };
   },
 
@@ -71,8 +83,8 @@ export default handleActions({
       record: {
         ...state.record,
         partner: {
-          pk: {value: partnerId},
-          name: {value: name},
+          pk: partnerId,
+          name: name,
         },
       },
     };
@@ -83,13 +95,20 @@ export default handleActions({
 
     return {
       ...state,
+      forms: {
+        ...state.forms,
+        contacts: [
+          ...state.forms.contacts,
+          null,
+        ],
+      },
       record: {
         ...state.record,
         contacts: [
           ...state.record.contacts,
           {
-            pk: {value: contactId},
-            name: {value: name},
+            pk: contactId,
+            name: name,
           },
         ],
       },
@@ -102,11 +121,15 @@ export default handleActions({
     const newState = {
       ...state,
       state: 'NEW_PARTNER',
+      forms: {
+        ...state.forms,
+        partner: state.blankForms.partner,
+      },
       record: {
         ...state.record,
         partner: {
-          pk: {value: ''},
-          name: {value: partnerName},
+          pk: '',
+          name: partnerName,
         },
       },
     };
@@ -126,13 +149,20 @@ export default handleActions({
       ...state,
       state: 'NEW_CONTACT',
       contactIndex: newIndex,
+      forms: {
+        ...state.forms,
+        contacts: [
+          ...state.forms.contacts,
+          state.blankForms.contact,
+        ],
+      },
       record: {
         ...state.record,
         contacts: [
           ...state.record.contacts,
           {
-            pk: {value: ''},
-            name: {value: contactName},
+            pk: '',
+            name: contactName,
           },
         ],
       },
@@ -151,7 +181,7 @@ export default handleActions({
   'NUO_EDIT_CONTACT': (state, action) => {
     const {contactIndex} = action.payload;
 
-    const pk = get(state, `record.contacts[${contactIndex}].pk.value`);
+    const pk = get(state, ['record', 'contacts', contactIndex, 'pk']);
     const newState = pk ? 'CONTACT_APPEND' : 'NEW_CONTACT';
     return {
       ...state,
@@ -201,7 +231,7 @@ export default handleActions({
       ...state,
       record: {
         ...state.record,
-        communicationrecord: {},
+        communication_record: {},
       },
     };
   },
@@ -221,16 +251,10 @@ export default handleActions({
     if (formIndex || formIndex === 0) {
       const formSet = (state.record || {})[formName] || [];
       const form = formSet[formIndex] || {};
-      const valueData = form[field] || {};
-
-      const newValueData = {
-        ...valueData,
-        value,
-      };
 
       const newForm = {
         ...form,
-        [field]: newValueData,
+        [field]: value,
       };
 
       const newFormSet = [...formSet];
@@ -246,12 +270,6 @@ export default handleActions({
     }
 
     const form = (state.record || {})[formName] || {};
-    const valueData = form[field] || {};
-
-    const newValueData = {
-      ...valueData,
-      value,
-    };
 
     return {
       ...state,
@@ -259,17 +277,103 @@ export default handleActions({
         ...state.record,
         [formName]: {
           ...form,
-          [field]: newValueData,
+          [field]: value,
+        },
+      },
+    };
+  },
+
+  'NUO_ADD_NEW_TAG': (state, action) => {
+    const {form, tagName} = action.payload;
+    const {newTags} = state;
+    if (has(newTags, tagName)) {
+      if (!includes(newTags[tagName], form)) {
+        newTags[tagName].push(form);
+      }
+    } else {
+      newTags[tagName] = [form];
+    }
+    return {
+      ...state,
+      newTags: {
+        ...newTags,
+      },
+    };
+  },
+
+  'NUO_REMOVE_NEW_TAG': (state, action) => {
+    const {form, tagName} = action.payload;
+    const {newTags} = state;
+
+    if (has(newTags, tagName)) {
+      if (includes(newTags[tagName], form)) {
+        newTags[tagName].splice(newTags[tagName].indexOf(form), 1);
+      }
+    }
+    return {
+      ...state,
+      newTags: {
+        ...newTags,
+      },
+    };
+  },
+
+  'NUO_REMOVE_NEW_TAGS_FROM_FORM': (state, action) => {
+    const form = action.payload;
+    const {newTags} = state;
+    const returnTags = {};
+    forOwn(newTags, (value, key) => {
+      if (includes(value, form)) {
+        value.splice(value.indexOf(form), 1);
+      }
+      returnTags[key] = value;
+    });
+    return {
+      ...state,
+      newTags: {
+        ...returnTags,
+      },
+    };
+  },
+
+  'NUO_CLEANUP_ORPHAN_TAGS': (state) => {
+    const {newTags} = state;
+    const remainingTags = {};
+    forOwn(newTags, (value, key) => {
+      if (!isEmpty(value)) remainingTags[key] = value;
+    });
+    return {
+      ...state,
+      newTags: {
+        ...remainingTags,
+      },
+    };
+  },
+
+  'NUO_ADD_PARTNER_TAG': (state, action) => {
+    const newTag = action.payload;
+
+    return {
+      ...state,
+      record: {
+        ...state.record,
+        partner: {
+          ...state.record.partner,
+          tags: {
+            ...state.record.partner.tags,
+            newTag,
+          },
         },
       },
     };
   },
 
   'NUO_NOTE_FORMS': (state, action) => {
-    const record = action.payload;
+    const {record, forms} = action.payload;
 
     return {
       ...state,
+      forms,
       record,
     };
   },

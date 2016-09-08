@@ -1,24 +1,32 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {
-  map,
-  get,
-  flatten,
-  assign,
-  omit,
-  mapValues,
-  isPlainObject,
-  isEmpty,
-  isUndefined,
-} from 'lodash-compat';
+import {map} from 'lodash-compat';
 
 /**
- * We have learned about workflow states.
- *
- * states: e.g. [{value: nn, display: Reviewed}]
+ * add a new tag to the state
  */
-export const receivedWorkflowStates =
-  createAction('NUO_RECEIVED_WORKFLOW_STATES');
+export const addNewTagAction =
+  createAction('NUO_ADD_NEW_TAG',
+    (form, tagName) => ({form, tagName}));
+
+/**
+ * remove association between a single tag and a single form
+ */
+export const removeNewTagAction =
+  createAction('NUO_REMOVE_NEW_TAG',
+  (form, tagName) => ({form, tagName}));
+
+/**
+ * remove all associations new tags have to a given form
+ */
+export const removeNewTagsFromForm =
+  createAction('NUO_REMOVE_NEW_TAGS_FROM_FORM');
+
+/**
+ * remove any new tags that are not associated with a form
+ */
+export const cleanUpOrphanTags =
+  createAction('NUO_CLEANUP_ORPHAN_TAGS');
 
 /**
  *  Determine what the state of the process view should be
@@ -30,8 +38,8 @@ export const determineProcessStateAction =
  * We have a new search field or we are starting over.
  */
 export const resetProcessAction = createAction('NUO_RESET_PROCESS',
-  (outreachId, outreach, workflowStates) =>
-    ({outreachId, outreach, workflowStates}));
+  (outreach, blankForms) =>
+    ({outreach, blankForms}));
 
 /**
  * Use chose a partner.
@@ -132,6 +140,8 @@ export function convertOutreach(record) {
     outreachInbox: record.outreach_email,
     workflowState: record.current_workflow_state,
     outreachSubject: record.subject,
+    outreachTo: record.to_emails,
+    outreachCC: record.cc_emails,
   };
 }
 
@@ -143,13 +153,6 @@ export function convertOutreach(record) {
 export const noteFormsAction = createAction('NUO_NOTE_FORMS');
 
 /**
- * Convert [{id: vv, name: nn}, ...] to [{value: vv, display: nn}]
- */
-export function convertWorkflowStates(states) {
-  return map(states, s => ({value: s.id, display: s.name}));
-}
-
-/**
  * Start the process by loading an outreach record and workflow states.
  *
  * outreachId: id for the outreach to load.
@@ -158,106 +161,48 @@ export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
       const outreach = await api.getOutreach(outreachId);
-      const states = await api.getWorkflowStates();
+      const forms = await api.getForms();
+
       dispatch(
         resetProcessAction(
-          outreachId,
           convertOutreach(outreach),
-          convertWorkflowStates(states)));
+          forms));
+      dispatch(editFormAction('outreach_record', 'pk', outreachId, null));
     } catch (e) {
       dispatch(errorAction(e.message));
     }
   };
 }
 
-
-/**
- * Convert [{field: '', message: ''}, ...] to {field: message, ...}
- */
-export function extractErrorObject(fieldArray) {
-  return assign({}, ...map(fieldArray, p => ({[p.field]: p.message})));
-}
-
-/**
- * Return object various kinds of empty keys removed.
- */
-function withoutEmptyValues(obj) {
-  return omit(obj, o =>
-    isPlainObject(o) && isEmpty(o) || isUndefined(o));
-}
-
-/**
- * Return object with the "errors" key removed.
- */
-function withoutEmptyValuesOrErrors(obj) {
-  const withoutErrors =
-    mapValues(obj, v => isPlainObject(v) ? omit(v, 'errors') : v);
-  return withoutEmptyValues(withoutErrors);
-}
-
-/**
- * Move fields of contact objects around to make the api happy.
- */
-export function formatContact(contact) {
-  if (get(contact, 'pk.value')) {
-    return contact;
-  }
-  return withoutEmptyValuesOrErrors({
-    pk: {value: ''},
-    name: contact.name,
-    email: contact.email,
-    phone: contact.phone,
-    location: withoutEmptyValuesOrErrors({
-      pk: {value: ''},
-      address_line_one: contact.address_line_one,
-      address_line_two: contact.address_line_two,
-      city: contact.city,
-      state: contact.state,
-      label: contact.label,
-    }),
-    // TODO: fix tags
-    tags: [],
-    notes: contact.notes,
-  });
-}
-
-/**
- * Flatten fields of contact data received from API
- */
-export function flattenContact(contact) {
-  return assign({}, ...flatten(map(contact, (v, k) => {
-    if (k === 'location') {
-      return v;
-    }
-    return {[k]: v};
-  })));
-}
-
 /**
  * Prepare an api forms object for merging with local record object.
  */
-export function formsFromApi(forms) {
-  const result = {};
+function formsFromApi(response) {
+  const result = {
+    forms: {},
+    record: {},
+  };
 
-  const cleanOutreachRecord = withoutEmptyValues(forms.outreachrecord);
-  if (!isEmpty(cleanOutreachRecord)) {
-    result.outreachrecord = cleanOutreachRecord;
+  const forms = response.forms;
+
+  if (forms.outreach_record) {
+    result.forms.outreach_record = forms.outreach_record;
+    result.record.outreach_record = forms.outreach_record.data;
   }
 
-  const cleanPartner = withoutEmptyValues(forms.partner);
-  if (!isEmpty(cleanPartner)) {
-    result.partner = cleanPartner;
+  if (forms.partner) {
+    result.forms.partner = forms.partner;
+    result.record.partner = forms.partner.data;
   }
 
-  const flatContacts = map(forms.contacts, c => flattenContact(c));
-  const cleanContacts = map(flatContacts, withoutEmptyValues);
   if (forms.contacts) {
-    result.contacts = cleanContacts;
+    result.forms.contacts = forms.contacts;
+    result.record.contacts = map(forms.contacts, c => c.data);
   }
 
-  const cleanCommunicationRecord = withoutEmptyValues(forms.contactrecord);
-  if (!isEmpty(cleanCommunicationRecord)) {
-    result.communicationrecord = cleanCommunicationRecord;
+  if (forms.communication_record) {
+    result.forms.communication_record = forms.communication_record;
+    result.record.communication_record = forms.communication_record.data;
   }
 
   return result;
@@ -266,12 +211,10 @@ export function formsFromApi(forms) {
 /**
  * Prepare local record object for sending to the api.
  */
-export function formsToApi(forms) {
+function formsToApi(record, newTags) {
   return {
-    outreachrecord: withoutEmptyValuesOrErrors({...forms.outreachrecord}),
-    partner: withoutEmptyValuesOrErrors({...forms.partner}),
-    contacts: map(forms.contacts, c => formatContact(c)),
-    contactrecord: withoutEmptyValuesOrErrors({...forms.communicationrecord}),
+    data: {...record},
+    new_tags: newTags,
   };
 }
 
@@ -281,19 +224,12 @@ export function formsToApi(forms) {
 export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
-    const record = process.record;
-    const withOutreach = {
-      ...record,
-      outreachrecord: {
-        ...record.outreachrecord,
-        pk: {value: process.outreachId},
-      },
-    };
-    const forms = formsToApi(withOutreach);
+    const forms = formsToApi(process.record, process.newTags);
     try {
-      const request = {forms};
-      await api.submitContactRecord(request, validateOnly);
-      if (!validateOnly && onSuccess) {
+      const response = await api.submitContactRecord(forms, validateOnly);
+      if (validateOnly) {
+        dispatch(noteFormsAction(formsFromApi(response)));
+      } else if (onSuccess) {
         onSuccess();
         return true;
       }
@@ -304,7 +240,7 @@ export function doSubmit(validateOnly, onSuccess) {
           dispatch(errorAction(apiErrors[0]));
         }
         if (e.data.forms) {
-          dispatch(noteFormsAction(formsFromApi(e.data.forms)));
+          dispatch(noteFormsAction(formsFromApi(e.data)));
         }
       } else {
         dispatch(errorAction(e.message));
