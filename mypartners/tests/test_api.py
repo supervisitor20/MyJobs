@@ -330,6 +330,17 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         )
         self.check_status_code_and_objects(response, 200, 0)
 
+        response_data = json.loads(response.content)
+        partner_name = response_data['forms']['partner']['data']['name']
+        self.assertEqual('James B', partner_name)
+        contact0_name = response_data['forms']['contacts'][0]['data']['name']
+        contact1_name = response_data['forms']['contacts'][1]['data']['name']
+        self.assertEqual('Nicole J', contact0_name)
+        self.assertEqual('foo bar', contact1_name)
+        communication_record_notes = (
+            response_data['forms']['communication_record']['data']['notes'])
+        self.assertEqual('dude was chill', communication_record_notes)
+
     def test_outreach_api_all_fields_required(self):
         """
         Test that the outreach conversion API forces the inbound data object

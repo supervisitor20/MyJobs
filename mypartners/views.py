@@ -2190,6 +2190,10 @@ def api_convert_outreach_record(request):
             contact_form_payload = merge_contact_forms(result, user_company)
             payload['forms']['contacts'].append(contact_form_payload)
         else:
+            if 'instance' in result:
+                contact = result['instance']
+            else:
+                contact = result['contact'].instance
             payload['forms']['contacts'].append({
                 'data': {'pk': contact.pk, 'name': contact.name}
             })
