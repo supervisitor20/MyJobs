@@ -2252,9 +2252,6 @@ def api_convert_outreach_record(request):
         # on subsequent passes, make new communication records for each contact
         if i > 0:
             communication_record.recreate()
-            attach_new_tags(
-                new_tags, created_tags, 'communicationrecord',
-                communication_record)
 
         contact.partner = partner
         contact.save()
