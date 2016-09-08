@@ -14,7 +14,7 @@ export default class RemoteFormField extends Component {
     const {fieldName, form, value, onChange,
       tagActions, selectedTags, availableTags} = this.props;
     const field = form.fields[fieldName] || {};
-    const errors = form.errors[fieldName];
+    const errors = (form.errors || {})[fieldName];
     const fieldDisable = field.readonly;
 
     function wrap(child) {
@@ -32,6 +32,8 @@ export default class RemoteFormField extends Component {
     const inputType = (field.widget || {}).input_type || 'unspecified';
 
     switch (inputType) {
+    case 'time':
+    case 'datetime':
     case 'text':
       return wrap(
         <TextField
@@ -100,7 +102,7 @@ export default class RemoteFormField extends Component {
           disable={fieldDisable}
           />
       );
-    case 'tags':
+    case 'selectmultiple':
       return wrap(
           <TagSelect
           name={fieldName}
@@ -131,13 +133,13 @@ RemoteFormField.propTypes = {
   tagActions: PropTypes.func,
   availableTags: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.number.isRequired,
+      value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired
   ),
   selectedTags: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.number.isRequired,
+      value: PropTypes.any.isRequired,
       display: PropTypes.string.isRequired,
     }).isRequired
   ),
