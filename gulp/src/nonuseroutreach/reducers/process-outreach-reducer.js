@@ -10,6 +10,15 @@ const defaultState = {
   newTags: {},
 };
 
+export function getErrorsForForm(forms, key) {
+  return !isEmpty(get(forms, [key, 'errors']));
+}
+
+export function getErrorsForForms(forms, key) {
+  return map(get(forms, key), f => !isEmpty(get(f, 'errors')));
+}
+
+
 /**
  * Represents the state of processing an NUO outreach record. {
  *
@@ -53,14 +62,6 @@ export default handleActions({
   },
 
   'NUO_DETERMINE_STATE': (state) => {
-    function getErrorsForForm(forms, key) {
-      return !isEmpty(get(forms, [key, 'errors']));
-    }
-
-    function getErrorsForForms(forms, key) {
-      return map(get(forms, key), f => !isEmpty(get(f, 'errors')));
-    }
-
     let currentState;
     let newForms = state.forms;
     let contactIndex = state.contactIndex;
@@ -73,9 +74,9 @@ export default handleActions({
       currentState = state.state;
     } else if (state.state === 'NEW_COMMUNICATIONRECORD' && getErrorsForForm(state.forms, 'communication_record')) {
       currentState = state.state;
-    }
+
     // Traverse through forms looking for the first one that does not have data, or has errors.
-    else if (isEmpty(state.record.partner)) {
+    } else if (isEmpty(state.record.partner)) {
       currentState = 'SELECT_PARTNER';
     } else if (getErrorsForForm(state.forms, 'partner')) {
       currentState = 'NEW_PARTNER';

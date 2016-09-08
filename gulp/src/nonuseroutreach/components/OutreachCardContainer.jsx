@@ -13,6 +13,8 @@ import {
   removeNewTagsFromForm,
 } from '../actions/process-outreach-actions';
 
+import {getErrorsForForm, getErrorsForForms} from '../reducers/process-outreach-reducer';
+
 
 class OutreachCardContainer extends Component {
   handlePartnerNav() {
@@ -133,14 +135,6 @@ OutreachCardContainer.propTypes = {
   communicationRecord: PropTypes.object,
   communicationRecordErrors: PropTypes.bool.isRequired,
 };
-
-function getErrorsForForm(forms, key) {
-  return !isEmpty(get(forms, [key, 'errors']));
-}
-
-function getErrorsForForms(forms, key) {
-  return map(get(forms, key), f => !isEmpty(get(f, 'errors')));
-}
 
 export default connect(state => ({
   partner: state.process.record.partner,
