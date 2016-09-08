@@ -284,7 +284,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
+        self.check_status_code_and_objects(response, 200, 8)
 
     def test_create_tag(self):
         """
@@ -298,13 +298,16 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data={'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
+        self.check_status_code_and_objects(response, 200, 8)
         partner = Partner.objects.get(name="James B")
         contact0 = Contact.objects.get(name="Nicole J")
-        communication_record = ContactRecord.objects.get(
-            notes="dude was chill")
+        communication_record0 = ContactRecord.objects.get(
+            notes="dude was chill", contact=contact0)
+        communication_record1 = ContactRecord.objects.get(
+            notes="dude was chill", contact=self.contact)
         self.assert_has_tag('SOMENEWTAG', partner)
-        self.assert_has_tag('Tag 2', communication_record)
+        self.assert_has_tag('Tag 2', communication_record0)
+        self.assert_has_tag('Tag 2', communication_record1)
         self.assert_has_tag('SOMENEWTAG', self.contact)
         self.assert_has_tag('SOMENEWTAG', contact0)
         self.assert_has_tag('Tag 2', contact0)
@@ -359,28 +362,13 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             data = {'request': json.dumps(self.request_data)}
         )
 
-        self.check_status_code_and_objects(response, 200, 6)
+        self.check_status_code_and_objects(response, 200, 7)
 
         dict_contact = Contact.objects.get(name="Nicole J")
         self.assertEqual(dict_contact.partner.pk, existing_partner.pk,
                          msg="New contact does not link to provided partner,"
                              "expected pk of %s, got %s" % (existing_partner.pk,
                                                             dict_contact.partner.pk))
-
-    def test_outreach_api_contact_location_by_pk(self):
-        """
-        Test that the outreach conversion API allows the member to add
-        locations via PK
-
-        """
-        existing_location = LocationFactory()
-        record = self.request_data['data']['contacts']
-        record[0]['location'] = {"pk": {'value': existing_location.pk}}
-        response = self.client.post(
-            reverse('api_convert_outreach_record'),
-            data = {'request': json.dumps(self.request_data)}
-        )
-        self.check_status_code_and_objects(response, 200, 7)
 
     def test_outreach_api_contact_append_notes(self):
         """
@@ -394,7 +382,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
+        self.check_status_code_and_objects(response, 200, 8)
         self.contact = Contact.objects.get(id=self.contact.id)
         # This is how we wish this could be written. Can be fixed along with
         # PD-2602: universal.NormalizedModelForm removes all new lines
@@ -591,36 +579,46 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             'contact2',
             'contact2notes',
             'contact1location',
-            'contactrecord',
+            'contactrecord0',
+            'contactrecord1',
         ]
         objects_created = []
         partner = Partner.objects.filter(name="James B").first()
         contact1 = Contact.objects.filter(name="Nicole J").first()
         contact2 = Contact.objects.filter(id=self.contact.id).first()
-        contact_record = ContactRecord.objects.filter(notes="dude was chill").first()
-        if partner and (self.outreach_record.partners
-                                .filter(id=partner.id)
-                                .exists()):
+        contact_records = ContactRecord.objects.filter(
+            notes="dude was chill")
+        if partner and (
+                self.outreach_record.partners
+                .filter(id=partner.id)
+                .exists()):
             objects_created.append("partner")
-        if contact1 and (self.outreach_record.contacts
-                                .filter(id=contact1.id)
-                                .exists()):
+        if contact1 and (
+                self.outreach_record.contacts
+                .filter(id=contact1.id)
+                .exists()):
             objects_created.append("contact1")
             if contact1.notes == "long note left here":
                 objects_created.append("contact1notes")
             if contact1.locations.all().count() > 0:
                 objects_created.append("contact1location")
-        if contact2 and (self.outreach_record.contacts
-                                .filter(id=contact2.id)
-                                .exists()):
+        if contact2 and (
+                self.outreach_record.contacts
+                .filter(id=contact2.id)
+                .exists()):
             objects_created.append("contact2")
             if "new notes" in contact2.notes:
                 objects_created.append("contact2notes")
-        if contact_record and (self.outreach_record.communication_records
-                                .filter(id=contact_record.id)
-                                .exists()):
-            objects_created.append("contactrecord")
-        objects_missing = [x for x in total_objects if x not in objects_created]
+        for i, contact_record in enumerate(contact_records):
+            if (self.outreach_record.communication_records
+                    .filter(id=contact_record.id)
+                    .exists()):
+                objects_created.append("contactrecord%s" % i)
+        objects_missing = [
+            x
+            for x in total_objects
+            if x not in objects_created
+        ]
         return objects_created, objects_missing
 
 
