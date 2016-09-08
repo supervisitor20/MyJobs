@@ -4,9 +4,11 @@ import SelectControls from 'common/ui/SelectControls';
 import {monthsArray} from 'common/calendar-support';
 
 export default class DateTimePicker extends Component {
-  constructor() {
-    super();
+  componentWillMount() {
+    const {value} = this.props;
+    // default state is loaded regardless so that we have yearRangeMin/Max
     this.state = this.getDefaultState();
+    if (value) this.stringToState(value);
   }
 
   getDefaultState() {
@@ -14,13 +16,18 @@ export default class DateTimePicker extends Component {
     return {
       selectMonth: today.getMonth() + 1,
       selectDay: today.getDate(),
-      selectYear: today.getFullYear(),
+      selectYear: +today.getFullYear(),
       selectHour: this.resolveHours(today.getHours()),
       selectAMPM: this.resolveAMPM(today.getHours()),
       selectMinute: today.getMinutes(),
       yearRangeMax: today.getFullYear() + 2,
       yearRangeMin: today.getFullYear() - 20,
     };
+  }
+
+  componentWillReceiveProps(newProps) {
+    const {value} = newProps;
+    this.stringToState(value);
   }
 
   resolveHours(hours) {
@@ -46,21 +53,19 @@ export default class DateTimePicker extends Component {
 
   rangeToDropDownArray(rangeStart, rangeEnd) {
     return map(range(rangeStart, rangeEnd),
-      (n) => ({value: n, display: n, render: () => ''}));
+      (n) => ({value: n, display: String(n), render: () => ''}));
   }
 
   stringToState(input) {
-    console.log(input);
     const re = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/i;
     const matchValues = re.exec(input);
-
     this.setState({
-      selectYear: +matchValues[0],
-      selectDay: +matchValues[1],
-      selectMonth: +matchValues[2],
-      selectHour: this.resolveHours(matchValues[3]),
-      selectAMPM: this.resolveAMPM(matchValues[3]),
-      selectMinute: +matchValues[4],
+      selectYear: +matchValues[1],
+      selectDay: +matchValues[2],
+      selectMonth: +matchValues[3],
+      selectHour: +this.resolveHours(matchValues[4]),
+      selectAMPM: +this.resolveAMPM(matchValues[4]),
+      selectMinute: +matchValues[5],
     });
   }
 
@@ -68,8 +73,7 @@ export default class DateTimePicker extends Component {
     const {onChange} = this.props;
     this.setState({
       [field]: value,
-    });
-    onChange({target:{value:this.stateToString()}});
+    }, () => onChange({target:{value:this.stateToString()}}));
   }
 
   stateToString() {
@@ -78,7 +82,7 @@ export default class DateTimePicker extends Component {
     const padDay = padLeft(this.state.selectDay, 2, '0');
     const padMinute = padLeft(this.state.selectMinute, 2, '0');
     const convertPadHour = padLeft(
-      this.backToMilitaryTime(+selectHour, +selectAMPM), 2, '0'
+      this.backToMilitaryTime(selectHour, selectAMPM), 2, '0'
     );
 
     return selectYear + '-' + padDay + '-' + padMonth + ' ' +
@@ -86,8 +90,6 @@ export default class DateTimePicker extends Component {
   }
 
   render() {
-    const {value} = this.props;
-    if (value) this.stringToState(value);
     const {selectYear, selectMonth, selectDay,
       selectHour, selectMinute, yearRangeMin, yearRangeMax, selectAMPM} = this.state;
 
