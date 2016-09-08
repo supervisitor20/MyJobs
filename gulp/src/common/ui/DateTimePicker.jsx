@@ -5,10 +5,11 @@ import {monthsArray} from 'common/calendar-support';
 
 export default class DateTimePicker extends Component {
   componentWillMount() {
-    const {value} = this.props;
+    const {value, onChange} = this.props;
     // default state is loaded regardless so that we have yearRangeMin/Max
     this.state = this.getDefaultState();
     if (value) this.stringToState(value);
+    else onChange({target: {value: this.stateToString()}});
   }
 
   componentWillReceiveProps(newProps) {
@@ -58,8 +59,8 @@ export default class DateTimePicker extends Component {
     const matchValues = re.exec(input);
     this.setState({
       selectYear: +matchValues[1],
-      selectDay: +matchValues[2],
-      selectMonth: +matchValues[3],
+      selectMonth: +matchValues[2],
+      selectDay: +matchValues[3],
       selectHour: +this.resolveHours(matchValues[4]),
       selectAMPM: +this.resolveAMPM(matchValues[4]),
       selectMinute: +matchValues[5],
@@ -82,7 +83,7 @@ export default class DateTimePicker extends Component {
       this.backToMilitaryTime(selectHour, selectAMPM), 2, '0'
     );
 
-    return selectYear + '-' + padDay + '-' + padMonth + ' ' +
+    return selectYear + '-' + padMonth + '-' + padDay + ' ' +
       convertPadHour + ':' + padMinute;
   }
 
