@@ -144,9 +144,9 @@ export const partnerForm = {
       label: 'Tags',
       help_text:
         'ie \'Disability\', \'veteran-outreach\', etc. ' +
-        'Select existing or add new tags',
+        'Separate tags with a comma.',
       widget: {
-        title: 'TagSelect',
+        title: 'TextInput',
         is_hidden: false,
         needs_multipart_form: false,
         is_localized: false,
@@ -156,7 +156,7 @@ export const partnerForm = {
           id: 'p-tags',
           maxlength: '255',
         },
-        input_type: 'tags',
+        input_type: 'text',
       },
       min_length: null,
       max_length: 255,
@@ -244,17 +244,17 @@ export const contactForm = {
         'ie \'Disability\', \'veteran-outreach\', etc. Separate ' +
         'tags with a comma.',
       widget: {
-        title: 'TagSelect',
+        title: 'TextInput',
         is_hidden: false,
         needs_multipart_form: false,
         is_localized: false,
         is_required: false,
         attrs: {
-          placeholder: 'Tags',
+          autocomplete: 'off',
           id: 'p-tags',
           maxlength: '255',
         },
-        input_type: 'tags',
+        input_type: 'text',
       },
       min_length: null,
       max_length: 255,
@@ -542,7 +542,7 @@ export const communicationRecordForm = {
       label: 'Date & Time',
       required: true,
       widget: {
-        input_type: 'datetime',
+        input_type: 'text',
         is_required: true,
         attrs: {},
       },
@@ -631,17 +631,17 @@ export const communicationRecordForm = {
         'ie \'Disability\', \'veteran-outreach\', etc. Separate tags with ' +
         'a comma.',
       widget: {
-        title: 'TagSelect',
+        title: 'TextInput',
         is_hidden: false,
         needs_multipart_form: false,
         is_localized: false,
         is_required: false,
         attrs: {
-          placeholder: 'Tags',
+          autocomplete: 'off',
           id: 'p-tags',
           maxlength: '255',
         },
-        input_type: 'tags',
+        input_type: 'text',
       },
       min_length: null,
       max_length: 255,
