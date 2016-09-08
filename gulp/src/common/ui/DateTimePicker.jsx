@@ -13,7 +13,7 @@ export default class DateTimePicker extends Component {
 
   componentWillReceiveProps(newProps) {
     const {value} = newProps;
-    this.stringToState(value);
+    if (value) this.stringToState(value);
   }
 
   getDefaultState() {
