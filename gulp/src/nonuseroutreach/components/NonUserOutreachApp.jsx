@@ -13,6 +13,7 @@ import {doGetRecords} from '../actions/record-actions';
 import {doLoadEmail} from '../actions/process-outreach-actions';
 import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 import Confirm from 'common/ui/Confirm';
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
 
 /* NonUserOutreachApp
  * An app for managing nonuser outreach, providing a sidebar for navigation and
@@ -24,10 +25,26 @@ class NonUserOutreachApp extends Component {
     const {history} = this.props;
     this.unsubscribeToHistory = history.listen(
       (...args) => this.handleNewLocation(...args));
+
+    this.unsubscribeToListenBefore = history.listenBefore(
+      (location, cb) => {
+        this.handleBeforeListen(location, cb);
+      });
   }
 
   componentWillUnmount() {
     this.unsubscribeToHistory();
+    this.unsubscribeToListenBefore();
+  }
+
+  async handleBeforeListen(_location, cb) {
+    if (this.preventHistory) {
+      const {dispatch} = this.props;
+      const message = 'All of your information will be lost if you navigate away from this page.';
+      cb(await runConfirmInPlace(dispatch, message));
+    } else {
+      cb(true);
+    }
   }
 
   async handleNewLocation(_, loc) {
@@ -36,7 +53,7 @@ class NonUserOutreachApp extends Component {
       return;
     }
     const lastComponent = loc.components[loc.components.length - 1];
-
+    this.preventHistory = false;
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
       // list of inboxes
@@ -57,6 +74,7 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
       // email
+      this.preventHistory = true;
       const recordId = loc.location.query.id;
       dispatch(markPageLoadingAction(true));
       await dispatch(doLoadEmail(recordId));
