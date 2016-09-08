@@ -604,7 +604,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             notes="dude was chill")
         if partner and (
                 self.outreach_record.partners
-                .filter(id=partner.id)
+                .filter(id=partner.id, owner=self.company)
                 .exists()):
             objects_created.append("partner")
         if contact1 and (
