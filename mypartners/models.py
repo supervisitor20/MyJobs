@@ -703,6 +703,25 @@ class ContactRecord(ArchivedModel):
 
         super(ContactRecord, self).save(*args, **kwargs)
 
+    def recreate(self):
+        """
+        Becomes a new copy of the original record.
+
+        returns a reference to the original record.
+        """
+        original_record = ContactRecord.objects.get(pk=self.pk)
+        self.pk = None
+
+        new_status = self.approval_status
+        new_status.pk = None
+        new_status.save()
+        self.approval_status = new_status
+
+        self.save()
+        self.tags.add(*original_record.tags.all())
+
+        return original_record
+
     def get_record_description(self):
         """
         Generates a human readable description of the contact
