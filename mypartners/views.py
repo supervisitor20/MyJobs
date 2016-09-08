@@ -2245,6 +2245,7 @@ def api_convert_outreach_record(request):
         contact.partner = partner
         contact.save()
         communication_record.contact = contact
+        communication_record.partner = partner
         communication_record.save()
         outreach.communication_records.add(communication_record_form.instance)
         outreach.contacts.add(contact)
