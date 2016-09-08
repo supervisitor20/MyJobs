@@ -290,16 +290,27 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         """
         Create a new tag as part of conversion.
         """
-        self.request_data['forms']['partner']['tags'].append(
-            {'pk': {'value': ''}, 'name': {'value': 'SOMENEWTAG'}})
+        self.request_data['new_tags'] = {
+            'SOMENEWTAG': ['partner', 'contact0', 'contact1'],
+            'Tag 2': ['contact0', 'communicationrecord'],
+        }
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data={'request': json.dumps(self.request_data)}
         )
         self.check_status_code_and_objects(response, 200, 7)
-        partner = Partner.objects.filter(name="James B").first()
-        partner_tags = list(partner.tags.all())
-        self.assertEqual('SOMENEWTAG', partner_tags[-1].name)
+        partner = Partner.objects.get(name="James B")
+        contact0 = Contact.objects.get(name="Nicole J")
+        communication_record = ContactRecord.objects.get(
+            notes="dude was chill")
+        self.assert_has_tag('SOMENEWTAG', partner)
+        self.assert_has_tag('Tag 2', communication_record)
+        self.assert_has_tag('SOMENEWTAG', self.contact)
+        self.assert_has_tag('SOMENEWTAG', contact0)
+        self.assert_has_tag('Tag 2', contact0)
+
+    def assert_has_tag(self, tag_name, instance):
+        self.assertIn(tag_name, [t.name for t in instance.tags.all()])
 
     def test_outreach_conversion_api_validate_only(self):
         """

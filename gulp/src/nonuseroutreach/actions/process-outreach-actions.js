@@ -211,9 +211,10 @@ function formsFromApi(response) {
 /**
  * Prepare local record object for sending to the api.
  */
-function formsToApi(record) {
+function formsToApi(record, newTags) {
   return {
     data: {...record},
+    new_tags: newTags,
   };
 }
 
@@ -223,7 +224,7 @@ function formsToApi(record) {
 export function doSubmit(validateOnly, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
-    const forms = formsToApi(process.record);
+    const forms = formsToApi(process.record, process.newTags);
     try {
       const response = await api.submitContactRecord(forms, validateOnly);
       if (validateOnly) {

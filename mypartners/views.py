@@ -2012,17 +2012,20 @@ def api_convert_outreach_record(request):
     :return: status code 200 on success, 400, 405 indicates error
 
     """
-    def add_tags_to_object(object_to_tag, tags_list):
-        """
-        save any new tags and add them to the provided object
-
-        :param object_to_tag: object which should have tags added to it
-        :param tags_list: list of tags
-        :return:
-        """
-        for tag in tags_list:
+    def create_tags(new_tags, company, user):
+        result = {}
+        for tag_name in new_tags.keys():
+            tag = Tag(name=tag_name, company=company, created_by=user)
             tag.save()
-        object_to_tag.tags.add(*list(tags_list))
+            result[tag_name] = tag
+        return result
+
+    def attach_new_tags(new_tags, created_tags, index, instance):
+        for tag_name, indicies in new_tags.iteritems():
+            for target_index in indicies:
+                if index == target_index:
+                    tag = created_tags[tag_name]
+                    instance.tags.add(tag)
 
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -2051,6 +2054,7 @@ def api_convert_outreach_record(request):
             'api_errors': api_errors}), status=400)
 
     data_object = request_object['data']
+    new_tags = request_object.get('new_tags', {})
 
     valid_keys = {
         'outreach_record',
@@ -2215,18 +2219,24 @@ def api_convert_outreach_record(request):
         return HttpResponse(
             json.dumps(payload), status=status, mimetype='application/json')
 
+    created_tags = create_tags(new_tags, user_company, request.user)
+
     outreach_form.save()
 
     if partner_form:
         partner_form.save()
         outreach.partners.add(partner_form.instance)
         partner = partner_form.instance
+        attach_new_tags(new_tags, created_tags, 'partner', partner)
 
     if communication_record_form:
         communication_record_form.save()
         communication_record = communication_record_form.instance
+        attach_new_tags(
+            new_tags, created_tags, 'communicationrecord',
+            communication_record)
 
-    for contact_result in contact_results:
+    for i, contact_result in enumerate(contact_results):
         if 'contact' in contact_result:
             contact_result['contact'].save()
             contact = contact_result['contact'].instance
@@ -2241,8 +2251,10 @@ def api_convert_outreach_record(request):
         if 'location' in contact_result:
             contact_result['location'].save()
             contact_result['location'].instance.contacts.add(contact)
+        attach_new_tags(new_tags, created_tags, 'contact%s' % i, contact)
 
     return HttpResponse('"success"')
+
 
 @requires('read tag')
 def tag_names(request):
