@@ -542,10 +542,10 @@ export const communicationRecordForm = {
       label: 'Date & Time',
       required: true,
       widget: {
-        input_type: 'text',
         is_required: true,
         attrs: {},
       },
+      input_type: 'datetime',
     },
     job_id: {
       title: 'CharField',

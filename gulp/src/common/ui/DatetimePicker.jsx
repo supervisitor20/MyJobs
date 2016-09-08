@@ -11,6 +11,11 @@ export default class DateTimePicker extends Component {
     if (value) this.stringToState(value);
   }
 
+  componentWillReceiveProps(newProps) {
+    const {value} = newProps;
+    this.stringToState(value);
+  }
+
   getDefaultState() {
     const today = new Date();
     return {
@@ -25,11 +30,6 @@ export default class DateTimePicker extends Component {
     };
   }
 
-  componentWillReceiveProps(newProps) {
-    const {value} = newProps;
-    this.stringToState(value);
-  }
-
   resolveHours(hours) {
     return ((h) => (+h > 12 ? +h - 12 : h))(hours);
   }
@@ -37,18 +37,15 @@ export default class DateTimePicker extends Component {
   resolveAMPM(hours) {
     return ((h) => (+h >= 12 ? 1 : 0))(hours);
   }
-  
+
   backToMilitaryTime(hours, AMPM) {
     if (+hours === 12) {
       if (+AMPM) {
-        return 12
-      } else {
-        return 0
+        return 12;
       }
-    } else {
-      return (+AMPM ? +hours + 12 : +hours)
+      return 0;
     }
-    
+    return (+AMPM ? +hours + 12 : +hours);
   }
 
   rangeToDropDownArray(rangeStart, rangeEnd) {
@@ -73,7 +70,7 @@ export default class DateTimePicker extends Component {
     const {onChange} = this.props;
     this.setState({
       [field]: value,
-    }, () => onChange({target:{value:this.stateToString()}}));
+    }, () => onChange({target: {value: this.stateToString()}}));
   }
 
   stateToString() {
