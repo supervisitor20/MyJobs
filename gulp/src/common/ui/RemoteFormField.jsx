@@ -8,6 +8,7 @@ import DateField from 'common/ui/DateField';
 import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import TagSelect from 'common/ui/tags/TagSelect';
+import DateTimePicker from 'common/ui/DateTimePicker';
 
 export default class RemoteFormField extends Component {
   render() {
@@ -33,7 +34,6 @@ export default class RemoteFormField extends Component {
 
     switch (inputType) {
     case 'time':
-    case 'datetime':
     case 'text':
       return wrap(
         <TextField
@@ -116,6 +116,13 @@ export default class RemoteFormField extends Component {
           placeholder={field.widget.attrs.placeholder}
           autoFocus={field.widget.attrs.autofocus}
           onNew={(tags) => tagActions('new', tags)}
+          />
+      );
+    case 'datetime':
+      return wrap(
+        <DateTimePicker
+          onChange={e => onChange(e, fieldName)}
+          value={value}
           />
       );
     default:
