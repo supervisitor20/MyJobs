@@ -542,7 +542,7 @@ export const communicationRecordForm = {
       label: 'Date & Time',
       required: true,
       widget: {
-        input_type: 'DatePicker',
+        input_type: 'datetime',
         is_required: true,
         attrs: {},
       },

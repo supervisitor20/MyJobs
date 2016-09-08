@@ -1,85 +1,132 @@
 import React, {Component, PropTypes} from 'react';
-import {range, map} from 'lodash-compat/collection';
+import {range, map, padLeft} from 'lodash-compat';
 import SelectControls from 'common/ui/SelectControls';
-import {hoursArray, monthsArray} from 'common/calendar-support'
+import {monthsArray} from 'common/calendar-support';
+
 export default class DateTimePicker extends Component {
   constructor() {
     super();
-    const {initialValue} = this.props;
-    this.state = getDefaultState();
-    if (initialValue) this.stringToState(initialValue);
+    this.state = this.getDefaultState();
   }
 
   getDefaultState() {
     const today = new Date();
     return {
-      selectMonth: today.getMonth()+1,
+      selectMonth: today.getMonth() + 1,
       selectDay: today.getDate(),
       selectYear: today.getFullYear(),
-      yearRangeMax: today.getFullYear()+2,
-      yearRangeMin: today.getFullYear()-20,
+      selectHour: this.resolveHours(today.getHours()),
+      selectAMPM: this.resolveAMPM(today.getHours()),
+      selectMinute: today.getMinutes(),
+      yearRangeMax: today.getFullYear() + 2,
+      yearRangeMin: today.getFullYear() - 20,
     };
   }
+
+  resolveHours(hours) {
+    return ((h) => (+h > 12 ? +h - 12 : h))(hours);
+  }
+
+  resolveAMPM(hours) {
+    return ((h) => (+h >= 12 ? 1 : 0))(hours);
+  }
+  
+  backToMilitaryTime(hours, AMPM) {
+    if (+hours === 12) {
+      if (+AMPM) {
+        return 12
+      } else {
+        return 0
+      }
+    } else {
+      return (+AMPM ? +hours + 12 : +hours)
+    }
+    
+  }
+
+  rangeToDropDownArray(rangeStart, rangeEnd) {
+    return map(range(rangeStart, rangeEnd),
+      (n) => ({value: n, display: n, render: () => ''}));
+  }
+
   stringToState(input) {
+    console.log(input);
     const re = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/i;
     const matchValues = re.exec(input);
 
     this.setState({
-      selectYear: matchValues[0],
-      selectDay: matchValues[1],
-      selectMonth: matchValues[2],
-      selectHour: matchValues[3],
-      selectMinute: matchValues[4],
+      selectYear: +matchValues[0],
+      selectDay: +matchValues[1],
+      selectMonth: +matchValues[2],
+      selectHour: this.resolveHours(matchValues[3]),
+      selectAMPM: this.resolveAMPM(matchValues[3]),
+      selectMinute: +matchValues[4],
     });
   }
 
   handleFieldChange(field, value) {
+    const {onChange} = this.props;
     this.setState({
-      [field]: value
+      [field]: value,
     });
+    onChange({target:{value:this.stateToString()}});
   }
 
-  fieldsToString() {
-    const {selectYear, selectDay, selectMonth,
-      selectHour, selectMinute} = this.state;
-    return selectYear + "-" + selectDay + "-" +
-      selectMonth + " " + selectHour + ":" + selectMinute;
+  stateToString() {
+    const {selectYear, selectHour, selectAMPM} = this.state;
+    const padMonth = padLeft(this.state.selectMonth, 2, '0');
+    const padDay = padLeft(this.state.selectDay, 2, '0');
+    const padMinute = padLeft(this.state.selectMinute, 2, '0');
+    const convertPadHour = padLeft(
+      this.backToMilitaryTime(+selectHour, +selectAMPM), 2, '0'
+    );
+
+    return selectYear + '-' + padDay + '-' + padMonth + ' ' +
+      convertPadHour + ':' + padMinute;
   }
 
   render() {
+    const {value} = this.props;
+    if (value) this.stringToState(value);
     const {selectYear, selectMonth, selectDay,
-      selectHour, selectMinute, yearRangeMin, yearRangeMax} = this.state;
+      selectHour, selectMinute, yearRangeMin, yearRangeMax, selectAMPM} = this.state;
+
     return (
       <div>
         <SelectControls
-          choices={map(hoursArray, (a) => ({...a, render: () => ''}))}
+          choices={map(monthsArray, (a) => ({...a, render: () => ''}))}
           value={selectMonth}
-          onSelect={v => handleFieldChange("selectMonth", v)}/>
+          onSelect={v => this.handleFieldChange('selectMonth', v)}/>
         <SelectControls
-          choices={map(range(1, 31), (n) => ({value: n, display: n, render: () => ''}))}
+          choices={this.rangeToDropDownArray(1, 32)}
           value={selectDay}
-          onSelect={v => handleFieldChange("selectDay", v)}/>
+          onSelect={v => this.handleFieldChange('selectDay', v)}/>
         <SelectControls
-          choices={map(range(yearRangeMin, yearRangeMax),
-            (n) => ({value: n, display: n, render: () => ''}))
-          }
+          choices={this.rangeToDropDownArray(yearRangeMin, yearRangeMax)}
           value={selectYear}
-          onSelect={v => handleFieldChange("selectYear", v)}/>
+          onSelect={v => this.handleFieldChange('selectYear', v)}/>
         <SelectControls
-          choices={map(hoursArray, (a) => ({...a, render: () => ''}))}
+          choices={this.rangeToDropDownArray(1, 13)}
           value={selectHour}
-          onSelect={v => handleFieldChange("selectHour", v)}/>
+          onSelect={v => this.handleFieldChange('selectHour', v)}/>
         <SelectControls
-          choices={map(range(1, 60), (n) => ({value: n, display: n, render: () => ''}))}
+          choices={this.rangeToDropDownArray(0, 61)}
           value={selectMinute}
-          onSelect={v => handleFieldChange("selectMinute", v)}/>
+          onSelect={v => this.handleFieldChange('selectMinute', v)}/>
+        <SelectControls
+          choices={[
+            {value: 0, display: 'AM', render: () => ''},
+            {value: 1, display: 'PM', render: () => ''},
+          ]}
+          value={selectAMPM}
+          onSelect={v => this.handleFieldChange('selectAMPM', v)}/>
       </div>
     );
   }
 }
 
 DateTimePicker.defaultProps = {
-  initialValue: "",
+  value: '',
 };
 
 DateTimePicker.propTypes = {
@@ -89,8 +136,8 @@ DateTimePicker.propTypes = {
   onChange: PropTypes.func.isRequired,
 
   /**
-   * initial value for the display in regex parseable string
-   * format: MM/DD/YYYY HH:MM:SS --- NOTE: Review this, ensure correct format
+   * value from the data store in regex parseable string
+   * format: YYYY-MM-DD HH:MM
    */
-  initialValue: PropTypes.string,
+  value: PropTypes.string,
 };

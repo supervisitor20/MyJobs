@@ -8,6 +8,7 @@ import DateField from 'common/ui/DateField';
 import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import TagSelect from 'common/ui/tags/TagSelect';
+import DateTimePicker from 'common/ui/DateTimePicker'
 
 export default class RemoteFormField extends Component {
   render() {
@@ -116,6 +117,13 @@ export default class RemoteFormField extends Component {
           onNew={(tags) => tagActions('new', tags)}
           />
       );
+    case 'datetime':
+        return wrap(
+          <DateTimePicker
+            onChange={e => onChange(e, fieldName)}
+            value={value}
+            />
+        );
     default:
       warning(false, `Unknown field type for ${fieldName}: ${inputType}`);
       return <span/>;
