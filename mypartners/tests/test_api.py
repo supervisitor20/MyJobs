@@ -221,7 +221,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                                                      self.inbox)
         self.role.activities.add(*self.activities)
         self.outreach_workflow = OutreachWorkflowStateFactory()
-        a_tag = TagFactory(company=self.company)
+        a_tag = TagFactory(name='Tag A', company=self.company)
         self.request_data = {
             "data": {
                 "outreach_record": {
@@ -268,7 +268,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                     "job_applications": "20",
                     "job_interviews": "10",
                     "job_hires": "0",
-                    "tags": [],
+                    "tags": [a_tag.pk],
                 }
             }
         }
@@ -306,6 +306,9 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         communication_record1 = ContactRecord.objects.get(
             notes="dude was chill", contact=self.contact)
         self.assert_has_tag('SOMENEWTAG', partner)
+        self.assert_has_tag('Tag A', partner)
+        self.assert_has_tag('Tag A', communication_record0)
+        self.assert_has_tag('Tag A', communication_record1)
         self.assert_has_tag('Tag 2', communication_record0)
         self.assert_has_tag('Tag 2', communication_record1)
         self.assert_has_tag('SOMENEWTAG', self.contact)

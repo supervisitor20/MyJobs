@@ -2245,15 +2245,7 @@ def api_convert_outreach_record(request):
 
         # on subsequent passes, make new communication records for each contact
         if i > 0:
-            # This is super icky.
-            print '>>> 1', communication_record.pk
-            communication_record.pk = None
-            new_status = communication_record.approval_status
-            new_status.pk = None
-            new_status.save()
-            communication_record.approval_status = new_status
-            communication_record.save()
-            print '>>> 2', communication_record.pk
+            communication_record.recreate()
             attach_new_tags(
                 new_tags, created_tags, 'communicationrecord',
                 communication_record)
@@ -2263,7 +2255,6 @@ def api_convert_outreach_record(request):
         communication_record.contact = contact
         communication_record.partner = partner
         communication_record.save()
-        print '>>> 3', communication_record.pk, communication_record.contact
         outreach.communication_records.add(communication_record_form.instance)
         outreach.contacts.add(contact)
         if 'location' in contact_result:
