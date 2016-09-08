@@ -1,6 +1,6 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
-import {map} from 'lodash-compat';
+import {map, isEmpty} from 'lodash-compat';
 
 /**
  * add a new tag to the state
@@ -203,6 +203,9 @@ function formsFromApi(response) {
   if (forms.communication_record) {
     result.forms.communication_record = forms.communication_record;
     result.record.communication_record = forms.communication_record.data;
+  } else {
+    result.forms.communication_record = forms.communication_record;
+    result.record.communication_record = {};
   }
 
   return result;
@@ -212,10 +215,14 @@ function formsFromApi(response) {
  * Prepare local record object for sending to the api.
  */
 function formsToApi(record, newTags) {
-  return {
+  const form = {
     data: {...record},
     new_tags: newTags,
   };
+  if (isEmpty(form.data.communication_record)) {
+    delete form.data.communication_record;
+  }
+  return form;
 }
 
 /**
