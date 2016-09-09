@@ -14,6 +14,7 @@ import {
   deletePartnerAction,
   deleteContactAction,
   deleteCommunicationRecordAction,
+  markCleanAction,
 } from '../actions/process-outreach-actions';
 
 describe('processEmailReducer', () => {
@@ -36,6 +37,10 @@ describe('processEmailReducer', () => {
     it('should remember the given workflow blankForms', () => {
       expect(result.blankForms).toDiffEqual(blankForms);
     });
+
+    it('should be clean', () => {
+      expect(result.dirty).toBeFalsy();
+    });
   });
 
   describe('handling choosePartnerAction', () => {
@@ -50,6 +55,10 @@ describe('processEmailReducer', () => {
 
     it('should have the partner name', () => {
       expect(result.record.partner.name).toEqual('acme');
+    });
+
+    it('should be dirty', () => {
+      expect(result.dirty).toBeTruthy();
     });
   });
 
@@ -89,6 +98,10 @@ describe('processEmailReducer', () => {
     it('places a null placeholder in the forms', () => {
       expect(result.forms.contacts[0]).toBe(null);
     });
+
+    it('should be dirty', () => {
+      expect(result.dirty).toBeTruthy();
+    });
   });
 
   describe('handling newPartnerAction', () => {
@@ -119,6 +132,9 @@ describe('processEmailReducer', () => {
       expect(result.record.partner.name).toEqual('Partner Name Inc.');
     });
 
+    it('should be dirty', () => {
+      expect(result.dirty).toBeTruthy();
+    });
   });
 
   describe('handling newContactAction', () => {
@@ -155,6 +171,10 @@ describe('processEmailReducer', () => {
 
     it('keep the partner', () => {
       expect(result.record.partner).toEqual(state.record.partner);
+    });
+
+    it('should be dirty', () => {
+      expect(result.dirty).toBeTruthy();
     });
   });
 
@@ -194,6 +214,13 @@ describe('processEmailReducer', () => {
             a: 'b',
           },
         });
+      });
+
+      it('marks the process as dirty', () => {
+        const action = editFormAction('partner', 'name', 'Bob');
+        const result = reducer({}, action);
+
+        expect(result.dirty).toBeTruthy();
       });
     });
 
@@ -241,6 +268,21 @@ describe('processEmailReducer', () => {
           },
         });
       });
+
+      it('marks the process as dirty', () => {
+        const action = editFormAction('contacts', 'city', 'elsewhere2', 1);
+        const result = reducer({}, action);
+
+        expect(result.dirty).toBe(true);
+      });
+    });
+  });
+
+  describe('handling markCleanAction', () => {
+    const action = markCleanAction();
+    it('transitions from dirty to clean', () => {
+      const result = reducer({dirty: true}, action);
+      expect(result.dirty).toBeFalsy();
     });
   });
 });

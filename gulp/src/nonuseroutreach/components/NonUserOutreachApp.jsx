@@ -10,7 +10,10 @@ import OutreachDetails from './OutreachDetails.jsx';
 import {markPageLoadingAction} from 'common/actions/loading-actions';
 import {doGetInboxes} from '../actions/inbox-actions';
 import {doGetRecords} from '../actions/record-actions';
-import {doLoadEmail} from '../actions/process-outreach-actions';
+import {
+  doLoadEmail,
+  markCleanAction,
+} from '../actions/process-outreach-actions';
 import {setPageAction, doGetWorkflowStateChoices} from '../actions/navigation-actions';
 import Confirm from 'common/ui/Confirm';
 import {runConfirmInPlace} from 'common/actions/confirm-actions';
@@ -38,10 +41,15 @@ class NonUserOutreachApp extends Component {
   }
 
   async handleBeforeListen(_location, cb) {
-    if (this.preventHistory) {
+    const {dirty} = this.props;
+    if (dirty) {
       const {dispatch} = this.props;
       const message = 'All of your information will be lost if you navigate away from this page.';
-      cb(await runConfirmInPlace(dispatch, message));
+      const result = await runConfirmInPlace(dispatch, message);
+      if (result) {
+        dispatch(markCleanAction());
+      }
+      cb(result);
     } else {
       cb(true);
     }
@@ -53,7 +61,6 @@ class NonUserOutreachApp extends Component {
       return;
     }
     const lastComponent = loc.components[loc.components.length - 1];
-    this.preventHistory = false;
     if (lastComponent === InboxManagementPage) {
       // update the application's state with the current page and refresh the
       // list of inboxes
@@ -74,7 +81,6 @@ class NonUserOutreachApp extends Component {
     } else if (lastComponent === ProcessRecordPage) {
       // update the application's state with the current page and refresh the
       // email
-      this.preventHistory = true;
       const recordId = loc.location.query.id;
       dispatch(markPageLoadingAction(true));
       await dispatch(doLoadEmail(recordId));
@@ -127,6 +133,8 @@ class NonUserOutreachApp extends Component {
 NonUserOutreachApp.propTypes = {
   history: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
+  // Should we warn the user about losing work if they navigate?
+  dirty: PropTypes.bool.isRequired,
   // whether or not to show a page loading indicator in the content area
   loading: PropTypes.bool.isRequired,
   // the tips to pass along to the menu component
@@ -141,4 +149,5 @@ export default connect(state => ({
   loading: state.loading.mainPage,
   tips: state.navigation.tips,
   page: state.navigation.currentPage,
+  dirty: state.process.dirty,
 }))(NonUserOutreachApp);
