@@ -326,8 +326,15 @@ export function pruneCommunicationRecordForm(form, formContents) {
   const fieldListsByType = {
     '': [...before, 'subject', 'date_time', ...after],
     email: [...before, 'contact_email', 'subject', 'date_time', ...after],
-    phone: [...before, 'phone', 'length', 'date_time', 'subject', ...after],
-    meetingorevent: [...before, 'location', 'date_time', 'subject', ...after],
+    phone: [...before, 'contact_phone', 'subject', 'date_time', ...after],
+    meetingorevent: [
+      ...before,
+      'location',
+      'length',
+      'subject',
+      'date_time',
+      ...after,
+    ],
   };
 
   const rawContactType = (formContents || {}).contact_type;
