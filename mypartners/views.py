@@ -2234,6 +2234,8 @@ def api_convert_outreach_record(request):
         partner_form.save()
         outreach.partners.add(partner_form.instance)
         partner = partner_form.instance
+        partner.owner = user_company
+        partner.save()
         attach_new_tags(new_tags, created_tags, 'partner', partner)
 
     if communication_record_form:
@@ -2253,9 +2255,6 @@ def api_convert_outreach_record(request):
         # on subsequent passes, make new communication records for each contact
         if i > 0:
             communication_record.recreate()
-            attach_new_tags(
-                new_tags, created_tags, 'communicationrecord',
-                communication_record)
 
         contact.partner = partner
         contact.save()
