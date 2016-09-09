@@ -2193,6 +2193,10 @@ def api_convert_outreach_record(request):
             contact_form_payload = merge_contact_forms(result, user_company)
             payload['forms']['contacts'].append(contact_form_payload)
         else:
+            if 'instance' in result:
+                contact = result['instance']
+            else:
+                contact = result['contact'].instance
             payload['forms']['contacts'].append({
                 'data': {'pk': contact.pk, 'name': contact.name}
             })
@@ -2245,6 +2249,14 @@ def api_convert_outreach_record(request):
             contact = contact_result['contact'].instance
         else:
             contact = contact_result['instance']
+
+        # on subsequent passes, make new communication records for each contact
+        if i > 0:
+            communication_record.recreate()
+            attach_new_tags(
+                new_tags, created_tags, 'communicationrecord',
+                communication_record)
+
         contact.partner = partner
         contact.save()
         communication_record.contact = contact

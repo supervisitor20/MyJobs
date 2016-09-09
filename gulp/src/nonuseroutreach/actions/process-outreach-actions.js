@@ -146,6 +146,11 @@ export function convertOutreach(record) {
 }
 
 /**
+ * We don't need to worry about the user losing work anymore.
+ */
+export const markCleanAction = createAction('NUO_MARK_CLEAN');
+
+/**
  * We have new form data from the API
  *
  * forms: new forms from the API
@@ -170,6 +175,7 @@ export function doLoadEmail(outreachId) {
       dispatch(editFormAction('outreach_record', 'pk', outreachId, null));
       dispatch(editFormAction('outreach_record', 'current_workflow_state',
                               forms.outreach_record.data.current_workflow_state, null));
+      dispatch(markCleanAction());
     } catch (e) {
       dispatch(errorAction(e.message));
     }
@@ -239,6 +245,7 @@ export function doSubmit(validateOnly, onSuccess) {
       if (validateOnly) {
         dispatch(noteFormsAction(formsFromApi(response)));
       } else if (onSuccess) {
+        dispatch(markCleanAction());
         onSuccess();
       }
     } catch (e) {

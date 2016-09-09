@@ -42,6 +42,7 @@ export function getErrorsForForms(forms, key) {
  *    contacts: [{ field contents for new contacts}]
  *    communication_record: field contents for record
  *  }
+ *  dirty: the user could lose work if they leave
  */
 export default handleActions({
   'NUO_RESET_PROCESS': (state, action) => {
@@ -108,6 +109,7 @@ export default handleActions({
 
     return {
       ...state,
+      dirty: true,
       record: {
         ...state.record,
         partner: {
@@ -123,6 +125,7 @@ export default handleActions({
 
     return {
       ...state,
+      dirty: true,
       forms: {
         ...state.forms,
         contacts: [
@@ -148,6 +151,7 @@ export default handleActions({
 
     const newState = {
       ...state,
+      dirty: true,
       state: 'NEW_PARTNER',
       forms: {
         ...state.forms,
@@ -175,6 +179,7 @@ export default handleActions({
 
     const newState = {
       ...state,
+      dirty: true,
       state: 'NEW_CONTACT',
       contactIndex: newIndex,
       forms: {
@@ -290,6 +295,7 @@ export default handleActions({
 
       return {
         ...state,
+        dirty: true,
         record: {
           ...state.record,
           [formName]: newFormSet,
@@ -301,6 +307,7 @@ export default handleActions({
 
     return {
       ...state,
+      dirty: true,
       record: {
         ...state.record,
         [formName]: {
@@ -308,6 +315,13 @@ export default handleActions({
           [field]: value,
         },
       },
+    };
+  },
+
+  'NUO_MARK_CLEAN': (state) => {
+    return {
+      ...state,
+      dirty: false,
     };
   },
 
@@ -374,24 +388,6 @@ export default handleActions({
       ...state,
       newTags: {
         ...remainingTags,
-      },
-    };
-  },
-
-  'NUO_ADD_PARTNER_TAG': (state, action) => {
-    const newTag = action.payload;
-
-    return {
-      ...state,
-      record: {
-        ...state.record,
-        partner: {
-          ...state.record.partner,
-          tags: {
-            ...state.record.partner.tags,
-            newTag,
-          },
-        },
       },
     };
   },
