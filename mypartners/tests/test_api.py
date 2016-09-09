@@ -195,7 +195,7 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
         """
         tag = Tag.objects.create(company=self.company, name="This Tag")
 
-        response = self.client.get(reverse('api_get_nuo_forms'))
+        response = self.client.get(reverse('api_get_nuo_forms')+'?outreachId=%s' % self.outreach_record.pk)
         payload = json.loads(response.content)
         tag_displays = [
             t['display']
