@@ -25,7 +25,10 @@ class OutreachCard extends Component {
           <img
           alt="[delete]"
           src={expandStaticUrl('svg/delete.svg')}
-          onClick={() => this.props.onDel()} /> : null}
+          onClick={(event) => {
+            this.props.onDel();
+            event.stopPropagation();
+          }} /> : null}
         {hasErrors ?
           <img
           alt="[error]"
@@ -47,6 +50,8 @@ class OutreachCard extends Component {
         onMouseEnter={() => this.setState({showActions: true})}
         onMouseLeave={() => this.setState({showActions: false})}
         onClick={() => onNav()}>
+
+
         <div className="tray-items-left">
           <img
           alt={'[' + type + ']'}
