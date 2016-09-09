@@ -122,11 +122,12 @@ class ProcessRecordPage extends Component {
     dispatch(resetSearchOrAddAction('CONTACT'));
   }
 
-  handleChoosePartner(obj) {
+  async handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
     this.resetSearches();
+    await(dispatch(doSubmit(true)));
     dispatch(determineProcessStateAction());
   }
 
@@ -138,6 +139,7 @@ class ProcessRecordPage extends Component {
     }
     dispatch(chooseContactAction(obj.value, obj.display));
     this.resetSearches();
+    await(dispatch(doSubmit(true)));
     dispatch(determineProcessStateAction());
   }
 

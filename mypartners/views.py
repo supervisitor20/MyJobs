@@ -36,7 +36,7 @@ from email_parser import build_email_dicts, get_datetime_from_str
 import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
-from universal.decorators import warn_when_inactive, restrict_to_staff
+from universal.decorators import warn_when_inactive
 from universal.api_validation import FormsApiValidator
 from myjobs.models import User
 
@@ -1697,7 +1697,6 @@ def make_communication_records(request, date_time, possible_contacts,
     return created_records, attachment_failures, None
 
 
-@restrict_to_staff()
 @requires("read outreach email address")
 def nuo_main(request):
     """
@@ -1712,7 +1711,6 @@ def nuo_main(request):
                               RequestContext(request))
 
 
-@restrict_to_staff()
 @requires("read outreach email address")
 def api_get_nuo_inbox_list(request):
     """
@@ -1731,7 +1729,6 @@ def api_get_nuo_inbox_list(request):
             list(inboxes)), content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("create outreach email address")
 def api_add_nuo_inbox(request):
     """
@@ -1752,7 +1749,6 @@ def api_add_nuo_inbox(request):
                         content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("delete outreach email address")
 def api_delete_nuo_inbox(request):
     """
@@ -1773,7 +1769,6 @@ def api_delete_nuo_inbox(request):
     return HttpResponse(json.dumps(ctx),
                         content_type='application/json; charset=utf-8')
 
-@restrict_to_staff()
 @requires("update outreach email address")
 def api_update_nuo_inbox(request):
     if not request.method == "POST":
@@ -1791,7 +1786,6 @@ def api_update_nuo_inbox(request):
                         content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("read outreach record")
 def api_get_nuo_records_list(request):
     """
@@ -1815,7 +1809,6 @@ def api_get_nuo_records_list(request):
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
 
-@restrict_to_staff()
 @requires("read outreach record")
 def api_get_individual_nuo_record(request, record_id=None):
     """
@@ -1894,14 +1887,16 @@ def merge_contact_forms(contact_forms, company):
     }
 
 
-@restrict_to_staff()
 @requires("convert outreach record")
 def api_get_nuo_forms(request):
     company = get_company_or_404(request)
+    outreach_pk = request.GET.get('outreachId', None)
+    outreach_instance = OutreachRecord.objects.get(pk=outreach_pk)
+
     forms = {
         'partner': NuoPartnerForm(company=company),
         'communication_record': NuoCommunicationRecordForm(company=company),
-        'outreach_record': NuoOutreachRecordForm(),
+        'outreach_record': NuoOutreachRecordForm(instance=outreach_instance),
     }
 
     payload = {
@@ -1917,7 +1912,6 @@ def api_get_nuo_forms(request):
 
 
 @csrf_exempt
-@restrict_to_staff()
 @requires("convert outreach record")
 def api_convert_outreach_record(request):
     """
@@ -2232,6 +2226,8 @@ def api_convert_outreach_record(request):
         outreach.partners.add(partner_form.instance)
         partner = partner_form.instance
         partner.created_by = request.user
+        partner.owner = user_company
+        partner.save()
         attach_new_tags(new_tags, created_tags, 'partner', partner)
 
     if communication_record_form:
@@ -2252,9 +2248,6 @@ def api_convert_outreach_record(request):
         # on subsequent passes, make new communication records for each contact
         if i > 0:
             communication_record.recreate()
-            attach_new_tags(
-                new_tags, created_tags, 'communicationrecord',
-                communication_record)
 
         contact.partner = partner
         contact.created_by = request.user

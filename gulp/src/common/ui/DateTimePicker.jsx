@@ -52,7 +52,7 @@ export default class DateTimePicker extends Component {
 
   rangeToDropDownArray(rangeStart, rangeEnd) {
     return map(range(rangeStart, rangeEnd),
-      (n) => ({value: n, display: String(n), render: () => ''}));
+      (n) => ({value: n, display: padLeft(n, 2, '0'), render: () => ''}));
   }
 
   stringToState(input) {
@@ -83,7 +83,6 @@ export default class DateTimePicker extends Component {
     const convertPadHour = padLeft(
       this.backToMilitaryTime(selectHour, selectAMPM), 2, '0'
     );
-
     return selectYear + '-' + padMonth + '-' + padDay + ' ' +
       convertPadHour + ':' + padMinute;
   }
@@ -123,7 +122,7 @@ export default class DateTimePicker extends Component {
           </Col>
           <Col xs={4} md={4}>
             <SelectControls
-              choices={this.rangeToDropDownArray(0, 61)}
+              choices={this.rangeToDropDownArray(0, 60)}
               value={selectMinute}
               onSelect={v => this.handleFieldChange('selectMinute', v)}/>
           </Col>
