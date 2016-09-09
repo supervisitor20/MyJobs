@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {range, map, padLeft} from 'lodash-compat';
+import {Col, Row} from 'react-bootstrap';
 import SelectControls from 'common/ui/SelectControls';
 import {monthsArray} from 'common/calendar-support';
 
@@ -93,33 +94,49 @@ export default class DateTimePicker extends Component {
 
     return (
       <div>
-        <SelectControls
-          choices={map(monthsArray, (a) => ({...a, render: () => ''}))}
-          value={selectMonth}
-          onSelect={v => this.handleFieldChange('selectMonth', v)}/>
-        <SelectControls
-          choices={this.rangeToDropDownArray(1, 32)}
-          value={selectDay}
-          onSelect={v => this.handleFieldChange('selectDay', v)}/>
-        <SelectControls
-          choices={this.rangeToDropDownArray(yearRangeMin, yearRangeMax)}
-          value={selectYear}
-          onSelect={v => this.handleFieldChange('selectYear', v)}/>
-        <SelectControls
-          choices={this.rangeToDropDownArray(1, 13)}
-          value={selectHour}
-          onSelect={v => this.handleFieldChange('selectHour', v)}/>
-        <SelectControls
-          choices={this.rangeToDropDownArray(0, 61)}
-          value={selectMinute}
-          onSelect={v => this.handleFieldChange('selectMinute', v)}/>
-        <SelectControls
-          choices={[
-            {value: 0, display: 'AM', render: () => ''},
-            {value: 1, display: 'PM', render: () => ''},
-          ]}
-          value={selectAMPM}
-          onSelect={v => this.handleFieldChange('selectAMPM', v)}/>
+        <Row>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={map(monthsArray, (a) => ({...a, render: () => ''}))}
+              value={selectMonth}
+              onSelect={v => this.handleFieldChange('selectMonth', v)}/>
+          </Col>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={this.rangeToDropDownArray(1, 32)}
+              value={selectDay}
+              onSelect={v => this.handleFieldChange('selectDay', v)}/>
+          </Col>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={this.rangeToDropDownArray(yearRangeMin, yearRangeMax)}
+              value={selectYear}
+              onSelect={v => this.handleFieldChange('selectYear', v)}/>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={this.rangeToDropDownArray(1, 13)}
+              value={selectHour}
+              onSelect={v => this.handleFieldChange('selectHour', v)}/>
+          </Col>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={this.rangeToDropDownArray(0, 61)}
+              value={selectMinute}
+              onSelect={v => this.handleFieldChange('selectMinute', v)}/>
+          </Col>
+          <Col xs={4} md={4}>
+            <SelectControls
+              choices={[
+                {value: 0, display: 'AM', render: () => ''},
+                {value: 1, display: 'PM', render: () => ''},
+              ]}
+              value={selectAMPM}
+              onSelect={v => this.handleFieldChange('selectAMPM', v)}/>
+          </Col>
+        </Row>
       </div>
     );
   }
