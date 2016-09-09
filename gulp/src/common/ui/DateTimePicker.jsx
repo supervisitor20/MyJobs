@@ -51,9 +51,8 @@ export default class DateTimePicker extends Component {
   }
 
   rangeToDropDownArray(rangeStart, rangeEnd) {
-    const lz = '0';
     return map(range(rangeStart, rangeEnd),
-      (n) => ({value: n, display: parseInt(String(n), 10) < 10 ? String(lz + n) : String(n), render: () => ''}));
+      (n) => ({value: n, display: padLeft(n, 2, '0'), render: () => ''}));
   }
 
   stringToState(input) {
@@ -84,7 +83,6 @@ export default class DateTimePicker extends Component {
     const convertPadHour = padLeft(
       this.backToMilitaryTime(selectHour, selectAMPM), 2, '0'
     );
-
     return selectYear + '-' + padMonth + '-' + padDay + ' ' +
       convertPadHour + ':' + padMinute;
   }
