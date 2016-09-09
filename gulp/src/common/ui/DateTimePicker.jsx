@@ -51,8 +51,9 @@ export default class DateTimePicker extends Component {
   }
 
   rangeToDropDownArray(rangeStart, rangeEnd) {
+    const lz = '0';
     return map(range(rangeStart, rangeEnd),
-      (n) => ({value: n, display: String(n), render: () => ''}));
+      (n) => ({value: n, display: parseInt(String(n), 10) < 10 ? String(lz + n) : String(n), render: () => ''}));
   }
 
   stringToState(input) {
