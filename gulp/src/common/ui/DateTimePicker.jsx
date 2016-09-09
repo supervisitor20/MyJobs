@@ -124,7 +124,7 @@ export default class DateTimePicker extends Component {
           </Col>
           <Col xs={4} md={4}>
             <SelectControls
-              choices={this.rangeToDropDownArray(0, 61)}
+              choices={this.rangeToDropDownArray(0, 60)}
               value={selectMinute}
               onSelect={v => this.handleFieldChange('selectMinute', v)}/>
           </Col>
