@@ -247,6 +247,7 @@ export function doSubmit(validateOnly, onSuccess) {
         }
         if (e.data.forms) {
           dispatch(noteFormsAction(formsFromApi(e.data)));
+          document.body.scrollTop = document.documentElement.scrollTop = 0;
         }
       } else {
         dispatch(errorAction(e.message));
