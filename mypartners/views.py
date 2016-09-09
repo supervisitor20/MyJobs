@@ -1898,10 +1898,13 @@ def merge_contact_forms(contact_forms, company):
 @requires("convert outreach record")
 def api_get_nuo_forms(request):
     company = get_company_or_404(request)
+    outreach_pk = request.GET.get('outreachId', None)
+    outreach_instance = OutreachRecord.objects.get(pk=outreach_pk)
+
     forms = {
         'partner': NuoPartnerForm(company=company),
         'communication_record': NuoCommunicationRecordForm(company=company),
-        'outreach_record': NuoOutreachRecordForm(),
+        'outreach_record': NuoOutreachRecordForm(instance=outreach_instance),
     }
 
     payload = {

@@ -57,6 +57,7 @@ export default handleActions({
       blankForms,
       forms: {
         contacts: [],
+        outreach_record: blankForms.outreach_record,
       },
       outreach,
     };
