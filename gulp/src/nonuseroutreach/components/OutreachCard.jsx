@@ -45,7 +45,8 @@ class OutreachCard extends Component {
       <div
         className="tray-container progress-card"
         onMouseEnter={() => this.setState({showActions: true})}
-        onMouseLeave={() => this.setState({showActions: false})}>
+        onMouseLeave={() => this.setState({showActions: false})}
+        onClick={() => onNav()}>
         <div className="tray-items-left">
           <img
           alt={'[' + type + ']'}
@@ -53,7 +54,7 @@ class OutreachCard extends Component {
         </div>
         {this.renderIcons()}
         <div className="tray-content ellipses">
-          <h5 onClick={() => onNav()}>{displayText}</h5>
+          <h5>{displayText}</h5>
         </div>
       </div>
     );
