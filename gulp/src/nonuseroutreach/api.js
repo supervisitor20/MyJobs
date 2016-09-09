@@ -76,8 +76,8 @@ export default class Api {
     return await this.api.get('/prm/api/partner/' + partnerId);
   }
 
-  async getForms() {
-    return await this.api.get('/prm/api/nonuseroutreach/forms');
+  async getForms(outreachId) {
+    return await this.api.get('/prm/api/nonuseroutreach/forms?outreachId=' + outreachId);
   }
 
   async submitContactRecord(request, validateOnly) {

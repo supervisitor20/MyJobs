@@ -161,13 +161,15 @@ export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
       const outreach = await api.getOutreach(outreachId);
-      const forms = await api.getForms();
+      const forms = await api.getForms(outreachId);
 
       dispatch(
         resetProcessAction(
           convertOutreach(outreach),
           forms));
       dispatch(editFormAction('outreach_record', 'pk', outreachId, null));
+      dispatch(editFormAction('outreach_record', 'current_workflow_state',
+                              forms.outreach_record.data.current_workflow_state, null));
     } catch (e) {
       dispatch(errorAction(e.message));
     }
