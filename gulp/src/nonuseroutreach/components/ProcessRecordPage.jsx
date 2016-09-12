@@ -1,18 +1,25 @@
 import React, {PropTypes, Component} from 'react';
 import {connect} from 'react-redux';
-import {getDisplayForValue} from 'common/array.js';
 import FieldWrapper from 'common/ui/FieldWrapper';
 import Card from './Card';
 import Form from './Form';
 import SearchDrop from './SearchDrop';
-import Select from 'common/ui/Select';
-import {get} from 'lodash-compat/object';
+import {
+  get,
+  forEach,
+  includes,
+  sortBy,
+  map,
+  keys,
+  pick,
+  without,
+  indexBy,
+} from 'lodash-compat';
+
 
 import {
-  partnerForm,
-  contactForm,
   contactNotesOnlyForm,
-  communicationRecordForm,
+  pruneCommunicationRecordForm,
 } from 'nonuseroutreach/forms';
 
 import {
@@ -26,10 +33,89 @@ import {
   newPartnerAction,
   newContactAction,
   editFormAction,
+  removeNewTagAction,
+  addNewTagAction,
   doSubmit,
+  cleanUpOrphanTags,
 } from '../actions/process-outreach-actions';
 
 class ProcessRecordPage extends Component {
+
+  getAvailableTags(form) {
+    const {newTags} = this.props;
+    const existingTags = form.fields.tags.choices;
+
+    return sortBy([
+      ...existingTags,
+      ...map(keys(newTags), tagName => ({value: tagName, display: tagName})),
+    ], 'display');
+  }
+
+  getSelectedTagsForForm(formName, form, formContents) {
+    const {newTags} = this.props;
+    const existingTags = indexBy(form.fields.tags.choices, 'value');
+
+    return sortBy([
+      ...map(formContents.tags || [], v => existingTags[v]),
+      ...map(keys(pick(newTags, assoc => includes(assoc, formName))), v =>
+        ({value: v, display: v})),
+    ], 'display');
+  }
+
+  handleNewTag(form, tagName) {
+    const {dispatch} = this.props;
+    dispatch(addNewTagAction(form, tagName));
+  }
+
+  handleRemoveTag(formName, formKey, formIndex, formContents, tags) {
+    const {dispatch} = this.props;
+    forEach(tags, (tag) => {
+      if (tag.value === tag.display) {
+        dispatch(removeNewTagAction(formName, tag.display));
+      } else {
+        const value = without(formContents.tags, ...map(tags, t => t.value));
+        dispatch(editFormAction(formKey, 'tags', value, formIndex));
+      }
+    });
+  }
+
+  handleSelectTag(formName, formKey, formIndex, formContents, tags) {
+    const {dispatch} = this.props;
+    forEach(tags, (tag) => {
+      if (tag.value === tag.display) {
+        dispatch(addNewTagAction(formName, tag.display));
+      } else {
+        const value = [...formContents.tags || [], tag.value];
+        dispatch(editFormAction(formKey, 'tags', value, formIndex));
+      }
+    });
+  }
+
+  /**
+   * router for tag related action. reduces number of prop types provided to
+   * form, remoteformfield
+   *
+   * @param action - what action is taking place, added via curried function
+   * @param form - the name of the form being accessed
+   * @param tagNameOrObject - either a tag name or tag object
+   */
+
+  tagActionRouter(action, formName, formKey, formIndex, formContents, tagNameOrObjects) {
+    switch (action) {
+    case 'remove':
+      this.handleRemoveTag(formName, formKey, formIndex, formContents, tagNameOrObjects);
+      break;
+    case 'select':
+      this.handleSelectTag(formName, formKey, formIndex, formContents, tagNameOrObjects);
+      break;
+    case 'new':
+      this.handleNewTag(formName, tagNameOrObjects);
+      break;
+    default:
+      break;
+    }
+  }
+
   resetSearches() {
     const {dispatch} = this.props;
 
@@ -37,11 +123,12 @@ class ProcessRecordPage extends Component {
     dispatch(resetSearchOrAddAction('CONTACT'));
   }
 
-  handleChoosePartner(obj) {
+  async handleChoosePartner(obj) {
     const {dispatch} = this.props;
 
     dispatch(choosePartnerAction(obj.value, obj.display));
     this.resetSearches();
+    await(dispatch(doSubmit(true)));
     dispatch(determineProcessStateAction());
   }
 
@@ -53,25 +140,24 @@ class ProcessRecordPage extends Component {
     }
     dispatch(chooseContactAction(obj.value, obj.display));
     this.resetSearches();
+    await(dispatch(doSubmit(true)));
     dispatch(determineProcessStateAction());
   }
 
   async handleNewPartner(obj) {
     const {dispatch} = this.props;
-
     dispatch(newPartnerAction(obj.display));
   }
 
   async handleNewContact(obj) {
     const {dispatch} = this.props;
-
     dispatch(newContactAction(obj.display));
   }
 
   async handleSavePartner() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
@@ -79,7 +165,7 @@ class ProcessRecordPage extends Component {
   async handleSaveContact() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
@@ -87,16 +173,20 @@ class ProcessRecordPage extends Component {
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
 
   async handleSubmit() {
     const {dispatch, history} = this.props;
-
-    await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
+    dispatch(cleanUpOrphanTags());
+    await dispatch(doSubmit(false, () => this.scrollToTop(), () => history.pushState(null, '/records')));
     this.resetSearches();
+  }
+
+  scrollToTop() {
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
   }
 
   renderCard(title, children) {
@@ -147,24 +237,43 @@ class ProcessRecordPage extends Component {
   renderNewCommunicationRecord() {
     const {
       dispatch,
+      communicationRecordForm,
       communicationRecordFormContents,
     } = this.props;
 
+    const prunedForm = pruneCommunicationRecordForm(
+      communicationRecordForm, communicationRecordFormContents);
+
     return (
       <Form
-        form={communicationRecordForm}
+        form={prunedForm}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
         onEdit={(n, v) =>
-          dispatch(editFormAction('communicationrecord', n, v))}
+          dispatch(editFormAction('communication_record', n, v))}
         onSubmit={() => this.handleSaveCommunicationRecord()}
+        tagActions={(action, tag) => {
+          this.tagActionRouter(
+            action,
+            'communicationrecord',
+            'communication_record',
+            undefined,
+            communicationRecordFormContents,
+            tag);
+        }}
+        availableTags={this.getAvailableTags(communicationRecordForm)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'communicationrecord',
+            communicationRecordForm,
+            communicationRecordFormContents)}
         />
     );
   }
 
   renderNewPartner() {
-    const {dispatch, partnerFormContents} = this.props;
+    const {dispatch, partnerForm, partnerFormContents} = this.props;
 
     return (
       <Form
@@ -174,12 +283,31 @@ class ProcessRecordPage extends Component {
         formContents={partnerFormContents}
         onEdit={(n, v) => dispatch(editFormAction('partner', n, v))}
         onSubmit={() => this.handleSavePartner()}
+        tagActions={(action, tag) =>
+          this.tagActionRouter(
+            action,
+            'partner',
+            'partner',
+            undefined,
+            partnerFormContents,
+            tag)}
+        availableTags={this.getAvailableTags(partnerForm)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'partner', partnerForm, partnerFormContents)}
         />
     );
   }
 
   renderNewContact() {
-    const {dispatch, contactIndex, contactFormsContents} = this.props;
+    const {
+      dispatch,
+      contactIndex,
+      contactForms,
+      contactFormsContents,
+    } = this.props;
+
+    const contactForm = contactForms[contactIndex];
     const contactFormContents = contactFormsContents[contactIndex] || {};
 
     return (
@@ -191,6 +319,19 @@ class ProcessRecordPage extends Component {
         onEdit={(n, v) =>
           dispatch(editFormAction('contacts', n, v, contactIndex))}
         onSubmit={() => this.handleSaveContact()}
+        tagActions={(action, tag) => {
+          this.tagActionRouter(
+            action,
+            'contact' + contactIndex,
+            'contacts',
+            contactIndex,
+            contactFormContents,
+            tag);
+        }}
+        availableTags={this.getAvailableTags(contactForm)}
+        selectedTags={
+          this.getSelectedTagsForForm(
+            'contact' + contactIndex, contactForm, contactFormContents)}
         />
     );
   }
@@ -213,29 +354,22 @@ class ProcessRecordPage extends Component {
   }
 
   renderSelectWorkflow() {
-    const {dispatch,
-      workflowState,
-      workflowStates,
+    const {
+      dispatch,
+      outreachRecordForm,
+      outreachRecordFormContents,
     } = this.props;
 
     return (
-      <Card title="Form Ready for Submission">
-        <FieldWrapper label="Workflow Status">
-          <Select
-            name="workflow"
-            value={getDisplayForValue(workflowStates, workflowState)}
-            choices={workflowStates}
-            onChange={e => dispatch(
-              editFormAction(
-                'outreachrecord',
-                'current_workflow_state',
-                e.target.value))}
-            />
-        </FieldWrapper>
-        <button className="nuo-button" onClick={() => this.handleSubmit()}>
-          Submit
-        </button>
-      </Card>
+      <Form
+        form={outreachRecordForm}
+        title="Form Ready for Submission"
+        submitTitle="Submit"
+        formContents={outreachRecordFormContents}
+        onEdit={(n, v) =>
+          dispatch(editFormAction('outreach_record', n, v, null))}
+        onSubmit={() => this.handleSubmit()}
+        />
     );
   }
 
@@ -278,33 +412,33 @@ class ProcessRecordPage extends Component {
 ProcessRecordPage.propTypes = {
   dispatch: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
-  outreachId: PropTypes.string.isRequired,
   processState: PropTypes.string.isRequired,
   partnerId: PropTypes.any,
   partnerFormContents: PropTypes.object.isRequired,
   contactFormsContents: PropTypes.arrayOf(
     PropTypes.object.isRequired).isRequired,
+  outreachRecordFormContents: PropTypes.object,
   contactIndex: PropTypes.number,
   communicationRecordFormContents: PropTypes.object.isRequired,
-  workflowState: PropTypes.number,
-  workflowStates: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.number.isRequired,
-      display: PropTypes.string.isRequired,
-    }).isRequired
-  ).isRequired,
+  newTags: PropTypes.object,
+  partnerForm: PropTypes.object,
+  contactForms: PropTypes.arrayOf(PropTypes.object),
+  communicationRecordForm: PropTypes.object,
+  outreachRecordForm: PropTypes.object,
 };
 
 export default connect(state => ({
-  outreachId: state.process.outreachId,
   processState: state.process.state,
-  partnerId: get(state.process, 'record.partner.pk.value'),
+  partnerId: get(state.process, 'record.partner.pk'),
   contactIndex: state.process.contactIndex,
   partnerFormContents: state.process.record.partner,
   contactFormsContents: state.process.record.contacts,
   communicationRecordFormContents:
-    state.process.record.communicationrecord,
-  workflowState:
-    get(state.process.record, 'outreachrecord.current_workflow_state.value'),
-  workflowStates: state.process.workflowStates,
+    state.process.record.communication_record,
+  newTags: state.process.newTags,
+  outreachRecordFormContents: state.process.record.outreach_record,
+  partnerForm: state.process.forms.partner,
+  contactForms: state.process.forms.contacts,
+  communicationRecordForm: state.process.forms.communication_record,
+  outreachRecordForm: state.process.forms.outreach_record,
 }))(ProcessRecordPage);

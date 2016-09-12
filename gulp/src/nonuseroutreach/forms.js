@@ -1,11 +1,4 @@
-import {mapValues} from 'lodash-compat';
-
-const communicationTypes = [
-  {display: 'Email', value: 'email'},
-  {display: 'Phone', value: 'phone'},
-  {display: 'Meeting or Event', value: 'meetingorevent'},
-  {display: 'Job Followup', value: 'job'},
-];
+import {mapValues, includes, keys, filter} from 'lodash-compat';
 
 const states = [
   {display: 'Select a State', value: ''},
@@ -70,105 +63,6 @@ const states = [
   {display: 'Wisconsin', value: 'WI'},
   {display: 'Wyoming', value: 'WY'},
 ];
-
-export const partnerForm = {
-  fields: {
-    name: {
-      title: 'CharField',
-      required: true,
-      label: 'Partner Organization',
-      help_text: 'Name of the Organization',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: true,
-        attrs: {
-          autofocus: 'autofocus',
-          placeholder: 'Partner Organization',
-          id: 'id_partner-partnername',
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    data_source: {
-      title: 'CharField',
-      required: false,
-      label: 'Source',
-      help_text: 'Website, event, or other source where you found the ' +
-        'partner',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          placeholder: 'Source',
-          id: 'id_partner-partnersource',
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    uri: {
-      title: 'URLField',
-      required: false,
-      label: 'URL',
-      help_text: 'Full url. ie http://partnerorganization.org',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          placeholder: 'URL',
-          id: 'id_partner-partnerurl',
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    tags: {
-      title: 'CharField',
-      required: false,
-      label: 'Tags',
-      help_text:
-        'ie \'Disability\', \'veteran-outreach\', etc. ' +
-        'Separate tags with a comma.',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          placeholder: 'Tags',
-          id: 'p-tags',
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-  },
-  orderedFields: [
-    'name',
-    'data_source',
-    'uri',
-    'tags',
-  ],
-};
 
 export const contactForm = {
   fields: {
@@ -244,17 +138,17 @@ export const contactForm = {
         'ie \'Disability\', \'veteran-outreach\', etc. Separate ' +
         'tags with a comma.',
       widget: {
-        title: 'TextInput',
+        title: 'TagSelect',
         is_hidden: false,
         needs_multipart_form: false,
         is_localized: false,
         is_required: false,
         attrs: {
-          autocomplete: 'off',
+          placeholder: 'Tags',
           id: 'p-tags',
           maxlength: '255',
         },
-        input_type: 'text',
+        input_type: 'selectmultiple',
       },
       min_length: null,
       max_length: 255,
@@ -404,7 +298,7 @@ export const contactForm = {
       max_length: null,
     },
   },
-  orderedFields: [
+  ordered_fields: [
     'name',
     'email',
     'phone',
@@ -426,260 +320,43 @@ function readonlyField(field) {
   };
 }
 
+export function pruneCommunicationRecordForm(form, formContents) {
+  const before = ['contact_type'];
+  const after = ['tags', 'notes'];
+  const fieldListsByType = {
+    '': [...before, 'subject', 'date_time', ...after],
+    email: [...before, 'contact_email', 'subject', 'date_time', ...after],
+    phone: [...before, 'contact_phone', 'subject', 'date_time', ...after],
+    meetingorevent: [
+      ...before,
+      'location',
+      'length',
+      'subject',
+      'date_time',
+      ...after,
+    ],
+  };
+
+  const rawContactType = (formContents || {}).contact_type;
+  const contactType = includes(keys(fieldListsByType), rawContactType) ?
+    rawContactType : '';
+
+  return {
+    ...form,
+    fields: {
+      ...form.fields,
+      contact_type: {
+        ...form.fields.contact_type,
+        choices: filter(form.fields.contact_type.choices, o =>
+          includes(keys(fieldListsByType), o.value)),
+      },
+    },
+    ordered_fields: fieldListsByType[contactType],
+  };
+}
+
 export const contactNotesOnlyForm = {
   ...contactForm,
   fields: mapValues(contactForm.fields, (f, key) =>
     key === 'notes' ? f : readonlyField(f)),
-};
-
-export const communicationRecordForm = {
-  fields: {
-    contact_type: {
-      title: 'TypedChoiceField',
-      required: true,
-      label: 'Communication Type',
-      help_text: '',
-      widget: {
-        title: 'Select',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: true,
-        attrs: {
-          autofocus: 'autofocus',
-        },
-        choices: communicationTypes,
-        input_type: 'select',
-      },
-      choices: communicationTypes,
-      coerce: 'to_python',
-      empty_value: '',
-    },
-    contact_email: {
-      title: 'CharField',
-      required: false,
-      label: 'Contact Email *',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    contact_phone: {
-      title: 'CharField',
-      required: false,
-      label: 'Contact Phone Number *',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '30',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 30,
-    },
-    location: {
-      title: 'CharField',
-      required: false,
-      label: 'Meeting Location *',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    length: {
-      label: 'Length',
-      widget: {
-        input_type: 'text',
-        attrs: {},
-      },
-    },
-    subject: {
-      title: 'CharField',
-      required: false,
-      label: 'Subject or Topic',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    date_time: {
-      label: 'Date & Time',
-      required: true,
-      widget: {
-        input_type: 'text',
-        is_required: true,
-        attrs: {},
-      },
-    },
-    job_id: {
-      title: 'CharField',
-      required: false,
-      label: 'Job Number/ID *',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '40',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 40,
-    },
-    job_applications: {
-      title: 'CharField',
-      required: false,
-      label: 'Number of Applications',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '6',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 6,
-    },
-    job_interviews: {
-      title: 'CharField',
-      required: false,
-      label: 'Number of Interviews',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '6',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 6,
-    },
-    job_hires: {
-      title: 'CharField',
-      required: false,
-      label: 'Number of Hires',
-      help_text: '',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          maxlength: '6',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 6,
-    },
-    tags: {
-      title: 'CharField',
-      required: false,
-      label: 'Tags',
-      help_text:
-        'ie \'Disability\', \'veteran-outreach\', etc. Separate tags with ' +
-        'a comma.',
-      widget: {
-        title: 'TextInput',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          autocomplete: 'off',
-          id: 'p-tags',
-          maxlength: '255',
-        },
-        input_type: 'text',
-      },
-      min_length: null,
-      max_length: 255,
-    },
-    notes: {
-      title: 'CharField',
-      required: false,
-      label: 'Details, Notes or Transcripts',
-      help_text: '',
-      widget: {
-        title: 'Textarea',
-        is_hidden: false,
-        needs_multipart_form: false,
-        is_localized: false,
-        is_required: false,
-        attrs: {
-          rows: '10',
-          cols: '40',
-        },
-        input_type: 'textarea',
-      },
-      min_length: null,
-      max_length: null,
-    },
-  },
-  orderedFields: [
-    'contact_type',
-    'contact_email',
-    'contact_phone',
-    'location',
-    'length',
-    'date_time',
-    'subject',
-    'job_id',
-    'job_applications',
-    'job_interviews',
-    'job_hires',
-    'tags',
-    'notes',
-  ],
 };

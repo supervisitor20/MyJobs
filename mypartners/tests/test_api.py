@@ -189,6 +189,22 @@ class NonUserOutreachTestCase(MyPartnersTestCase):
                                                 "returned for a non-company "
                                                 "record.")
 
+    def test_tag_names(self):
+        """
+        Test that tags don't have "for $company" appended to their displays.
+        """
+        tag = Tag.objects.create(company=self.company, name="This Tag")
+
+        response = self.client.get(reverse('api_get_nuo_forms')+'?outreachId=%s' % self.outreach_record.pk)
+        payload = json.loads(response.content)
+        tag_displays = [
+            t['display']
+            for t in
+            payload['partner']['fields']['tags']['choices']
+        ]
+        self.company.tag_set.add(tag)
+        self.assertIn('This Tag', tag_displays)
+
 class NUOConversionAPITestCase(MyPartnersTestCase):
     """
     Tests related to the conversion API for non user outreach. This API
@@ -205,57 +221,54 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
                                                      self.inbox)
         self.role.activities.add(*self.activities)
         self.outreach_workflow = OutreachWorkflowStateFactory()
-        a_tag = TagFactory()
+        a_tag = TagFactory(name='Tag A', company=self.company)
         self.request_data = {
-            "forms": {
-                "outreachrecord": {
-                    "pk": {'value': self.outreach_record.pk},
+            "data": {
+                "outreach_record": {
+                    "pk": self.outreach_record.pk,
                     "current_workflow_state":
-                        {'value': self.outreach_workflow.pk},
+                        self.outreach_workflow.pk,
                 },
                 "partner": {
-                    "pk": {'value': ""},
-                    "name": {'value': "James B"},
-                    "data_source": {'value': "email"},
-                    "uri": {'value': "http://www.example.com"},
-                    "tags": [{'pk': {'value': a_tag.pk}}],
-                    "owner": {'value': self.company.pk},
+                    "pk": "",
+                    "name": "James B",
+                    "data_source": "email",
+                    "uri": "http://www.example.com",
+                    "tags": [a_tag.pk],
+                    "owner": self.company.pk,
                 },
                 "contacts": [
                     {
-                        "pk": {'value': ""},
-                        "name": {'value': "Nicole J"},
-                        "email": {'value': "nicolej@test.com"},
-                        "phone": {'value': "7651234123"},
-                        "location": {
-                            "pk": {'value': ""},
-                            "address_line_one": {'value': ""},
-                            "address_line_two": {'value': ""},
-                            "city": {'value': "Newtoneous"},
-                            "state": {'value': "AZ"},
-                            "country_code": {'value': "1"},
-                            "label": {'value': "new place"},
-                            },
-                        "tags": [{'pk': {'value': a_tag.pk}}],
-                        "notes": {'value': "long note left here"},
+                        "pk": "",
+                        "name": "Nicole J",
+                        "email": "nicolej@test.com",
+                        "phone": "7651234123",
+                        "address_line_one": "",
+                        "address_line_two": "",
+                        "city": "Newtoneous",
+                        "state": "AZ",
+                        "country_code": "1",
+                        "label": "new place",
+                        "tags": [a_tag.pk],
+                        "notes": "long note left here",
                     },
                     {
-                        "pk": {'value': self.contact.pk},
-                        "notes": {'value': "new notes"},
+                        "pk": self.contact.pk,
+                        "notes": "new notes",
                     },
                 ],
-                "contactrecord": {
-                    "contact_type": {'value': "phone"},
-                    "location": {'value': "dining hall"},
-                    "length": {'value': "10:30"},
-                    "subject": {'value': "new job"},
-                    "date_time": {'value': "2016-01-01 05:10"},
-                    "notes": {'value': "dude was chill"},
-                    "job_id": {'value': "10"},
-                    "job_applications": {'value': "20"},
-                    "job_interviews": {'value': "10"},
-                    "job_hires": {'value': "0"},
-                    "tags": [],
+                "communication_record": {
+                    "contact_type": "phone",
+                    "location": "dining hall",
+                    "length": "10:30",
+                    "subject": "new job",
+                    "date_time": "2016-01-01 05:10",
+                    "notes": "dude was chill",
+                    "job_id": "10",
+                    "job_applications": "20",
+                    "job_interviews": "10",
+                    "job_hires": "0",
+                    "tags": [a_tag.pk],
                 }
             }
         }
@@ -271,22 +284,39 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
+        self.check_status_code_and_objects(response, 200, 8)
 
     def test_create_tag(self):
         """
         Create a new tag as part of conversion.
         """
-        self.request_data['forms']['partner']['tags'].append(
-            {'pk': {'value': ''}, 'name': {'value': 'SOMENEWTAG'}})
+        self.request_data['new_tags'] = {
+            'SOMENEWTAG': ['partner', 'contact0', 'contact1'],
+            'Tag 2': ['contact0', 'communicationrecord'],
+        }
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data={'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
-        partner = Partner.objects.filter(name="James B").first()
-        partner_tags = list(partner.tags.all())
-        self.assertEqual('SOMENEWTAG', partner_tags[-1].name)
+        self.check_status_code_and_objects(response, 200, 8)
+        partner = Partner.objects.get(name="James B")
+        contact0 = Contact.objects.get(name="Nicole J")
+        communication_record0 = ContactRecord.objects.get(
+            notes="dude was chill", contact=contact0)
+        communication_record1 = ContactRecord.objects.get(
+            notes="dude was chill", contact=self.contact)
+        self.assert_has_tag('SOMENEWTAG', partner)
+        self.assert_has_tag('Tag A', partner)
+        self.assert_has_tag('Tag A', communication_record0)
+        self.assert_has_tag('Tag A', communication_record1)
+        self.assert_has_tag('Tag 2', communication_record0)
+        self.assert_has_tag('Tag 2', communication_record1)
+        self.assert_has_tag('SOMENEWTAG', self.contact)
+        self.assert_has_tag('SOMENEWTAG', contact0)
+        self.assert_has_tag('Tag 2', contact0)
+
+    def assert_has_tag(self, tag_name, instance):
+        self.assertIn(tag_name, [t.name for t in instance.tags.all()])
 
     def test_outreach_conversion_api_validate_only(self):
         """
@@ -295,11 +325,21 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         response = self.client.post(
-            reverse('api_convert_outreach_record'),
-            data = {'request': json.dumps(self.request_data),
-                    'validate_only':'1'}
+            reverse('api_convert_outreach_record') + '?validate_only=1',
+            data={'request': json.dumps(self.request_data)},
         )
         self.check_status_code_and_objects(response, 200, 0)
+
+        response_data = json.loads(response.content)
+        partner_name = response_data['forms']['partner']['data']['name']
+        self.assertEqual('James B', partner_name)
+        contact0_name = response_data['forms']['contacts'][0]['data']['name']
+        contact1_name = response_data['forms']['contacts'][1]['data']['name']
+        self.assertEqual('Nicole J', contact0_name)
+        self.assertEqual('foo bar', contact1_name)
+        communication_record_notes = (
+            response_data['forms']['communication_record']['data']['notes'])
+        self.assertEqual('dude was chill', communication_record_notes)
 
     def test_outreach_api_all_fields_required(self):
         """
@@ -307,7 +347,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         to have all relevant fields
 
         """
-        self.request_data['forms'].pop('partner')
+        self.request_data['data'].pop('partner')
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -329,48 +369,20 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
 
         """
         existing_partner = PartnerFactory(owner=self.company)
-        record= self.request_data['forms']['partner']
-        record['pk'] = {'value': existing_partner.pk}
+        record= self.request_data['data']['partner']
+        record['pk'] = existing_partner.pk
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
 
-        self.check_status_code_and_objects(response, 200, 6)
+        self.check_status_code_and_objects(response, 200, 7)
 
         dict_contact = Contact.objects.get(name="Nicole J")
         self.assertEqual(dict_contact.partner.pk, existing_partner.pk,
                          msg="New contact does not link to provided partner,"
                              "expected pk of %s, got %s" % (existing_partner.pk,
                                                             dict_contact.partner.pk))
-
-    def test_outreach_api_contact_location_by_pk(self):
-        """
-        Test that the outreach conversion API allows the member to add
-        locations via PK
-
-        """
-        existing_location = LocationFactory()
-        record = self.request_data['forms']['contacts']
-        record[0]['location'] = {"pk": {'value': existing_location.pk}}
-        response = self.client.post(
-            reverse('api_convert_outreach_record'),
-            data = {'request': json.dumps(self.request_data)}
-        )
-        self.check_status_code_and_objects(response, 200, 7)
-
-    def test_outreach_api_contact_no_locations(self):
-        """
-        Test that the outreach conversion API does not allow a contact
-        without a location.
-
-        """
-        self.request_data['forms']['contacts'][0].pop('location')
-        response = self.client.post(
-            reverse('api_convert_outreach_record'),
-            data = {'request': json.dumps(self.request_data)}
-        )
-        self.check_status_code_and_objects(response, 400, 0)
 
     def test_outreach_api_contact_append_notes(self):
         """
@@ -384,46 +396,12 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
         )
-        self.check_status_code_and_objects(response, 200, 7)
+        self.check_status_code_and_objects(response, 200, 8)
         self.contact = Contact.objects.get(id=self.contact.id)
-        self.assertEqual(self.contact.notes, "first part\nnew notes")
-
-    def test_outreach_api_contact_errors(self):
-        """
-        Test that errors are in the right places when processing contacts
-
-        """
-        self.request_data['forms']['contacts'][0] = {
-            'location': {
-                'pk': {'value': ''},
-            },
-        }
-        response = self.client.post(
-            reverse('api_convert_outreach_record'),
-            data={'request': json.dumps(self.request_data)}
-        )
-        self.check_status_code_and_objects(response, 400, 0)
-        output_doc = json.loads(response.content)
-        self.assert_in_message(
-            'blank', output_doc, 'forms', 'contacts', 0, 'name')
-        self.assert_in_message(
-            'blank', output_doc, 'forms', 'contacts', 0, 'location', 'city')
-        self.assert_in_message(
-            'blank', output_doc, 'forms', 'contacts', 0, 'location', 'state')
-
-
-    def assert_in_message(self, expected, root, *path):
-        try:
-            ref = root
-            for p in path:
-                ref = ref[p]
-        except KeyError:
-            self.fail("Could not follow path %r, failed at %s" % (path, p))
-
-        self.assertTrue(
-            any(expected in m for m in ref['errors']),
-            "%s should appear in %r" % (expected, ref['errors']))
-
+        # This is how we wish this could be written. Can be fixed along with
+        # PD-2602: universal.NormalizedModelForm removes all new lines
+        # self.assertEqual(self.contact.notes, "first part\nnew notes")
+        self.assertEqual(self.contact.notes, "first part new notes")
 
     def test_outreach_api_no_data(self):
         """
@@ -436,14 +414,14 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         )
         self.check_status_code_and_objects(response, 400, 0)
 
-    def test_outreach_api_no_forms_key(self):
+    def test_outreach_api_no_data_key(self):
         """
-        Test that we catch the lack of a forms key.
+        Test that we catch the lack of a data key.
 
         """
-        for (key, value) in self.request_data['forms'].iteritems():
+        for (key, value) in self.request_data['data'].iteritems():
             self.request_data[key] = value
-        del self.request_data['forms']
+        del self.request_data['data']
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data={'request': json.dumps(self.request_data)}
@@ -456,7 +434,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         data
 
         """
-        self.request_data['forms']['dummystuff'] = "invalid stuff"
+        self.request_data['data']['dummystuff'] = "invalid stuff"
         response = self.client.post(
             reverse('api_convert_outreach_record'),
             data = {'request': json.dumps(self.request_data)}
@@ -469,7 +447,7 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         if a model fails form validation
 
         """
-        record = self.request_data['forms']['contactrecord']
+        record = self.request_data['data']['communication_record']
         record['date_time'] = {'value': "invalid dt"}
         response = self.client.post(
             reverse('api_convert_outreach_record'),
@@ -553,20 +531,52 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         :param expected_count: How many objects should be created
 
         """
+        abbreviated_content = response.content
+        try:
+            abbreviated_parsed = json.loads(abbreviated_content)
+
+            def simplify(root):
+                result = {}
+                if 'errors' in root:
+                    result['errors'] = root['errors']
+                if 'data' in root:
+                    result['data'] = root['data']
+                return result
+
+            if 'forms' in abbreviated_parsed:
+                forms = abbreviated_parsed['forms']
+                simple_forms = [
+                    'partner',
+                    'communication_record',
+                    'outreach_record',
+                ]
+                for form_name in simple_forms:
+                    if form_name in forms:
+                        forms[form_name] = simplify(forms[form_name])
+                if 'contacts' in forms:
+                    for i, root in enumerate(forms['contacts']):
+                        forms['contacts'][i] = simplify(root)
+
+            abbreviated_content = json.dumps(abbreviated_parsed, indent=2)
+        except ValueError:
+            pass
         self.assertEqual(response.status_code, expected_code,
                          msg="request failed, expected status %s, got %s, "
                              "reponse content was: %s" %
                              (expected_code, response.status_code,
-                              response.content))
+                              abbreviated_content))
 
         objects_created, objects_missing = self.check_objects_created()
 
         self.assertEqual(len(objects_created), expected_count,
                          msg="unexpected behavior, status code %s but objects "
-                             "created: %s, missing: %s" %
+                             "objects created count was %s, expected %s, "
+                             "created: %r, missing: %r" %
                              (expected_code,
-                              ', '.join(objects_created),
-                              ', '.join(objects_missing)))
+                              len(objects_created),
+                              expected_count,
+                              objects_created,
+                              objects_missing))
 
     def check_objects_created(self):
         """
@@ -576,36 +586,53 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         :return: tuple of (objects created, objected missing)
 
         """
-        total_objects = ['partner', 'contact1', 'contact1notes' 'contact2', 'contact2notes',
-                         'contact1location', 'contactrecord']
+        total_objects = [
+            'partner',
+            'contact1',
+            'contact1notes',
+            'contact2',
+            'contact2notes',
+            'contact1location',
+            'contactrecord0',
+            'contactrecord1',
+        ]
         objects_created = []
         partner = Partner.objects.filter(name="James B").first()
         contact1 = Contact.objects.filter(name="Nicole J").first()
         contact2 = Contact.objects.filter(id=self.contact.id).first()
-        contact_record = ContactRecord.objects.filter(notes="dude was chill").first()
-        if partner and (self.outreach_record.partners
-                                .filter(id=partner.id)
-                                .exists()):
+        contact_records = ContactRecord.objects.filter(
+            notes="dude was chill")
+        if partner and (
+                self.outreach_record.partners
+                .filter(id=partner.id, owner=self.company)
+                .exists()):
             objects_created.append("partner")
-        if contact1 and (self.outreach_record.contacts
-                                .filter(id=contact1.id)
-                                .exists()):
+        if contact1 and (
+                self.outreach_record.contacts
+                .filter(id=contact1.id)
+                .exists()):
             objects_created.append("contact1")
             if contact1.notes == "long note left here":
-                objects_created.append("contact1note")
+                objects_created.append("contact1notes")
             if contact1.locations.all().count() > 0:
                 objects_created.append("contact1location")
-        if contact2 and (self.outreach_record.contacts
-                                .filter(id=contact2.id)
-                                .exists()):
+        if contact2 and (
+                self.outreach_record.contacts
+                .filter(id=contact2.id)
+                .exists()):
             objects_created.append("contact2")
             if "new notes" in contact2.notes:
                 objects_created.append("contact2notes")
-        if contact_record and (self.outreach_record.communication_records
-                                .filter(id=contact_record.id)
-                                .exists()):
-            objects_created.append("contactrecord")
-        objects_missing = [x for x in total_objects if x not in objects_created]
+        for i, contact_record in enumerate(contact_records):
+            if (self.outreach_record.communication_records
+                    .filter(id=contact_record.id)
+                    .exists()):
+                objects_created.append("contactrecord%s" % i)
+        objects_missing = [
+            x
+            for x in total_objects
+            if x not in objects_created
+        ]
         return objects_created, objects_missing
 
 

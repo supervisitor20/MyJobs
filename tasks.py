@@ -786,7 +786,8 @@ def requeue_failures():
     failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'],
                                             tstamp__gt=five_pm,
                                             name__in=['tasks.etl_to_solr',
-                                                      'tasks.priority_etl_to_solr'])
+                                                      'tasks.priority_etl_to_solr',
+                                                      'tasks.task_update_solr'])
 
     if len(failed_tasks) > FAILURE_COUNT:
         send_mail(recipient_list=["matt@apps.directemployers.org"],

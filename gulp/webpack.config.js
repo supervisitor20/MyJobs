@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   devServer: {
@@ -13,6 +14,7 @@ module.exports = {
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
+    sass: './src/sass/custom.scss'
   },
   resolve: {
     root: path.resolve('src'),
@@ -37,6 +39,10 @@ module.exports = {
         exclude: /node_modules/,
         loader: 'eslint-loader',
       },
+      {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('css!sass')
+      }
     ],
     // ie8 catchall. Some imported react components need this.
     postLoaders: [
@@ -45,6 +51,9 @@ module.exports = {
         loaders: ['es3ify'],
       },
     ],
+    sassLoader: {
+      includePaths: [path.resolve(__dirname, "../static")]
+    },
   },
   eslint: {
     failOnWarning: true,
@@ -74,5 +83,6 @@ module.exports = {
     // In development it can be useful to see this output to verify that
     // dead code removal is doing something sane.
     new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}),
+    new ExtractTextPlugin('../custom.css', {allChunks: true}),
   ],
 };
