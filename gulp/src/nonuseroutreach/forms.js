@@ -1,4 +1,4 @@
-import {mapValues} from 'lodash-compat';
+import {mapValues, includes, keys, filter} from 'lodash-compat';
 
 const states = [
   {display: 'Select a State', value: ''},
@@ -317,6 +317,41 @@ function readonlyField(field) {
   return {
     ...field,
     readonly: true,
+  };
+}
+
+export function pruneCommunicationRecordForm(form, formContents) {
+  const before = ['contact_type'];
+  const after = ['tags', 'notes'];
+  const fieldListsByType = {
+    '': [...before, 'subject', 'date_time', ...after],
+    email: [...before, 'contact_email', 'subject', 'date_time', ...after],
+    phone: [...before, 'contact_phone', 'subject', 'date_time', ...after],
+    meetingorevent: [
+      ...before,
+      'location',
+      'length',
+      'subject',
+      'date_time',
+      ...after,
+    ],
+  };
+
+  const rawContactType = (formContents || {}).contact_type;
+  const contactType = includes(keys(fieldListsByType), rawContactType) ?
+    rawContactType : '';
+
+  return {
+    ...form,
+    fields: {
+      ...form.fields,
+      contact_type: {
+        ...form.fields.contact_type,
+        choices: filter(form.fields.contact_type.choices, o =>
+          includes(keys(fieldListsByType), o.value)),
+      },
+    },
+    ordered_fields: fieldListsByType[contactType],
   };
 }
 

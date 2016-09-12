@@ -19,6 +19,7 @@ import {
 
 import {
   contactNotesOnlyForm,
+  pruneCommunicationRecordForm,
 } from 'nonuseroutreach/forms';
 
 import {
@@ -236,9 +237,12 @@ class ProcessRecordPage extends Component {
       communicationRecordFormContents,
     } = this.props;
 
+    const prunedForm = pruneCommunicationRecordForm(
+      communicationRecordForm, communicationRecordFormContents);
+
     return (
       <Form
-        form={communicationRecordForm}
+        form={prunedForm}
         title="Communication Record"
         submitTitle="Add Record"
         formContents={communicationRecordFormContents}
