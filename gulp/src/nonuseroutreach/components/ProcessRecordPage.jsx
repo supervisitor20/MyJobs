@@ -154,7 +154,7 @@ class ProcessRecordPage extends Component {
   async handleSavePartner() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
@@ -162,7 +162,7 @@ class ProcessRecordPage extends Component {
   async handleSaveContact() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
@@ -170,7 +170,7 @@ class ProcessRecordPage extends Component {
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
 
-    await dispatch(doSubmit(true));
+    await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
   }
@@ -178,8 +178,12 @@ class ProcessRecordPage extends Component {
   async handleSubmit() {
     const {dispatch, history} = this.props;
     dispatch(cleanUpOrphanTags());
-    await dispatch(doSubmit(false, () => history.pushState(null, '/records')));
+    await dispatch(doSubmit(false, () => this.scrollToTop(), () => history.pushState(null, '/records')));
     this.resetSearches();
+  }
+
+  scrollToTop() {
+    document.body.scrollTop = document.documentElement.scrollTop = 0;
   }
 
   renderCard(title, children) {

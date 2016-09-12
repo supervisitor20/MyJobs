@@ -226,17 +226,9 @@ function formsToApi(record, newTags) {
 }
 
 /**
- * On a form that is taller than the view window,
- * when there is a form error, scroll to the top.
- */
-function scrollToTop() {
-  document.body.scrollTop = document.documentElement.scrollTop = 0;
-}
-
-/**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly, onSuccess, onFormErrors) {
+export function doSubmit(validateOnly, onFormErrors, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
     const forms = formsToApi(process.record, process.newTags);
@@ -255,7 +247,9 @@ export function doSubmit(validateOnly, onSuccess, onFormErrors) {
         }
         if (e.data.forms) {
           dispatch(noteFormsAction(formsFromApi(e.data)));
-          onFormErrors(scrollToTop());
+          if (onFormErrors) {
+            onFormErrors();
+          }
         }
       } else {
         dispatch(errorAction(e.message));
