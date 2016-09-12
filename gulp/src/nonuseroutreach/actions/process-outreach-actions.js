@@ -236,7 +236,7 @@ function formsToApi(record, newTags) {
 /**
  * Submit data to create a communication record.
  */
-export function doSubmit(validateOnly, onSuccess) {
+export function doSubmit(validateOnly, onFormErrors, onSuccess) {
   return async (dispatch, getState, {api}) => {
     const process = getState().process;
     const forms = formsToApi(process.record, process.newTags);
@@ -256,6 +256,9 @@ export function doSubmit(validateOnly, onSuccess) {
         }
         if (e.data.forms) {
           dispatch(noteFormsAction(formsFromApi(e.data)));
+          if (onFormErrors) {
+            onFormErrors();
+          }
         }
       } else {
         dispatch(errorAction(e.message));
