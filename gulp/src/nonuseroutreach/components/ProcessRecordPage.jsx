@@ -306,11 +306,11 @@ class ProcessRecordPage extends Component {
     const contactForm = contactForms[contactIndex];
     const contactFormContents = contactFormsContents[contactIndex] || {};
 
-    const prunedContactForm = replaceStateWithChoices(contactForm, contactFormContents);
+    const modifiedContactForm = replaceStateWithChoices(contactForm, contactFormContents);
 
     return (
       <Form
-        form={prunedContactForm}
+        form={modifiedContactForm}
         title="Contact Details"
         submitTitle="Add Contact"
         formContents={contactFormContents}
