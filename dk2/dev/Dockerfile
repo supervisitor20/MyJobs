@@ -14,7 +14,7 @@ run apt-get update
 run apt-get --yes build-dep libgeos-dev && apt-get clean
 run apt-get --yes install python-setuptools python-dev apache2 python-pip \
     mysql-client libxml2 libxml2-dev libxslt-dev libmysqlclient-dev\
-    phantomjs python-ipdb strace nodejs && apt-get clean
+    phantomjs python-ipdb strace nodejs libgeos-dev && apt-get clean
 
 
 # My.Jobs
