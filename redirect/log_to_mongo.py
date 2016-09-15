@@ -59,13 +59,16 @@ def to_mongo(file_name):
         "file_created": file_created}).inserted_id
 
     json_lines = []
+    # Denotes if the file was inserted successfully in its entirety. Toggled if
+    # we can't parse a line as JSON.
+    success = True
     for line in lines:
         # Try to parse each line as JSON. There may or may not be invalid data
         # in the file; Don't crash and burn if so.
         try:
             json_line = json.loads(line)
         except ValueError:
-            pass
+            success = False
         else:
             # '"-"' is valid JSON but insert_many requires a list of
             # dictionaries. If "json_line" is a string, it's not a
@@ -93,6 +96,8 @@ def to_mongo(file_name):
         #     collection with the number of items related to that file in the
         #     "analytics" collection.
         client.analytics.analytics.insert_many(json_lines)
+    client.analytics.files.update({'_id': file_id},
+                                  {'$set': {'success': success}})
 
 
 if __name__ == '__main__':
