@@ -1,0 +1,262 @@
+/*GLOBAL STYLES FOR THE PAGE*/
+
+$primary-gray: #d3d3d3;
+$dark-gray: #3f3f3f;
+$medium-gray: #777777;
+$light-gray: #b3b3b3;
+$faded-gray: #a7a7a7;
+$btn-gray: #2c2c2c;
+$black: #000000;
+$white: #ffffff;
+
+*:focus {
+  outline: 0;
+}
+*{
+  margin: 0;
+  padding: 0;
+}
+ul {
+  list-style-type: none;
+}
+a {
+  text-decoration: none;
+}
+p {
+  color: #777;
+}
+a:hover {
+  text-decoration: none;
+}
+legend{
+  border-bottom: none;
+}
+
+/*SASS EXTEND/INHERITANCE STYLES*/
+
+.gray-section-boxes {
+  border: 1px solid #666666;
+  background-color: $primary-gray;
+  margin-bottom: 30px;
+  border-radius: 3px;
+}
+.search-input-boxes {
+  width: 350px;
+  height: 35px;
+  padding: 5px;
+}
+.main-search-labels {
+  text-align: left;
+  font-size: 22px;
+  font-weight: 200;
+}
+.global-btn {
+  background-color: $btn-gray;
+  color: $white;
+  font-size: 12px;
+  border: none;
+  border-radius: 3px;
+  font-weight: 100;
+}
+
+/*MAIN NAVIGATION HEADER STYLES*/
+
+#main_nav {
+  .main-nav, .main-nav-collapse {
+    max-height: 42px;
+    min-height: 42px;
+  }
+  .main-nav {
+    background-color: #d3d3d3;
+  }
+  .my-jobs-logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #757575;
+  }
+  .right-nav{
+    a {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      font-weight: 200;
+    }
+  }
+}
+
+/*ENTIRE PAGE CONTENT STYLES (EXCLUDING THE NAVIGATION)*/
+
+#page_content {
+  margin: 0 auto;
+  max-width: 1460px;
+}
+
+/*MAIN SEARCH OPTIONS STYLES*/
+
+#search {
+  label {
+    @extend .main-search-labels;
+  }
+  .search-submit{
+    @extend .global-btn;
+  }
+  .search-show-all {
+    font-size: 12px;
+    position: relative;
+    top: 10px;
+
+    a {
+      text-decoration: underline;
+      color: $dark-gray;
+    }
+  }
+  .what-section {
+    margin:0 35px 10px 0;
+    display:inline-block;
+    position: relative;
+
+    #what{
+      @extend .search-input-boxes;
+    }
+  }
+  .where-section {
+    margin:0 35px 10px 0;
+    display:inline-block;
+    position: relative;
+
+    #where {
+      @extend .search-input-boxes;
+    }
+  }
+  .search-submit {
+    display: inline-block;
+    margin: 0 25px 10px 0;
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 3px;
+    font-weight: 100;
+  }
+}
+
+/*MAIN PAGE CONTENT STYLES*/
+
+#main_content {
+  .left-content {
+/*LEFT SIDE ENTER EMAIL STYLES*/
+
+    .company-name, .company-location {
+      color: $light-gray;
+    }
+    .get-email-title {
+      font-size: 17px;
+      font-weight: 200;
+      color: $medium-gray;
+    }
+    .cancel-anytime {
+      color: $faded-gray;
+    }
+    .email-box {
+      @extend .gray-section-boxes;
+      padding: 10px;
+
+      #enter_email {
+        position: relative;
+        margin-bottom: 10px;
+
+        .save-email {
+            @extend .global-btn;
+            position: absolute;
+            bottom: 3px;
+            right: 0;
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 3px;
+            font-weight: 100;
+        }
+      }
+    }
+
+/*LEFT SIDE SEARCH CRITERIA STYLES*/
+
+      .search-criteria-box {
+        @extend .gray-section-boxes;
+        padding: 10px;
+
+        .form-check .company-filter-chkbx, .form-check .city-filer-chkbx{
+          display: inline-block;
+          margin-right: 5px;
+        }
+        .search-legend {
+          font-size: 17px;
+          font-weight: 200;
+          color: $medium-gray;
+        }
+      }
+      .facebook-icon {
+        color: #1f4ed0;
+      }
+      .twitter-icon {
+        color: #4292ff;
+      }
+      .linkedin-icon {
+        color: #396cf5;
+      }
+      .google-plus-icon {
+        color: #ff4d00;
+      }
+      .email-icon {
+        color: #b0b0b0;
+      }
+      .plus-icon {
+        color: #ff783e;
+      }
+  }
+
+/*RIGHT SIDE SEARCH RESULTS STYLES*/
+  .right-content {
+    .show-more-jobs {
+      float: right;
+      @extend .global-btn;
+    }
+  }
+}
+
+/*FOOTER STYLES*/
+#footer {
+  margin-top: 300px;
+
+  /*LEFT SIDE FOOTER STYLES*/
+  .left-content {
+    .footer-box {
+      @extend .gray-section-boxes;
+    }
+  }
+  /*RIGHT SIDE FOOTER STYLES*/
+  .right-content {
+    .footer-logo {
+      margin-bottom: 20px;
+
+      span {
+        font-size: 24px;
+        font-weight: 600;
+        color: #757575;
+      }
+    }
+    .header-logo {
+      position: relative;
+      bottom: 5px;
+    }
+    .footer-map-section {
+      padding: 5px 0px;
+
+      li {
+        display: inline;
+      }
+      a {
+        color: #3F3F3F;
+        font-size: 14px;
+        font-weight: 400;
+      }
+    }
+  }
+}
