@@ -64,21 +64,26 @@ legend{
 #main_nav {
   margin-bottom: 35px;
 
-  .main-nav, .main-nav-collapse {
+  .left-logo{
+    padding-top: 3px;
+
+    .header-logo {
+      height: 25px;
+      width: 100px;
+      -webkit-filter: invert(50%);
+      filter: invert(50%);
+    }
+  }
+  .main-nav-collapse {
     max-height: 42px;
     min-height: 42px;
   }
   .main-nav {
     background-color: #d3d3d3;
+    max-height: 42px;
+    min-height: 42px;
 
-    .dropdown {
-      li {
-        font-size: 14px;
-        border-bottom: 1px solid #3F3F3F;
-      }
-    }
-
-    .dropdown-menu {
+  .dropdown-menu {
       padding: 0;
       width: 250px;
       max-width: 250px;
@@ -90,12 +95,26 @@ legend{
     font-weight: bold;
     color: #757575;
   }
-  .right-nav{
+  .navbar-nav.navbar-right.right-nav{
     a {
       padding-top: 10px;
       padding-bottom: 10px;
       font-weight: 200;
     }
+    .dropdown {
+     li {
+       font-size: 20px;
+       border-bottom: 1px solid #3F3F3F;
+     }
+     a {
+       font-size: 20px;
+     }
+     .dropdown-menu {
+       a {
+         font-size: 14px;
+       }
+     }
+   }
   }
 }
 
@@ -103,6 +122,12 @@ legend{
 
 #brand_logo {
   margin-bottom: 35px;
+
+  .location-logo-text {
+    font-size: 45px;
+    font-weight: bold;
+    color: #000000;
+  }
 }
 
 /*ENTIRE PAGE CONTENT STYLES (EXCLUDING THE NAVIGATION)*/
@@ -120,6 +145,10 @@ legend{
   #search {
     label {
       @extend .main-search-labels;
+      display:block;
+    }
+    input {
+      display:block;
     }
     i {
       position: absolute;
@@ -173,6 +202,9 @@ legend{
   margin-bottom: 35px;
 
   .left-content {
+    width: 100%;
+    max-width: 715px;
+
 /*LEFT SIDE ENTER EMAIL STYLES*/
 
     .company-name, .company-location {
@@ -221,6 +253,41 @@ legend{
             display: inline-block;
             margin-right: 5px;
           }
+          .company-filter-title, .city-filter-title, .title-filter-title, .top-search-filter-title{
+            float: left;
+            color: #797979;
+            font-weight: 200;
+          }
+          .company-job-count, .city-count, .title-count, .top-search-count{
+            float: right;
+            color: #797979;
+            font-weight: 200;
+          }
+          .select-filter {
+            padding: 0;
+            margin: 0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            overflow: hidden;
+            background-color: #fff;
+            background: #fff
+          }
+
+          .select-filter select {
+              padding: 10px 10px;
+              width: 100%;
+              border: none;
+              box-shadow: none;
+              background-color: transparent;
+              background-image: none;
+              -webkit-appearance: none;
+              -moz-appearance: none;
+              appearance: none;
+          }
+
+          .select-filter select:focus {
+              outline: none;
+          }
         }
         .search-legend {
           font-size: 17px;
@@ -265,6 +332,8 @@ legend{
   .left-content {
     .footer-box {
       @extend .gray-section-boxes;
+      padding: 15px 75px 25px 25px;
+      margin-bottom: 0
     }
   }
   /*RIGHT SIDE FOOTER STYLES*/
@@ -276,6 +345,12 @@ legend{
         font-size: 24px;
         font-weight: 600;
         color: #757575;
+      }
+      .header-logo {
+        height: 25px;
+        width: 100px;
+        -webkit-filter: invert(50%);
+        filter: invert(50%);
       }
     }
     .header-logo {
