@@ -1317,5 +1317,5 @@ class RedirectViewTests(RedirectBase):
         response = self.client.get(path,
                                    HTTP_HOST='my.jobs', follow=True)
         self.assertEqual(response['Location'],
-                         'http://my.jobs' + path.replace('%2B', '+'))
+                         'https://my.jobs' + path.replace('%2B', '+'))
         self.assertEqual(response.status_code, 301)

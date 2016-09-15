@@ -167,7 +167,7 @@ def parse_feed(feed_url, frequency='W', num_items=100, offset=0,
 
     # ensure we use https for any request to redirect
     feed_url = feed_url.replace('http://my.jobs', 'https://my.jobs')
-    
+
     if feed_url.find('?') > -1:
         separator = '&'
     else:
