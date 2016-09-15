@@ -33,6 +33,7 @@ init() {
     initsolrdata
     initmysqldata
     initrevproxycerts
+    initnet
 }
 
 initsolrdata() {
@@ -55,6 +56,9 @@ initrevproxycerts() {
     done
 }
 
+initnet() {
+  docker network create myjobs
+}
 
 debugargs() {
     echo "$port $portarg $pythonpath $pythonpatharg ||| $@"
@@ -64,7 +68,7 @@ pull() {
     docker pull mysql:5.5
     docker pull ubuntu:14.04
     docker pull ubuntu:15.10
-    docker pull jwilder/nginx-proxy
+    docker pull nginx:stable
 }
 
 background() {
@@ -72,16 +76,18 @@ background() {
         -t darrint/solr \
         solr
     docker build \
-         -t darrint/revproxy \
+         -t myjobsdev/revproxy \
          nginx-proxy
     docker run \
         --name solr \
+        --net=myjobs \
         -d \
         --volumes-from solrdata \
         -p 8983:8983 \
         darrint/solr
     docker run \
         --name mysql \
+        --net=myjobs \
         -d \
         -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
         --volumes-from mysqldata \
@@ -90,13 +96,15 @@ background() {
         mysql:5.5
     docker run \
         --name revproxy \
+        --net=myjobs \
         -d \
         -p 80:80 -p 443:443 \
         -v $(pwd)/revproxy/certs:/etc/nginx/certs \
         -v /var/run/docker.sock:/tmp/docker.sock:ro \
-        darrint/revproxy
+        myjobsdev/revproxy
     docker run \
         --name mongo \
+        --net=myjobs \
         -d \
         -p 27017:27017 \
         mongo:3.2
@@ -104,7 +112,8 @@ background() {
 
 backgroundstop() {
     docker stop mysql || true
-    docker stop solr || true
+    # Avoid timeout on our hacky solr container.
+    docker kill solr || true
     docker stop revproxy || true
     docker stop mongo || true
     docker rm mysql || true
@@ -119,21 +128,21 @@ bgrst() {
 }
 
 restartsecure() {
-    docker stop secure.my.jobs || true
-    docker rm secure.my.jobs || true
+    docker stop django-secure || true
+    docker rm django-secure || true
     runsecure || true
 }
 
 restartmicrosites() {
-    docker stop star.jobs || true
-    docker rm star.jobs || true
+    docker stop django-microsites || true
+    docker rm django-microsites || true
     runmicrosites || true
 }
 
 maint() {
     docker run \
         --rm \
-        --net=host \
+        --net=myjobs \
         --volumes-from solrdata \
         --volumes-from mysqldata \
         -v $(pwd)/..:/MyJobs \
@@ -150,14 +159,11 @@ rebuilddev() {
 }
 
 doruncd() {
-    if [ -z ${port+x} ]; then
-     nethost="--net=host"
-    fi
     dir="$1"
     shift
     docker run \
-        $nethost \
         --rm \
+        --net=myjobs \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
         $portarg \
@@ -181,31 +187,50 @@ manage() {
 runserver() {
     virthost="$1"
     docker run \
-        --name $(echo $virthost | sed 's/*/star/g') \
-        --link solr \
-        --link mysql \
-        --expose=80 \
+        --name $virthost \
+        --net=myjobs \
+        --expose=8000 \
         --rm \
         -v $(pwd)/..:/MyJobs \
         -v $(pwd)/../../deployment:/deployment \
         $pythonpatharg \
         $dockerenvarg \
-        -e VIRTUAL_HOST="$virthost" \
         -w /MyJobs \
         -i -t \
         darrint/dev \
-        python manage.py runserver 0.0.0.0:80
+        python manage.py runserver 0.0.0.0:8000
 }
 
 runmicrosites() {
     pythonpatharg="-e PYTHONPATH=settings_dseo" \
-        dockerenvarg="-e NO_HTTPS_REDIRECT=1 $dockerenvarg" \
-        runserver "*.jobs"
+        runserver "django-microsites"
 }
 
 runsecure() {
     pythonpatharg="-e PYTHONPATH=settings_myjobs" \
-        runserver "secure.my.jobs"
+        runserver "django-secure"
+}
+
+runredirect() {
+    pythonpatharg="-e PYTHONPATH=settings_redirect" \
+        runserver "django-redirect"
+}
+
+rundevserver() {
+    docker run \
+        --net=myjobs \
+        --name webpack-devserver \
+        --rm \
+        -v $(pwd)/..:/MyJobs \
+        -v $(pwd)/../../deployment:/deployment \
+        $pythonpatharg \
+        $dockerenvarg \
+        --user $(id -u):$(id -g) \
+        -p 8080:8080 \
+        -w /MyJobs/gulp \
+        -i -t \
+        darrint/dev \
+        npm run devserver
 }
 
 "$@"
