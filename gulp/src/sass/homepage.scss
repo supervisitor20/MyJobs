@@ -3,6 +3,7 @@
 $primary-gray: #d3d3d3;
 $dark-gray: #3f3f3f;
 $medium-gray: #777777;
+$medium-light-gray: #797979;
 $light-gray: #b3b3b3;
 $faded-gray: #a7a7a7;
 $btn-gray: #2c2c2c;
@@ -34,6 +35,16 @@ legend{
 
 /*SASS EXTEND/INHERITANCE STYLES*/
 
+@mixin box-shadow($boxShadow) {
+  -webkit-box-shadow: $boxShadow;
+  -moz-box-shadow: $boxShadow;
+  box-shadow: $boxShadow;
+}
+@mixin appearance($appearance) {
+  -webkit-appearance: $appearance;
+  -moz-appearance: $appearance;
+  appearance: $appearance;
+}
 .gray-section-boxes {
   border: 1px solid #666666;
   background-color: $primary-gray;
@@ -44,6 +55,7 @@ legend{
   width: 350px;
   height: 35px;
   padding: 5px;
+  @include box-shadow(0px 0px 5px 0px rgba(194,194,194,1));
 }
 .main-search-labels {
   text-align: left;
@@ -70,6 +82,8 @@ legend{
     .header-logo {
       height: 25px;
       width: 100px;
+      position: relative;
+      bottom: 2px;
       -webkit-filter: invert(50%);
       filter: invert(50%);
     }
@@ -127,6 +141,11 @@ legend{
     font-size: 45px;
     font-weight: bold;
     color: #000000;
+  }
+  .logo {
+    position: relative;
+    bottom: 10px;
+    right: 10px;
   }
 }
 
@@ -226,6 +245,11 @@ legend{
         position: relative;
         margin-bottom: 10px;
 
+        .enter-email {
+          width: 100%;
+          padding: 5px;
+        }
+
         .save-email {
             @extend .global-btn;
             position: absolute;
@@ -246,6 +270,12 @@ legend{
         @extend .gray-section-boxes;
         padding: 10px;
 
+        legend {
+          color: $medium-gray;
+        }
+        .search-criteria-title {
+          border-bottom: 1px solid #000000;
+        }
         .form-check{
           margin-bottom: 15px;
 
@@ -255,13 +285,37 @@ legend{
           }
           .company-filter-title, .city-filter-title, .title-filter-title, .top-search-filter-title{
             float: left;
-            color: #797979;
+            color: $medium-light-gray;
             font-weight: 200;
+          }
+          .show-all-companies-filter, .show-all-titles-filter, .show-all-top-search-filter {
+            color: $medium-light-gray;
+            font-weight: 200;
+          }
+          .show-all-companies-filter:hover, .show-all-titles-filter:hover, .show-all-top-search-filter:hover {
+            cursor: pointer;
+          }
+
+          .show-less-companies-filter, .show-less-titles-filter, .show-less-top-search-filter {
+            color: $medium-light-gray;
+            font-weight: 200;
+          }
+          .show-less-companies-filter:hover, .show-less-titles-filter:hover, .show-less-top-search-filter:hover {
+            cursor: pointer;
           }
           .company-job-count, .city-count, .title-count, .top-search-count{
             float: right;
-            color: #797979;
+            color: $medium-light-gray;
             font-weight: 200;
+          }
+          .filter-panel {
+            display: none;
+          }
+          .filter-accordion:hover {
+            cursor: pointer;
+          }
+          .filter-panel.filter-panel-active {
+            display: block;
           }
           .select-filter {
             padding: 0;
@@ -280,9 +334,7 @@ legend{
               box-shadow: none;
               background-color: transparent;
               background-image: none;
-              -webkit-appearance: none;
-              -moz-appearance: none;
-              appearance: none;
+              @include appearance(none);
           }
 
           .select-filter select:focus {
@@ -320,6 +372,13 @@ legend{
     .show-more-jobs {
       float: right;
       @extend .global-btn;
+    }
+    .job-title {
+      margin: 0;
+    }
+    .job-title-clk {
+      font-size: 18px;
+      color: $dark-gray;
     }
   }
 }
