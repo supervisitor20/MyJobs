@@ -139,6 +139,12 @@ restartmicrosites() {
     runmicrosites || true
 }
 
+restartredirect() {
+    docker stop django-redirect || true
+    docker rm django-redirect || true
+    runredirect || true
+}
+
 maint() {
     docker run \
         --rm \
