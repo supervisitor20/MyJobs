@@ -7,12 +7,15 @@ import Textarea from 'common/ui/Textarea';
 import DateField from 'common/ui/DateField';
 import Select from 'common/ui/Select';
 import FieldWrapper from 'common/ui/FieldWrapper';
+import TagSelect from 'common/ui/tags/TagSelect';
+import DateTimePicker from 'common/ui/DateTimePicker';
 
 export default class RemoteFormField extends Component {
   render() {
-    const {fieldName, form, value, onChange} = this.props;
+    const {fieldName, form, value, onChange,
+      tagActions, selectedTags, availableTags} = this.props;
     const field = form.fields[fieldName] || {};
-    const errors = form.errors[fieldName];
+    const errors = (form.errors || {})[fieldName];
     const fieldDisable = field.readonly;
 
     function wrap(child) {
@@ -30,6 +33,7 @@ export default class RemoteFormField extends Component {
     const inputType = (field.widget || {}).input_type || 'unspecified';
 
     switch (inputType) {
+    case 'time':
     case 'text':
       return wrap(
         <TextField
@@ -98,6 +102,29 @@ export default class RemoteFormField extends Component {
           disable={fieldDisable}
           />
       );
+    case 'selectmultiple':
+      return wrap(
+          <TagSelect
+          name={fieldName}
+          onChoose={(tags) => tagActions('select', tags)}
+          onRemove={(tags) => tagActions('remove', tags)}
+          required={field.required}
+          selected={selectedTags || []}
+          available={availableTags || []}
+          maxLength={field.widget.maxlength}
+          isHidden={field.widget.is_hidden}
+          placeholder={field.widget.attrs.placeholder}
+          autoFocus={field.widget.attrs.autofocus}
+          onNew={(tags) => tagActions('new', tags)}
+          />
+      );
+    case 'datetime':
+      return wrap(
+        <DateTimePicker
+          onChange={e => onChange(e, fieldName)}
+          value={value}
+          />
+      );
     default:
       warning(false, `Unknown field type for ${fieldName}: ${inputType}`);
       return <span/>;
@@ -110,4 +137,17 @@ RemoteFormField.propTypes = {
   fieldName: PropTypes.string.isRequired,
   value: PropTypes.any.isRequired,
   onChange: PropTypes.func.isRequired,
+  tagActions: PropTypes.func,
+  availableTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ),
+  selectedTags: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.any.isRequired,
+      display: PropTypes.string.isRequired,
+    }).isRequired
+  ),
 };
