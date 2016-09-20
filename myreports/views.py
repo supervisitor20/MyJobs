@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.db.models.loading import get_model
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render_to_response
@@ -513,6 +514,7 @@ def export_options_api(request):
     cols = (
         ConfigurationColumn.objects
         .active_for_report_data(report.report_data)
+        .filter(Q(filter_only__isnull=True) | Q(filter_only=False))
         .order_by('order'))
     values = [
         {'value': c.column_name, 'display': c.alias or c.column_name}
