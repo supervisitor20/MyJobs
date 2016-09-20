@@ -649,6 +649,15 @@ legend{
 /* Extra Small Devices, Phones */
 @media only screen and (max-width : 480px) {
 
+  #brand_logo {
+    .location-logo-text {
+      font-size: 40px;
+    }
+    .logo {
+      height: 75px;
+      width: 100px;
+    }
+  }
 }
 
 /* Small Devices, Tablets */
