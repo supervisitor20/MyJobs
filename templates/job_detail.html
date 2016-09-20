@@ -1,6 +1,7 @@
 {% extends "seo_base.html" %}
 {% load i18n %}
 {% load seo_extras %}
+{% load redirect_urls %}
 {% block direct_extraHeaderContent %}
 <link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
 
@@ -79,7 +80,7 @@
         </div>
         <div class='direct-action-btn' id="direct_applyButtonBottom">
             {% if the_job.link %}
-            <a href="{{the_job.link}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+            <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
             {% elif the_job.apply_info %}
             <div id="apply-block">{{ the_job.apply_info }}</div>
             {% endif %}
@@ -99,7 +100,7 @@
 <div id="direct_applyDiv" class="direct_rightColBox">
     <div id="direct_applyButton" class="direct-action-btn" role="menu">
         {% if the_job.link %}
-        <a href="{{the_job.link}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+        <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
         {% elif the_job.apply_info %}
         <br/>
         <div id="apply-block">{{ the_job.apply_info }}</div>
