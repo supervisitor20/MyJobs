@@ -47,6 +47,7 @@ legend{
 }
 @mixin transform($transform) {
   -ms-transform: $transform;
+  -moz-transform: $transform;
   -webkit-transform: $transform;
   transform: $transform;
 }
@@ -83,6 +84,7 @@ legend{
 
   .left-logo{
     padding-top: 3px;
+    float: left;
 
     .header-logo {
       height: 25px;
@@ -114,7 +116,9 @@ legend{
     font-weight: bold;
     color: #757575;
   }
-  .navbar-nav.navbar-right.right-nav{
+  .navbar-nav.navbar-right.right-nav {
+    float: right;
+
     a {
       padding-top: 10px;
       padding-bottom: 10px;
@@ -236,7 +240,18 @@ legend{
     max-width: 745px;
 
 /*LEFT SIDE ENTER EMAIL STYLES*/
+    .mobile-search-criteria {
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: -20px;
+    }
 
+    .mobile-search-criteria a {
+      background-color: #d3d3d3;
+      color: #000000;
+      padding: 10px;
+
+    }
     .company-name, .company-location {
       color: $light-gray;
     }
@@ -277,12 +292,30 @@ legend{
 
 /*LEFT SIDE SEARCH CRITERIA STYLES*/
 
+      .show-search-criteria {
+        display: block !important;
+      }
       .search-criteria-box {
         @extend .gray-section-boxes;
         padding: 10px;
 
         legend {
           color: $medium-gray;
+        }
+        #search_criteria {
+          position: relative;
+        }
+        .caret-up {
+        	width: 15px;
+          height: 15px;
+          position: absolute;
+          top: -18px;
+          left: 49%;
+        	background: #d3d3d3;
+          border-top: 1px solid black;
+          border-left: 1px solid black;
+          @include transform(rotate(45deg));
+
         }
         .search-criteria-title {
           border-bottom: 1px solid #000000;
@@ -542,9 +575,65 @@ legend{
 
   .mob-nav-content-pop{
     position: fixed;
-      width: 100%;
-      bottom: -110px;
+    width: 100%;
+    bottom: -110px;
 
+    .cbp-spmenu {
+    	position: absolute;
+    }
+    .cbp-spmenu h3 {
+    	color: #666666;
+    	font-size: 1.9em;
+    	padding: 20px;
+    	margin: 0;
+      border-bottom: 1px solid #d3d3d3;
+      border-left: 1px solid #d3d3d3;
+    	font-weight: 300;
+    	background: #ffffff;
+    }
+    .cbp-spmenu a {
+    	display: block;
+    	color: black;
+      background-color: white;
+    	font-size: 1.1em;
+    	font-weight: 300;
+    }
+    .cbp-spmenu a:hover {
+    	background: #d3d3d3;
+      color: #ffffff;
+    }
+    .cbp-spmenu a:active {
+    	background: #afdefa;
+    	color: #47a3da;
+    }
+    .cbp-spmenu-horizontal {
+    	width: 100%;
+    	height: auto;
+    	left: 0;
+    	z-index: 1000;
+    	overflow: hidden;
+    }
+    .cbp-spmenu-horizontal h3 {
+    	height: 100%;
+    	width: 20%;
+    	float: left;
+    }
+    .cbp-spmenu-horizontal a {
+    	padding: 0.8em;
+      border: 1px solid #d3d3d3;
+      color: #000000;
+    }
+    .cbp-spmenu-bottom {
+    	bottom: -150px;
+    }
+    .cbp-spmenu-bottom.cbp-spmenu-open {
+    	bottom: 185px;
+    }
+    .cbp-spmenu {
+    	-webkit-transition: all 0.1s ease;
+    	-moz-transition: all 0.1s ease;
+    	transition: all 0.1s ease;
+    }
   }
 }
 
