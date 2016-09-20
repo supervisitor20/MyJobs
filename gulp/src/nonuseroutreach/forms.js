@@ -1,6 +1,6 @@
 import {mapValues, includes, keys, filter} from 'lodash-compat';
 
-const states = [
+export const states = [
   {display: 'Select a State', value: ''},
   {display: 'Alabama', value: 'AL'},
   {display: 'Alaska', value: 'AK'},
@@ -319,6 +319,39 @@ function readonlyField(field) {
     readonly: true,
   };
 }
+
+export function replaceStateWithChoices(form, formContents) {
+  const before = ['name', 'email', 'phone', 'tags', 'address_line_one', 'address_line_two', 'city'];
+  const after = ['postal_code', 'label', 'notes'];
+
+  const contactListByType = {
+    '': [ ...before, 'state', ...after ],
+  };
+
+  // const contactType = contactListByType;
+
+  const rawContactType = (formContents || {}).fields;
+  const contactType = includes(keys(contactListByType), rawContactType) ?
+    rawContactType : '';
+
+  return {
+    ...form,
+    fields: {
+      ...form.fields,
+      state: {
+        ...form.fields.state,
+        choices: states,
+        ...form.fields.state,
+        widget: {
+          ...form.fields.state.widget,
+          input_type: 'select',
+        },
+      },
+    },
+    ordered_fields: contactListByType[contactType],
+  };
+}
+
 
 export function pruneCommunicationRecordForm(form, formContents) {
   const before = ['contact_type'];
