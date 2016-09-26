@@ -1,0 +1,863 @@
+@charset "utf-8";
+/* TODO: Incorporate Marcus's latest design, which was approved last Friday afternoon to this in the future. */
+/** Legacy styles **/
+#direct_dotjobsMetaBoxSearch #standardSearch .searchHeader,
+#direct_dotjobsMetaBoxSearch #standardSearch .searchFooter{
+	background-color: rgba(242, 242, 242, .85);
+}
+
+#direct_container .row .stub{
+    width: 40px;
+}
+#direct_container .veteran .stub{
+    width: 42px;
+}
+#direct_colophon ul{
+    line-height: 0px;
+    margin: 0;
+}
+
+/*Header Styles*/
+.tabSpacer {
+    width: 1px;
+    height: 26px;
+    background: transparent url(/static/tabBG.png);
+    display: block;
+    float: left;
+}
+
+#current-microsite-name {
+    color: #FFF;
+    font-weight: bold;
+    text-decoration: none;
+    padding-top: 4px !important;
+    padding-bottom: 5px !important;
+    font-size: 1.2em;
+}
+
+#current-microsite-name {
+    margin-left: 11px;
+}
+
+.moreLocs {
+    padding-top: 2px;
+    padding-bottom: 1px;
+    margin-top: 42px;
+}
+
+.siteTagsList.showTagList{
+    display: block;
+}
+.siteTagsList.hideTagList{
+    display: none;
+}
+
+.megaMenuTab{
+    background-color: #444;
+    color: #FFF;
+    width: 128px;
+    padding: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid #555;
+}
+
+#megaMenuCities,
+#megaMenuSiteTags {
+    display: none;
+}
+
+#megaMenuCities h4,
+#megaMenuSiteTags h4{
+    background: #444;
+    margin-right: 21px;
+    margin-top: 10px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    color: #fff;
+    padding-left: 5px;
+    padding-bottom: 2px;
+}
+
+#megaMenuCities div.selectBox {
+    height: 251px;
+    margin-top: -1px;
+    float: left;
+}
+
+.cityList,
+.tagList {
+    background: #fff;
+    height: 228px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #000;
+    font-size: 1em;
+    line-height: 14pt;
+    position: relative;
+}
+#cityStatesDiv,
+#cityCitiesDiv,
+.tagList{
+    background: #fff;
+    border: 1px solid #999;
+    border-bottom-left-radius: 4px;
+}
+#siteTagDiv{
+    height: 198px;
+}
+#megaMenuCities div#cityCitiesSelect{
+    margin-left: -1px;
+}
+#megaMenuSiteTags h4#left-block-corner{
+    border-top-left-radius: 0px;
+}
+#megaMenuSiteTags h4#right-block-corner{
+    border-top-right-radius: 0px;
+}
+#megaMenuSiteTags h4.fix-right-margin{
+    margin-right: 0px;
+}
+#megaMenuSiteTags div#fix-left-margin{
+    margin-left: -1px;
+}
+#megaMenuSiteTags div.no-left-margin{
+    margin-left: 0px;
+}
+#megaMenuSiteTags div#siteTagSelect{
+    width: 619px;
+}
+#cityCitiesList{
+    border-bottom-right-radius: 4px;
+}
+#popularCityList,
+#popularTagList{
+    background: #fff;
+    border: 1px solid #999;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-left: 21px;
+}
+#cityCitiesList a,
+#cityPopularCities a,
+#associatedList a{
+    margin: 0;
+    padding: 0;
+    text-shadow: none;
+    color: #000;
+    font-size: 1em;
+    line-height: 12px;
+}
+ul#cityCitiesList  li  a:hover,
+ul#cityPopularCities  li  a:hover,
+ul#associatedList  li  a:hover {
+    background-color: transparent;
+}
+#cityLoading,
+#associatedLoading {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 0;
+    left: 0;
+    display: none;
+}
+#megaMenuCities li,
+#megaMenuSiteTags li {
+    float: none;
+    font-size: 1em;
+    padding: 2px 0px 3px 10px;
+}
+#megaMenuCities ul,
+#megaMenuSiteTags ul {
+    float: none;
+    cursor: default;
+}
+li.menu-item-active,
+#megaMenuCities li:hover,
+#megaMenuSiteTags li:hover {
+    background: #5a6d81;
+    color: #fff;
+}
+#megaMenuCities li:hover a,
+#megaMenuSiteTags li:hover a {
+    color: #fff;
+}
+
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+
+.ui-autocomplete-category {
+    font-weight: bold;
+    color: #fff;
+    background: #5c99f0;
+    padding: 5px;
+}
+.ui-menu-item {
+    display: inline-block;
+    padding-right: 15px;
+    text-indent: 9px;
+    font-size: .9em;
+}
+.column_one {
+    font-weight: bold;
+    float:left;
+    width: 350px;
+}
+.column_two {
+    float:left;
+    width: 200px;
+}
+
+#cities ul {
+    margin-left: 5px;
+}
+#popularCityList {
+    margin-left: 0;
+}
+h1{
+    font-family: helvetica, arial, sans-serif;
+    font-weight: normal;
+}
+
+#direct_dotjobsHeader h1 a,
+#direct_dotjobsHeader h1 a:hover{
+    text-decoration: none;
+    color: #333;
+}
+h1#direct_mobileH1{
+    min-height: 80px;
+}
+#direct_dotjobsHeader h1.noDotJobs{
+    padding: 37px 0px 15px 0;
+    height: 39px;
+}
+#direct_dotjobsHeader h1 img,
+h1#direct_mobileH1 img{
+    position: relative;
+    top: 19px;
+}
+
+/*Job Detail Styles*/
+#direct_applyButton a:link, #direct_applyButton a:visited,
+#direct_applyButtonBottom a:link, #direct_applyButtonBottom a:visited,
+#direct_searchOptions li a {
+    color: #fff !important;
+    filter: none !important;
+}
+
+#direct_dotjobsMetaBoxSearch #standardSearch{
+    display: block;
+    margin: 170px 20px 230px 20px;
+    z-index: 99;
+    position: relative;
+    border-radius: 2px;
+}
+#standardSearch .searchHeader{
+    float: left;
+    height: auto;
+    padding-bottom: 0px;
+}
+#standardSearch .searchHeader input{
+    margin-bottom: 0px;
+}
+#direct_dotjobsMetaBoxSearch #standardSearch .searchHeader,
+#direct_dotjobsMetaBoxSearch #standardSearch .searchFooter{
+    border-radius: 2px;
+}
+#direct_dotjobsMetaBoxSearch #standardSearch .searchHeader{
+    padding-bottom: 9px;
+    -webkit-border-bottom-left-radius: 0px;
+    -moz-border-bottom-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    -webkit-border-bottom-right-radius: 0px;
+    -moz-border-bottom-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-width: 0px;
+}
+#direct_dotjobsMetaBoxSearch #standardSearch .searchFooter{
+    border-top-width: 0px;
+    -webkit-border-top-left-radius: 0px;
+    -moz-border-top-left-radius: 0px;
+    border-top-left-radius: 0px;
+    -webkit-border-top-right-radius: 0px;
+    -moz-border-top-right-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+#direct_searchBoxBottom{
+    height: 60px;
+    background-color: rgba(0,0,0,.5);
+    z-index: 99;
+    position: absolute;
+    margin-top: -58px;
+    width: 960px;
+    box-shadow: 0px 2px 2px #999;
+}
+
+#direct_searchBoxBottom #direct_dotjobsBottomSponsor{
+    float: left;
+    background: transparent;
+    height: 60px;
+    width: auto;
+    margin: 5px;
+}
+#direct_searchBoxBottom #direct_dotjobsBottomSponsor img{
+    height: 50px;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls{
+    width: auto;
+    margin-left: 20px;
+    text-align: right;
+    padding: 20px;
+    float: right;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls .imageControl{
+    display: block;
+    float: left;
+    height: 23px;
+    width: 30px;
+    margin: 0 5px;
+    color: #FFF;
+    text-align: center;
+    background-image: url(/static/billboard-nav.png);
+    background-position: 0 -60px;
+    padding-top: 7px;
+    font-weight: bold;
+    font-size: 1.3em;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls .imageControl:hover,
+#direct_searchBoxBottom #direct_dotJobsImageControls span.active{
+    color: #000;
+    background-position: -30px -60px;
+    cursor: pointer;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls #direct_imageControl_prev{
+    background-position: 0px 0px;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls #direct_imageControl_next{
+    background-position: 0px -30px;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls #direct_imageControl_prev:hover{
+    background-position: -30px 0px;
+}
+#direct_searchBoxBottom #direct_dotJobsImageControls #direct_imageControl_next:hover{
+    background-position: -30px -30px;
+}
+.copyrightControl{
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    bottom: 70px;
+    height: 20px;
+    width: 20px;
+    text-indent: -9000px;
+    background-image: url(/static/billboard-nav.png);
+    background-repeat: no-repeat;
+    background-position: 0 -90px;
+}
+
+#sponsor-dotjobs{
+    position: absolute;
+    width: 136px;
+    height: 136px;
+    border-radius: 50px;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    margin-top: -505px;
+    left: 852px;
+    text-indent: -99999px;
+    outline: none;
+}
+a#sponsor-dotjobs:hover{
+    background-position: 0 -135px;
+}
+#direct_dotjobsIconContainer{
+    display: block;
+    text-align: center;
+}
+#direct_dotjobsIconBar,
+#direct_dotjobsCustomNavBar,
+#direct_dotjobsFilterCarousel{
+    height: 60px;
+    padding: 10px;
+    background: #f2f2f2;
+    border: 1px solid #e0e0e0;
+    margin: 10px 0;
+    border-radius: 2px;
+    box-shadow: 0px 2px 2px #999;
+}
+#direct_dotjobsCustomNavBar{
+    text-align: center;
+}
+#direct_dotjobsCustomNavBar a{
+    font-weight: bold;
+    padding: 5px 14px;
+    display: inline-block;
+    height: 20px;
+    margin-top: -5px;
+    border-radius: 2px;
+    text-align: center;
+}
+#direct_dotjobsCustomNavBar a:hover{
+    color:#fff;
+}
+
+#direct_dotjobsIconBar .icon{
+    margin: 0 10px;
+    background: #DDD;
+    width: 102px;
+    height: 52px;
+}
+#direct_dotjobsIconBar .icon img{
+    width: 100px;
+    height: 50px;
+    border: 1px solid #ccc;
+}
+#direct_dotjobsIconBar .browse{
+    height: 60px;
+}
+#direct_dotjobsIconBar .span15,
+#direct_dotjobsFilterCarousel .span15{
+    width: 856px;
+    margin-left: 14px;
+    padding-left: 0px;
+    margin-right: 0px !important;
+}
+#direct_dotjobsIconBar .span15{
+    margin-left: 10px;
+    padding-right: 0px;
+}
+#direct_dotjobsFilterCarousel .browse{
+    height: 250px;
+}
+#direct_dotjobsFilterCarousel{
+    height: auto;
+}
+.spanOneHalf{
+    width: 20px;
+    margin-left: 0px;
+    margin-right: 10px;
+    height: 1px;
+}
+#direct_dotjobsCarouselContainer .direct_scrollBox{
+    position: relative;
+    left: 0px;
+    width: 10000px;
+}
+#direct_dotjobsCarouselContainer{
+    overflow-x: hidden;
+}
+#direct_companyList{
+    height: 30px;
+}
+#direct_companyList a{
+    padding: 2px 5px 5px 5px;
+    background-color: #F2F2F2;
+    margin: -12px auto 0 auto;
+    width: 150px;
+    text-align: center;
+    border-radius: 2px;
+    box-shadow: 0px 2px 2px #999;
+    display: block;
+}
+#direct_companyList a:hover{
+    color: #FFF;
+}
+#direct_dotjobsFilterCarousel .direct_dotjobsFilterContainer{
+    display: block;
+    float: left;
+    background: #FFF;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    width: 270px;
+    padding: 5px;
+    margin-right: 5px;
+    min-height: 245px;
+}
+#direct_dotjobsFilterCarousel .direct_dotjobsFilterContainer h3 .direct_filterLabel{
+    font-weight: normal;
+    color: #666;
+}
+#direct_dotjobsFilterCarousel .direct_dotjobsFilterContainer h3 span{
+    display: inline;
+    border: none;
+    margin: 0;
+}
+.direct_dotjobsFilterContainer h3{
+    padding: 5px;
+    background: #f2f2f2;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+}
+.direct_dotjobsFilterContainer ul{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.direct_dotjobsFilterContainer a{
+    color: #666;
+    line-height: 1.2em;
+}
+.direct_dotjobsFilterContainer a:hover{
+    color: #900;
+}
+.direct_dotjobsFilterContainer .more_less_links_container {
+    margin-left: 25px;
+}
+.ui-autocomplete .ui-state-hover,
+.ui-menu .ui-menu-item a{
+    padding: 0px;
+    border: 0px;
+    margin: 0 0 0 0 !important
+}
+
+.account_btn {
+    display: none;
+}
+
+#grouping-list {
+    border: 1px solid;
+    margin-top: 15px;
+}
+
+#grouping-list * {
+    margin-left: 30px;
+}
+
+#grouping-list ul {
+    padding-left: 30px;
+}
+
+#grouping-list [id^='products-']:first-of-type {
+    margin-top: 30px;
+}
+
+#grouping-list [id^='products-']:last-of-type {
+    margin-bottom: 30px;
+}
+
+
+/* FROM MOCK-UP */
+*:focus {
+  outline: 0; }
+
+* {
+  margin: 0;
+  padding: 0; }
+
+ul {
+  list-style-type: none; }
+
+a {
+  text-decoration: none; }
+
+a:hover {
+  text-decoration: none; }
+
+legend {
+  border-bottom: none; }
+
+
+.gray-section-boxes, #main_content .left-content .email-box, #main_content .left-content .search-criteria-box, #main_content .right-content .email-box, #footer .left-content .footer-box {
+  border: 1px solid #666666;
+  background-color: #d3d3d3;
+  margin-bottom: 30px;
+  border-radius: 3px; }
+
+.search-input-boxes, #search_options #standardSearch .what-section #q, #search_options #standardSearch .where-section #location {
+  width: 350px;
+  height: 35px;
+  padding: 5px;
+  -webkit-box-shadow: 0px 0px 5px 0px #c2c2c2;
+  -moz-box-shadow: 0px 0px 5px 0px #c2c2c2;
+  box-shadow: 0px 0px 5px 0px #c2c2c2; }
+
+.main-search-labels, #search_options #standardSearch label {
+  text-align: left;
+  font-size: 22px;
+  font-weight: 200; }
+
+.global-btn, #search_options #standardSearch .search-submit, #main_content .left-content .email-box #enter_email .save-email, #main_content .right-content .show-more-jobs, #main_content .right-content .email-box #mobile_enter_email .save-email {
+  background-color: #2c2c2c;
+  color: #ffffff;
+  font-size: 12px;
+  border: none;
+  border-radius: 3px;
+  font-weight: 100; }
+
+
+/*BRAND LOGO STYLES*/
+#brand_logo {
+  margin: 60px 0 35px; }
+
+  #brand_logo .location-logo-text {
+    font-size: 45px;
+    font-weight: bold;
+    color: #000000; }
+
+  #brand_logo .logo {
+    position: relative;
+    bottom: 10px;
+    right: 10px; }
+
+/*ENTIRE PAGE CONTENT STYLES (EXCLUDING THE NAVIGATION)*/
+#page_content {
+  margin: 0 auto;
+  max-width: 1460px; }
+
+/*MAIN SEARCH OPTIONS STYLES*/
+#search_options {
+  margin-bottom: 35px; }
+  #search_options #standardSearch label {
+    display: block; }
+  #search_options #standardSearch input {
+    display: block; }
+  #search_options #standardSearch i {
+    padding: 0 20px 5px 20px;
+    position: absolute;
+    color: #666666;
+    bottom: 3px;
+    right: 10px; }
+  #search_options #standardSearch .search-show-all {
+    font-size: 12px;
+    position: relative;
+    top: 10px; }
+    #search_options #standardSearch .search-show-all a {
+      text-decoration: underline;
+      color: #3f3f3f; }
+  #search_options #standardSearch .what-section {
+    padding: 0 20px 5px 20px;
+    display: inline-block;
+    position: relative;
+    width: 100% !important; }
+    #search_options #standardSearch .what-section .what {
+      width: 100% !important; }
+  #search_options #standardSearch .where-section {
+    padding: 0 20px 5px 20px;
+    display: inline-block;
+    position: relative;
+    width: 100% !important; }
+    #search_options #standardSearch .where-section .where {
+      width: 100% !important; }
+  #search_options #standardSearch .search-submit {
+    display: inline-block;
+    margin: 0 25px 10px 0;
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 3px;
+    font-weight: 100; }
+
+/*MAIN PAGE CONTENT STYLES*/
+#main_content {
+  margin-bottom: 35px;
+  /*RIGHT SIDE SEARCH RESULTS STYLES*/ }
+  #main_content .left-content {
+    width: 100%;
+    max-width: 745px;
+    /*LEFT SIDE ENTER EMAIL STYLES*/
+    /*LEFT SIDE SEARCH CRITERIA STYLES*/ }
+    #main_content .left-content .mobile-search-criteria {
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: -20px; }
+    #main_content .left-content .mobile-search-criteria a {
+      background-color: #d3d3d3;
+      color: #000000;
+      padding: 10px; }
+    #main_content .left-content .company-name, #main_content .left-content .company-location {
+      color: #b3b3b3; }
+    #main_content .left-content .get-email-title {
+      font-size: 17px;
+      font-weight: 200;
+      color: #777777; }
+     .cancel-anytime {
+      color: #a7a7a7; }
+    #main_content .left-content .email-box {
+      padding: 10px; }
+      #main_content .left-content .email-box #enter_email {
+        position: relative;
+        margin-bottom: 10px; }
+        #main_content .left-content .email-box #enter_email .enter-email {
+          width: 100%;
+          padding: 5px; }
+        .save-email {
+          position: absolute;
+          bottom: 23px;
+          right: 0;
+          display: inline-block;
+          padding: 5px 10px;
+          font-size: 12px;
+          border-radius: 3px;
+          font-weight: 100; }
+    #main_content .left-content .show-search-criteria {
+      display: block !important; }
+    #main_content .left-content .search-criteria-box {
+      padding: 10px; }
+      #main_content .left-content .search-criteria-box legend {
+        color: #777777; }
+      #main_content .left-content .search-criteria-box #search_criteria {
+        position: relative; }
+      #main_content .left-content .search-criteria-box .caret-up {
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        top: -18px;
+        left: 49%;
+        background: #d3d3d3;
+        border-top: 1px solid black;
+        border-left: 1px solid black;
+        -ms-transform: rotate(45deg);
+        -moz-transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+        transform: rotate(45deg); }
+      #main_content .left-content .search-criteria-box .search-criteria-title {
+        border-bottom: 1px solid #000000;
+        position: relative; }
+        #main_content .left-content .search-criteria-box .search-criteria-title .drop-caret {
+          position: absolute;
+          right: 10px;
+          top: 10px; }
+        #main_content .left-content .search-criteria-box .search-criteria-title .caret-rotate {
+          -ms-transform: rotate(180deg);
+          -moz-transform: rotate(180deg);
+          -webkit-transform: rotate(180deg);
+          transform: rotate(180deg); }
+      #main_content .left-content .search-criteria-box .form-check {
+        margin-bottom: 15px; }
+        #main_content .left-content .search-criteria-box .form-check .company-filter-chkbx, #main_content .left-content .search-criteria-box .form-check .city-filter-chkbx, #main_content .left-content .search-criteria-box .form-check .title-filter-chkbx, #main_content .left-content .search-criteria-box .form-check .top-search-filter-chkbx {
+          display: inline-block;
+          margin-right: 5px; }
+        #main_content .left-content .search-criteria-box .form-check .company-filter-title, #main_content .left-content .search-criteria-box .form-check .city-filter-title, #main_content .left-content .search-criteria-box .form-check .title-filter-title, #main_content .left-content .search-criteria-box .form-check .top-search-filter-title {
+          float: left;
+          color: #797979;
+          font-weight: 200; }
+        #main_content .left-content .search-criteria-box .form-check .show-all-companies-filter, #main_content .left-content .search-criteria-box .form-check .show-all-titles-filter, #main_content .left-content .search-criteria-box .form-check .show-all-top-search-filter {
+          color: #797979;
+          font-weight: 200; }
+        #main_content .left-content .search-criteria-box .form-check .show-all-companies-filter:hover, #main_content .left-content .search-criteria-box .form-check .show-all-titles-filter:hover, #main_content .left-content .search-criteria-box .form-check .show-all-top-search-filter:hover {
+          cursor: pointer; }
+        #main_content .left-content .search-criteria-box .form-check .show-less-companies-filter, #main_content .left-content .search-criteria-box .form-check .show-less-titles-filter, #main_content .left-content .search-criteria-box .form-check .show-less-top-search-filter {
+          color: #797979;
+          font-weight: 200; }
+        #main_content .left-content .search-criteria-box .form-check .show-less-companies-filter:hover, #main_content .left-content .search-criteria-box .form-check .show-less-titles-filter:hover, #main_content .left-content .search-criteria-box .form-check .show-less-top-search-filter:hover {
+          cursor: pointer; }
+        #main_content .left-content .search-criteria-box .form-check .company-job-count, #main_content .left-content .search-criteria-box .form-check .city-count, #main_content .left-content .search-criteria-box .form-check .title-count, #main_content .left-content .search-criteria-box .form-check .top-search-count {
+          float: right;
+          color: #797979;
+          font-weight: 200; }
+        #main_content .left-content .search-criteria-box .form-check .filter-panel {
+          display: none; }
+        #main_content .left-content .search-criteria-box .form-check .filter-accordion:hover {
+          cursor: pointer; }
+        #main_content .left-content .search-criteria-box .form-check .filter-panel.filter-panel-active {
+          display: block; }
+        #main_content .left-content .search-criteria-box .form-check .select-filter {
+          padding: 0;
+          margin: 0;
+          border: 1px solid #ccc;
+          border-radius: 3px;
+          overflow: hidden;
+          padding: 10px 10px;
+          background-color: #fff;
+          background: #fff; }
+        #main_content .left-content .search-criteria-box .form-check .select-filter select {
+          width: 100%;
+          border: none;
+          box-shadow: none;
+          background-color: transparent;
+          background-image: none; }
+        #main_content .left-content .search-criteria-box .form-check .select-filter select:focus {
+          outline: none; }
+      #main_content .left-content .search-criteria-box .search-legend {
+        font-size: 17px;
+        font-weight: 200;
+        color: #777777; }
+    #main_content .left-content .facebook-icon {
+      color: #1f4ed0; }
+    #main_content .left-content .twitter-icon {
+      color: #4292ff; }
+    #main_content .left-content .linkedin-icon {
+      color: #396cf5; }
+    #main_content .left-content .google-plus-icon {
+      color: #ff4d00; }
+    #main_content .left-content .email-icon {
+      color: #b0b0b0; }
+    #main_content .left-content .plus-icon {
+      color: #ff783e; }
+
+  #main_content .right-content .job-title {
+    margin: 0; }
+  #main_content .right-content .job-title-clk {
+    font-size: 18px;
+    color: #3f3f3f; }
+  #main_content .right-content .email-box {
+    padding: 10px;
+    margin-top: 75px; }
+    #main_content .right-content .email-box #mobile_enter_email {
+      position: relative;
+      margin-bottom: 10px; }
+      #main_content .right-content .email-box #mobile_enter_email .enter-email {
+        width: 100%;
+        padding: 5px; }
+      #main_content .right-content .email-box #mobile_enter_email .save-email {
+        position: absolute;
+        bottom: 3px;
+        right: 0;
+        display: inline-block;
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 3px;
+        font-weight: 100; }
+  #main_content .right-content .facebook-icon {
+    color: #1f4ed0; }
+  #main_content .right-content .twitter-icon {
+    color: #4292ff; }
+  #main_content .right-content .linkedin-icon {
+    color: #396cf5; }
+  #main_content .right-content .google-plus-icon {
+    color: #ff4d00; }
+  #main_content .right-content .email-icon {
+    color: #b0b0b0; }
+  #main_content .right-content .plus-icon {
+    color: #ff783e; }
+
+/*FOOTER STYLES*/
+#footer {
+  margin-top: 300px;
+  /*LEFT SIDE FOOTER STYLES*/
+  /*RIGHT SIDE FOOTER STYLES*/ }
+  #footer .left-content .footer-box {
+    padding: 38px 25px 25px 25px;
+    margin-bottom: 0; }
+  #footer .right-content .footer-logo {
+    margin-bottom: 20px; }
+    #footer .right-content .footer-logo span {
+      font-size: 24px;
+      font-weight: 600;
+      color: #757575; }
+    #footer .right-content .footer-logo .header-logo {
+      height: 25px;
+      width: 100px;
+      -webkit-filter: invert(50%);
+      filter: invert(50%); }
+  #footer .right-content .header-logo {
+    position: relative;
+    bottom: 5px; }
+  #footer .right-content .footer-map-section {
+    padding: 5px 0px; }
+    #footer .right-content .footer-map-section li {
+      display: inline; }
+    #footer .right-content .footer-map-section a {
+      color: #3F3F3F;
+      font-size: 14px;
+      font-weight: 400; }
+
+
+/* END FROM MOCK UP */
