@@ -15,6 +15,7 @@ module.exports = {
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
     custom: './src/sass/custom.scss',
+    seo_base_styles: './src/sass/seo_base_styles.scss',
   },
   resolve: {
     root: path.resolve('src'),
