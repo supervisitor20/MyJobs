@@ -160,7 +160,8 @@ def assign_ticket_to_request(key, access_request):
 
 
 @task(name='tasks.send_search_digest', ignore_result=True,
-      default_retry_delay=180, max_retries=2, bind=True)
+      default_retry_delay=180, max_retries=2, bind=True,
+      time_limit=30)
 def send_search_digest(self, search):
     """
     Task used by send_send_search_digests to send individual digest or search
@@ -781,7 +782,7 @@ def requeue_failures():
     FAILURE_COUNT = 15
 
     midnight = datetime.combine(date.today(), datetime.min.time())
-    five_pm = midnight - datetime.timedelta(hours=7)
+    five_pm = midnight - timedelta(hours=7)
 
     failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'],
                                             tstamp__gt=five_pm,
