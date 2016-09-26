@@ -20,6 +20,7 @@ import {
 import {
   contactNotesOnlyForm,
   pruneCommunicationRecordForm,
+  replaceStateWithChoices,
 } from 'nonuseroutreach/forms';
 
 import {
@@ -156,7 +157,6 @@ class ProcessRecordPage extends Component {
 
   async handleSavePartner() {
     const {dispatch} = this.props;
-
     await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
@@ -164,7 +164,6 @@ class ProcessRecordPage extends Component {
 
   async handleSaveContact() {
     const {dispatch} = this.props;
-
     await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
@@ -172,7 +171,6 @@ class ProcessRecordPage extends Component {
 
   async handleSaveCommunicationRecord() {
     const {dispatch} = this.props;
-
     await dispatch(doSubmit(true, () => this.scrollToTop()));
     this.resetSearches();
     dispatch(determineProcessStateAction());
@@ -219,7 +217,6 @@ class ProcessRecordPage extends Component {
 
   renderSelectContact() {
     const {partnerId} = this.props;
-
     return this.renderCard('Add Contact', ([
       <div key="contact" className="product-card no-highlight clearfix">
         <FieldWrapper label="Contact Search">
@@ -310,9 +307,11 @@ class ProcessRecordPage extends Component {
     const contactForm = contactForms[contactIndex];
     const contactFormContents = contactFormsContents[contactIndex] || {};
 
+    const modifiedContactForm = replaceStateWithChoices(contactForm, contactFormContents);
+
     return (
       <Form
-        form={contactForm}
+        form={modifiedContactForm}
         title="Contact Details"
         submitTitle="Add Contact"
         formContents={contactFormContents}
