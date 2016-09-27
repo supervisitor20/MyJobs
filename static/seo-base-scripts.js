@@ -2,14 +2,14 @@
  * Legacy es5.1 functions used in seo_base.html template
 **/
 
-$(document).on("ready", function() {
-    /* needed to render 'topbar' */
-    if(typeof site_name !== 'undefined' && !$("*[data-widget_type=tools]").length) {
-        get_toolbar(site_name);
-    }
+$(document).ready(function() {
+  /* needed to render 'topbar' */
+  if(typeof site_name !== 'undefined' && !$("*[data-widget_type=tools]").length) {
+      get_toolbar(site_name);
+  }
 
-    /* Save Search Functionality */
-    get_default_widget_html(false);
+  /* Save Search Functionality */
+  get_default_widget_html(false);
 });
 
 function get_toolbar(site_name) {
@@ -128,3 +128,90 @@ function jsonp_ajax_call(ajax_url) {
         }
     });
 }
+
+/*
+JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
+*/
+  //Javascript to show search criteria in mobile view
+  $(".mobile-search-btn").on("click", function(e) {
+    $(".search-criteria-box").toggleClass("show-search-criteria");
+  });
+
+  //Javascript for showing the search facets in mobile view on click
+  $("#mobile_search").on("click", function(e) {
+    var mobileSearchFacets = $(".mobile-search-facets");
+    mobileSearchFacets.toggleClass("show-mobile-search-facets");
+  });
+
+  //Javascript for activating the mobile footer menu
+  function activeMobileMenu() {
+    var showMessages = $( '#show_messages' );
+    var showCompany = $( '#show_company' );
+    var showProfile = $( '#show_profile' );
+    var messageMenu = $("#cbp-spmenu-m4");
+    var companyMenu = $("#cbp-spmenu-c4");
+    var profileMenu = $("#cbp-spmenu-p4");
+
+    showMessages.on("click", function(e)  {
+      e.stopPropagation();
+      $( this ).toggleClass('active' );
+      messageMenu.toggleClass('cbp-spmenu-open' );
+      if (companyMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
+        companyMenu.removeClass('cbp-spmenu-open');
+        profileMenu.removeClass('cbp-spmenu-open');
+      }
+    });
+    showCompany.on("click", function(e)  {
+      e.stopPropagation();
+      $( this ).toggleClass('active' );
+      companyMenu.toggleClass('cbp-spmenu-open' );
+      if (messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
+        messageMenu.removeClass('cbp-spmenu-open');
+        profileMenu.removeClass('cbp-spmenu-open');
+      }
+    });
+    showProfile.on("click", function(e)  {
+      e.stopPropagation();
+      $( this ).toggleClass('active' );
+      profileMenu.toggleClass('cbp-spmenu-open' );
+      if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open')) {
+        companyMenu.removeClass('cbp-spmenu-open');
+        messageMenu.removeClass('cbp-spmenu-open');
+      }
+    });
+  }
+  activeMobileMenu();
+
+  //Javascript for closing the mobile menu on click of anywhere on the screen
+  $(window).click(function() {
+    var messageMenu = $("#cbp-spmenu-m4");
+    var companyMenu = $("#cbp-spmenu-c4");
+    var profileMenu = $("#cbp-spmenu-p4");
+
+    if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
+      companyMenu.removeClass('cbp-spmenu-open');
+      messageMenu.removeClass('cbp-spmenu-open');
+      profileMenu.removeClass('cbp-spmenu-open');
+    }
+  });
+
+  //Function for initializing the accordion of the search criteria
+  function filterAccordion() {
+    var accordion = $(".filter-accordion");
+    $.each(accordion, function(v,i) {
+      var that = $(this);
+      var panel = that.next(".filter-panel");
+      var filterCaret = that.children(".drop-caret");
+      that.on("click", function(e) {
+        panel.toggleClass("filter-panel-deactive");
+        filterCaret.toggleClass("caret-rotate");
+      })
+    })
+  }
+  filterAccordion();
+
+  //Javascript for showing and hiding the social share icons when the share button is clicked
+  $(".share-social").on("click", function(e) {
+    var social = $(".social-media");
+    social.toggleClass("show-social");
+  });
