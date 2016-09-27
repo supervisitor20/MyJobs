@@ -103,55 +103,196 @@
           {% endif %}
           </div><!-- email-box -->
 
-          <div class="hidden-xs search-criteria-box">
-                <form id="search_criteria">
-                  <fieldset class="form-group">
-                    <legend class="search-legend">Current Search Criteria</legend>
-                    <div class="form-check">
-                      <p class="search-criteria-title">Display Order</p>
-                      <div class="select-filter">
-                        <select class="display-order-select">
-                          <option>Relevance</option>
-                          <option>Ascending</option>
-                          <option>Descending</option>
-                          <option>Date</option>
+          <div class="facets">
+            <section id="save_email_search">
+              <div class="email-box">
+                <h4 class="get-email-title">Save &amp; Email this search</h4>
+                <form id="enter_email">
+                  <div class="form-group">
+                    <input class="form-control enter-email" type="text" placeholder="clotilde_crooks@gmail.com" />
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-xs-12 col-sm-12 col-lg-8">
+                        <select class="email-frequency form-control">
+                          <option>Daily</option>
+                          <option>Weekly</option>
                         </select>
                       </div>
-                    </div>
-                    <div class="form-check">
-                      <p class="search-criteria-title">Filter By City</p>
-
-                        <label class="city-filter-title" for="l1"><input type="checkbox" name="l1" class="city-filter-chkbx"/>Chattanooga, TN</label>
-                        <span class="city-count">512</span>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div class="form-check">
-                      <p class="search-criteria-title filter-accordion">Filter By Company<span class="drop-caret caret"></span></p>
-                      <div class="filter-panel">
-                        <span class="yes show-all-companies-filter pull-right">(show all)</span>
-                        <span class="show-less-companies-filter pull-right hidden">(show less)</span>
-                        <div class="clearfix"></div>
+                      <div class="col-xs-12 col-sm-12 col-lg-4">
+                        <input class="btn btn-default save-email" type="submit" value="Save"/>
                       </div>
                     </div>
-                    <div class="form-check">
-                      <p class="search-criteria-title filter-accordion">Filter By Title<span class="drop-caret caret"></span></p>
-                      <div class="filter-panel">
-                        <span class="show-all-titles-filter pull-right">(show all)</span>
-                        <span class="show-less-titles-filter pull-right hidden">(show less)</span>
-                        <div class="clearfix"></div>
-                      </div>
-                    </div>
-                    <div class="form-check">
-                      <p class="search-criteria-title filter-accordion">Filter By Top Search Results<span class="drop-caret caret"></span></p>
-                      <div class="filter-panel">
-                        <span class="yes show-all-top-search-filter pull-right">(show all)</span>
-                        <span class="show-less-top-search-filter pull-right hidden">(show less)</span>
-                      </div>
-                    </div>
-                  </fieldset>
-                  <span class="hidden-sm hidden-md hidden-lg caret-up"></span>
+                  </div>
                 </form>
+                <div class="cancel-anytime text-center">Cancel Anytime</div>
               </div>
+            </section>
+          <section id="city_filter">
+            <div class="city-filter-box">
+              <h4 class="filter-accordion">City</h4>
+              <div class="filter-panel">
+                <div class="city-showing">
+                  <p class="city-title-filter"><a href="#">Chattanooga, TN</a></p>
+                </div>
+                <div class="city-showing">
+                  <p class="city-title-filter"><a href="#">Indianapolis, IN</a></p>
+                </div>
+                <div class="city-showing">
+                  <p class="city-title-filter"><a href="#">New York, NY</a></p>
+                </div>
+                <div class="city-showing">
+                  <p class="city-title-filter"><a href="#">Denver, CO</a></p>
+                </div>
+                <div class="city-showing">
+                  <p class="city-title-filter"><a href="#">Chicago, IL</a></p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section id="company_filter">
+            <div class="company-filter-box">
+              <h4 class="filter-accordion">Company</h4>
+              <div class="filter-panel">
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">WordMakers</a></p>
+                  <span class="company-job-count">512</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">ListenUP</a></p>
+                  <span class="company-job-count">1734</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Ball Lightning</a></p>
+                  <span class="company-job-count">4170</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">The Cloven Hoof</a></p>
+                  <span class="company-job-count">620</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Mr. Green</a></p>
+                  <span class="company-job-count">1173</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Digitalgen</a></p>
+                  <span class="company-job-count">735</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">XOR Groceteria</a></p>
+                  <span class="company-job-count">6156</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Building Blocks</a></p>
+                  <span class="company-job-count">1436</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Chaucer's Farm</a></p>
+                  <span class="company-job-count">2050</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="company-showing">
+                  <p class="company-filter-title"><a href="#">Kyagora</a></p>
+                  <span class="company-job-count">4492</span>
+                  <div class="clearfix"></div>
+                </div>
+                <!-- <span class="show-all-companies-filter pull-right">(show all)</span>
+                <span class="show-less-companies-filter pull-right hidden">(show less)</span> -->
+                <div class="clearfix"></div>
+              </div>
+            </div>
+
+          </section>
+          <section id="title_filter">
+            <div class="title-filter-box">
+              <h4 class="filter-accordion">Title</h4>
+              <div class="filter-panel">
+                <div class="title-showing">
+                  <p class="title-filter-title"><a href="#">Teacher</a></p>
+                  <span class="title-count">4</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="title-showing">
+                  <p class="title-filter-title"><a href="#">Developer</a></p>
+                  <span class="title-count">12</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="title-showing">
+                  <p class="title-filter-title"><a href="#">Nurse</a></p>
+                  <span class="title-count">22</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="title-showing">
+                  <p class="title-filter-title"><a href="#">Carpenter</a></p>
+                  <span class="title-count">2</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="title-showing">
+                  <p class="title-filter-title"><a href="#">Driver</a></p>
+                  <span class="title-count">30</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <span class="show-all-titles-filter pull-right">(show all)</span>
+                <span class="show-less-titles-filter pull-right hidden">(show less)</span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </section>
+          <section id="top_search_filter">
+            <div class="top-search-filter-box">
+              <h4 class="filter-accordion">Top Searches</h4>
+              <div class="filter-panel">
+                <div class="top-search-showing">
+                  <p class="top-search-filter-title"><a href="#">Teacher</a></p>
+                  <span class="top-search-count">20</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="top-search-showing">
+                  <p class="top-search-filter-title"><a href="#">Web Developer</a></p>
+                  <span class="top-search-count">55</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="top-search-showing">
+                  <p class="top-search-filter-title"><a href="#">Software Engineer</a></p>
+                  <span class="top-search-count">48</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="top-search-showing">
+                  <p class="top-search-filter-title"><a href="#">Registered Nurse</a></p>
+                  <span class="top-search-count">45</span>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="top-search-showing">
+                  <p class="top-search-filter-title"><a href="#">Truck Driver</a></p>
+                  <span class="top-search-count">32</span>
+                  <div class="clearfix"></div>
+                </div>
+
+                <span class="yes show-all-top-search-filter pull-right">(show all)</span>
+                <span class="show-less-top-search-filter pull-right hidden">(show less)</span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </section>
+            </div>
         </div>
       </div>
 
