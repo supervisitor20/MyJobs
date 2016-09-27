@@ -306,8 +306,6 @@ margin-bottom: 50px;
   .plus-icon {
     color: #ff783e;
   }
-
-#search_form {
   label {
     @extend .main-search-labels;
     display:block;
@@ -360,7 +358,7 @@ margin-bottom: 50px;
   .what-section {
     display:inline-block;
     position: relative;
-    width: 100% !important;
+    width: 100%;
 
     i {
       position: absolute;
@@ -369,14 +367,14 @@ margin-bottom: 50px;
     }
     #what{
       @extend .search-input-boxes;
-      width: 100% !important;
+      width: 100%;
       padding: 0 0 0 40px;
     }
   }
   .where-section {
     display:inline-block;
     position: relative;
-    width: 100% !important;
+    width: 100%;
 
     i {
       position: absolute;
@@ -385,7 +383,7 @@ margin-bottom: 50px;
     }
     #where {
       @extend .search-input-boxes;
-      width: 100% !important;
+      width: 100%;
       padding: 0 0 0 40px;
     }
   }
@@ -398,18 +396,11 @@ margin-bottom: 50px;
     font-weight: 100;
   }
 }
-}
-/*CURRENT JOBS DISPLAYING STYLES*/
-/*FOOTER STYLES*/
-
-
-/*MAIN SEARCH OPTIONS STYLES*/
-
-
 /*MAIN PAGE CONTENT STYLES*/
 
 #main_content {
   margin-bottom: 35px;
+}
 
 /*RIGHT SIDE SEARCH RESULTS STYLES*/
   .right-content {
@@ -483,7 +474,6 @@ margin-bottom: 50px;
       color: #ff783e;
     }
   }
-}
 
 /*FOOTER STYLES*/
 #footer {
@@ -680,7 +670,8 @@ margin-bottom: 50px;
       margin-bottom: 30px;
       border-top: none;
       border-radius: 3px;
-      margin-top: 35px;
+      margin-top: 75px;
+      padding: 0px 10px;
     }
     .save-email {
       margin-top: 15px;
@@ -689,7 +680,7 @@ margin-bottom: 50px;
   }
   #city_filter {
     padding: 0 15px;
-    margin-bottom: -40px;
+    margin-bottom: -76px;
 
     h4 {
       margin: -1px -15px;
@@ -700,12 +691,13 @@ margin-bottom: 50px;
       margin-bottom: 30px;
       border-top: none;
       border-radius: 3px;
-      margin-top: 35px;
+      margin-top: 75px;
+      padding: 0px 10px;
     }
   }
   #company_filter {
     padding: 0 15px;
-    margin-bottom: -40px;
+    margin-bottom: -76px;
 
     h4 {
       margin: -1px -15px;
@@ -716,12 +708,13 @@ margin-bottom: 50px;
       margin-bottom: 30px;
       border-top: none;
       border-radius: 3px;
-      margin-top: 35px;
+      margin-top: 75px;
+      padding: 0px 10px;
     }
   }
   #title_filter {
     padding: 0 15px;
-    margin-bottom: -40px;
+    margin-bottom: -76px;
 
     h4 {
       margin: -1px -15px;
@@ -732,12 +725,13 @@ margin-bottom: 50px;
       margin-bottom: 30px;
       border-top: none;
       border-radius: 3px;
-      margin-top: 35px;
+      margin-top: 75px;
+      padding: 0px 10px;
     }
   }
   #top_search_filter {
     padding: 0 15px;
-    margin-bottom: -40px;
+    margin-bottom: -76px;
 
     h4 {
       margin: -1px -15px;
@@ -748,7 +742,8 @@ margin-bottom: 50px;
       margin-bottom: 30px;
       border-top: none;
       border-radius: 3px;
-      margin-top: 35px;
+      margin-top: 75px;
+      padding: 0px 10px;
     }
   }
   #search {
@@ -777,11 +772,14 @@ margin-bottom: 50px;
   }
   #current_jobs {
     padding: 0 15px;
-    margin-top: 75px;
+    margin-top: 115px;
 
     .more-jobs {
       text-align: center;
       margin-top: 30px;
+    }
+    .show-more-jobs {
+      float: none !important;
     }
   }
   #mobile_footer_content {
@@ -800,7 +798,7 @@ margin-bottom: 50px;
     display: block;
     margin-bottom: 67px;
 
-    .footer-mobile-content li {
+    .footer-mobile-content {
       li {
         border-top: 1px solid gray;
         padding: 15px 15px;
@@ -815,17 +813,9 @@ margin-bottom: 50px;
       }
     }
   }
-
      #main_content .right-content .email-box, .city-filter-box, .company-filter-box, .title-filter-box, .top-search-filter-box {
-      margin-top: 75px;
-      padding: 0px 10px;
+
     }
-     #main_content .right-content .show-more-jobs {
-       float: none;
-     }
-
-
-
 }
 
 /* Extra Small Devices, Phones */
@@ -872,42 +862,68 @@ margin-bottom: 50px;
   .mobile-social-media {
     display: none;
   }
+  .right-content {
+    #save_email_search {
+      display: none;
+    }
+  }
   #main_nav {
     .location-logo {
        margin: 0 auto;
        width: 100%;
      }
+     .right-nav {
+       display: block;
+     }
+     .left-logo {
+       float: left !important;
+     }
   }
   #brand_logo {
+    .location-logo {
+      margin: 0 auto;
+      width: 56%;
+    }
     .logo-text {
-      left: 25%;
+      left: 15%;
+      font-size: 28px;
     }
   }
   #save_email_search {
+    margin-bottom: -31px;
+
     .email-box {
       margin-top: 0px;
       padding: 0 10px;
     }
   }
   #city_filter {
+    margin-bottom: -31px;
+
     .city-filter-box {
       margin-top: 0px;
       padding: 0 10px;
     }
   }
   #company_filter {
+    margin-bottom: -31px;
+
     .company-filter-box {
       margin-top: 0px;
       padding: 0 10px;
     }
   }
   #title_filter {
+    margin-bottom: -31px;
+
     .title-filter-box {
       margin-top: 0px;
       padding: 0 10px;
     }
   }
   #top_search_filter {
+    margin-bottom: -31px;
+
     .top-search-filter-box {
       margin-top: 0px;
       padding: 0 10px;
@@ -932,69 +948,45 @@ margin-bottom: 50px;
       width: 100% !important;
       margin-bottom: 0px;
     }
+    .where-section {
+      width: 100% !important;
+      margin-bottom: 0px;
+    }
+    .submit-section {
+      padding: 0;
+    }
+    .share-social.search-submit {
+      display: inline-block;
+    }
   }
   #current_jobs {
-    margin-top: 0px;
-  }
-  #mobile_footer_content {
+    margin-top: 48px;
+    padding: 0;
 
+    .show-more-jobs {
+      float: right !important;
+    }
   }
   #mobile_footer {
     display: none;
   }
   #footer {
-
+    display: block;
   }
-  #footer-content {
-
+  #footer_mobile {
+    display: none;
   }
-
-
-     #footer {
-       display: block;
-     }
-     #footer_mobile {
-       display: none;
-     }
-     #main_nav .right-nav {
-       display: block;
-     }
-     #main_nav .left-logo {
-       float: left !important;
-     }
-     #search #search_form
-     #save_email_search, #city_filter, #company_filter, #title_filter, #top_search_filter {
-    margin-bottom: -31px;
-    }
-     #search #search_form .where-section {
-       width: 100% !important;
-       margin-bottom: 0px;
-     }
-     #current_jobs {
-       padding: 0;
-     }
-     #main_content .right-content .show-more-jobs {
-       float: right;
-     }
-     .submit-section {
-        padding: 0;
-     }
-
-     #search #search_form .share-social.search-submit {
-       display: inline-block;
-     }
-     .right-content #save_email_search {
-       display: none;
-     }
-
-    //  #search #search_form
-    //  #search #search_form
-
 }
 
 /* Large Devices, Wide Screens */
 @media only screen and (min-width : 1200px) {
 
+  #brand_logo {
+    .logo-text {
+      font-size: 34px;
+      left: 20%;
+    }
+  }
   #save_email_search {
     .save-email {
         margin-top: 0;
