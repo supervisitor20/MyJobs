@@ -1,0 +1,262 @@
+{{ site_config.doc_type|safe }}
+{% load seo_extras %}
+{% load compress %}
+{% load staticfiles %}
+
+{% flatpage_site_title as site_title %}
+{% flatpage_site_description as site_description %}
+{% flatpage_site_tags as site_tags %}
+{% if flatpage %}
+    {% get_custom_page flatpage as custom_page %}
+{% endif %}
+
+<!DOCTYPE html>
+<html lang="en" prefix="fb: http://www.facebook.com/2008/fbml">
+<head>
+    <title>{% block directseo_title %}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="msvalidate.01" content="B9E4E5CC00BB58B097061E7DBFC6FA6B" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+    <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+    {% if wp_base_url %}
+    <link rel="stylesheet" href="{{wp_base_url}}/seo_base_styles.css" rel="stylesheet" type="text/css">
+    {% else %}
+        {% compress css %}
+            <link rel="stylesheet" href="{% static "bundle/seo_base_styles.css" %}" rel="stylesheet" type="text/css">
+        {% endcompress %}
+    {% endif %}
+    <link href="{{ STATIC_URL }}dotjobs/favicon.ico" rel="shortcut icon">
+
+    {% newrelic_browser_monitoring %}
+
+    {% block meta_title %}
+        <meta name="title" content="{% build_title site_title title_term location_term breadbox.company_breadcrumb.display_title results_heading %}">
+    {% endblock %}
+
+    {% block seo_description %}
+        {% if site_description %}
+            <meta name="description" content='{{site_description}} {{ site_title }}'>
+        {% else %}
+            <meta name="description" content='"Real jobs from real companies. Updated daily. Only verified, open positions at top companies. " {{ site_title }}'>
+        {% endif %}
+    {% endblock seo_description %}
+
+    {% if num_filters >= max_filter_settings %}
+        <meta name="robots" content="nofollow">
+    {% endif %}
+
+    {% block rss_feed %}{% endblock %}
+
+    {# publisher should be included on home pages only #}
+    {% block publisher %}{% endblock %}
+
+    {% block flatpage_meta %}{% endblock flatpage_meta %}
+
+    {% if site_config.meta %} {{site_config.meta|safe}} {% endif %}
+
+    {% block direct_extraMetaOpenGraph %}{% endblock %}
+</head>
+<body {% block directseo_bodySchema %}{% endblock directseo_bodySchema %}>
+<div id="page_content">
+  <section id="brand_logo" class="text-center direct_dotjobsWideHeader">
+   {% comment - need this for the topbar %} {% endcomment %}
+  </section>
+
+{% block directseo_outer_container %}
+  <section id="direct_container">
+    <div id="direct_innerContainer">
+      {% block directseo_container %}
+          <section id="search_options">
+          <!-- Removed direct header from original codes -->
+            <div class="direct_searchContainer">
+                {% if site_config.browse_moc_show %}
+                {% include "search_box_vets.html" %}
+                {% else %}
+                {% include "search_box_bootstrap3.html" %}
+                {% endif %}
+            </div>
+          </section>
+      {% endblock directseo_container %}
+
+    <section id="main_content">
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-6">
+        <div class="left-content">
+          <div class="hidden-xs email-box">
+          {% if company %}
+            <div id="direct_companyModule" role="menu">
+              {% include 'includes/company_module.html'%}
+            </div>
+          {% endif %}
+          {% if default_jobs or featured_jobs %}
+            {% if "network" in site_tags or site_config.show_saved_search_widget %}
+                {% if site_config.use_secure_blocks %}
+                    <div data-secure_block_id="saved_search"></div>
+                {% else %}
+                    <div id="de-myjobs-widget"></div>
+                {% endif %}
+            {% endif %}
+              <a name="filters"></a>
+
+          {% endif %}
+          </div><!-- email-box -->
+
+          <div class="hidden-xs search-criteria-box">
+                <form id="search_criteria">
+                  <fieldset class="form-group">
+                    <legend class="search-legend">Current Search Criteria</legend>
+                    <div class="form-check">
+                      <p class="search-criteria-title">Display Order</p>
+                      <div class="select-filter">
+                        <select class="display-order-select">
+                          <option>Relevance</option>
+                          <option>Ascending</option>
+                          <option>Descending</option>
+                          <option>Date</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <p class="search-criteria-title">Filter By City</p>
+
+                        <label class="city-filter-title" for="l1"><input type="checkbox" name="l1" class="city-filter-chkbx"/>Chattanooga, TN</label>
+                        <span class="city-count">512</span>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="form-check">
+                      <p class="search-criteria-title filter-accordion">Filter By Company<span class="drop-caret caret"></span></p>
+                      <div class="filter-panel">
+                        <span class="yes show-all-companies-filter pull-right">(show all)</span>
+                        <span class="show-less-companies-filter pull-right hidden">(show less)</span>
+                        <div class="clearfix"></div>
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <p class="search-criteria-title filter-accordion">Filter By Title<span class="drop-caret caret"></span></p>
+                      <div class="filter-panel">
+                        <span class="show-all-titles-filter pull-right">(show all)</span>
+                        <span class="show-less-titles-filter pull-right hidden">(show less)</span>
+                        <div class="clearfix"></div>
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <p class="search-criteria-title filter-accordion">Filter By Top Search Results<span class="drop-caret caret"></span></p>
+                      <div class="filter-panel">
+                        <span class="yes show-all-top-search-filter pull-right">(show all)</span>
+                        <span class="show-less-top-search-filter pull-right hidden">(show less)</span>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <span class="hidden-sm hidden-md hidden-lg caret-up"></span>
+                </form>
+              </div>
+        </div>
+      </div>
+
+      <div class="col-xs-12 col-sm-6 col-md-6">
+        <div class="right-content">
+            {% include 'includes/job_list_bootstrap3.html' %}
+        </div>
+      </div>
+    </div>
+    </section><!-- main_content -->
+    {% endblock directseo_outer_container %}
+
+    </div><!-- direct_innerContainer -->
+  </section><!-- direct_container -->
+
+  <section id="footer">
+    <div class="row">
+      <div class="col-xs-12 col-md-12">
+        <footer class="footer">
+          <div class="row">
+            <div class="col-xs-0 col-sm-1 col-md-1"></div>
+            <div class="col-xs-12 col-sm-6 col-sm-push-5 col-md-6 col-md-push-5">
+              <div class="right-content">
+                <div class="footer-sitemap text-center">
+                  <div class="footer-logo">
+                    <img class="header-logo" src="http://d2e48ltfsb5exy.cloudfront.net/myjobs/logos/myjobs_logo_white_small.png" id="header_logo" alt="My.jobs" width="135" height="83">
+                    <span>Network</span>
+                  </div>
+                  <ul class="footer-map-section">
+                    <li><a href="http://directemployers.org">A Service of DirectEmployers</a></li> |
+                    <li><a href="http://www.directemployers.org/become-a-member/">Become a Member</a></li> |
+                    <li><a href="http://www.directemployers.org/products-services/direct-compliance/vevraa-compliance/">VEVRAA Compliance</a></li> |
+                    <li><a href="http://us.jobs/indexingrequest.asp">Include Jobs for Free</a></li> |
+                    <li><a href="http://us.jobs/postajob.asp">Post Jobs</a></li>
+                  </ul>
+                  <ul class="footer-map-section">
+                    <li><a href="https://secure.my.jobs/about/">About</a></li> |
+                    <li><a href="http://www.directemployers.org/blogs/help-wanted/" >Blog</a></li> |
+                    <li> <a href="https://secure.my.jobs/contact-faq/">Contact</a></li> |
+                    <li><a href="https://secure.my.jobs/privacy/">Privacy</a></li> |
+                    <li><a href="https://secure.my.jobs/terms/">Terms</a></li>
+                  </ul>
+                  <ul class="footer-map-section">
+                    <li><a href="http://disability.jobs/">Disability Jobs</a></li> |
+                    <li><a href="http://diversity.jobs/">Diversity Jobs</a></li> |
+                    <li><a href="http://minority.jobs/">Minority Jobs</a></li> |
+                    <li><a href="http://veterans.jobs/">Veterans Jobs</a></li> |
+                    <li><a href="https://www.privacyrights.org/Online-Privacy-and-Technology" class="direct_dotjobsFooterLink">Security Tips</a></li>
+                  </ul>
+                  <ul class="footer-map-section">
+                    <li><a href="http://www.my.jobs/member-companies/">Member Companies</a></li> |
+                    <li><a href="http://directemployers.org/recruitment-marketing/">Recruitment Marketing</a></li> |
+                    <li><a href="http://directemployers.org/recruitment-marketing/#military-crosswalk">Military Crosswalk</a></li> |
+                    <li><a href="http://directemployers.org/request-demo/">Schedule a Demo</a></li> |
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-xs-12 col-sm-5 col-sm-pull-6 col-md-5 col-md-pull-6">
+              <div class="left-content">
+                <div class="footer-box">
+                    <p>The <a href="http://goto.jobs/about.asp" target="_blank">.JOBS Top Level Domain</a> is sponsored by the <a href="http://www.shrm.org/" target="_blank">Society for Human Resource Management (SHRM)</a></p>
+        <p>The <a href="http://us.jobs/" target="_blank">National Labor Exchange</a> is sponsored by the <a href="http://www.naswa.org/">National Association of State Workforce Agencies (NASWA)</a></p>
+        <p>The .JOBS Top Level Domain is endorsed by <a href="http://www.hrpolicy.org/" target="_blank">HR Policy Association</a>, The Public Policy Association of Chief Human Resource Officers.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </section><!-- Footer -->
+
+</div><!-- page_content -->
+
+<script defer src="{{ STATIC_URL }}jquery-1.11.3.min.js"></script>
+<script defer src="{{ STATIC_URL }}seo-base-scripts.js"></script>
+{% compress js %}
+<script defer src="{% static "utils.js" %}"></script>
+<script defer src="{% static "secure-blocks/secure-block.js" %}"></script>
+<script defer src="{% static 'search.js' %}"></script>
+{% endcompress %}
+
+{% if site_config.use_secure_blocks %}
+    <script defer>
+      var pager_num_items = {{ site_config.num_subnav_items_to_show }};
+      var parent_site_url = "{% if testing_host_prefix %}http://{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
+      $(document).on("ready", function() {
+        load_secure_blocks(parent_site_url + '/secure-blocks/');
+      });
+    </script>
+{% endif %}
+
+<script defer src="{{ STATIC_URL }}pager.164-21.js"></script>
+
+{% if "network" in site_tags %}
+    <script defer>
+        var site_name = "{{ site_name }}";
+        var ABSOLUTE_URL = "{{ ABSOLUTE_URL }}",
+            impersonating = {% if request.impersonator %}true{% else %}false{% endif %};
+    </script>
+{% endif %}
+
+<script defer src="//d2e48ltfsb5exy.cloudfront.net/framework/v2/js/code/jquery-ui-1.8.17.custom.min.js"></script>
+
+{% block ga_js %}{% include "ga.html"%}{% endblock %}
+</body>
+</html>

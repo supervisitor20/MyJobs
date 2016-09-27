@@ -331,6 +331,14 @@ class MySearchViewTests(MyJobsBase):
             reverse('edit_search'), search.pk)
         self.assertTrue(edit_url in response.content)
 
+    def test_widget_with_saved_search_v2(self):
+        search = SavedSearchFactory(user=self.user)
+        response = self.client.get(reverse('saved_search_widget') +
+                                   '?url=%s&v2=1&callback=callback' % (
+                                       search.url, ))
+        response_text = '<form id=\\"enter_email\\">'
+        self.assertTrue(response_text in response.content)
+
     def test_widget_with_partner_saved_search(self):
         company = CompanyFactory()
         partner = PartnerFactory(owner=company)
