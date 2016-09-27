@@ -1177,6 +1177,42 @@ margin-bottom: 50px;
   }
 }
 
+/*STYLES FOR THE JOBS DETAILS PAGE*/
+
+#job_description {
+  h4 {
+    margin-bottom: 5px;
+    margin-top: 0;
+  }
+  h3 {
+    border-bottom: 2px solid #f7f7f7;
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+  }
+  .info-section {
+    p {
+      &:nth-child(1) {
+        color: $primary-navy-blue;
+      }
+    }
+  }
+  .apply {
+    background-color: $primary-navy-blue;
+    color: #ffffff;
+    font-size: 12px;
+    border: none;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0 15px 10px 0;
+    padding: 10px 75px;
+    font-size: 18px;
+    border-radius: 3px;
+    font-weight: 100;
+    font-weight: 100;
+  }
+}
+
 /*==================================================
 =            Bootstrap 3 Media Queries             =
 ==================================================*/
@@ -1380,6 +1416,16 @@ margin-bottom: 50px;
       }
     }
   }
+	#job_description {
+		margin-top: 105px;
+		padding: 0 20px;
+
+		.apply {
+			margin: 0 auto;
+			width: 100%;
+			text-align: center;
+		}
+	}
 }
 
 /* Extra Small Devices, Phones */
@@ -1543,6 +1589,14 @@ margin-bottom: 50px;
   #footer_mobile {
     display: none;
   }
+	#job_description {
+		margin-top: 0;
+		padding: 0;
+
+		.apply {
+			width: 35%;
+		}
+	}
 }
 
 /* Large Devices, Wide Screens */
@@ -1563,6 +1617,14 @@ margin-bottom: 50px;
   #current_jobs {
     margin-top: 20px;
   }
+	#job_description {
+		margin-top: 20px;
+		padding: 0;
+
+		.apply {
+			width: 28%;
+		}
+	}
 }
 
 @media only screen and (min-width : 1300px) {
@@ -1570,6 +1632,14 @@ margin-bottom: 50px;
   #current_jobs {
     margin-top: 45px;
   }
+	#job_description {
+		margin-top: 50px;
+		padding: 0;
+
+		.apply {
+			width: 28%;
+		}
+	}
 }
 
 /* END NEW SASS STYLES FOR REBRANDING */
