@@ -624,19 +624,56 @@ margin-bottom: 50px;
 
 /* Custom, iPhone Retina */
 @media only screen and (min-width : 320px) {
+
+  .mobile-search-facets {
+    display: none;
+  }
   .mobile-search-facets.show-mobile-search-facets {
     display: block;
   }
   .facets {
     display: none;
   }
+  .social-media {
+    margin-top: 75px;
+  }
+  .mobile-search-criteria {
+    text-align: center;
+  }
+  .mobile-search-btn {
+    background-color: #f7f7f7;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 2px;
+  }
   #main_nav {
-
+    .right-nav {
+      display: none;
+    }
+    .location-logo {
+      text-align: center;
+    }
+    .left-logo {
+      float: none !important;
+      text-align: center;
+    }
   }
   #brand_logo {
-
+    .logo-text {
+      left: 14%;
+    }
+    .location-logo {
+      margin: 0 auto;
+      width: 33%;
+    }
   }
   #save_email_search {
+    padding: 0 15px;
+    margin-bottom: -40px;
+
+    h4 {
+      margin: -1px -15px;
+    }
     .email-box {
       border: 1px solid #666666;
       background-color: #f7f7f7;
@@ -645,8 +682,18 @@ margin-bottom: 50px;
       border-radius: 3px;
       margin-top: 35px;
     }
+    .save-email {
+      margin-top: 15px;
+      width: 100%;
+    }
   }
   #city_filter {
+    padding: 0 15px;
+    margin-bottom: -40px;
+
+    h4 {
+      margin: -1px -15px;
+    }
     .city-filter-box {
       border: 1px solid #666666;
       background-color: #f7f7f7;
@@ -657,6 +704,12 @@ margin-bottom: 50px;
     }
   }
   #company_filter {
+    padding: 0 15px;
+    margin-bottom: -40px;
+
+    h4 {
+      margin: -1px -15px;
+    }
     .company-filter-box {
       border: 1px solid #666666;
       background-color: #f7f7f7;
@@ -667,6 +720,12 @@ margin-bottom: 50px;
     }
   }
   #title_filter {
+    padding: 0 15px;
+    margin-bottom: -40px;
+
+    h4 {
+      margin: -1px -15px;
+    }
     .title-filter-box {
       border: 1px solid #666666;
       background-color: #f7f7f7;
@@ -677,6 +736,12 @@ margin-bottom: 50px;
     }
   }
   #top_search_filter {
+    padding: 0 15px;
+    margin-bottom: -40px;
+
+    h4 {
+      margin: -1px -15px;
+    }
     .top-search-filter-box  {
       border: 1px solid #666666;
       background-color: #f7f7f7;
@@ -687,16 +752,195 @@ margin-bottom: 50px;
     }
   }
   #search {
+    margin-bottom: 0;
 
+    .what-section {
+      width: 93% !important;
+      margin-bottom: 20px;
+    }
+    .where-section {
+      width: 93% !important;
+      margin-bottom: 20px;
+    }
+    .submit-section {
+      padding: 0 12px;
+    }
+    .search-submit {
+      width: 94%;
+    }
+    .share-social.search-submit {
+      display: none;
+    }
+    .breadcrumb-row {
+      display: none;
+    }
   }
   #current_jobs {
+    padding: 0 15px;
+    margin-top: 75px;
 
+    .more-jobs {
+      text-align: center;
+      margin-top: 30px;
+    }
   }
   #mobile_footer_content {
 
   }
   #mobile_footer {
     display: block;
+  }
+  #footer {
+    display: none;
+  }
+  #footer-content {
+
+  }
+  #footer_mobile {
+    display: block;
+    margin-bottom: 67px;
+
+    .footer-mobile-content li {
+      li {
+        border-top: 1px solid gray;
+        padding: 15px 15px;
+        background-color: #f7f7f7;
+
+        a {
+          color: black;
+          font-size: 20px;
+          color: black;
+          font-size: 22px;
+        }
+      }
+    }
+  }
+
+     #main_content .right-content .email-box, .city-filter-box, .company-filter-box, .title-filter-box, .top-search-filter-box {
+      margin-top: 75px;
+      padding: 0px 10px;
+    }
+     #main_content .right-content .show-more-jobs {
+       float: none;
+     }
+
+
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (min-width : 480px) {
+
+  #search {
+    .submit-section {
+        padding: 0 14px;
+    }
+  }
+}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+
+  #brand_logo {
+    .location-logo {
+       margin: 0 auto;
+       width: 17%;
+     }
+  }
+  #search {
+    .submit-section {
+        padding: 0 23px;
+    }
+  }
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (min-width : 992px) {
+
+  .mobile-search-criteria {
+    display: none;
+  }
+  .mobile-search-facets.show-mobile-search-facets {
+    display: none;
+  }
+  .facets {
+    display: block;
+  }
+  .mobile-facets {
+    display: none;
+  }
+  .mobile-social-media {
+    display: none;
+  }
+  #main_nav {
+    .location-logo {
+       margin: 0 auto;
+       width: 100%;
+     }
+  }
+  #brand_logo {
+    .logo-text {
+      left: 25%;
+    }
+  }
+  #save_email_search {
+    .email-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #city_filter {
+    .city-filter-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #company_filter {
+    .company-filter-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #title_filter {
+    .title-filter-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #top_search_filter {
+    .top-search-filter-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #search {
+    margin-bottom: 20px;
+
+    .breadcrumb-row {
+      display: block;
+    }
+    .search-submit {
+      width: 32%;
+    }
+    .caret-up {
+      left: 63%;
+    }
+    .social-media {
+      margin: 0 10% 0 12%;
+    }
+    .what-section {
+      width: 100% !important;
+      margin-bottom: 0px;
+    }
+  }
+  #current_jobs {
+    margin-top: 0px;
+  }
+  #mobile_footer_content {
+
+  }
+  #mobile_footer {
+    display: none;
   }
   #footer {
 
@@ -706,158 +950,6 @@ margin-bottom: 50px;
   }
 
 
-
-     #main_content .right-content .email-box, .city-filter-box, .company-filter-box, .title-filter-box, .top-search-filter-box {
-      margin-top: 75px;
-      padding: 0px 10px;
-    }
-
-    .breadcrum-row {
-      display: none;
-    }
-    .save-email {
-      margin-top: 15px;
-      width: 100%;
-    }
-    #save_email_search h4, #company_filter h4, #city_filter h4, #title_filter h4, #top_search_filter h4 {
-    margin: -1px -15px;
-}
-    #save_email_search, #city_filter, #company_filter, #title_filter, #top_search_filter {
-      padding: 0 15px;
-      margin-bottom: -40px;
-    }
-    #brand_logo .logo-text {
-      left: 14%;
-    }
-    .location-logo {
-      margin: 0 auto;
-      width: 33%;
-    }
-     #search {
-       margin-bottom: 0;
-     }
-     #footer {
-       display: none;
-     }
-     #footer_mobile {
-       display: block;
-       margin-bottom: 67px;
-     }
-     .social-media {
-           margin-top: 75px;
-     }
-     .footer-mobile-content li {
-       border-top: 1px solid gray;
-       padding: 15px 15px;
-       background-color: #f7f7f7;
-     }
-     .footer-mobile-content li a{
-       color: black;
-       font-size: 20px;
-       color: black;
-       font-size: 22px;
-     }
-
-     .mobile-search-criteria {
-       text-align: center;
-     }
-     .mobile-search-btn {
-       background-color: #f7f7f7;
-       color: black;
-       padding: 10px 20px;
-       border-radius: 2px;
-     }
-     #main_nav .right-nav {
-       display: none;
-     }
-     .location-logo {
-       text-align: center;
-     }
-     #main_nav .left-logo {
-       float: none !important;
-       text-align: center;
-     }
-     #search #search_form .what-section {
-       width: 93% !important;
-       margin-bottom: 20px;
-     }
-     .mobile-search-facets {
-       display: none;
-     }
-     #search #search_form .where-section {
-       width: 93% !important;
-       margin-bottom: 20px;
-     }
-     #current_jobs {
-       padding: 0 15px;
-           margin-top: 75px;
-     }
-     #main_content .right-content .show-more-jobs {
-       float: none;
-     }
-     .more-jobs {
-       text-align: center;
-       margin-top: 30px;
-     }
-     .submit-section {
-        padding: 0 12px;
-     }
-     .search-submit {
-        width: 94%;
-     }
-     #search #search_form .share-social.search-submit {
-       display: none;
-     }
-   }
-
-   /* Extra Small Devices, Phones */
-   @media only screen and (min-width : 480px) {
-     .submit-section {
-         padding: 0 14px;
-     }
-   }
-
-   /* Small Devices, Tablets */
-   @media only screen and (min-width : 768px) {
-     .submit-section {
-         padding: 0 23px;
-     }
-     .location-logo {
-        margin: 0 auto;
-        width: 17%;
-      }
-   }
-
-   /* Medium Devices, Desktops */
-   @media only screen and (min-width : 992px) {
-     #mobile_footer {
-       display: none;
-     }
-     .facets {
-       display: block;
-     }
-     .breadcrum-row {
-       display: block;
-     }
-     .location-logo {
-        margin: 0 auto;
-        width: 100%;
-      }
-      .search-submit {
-    width: 32%;
-}
-      #search {
-    margin-bottom: 20px;
-}
-#current_jobs {
-    margin-top: 0px;
-}
-      #brand_logo .logo-text {
-        left: 25%;
-    }
-     .mobile-facets {
-       display: none;
-     }
      #footer {
        display: block;
      }
@@ -870,10 +962,7 @@ margin-bottom: 50px;
      #main_nav .left-logo {
        float: left !important;
      }
-     #search #search_form .what-section {
-       width: 100% !important;
-       margin-bottom: 0px;
-     }
+     #search #search_form
      #save_email_search, #city_filter, #company_filter, #title_filter, #top_search_filter {
     margin-bottom: -31px;
     }
@@ -890,37 +979,26 @@ margin-bottom: 50px;
      .submit-section {
         padding: 0;
      }
-    .email-box, .city-filter-box, .company-filter-box, .title-filter-box, .top-search-filter-box {
-    margin-top: 0px;
-    padding: 0 10px;
-}
+
      #search #search_form .share-social.search-submit {
        display: inline-block;
      }
      .right-content #save_email_search {
        display: none;
      }
-     .mobile-social-media {
-       display: none;
-     }
-     #search #search_form .caret-up {
-    left: 63%;
-}
-     #search #search_form .social-media {
-    margin: 0 10% 0 12%;
-}
-     .mobile-search-criteria {
-       display: none;
-     }
-     .mobile-search-facets.show-mobile-search-facets {
-       display: none;
-     }
-   }
 
-   /* Large Devices, Wide Screens */
-   @media only screen and (min-width : 1200px) {
-     .save-email {
-         margin-top: 0;
-         width: 100%;
-     }
-   }
+    //  #search #search_form
+    //  #search #search_form
+
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (min-width : 1200px) {
+
+  #save_email_search {
+    .save-email {
+        margin-top: 0;
+        width: 100%;
+    }
+  }
+}
