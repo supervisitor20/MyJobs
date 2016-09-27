@@ -813,9 +813,6 @@ margin-bottom: 50px;
       }
     }
   }
-     #main_content .right-content .email-box, .city-filter-box, .company-filter-box, .title-filter-box, .top-search-filter-box {
-
-    }
 }
 
 /* Extra Small Devices, Phones */
@@ -992,5 +989,15 @@ margin-bottom: 50px;
         margin-top: 0;
         width: 100%;
     }
+  }
+  #current_jobs {
+    margin-top: 20px;
+  }
+}
+
+@media only screen and (min-width : 1300px) {
+
+  #current_jobs {
+    margin-top: 45px;
   }
 }
