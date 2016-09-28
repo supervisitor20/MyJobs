@@ -9,6 +9,7 @@ $background-gray: #f4f4f4;
 $light-gray: #909090;
 $btn-gray: #bdbdbd;
 $blue: #1a93f4;
+$red-maroon: #954343;
 $black: #000000;
 $white: #ffffff;
 
@@ -725,6 +726,9 @@ legend{
   .email-frequency {
     border: 2px solid $btn-gray;
   }
+	.get-title {
+		text-align: center;
+	}
 }
 #company_filter {
   h4 {
@@ -973,9 +977,9 @@ margin-bottom: 50px;
       float: right;
       @extend .global-btn;
     }
-    .job-listing:nth-child(n+11) {
-        display:none;
-    }
+    // .direct_joblisting:nth-child(n+11) {
+    //     display:none;
+    // }
     .jobs-found {
       border-bottom: 1px solid #d3d3d3;
       padding-bottom: 10px;
@@ -983,18 +987,18 @@ margin-bottom: 50px;
       color: $primary-navy-blue;
       font-weight: bold;
     }
-    .job-listing {
+    .direct_joblisting {
         padding: 10px 0px;
         border-bottom: 1px solid #d3d3d3;
     }
-    .job-title {
+    .direct-job-title {
       margin: 0;
     }
-    .job-title-clk {
+    .direct-job-title-clk {
       color: $blue;
 
       &:hover {
-        color: $white;
+        color: $red-maroon;
       }
     }
     .email-box {
@@ -1379,7 +1383,7 @@ margin-bottom: 50px;
       display: none;
     }
   }
-  #current_jobs {
+  #direct_listingDiv {
     padding: 0 15px;
     margin-top: 115px;
 
@@ -1569,7 +1573,7 @@ margin-bottom: 50px;
       display: inline-block;
     }
   }
-  #current_jobs {
+  #direct_listingDiv {
     margin-top: 48px;
     padding: 0;
 
@@ -1579,6 +1583,9 @@ margin-bottom: 50px;
     .job-location-information {
       color: $primary-navy-blue;
     }
+		.hiringPlace {
+			color: $primary-navy-blue;
+		}
   }
   #mobile_footer {
     display: none;
@@ -1614,7 +1621,7 @@ margin-bottom: 50px;
         width: 100%;
     }
   }
-  #current_jobs {
+  #direct_listingDiv {
     margin-top: 20px;
   }
 	#job_description {
@@ -1629,7 +1636,7 @@ margin-bottom: 50px;
 
 @media only screen and (min-width : 1300px) {
 
-  #current_jobs {
+  #direct_listingDiv {
     margin-top: 45px;
   }
 	#job_description {

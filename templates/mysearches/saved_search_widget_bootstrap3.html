@@ -7,10 +7,25 @@
     <em class="success">Success</em>{% if not user %}<p>Your search was successfully saved. Results will be sent to {{ success }}.</p>{% endif %}
 {% endif %}
 {% if not search and not success %}
-    <p class="get-email-title">Get new jobs sent directly to your inbox!</p>
-    <input placeholder="Your email address" type="text" id="saved-search-email" class="enter-email"  name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}>
-    <input id="saved-search-btn" class="btn btn-default save-email" type="submit" onclick="save_search();" value="Save" />
-    <p class="cancel-anytime text-right">Cancel Anytime</p>
+    <p class="get-title">Get new jobs sent directly to your inbox!</p>
+    <!-- <input placeholder="Your email address" type="text" id="saved-search-email" class="enter-email"  name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}> -->
+    <div class="form-group">
+      <input class="form-control enter-email" id="saved-search-email" type="text" placeholder="clotilde_crooks@gmail.com" name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}/>
+    </div>
+    <!-- <input id="saved-search-btn" class="btn btn-default save-email" type="submit" onclick="save_search();" value="Save" /> -->
+    <div class="form-group">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-lg-8">
+          <select class="email-frequency form-control">
+            <option>Daily</option>
+            <option>Weekly</option>
+          </select>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-lg-4">
+          <input id="saved-search-btn"  class="btn btn-default save-email" type="submit" onclick="save_search();" value="Save" />
+        </div>
+      </div>
+    </div>
 {% elif search %}
             {% if not success %}
                 <p><b>This search is being sent to {{ search.email }}.</b></p>
