@@ -716,7 +716,7 @@ legend{
   form {
     padding: 15px 0px 0px 0px;
   }
-  h4 {
+  h3 {
     @extend .facet-header;
   }
 
@@ -731,22 +731,22 @@ legend{
 	}
 }
 #company_filter {
-  h4 {
+  h3 {
     @extend .facet-header;
   }
 }
 #city_filter {
-  h4 {
+  h3 {
     @extend .facet-header;
   }
 }
 #title_filter {
-  h4 {
+  h3 {
     @extend .facet-header;
   }
 }
 #top_search_filter {
-  h4 {
+  h3 {
     @extend .facet-header;
   }
 }
@@ -762,6 +762,9 @@ legend{
 }
 .city-title-filter a, .company-filter-title a, .title-filter-title a, .top-search-filter-title a {
   color: $primary-navy-blue;
+}
+.city-title-filter a:hover, .company-filter-title a:hover, .title-filter-title a:hover, .top-search-filter-title a:hover {
+  color: $red-maroon;
 }
 .company-filter-title, .title-filter-title, .top-search-filter-title {
   float: left;
@@ -993,6 +996,7 @@ margin-bottom: 50px;
     }
     .direct-job-title {
       margin: 0;
+			font-size: 20px;
     }
     .direct-job-title-clk {
       color: $blue;
@@ -1183,7 +1187,7 @@ margin-bottom: 50px;
 
 /*STYLES FOR THE JOBS DETAILS PAGE*/
 
-#job_description {
+#direct_listingDiv {
   h4 {
     margin-bottom: 5px;
     margin-top: 0;
@@ -1214,6 +1218,10 @@ margin-bottom: 50px;
     border-radius: 3px;
     font-weight: 100;
     font-weight: 100;
+
+		&:hover {
+			background-color: $red-maroon;
+		}
   }
 }
 
@@ -1272,8 +1280,9 @@ margin-bottom: 50px;
     padding: 0 15px;
     margin-bottom: -40px;
 
-    h4 {
+    h3 {
       margin: -1px -15px;
+			font-size: 20px;
     }
     .email-box {
       border: 1px solid $white;
@@ -1284,6 +1293,20 @@ margin-bottom: 50px;
       margin-top: 75px;
       padding: 0px 10px;
     }
+		.search-sent-text {
+			text-align: center;
+		}
+		.direct-action-btn {
+			margin: 20px 0;
+			text-align: center;
+
+			a {
+				background-color: $btn-gray;
+				color: $white;
+				padding: 10px;
+				border-radius: 3px;
+			}
+		}
     .save-email {
       margin-top: 15px;
       width: 100%;
@@ -1295,8 +1318,9 @@ margin-bottom: 50px;
     padding: 0 15px;
     margin-bottom: -76px;
 
-    h4 {
+    h3 {
       margin: -1px -15px;
+			font-size: 20px;
     }
     .city-filter-box {
       border: 1px solid $white;
@@ -1312,8 +1336,9 @@ margin-bottom: 50px;
     padding: 0 15px;
     margin-bottom: -76px;
 
-    h4 {
+    h3 {
       margin: -1px -15px;
+			font-size: 20px;
     }
     .company-filter-box {
       border: 1px solid $white;
@@ -1329,8 +1354,9 @@ margin-bottom: 50px;
     padding: 0 15px;
     margin-bottom: -76px;
 
-    h4 {
+    h3 {
       margin: -1px -15px;
+			font-size: 20px;
     }
     .title-filter-box {
       border: 1px solid $white;
@@ -1346,8 +1372,9 @@ margin-bottom: 50px;
     padding: 0 15px;
     margin-bottom: -76px;
 
-    h4 {
+    h3 {
       margin: -1px -15px;
+			font-size: 20px;
     }
     .top-search-filter-box  {
       border: 1px solid $white;
@@ -1420,7 +1447,7 @@ margin-bottom: 50px;
       }
     }
   }
-	#job_description {
+	#direct_listingDiv {
 		margin-top: 105px;
 		padding: 0 20px;
 
@@ -1596,7 +1623,7 @@ margin-bottom: 50px;
   #footer_mobile {
     display: none;
   }
-	#job_description {
+	#direct_listingDiv {
 		margin-top: 0;
 		padding: 0;
 
@@ -1624,7 +1651,7 @@ margin-bottom: 50px;
   #direct_listingDiv {
     margin-top: 20px;
   }
-	#job_description {
+	#direct_listingDiv {
 		margin-top: 20px;
 		padding: 0;
 
@@ -1639,7 +1666,7 @@ margin-bottom: 50px;
   #direct_listingDiv {
     margin-top: 45px;
   }
-	#job_description {
+	#direct_listingDiv {
 		margin-top: 50px;
 		padding: 0;
 
