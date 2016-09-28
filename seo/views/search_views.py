@@ -442,12 +442,15 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         company_data = None
 
     # This check is to make sure we're at the canonical job detail url.
-
     # We only need the job id to be in the url, but we also put the title.
     # The offshoot of that is that if someone mistypes or mispells the title
     # in the url, then we want whoever clicks the link to be directed to the
     # canonical (and correctly spelled/no typo) version.
-    if (title_slug == the_job.title_slug and
+
+    def nvl(i, s):
+        return i if i else s
+
+    if (nvl(title_slug, 'na') == nvl(the_job.title_slug, 'na') and
             location_slug == slugify(the_job.location)) \
             and not search_type == 'uid':
         ga = settings.SITE.google_analytics.all()
@@ -573,7 +576,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         # job with the passed in id.
         kwargs = {
             'location_slug': slugify(the_job.location),
-            'title_slug': the_job.title_slug,
+            'title_slug': the_job.title_slug or 'na',
             'job_id': the_job.guid
         }
         redirect_url = reverse(

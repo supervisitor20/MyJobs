@@ -37,10 +37,10 @@ class DESearchQuerySet(SearchQuerySet):
 
         facet_counts1 = self.facet_counts()
         facet_counts2 = sqs2.facet_counts()
-
+        import ipdb; ipdb.set_trace()
         # field_counts = {facet_field: [(facet_field_value, count), ...], ...}
-        field_counts1 = facet_counts1.get('fields', [])
-        field_counts2 = facet_counts2.get('fields', [])
+        field_counts1 = facet_counts1.get('fields', {})
+        field_counts2 = facet_counts2.get('fields', {})
 
         for facet_field in field_counts2:
             # field_dict = {facet_field_value: count, ...}
