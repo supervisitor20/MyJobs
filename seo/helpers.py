@@ -296,7 +296,7 @@ def job_breadcrumbs(job, company=False):
         # template; if not, the city value -- ordinarily JUST the cityname --
         # will be set to the "City, ST" location field on the job document.
         if display != "None":
-            up_slug = "/".join([attrs.get(k, {}).get('path', 'unknown') for k in dropmap[f]])
+            up_slug = "/".join([attrs.get(k, {}).get('path', '') for k in dropmap[f]])
             breadcrumbs[f] = {'path': "/" + up_slug + "/",
                               'display': display or getattr(job, f)}
     return breadcrumbs
