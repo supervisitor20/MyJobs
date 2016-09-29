@@ -447,10 +447,11 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
     # in the url, then we want whoever clicks the link to be directed to the
     # canonical (and correctly spelled/no typo) version.
 
-    def nvl(i, s):
+    def replace_none(i, s):
         return i if i else s
 
-    if (nvl(title_slug, 'na') == nvl(the_job.title_slug, 'na') and
+    if (replace_none(title_slug, 'na') ==
+            replace_none(the_job.title_slug, 'na') and
             location_slug == slugify(the_job.location)) \
             and not search_type == 'uid':
         ga = settings.SITE.google_analytics.all()
