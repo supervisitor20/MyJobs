@@ -6,10 +6,10 @@
         </h3>
         <ul role="menu" id="direct_{{ widget.selector_type }}Disambig">
             {% for item in widget.shown_items %}
-                <li class="menu-item" role="menuitem"><a href="{{ item.url }}">{{ item.name }}{% if item.count %} ({{ item.count }}){% endif %}</a></li>
+                <li class="menu-item" role="menuitem"><a href="{{ item.url }}">{{ item.name }}{% if item.count %} ({{ item.count }}){% endif %}<span class="count"></span></a></li>
             {% endfor %}
             {% for item in widget.hidden_items %}
-                <li  class="menu-item" role="menuitem" class="direct_hiddenOption"><a href="{{ item.url }}">{{ item.name }}{% if item.count %} ({{ item.count }}){% endif %}</a></li>
+                <li  class="menu-item" role="menuitem" class="direct_hiddenOption"><a href="{{ item.url }}">{{ item.name }}{% if item.count %} ({{ item.count }}){% endif %}<span class="count"></span></a></li>
             {% endfor %}
         </ul>
         {% if widget.hidden_items %}

@@ -215,3 +215,12 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     var social = $(".social-media");
     social.toggleClass("show-social");
   });
+
+  //Javascript to cut the count off of the facets and place it separately into a span that floats to the right
+  $.each($("li.menu-item a"), function(i,v) {
+    var self = $(this);
+    var text = self.text().split("(")[0];
+    var count = self.text().split("(").pop();
+    self.html(text);
+    self.next("span").html("(" + count);
+  });

@@ -226,10 +226,10 @@ class FacetListWidget(object):
         })
 
         li_item = ('<li class="menu-item" role="menuitem" '
-                   '{% if li_class %}class="{{li_class}}"{% endif %}>'
+                   '{% if li_class %}class="{{li_class}} menu-item"{% endif %}>'
                    '<a href="{{ item_url }}">'
                    '{{ item_name }}{% if item_count %} ({{ item_count }})'
-                   '{% endif %}</a></li>')
+                   '{% endif %}</a><span class="count"></span></li>')
         item_template = Template(li_item)
         href = item_template.render(item_context)
 
