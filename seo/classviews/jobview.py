@@ -65,7 +65,7 @@ class BaseJobView(BaseView):
 
 
 class JobDetailView(BaseJobView):
-    template = "job_detail.html"
+    template = "job_detail_bootstrap3.html"
 
     def __init__(self, request, *args, **kwargs):
         self.request = request
@@ -78,7 +78,7 @@ class JobDetailView(BaseJobView):
 
 
 class JobListingBySlugTag(BaseJobView):
-    template = "job_listing.html"
+    template = "job_listing_bootstrap3.html"
 
     def __init__(self, request, *args, **kwargs):
         self.request = request

@@ -1156,7 +1156,7 @@ class TemplateTestCase(DirectSEOTestCase):
         settings.SITE=self.site
 
     def test_xss_job_list(self):
-        template = Template(file("templates/includes/job_list.html", 'r').read())
+        template = Template(file("templates/includes/job_list_bootstrap3.html", 'r').read())
         context = Context({'location_term': '%27%22%3E%3Cimg+src%3Dx+onerror%3Dalert%28document.cookie%29%3E'})
         resp = template.render(context)
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
@@ -1170,7 +1170,7 @@ class TemplateTestCase(DirectSEOTestCase):
         config = factories.ConfigurationFactory.build()
         request =RequestFactory().get('/job/')
         request.user = AnonymousUser()
-        template = Template(file("templates/job_listing.html", 'r').read())
+        template = Template(file("templates/job_listing_bootstrap3.html", 'r').read())
         resp = template.render(TemplateContext(request,
             {'location_term':'%27%22%3E%3Cimg+src%3Dflerg+onerror%3Dalert%28document.cookie%29%3E',
                                                          'site_config':config}))

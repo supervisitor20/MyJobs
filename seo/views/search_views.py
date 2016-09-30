@@ -543,7 +543,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         }
         # Render the response, but don't return it yet--we need to add an
         # additional canonical url header to the response.
-        the_response = render_to_response('job_detail.html', data_dict,
+        the_response = render_to_response('job_detail_bootstrap3.html', data_dict,
                                   context_instance=RequestContext(request))
 
         # The test described in MS-481 was considered a success and the code
@@ -1803,7 +1803,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'widgets': widgets,
         'analytics_info': get_analytics_info()
     }
-    return render_to_response(site_config.get_template('job_listing.html'),
+    return render_to_response(site_config.get_template('job_listing_bootstrap3.html'),
                               data_dict, context_instance=RequestContext(request))
 
 
@@ -1941,7 +1941,7 @@ def test_markdown(request):
             data_dict = {
                 'the_job': TempJob(**job_json)
             }
-            return render_to_response('job_detail.html', data_dict,
+            return render_to_response('job_detail_bootstrap3.html', data_dict,
                                       context_instance=RequestContext(request))
     else:
         form = UploadJobFileForm()
