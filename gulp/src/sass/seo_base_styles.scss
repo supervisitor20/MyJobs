@@ -21,8 +21,15 @@ $white: #ffffff;
   margin: 0;
   padding: 0;
 }
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
 body {
   overflow-x: hidden;
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 15rem;
   background-color: $background-gray;
 }
 ul {
@@ -588,6 +595,10 @@ margin-bottom: 50px;
 /*FOOTER STYLES*/
 #footer {
   margin-top: 100px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
 
   .footer-content li {
     display: inline-block;

@@ -217,6 +217,7 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
   });
 
   //Javascript to cut the count off of the facets and place it separately into a span that floats to the right
+  //Might need to configure and change settings later to get rid of this function
   $.each($("li.menu-item a"), function(i,v) {
     var self = $(this);
     var text = self.text().split("(")[0];
