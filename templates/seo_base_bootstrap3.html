@@ -60,7 +60,7 @@
 </head>
 <body {% block directseo_bodySchema %}{% endblock directseo_bodySchema %}>
 <div id="page_content">
-  <section id="brand_logo" class="text-center direct_dotjobsWideHeader">
+  <section id="main_nav" class="text-center direct_dotjobsWideHeader">
    {% comment - need this for the topbar %} {% endcomment %}
   </section>
 
@@ -74,7 +74,7 @@
                 {% if site_config.browse_moc_show %}
                 {% include "search_box_vets.html" %}
                 {% else %}
-                {% include "search_box_bootstrap3.html" %}
+                {% include "search_box_widget.html" %}
                 {% endif %}
             </div>
           </section>

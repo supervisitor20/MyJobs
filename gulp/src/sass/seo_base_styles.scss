@@ -1,6 +1,4 @@
 @charset "utf-8";
-/* TODO: Incorporate Marcus's latest design, which was approved last Friday afternoon to this in the future. */
-/** Legacy styles **/
 
 /*GLOBAL STYLES AND VARIABLES*/
 
@@ -13,6 +11,7 @@ $red-maroon: #954343;
 $black: #000000;
 $white: #ffffff;
 
+/** Legacy styles **/
 #direct_dotjobsMetaBoxSearch #standardSearch .searchHeader,
 #direct_dotjobsMetaBoxSearch #standardSearch .searchFooter{
 	background-color: rgba(242, 242, 242, .85);
@@ -538,6 +537,7 @@ a#sponsor-dotjobs:hover{
 #grouping-list [id^='products-']:last-of-type {
     margin-bottom: 30px;
 }
+/** End Legacy styles **/
 
 
 /* START OF NEW SASS STYLES FOR REBRANDING */
@@ -621,25 +621,153 @@ legend{
 }
 
 /*MAIN NAVIGATION HEADER STYLES*/
+  /* Legacy Topbar styles, keeping until PD-2630 is completed */
+  .menu-container > ul > li:hover > a {
+      cursor: pointer;
+      background-color: #f5f5f5;
+      text-decoration: none;
+      color: #0f0f0f!important;
+  }
+
+  .menu-container > ul > li > ul {
+      display: none;
+  }
+
+  .menu-container > ul > li:last-of-type > ul {
+      left: 0;
+  }
+
+  .menu-container > ul > li:hover > ul {
+      display: list-item;
+  }
+
+  #logged-in-li {
+      padding: 4px !important;
+  }
+
+  #back-btn {
+      border-right: 1px solid #FFF !important;
+      height: 100% !important;
+  }
+
+  #back-btn-li {
+      float: left;
+      width: 40px !important;
+      height: 100%;
+      z-index: 999;
+  }
+
+  .sub-nav-item {
+      margin-left: 40px;
+  }
+
+  #pop-menu .desktop_hide {
+      display: none;
+  }
+
+  /*
+   * nav id and submenu-dropdown class are used by JavaScript
+   * in topbar.js for legacy mobile view. Will become obsolete when new mobile view
+   * is implemented.
+  */
+
+  .submenu-dropdown {
+      background-color: #444;
+  }
+
+  .submenu-dropdown > a:after {
+      float: right;
+      display: block;
+      width: 0;
+      border: 4px solid transparent;
+      border-left: 6px solid #999;
+      border-right: 0;
+  }
+
+  .submenu-dropdown > ul {
+      display: none;
+      margin: 0;
+  }
+
+  .submenu-dropdown ul li {
+      padding: 0 10px 0 10px;
+  }
+
+  .submenu-dropdown ul li a,
+  .submenu-dropdown ul li a:hover {
+      color: #fff;
+      text-decoration: none;
+      margin-top: 0;
+      padding: 0;
+  }
+
+  .submenu-dropdown ul li a:hover {
+      background-color: #222;
+      border-radius: 0;
+  }
+
+  .submenu-dropdown ul li:hover {
+      background-color: #222;
+  }
+
+  #nav.active ul#pop-menu li a:hover,
+  #nav li:hover ul#pop-menu li a:hover {
+      background:#444;
+      color: #fff;
+      text-decoration:none;
+  }
+
+  #nav ul#pop-menu {
+      background:#444;
+      padding: 0;
+      margin: 2px 0 0 -2px;
+      position:absolute;
+      display: none;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      width: 275px;
+  }
+
+  #nav a {
+      color: #fff;
+  }
+
+  #nav > li {
+      padding: 5px 2px 3px 2px;
+  }
+
+  .menu-container > .desktop_hide {
+      display: none;
+  }
+
+  #menu-inbox ~ ul li > p {
+      color: white;
+      padding-left: 4px;
+  }
+
+  #menu-inbox > div.icon-envelope {
+      margin-left: 3px;
+  }
+ /* End legacy Topbar styles*/
+
+#last-microsite-name {
+  color: $white;
+}
+
 #main_nav {
   margin-bottom: 75px;
 
   .left-logo{
-    padding-top: 8px;
-    float: left;
-
-
+    font-size: 20px;
     .header-logo {
-      height: 30px;
-      width: 60px;
+      font-weight: bold;
       position: relative;
-      bottom: 2px;
       -webkit-filter: invert(50%);
       filter: invert(50%);
     }
   }
-  .main-nav {
-    height: 42px;
+  .main-nav-topbar {
+    height: 40px;
     background-color: $primary-navy-blue;
     border-color: $primary-navy-blue;
 
@@ -656,12 +784,7 @@ legend{
     color: $white;
   }
   .navbar-nav.navbar-right.right-nav {
-    float: right;
-    margin-top: 7px;
-
     a {
-      padding-top: 10px;
-      padding-bottom: 10px;
       font-weight: 200;
       color: $white;
     }
@@ -672,6 +795,10 @@ legend{
      }
      a {
        font-size: 20px;
+     }
+     a:hover {
+       background-color: #f5f5f5;
+       color: #3a4153;
      }
      .dropdown-menu {
        a {
@@ -1518,6 +1645,7 @@ margin-bottom: 50px;
      }
      .left-logo {
        float: left !important;
+       padding-top: 7px;
      }
   }
   #brand_logo {
