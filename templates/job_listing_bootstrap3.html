@@ -93,4 +93,14 @@
     </script>
     <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,3,6"></script>
 {% endblock extra-js %}
+<!-- {% block scrollJS %}
+  <script>
+    window.onload = function() {
+      var resultsDIV = $("#direct_listingDiv");
+      $('html, body').animate({
+        scrollTop: $(resultsDIV).offset().top - 115
+      }, 100);
+    };
+  </script>
+{% endblock %} -->
 {% endcache %}
