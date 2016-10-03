@@ -740,13 +740,17 @@ legend{
       display: none;
   }
 
+  #menu-inbox::before {
+    content: "Inbox ";
+  }
+
   #menu-inbox ~ ul li > p {
       color: white;
       padding-left: 4px;
   }
 
   #menu-inbox > div.icon-envelope {
-      margin-left: 3px;
+      display: none;
   }
  /* End legacy Topbar styles*/
 

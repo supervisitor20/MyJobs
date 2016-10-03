@@ -278,7 +278,8 @@ def get_menus(context):
     message_menu = {
         "label": "Messages",
         "id": "menu-inbox",
-        "iconLabel": str(new_messages.count() if new_messages else "Inbox"),
+        "icon": "icon-envelope icon-white",
+        "iconLabel": str(new_messages.count() if new_messages else 0),
         "submenus": [
             {
                 "id": "menu-inbox-all",
