@@ -14,7 +14,7 @@ $(document).ready(function() {
 
 function get_toolbar(site_name) {
     var site = encodeURIComponent(window.location.protocol + '//' + window.location.hostname),
-        url = ABSOLUTE_URL + "topbar/?site_name=" + site_name + "&site=" + site + "&impersonating=" + impersonating;
+        url = ABSOLUTE_URL + "topbar/?v2=1&site_name=" + site_name + "&site=" + site + "&impersonating=" + impersonating;
     $.ajax({
         url: url,
         dataType: "jsonp",

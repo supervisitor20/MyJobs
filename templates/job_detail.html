@@ -123,11 +123,13 @@
             </a>
           </li>
           {% endif %}
+          {% if crumbs.title %}
           <li>
             <a href="{{ crumbs.title.path }}" title="Remove {{ crumbs.title.display }}">
               {{ crumbs.title.display|smart_truncate }}
             </a>
           </li>
+          {% endif %}
           {# if crumbs.city.display #}
           <li>
             <a href="{{ crumbs.city.path }}" title="Remove {{ crumbs.city.display }}">
