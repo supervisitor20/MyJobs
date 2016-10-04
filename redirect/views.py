@@ -188,7 +188,7 @@ def home(request, guid, vsid=None, debug=None):
         analytics.update({
             # Python tacks microseconds onto the end while JavaScript does
             # milliseconds. JS can handle parsing both, as can python-dateutil.
-            'to': now_iso, 'referrer': request.META.get('HTTP_REFERER', ''),
+            'to': now_iso, 're': request.META.get('HTTP_REFERER', ''),
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se, 'nv': nv})
 
         response['X-JSON-Header'] = json.dumps(analytics)

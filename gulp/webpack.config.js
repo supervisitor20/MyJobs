@@ -14,7 +14,7 @@ module.exports = {
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
-    sass: './src/sass/custom.scss'
+    custom: './src/sass/custom.scss',
   },
   resolve: {
     root: path.resolve('src'),
@@ -83,6 +83,6 @@ module.exports = {
     // In development it can be useful to see this output to verify that
     // dead code removal is doing something sane.
     new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}),
-    new ExtractTextPlugin('../custom.css', {allChunks: true}),
+    new ExtractTextPlugin('[name].css'),
   ],
 };

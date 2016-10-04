@@ -461,7 +461,8 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             url = ''
             path = ''
         else:
-            url = urlparse(the_job.link)
+            url = urlparse(the_job.link.replace("http://my.jobs",
+                                                "https://my.jobs"))
             path = url.path.replace("/", "")
             # use the override view source
             if settings.VIEW_SOURCE and url.scheme != "mailto":
@@ -1864,7 +1865,7 @@ def urls_redirect(request, guid, vsid=None, debug=None):
     qs = QueryDict(request.META['QUERY_STRING'], mutable=True)
     qs['my.jobs.site.id'] = site.pk
     qs = qs.urlencode()
-    return HttpResponseRedirect('http://my.jobs/%s%s%s?%s' %
+    return HttpResponseRedirect('https://my.jobs/%s%s%s?%s' %
                                 (guid, vsid, debug, qs))
 
 
