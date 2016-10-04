@@ -238,9 +238,9 @@ class SearchBoxTests(DirectSEOTestCase):
         self.check_for_label_on_results_pages(default_moc_label)
 
         # With custom label.
-        custom_where_label = 'Custom Where'
-        custom_what_label = 'Custom What'
-        custom_moc_label = 'Custom Moc'
+        # custom_where_label = 'Custom Where'
+        # custom_what_label = 'Custom What'
+        # custom_moc_label = 'Custom Moc'
 
         # Regular search box.
         # self.config.browse_moc_show = False
@@ -262,9 +262,9 @@ class SearchBoxTests(DirectSEOTestCase):
 
     def test_custom_search_box_placeholders(self):
         # There are no default placeholders, so we can only check custom ones.
-        custom_where_placeholder = 'Custom Where placeholder'
-        custom_what_placeholder = 'Custom What placeholder'
-        custom_moc_placeholder = 'Custom Moc placeholder'
+        # custom_where_placeholder = 'Custom Where placeholder'
+        # custom_what_placeholder = 'Custom What placeholder'
+        # custom_moc_placeholder = 'Custom Moc placeholder'
 
         # Regular search box.
         # self.config.where_placeholder = custom_where_placeholder
@@ -301,9 +301,9 @@ class SearchBoxTests(DirectSEOTestCase):
         self.check_for_helptext_on_results_pages(default_moc_helptext)
 
         # With custom helptext.
-        custom_where_helptext = 'Custom Where helptext'
-        custom_what_helptext = 'Custom What helptext'
-        custom_moc_helptext = 'Custom Moc helptext'
+        # custom_where_helptext = 'Custom Where helptext'
+        # custom_what_helptext = 'Custom What helptext'
+        # custom_moc_helptext = 'Custom Moc helptext'
 
         # Regular search box.
         # self.config.browse_moc_show = False
