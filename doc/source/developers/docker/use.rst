@@ -71,9 +71,9 @@ Know your local ip address. We'll call it $myip from now on.
 First Time (Linux)
 ------------------
 
-Install docker from your distro.
+Check your distro's repositories. If Docker < 1.9 is available, install from `the Docker website <https://docs.docker.com/engine/installation/linux/ubuntulinux/>`_ as appropriate. Otherwise, install docker from your distro.
 
-Make sure your user is added to the docker group.  
+Make sure your user is added to the docker group.
 
 docker should be shown when you run ``groups``
 
@@ -134,12 +134,14 @@ stay running.
 
 ``dk maint mysql:5.5`` Start an interactive container based on MySQL
 
-``cp -a solr_config/* /var/solr/data`` assuming you have ``solr.xml`` and
-friends in ``solr_config/``
+``cp -a solr/* /var/solr/data`` assuming you have ``solr.xml`` and
+friends in ``solr/``
 
 ``mysql -u root -p -h $myip``
 
 ``mysql> SET GLOBAL max_allowed_packet=1073741824;``
+
+``CREATE DATABASE db;``
 
 ``exit``
 
@@ -154,7 +156,7 @@ backup file is ``dbbackup.sql``
 
 ``dk background``
 
-``docker ps`` Should show MySQL, Solr, and revproxy running.
+``docker ps`` Should show MySQL, Solr, Mongo, and revproxy running.
 
 Configure MyJobs to Run in Docker Containers
 ============================================
