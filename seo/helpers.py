@@ -310,7 +310,7 @@ def _page_title(crumbs):
     loc_part = ", ".join(filter(lambda x: x, displays))
     if crumbs.get("company"):
         info_part = " ".join([crumbs['company']['display'],
-                              crumbs['title']['display']])
+                              crumbs.get('title', {}).get('display', '')])
     else:
         info_part = crumbs.get('title', {}).get('display', '')
 
