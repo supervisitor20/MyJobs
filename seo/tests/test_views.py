@@ -231,11 +231,11 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.check_for_label_on_results_pages(default_what_label)
 
         # Search box vets.
-        self.config.browse_moc_show = True
-        self.config.save()
-        self.check_for_label_on_results_pages(default_where_label)
-        self.check_for_label_on_results_pages(default_what_label)
-        self.check_for_label_on_results_pages(default_moc_label)
+        # self.config.browse_moc_show = True
+        # self.config.save()
+        # self.check_for_label_on_results_pages(default_where_label)
+        # self.check_for_label_on_results_pages(default_what_label)
+        # self.check_for_label_on_results_pages(default_moc_label)
 
         # With custom label.
         # custom_where_label = 'Custom Where'
@@ -252,13 +252,13 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.check_for_label_on_results_pages(custom_what_label)
 
         # Search box vets.
-        self.config.browse_moc_show = True
-        self.config.save()
-        self.check_for_label_on_results_pages(custom_where_label)
-        self.check_for_label_on_results_pages(custom_what_label)
-        self.config.moc_label = custom_moc_label
-        self.config.save()
-        self.check_for_label_on_results_pages(custom_moc_label)
+        # self.config.browse_moc_show = True
+        # self.config.save()
+        # self.check_for_label_on_results_pages(custom_where_label)
+        # self.check_for_label_on_results_pages(custom_what_label)
+        # self.config.moc_label = custom_moc_label
+        # self.config.save()
+        # self.check_for_label_on_results_pages(custom_moc_label)
 
     def test_custom_search_box_placeholders(self):
         # There are no default placeholders, so we can only check custom ones.
@@ -275,13 +275,13 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.check_for_placeholder_on_results_pages(custom_what_placeholder)
 
         # Search box vets.
-        self.config.browse_moc_show = True
-        self.config.save()
-        self.check_for_placeholder_on_results_pages(custom_where_placeholder)
-        self.check_for_placeholder_on_results_pages(custom_what_placeholder)
-        self.config.moc_placeholder = custom_moc_placeholder
-        self.config.save()
-        self.check_for_placeholder_on_results_pages(custom_moc_placeholder)
+        # self.config.browse_moc_show = True
+        # self.config.save()
+        # self.check_for_placeholder_on_results_pages(custom_where_placeholder)
+        # self.check_for_placeholder_on_results_pages(custom_what_placeholder)
+        # self.config.moc_placeholder = custom_moc_placeholder
+        # self.config.save()
+        # self.check_for_placeholder_on_results_pages(custom_moc_placeholder)
 
     def test_custom_search_box_helptexts(self):
         # No custom where helptext added.
@@ -294,11 +294,11 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.check_for_helptext_on_results_pages(default_what_helptext)
 
         # Search box vets.
-        self.config.browse_moc_show = True
-        self.config.save()
-        self.check_for_helptext_on_results_pages(default_where_helptext)
-        self.check_for_helptext_on_results_pages(default_what_helptext)
-        self.check_for_helptext_on_results_pages(default_moc_helptext)
+        # self.config.browse_moc_show = True
+        # self.config.save()
+        # self.check_for_helptext_on_results_pages(default_where_helptext)
+        # self.check_for_helptext_on_results_pages(default_what_helptext)
+        # self.check_for_helptext_on_results_pages(default_moc_helptext)
 
         # With custom helptext.
         # custom_where_helptext = 'Custom Where helptext'
@@ -315,13 +315,13 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.check_for_helptext_on_results_pages(custom_what_helptext)
 
         # Search box vets.
-        self.config.browse_moc_show = True
-        self.config.save()
-        self.check_for_helptext_on_results_pages(custom_where_helptext)
-        self.check_for_helptext_on_results_pages(custom_what_helptext)
-        self.config.moc_helptext = custom_moc_helptext
-        self.config.save()
-        self.check_for_helptext_on_results_pages(custom_moc_helptext)
+        # self.config.browse_moc_show = True
+        # self.config.save()
+        # self.check_for_helptext_on_results_pages(custom_where_helptext)
+        # self.check_for_helptext_on_results_pages(custom_what_helptext)
+        # self.config.moc_helptext = custom_moc_helptext
+        # self.config.save()
+        # self.check_for_helptext_on_results_pages(custom_moc_helptext)
 
 
 class SeoSiteTestCase(DirectSEOTestCase):
