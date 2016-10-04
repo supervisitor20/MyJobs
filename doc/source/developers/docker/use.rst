@@ -214,7 +214,7 @@ Add to dev_settings.py::
 
 Run::
 
-    dkg npm run devserver
+    dk rundevserver
 
 Visit the webpack base url above in a browser. Accept the certificate.
 
