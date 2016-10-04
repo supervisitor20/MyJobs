@@ -220,12 +220,12 @@ class SearchBoxTests(DirectSEOTestCase):
         resp = self.client.get(reverse('all_jobs'))
         self.assertIn(string, resp.content)
 
-    def test_custom_search_box_labels(self):
+    # def test_custom_search_box_labels(self):
         # No custom where label added.
         # Regular search box.
-        default_where_label = 'Where'
-        default_what_label = 'What'
-        default_moc_label = 'Military'
+        # default_where_label = 'Where'
+        # default_what_label = 'What'
+        # default_moc_label = 'Military'
 
         # self.check_for_label_on_results_pages(default_where_label)
         # self.check_for_label_on_results_pages(default_what_label)
@@ -260,7 +260,7 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.config.save()
         # self.check_for_label_on_results_pages(custom_moc_label)
 
-    def test_custom_search_box_placeholders(self):
+    # def test_custom_search_box_placeholders(self):
         # There are no default placeholders, so we can only check custom ones.
         # custom_where_placeholder = 'Custom Where placeholder'
         # custom_what_placeholder = 'Custom What placeholder'
@@ -283,12 +283,12 @@ class SearchBoxTests(DirectSEOTestCase):
         # self.config.save()
         # self.check_for_placeholder_on_results_pages(custom_moc_placeholder)
 
-    def test_custom_search_box_helptexts(self):
+    # def test_custom_search_box_helptexts(self):
         # No custom where helptext added.
         # Regular search box.
-        default_where_helptext = 'city, state, country'
-        default_what_helptext = 'job title, keywords'
-        default_moc_helptext = 'military job title or code'
+        # default_where_helptext = 'city, state, country'
+        # default_what_helptext = 'job title, keywords'
+        # default_moc_helptext = 'military job title or code'
 
         # self.check_for_helptext_on_results_pages(default_where_helptext)
         # self.check_for_helptext_on_results_pages(default_what_helptext)
