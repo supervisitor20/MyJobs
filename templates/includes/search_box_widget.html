@@ -13,22 +13,20 @@
           <div class="row">
             <div class="col-xs-12 col-md-4">
               <span class="what-section">
-                <!-- <label for="what">What</label> -->
-                <input title="Search Phrase" type="text" name="q" id="q" class="micrositeTitleField what" {% if title_term != "\*" %}value="{{ title_term }}"{% endif %} placeholder="job title, keywords" />
+                <label for="what">{{ site_config.what_label|default:_("What") }}</label>
+                <input title="Search Phrase" type="text" name="q" id="q" class="micrositeTitleField what" {% if title_term != "\*" %}value="{{ title_term }}"{% endif %} {% if site_config.what_placeholder %}placeholder="{{ site_config.what_placeholder }}"{% endif %} />
                 <i class="glyphicon glyphicon-search" aria-hidden="true"></i>
               </span>
             </div>
               <div class="col-xs-12 col-md-4">
                 <span class="where-section">
-                  <!-- <label for="where">Where</label> -->
-                  <input title="Search Location" type="text" name="location" id="location" class="micrositeLocationField where" {% if location_term != "\*" %}value="{{ location_term }}"{% endif %} placeholder="city, state, country" />
+                  <label for="where">{{ site_config.where_label|default:_("Where") }}</label>
+                  <input title="Search Location" type="text" name="location" id="location" class="micrositeLocationField where" {% if location_term != "\*" %}value="{{ location_term }}"{% endif %} {% if site_config.where_placeholder %}placeholder="{{ site_config.where_placeholder }}"{% endif %} />
                   <i class="glyphicon glyphicon-map-marker" aria-hidden="true"></i>
                 </span>
               </div>
               <div class="col-xs-12 col-md-4 text-left">
                 <span class="submit-section">
-                  <!-- <label for="sub">&nbsp;</label> -->
-                  <!-- <a class="search-submit" href="#mobile_search">search</a> -->
                   <input alt="Submit Search" class="search-submit" type="submit" value="Search" />
                   <a class="share-social search-submit" href="#"><img class="share-icon" src="{{ STATIC_URL }}images/share-icon.png" alt="share" /></a>
                 </span>

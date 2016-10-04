@@ -562,6 +562,9 @@ margin-bottom: 50px;
 			top: 10px;
       color: $blue;
     }
+    label {
+      display: none;
+    }
     #q{
       @extend .search-input-boxes;
       width: 100%;
@@ -592,6 +595,9 @@ margin-bottom: 50px;
 			font-size: 24px;
 			top: 10px;
       color: $blue;
+    }
+    label {
+      display: none;
     }
     #location {
       @extend .search-input-boxes;
@@ -1204,7 +1210,8 @@ margin-bottom: 50px;
   #brand_logo {
     .logo-text {
       font-size: 34px;
-      left: 20%;
+      left: 9%;
+      bottom: 20px;
     }
   }
   #direct-saved-search-box {
