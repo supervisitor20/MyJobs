@@ -220,108 +220,108 @@ class SearchBoxTests(DirectSEOTestCase):
         resp = self.client.get(reverse('all_jobs'))
         self.assertIn(string, resp.content)
 
-    # def test_custom_search_box_labels(self):
+    def test_custom_search_box_labels(self):
         # No custom where label added.
         # Regular search box.
-        # default_where_label = 'Where'
-        # default_what_label = 'What'
-        # default_moc_label = 'Military'
+        default_where_label = 'Where'
+        default_what_label = 'What'
+        default_moc_label = 'Military'
 
-        # self.check_for_label_on_results_pages(default_where_label)
-        # self.check_for_label_on_results_pages(default_what_label)
+        self.check_for_label_on_results_pages(default_where_label)
+        self.check_for_label_on_results_pages(default_what_label)
 
         # Search box vets.
-        # self.config.browse_moc_show = True
-        # self.config.save()
-        # self.check_for_label_on_results_pages(default_where_label)
-        # self.check_for_label_on_results_pages(default_what_label)
-        # self.check_for_label_on_results_pages(default_moc_label)
+        self.config.browse_moc_show = True
+        self.config.save()
+        self.check_for_label_on_results_pages(default_where_label)
+        self.check_for_label_on_results_pages(default_what_label)
+        self.check_for_label_on_results_pages(default_moc_label)
 
         # With custom label.
-        # custom_where_label = 'Custom Where'
-        # custom_what_label = 'Custom What'
-        # custom_moc_label = 'Custom Moc'
+        custom_where_label = 'Custom Where'
+        custom_what_label = 'Custom What'
+        custom_moc_label = 'Custom Moc'
 
         # Regular search box.
-        # self.config.browse_moc_show = False
-        # self.config.where_label = custom_where_label
-        # self.config.save()
-        # self.check_for_label_on_results_pages(custom_where_label)
-        # self.config.what_label = custom_what_label
-        # self.config.save()
-        # self.check_for_label_on_results_pages(custom_what_label)
+        self.config.browse_moc_show = False
+        self.config.where_label = custom_where_label
+        self.config.save()
+        self.check_for_label_on_results_pages(custom_where_label)
+        self.config.what_label = custom_what_label
+        self.config.save()
+        self.check_for_label_on_results_pages(custom_what_label)
 
         # Search box vets.
-        # self.config.browse_moc_show = True
-        # self.config.save()
-        # self.check_for_label_on_results_pages(custom_where_label)
-        # self.check_for_label_on_results_pages(custom_what_label)
-        # self.config.moc_label = custom_moc_label
-        # self.config.save()
-        # self.check_for_label_on_results_pages(custom_moc_label)
+        self.config.browse_moc_show = True
+        self.config.save()
+        self.check_for_label_on_results_pages(custom_where_label)
+        self.check_for_label_on_results_pages(custom_what_label)
+        self.config.moc_label = custom_moc_label
+        self.config.save()
+        self.check_for_label_on_results_pages(custom_moc_label)
 
-    # def test_custom_search_box_placeholders(self):
+    def test_custom_search_box_placeholders(self):
         # There are no default placeholders, so we can only check custom ones.
-        # custom_where_placeholder = 'Custom Where placeholder'
-        # custom_what_placeholder = 'Custom What placeholder'
-        # custom_moc_placeholder = 'Custom Moc placeholder'
+        custom_where_placeholder = 'Custom Where placeholder'
+        custom_what_placeholder = 'Custom What placeholder'
+        custom_moc_placeholder = 'Custom Moc placeholder'
 
         # Regular search box.
-        # self.config.where_placeholder = custom_where_placeholder
-        # self.config.save()
-        # self.check_for_placeholder_on_results_pages(custom_where_placeholder)
-        # self.config.what_placeholder = custom_what_placeholder
-        # self.config.save()
-        # self.check_for_placeholder_on_results_pages(custom_what_placeholder)
+        self.config.where_placeholder = custom_where_placeholder
+        self.config.save()
+        self.check_for_placeholder_on_results_pages(custom_where_placeholder)
+        self.config.what_placeholder = custom_what_placeholder
+        self.config.save()
+        self.check_for_placeholder_on_results_pages(custom_what_placeholder)
 
         # Search box vets.
-        # self.config.browse_moc_show = True
-        # self.config.save()
-        # self.check_for_placeholder_on_results_pages(custom_where_placeholder)
-        # self.check_for_placeholder_on_results_pages(custom_what_placeholder)
-        # self.config.moc_placeholder = custom_moc_placeholder
-        # self.config.save()
-        # self.check_for_placeholder_on_results_pages(custom_moc_placeholder)
+        self.config.browse_moc_show = True
+        self.config.save()
+        self.check_for_placeholder_on_results_pages(custom_where_placeholder)
+        self.check_for_placeholder_on_results_pages(custom_what_placeholder)
+        self.config.moc_placeholder = custom_moc_placeholder
+        self.config.save()
+        self.check_for_placeholder_on_results_pages(custom_moc_placeholder)
 
-    # def test_custom_search_box_helptexts(self):
+    def test_custom_search_box_helptexts(self):
         # No custom where helptext added.
         # Regular search box.
-        # default_where_helptext = 'city, state, country'
-        # default_what_helptext = 'job title, keywords'
-        # default_moc_helptext = 'military job title or code'
+        default_where_helptext = 'city, state, country'
+        default_what_helptext = 'job title, keywords'
+        default_moc_helptext = 'military job title or code'
 
-        # self.check_for_helptext_on_results_pages(default_where_helptext)
-        # self.check_for_helptext_on_results_pages(default_what_helptext)
+        self.check_for_helptext_on_results_pages(default_where_helptext)
+        self.check_for_helptext_on_results_pages(default_what_helptext)
 
         # Search box vets.
-        # self.config.browse_moc_show = True
-        # self.config.save()
-        # self.check_for_helptext_on_results_pages(default_where_helptext)
-        # self.check_for_helptext_on_results_pages(default_what_helptext)
-        # self.check_for_helptext_on_results_pages(default_moc_helptext)
+        self.config.browse_moc_show = True
+        self.config.save()
+        self.check_for_helptext_on_results_pages(default_where_helptext)
+        self.check_for_helptext_on_results_pages(default_what_helptext)
+        self.check_for_helptext_on_results_pages(default_moc_helptext)
 
         # With custom helptext.
-        # custom_where_helptext = 'Custom Where helptext'
-        # custom_what_helptext = 'Custom What helptext'
-        # custom_moc_helptext = 'Custom Moc helptext'
+        custom_where_helptext = 'Custom Where helptext'
+        custom_what_helptext = 'Custom What helptext'
+        custom_moc_helptext = 'Custom Moc helptext'
 
         # Regular search box.
-        # self.config.browse_moc_show = False
-        # self.config.where_helptext = custom_where_helptext
-        # self.config.save()
-        # self.check_for_helptext_on_results_pages(custom_where_helptext)
-        # self.config.what_helptext = custom_what_helptext
-        # self.config.save()
-        # self.check_for_helptext_on_results_pages(custom_what_helptext)
+        self.config.browse_moc_show = False
+        self.config.where_helptext = custom_where_helptext
+        self.config.save()
+        self.check_for_helptext_on_results_pages(custom_where_helptext)
+        self.config.what_helptext = custom_what_helptext
+        self.config.save()
+        self.check_for_helptext_on_results_pages(custom_what_helptext)
 
         # Search box vets.
-        # self.config.browse_moc_show = True
-        # self.config.save()
-        # self.check_for_helptext_on_results_pages(custom_where_helptext)
-        # self.check_for_helptext_on_results_pages(custom_what_helptext)
-        # self.config.moc_helptext = custom_moc_helptext
-        # self.config.save()
-        # self.check_for_helptext_on_results_pages(custom_moc_helptext)
+        self.config.browse_moc_show = True
+        self.config.save()
+        self.check_for_helptext_on_results_pages(custom_where_helptext)
+        self.check_for_helptext_on_results_pages(custom_what_helptext)
+        self.config.moc_helptext = custom_moc_helptext
+        self.config.save()
+        self.check_for_helptext_on_results_pages(custom_moc_helptext)
 
 
 class SeoSiteTestCase(DirectSEOTestCase):
@@ -1156,7 +1156,7 @@ class TemplateTestCase(DirectSEOTestCase):
         settings.SITE=self.site
 
     def test_xss_job_list(self):
-        template = Template(file("templates/includes/job_list_bootstrap3.html", 'r').read())
+        template = Template(file("templates/includes/job_list.html", 'r').read())
         context = Context({'location_term': '%27%22%3E%3Cimg+src%3Dx+onerror%3Dalert%28document.cookie%29%3E'})
         resp = template.render(context)
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
@@ -1170,7 +1170,7 @@ class TemplateTestCase(DirectSEOTestCase):
         config = factories.ConfigurationFactory.build()
         request =RequestFactory().get('/job/')
         request.user = AnonymousUser()
-        template = Template(file("templates/job_listing_bootstrap3.html", 'r').read())
+        template = Template(file("templates/job_listing.html", 'r').read())
         resp = template.render(TemplateContext(request,
             {'location_term':'%27%22%3E%3Cimg+src%3Dflerg+onerror%3Dalert%28document.cookie%29%3E',
                                                          'site_config':config}))
@@ -1462,23 +1462,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
         for preserved in preserved_strings:
             self.assertContains(resp, preserved)
 
-    # def test_xss_job_listing_bread_box(self):
-    #     site = factories.SeoSiteFactory.build()
-    #     site.save()
-    #     config = factories.ConfigurationFactory.build()
-    #     config.status = 2
-    #     config.save()
-    #     site.configurations.add(config)
-    #     resp = self.client.get('/usa/jobs/?P=\"><script>524199182',
-    #                            HTTP_HOST='buckconsultants.jobs')
-    #     self.assertEqual(resp.content.find('<script>524199182'), -1)
-    #     self.assertContains(resp, 'script%3E524199182')
-    #     resp = self.client.get(
-    #         '/indianapolis/indiana/usa/jobs/?P=\"><script>120341734',
-    #         HTTP_HOST='buckconsultants.jobs')
-    #     self.assertEqual(resp.content.find('<script>120341734'), -1)
-    #     self.assertContains(resp,
-    #                         '"loc_up_bread_box" href="/indiana/usa/jobs/?P=%22%3E%3Cscript%3E120341734"')
+    def test_xss_job_listing_bread_box(self):
+        site = factories.SeoSiteFactory.build()
+        site.save()
+        config = factories.ConfigurationFactory.build()
+        config.status = 2
+        config.save()
+        site.configurations.add(config)
+        resp = self.client.get('/usa/jobs/?P=\"><script>524199182',
+                               HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.content.find('<script>524199182'), -1)
+        self.assertContains(resp, 'script%3E524199182')
+        resp = self.client.get(
+            '/indianapolis/indiana/usa/jobs/?P=\"><script>120341734',
+            HTTP_HOST='buckconsultants.jobs')
+        self.assertEqual(resp.content.find('<script>120341734'), -1)
+        self.assertContains(resp,
+                            '"loc_up_bread_box" href="/indiana/usa/jobs/?P=%22%3E%3Cscript%3E120341734"')
 
     def test_location_redirect(self):
         """
@@ -1826,13 +1826,13 @@ class SeoViewsTestCase(DirectSEOTestCase):
 
         # Tracking pixel should be near the end of the page; reverse list of
         # img tags to find the one we want quicker.
-        # images = soup.findAll('img')[::-1]
-        # pixel_found = False
-        # for image in images:
-        #     if 'my.jobs/pixel.gif' in image.get('src'):
-        #         pixel_found = True
-        #         break
-        # self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
+        images = soup.findAll('img')[::-1]
+        pixel_found = False
+        for image in images:
+            if 'my.jobs/pixel.gif' in image.get('src'):
+                pixel_found = True
+                break
+        self.assertTrue(pixel_found, 'My.jobs tracking pixel not found')
 
         # Check that the apply links are formatted correctly. This particular
         # job has a mailto link, so the view source should not be included.
@@ -1846,47 +1846,47 @@ class SeoViewsTestCase(DirectSEOTestCase):
         for param in params:
             self.assertIn(job['title'], param)
 
-    # def test_job_listing_count(self):
-    #     """
-    #     Test that the job listing header contains the correct job count.
-    #
-    #     """
-    #     job = solr_settings.SOLR_FIXTURE[0].copy()
-    #     job.update({
-    #         'city': 'Muncie',
-    #         'city_ac': 'Muncie',
-    #         'city_exact': 'Muncie',
-    #         'city_slab': 'muncie/indiana/usa/jobs::muncie, IN',
-    #         'city_slab_exact': 'muncie/indiana/usa/jobs::Muncie, IN',
-    #         'city_slug': 'muncie',
-    #         'full_loc': 'city::Indianapolis@@state::Indiana@@location::Indianapolis, IN@@country::United States',
-    #         'full_loc_exact': 'city::Muncie@@state::Indiana@@location::Muncie, IN@@country::United States',
-    #         'guid': '3'*32,
-    #         'id': 'seo.joblisting.3',
-    #         'location': 'Muncie, IN',
-    #         'location_exact': 'Muncie, IN',
-    #         'reqid': 'AAA000002',
-    #         'uid': "1002",
-    #         'link': 'http://my.jobs/' + '3'*32
-    #     })
-    #     self.conn.add([job])
-    #     site = factories.SeoSiteFactory.build()
-    #     site.save()
-    #
-    #     for url, num_jobs in [('/indiana/usa/jobs/', 3),
-    #                          ('/indianapolis/indiana/usa/jobs/', 2)]:
-    #         resp = self.client.get(url,
-    #                                HTTP_HOST='buckconsultants.jobs',
-    #                                follow=True)
-    #         self.assertEqual(len(resp.context['default_jobs']), num_jobs)
-    #         content = BeautifulSoup(resp.content)
-    #         count = content.find('h3',
-    #                              **{'class': 'direct_highlightedText'})
-    #
-    #         count_text = '%d Jobs in Indiana' % num_jobs
-    #         if 'indianapolis' in url:
-    #             count_text += 'polis, IN'
-    #         self.assertEqual(count.text.strip(), count_text)
+    def test_job_listing_count(self):
+        """
+        Test that the job listing header contains the correct job count.
+
+        """
+        job = solr_settings.SOLR_FIXTURE[0].copy()
+        job.update({
+            'city': 'Muncie',
+            'city_ac': 'Muncie',
+            'city_exact': 'Muncie',
+            'city_slab': 'muncie/indiana/usa/jobs::muncie, IN',
+            'city_slab_exact': 'muncie/indiana/usa/jobs::Muncie, IN',
+            'city_slug': 'muncie',
+            'full_loc': 'city::Indianapolis@@state::Indiana@@location::Indianapolis, IN@@country::United States',
+            'full_loc_exact': 'city::Muncie@@state::Indiana@@location::Muncie, IN@@country::United States',
+            'guid': '3'*32,
+            'id': 'seo.joblisting.3',
+            'location': 'Muncie, IN',
+            'location_exact': 'Muncie, IN',
+            'reqid': 'AAA000002',
+            'uid': "1002",
+            'link': 'http://my.jobs/' + '3'*32
+        })
+        self.conn.add([job])
+        site = factories.SeoSiteFactory.build()
+        site.save()
+
+        for url, num_jobs in [('/indiana/usa/jobs/', 3),
+                             ('/indianapolis/indiana/usa/jobs/', 2)]:
+            resp = self.client.get(url,
+                                   HTTP_HOST='buckconsultants.jobs',
+                                   follow=True)
+            self.assertEqual(len(resp.context['default_jobs']), num_jobs)
+            content = BeautifulSoup(resp.content)
+            count = content.find('h3',
+                                 **{'class': 'direct_highlightedText'})
+
+            count_text = '%d Jobs in Indiana' % num_jobs
+            if 'indianapolis' in url:
+                count_text += 'polis, IN'
+            self.assertEqual(count.text.strip(), count_text)
 
     def test_url_for_sort_field(self):
         """
