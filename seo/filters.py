@@ -163,16 +163,13 @@ class FacetListWidget(object):
 
         if not self.show_widget():
             return
-        output = [self._render_header()]
-        output.append('<div class="filter-panel">')
-        output.append(self._as_ul())
 
-
+        output = [self._as_ul()]
 
         if self._has_hidden_items or self._show_more(self.items):
             more_less = self._render_more_less()
             output.append(more_less)
-        output.append('</div>')
+
         return mark_safe('\n'.join(output))
 
     def item_name(self, item):
@@ -225,11 +222,11 @@ class FacetListWidget(object):
             "item_count": item_count,
         })
 
-        li_item = ('<li class="menu-item" role="menuitem" '
-                   '{% if li_class %}class="{{li_class}} menu-item"{% endif %}>'
+        li_item = ('<li role="menuitem" '
+                   '{% if li_class %}class="{{li_class}}"{% endif %}>'
                    '<a href="{{ item_url }}">'
                    '{{ item_name }}{% if item_count %} ({{ item_count }})'
-                   '{% endif %}</a><span class="count"></span></li>')
+                   '{% endif %}</a></li>')
         item_template = Template(li_item)
         href = item_template.render(item_context)
 
@@ -251,17 +248,6 @@ class FacetListWidget(object):
         self._num_items_rendered += len(rendered_items)
         return rendered_items
 
-    def _render_header(self):
-        """
-        Add Headers to the output
-
-        """
-        column_header = ('<h3 class="filter-accordion"><span class="direct_filterLabel">%s</span> '
-                         '<span class="direct_highlightedText">%s</span></h3>')
-        column_header = column_header % (_("Filter by"), self.get_title())
-
-        return column_header
-
     def _as_ul(self):
         """
         Renders the complete ul containing li items for all valid items
@@ -270,12 +256,16 @@ class FacetListWidget(object):
         :return: A string containing the rendered ul.
 
         """
+        column_header = ('<h3><span class="direct_filterLabel">%s</span> '
+                         '<span class="direct_highlightedText">%s</span></h3>')
+        column_header = column_header % (_("Filter by"), self.get_title())
+
         # Javascript in pager.js uses splits that assume there are no '_'
         # characters in the type
         ul_open = '<ul role="menu" id="direct_%sDisambig">'
         ul_open = ul_open % self.selector_type
 
-        output = [ul_open]
+        output = [column_header, ul_open]
 
         list_items = self._render_lis()
         output = output + list_items
@@ -307,8 +297,8 @@ class FacetListWidget(object):
         more_less = more_less % dict(num_items=self.num_to_show,
                                      type=self.selector_type,
                                      total_items=self._num_items_rendered,
-                                     more=_("(show more)"),
-                                     less=_("(show less)"),
+                                     more=_("More"),
+                                     less=_("Less"),
                                      offset=self.offset)
         return more_less
 
