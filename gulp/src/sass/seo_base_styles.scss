@@ -101,30 +101,13 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
-.menu-item, .direct_hiddenOption {
-	padding-bottom: 10px;
 
-	a {
-		color: $primary-navy-blue;
+.direct_hiddenOption {display:none;}
 
-		&:hover {
-			color: $red-maroon;
-		}
-	}
+a.direct_optionsLess {
+    display:none;
 }
-.count {
-  float: right;
-}
-.direct_optionsMore {
-	padding-right: 10px;
-}
-.direct_optionsMore, .direct_optionsLess {
-	color: $primary-navy-blue;
 
-	&:hover {
-		color: $red-maroon;
-	}
-}
 .job-description-section {
   margin-top: 50px;
 }
