@@ -205,21 +205,16 @@ class NewPartnerForm(NormalizedModelForm):
     def save(self, commit=True):
         # self.instance is a Contact instance
         company_id = self.data['company_id']
-        partner_url = self.data.get('partnerurl', '')
-        partner_source = self.data.get('partnersource', '')
+        partner_url = self.cleaned_data.get('partnerurl', '')
+        partner_source = self.cleaned_data.get('partnersource', '')
 
         status = Status.objects.create(approved_by=self.user)
-        partner = Partner.objects.create(name=self.data['partnername'],
+        partner = Partner.objects.create(name=self.cleaned_data['partnername'],
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
-
-        self.data = remove_partner_data(self.data,
-                                        ['partnername', 'partnerurl',
-                                         'csrfmiddlewaretoken', 'company',
-                                         'company_id', 'ct'])
 
         create_contact = any(self.cleaned_data.get(field)
                              for field in self.__CONTACT_FIELDS

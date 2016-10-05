@@ -394,14 +394,11 @@ class NUOConversionAPITestCase(MyPartnersTestCase):
         self.contact.save()
         response = self.client.post(
             reverse('api_convert_outreach_record'),
-            data = {'request': json.dumps(self.request_data)}
+            data={'request': json.dumps(self.request_data)}
         )
         self.check_status_code_and_objects(response, 200, 8)
         self.contact = Contact.objects.get(id=self.contact.id)
-        # This is how we wish this could be written. Can be fixed along with
-        # PD-2602: universal.NormalizedModelForm removes all new lines
-        # self.assertEqual(self.contact.notes, "first part\nnew notes")
-        self.assertEqual(self.contact.notes, "first part new notes")
+        self.assertEqual(self.contact.notes, "first part\nnew notes")
 
     def test_outreach_api_no_data(self):
         """
