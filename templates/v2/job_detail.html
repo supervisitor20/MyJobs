@@ -1,4 +1,4 @@
-{% extends "seo_base.html" %}
+{% extends "seo_base_bootstrap3.html" %}
 {% load i18n %}
 {% load seo_extras %}
 {% load redirect_urls %}
@@ -24,18 +24,18 @@
 {% block directseo_primary_navigation %}{% endblock %}
 {% block directseo_main_content %}
 
-<div itemscope itemtype="http://schema.org/JobPosting" role="main">
+<div class="job-description-section" itemscope itemtype="http://schema.org/JobPosting" role="main">
     {% if site_commitments_string %}
     <meta itemprop="specialCommitments" content="{{site_commitments_string}}" />
     {% endif %}
     <meta itemprop="employmentType" content="Paid Work" />
     <div id="direct_jobListingTitle">
         <h3>
-          <span class="direct_jobListingCompany" itemprop="hiringOrganization"
+          <span class="direct-detail-jobListingCompany" itemprop="hiringOrganization"
             itemscope itemtype="http://schema.org/Organization">
             <span itemprop="name">{{the_job.company}}</span>
           </span>
-          <span class="direct_highlightedText">
+          <span class="direct-detail-highlightedText">
             <span itemprop="title">{{ the_job.title|cut:"?"|cut:"~" }}</span> in
             <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">
               {% spaceless %}
@@ -61,7 +61,7 @@
           </span>
         </h3>
     </div>
-    <div id="direct_horzRule"></div>
+    <div class="direct-detail-horzRule"></div>
     <div id="direct_listingDiv">
         <meta itemprop="datePosted" content="{{the_job.date_updated|date:'c'}}"/>
         <div id="direct_jobDescriptionText" itemprop="description">
@@ -80,7 +80,7 @@
         </div>
         <div class='direct-action-btn' id="direct_applyButtonBottom">
             {% if the_job.link %}
-            <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+            <a class="apply" href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
             {% elif the_job.apply_info %}
             <div id="apply-block">{{ the_job.apply_info }}</div>
             {% endif %}
@@ -97,21 +97,7 @@
 </div>
 {% endif %}
 
-<div id="direct_applyDiv" class="direct_rightColBox">
-    <div id="direct_applyButton" class="direct-action-btn" role="menu">
-        {% if the_job.link %}
-        <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
-        {% elif the_job.apply_info %}
-        <br/>
-        <div id="apply-block">{{ the_job.apply_info }}</div>
-        {% endif %}
-    </div>
-    <div id="direct_shareDiv" role="menu">
-        <h3>{% trans "Share" %}</h3>
-        {% include 'includes/add_this.html' %}<!--replace with my.jobs sharing when ready. JPS 10-4-12-->
-    </div>
- </div>
- <div id="direct_disambiguationDiv">
+ <!-- <div id="direct_disambiguationDiv">
     <div id="direct_searchCriteria" role="menu">
         <h3 id="direct_searchCriteriaHeader" style="float:left;">{% blocktrans %}Current Search Criteria{% endblocktrans %}</h3>
         <div style="clear:left;"></div>
@@ -123,13 +109,11 @@
             </a>
           </li>
           {% endif %}
-          {% if crumbs.title %}
           <li>
             <a href="{{ crumbs.title.path }}" title="Remove {{ crumbs.title.display }}">
               {{ crumbs.title.display|smart_truncate }}
             </a>
           </li>
-          {% endif %}
           {# if crumbs.city.display #}
           <li>
             <a href="{{ crumbs.city.path }}" title="Remove {{ crumbs.city.display }}">
@@ -163,7 +147,7 @@
           <li><a href="/jobs/" title="Clear All">{% blocktrans %}Clear All{% endblocktrans %}</a></li>
         </ul>
     </div>
-</div>
+</div> -->
 {% endblock %}
 {% block extra-js %}
     <script>
