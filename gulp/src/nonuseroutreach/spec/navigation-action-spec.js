@@ -36,3 +36,32 @@ describe('doGetWorkflowStateChoices',() => {
     });
   });
 });
+
+describe('doFilterRecords',() => {
+  let store;
+  let api;
+  const testState = {
+      navigation: {
+        workflowFilter: 'All',
+        termFilter: '',
+        filtersActive: true,
+        filteredRecords: [],
+      }
+    };
+  api = new FakeApi();
+  store = createReduxStore(
+    combineReducers({navigation: navigationReducer, error: errorReducer}),
+    testState, {api});
+
+  const testState = {
+      navigation: {
+        workflowFilter: 'All',
+        termFilter: '',
+        filtersActive: true,
+        filteredRecords: [],
+      }
+    };
+
+  it('should have updated choices', () => {
+    });
+});
