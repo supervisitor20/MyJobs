@@ -39,7 +39,7 @@ a {
   text-decoration: none;
 }
 p {
-  color: $black;
+  color: $primary-navy-blue;
 }
 a:hover {
   text-decoration: none;
@@ -74,7 +74,7 @@ legend{
 }
 .facet-header {
   background-color: $white;
-  color: $black;
+  color: $primary-navy-blue;
   border: 1px solid #d5d4d0;
   padding: 10px 15px;
   font-size: 20px;
@@ -101,7 +101,11 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
-
+.site-name {
+  color: #3a4135;
+  position: relative;
+  left: 10%;
+}
 .direct_hiddenOption {display:none;}
 
 a.direct_optionsLess {
@@ -347,7 +351,7 @@ a.direct_optionsLess {
   }
   .logo-text {
     position: relative;
-    color: $black;
+    color: $primary-navy-blue;
     margin-bottom: 0;
     bottom: 25px;
     font-weight: 800;
@@ -407,10 +411,8 @@ a.direct_optionsLess {
 .company-filter-title, .title-filter-title, .top-search-filter-title {
   float: left;
 }
-.company-job-count, .city-count, .title-count, .top-search-count{
+.count {
   float: right;
-  font-weight: 200;
-  color: $primary-navy-blue;
 }
 
 /*SEARCHBOX STYLES*/
@@ -495,11 +497,11 @@ margin-bottom: 50px;
     display:block;
   }
   .social-media {
-    border: 1px solid $white;
-    box-shadow: 2px 2px 3px #BBB;
     margin: 0 20% 0 15%;
     padding-top: 10px;
     visibility: hidden;
+    border: 1px solid #d5d4d0;
+    box-shadow: 2px 2px 3px #BBB
   }
   .caret-up {
     width: 15px;
@@ -508,8 +510,8 @@ margin-bottom: 50px;
     top: -8px;
     left: 47%;
     background: $white;
-    border-top: 1px solid $white;
-    border-left: 1px solid $white;
+    border-top: 1px solid #d5d4d0;
+    border-left: 1px solid #d5d4d0;
     -ms-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
@@ -633,6 +635,7 @@ margin-bottom: 50px;
   .right-content {
     .show-more-jobs {
       float: right;
+      margin-top: 25px;
       @extend .global-btn;
     }
     .jobs-found {
@@ -908,7 +911,7 @@ margin-bottom: 50px;
   }
   .mobile-search-btn {
     background-color: $white;
-    color: $black;
+    color: $primary-navy-blue;
     padding: 10px 20px;
     border-radius: 2px;
   }

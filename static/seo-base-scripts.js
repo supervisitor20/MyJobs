@@ -211,17 +211,25 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
   filterAccordion();
 
   //Javascript for showing and hiding the social share icons when the share button is clicked
+  $(window).on("click", function() {
+    var socialMedia = $(".social-media");
+    if(socialMedia.hasClass("show-social")){
+      socialMedia.removeClass("show-social");
+    }
+  });
   $(".share-social").on("click", function(e) {
+    e.stopPropagation();
     var social = $(".social-media");
     social.toggleClass("show-social");
   });
 
   //Javascript to cut the count off of the facets and place it separately into a span that floats to the right
   //Might need to configure and change settings later to get rid of this function
-  $.each($("li.menu-item a"), function(i,v) {
+  $.each($("#direct_disambiguationDiv li a"), function(i,v) {
     var self = $(this);
     var text = self.text().split("(")[0];
     var count = self.text().split("(").pop();
     self.html(text);
-    self.next("span").html("(" + count);
+    self.append("<span class='count'></span>");
+    self.children("span").html("(" + count);
   });

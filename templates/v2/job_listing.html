@@ -97,6 +97,9 @@
   <script>
     window.onload = function() {
       var resultsDIV = $("#direct_listingDiv");
+      if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+
+      }
       $('html, body').animate({
         scrollTop: $(resultsDIV).offset().top - 115
       }, 100);

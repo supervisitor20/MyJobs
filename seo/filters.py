@@ -153,11 +153,12 @@ class FacetListWidget(object):
         facet_title = getattr(self.site_config, facet_title_field)
         return _(facet_title)
 
-    def render(self):
+    def render(self, v2=False):
         """
         :return: A string containing the facets in self.items rendered as a ul.
 
         """
+        self.v2 = v2
         self._has_hidden_items = False
         self._num_items_rendered = 1
 
@@ -222,11 +223,19 @@ class FacetListWidget(object):
             "item_count": item_count,
         })
 
-        li_item = ('<li role="menuitem" '
-                   '{% if li_class %}class="{{li_class}}"{% endif %}>'
-                   '<a href="{{ item_url }}">'
-                   '{{ item_name }}{% if item_count %} ({{ item_count }})'
-                   '{% endif %}</a></li>')
+        if self.v2:
+            li_item = ('<li role="menuitem" '
+                       '{% if li_class %}class="{{li_class}}"{% endif %}>'
+                       '<a href="{{ item_url }}">'
+                       '{{ item_name }}{% if item_count %} ({{ item_count }})'
+                       '{% endif %}</a></li>')
+        else:
+            li_item = ('<li role="menuitem" '
+                       '{% if li_class %}class="{{li_class}}"{% endif %}>'
+                       '<a href="{{ item_url }}">'
+                       '{{ item_name }}{% if item_count %} ({{ item_count }})'
+                       '{% endif %}</a></li>')
+
         item_template = Template(li_item)
         href = item_template.render(item_context)
 
