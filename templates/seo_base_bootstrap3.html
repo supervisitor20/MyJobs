@@ -91,7 +91,7 @@
                                 {%if site_heading_base2 == "My"%}
                                   <span class="site-name">Network</span>
                                 {%else%}
-                                  <span class="site-name">{{site_heading_base2}}</span> 
+                                  <span class="site-name">{{site_heading_base2}}</span>
                                 {% endif %}
                               </a>
                             </h1>
@@ -121,6 +121,7 @@
             {% else %}
             {% include 'v2/includes/search_box_widget.html' %}
             {% endif %}
+            {% include "v2/includes/mobile_search_filter.html" %}
             {% block directseo_main_content %}{% endblock %}
         </div>
       </div>
