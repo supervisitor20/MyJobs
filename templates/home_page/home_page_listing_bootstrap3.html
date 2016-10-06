@@ -54,6 +54,20 @@
 {% endif %}
 {% endblock directseo_right_hand_column %}
 
+{% block directseo_mobile_facets %}
+{% if default_jobs or featured_jobs %}
+<div id="mobile_direct_disambiguationDiv" class="mobile-facets direct_rightColBox">
+  <div class="filter-box">
+    {% for widget in widgets %}
+    {% if widget.render %}
+    {{ widget.render }}
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock directseo_mobile_facets %}
+
 {% block directseo_off_site_links %}
     {% if site_config.show_home_social_footer %}
         {% include "off_site_links.html" %}

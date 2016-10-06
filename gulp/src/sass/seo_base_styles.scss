@@ -101,7 +101,7 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
-li.menu-item {
+li.menu-item, .filter-panel {
   padding-bottom: 5px;
 
   a {
@@ -403,6 +403,11 @@ a.direct_optionsLess {
 	}
 }
 #direct_disambiguationDiv {
+  h3 {
+    @extend .facet-header;
+  }
+}
+#mobile_direct_disambiguationDiv {
   h3 {
     @extend .facet-header;
   }
@@ -916,6 +921,10 @@ margin-bottom: 50px;
   .mobile-search-facets {
     display: none;
   }
+  #direct_jobListingTitle, .jobs-found {
+    margin: 0 auto;
+    width: 91%;
+  }
   .mobile-search-facets.show-mobile-search-facets {
     display: block;
   }
@@ -1096,6 +1105,9 @@ margin-bottom: 50px;
 /* Small Devices, Tablets */
 @media only screen and (min-width : 768px) {
 
+  #direct_jobListingTitle, .jobs-found {
+    width: 95%;
+  }
   #brand_logo {
     .location-logo {
        margin: 0 auto;
@@ -1112,6 +1124,9 @@ margin-bottom: 50px;
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 992px) {
 
+  #direct_jobListingTitle, .jobs-found {
+    width: 100%;
+  }
   .mobile-search-criteria {
     display: none;
   }

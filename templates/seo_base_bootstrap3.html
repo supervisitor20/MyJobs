@@ -121,8 +121,14 @@
             {% else %}
             {% include 'v2/includes/search_box_widget.html' %}
             {% endif %}
-            {% include "v2/includes/mobile_search_filter.html" %}
+            <div class="mobile-search-criteria">
+              <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
+            </div>
+            <div class="mobile-search-facets">
+              {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
+            </div>
             {% block directseo_main_content %}{% endblock %}
+            {% block mobile_directseo_save_email %}{% endblock %}
         </div>
       </div>
     </div>
@@ -185,6 +191,6 @@
 <script defer src="//d2e48ltfsb5exy.cloudfront.net/framework/v2/js/code/jquery-ui-1.8.17.custom.min.js"></script>
 
 {% block ga_js %}{% include "ga.html"%}{% endblock %}
-<!-- {% block scrollJS %}{% endblock %} -->
+{% block scrollJS %}{% endblock %}
 </body>
 </html>
