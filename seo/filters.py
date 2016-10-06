@@ -228,7 +228,7 @@ class FacetListWidget(object):
         })
         #Code needed for v2
         if self.version == 'v2':
-            li_item = ('<li class="menu-item" role="menuitem" '
+            li_item = ('<li role="menuitem" '
                        '{% if li_class %}class="{{li_class}}"{% endif %}>'
                        '<a href="{{ item_url }}">'
                        '{{ item_name }}{% if item_count %} ({{ item_count }})'

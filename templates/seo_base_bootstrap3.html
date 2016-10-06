@@ -128,7 +128,12 @@
               {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
             </div>
             {% block directseo_main_content %}{% endblock %}
-            {% block mobile_directseo_save_email %}{% endblock %}
+            <div id="mobile_save_email_search">
+              {% block mobile_directseo_save_email %}{% endblock %}
+            </div>
+            <div id="mobile_social_media">
+              {% include 'v2/includes/add_this.html' %}
+            </div>
         </div>
       </div>
     </div>

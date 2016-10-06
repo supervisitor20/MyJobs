@@ -101,7 +101,7 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
-li.menu-item, .filter-panel {
+.filter-panel li, .filter-panel {
   padding-bottom: 5px;
 
   a {
@@ -383,7 +383,7 @@ a.direct_optionsLess {
   }
 }
 
-#direct-saved-search-box {
+#mobile_direct-saved-search-box, #direct-saved-search-box {
 
   form {
     padding: 15px 0px 0px 0px;
@@ -918,6 +918,12 @@ margin-bottom: 50px;
 /* Custom, iPhone Retina */
 @media only screen and (min-width : 320px) {
 
+  #mobile_social_media {
+    padding-top: 50px;
+    margin: 0 auto;
+    width: 63%;
+  }
+
   .mobile-search-facets {
     display: none;
   }
@@ -965,7 +971,7 @@ margin-bottom: 50px;
       width: 33%;
     }
   }
-  #direct-saved-search-box {
+  #mobile_direct-saved-search-box, #direct-saved-search-box {
     padding: 0 15px;
     margin-bottom: -40px;
 
@@ -1095,6 +1101,15 @@ margin-bottom: 50px;
 /* Extra Small Devices, Phones */
 @media only screen and (min-width : 480px) {
 
+  #mobile_social_media {
+    padding-top: 50px;
+    margin: 0 auto;
+    width: 52%;
+  }
+
+  #direct_jobListingTitle, .jobs-found {
+    width: 95%;
+  }
   #search {
     .submit-section {
         padding: 0 14px;
@@ -1105,6 +1120,11 @@ margin-bottom: 50px;
 /* Small Devices, Tablets */
 @media only screen and (min-width : 768px) {
 
+  #mobile_social_media {
+    padding-top: 50px;
+    margin: 0 auto;
+    width: 32%;
+  }
   #direct_jobListingTitle, .jobs-found {
     width: 95%;
   }
@@ -1124,6 +1144,9 @@ margin-bottom: 50px;
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 992px) {
 
+  #mobile_social_media {
+    display: none;
+  }
   #direct_jobListingTitle, .jobs-found {
     width: 100%;
   }
@@ -1144,6 +1167,9 @@ margin-bottom: 50px;
   }
   .right-content {
     #direct-saved-search-box {
+      display: none;
+    }
+    #mobile_direct-saved-search-box {
       display: none;
     }
   }
@@ -1171,6 +1197,14 @@ margin-bottom: 50px;
     }
   }
   #direct-saved-search-box {
+    margin-bottom: -31px;
+
+    .email-box {
+      margin-top: 0px;
+      padding: 0 10px;
+    }
+  }
+  #mobile_direct-saved-search-box {
     margin-bottom: -31px;
 
     .email-box {
@@ -1252,6 +1286,12 @@ margin-bottom: 50px;
     }
   }
   #direct-saved-search-box {
+    .save-email {
+        margin-top: 0;
+        width: 100%;
+    }
+  }
+  #mobile_direct-saved-search-box {
     .save-email {
         margin-top: 0;
         width: 100%;

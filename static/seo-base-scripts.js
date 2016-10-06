@@ -53,6 +53,7 @@ function handle_error() {
 
 function fill(html) {
     $('#de-myjobs-widget').html(html);
+    $('#mobile-de-myjobs-widget').html(html);
     most_recent_html = html;
 }
 

@@ -104,7 +104,7 @@
 </div>
 {% endblock %}
 
-<!-- {% block mobile_directseo_save_email %}
+{% block mobile_directseo_save_email %}
 {% if default_jobs or featured_jobs %}
     {% if "network" in site_tags or site_config.show_saved_search_widget %}
         {% if site_config.use_secure_blocks %}
@@ -114,13 +114,13 @@
         <div id="mobile_direct-saved-search-box" class="direct_rightColBox direct-action-box">
           <div class="email-box">
             <h3 class="get-email-title">Save &amp; Email this search</h3>
-            <div id="de-myjobs-widget"></div>
+            <div id="mobile-de-myjobs-widget"></div>
           </div>
         </div>
         {% endif %}
     {% endif %}
 {% endif %}
-{% endblock %} -->
+{% endblock %}
 {% block extra-js %}
     <script type="text/javascript">
         var analytics_info = {{ analytics_info|safe }};
