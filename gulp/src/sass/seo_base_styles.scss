@@ -156,7 +156,7 @@ a.direct_optionsLess {
   }
 
   .menu-container > ul > li:last-of-type > ul {
-      left: 0;
+      right: 0;
   }
 
   .menu-container > ul > li:hover > ul {
@@ -192,45 +192,6 @@ a.direct_optionsLess {
    * in topbar.js for legacy mobile view. Will become obsolete when new mobile view
    * is implemented.
   */
-
-  .submenu-dropdown {
-      background-color: #444;
-  }
-
-  .submenu-dropdown > a:after {
-      float: right;
-      display: block;
-      width: 0;
-      border: 4px solid transparent;
-      border-left: 6px solid #999;
-      border-right: 0;
-  }
-
-  .submenu-dropdown > ul {
-      display: none;
-      margin: 0;
-  }
-
-  .submenu-dropdown ul li {
-      padding: 0 10px 0 10px;
-  }
-
-  .submenu-dropdown ul li a,
-  .submenu-dropdown ul li a:hover {
-      color: #fff;
-      text-decoration: none;
-      margin-top: 0;
-      padding: 0;
-  }
-
-  .submenu-dropdown ul li a:hover {
-      background-color: #222;
-      border-radius: 0;
-  }
-
-  .submenu-dropdown ul li:hover {
-      background-color: #222;
-  }
 
   #nav.active ul#pop-menu li a:hover,
   #nav li:hover ul#pop-menu li a:hover {
@@ -282,6 +243,7 @@ a.direct_optionsLess {
 
 #main_nav {
   margin-bottom: 75px;
+  cursor: pointer;
 
   .left-logo{
     font-size: 20px;
@@ -333,6 +295,14 @@ a.direct_optionsLess {
        }
      }
    }
+  }
+
+  .submenu-dropdown > ul {
+    display: none;
+  }
+
+  .submenu-dropdown ul li {
+      padding: 0 30px;
   }
 }
 /*ENTIRE PAGE CONTENT STYLES (EXCLUDING THE NAVIGATION)*/
