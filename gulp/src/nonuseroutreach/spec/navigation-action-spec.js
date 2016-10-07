@@ -1,5 +1,7 @@
 import {navigationReducer} from '../reducers/navigation-reducer';
 
+import {recordManagementReducer} from '../reducers/record-management-reducer';
+
 import errorReducer from '../../common/reducers/error-reducer';
 import {promiseTest} from '../../common/spec';
 
@@ -41,27 +43,65 @@ describe('doFilterRecords',() => {
   let store;
   let api;
   const testState = {
+      records: [
+        {
+          fromEmail: 'test@test.com',
+          outreachEmail: 'detest@my.jobs',
+          dateAdded: '06-24-2016',
+          currentWorkflowState: 'Newish',
+          id: '1',
+        },
+        {
+          fromEmail: 'terribletim@test.com',
+          outreachEmail: 'detest@my.jobs',
+          dateAdded: '06-24-2011',
+          currentWorkflowState: 'Oldish',
+          id: '1',
+        },
+        {
+          fromEmail: 'terrantularterry@test.com',
+          outreachEmail: 'detest@my.jobs',
+          dateAdded: '06-24-2012',
+          currentWorkflowState: 'Oldish',
+          id: '1',
+        },
+      ],
       navigation: {
         workflowFilter: 'All',
         termFilter: '',
-        filtersActive: true,
+        filtersActive: false,
         filteredRecords: [],
       }
     };
-  api = new FakeApi();
-  store = createReduxStore(
-    combineReducers({navigation: navigationReducer, error: errorReducer}),
-    testState, {api});
+  const makeStore = (testState) => createReduxStore(
+    combineReducers({navigation: navigationReducer, records:recordManagementReducer}),
+    testState);
 
-  const testState = {
-      navigation: {
-        workflowFilter: 'All',
-        termFilter: '',
-        filtersActive: true,
-        filteredRecords: [],
-      }
-    };
-
-  it('should have updated choices', () => {
+  it('should honor the workflow filter', () => {
+    const newState = {
+        ...testState,
+        navigation: {
+          ...testState.navigation,
+          workflowFilter: "Oldish",
+          filtersActive: true,
+        }
+      };
+    store = makeStore(newState)
+    store.dispatch(doFilterRecords());
+    expect(store.getState().navigation.filteredRecords.length).toEqual(2);
     });
-});
+
+  it('should honor the term filter', () => {
+    const newState = {
+        ...testState,
+        navigation: {
+          ...testState.navigation,
+          termFilter: "terribletim",
+          filtersActive: true,
+        }
+      };
+    store = makeStore(newState)
+    store.dispatch(doFilterRecords());
+    expect(store.getState().navigation.filteredRecords.length).toEqual(1);
+    });
+  });
