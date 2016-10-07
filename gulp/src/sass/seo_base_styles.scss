@@ -27,9 +27,7 @@ html {
 }
 body {
   overflow-x: hidden;
-  position: relative;
-  min-height: 100%;
-  padding-bottom: 15rem;
+  height: 100%;
   background-color: $white;
 }
 ul {
@@ -101,6 +99,39 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
+#direct_companyModule {
+  text-align: center;
+
+  h3 {
+    @extend .facet-header;
+  }
+  .company-logo {
+    display: block;
+    margin-top: 15px;
+  }
+  .company-title {
+    display: block;
+    color: $primary-navy-blue;
+    margin-top: 5px;
+
+    &:hover {
+      color: $red-maroon;
+    }
+  }
+  .company-box {
+    margin: 0px 15px;
+    border: 1px solid $extra-light-gray;
+    background-color: $medium-gray;
+    border-top: none;
+    border-radius: 3px;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 3px #bbb;
+    padding: 0px 10px;
+  }
+}
+.clearfooter {
+  clear: both;
+}
 .filter-panel li, .filter-panel {
   padding-bottom: 5px;
 
@@ -358,6 +389,8 @@ a.direct_optionsLess {
 #page_content {
   margin: 0 auto;
   max-width: 1460px;
+  min-height: 100%;
+  position: relative;
 }
 /*BRAND LOGO STYLES*/
 #brand_logo {
@@ -736,11 +769,11 @@ margin-bottom: 50px;
 
 /*FOOTER STYLES*/
 #footer {
-  margin-top: 100px;
-  position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
+  position: relative;
+  width: 100%;
 
   .footer-content li {
     display: inline-block;
