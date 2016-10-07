@@ -1007,7 +1007,12 @@ margin-bottom: 50px;
     }
     .location-logo {
       margin: 0 auto;
-      width: 33%;
+      width: 50%;
+    }
+    .site-name {
+      left: 6%;
+      color: $primary-navy-blue;
+      bottom: 15px;
     }
   }
   #mobile_direct-saved-search-box, #direct-saved-search-box {
@@ -1154,6 +1159,17 @@ margin-bottom: 50px;
         padding: 0 14px;
     }
   }
+  #brand_logo {
+
+    .location-logo {
+      margin: 0 auto;
+      width: 37%;
+    }
+    .site-name {
+      left: 6%;
+      bottom: 15px;
+    }
+  }
 }
 
 /* Small Devices, Tablets */
@@ -1231,7 +1247,7 @@ margin-bottom: 50px;
   #brand_logo {
     .location-logo {
       margin: 0 auto;
-      width: 56%;
+      width: 77%;
     }
     .logo-text {
       left: 15%;
@@ -1357,6 +1373,12 @@ margin-bottom: 50px;
 			width: 28%;
 		}
 	}
+  #brand_logo {
+    .location-logo {
+      margin: 0 auto;
+      width: 50%;
+    }
+  }
 }
 
 /* END NEW SASS STYLES FOR REBRANDING */
