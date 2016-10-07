@@ -127,18 +127,17 @@
     </script>
     <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,3,6"></script>
 {% endblock extra-js %}
-<!-- {% block scrollJS %}
+{% block scrollJS %}
   <script>
     window.onload = function() {
       var resultsDIV = $("#direct_listingDiv");
       var viewPort = $(window).width();
-      // if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      //
-      // }
-      $('html, body').animate({
-        scrollTop: $(resultsDIV).offset().top - 115
-      }, 100);
+      if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || viewPort < 992 ) {
+        $('html, body').animate({
+          scrollTop: $(resultsDIV).offset().top - 115
+        }, 100);
+      }
     };
   </script>
-{% endblock %} -->
+{% endblock %}
 {% endcache %}

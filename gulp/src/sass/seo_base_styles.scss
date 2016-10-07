@@ -951,6 +951,9 @@ margin-bottom: 50px;
 /* Custom, iPhone Retina */
 @media only screen and (min-width : 320px) {
 
+  #direct_companyModule {
+    display: none;
+  }
   #mobile_social_media {
     padding-top: 50px;
     margin: 0 auto;
@@ -1177,6 +1180,9 @@ margin-bottom: 50px;
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 992px) {
 
+  #direct_companyModule {
+    display: block;
+  }
   #mobile_social_media {
     display: none;
   }
