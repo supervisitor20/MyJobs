@@ -24,7 +24,7 @@ describe('doGetWorkflowStateChoices',() => {
 
   api = new FakeApi();
   store = createReduxStore(
-    combineReducers({navigation: navigationReducer, error: errorReducer}),
+    combineReducers({navigation: navigationReducer}),
     {}, {api});
   describe('after load', () => {
     beforeEach(promiseTest(async () => {
