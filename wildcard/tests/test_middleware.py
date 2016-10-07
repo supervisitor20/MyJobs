@@ -47,4 +47,5 @@ class WildcardMiddlewareTestCase(DirectSEOBase):
             'HTTP_HOST': 'fake.usa.jobs',
             'wsgi.url_scheme': 'https'
         })
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp['Location'], 'https://usa.jobs')
