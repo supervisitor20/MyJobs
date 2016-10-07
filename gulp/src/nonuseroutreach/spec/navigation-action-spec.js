@@ -33,8 +33,8 @@ describe('doGetWorkflowStateChoices',() => {
       await store.dispatch(doGetWorkflowStateChoices())
     }));
 
-  it('should have updated choices', () => {
-    expect(store.getState().navigation.workflowChoices.length).toEqual(2);
+    it('should have updated choices', () => {
+      expect(store.getState().navigation.workflowChoices.length).toEqual(2);
     });
   });
 });
