@@ -248,3 +248,51 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
       self.children("span").html("(" + count);
     });
   });
+
+  //Function for showing and hiding the header when scrolling in mobile view
+  function showHideHeaderScroll(){
+    // Hide Header on on scroll down
+    var didScroll;
+    var lastScrollTop = 0;
+    var delta = 5;
+    var navbarHeight = $('nav').outerHeight();
+    var viewPort = $(window).width();
+
+    //Checking to see if it's a mobile device or if the screensize is in mobile view
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || viewPort < 992 ) {
+      $(window).scroll(function(event){
+          didScroll = true;
+      });
+
+      setInterval(function() {
+          if (didScroll) {
+              hasScrolled();
+              didScroll = false;
+          }
+      }, 250);
+
+      //Checking to make sure a scroll has occured
+      function hasScrolled() {
+          var scroll_Top = $(this).scrollTop();
+
+          // Make sure they scroll more than delta
+          if(Math.abs(lastScrollTop - scroll_Top) <= delta)
+              return;
+
+          // If they scrolled down and are past the navbar, add class .nav-up.
+          if (scroll_Top > lastScrollTop && scroll_Top > navbarHeight){
+              // Scroll Down
+              $('nav').removeClass('nav-down').addClass('nav-up');
+          } else {
+              // Scroll Up
+              if(scroll_Top + $(window).height() < $(document).height()) {
+                  $('nav').removeClass('nav-up').addClass('nav-down');
+              }
+          }
+
+          lastScrollTop = scroll_Top;
+      }
+    }
+  }
+
+  showHideHeaderScroll();
