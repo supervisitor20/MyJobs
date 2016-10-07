@@ -234,3 +234,17 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     self.append("<span class='count'></span>");
     self.children("span").html("(" + count);
   });
+  
+  //Javascript to cut the count off the hidden facets and place it separately inside of a span that floats. The code
+  //above is duplicated but wouldn't work for the hidden LI that were created on the fly so I am dynamically doing it
+  //when there is a click event on the option to show more of the filters
+  $(".direct_optionsMore").on("click", function(e) {
+    $.each($("#direct_disambiguationDiv li a"), function(i,v) {
+      var self = $(this);
+      var text = self.text().split("(")[0];
+      var count = self.text().split("(").pop();
+      self.html(text);
+      self.append("<span class='count'></span>");
+      self.children("span").html("(" + count);
+    });
+  });
