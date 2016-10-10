@@ -569,7 +569,7 @@ def task_etl_to_solr(guid, buid, name):
         raise task_etl_to_solr.retry(exc=e)
 
 
-@task(name='tasks.jobsfs_to_mongo', ingore_result=True, send_error_emails=False)
+@task(name='tasks.jobsfs_to_mongo', ignore_result=True, send_error_emails=False)
 def task_jobsfs_to_mongo(guid, buid, name):
     try:
         jobsfs_to_mongo(guid, buid, name)
@@ -579,7 +579,7 @@ def task_jobsfs_to_mongo(guid, buid, name):
         raise task_jobsfs_to_mongo.retry(exc=e)
 
 
-@task(name='tasks.seoxml_to_mongo', ingore_result=True, send_error_emails=False)
+@task(name='tasks.seoxml_to_mongo', ignore_result=True, send_error_emails=False)
 def task_seoxml_to_mongo(buid, **kwargs):
     try:
         seoxml_to_mongo(buid)
