@@ -6,8 +6,34 @@ $(window).ready(function () {
         get_companies();
     }
 
-    $('li.mobile-trigger').click(function () {
-        $('li.mobile-sub-nav', this).toggle();
+    $.each($('li.mobile-trigger'), function(i) {
+      var self = $(this);
+      var currentListItem = self.children('.mobile-submenu').children('.mobile-sub-nav');
+      self.on('click', function(e) {
+        e.stopPropagation();
+        $('.mobile-submenu').children('.mobile-sub-nav').not(currentListItem).removeClass('mobile-list-open');
+        currentListItem.toggleClass('mobile-list-open');
+        if($('.mobile-submenu').children('.mobile-sub-nav').hasClass('mobile-list-open')){
+        $('.overlay').show();
+        $('body').addClass('no-scroll');
+      }else{
+        $('.overlay').hide();
+        $('body').removeClass('no-scroll');
+      }
+      });
+    });
+
+    //Javascript for closing the mobile menu on click of anywhere on the screen
+    $(window).click(function() {
+      var mobileSubContent = $('li.mobile-trigger').children('.mobile-submenu').children('.mobile-sub-nav');
+      $.each(mobileSubContent, function(i) {
+        var self = $(this);
+        if(self.hasClass('mobile-list-open')){
+          self.removeClass('mobile-list-open');
+          $('body').removeClass('no-scroll');
+          $('.overlay').hide();
+        }
+      });
     });
 
 });

@@ -248,7 +248,8 @@ def ajax_get_facets(request, filter_path, facet_type):
         query_string = qs.urlencode()
 
         widget = FacetListWidget(request, site_config, _type, facet_results,
-                                 filters, query_string=query_string)
+                                 filters, query_string=query_string,
+                                 version=site_config.template_version)
 
         items = []
         for facet in facet_results:

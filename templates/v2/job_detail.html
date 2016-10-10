@@ -93,61 +93,9 @@
 {% block directseo_right_hand_column %}
 {% if company %}
 <div id="direct_companyModule" class="direct_rightColBox" role="menu">
-  {% include 'includes/company_module.html'%}
+  {% include 'v2/includes/company_module.html'%}
 </div>
 {% endif %}
-
- <!-- <div id="direct_disambiguationDiv">
-    <div id="direct_searchCriteria" role="menu">
-        <h3 id="direct_searchCriteriaHeader" style="float:left;">{% blocktrans %}Current Search Criteria{% endblocktrans %}</h3>
-        <div style="clear:left;"></div>
-        <ul id="direct_searchOptions">
-          {% if site_config.browse_company_show %}
-          <li>
-            <a href="{{ crumbs.company.path }}" title="Remove {{ crumbs.company.display }}">
-              {{ crumbs.company.display|smart_truncate }}
-            </a>
-          </li>
-          {% endif %}
-          <li>
-            <a href="{{ crumbs.title.path }}" title="Remove {{ crumbs.title.display }}">
-              {{ crumbs.title.display|smart_truncate }}
-            </a>
-          </li>
-          {# if crumbs.city.display #}
-          <li>
-            <a href="{{ crumbs.city.path }}" title="Remove {{ crumbs.city.display }}">
-              {{ crumbs.city.display|smart_truncate }}
-            </a>
-          </li>
-          {# endif #}
-          {% if crumbs.state %}
-          {# crumbs.state won't exist for international listings, e.g. Beijing, China #}
-          <li>
-            <a href="{{ crumbs.state.path }}" title="Remove {{ crumbs.state.display }}">
-              {{ crumbs.state.display|smart_truncate }}
-            </a>
-          </li>
-          {% endif %}
-          {% if crumbs.q %}
-          <li>
-            <a href="{{ crumbs.q.path }}" title="Remove {{ crumbs.q.display }}">
-              {{ crumbs.q.display|smart_truncate }}
-            </a>
-          </li>
-          {% endif %}
-          {% if crumbs.moc %}
-          <li>
-            <a href="{{ crumbs.moc.path }}" title="Remove {{ crumbs.moc.display }}">
-              {{ crumbs.moc.display|smart_truncate }}
-            </a>
-          </li>
-          {% endif %}
-
-          <li><a href="/jobs/" title="Clear All">{% blocktrans %}Clear All{% endblocktrans %}</a></li>
-        </ul>
-    </div>
-</div> -->
 {% endblock %}
 {% block extra-js %}
     <script>

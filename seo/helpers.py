@@ -796,7 +796,7 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
         w = FacetListWidget(request, site_config, _type[0],
                             facet_counts.get('%s_slab' % _type[0],
                                              [])[0:num_items*2],
-                            filters)
+                            filters, version=site_config.template_version)
         w.precedence = _type[1]
         widgets.append(w)
     if custom_facets:

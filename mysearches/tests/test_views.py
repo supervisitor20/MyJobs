@@ -336,7 +336,7 @@ class MySearchViewTests(MyJobsBase):
         response = self.client.get(reverse('saved_search_widget') +
                                    '?url=%s&v2=1&callback=callback' % (
                                        search.url, ))
-        response_text = '<form id=\\"enter_email\\">'
+        response_text = '<form class=\\"enter_email\\">'
         self.assertTrue(response_text in response.content)
 
     def test_widget_with_partner_saved_search(self):

@@ -53,6 +53,7 @@ function handle_error() {
 
 function fill(html) {
     $('#de-myjobs-widget').html(html);
+    $('#mobile-de-myjobs-widget').html(html);
     most_recent_html = html;
 }
 
@@ -143,58 +144,6 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     mobileSearchFacets.toggleClass("show-mobile-search-facets");
   });
 
-  //Javascript for activating the mobile footer menu
-  function activeMobileMenu() {
-    var showMessages = $( '#show_messages' );
-    var showCompany = $( '#show_company' );
-    var showProfile = $( '#show_profile' );
-    var messageMenu = $("#cbp-spmenu-m4");
-    var companyMenu = $("#cbp-spmenu-c4");
-    var profileMenu = $("#cbp-spmenu-p4");
-
-    showMessages.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      messageMenu.toggleClass('cbp-spmenu-open' );
-      if (companyMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-        companyMenu.removeClass('cbp-spmenu-open');
-        profileMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-    showCompany.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      companyMenu.toggleClass('cbp-spmenu-open' );
-      if (messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-        messageMenu.removeClass('cbp-spmenu-open');
-        profileMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-    showProfile.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      profileMenu.toggleClass('cbp-spmenu-open' );
-      if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open')) {
-        companyMenu.removeClass('cbp-spmenu-open');
-        messageMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-  }
-  activeMobileMenu();
-
-  //Javascript for closing the mobile menu on click of anywhere on the screen
-  $(window).click(function() {
-    var messageMenu = $("#cbp-spmenu-m4");
-    var companyMenu = $("#cbp-spmenu-c4");
-    var profileMenu = $("#cbp-spmenu-p4");
-
-    if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-      companyMenu.removeClass('cbp-spmenu-open');
-      messageMenu.removeClass('cbp-spmenu-open');
-      profileMenu.removeClass('cbp-spmenu-open');
-    }
-  });
-
   //Function for initializing the accordion of the search criteria
   function filterAccordion() {
     var accordion = $(".filter-accordion");
@@ -211,17 +160,87 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
   filterAccordion();
 
   //Javascript for showing and hiding the social share icons when the share button is clicked
+  $(window).on("click", function() {
+    var socialMedia = $(".social-media");
+    if(socialMedia.hasClass("show-social")){
+      socialMedia.removeClass("show-social");
+    }
+  });
   $(".share-social").on("click", function(e) {
+    e.stopPropagation();
     var social = $(".social-media");
     social.toggleClass("show-social");
   });
 
   //Javascript to cut the count off of the facets and place it separately into a span that floats to the right
   //Might need to configure and change settings later to get rid of this function
-  $.each($("li.menu-item a"), function(i,v) {
+  $.each($("#direct_disambiguationDiv li a"), function(i,v) {
     var self = $(this);
     var text = self.text().split("(")[0];
     var count = self.text().split("(").pop();
     self.html(text);
-    self.next("span").html("(" + count);
+    self.append("<span class='count'></span>");
+    self.children("span").html("(" + count);
   });
+
+  //Javascript to cut the count off the hidden facets and place it separately inside of a span that floats. The code
+  //above is duplicated but wouldn't work for the hidden LI that were created on the fly so I am dynamically doing it
+  //when there is a click event on the option to show more of the filters
+  $(".direct_optionsMore").on("click", function(e) {
+    $.each($("#direct_disambiguationDiv li a"), function(i,v) {
+      var self = $(this);
+      var text = self.text().split("(")[0];
+      var count = self.text().split("(").pop();
+      self.html(text);
+      self.append("<span class='count'></span>");
+      self.children("span").html("(" + count);
+    });
+  });
+
+  //Function for showing and hiding the header when scrolling in mobile view
+  function showHideHeaderScroll(){
+    // Hide Header on on scroll down
+    var didScroll;
+    var lastScrollTop = 0;
+    var delta = 5;
+    var navbarHeight = $('nav.main-nav-topbar').outerHeight();
+    var viewPort = $(window).width();
+
+    //Checking to see if it's a mobile device or if the screensize is in mobile view
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || viewPort < 992 ) {
+      $(window).scroll(function(event){
+          didScroll = true;
+      });
+
+      setInterval(function() {
+          if (didScroll) {
+              hasScrolled();
+              didScroll = false;
+          }
+      }, 250);
+
+      //Checking to make sure a scroll has occured
+      function hasScrolled() {
+          var scroll_Top = $(this).scrollTop();
+
+          // Make sure they scroll more than delta
+          if(Math.abs(lastScrollTop - scroll_Top) <= delta)
+              return;
+
+          // If they scrolled down and are past the navbar, add class .nav-up.
+          if (scroll_Top > lastScrollTop && scroll_Top > navbarHeight){
+              // Scroll Down
+              $('nav.main-nav-topbar').removeClass('nav-down').addClass('nav-up');
+          } else {
+              // Scroll Up
+              if(scroll_Top + $(window).height() < $(document).height()) {
+                  $('nav.main-nav-topbar').removeClass('nav-up').addClass('nav-down');
+              }
+          }
+
+          lastScrollTop = scroll_Top;
+      }
+    }
+  }
+
+  showHideHeaderScroll();
