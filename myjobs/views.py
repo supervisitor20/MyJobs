@@ -525,6 +525,7 @@ def cas(request):
 
 def topbar(request):
     callback = request.REQUEST.get('callback')
+    use_v2 = request.REQUEST.get('v2', 0)
     user = request.user
     impersonating = request.REQUEST.get('impersonating')
 
@@ -557,8 +558,13 @@ def topbar(request):
                             domain='.my.jobs')
         ctx['current_microsite_name'] = last_name
         ctx['current_microsite_url'] = caller
+        # Switch between version 1 and 2 topbar template
+    if use_v2:
+        template_string = 'includes/topbar_v2.html'
+    else:
+        template_string = 'includes/topbar.html'
 
-    html = render_to_response('includes/topbar.html', ctx,
+    html = render_to_response(template_string, ctx,
                               RequestContext(request))
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 

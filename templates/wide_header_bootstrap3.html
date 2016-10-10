@@ -1,21 +1,24 @@
-{% load i18n %}
+
 {% if not site_heading %}
     {% load seo_extras %}
     {% flatpage_site_heading as site_heading %}
 {% endif %}
+
 {% if site_config.wide_header %}
     {{site_config.wide_header|safe}}
 {% elif 'network' in site_tags %}
 {% load seo_extras %}
+
 {% if site_config.use_secure_blocks %}
-<div data-secure_block_id="sb_toolbar" data-site_name="{{ site_name }}" data-widget_type="tools"></div>
+    <div data-secure_block_id="sb_toolbar" data-site_name="{{ site_name }}" data-widget_type="tools"></div>
 {% endif %}
-<div class="direct_dotjobsWideHeader">
-    <div id="direct_dotjobsHeader" role="banner">
+<!-- The class name direct_dotjobsWideHeader is where the topbar is being rendered with JS -->
+<div class="direct_dotjobsWideHeader row">
+    <div id="direct_dotjobsHeader" role="banner" class="col-xs-12 col-md-12">
         {% if site_config.home_page_template == "home_page/home_page_my_jobs.html" %}
             <h1>
                 <a href="/">
-                    <img src="//d2e48ltfsb5exy.cloudfront.net/myjobs/logos/myjobs_logo_md.145-03.png" id="headerLogo" alt="my.jobs" width="192" height="83" />
+                    <img src="//d2e48ltfsb5exy.cloudfront.net/myjobs/logos/myjobs_logo_md.145-03.png" id="headerLogo"  alt="my.jobs" width="192" height="83" />
                 </a>
                 <span id="direct_tagline">
                     The Right Place for <a id="" href="https://secure.my.jobs"></a>
@@ -35,9 +38,9 @@
                                 {{site_heading}}
                                 </h1>
                             {% else %}
-                                <h1><a href="/">
-                                {{site_heading_base2}}<img src="{{ STATIC_URL }}dotJobs-logo.145-03.png" id="headerLogo" alt=".jobs" width="135" height="83">
-                                </a></h1>
+                                {% comment - header is being refactored in new design %}<a href="/" class="location-logo-text">
+                                {{site_heading_base2}} <img src="{{ STATIC_URL }}dotJobs-logo.145-03.png" id="page_logo" class="logo" alt=".jobs" width="150" height="90">
+                                </a>{% endcomment %}
                             {% endif %}
                         {% endwith %}
                     {% else %}
@@ -51,3 +54,4 @@
     </div>
 </div>
 {% endif %}
+
