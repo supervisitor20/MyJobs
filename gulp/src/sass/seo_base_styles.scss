@@ -919,6 +919,71 @@ margin-bottom: 50px;
 /* Custom, iPhone Retina */
 @media only screen and (min-width : 320px) {
 
+  .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 10));
+    width: 100vw !important;
+    left: 30%;
+    top: -50px !important;
+
+    li {
+      text-align: left;
+      padding: 10px 0px 10px 35px;
+      font-size: 18px;
+
+      a {
+        color: $primary-navy-blue;
+      }
+    }
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 2));
+    width: 100vw !important;
+    left: 45%;
+    top: -92px !important;
+
+    li {
+      text-align: left;
+      padding: 10px 0px 10px 35px;
+      font-size: 18px;
+
+      a {
+        color: $primary-navy-blue;
+      }
+    }
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%)));
+    width: 100vw !important;
+    left: 93%;
+    top: -132px !important;
+
+    li {
+      text-align: left;
+      padding: 10px 0px 10px 35px;
+      font-size: 18px;
+
+      a {
+        color: $primary-navy-blue;
+      }
+    }
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
+      margin-left: calc(-1 * ((100vw - 100%) / 2));
+      width: 100vw !important;
+      right: 5%;
+      top: -215px !important;
+
+      li {
+        text-align: left;
+        padding: 10px 0px 10px 35px;
+        font-size: 18px;
+
+        a {
+          color: $primary-navy-blue;
+        }
+      }
+  }
+
   #direct_companyModule {
     display: none;
   }

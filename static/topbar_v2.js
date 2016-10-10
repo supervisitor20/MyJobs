@@ -5,9 +5,18 @@ $(window).ready(function () {
     if (typeof tools_companies !== 'undefined') {
         get_companies();
     }
+    //
+    // $('li.mobile-trigger').click(function () {
+    //     $('li.mobile-sub-nav', this).toggle();
+    // });
 
-    $('li.mobile-trigger').click(function () {
-        $('li.mobile-sub-nav', this).toggle();
+    $.each($('li.mobile-trigger'), function(i) {
+      var self = $(this);
+      var currentListItem = self.children('.mobile-submenu').children('.mobile-sub-nav');
+      self.on('click', function(e) {
+        $('.mobile-submenu').children('.mobile-sub-nav').removeClass('mobile-list-open');
+        currentListItem.addClass('mobile-list-open');
+      });
     });
 
 });

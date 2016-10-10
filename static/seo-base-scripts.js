@@ -144,44 +144,44 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     mobileSearchFacets.toggleClass("show-mobile-search-facets");
   });
 
-  //Javascript for activating the mobile footer menu
-  function activeMobileMenu() {
-    var showMessages = $( '#show_messages' );
-    var showCompany = $( '#show_company' );
-    var showProfile = $( '#show_profile' );
-    var messageMenu = $("#cbp-spmenu-m4");
-    var companyMenu = $("#cbp-spmenu-c4");
-    var profileMenu = $("#cbp-spmenu-p4");
-
-    showMessages.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      messageMenu.toggleClass('cbp-spmenu-open' );
-      if (companyMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-        companyMenu.removeClass('cbp-spmenu-open');
-        profileMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-    showCompany.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      companyMenu.toggleClass('cbp-spmenu-open' );
-      if (messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-        messageMenu.removeClass('cbp-spmenu-open');
-        profileMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-    showProfile.on("click", function(e)  {
-      e.stopPropagation();
-      $( this ).toggleClass('active' );
-      profileMenu.toggleClass('cbp-spmenu-open' );
-      if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open')) {
-        companyMenu.removeClass('cbp-spmenu-open');
-        messageMenu.removeClass('cbp-spmenu-open');
-      }
-    });
-  }
-  activeMobileMenu();
+  // //Javascript for activating the mobile footer menu
+  // function activeMobileMenu() {
+  //   var showMessages = $( '#show_messages' );
+  //   var showCompany = $( '#show_company' );
+  //   var showProfile = $( '#show_profile' );
+  //   var messageMenu = $("#cbp-spmenu-m4");
+  //   var companyMenu = $("#cbp-spmenu-c4");
+  //   var profileMenu = $("#cbp-spmenu-p4");
+  //
+  //   showMessages.on("click", function(e)  {
+  //     e.stopPropagation();
+  //     $( this ).toggleClass('active' );
+  //     messageMenu.toggleClass('cbp-spmenu-open' );
+  //     if (companyMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
+  //       companyMenu.removeClass('cbp-spmenu-open');
+  //       profileMenu.removeClass('cbp-spmenu-open');
+  //     }
+  //   });
+  //   showCompany.on("click", function(e)  {
+  //     e.stopPropagation();
+  //     $( this ).toggleClass('active' );
+  //     companyMenu.toggleClass('cbp-spmenu-open' );
+  //     if (messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
+  //       messageMenu.removeClass('cbp-spmenu-open');
+  //       profileMenu.removeClass('cbp-spmenu-open');
+  //     }
+  //   });
+  //   showProfile.on("click", function(e)  {
+  //     e.stopPropagation();
+  //     $( this ).toggleClass('active' );
+  //     profileMenu.toggleClass('cbp-spmenu-open' );
+  //     if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open')) {
+  //       companyMenu.removeClass('cbp-spmenu-open');
+  //       messageMenu.removeClass('cbp-spmenu-open');
+  //     }
+  //   });
+  // }
+  // activeMobileMenu();
 
   //Javascript for closing the mobile menu on click of anywhere on the screen
   $(window).click(function() {
