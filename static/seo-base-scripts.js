@@ -144,45 +144,6 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     mobileSearchFacets.toggleClass("show-mobile-search-facets");
   });
 
-  // //Javascript for activating the mobile footer menu
-  // function activeMobileMenu() {
-  //   var showMessages = $( '#show_messages' );
-  //   var showCompany = $( '#show_company' );
-  //   var showProfile = $( '#show_profile' );
-  //   var messageMenu = $("#cbp-spmenu-m4");
-  //   var companyMenu = $("#cbp-spmenu-c4");
-  //   var profileMenu = $("#cbp-spmenu-p4");
-  //
-  //   showMessages.on("click", function(e)  {
-  //     e.stopPropagation();
-  //     $( this ).toggleClass('active' );
-  //     messageMenu.toggleClass('cbp-spmenu-open' );
-  //     if (companyMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-  //       companyMenu.removeClass('cbp-spmenu-open');
-  //       profileMenu.removeClass('cbp-spmenu-open');
-  //     }
-  //   });
-  //   showCompany.on("click", function(e)  {
-  //     e.stopPropagation();
-  //     $( this ).toggleClass('active' );
-  //     companyMenu.toggleClass('cbp-spmenu-open' );
-  //     if (messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-  //       messageMenu.removeClass('cbp-spmenu-open');
-  //       profileMenu.removeClass('cbp-spmenu-open');
-  //     }
-  //   });
-  //   showProfile.on("click", function(e)  {
-  //     e.stopPropagation();
-  //     $( this ).toggleClass('active' );
-  //     profileMenu.toggleClass('cbp-spmenu-open' );
-  //     if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open')) {
-  //       companyMenu.removeClass('cbp-spmenu-open');
-  //       messageMenu.removeClass('cbp-spmenu-open');
-  //     }
-  //   });
-  // }
-  // activeMobileMenu();
-
   //Javascript for closing the mobile menu on click of anywhere on the screen
   $(window).click(function() {
     var messageMenu = $("#cbp-spmenu-m4");
@@ -255,7 +216,7 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     var didScroll;
     var lastScrollTop = 0;
     var delta = 5;
-    var navbarHeight = $('nav').outerHeight();
+    var navbarHeight = $('nav.main-nav-topbar').outerHeight();
     var viewPort = $(window).width();
 
     //Checking to see if it's a mobile device or if the screensize is in mobile view
@@ -282,11 +243,11 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
           // If they scrolled down and are past the navbar, add class .nav-up.
           if (scroll_Top > lastScrollTop && scroll_Top > navbarHeight){
               // Scroll Down
-              $('nav').removeClass('nav-down').addClass('nav-up');
+              $('nav.main-nav-topbar').removeClass('nav-down').addClass('nav-up');
           } else {
               // Scroll Up
               if(scroll_Top + $(window).height() < $(document).height()) {
-                  $('nav').removeClass('nav-up').addClass('nav-down');
+                  $('nav.main-nav-topbar').removeClass('nav-up').addClass('nav-down');
               }
           }
 

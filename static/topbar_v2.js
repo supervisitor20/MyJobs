@@ -5,10 +5,6 @@ $(window).ready(function () {
     if (typeof tools_companies !== 'undefined') {
         get_companies();
     }
-    //
-    // $('li.mobile-trigger').click(function () {
-    //     $('li.mobile-sub-nav', this).toggle();
-    // });
 
     $.each($('li.mobile-trigger'), function(i) {
       var self = $(this);
