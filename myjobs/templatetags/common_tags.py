@@ -279,6 +279,7 @@ def get_menus(context):
         "label": "Messages",
         "id": "menu-inbox",
         "icon": "icon-envelope icon-white",
+        "mobile_icon_v2": "glyphicon glyphicon-envelope",
         "iconLabel": str(new_messages.count() if new_messages else 0),
         "submenus": [
             {
@@ -293,6 +294,7 @@ def get_menus(context):
         beta_menu.update({
             "label": "Beta",
             "id": "beta-menu",
+            "mobile_icon_v2": "glyphicon glyphicon-flag",
         })
 
         try:
@@ -315,6 +317,7 @@ def get_menus(context):
     employer_menu = {
         "label": "Employers",
         "id": "employers",
+        "mobile_icon_v2": "glyphicon glyphicon-briefcase",
         "submenuId": "employer-apps",
         "submenus": [
         ]
@@ -361,6 +364,9 @@ def get_menus(context):
 
     profile_menu = {
         "label": user.email,
+        "id": "profile_mobile_v2",
+        "mobile_icon_v2": "glyphicon glyphicon-user",
+        "label_mobile_v2": "Profile",
         "submenus": [
             {
                 "id": "profile-tab",

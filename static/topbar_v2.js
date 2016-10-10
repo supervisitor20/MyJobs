@@ -1,10 +1,15 @@
 //TODO: as time permits, figure what's truly needed in here
 var readCookie = utils.readCookie;
 
-$(window).ready(function() {
+$(window).ready(function () {
     if (typeof tools_companies !== 'undefined') {
         get_companies();
     }
+
+    $('li.mobile-trigger').click(function () {
+        $('li.mobile-sub-nav', this).toggle();
+    });
+
 });
 
 function get_companies() {
@@ -13,7 +18,7 @@ function get_companies() {
     parent_list_item.setAttribute("id", "current-company");
     parent_list_item.setAttribute("class", "submenu-dropdown");
 
-    $(parent_list_item).bind("click", function(event) {
+    $(parent_list_item).bind("click", function (event) {
         event.preventDefault();
         var li_last_child = parent_list_item.lastChild;
 
@@ -37,7 +42,7 @@ function get_companies() {
     var company_not_found = false;
 
     // Creating li items for "list" (the ul)
-    for(var i=0; i<tools_companies.length; i++) {
+    for (var i = 0; i < tools_companies.length; i++) {
         var company = tools_companies[i];
 
         // Get company name from cid, if cid exists
@@ -57,8 +62,8 @@ function get_companies() {
 
         var list_item = document.createElement("li");
         list_item.setAttribute("id", "company_" + String(company.id));
-        list_item.innerHTML = "<a>"+company.name+"</a>";
-        list_item.onclick = function() {
+        list_item.innerHTML = "<a>" + company.name + "</a>";
+        list_item.onclick = function () {
             // this.id Format: company_COMPANYID
             var item_id = this.id.split("_")[1];
 
@@ -66,7 +71,7 @@ function get_companies() {
             set_cookie(item_id, 14);
 
             // replaces text of main li holding company list
-            parent_list_item.firstChild.innerHTML = "<strong>"+ this.firstChild.innerHTML +"</strong>";
+            parent_list_item.firstChild.innerHTML = "<strong>" + this.firstChild.innerHTML + "</strong>";
 
             process_reload();
         };
@@ -78,7 +83,7 @@ function get_companies() {
         menu_company_name = tools_companies[0].name;
     }
 
-    label.innerHTML =  menu_company_name + ' <span class="caret"></span>';
+    label.innerHTML = menu_company_name + ' <span class="caret"></span>';
     parent_list_item.appendChild(label);
     parent_list_item.appendChild(list);
 
@@ -89,9 +94,9 @@ function get_companies() {
 
 function process_reload() {
     /*
-    Looks at what path the user is currently in.  If the path is showing
-    an app that changing company matters redirect the user to a desired
-    location instead of causing a 404.
+     Looks at what path the user is currently in.  If the path is showing
+     an app that changing company matters redirect the user to a desired
+     location instead of causing a 404.
      */
     var path = window.location.pathname,
         // Apps that changing company IDs would be a problem.
@@ -102,10 +107,10 @@ function process_reload() {
         app_name,
         i;
 
-    for(i=0; i < app_names.length; i++) {
+    for (i = 0; i < app_names.length; i++) {
         app_name = app_names[i];
-        if(path.indexOf(app_name) != -1) {
-            if(app_name === "candidates") {
+        if (path.indexOf(app_name) != -1) {
+            if (app_name === "candidates") {
                 // window.location.href used instead of window.location.replace
                 // to simulate a link instead of a redirect.
                 window.location.href = new_href + "/candidates/view/";
@@ -114,11 +119,11 @@ function process_reload() {
                 // was causing race conditions
                 return false
             }
-            else if(app_name === "prm") {
+            else if (app_name === "prm") {
                 window.location.href = new_href + "/prm/view/";
                 return false
             }
-            else if(app_name === "posting") {
+            else if (app_name === "posting") {
                 window.location.href = new_href + "/posting/admin/";
                 return false
             }
@@ -129,13 +134,13 @@ function process_reload() {
 
 function set_cookie(company_id, days) {
     var expires;
-    if(days) {
+    if (days) {
         var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        expires = "; expires="+date.toGMTString();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
     } else
         expires = "";
-    document.cookie = "myjobs_company="+company_id+expires+"; path=/";
+    document.cookie = "myjobs_company=" + company_id + expires + "; path=/";
 }
 
 function delete_cookie() {
