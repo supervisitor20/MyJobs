@@ -144,19 +144,6 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
     mobileSearchFacets.toggleClass("show-mobile-search-facets");
   });
 
-  // //Javascript for closing the mobile menu on click of anywhere on the screen
-  // $(window).click(function() {
-  //   var messageMenu = $("#cbp-spmenu-m4");
-  //   var companyMenu = $("#cbp-spmenu-c4");
-  //   var profileMenu = $("#cbp-spmenu-p4");
-  //
-  //   if (companyMenu.hasClass('cbp-spmenu-open') || messageMenu.hasClass('cbp-spmenu-open') || profileMenu.hasClass('cbp-spmenu-open')) {
-  //     companyMenu.removeClass('cbp-spmenu-open');
-  //     messageMenu.removeClass('cbp-spmenu-open');
-  //     profileMenu.removeClass('cbp-spmenu-open');
-  //   }
-  // });
-
   //Function for initializing the accordion of the search criteria
   function filterAccordion() {
     var accordion = $(".filter-accordion");

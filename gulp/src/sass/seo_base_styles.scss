@@ -99,6 +99,20 @@ legend{
   font-weight: 100;
 }
 /*NEED TO ORGANIZE THIS CSS*/
+.no-scroll {
+  overflow: hidden;
+}
+.overlay {
+  display: none;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  position: fixed;
+  padding: 0;
+  transition: opacity .5s;
+}
 
 .mobile-list-open {
   display: list-item !important;
@@ -925,7 +939,7 @@ margin-bottom: 50px;
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
     width: 100vw !important;
-    left: 30%;
+    left: 41%;
     top: -50px !important;
 
     li {
@@ -941,7 +955,7 @@ margin-bottom: 50px;
   .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 2));
     width: 100vw !important;
-    left: 45%;
+    left: 49%;
     top: -92px !important;
 
     li {
@@ -957,7 +971,7 @@ margin-bottom: 50px;
   .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
-    left: 93%;
+    left: 86%;
     top: -132px !important;
 
     li {
@@ -973,7 +987,7 @@ margin-bottom: 50px;
   .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
       margin-left: calc(-1 * ((100vw - 100%) / 2));
       width: 100vw !important;
-      right: 5%;
+      right: 13%;
       top: -215px !important;
 
       li {
@@ -1177,6 +1191,22 @@ margin-bottom: 50px;
 
 /* Extra Small Devices, Phones */
 @media only screen and (min-width : 480px) {
+  .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 10));
+    left: 40%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 2));
+    left: 50%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%)));
+    left: 88%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
+      margin-left: calc(-1 * ((100vw - 100%) / 2));
+      right: 12%;
+  }
 
   #mobile_social_media {
     padding-top: 50px;
@@ -1207,7 +1237,22 @@ margin-bottom: 50px;
 
 /* Small Devices, Tablets */
 @media only screen and (min-width : 768px) {
-
+  .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 10));
+    left: 36%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%) / 2));
+    left: 50%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
+    margin-left: calc(-1 * ((100vw - 100%)));
+    left: 93%;
+  }
+  .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
+      margin-left: calc(-1 * ((100vw - 100%) / 2));
+      right: 7%;
+  }
   #mobile_social_media {
     padding-top: 50px;
     margin: 0 auto;
