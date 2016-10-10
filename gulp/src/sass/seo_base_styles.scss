@@ -652,6 +652,46 @@ margin-bottom: 50px;
       }
     }
   }
+  .moc-section {
+    display:inline-block;
+    position: relative;
+    width: 100%;
+
+    i {
+      position: absolute;
+      left: 10px;
+			font-size: 24px;
+			top: 10px;
+      color: $blue;
+    }
+    .helptext {
+      position: absolute;
+      bottom: 12px;
+      color: $blue;
+      left: 15%;
+    }
+    label {
+      display: none;
+    }
+    #moc {
+      @extend .search-input-boxes;
+      width: 100%;
+      padding: 0 0 0 40px;
+
+      &::-webkit-input-placeholder {
+        color: $blue;
+      }
+      &::-moz-placeholder {
+        color: $blue;
+      }
+      &:-ms-input-placeholder {
+        color: $blue;
+      }
+      &:-moz-placeholder {
+        color: $blue;
+      }
+    }
+  }
   .search-submit {
     display: inline-block;
     margin: 0 15px 10px 0;
@@ -1128,6 +1168,10 @@ margin-bottom: 50px;
       width: 93% !important;
       margin-bottom: 20px;
     }
+    .moc-section {
+      width: 93% !important;
+      margin-bottom: 20px;
+    }
     .submit-section {
       padding: 0 12px;
     }
@@ -1383,6 +1427,10 @@ margin-bottom: 50px;
       margin-bottom: 0px;
     }
     .where-section {
+      width: 100% !important;
+      margin-bottom: 0px;
+    }
+    .moc-section {
       width: 100% !important;
       margin-bottom: 0px;
     }
