@@ -10,8 +10,20 @@ $(window).ready(function () {
       var self = $(this);
       var currentListItem = self.children('.mobile-submenu').children('.mobile-sub-nav');
       self.on('click', function(e) {
-        $('.mobile-submenu').children('.mobile-sub-nav').removeClass('mobile-list-open');
-        currentListItem.addClass('mobile-list-open');
+        e.stopPropagation();
+        $('.mobile-submenu').children('.mobile-sub-nav').not(currentListItem).removeClass('mobile-list-open')
+        currentListItem.toggleClass('mobile-list-open');
+      });
+    });
+
+    //Javascript for closing the mobile menu on click of anywhere on the screen
+    $(window).click(function() {
+      var mobileSubContent = $('li.mobile-trigger').children('.mobile-submenu').children('.mobile-sub-nav');
+      $.each(mobileSubContent, function(i) {
+        var self = $(this);
+        if(self.hasClass('mobile-list-open')){
+          self.removeClass('mobile-list-open');
+        }
       });
     });
 
