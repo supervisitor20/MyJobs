@@ -29,7 +29,6 @@ from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
 from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
 import import_jobs
-from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from import_jobs.models import ImportRecord
 from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from postajob.models import Job
@@ -174,6 +173,9 @@ def send_search_digest(self, search):
     :search: SavedSearch or SavedSearchDigest instance to be mailed
     """
     try:
+        newrelic.agent.add_custom_parameter("search_id", search.pk)
+        newrelic.agent.add_custom_parameter("url", search.url)
+        newrelic.agent.add_custom_parameter("feed", search.feed)
         search.send_email()
     except Exception as e:
         logger.error("Unable to send saved search for Saved Search ID: %s", search.pk)
