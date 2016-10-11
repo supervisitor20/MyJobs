@@ -175,7 +175,9 @@ def send_search_digest(self, search):
     """
     try:
         search.send_email()
-    except (ValueError, URLError, HTTPError) as e:
+    except Exception as e:
+        logger.error("Unable to send saved search for Saved Search ID: %s", search.pk)
+        logger.exception(e)
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
 
