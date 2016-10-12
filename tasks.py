@@ -182,8 +182,6 @@ def send_search_digest(self, search):
             raise send_search_digest.retry(arg=[search], exc=e)
 
 
-
-
 PARTNER_LIBRARY_SOURCES = {
     'Employment Referral Resource Directory': {
         'search_url': 'https://ofccp.dol-esa.gov/errd/directory.jsp',
