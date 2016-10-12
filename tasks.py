@@ -173,15 +173,15 @@ def send_search_digest(self, search):
     :search: SavedSearch or SavedSearchDigest instance to be mailed
     """
     try:
-        newrelic.agent.add_custom_parameter("search_id", search.pk)
-        newrelic.agent.add_custom_parameter("url", search.url)
-        newrelic.agent.add_custom_parameter("feed", search.feed)
+        newrelic.agent.add_custom_parameter("search", search)
         search.send_email()
     except Exception as e:
         logger.error("Unable to send saved search for Saved Search ID: %s", search.pk)
         logger.exception(e)
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
+
+
 
 
 PARTNER_LIBRARY_SOURCES = {

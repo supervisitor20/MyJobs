@@ -347,7 +347,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.mock_urlopen.side_effect = ValueError("bork bork bork")
 
         SavedSearchDigestFactory(user=self.user)
-        search = SavedSearchFactory(user=self.user, feed='www.my.jobs')
+        search = SavedSearchFactory(user=self.user, feed='http://www.my.jobs')
 
         # Celery raises a retry that makes the test fail. In reality
         # everything is fine, so ignore the retry.
