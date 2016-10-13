@@ -55,19 +55,16 @@ function get_companies() {
     });
 
     var label = document.createElement("a");
-
     // Company id from myjobs_company cookie
     var cid = readCookie("myjobs_company");
-
     var list = document.createElement("ul");
     list.setAttribute("id", "select_company");
 
     // Company name used to show user what current company is selected
     var menu_company_name;
-
     var company_not_found = false;
 
-    // Creating li items for "list" (the ul)
+    // Creating li items for "select_company" ul
     for (var i = 0; i < tools_companies.length; i++) {
         var company = tools_companies[i];
 
@@ -90,7 +87,6 @@ function get_companies() {
         list_item.setAttribute("id", "company_" + String(company.id));
         list_item.innerHTML = "<a>" + company.name + "</a>";
         list_item.onclick = function () {
-            // this.id Format: company_COMPANYID
             var item_id = this.id.split("_")[1];
 
             // 14 = 2 weeks
@@ -116,6 +112,34 @@ function get_companies() {
     var parent_element = document.getElementById("employer-apps"),
         first_child = parent_element.firstChild;
     parent_element.insertBefore(parent_list_item, first_child);
+
+    // ---- Mobile ---- //
+    var mobile_parent_list_item = document.createElement("li"),
+        mobile_link = document.createElement("a");
+    mobile_parent_list_item.setAttribute("id", "mobile-parent-company-list");
+    mobile_parent_list_item.setAttribute("class", "mobile-sub-nav");
+    mobile_link.innerHTML = "<strong>" + menu_company_name + "</strong>";
+    mobile_parent_list_item.appendChild(mobile_link);
+
+    var pop_menu = document.getElementById("mobile-employer-apps");
+    pop_menu.appendChild(mobile_parent_list_item);
+
+    var mobile_list = document.createElement("ul");
+    mobile_list.setAttribute("id", "mobile_select_company");
+    mobile_parent_list_item.appendChild(mobile_list);
+
+    for (var j = 0; j < tools_companies.length; j++) {
+        var mobile_list_item = document.createElement("li");
+        mobile_list_item.setAttribute("id", "mobilecompany_" + tools_companies[j].id);
+        mobile_list_item.innerHTML = "<a>"+ tools_companies[j].name +"</a>";
+        mobile_list_item.onclick = function() {
+            var mobile_item_id = this.id.split("_")[1];
+            set_cookie(mobile_item_id, 14);
+            mobile_parent_list_item.firstChild.innerHTML = "<strong>"+ this.firstChild.innerHTML + "</strong>";
+            process_reload();
+        };
+        mobile_list.appendChild(mobile_list_item);
+    }
 }
 
 function process_reload() {
@@ -135,7 +159,7 @@ function process_reload() {
 
     for (i = 0; i < app_names.length; i++) {
         app_name = app_names[i];
-        if (path.indexOf(app_name) != -1) {
+        if (path.indexOf(app_name) !== -1) {
             if (app_name === "candidates") {
                 // window.location.href used instead of window.location.replace
                 // to simulate a link instead of a redirect.

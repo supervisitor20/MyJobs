@@ -319,6 +319,7 @@ def get_menus(context):
         "id": "employers",
         "mobile_icon_v2": "glyphicon glyphicon-briefcase",
         "submenuId": "employer-apps",
+        "mobile_submenuId": "mobile-employer-apps",
         "submenus": [
         ]
     } if user.roles.exists() else {}
