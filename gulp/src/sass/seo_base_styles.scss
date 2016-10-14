@@ -243,21 +243,6 @@ a.direct_optionsLess {
       height: 100% !important;
   }
 
-  #back-btn-li {
-      float: left;
-      width: 40px !important;
-      height: 100%;
-      z-index: 999;
-  }
-
-  .sub-nav-item {
-      margin-left: 40px;
-  }
-
-  #pop-menu .desktop_hide {
-      display: none;
-  }
-
   /*
    * nav id and submenu-dropdown class are used by JavaScript
    * in topbar.js for legacy mobile view. Will become obsolete when new mobile view
@@ -832,8 +817,6 @@ margin-bottom: 50px;
 
   .mobile-submenu {
     position: absolute;
-    top: -180px;
-    width: 75px;
     background-color: $white;
     padding: 0;
   }
@@ -1016,7 +999,7 @@ margin-bottom: 50px;
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
     left: 86%;
-    top: -132px !important;
+    top: -260px !important;
 
     li {
       text-align: left;
