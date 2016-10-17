@@ -16,4 +16,4 @@ def views_last_7_days(request):
 
     """
 
-    return Http404("View not yet enabled")
+    raise Http404('View not yet enabled')
