@@ -295,6 +295,7 @@ def get_menus(context):
             "label": "Beta",
             "id": "beta-menu",
             "mobile_icon_v2": "glyphicon glyphicon-flag",
+            "submenus": [],
         })
 
         try:
@@ -304,15 +305,18 @@ def get_menus(context):
             can_read_outreach_email_address = False
 
         if can_read_outreach_email_address:
-            beta_menu.update({
-                "submenus": [
-                    {
+            beta_menu["submenus"].append({
                         "id": "nonuseroutreach",
                         "href": url("prm/view/nonuseroutreach"),
                         "label": "Non-User Outreach",
-                    }
-                ],
-            })
+                    })
+
+        # permissions to be added in Python API PR
+        beta_menu["submenus"].append({
+                    "id": "analytics",
+                    "href": url("analytics/view/main"),
+                    "label": "Analytics",
+                })
 
     employer_menu = {
         "label": "Employers",
