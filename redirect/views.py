@@ -185,10 +185,11 @@ def home(request, guid, vsid=None, debug=None):
         nv = request.COOKIES.get('de_nv') or now_iso
         response.set_cookie('de_nv', nv, expires=30*60,
                             domain=request.get_host())
+        referrer = request.META.get('HTTP_REFERER', '')
         analytics.update({
             # Python tacks microseconds onto the end while JavaScript does
             # milliseconds. JS can handle parsing both, as can python-dateutil.
-            'to': now_iso, 're': request.META.get('HTTP_REFERER', ''),
+            'time': now_iso, 'to': now_iso, 're': referrer,
             'pn': pn, 'pr': pr, 'hn': hn, 'se': se, 'nv': nv})
 
         response['X-JSON-Header'] = json.dumps(analytics)
