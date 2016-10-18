@@ -214,7 +214,7 @@ a.direct_optionsLess {
   margin-bottom: 25px;
 }
 /*MAIN NAVIGATION HEADER STYLES*/
-  /* Legacy Topbar styles, keeping until PD-2630 is completed */
+  /* Topbar styles */
   .menu-container > ul > li:hover > a {
       cursor: pointer;
       background-color: #f5f5f5;
@@ -234,57 +234,7 @@ a.direct_optionsLess {
       display: list-item;
   }
 
-  #logged-in-li {
-      padding: 4px !important;
-  }
-
-  #back-btn {
-      border-right: 1px solid #FFF !important;
-      height: 100% !important;
-  }
-
-  /*
-   * nav id and submenu-dropdown class are used by JavaScript
-   * in topbar.js for legacy mobile view. Will become obsolete when new mobile view
-   * is implemented.
-  */
-
-  #nav.active ul#pop-menu li a:hover,
-  #nav li:hover ul#pop-menu li a:hover {
-      background:#444;
-      color: #fff;
-      text-decoration:none;
-  }
-
-  #nav ul#pop-menu {
-      background:#444;
-      padding: 0;
-      margin: 2px 0 0 -2px;
-      position:absolute;
-      display: none;
-      border-bottom-left-radius: 4px;
-      border-bottom-right-radius: 4px;
-      width: 275px;
-  }
-
-  #nav a {
-      color: #fff;
-  }
-
-  #nav > li {
-      padding: 5px 2px 3px 2px;
-  }
-
-  .menu-container > .desktop_hide {
-      display: none;
-  }
-
-  #menu-inbox ~ ul li > p {
-      color: white;
-      padding-left: 4px;
-  }
-
- /* End legacy Topbar styles*/
+ /* End Topbar styles*/
 
 #last-microsite-name {
   color: $white;
@@ -365,6 +315,8 @@ a.direct_optionsLess {
 #brand_logo {
   .logo {
     position: relative;
+    width: 12rem;
+    height: 8rem;
   }
   .logo-text {
     position: relative;
@@ -681,7 +633,7 @@ margin-bottom: 50px;
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 9px;
-    font-size: 14px;
+    font-size: 18px;
     border-radius: 3px;
     font-weight: 100;
   }
@@ -954,10 +906,10 @@ margin-bottom: 50px;
 =            Bootstrap 3 Media Queries             =
 ==================================================*/
 
-/*==========  Mobile First Method  ==========*/
+/*==========  Mobile First Approach  ==========*/
 
 /* Custom, iPhone Retina */
-@media only screen and (min-width : 320px) {
+@media only screen and (min-width : 320px) and (max-width: 769px) {
 
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
@@ -1168,7 +1120,6 @@ margin-bottom: 50px;
     }
     .search-submit {
       width: 94%;
-			font-size: 18px;
     }
     .share-social.search-submit {
       display: none;
@@ -1252,26 +1203,23 @@ margin-bottom: 50px;
   #direct_jobListingTitle, .jobs-found {
     width: 95%;
   }
-  #search {
-    .submit-section {
-        padding: 0 14px;
-    }
-  }
+
   #brand_logo {
 
     .location-logo {
       margin: 0 auto;
-      width: 37%;
+      width: 32%;
     }
     .site-name {
       left: 6%;
       bottom: 15px;
+      font-size: 3rem;
     }
   }
 }
 
 /* Small Devices, Tablets */
-@media only screen and (min-width : 768px) {
+@media only screen and (min-width : 769px) {
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
     left: 36%;
@@ -1302,15 +1250,118 @@ margin-bottom: 50px;
        width: 17%;
      }
   }
-  #search {
-    .submit-section {
-        padding: 0 23px;
-    }
-  }
+
 }
 
-/* DirectEmployers Mobile Break Point */
-@media only screen and (max-width : 991px) {
+/* DirectEmployers Mobile Break Point iPad */
+@media only screen
+  and (min-width: 769px)
+  and (max-width: 991px) {
+
+
+  #direct_companyModule {
+    display: none;
+  }
+  #mobile_social_media {
+    display: none;
+  }
+
+  .mobile-search-facets {
+    display: none;
+  }
+
+  #direct_jobListingTitle, .jobs-found {
+    margin: 0 auto;
+    width: 91%;
+  }
+
+  .mobile-search-facets.show-mobile-search-facets {
+    display: block;
+  }
+
+  .facets {
+    display: none;
+  }
+
+  .social-media {
+    margin-top: 75px;
+  }
+
+  .mobile-search-criteria {
+    text-align: center;
+    padding: 25px 0px;
+  }
+
+  .mobile-search-btn {
+    background-color: $btn-gray;
+    color: $primary-navy-blue;
+    padding: 10px 20px;
+    border-radius: 2px;
+  }
+
+  .right-content {
+    padding-left: 5rem;
+  }
+
+  #search {
+    margin-bottom: 0;
+
+    .search-submit {
+      margin: 0 1rem 0 0;
+      padding: 0.9rem 2rem;
+    }
+
+    .submit-section {
+      padding: 0;
+    }
+  }
+
+  #menu-inbox > div.icon-envelope {
+      display: none;
+  }
+
+  #menu-inbox::before {
+    content: "Inbox ";
+  }
+
+  #mobile_footer {
+    display: none;
+  }
+
+  #footer_mobile {
+    display: none;
+  }
+
+  #main_nav {
+
+    .main-nav-topbar {
+      min-height: 0;
+      height: 5rem;
+    }
+
+    .left-logo {
+      padding-top: 0.5rem;
+      font-size: 1.6rem;
+    }
+
+    .navbar-nav.navbar-right.right-nav {
+
+      .dropdown {
+        a {
+          font-size: 1.8rem;
+        }
+      }
+    }
+
+  }
+
+  #footer {
+    .footer-content li {
+      display: inline-block;
+      font-size: 1.8rem;
+      padding: 1rem;
+    }
+  }
 
 }
 
