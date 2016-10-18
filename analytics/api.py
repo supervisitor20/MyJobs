@@ -53,7 +53,7 @@ def views_last_7_days(request):
     #
     # return HttpResponse(json.dumps([r for r in records]))
 
-    days_back = 4
+    days_back = 7
     def get_start_end(date_in):
         day_start = date_in.replace(hour=0, minute=0, second=0,
                                          microsecond=0)
@@ -80,10 +80,10 @@ def views_last_7_days(request):
         #     },
         # ]
 
-        query = {'$type': 'date',
-                 'time_first_viewed': {
+        query = {'time_first_viewed': {
+                     '$type': 'date',
                      '$gte': day_start,
-                     '$lte': day_end
+                     '$lte': day_end,
                     }
                  }
         count_views = job_views.find(query).count()
