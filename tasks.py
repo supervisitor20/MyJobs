@@ -537,7 +537,7 @@ def expire_jobs():
         job.save()
 
 
-@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_results=True)
+@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_result=True)
 def task_clear_bu_cache(buid, **kwargs):
     try:
         BusinessUnit.clear_cache(buid)
