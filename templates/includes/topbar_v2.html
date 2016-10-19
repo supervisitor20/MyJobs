@@ -64,7 +64,7 @@
         <ul class="mob-nav-section">
             {% for menu in menus %}
                 <li class="col-xs-3 mob-nav-content mobile-trigger" {% if menu.submenus %}class=""{% endif %}>
-                  <a id="{{ menu.id }}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  <a id="{{ menu.id }}-mobile" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                       {% if menu.mobile_icon_v2 %}
                           <i class="{{ menu.mobile_icon_v2 }}"></i>
                       {% endif %}

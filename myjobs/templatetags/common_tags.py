@@ -281,6 +281,7 @@ def get_menus(context):
         "icon": "icon-envelope icon-white",
         "mobile_icon_v2": "glyphicon glyphicon-envelope",
         "iconLabel": str(new_messages.count() if new_messages else 0),
+        "mobile_submenuId": "mobile-messages",
         "submenus": [
             {
                 "id": "menu-inbox-all",
@@ -295,6 +296,7 @@ def get_menus(context):
             "label": "Beta",
             "id": "beta-menu",
             "mobile_icon_v2": "glyphicon glyphicon-flag",
+            "mobile_submenuId": "mobile-beta",
         })
 
         try:
@@ -368,6 +370,7 @@ def get_menus(context):
         "id": "profile_mobile_v2",
         "mobile_icon_v2": "glyphicon glyphicon-user",
         "label_mobile_v2": "Profile",
+        "mobile_submenuId": "mobile-profile",
         "submenus": [
             {
                 "id": "profile-tab",
