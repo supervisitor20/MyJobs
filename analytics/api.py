@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 from secrets import MONGO_HOST
 
-from django.shortcuts import Http404, HttpResponse
+from django.shortcuts import HttpResponse
 
-from universal.helpers import get_company_or_404
 from myjobs.decorators import requires
 
 
