@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Bar from './components/Bar';
-import Line from './components/Line';
+import AreaChart from './components/AreaChart';
+import BarChart from './components/BarChart';
 import PieChart from './components/PieChart';
 
 ReactDOM.render(
   <div>
-      <Bar/>
-      <Line/>
-      <PieChart/>
+    <AreaChart/>
+    <BarChart/>
+    <PieChart/>
   </div>
   , document.getElementById('content')
 );
