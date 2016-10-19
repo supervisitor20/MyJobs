@@ -311,12 +311,18 @@ def get_menus(context):
                         "label": "Non-User Outreach",
                     })
 
-        # permissions to be added in Python API PR
-        beta_menu["submenus"].append({
-                    "id": "analytics",
-                    "href": url("analytics/view/main"),
-                    "label": "Analytics",
-                })
+        try:
+            can_view_analytics_info = user.can(
+                company, "view analytics")
+        except MissingAppLevelAccess:
+            can_view_analytics_info = False
+
+        if can_view_analytics_info:
+            beta_menu["submenus"].append({
+                        "id": "analytics",
+                        "href": url("analytics/view/main"),
+                        "label": "Analytics",
+                    })
 
     employer_menu = {
         "label": "Employers",
