@@ -54,3 +54,85 @@ def views_last_7_days(request):
     records = job_views.aggregate(query)
 
     return HttpResponse(json.dumps([format_dict(r) for r in records]))
+
+
+@requires("view analytics")
+def activity_last_7_days(request):
+    """
+    retrieve analytics hits in last 7 days, return as json
+
+    :param request:
+    :return: dump of data
+
+    """
+    def format_dict(input_dict):
+        record_date = input_dict['_id']
+        return {
+            'day': "%s/%s/%s" % (record_date['year'],
+                                 record_date['month'],
+                                 record_date['day']),
+            'hits': input_dict['count']
+        }
+
+    client = MongoClient(MONGO_HOST)
+    filtered_analytics = client.analytics.analytics
+
+    query = [
+        {'$match': {'time': {'$type': 'date'}}},
+        {'$match': {'time': {'$gte': datetime.today() -
+                                     timedelta(days=7)}}},
+        {'$match': {'time': {'$lte': datetime.today()}}},
+        {
+            "$group" :
+                {
+                    "_id":
+                        {
+                            "month": {"$month": "$time"},
+                            "day": {"$dayOfMonth": "$time"},
+                            "year": {"$year": "$time"}
+                        },
+                    "count": {"$sum": 1}
+                }
+        },
+        {'$sort': {'_id': 1}}
+    ]
+
+    records = filtered_analytics.aggregate(query)
+
+    return HttpResponse(json.dumps([format_dict(r) for r in records]))
+
+@requires("view analytics")
+def campaign_percentages(request):
+    """
+    retrieve campaign percentages, return as json
+
+    :param request:
+    :return: dump of data
+
+    """
+    def format_dict(input_dict):
+        record_date = input_dict['_id']
+        return input_dict
+
+    client = MongoClient(MONGO_HOST)
+    filtered_analytics = client.analytics.analytics
+
+    query = [
+        {'$match': {'dn': {'$type': 'string'}}},
+        {
+            "$group" :
+                {
+                    "_id":
+                        {
+                            "campaign": '$dn',
+                        },
+                    "count": {"$sum": 1}
+                }
+        },
+        {'$limit': 10},
+        {'$sort': {'_id': 1}}
+    ]
+
+    records = filtered_analytics.aggregate(query)
+
+    return HttpResponse(json.dumps([format_dict(r) for r in records]))
