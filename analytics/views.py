@@ -1,6 +1,10 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from myjobs.decorators import requires
+
+
+@requires("view analytics")
 def analytics_main(request):
     """
     View for analytics react module
