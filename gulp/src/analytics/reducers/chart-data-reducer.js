@@ -9,6 +9,6 @@ export default handleActions({
     return {
       ...state,
       'JobViewsChartData': action.payload,
-    }
-  }
+    };
+  },
 }, initialChartData);

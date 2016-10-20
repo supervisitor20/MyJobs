@@ -1,9 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {Col, Row} from 'react-bootstrap';
 import {doGetChartData} from '../actions/chart-data-actions';
-import {BarChart, Bar, Brush, Cell, CartesianGrid, ReferenceLine, ReferenceDot,
-  XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import {BarChart, Bar, Cell, CartesianGrid, XAxis, YAxis, Tooltip, Legend} from 'recharts';
 
 import LineChartDisplay from './LineChartDisplay';
 import AreaChartDisplay from './AreaChartDisplay';
@@ -14,7 +12,7 @@ class ChartDisplay extends React.Component {
     dispatch(doGetChartData());
   }
   render() {
-        const data = this.props.chartData.JobViewsChartData;
+    const data = this.props.chartData.JobViewsChartData;
 //     const data = [
 //   { name: 'food', uv: 2400, pv: 2013, amt: 4500 },
 //   { name: 'cosmetic', uv: 3300, pv: 2000, amt: 6500 },
@@ -24,7 +22,7 @@ class ChartDisplay extends React.Component {
     return (
       <div className="cardWrapper">
         <BarChart width={800} height={600} data={data}>
-            <XAxis dataKey="day" interval='1' padding={{ left: 50, right: 50 }} />
+            <XAxis dataKey="day" interval="1" padding={{left: 50, right: 50}} />
             <YAxis yAxisId="a" type="number" domain={[0, 'dataMax + 500']} />
             <Legend />
             <Tooltip />

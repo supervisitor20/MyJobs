@@ -44,5 +44,5 @@ ReactDOM.render(
   <Provider store={store}>
     <ChartDisplay />
   </Provider>
-  ,document.getElementById('content')
+  , document.getElementById('content')
 );
