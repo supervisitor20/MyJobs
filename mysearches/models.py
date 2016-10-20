@@ -597,7 +597,7 @@ class PartnerSavedSearch(SavedSearch):
         super(PartnerSavedSearch, self).save(*args, **kwargs)
         if new:
             now = datetime.now()
-            after_ten = now.hour >= 10
+            after_ten = now.hour > 10 or (now.hour == 10 and now.minute > 0)
             from tasks import send_search_digest
             if after_ten:
                 if self.frequency == 'D':

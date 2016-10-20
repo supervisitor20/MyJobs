@@ -599,7 +599,7 @@ class PartnerSavedSearchTests(MyJobsBase):
         }
         self.assertEqual(SavedSearch.objects.filter(**kwargs).count(), 0)
 
-    @freeze_time("2016-10-01 11:00:00")
+    @freeze_time("2016-10-01 10:01:00")
     def test_send_pss_after_10(self):
         """
         Ensures that partner saved searches that are created and scheduled for
