@@ -598,15 +598,16 @@ class PartnerSavedSearch(SavedSearch):
         if new:
             now = datetime.now()
             after_ten = now.hour >= 10
+            from tasks import send_search_digest
             if after_ten:
                 if self.frequency == 'D':
-                    self.send_email()
+                    send_search_digest.s(self).apply_async()
                 elif self.frequency == 'W':
                     if int(self.day_of_week) == now.isoweekday():
-                        self.send_email()
+                        send_search_digest.s(self).apply_async()
                 elif self.frequency == 'M':
                     if self.day_of_month == now.day:
-                        self.send_email()
+                        send_search_digest.s(self).apply_async()
 
     def create_record(self, change_msg=None, body=None, failure_message=None):
         """
