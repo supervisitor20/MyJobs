@@ -296,6 +296,7 @@ def get_menus(context):
             "label": "Beta",
             "id": "beta-menu",
             "mobile_icon_v2": "glyphicon glyphicon-flag",
+            "submenus": [],
             "mobile_submenuId": "mobile-beta",
         })
 
@@ -306,15 +307,24 @@ def get_menus(context):
             can_read_outreach_email_address = False
 
         if can_read_outreach_email_address:
-            beta_menu.update({
-                "submenus": [
-                    {
+            beta_menu["submenus"].append({
                         "id": "nonuseroutreach",
                         "href": url("prm/view/nonuseroutreach"),
                         "label": "Non-User Outreach",
-                    }
-                ],
-            })
+                    })
+
+        try:
+            can_view_analytics_info = user.can(
+                company, "view analytics")
+        except MissingAppLevelAccess:
+            can_view_analytics_info = False
+
+        if can_view_analytics_info:
+            beta_menu["submenus"].append({
+                        "id": "analytics",
+                        "href": url("analytics/view/main"),
+                        "label": "Analytics",
+                    })
 
     employer_menu = {
         "label": "Employers",

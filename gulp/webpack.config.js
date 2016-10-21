@@ -14,6 +14,7 @@ module.exports = {
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
+    analytics: './src/analytics/main',
     custom: './src/sass/custom.scss',
     seo_base_styles: './src/sass/seo_base_styles.scss',
   },
