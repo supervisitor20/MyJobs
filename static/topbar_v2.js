@@ -1,4 +1,3 @@
-//TODO: as time permits, figure what's truly needed in here
 var readCookie = utils.readCookie;
 
 $(window).ready(function () {
@@ -9,6 +8,10 @@ $(window).ready(function () {
     $.each($('li.mobile-trigger'), function(i) {
       var self = $(this);
       var currentListItem = self.children('.mobile-submenu').children('.mobile-sub-nav');
+      currentListItem.on('click', function(e) {
+        e.stopPropagation();
+      });
+
       self.on('click', function(e) {
         e.stopPropagation();
         $('.mobile-submenu').children('.mobile-sub-nav').not(currentListItem).removeClass('mobile-list-open');
@@ -118,7 +121,18 @@ function get_companies() {
         mobile_link = document.createElement("a");
     mobile_parent_list_item.setAttribute("id", "mobile-parent-company-list");
     mobile_parent_list_item.setAttribute("class", "mobile-sub-nav");
-    mobile_link.innerHTML = "<strong>" + menu_company_name + "</strong>";
+    // This is for the toggling of Employers list of companies
+    $(mobile_parent_list_item).bind("click", function (event) {
+        event.preventDefault();
+        var mobile_li_last_child = mobile_parent_list_item.lastChild;
+
+        if (mobile_li_last_child.currentStyle ? mobile_li_last_child.currentStyle.display : getComputedStyle(mobile_li_last_child, null).display === "none")
+            mobile_li_last_child.style.display = "block";
+        else
+            mobile_li_last_child.style.display = "none";
+    });
+
+    mobile_link.innerHTML = "<strong><span class='glyphicon glyphicon-triangle-bottom'></span> " + menu_company_name + "</strong>";
     mobile_parent_list_item.appendChild(mobile_link);
 
     var pop_menu = document.getElementById("mobile-employer-apps");

@@ -947,11 +947,11 @@ margin-bottom: 50px;
       }
     }
   }
-  .mob-nav-section .mob-nav-content:nth-of-type(3) .mobile-submenu {
+  #mobile-employer-apps {
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
     left: 86%;
-    top: -260px !important;
+    top: -25.5rem;
 
     li {
       text-align: left;
@@ -960,11 +960,28 @@ margin-bottom: 50px;
 
       a {
         color: $primary-navy-blue;
-        display: inline-block;
-        width: 100%;
       }
     }
   }
+
+  #mobile_select_company {
+    display: none;
+    max-height: 8.1rem;
+    max-width: 34rem;
+    overflow-y: scroll;
+  }
+
+  /** Be default iOS devices hides scroll bar, this makes all devices show scroll bar for nested sub menus **/
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 2.7rem;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 0.5rem;
+    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+  }
+
   .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
       margin-left: calc(-1 * ((100vw - 100%) / 2));
       width: 100vw !important;
