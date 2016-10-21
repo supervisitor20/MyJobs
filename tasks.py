@@ -29,7 +29,6 @@ from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
 from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
 import import_jobs
-from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from import_jobs.models import ImportRecord
 from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from postajob.models import Job
@@ -174,8 +173,11 @@ def send_search_digest(self, search):
     :search: SavedSearch or SavedSearchDigest instance to be mailed
     """
     try:
+        newrelic.agent.add_custom_parameter("search", search)
         search.send_email()
-    except (ValueError, URLError, HTTPError) as e:
+    except Exception as e:
+        logger.error("Unable to send saved search for Saved Search ID: %s", search.pk)
+        logger.exception(e)
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
 
@@ -535,7 +537,7 @@ def expire_jobs():
         job.save()
 
 
-@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_results=True)
+@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_result=True)
 def task_clear_bu_cache(buid, **kwargs):
     try:
         BusinessUnit.clear_cache(buid)
