@@ -27,8 +27,8 @@ django-widget-tweaks==1.1.2
 django-cors-headers==1.1.0
 factory_boy==2.5.0
 git+git://github.com/DirectEmployers/django-fsm-widget.git@dc928b0b034a3f4c456e83b3e4511c53a24b98a5
-git+git://github.com/DirectEmployers/saved-search.git
-git+git://github.com/DirectEmployers/solrsitemap.git
+git+git://github.com/DirectEmployers/saved-search.git@1b78ebb785874956fa2805ec16f880165caae243
+git+git://github.com/DirectEmployers/solrsitemap.git@d6967443a17ace8ffff550b536b3b4f133404b3a
 git+git://github.com/DirectEmployers/unicode-slugify.git
 git+git://github.com/arneb/django-messages.git@bc443623fde4945a841c48665b477a529f4ec676
 git+git://github.com/frankban/django-endless-pagination.git@725bde91db6da2be0663652b0df4501ba72306e7
