@@ -17,9 +17,11 @@ from django.http import Http404
 from django.test import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
+
+from freezegun import freeze_time
+
 from myprofile.tests.factories import SecondaryEmailFactory
 from seo.models import SeoSite
-
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory, RoleFactory
@@ -812,6 +814,7 @@ class SearchesOverviewTests(MyPartnersTestCase):
         self.assertEqual(len(searches('div', class_='product-card')), 10)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SearchFeedTests(MyPartnersTestCase):
     """Tests relating to the search feed page, /prm/view/searches/feed"""
     def setUp(self):
@@ -855,6 +858,7 @@ class SearchFeedTests(MyPartnersTestCase):
             self.assertIn(text, details[i].get_text().strip())
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SearchEditTests(MyPartnersTestCase):
     """Tests relating to the edit search page /prm/view/searches/edit"""
     def setUp(self):
@@ -1645,6 +1649,7 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
                           partner.tags.values_list('name', flat=True))
 
 
+@freeze_time("2016-10-01 10:00:00")
 class ContactLogEntryTests(MyPartnersTestCase):
     def test_impersonation_session_logged(self):
         """

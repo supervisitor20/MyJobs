@@ -11,6 +11,8 @@ from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
+
+from freezegun import freeze_time
 from jira.client import JIRA
 from mock import Mock
 
@@ -36,6 +38,7 @@ import tasks
 from tasks import process_batch_events
 
 
+@freeze_time("2016-10-01 10:00:00")
 class MyJobsViewsTests(MyJobsBase):
     def setUp(self):
         super(MyJobsViewsTests, self).setUp()
