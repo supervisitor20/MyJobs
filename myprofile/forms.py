@@ -58,6 +58,7 @@ class NameForm(BaseUserForm):
         form_name = _("Personal Information")
         model = Name
         widgets = generate_custom_widgets(model)
+        exclude = []
 
 
 class SecondaryEmailForm(BaseUserForm):
@@ -69,6 +70,7 @@ class SecondaryEmailForm(BaseUserForm):
         form_name = _("Secondary Email")
         model = SecondaryEmail
         widgets = generate_custom_widgets(model)
+        exclude = []
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -91,6 +93,7 @@ class EducationForm(BaseUserForm):
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'
+        exclude = []
 
 
 class EmploymentHistoryForm(BaseUserForm):
@@ -106,6 +109,7 @@ class EmploymentHistoryForm(BaseUserForm):
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'
+        exclude = []
 
 
 class TelephoneForm(BaseUserForm):
@@ -127,6 +131,7 @@ class TelephoneForm(BaseUserForm):
     class Meta:
         form_name = _("Phone Number")
         model = Telephone
+        exclude = []
         widgets = generate_custom_widgets(model)
         widgets['country_dialing'].attrs['class'] = "phoneCountryCode"
         widgets['area_dialing'].attrs['class'] = "phoneAreaCode"
@@ -146,6 +151,7 @@ class AddressForm(BaseUserForm):
     class Meta:
         form_name = _("Address")
         model = Address
+        exclude = []
         widgets = generate_custom_widgets(model)
 
 
@@ -159,6 +165,7 @@ class MilitaryServiceForm(BaseUserForm):
     class Meta:
         form_name = _("Military Service History")
         model = MilitaryService
+        exclude = []
         widgets = generate_custom_widgets(model)
         widgets['branch'].attrs['placeholder'] = 'Army, Navy, Air Force...'
         widgets['service_start_date'].attrs['placeholder'] = 'ie 05/30/2005'
@@ -184,6 +191,7 @@ class LicenseForm(BaseUserForm):
     class Meta:
         form_name = _("License")
         model = License
+        exclude = []
         widgets = generate_custom_widgets(model)
 
 
@@ -195,6 +203,7 @@ class WebsiteForm(BaseUserForm):
     class Meta:
         form_name = _('Website')
         model = Website
+        exclude = []
         widgets = generate_custom_widgets(model)
         widgets['description'] = Textarea(attrs={'rows': 5, 'cols': 24})
 
@@ -207,6 +216,7 @@ class SummaryForm(BaseUserForm):
     class Meta:
         form_name = _('Summary')
         model = Summary
+        exclude = []
         widgets = generate_custom_widgets(model)
         widgets['the_summary'] = Textarea(attrs={'rows': 5, 'cols': 24})
 
@@ -221,6 +231,7 @@ class VolunteerHistoryForm(BaseUserForm):
     class Meta:
         form_name = _("Most Recent Volunteer History")
         model = VolunteerHistory
+        exclude = []
         widgets = generate_custom_widgets(model)
         widgets['start_date'].attrs['placeholder'] = 'ie 05/30/2005'
         widgets['end_date'].attrs['placeholder'] = 'ie 06/01/2007'

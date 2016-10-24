@@ -6,7 +6,7 @@ import uuid
 
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.http import Http404, HttpResponseForbidden
@@ -27,7 +27,7 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.utils.translation import ugettext_lazy as _
 
 from default_settings import GRAVATAR_URL_PREFIX, GRAVATAR_URL_DEFAULT
@@ -361,8 +361,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         return list(company.role_set.filter(name="Admin").values_list(
             'user', flat=True)) == [self.id]
 
-    natural_key = __unicode__
-
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         # TODO: Fix PartnerSavedSearch-User relationship.
@@ -417,7 +415,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Is the user affected by a password expiration policy?
 
         """
-        Company = get_model('seo', 'Company')
+        Company = apps.get_model('seo', 'Company')
         user_companies = (
             Company.objects.filter(role__user=self)
             .filter(password_expiration=True))
@@ -859,7 +857,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         user, _ = User.objects.create_user(
             email=email, send_email=False, in_reserve=True)
-        Invitation = get_model('registration', 'Invitation')
+        Invitation = apps.get_model('registration', 'Invitation')
         invitation = Invitation.objects.create(
             inviting_user=self, inviting_company=company, invitee=user)
 

@@ -213,8 +213,6 @@ class Location(models.Model):
     def __unicode__(self):
         return ", ".join(filter(bool, [self.city, self.state]))
 
-    natural_key = __unicode__
-
     def save(self, **kwargs):
         super(Location, self).save(**kwargs)
 
@@ -258,8 +256,6 @@ class Contact(ArchivedModel):
         if self.email:
             return self.email
         return 'Contact object'
-
-    natural_key = __unicode__
 
     def delete(self, *args, **kwargs):
         pre_delete.send(sender=Contact, instance=self, using='default')
@@ -354,8 +350,6 @@ class Partner(ArchivedModel):
 
     def __unicode__(self):
         return self.name
-
-    natural_key = __unicode__
 
     # get_searches_for_partner
     def get_searches(self):
@@ -520,7 +514,6 @@ class PartnerLibrary(models.Model):
     def __unicode__(self):
         return self.name
 
-    natural_key = __unicode__
 
     def save(self, *args, **kwargs):
         self.has_valid_location = self.st.upper() in states.keys()
@@ -794,43 +787,43 @@ MAX_ATTACHMENT_MB = 4
 S3_CONNECTION = 'S3Connection:s3.amazonaws.com'
 
 
-class PRMAttachment(models.Model):
+def get_file_name(instance, filename):
+    """
+    Ensures that a file name is unique before uploading.
+    The PRMAttachment instance requires an extra attribute,
+    partner (a Partner instance) to be set in order to create the
+    file name.
 
-    def get_file_name(self, filename):
-        """
-        Ensures that a file name is unique before uploading.
-        The PRMAttachment instance requires an extra attribute,
-        partner (a Partner instance) to be set in order to create the
-        file name.
+    """
+    filename, extension = path.splitext(filename)
+    filename = '.'.join([sub(r'[\W]', '', filename),
+                         sub(r'[\W]', '', extension)])
 
-        """
-        filename, extension = path.splitext(filename)
-        filename = '.'.join([sub(r'[\W]', '', filename),
-                             sub(r'[\W]', '', extension)])
+    # If the uploaded file only contains invalid characters the end
+    # result will be a file named "."
+    if not filename or filename == '.':
+        filename = 'unnamed_file'
 
-        # If the uploaded file only contains invalid characters the end
-        # result will be a file named "."
-        if not filename or filename == '.':
-            filename = 'unnamed_file'
+    uid = uuid4()
+    if instance.partner:
+        partner = instance.partner.pk
+        owner = instance.partner.owner.pk
+    else:
+        partner = owner = 'none'
+    path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
+    name = "%s/%s" % (path_addon, filename)
 
+    # Make sure that in the unlikely event that a filepath/uid/filename
+    # combination isn't actually unique a new unique id
+    # is generated.
+    while default_storage.exists(name):
         uid = uuid4()
-        if self.partner:
-            partner = self.partner.pk
-            owner = self.partner.owner.pk
-        else:
-            partner = owner = 'none'
         path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
         name = "%s/%s" % (path_addon, filename)
 
-        # Make sure that in the unlikely event that a filepath/uid/filename
-        # combination isn't actually unique a new unique id
-        # is generated.
-        while default_storage.exists(name):
-            uid = uuid4()
-            path_addon = "mypartners/%s/%s/%s" % (owner, partner, uid)
-            name = "%s/%s" % (path_addon, filename)
+    return name
 
-        return name
+class PRMAttachment(models.Model):
 
     attachment = models.FileField(upload_to=get_file_name, blank=True,
                                   null=True, max_length=767)
@@ -934,8 +927,7 @@ class Tag(models.Model):
     def __unicode__(self):
         return "%s for %s" % (self.name, self.company.name)
 
-    def natural_key(self):
-        return self.name
+
 
     class Meta:
         unique_together = ('name', 'company')

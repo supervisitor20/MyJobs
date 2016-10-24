@@ -7,7 +7,7 @@ import re
 import urllib
 from urlparse import urlparse, urlunparse
 
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, Http404
@@ -135,7 +135,7 @@ def get_company(request):
     Uses the myjobs_company cookie to determine what the current company is.
 
     """
-    if not request.user or not request.user.pk or request.user.is_anonymous():
+    if not hasattr(request, "user") or not request.user or not request.user.pk or request.user.is_anonymous():
         return None
 
     # If settings.SITE is set we're on a microsite, so get the company
@@ -153,7 +153,7 @@ def get_company(request):
 
     company = request.COOKIES.get('myjobs_company')
     if company:
-        company = get_object_or_404(get_model('seo', 'company'), pk=company)
+        company = get_object_or_404(apps.get_model('seo', 'company'), pk=company)
 
         if not company.user_has_access(request.user):
             company = None
@@ -164,7 +164,7 @@ def get_company(request):
 
         # This is ugly and is in place only because we didn't update
         # postajob to use roles before the go-live.
-        return get_model('seo', 'Company').objects.filter(
+        return apps.get_model('seo', 'Company').objects.filter(
             role__user=request.user).first()
 
     return company

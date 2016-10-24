@@ -25,7 +25,7 @@ from myjobs.tests.factories import UserFactory
 from mypartners.models import OutreachEmailAddress
 from redirect.actions import sourcecodetag
 from redirect.models import (DestinationManipulation, ExcludedViewSource,
-                             CompanyEmail)
+                             CompanyEmail, Redirect)
 from redirect.tests.factories import (RedirectFactory, RedirectArchiveFactory,
                                       CanonicalMicrositeFactory,
                                       DestinationManipulationFactory,
@@ -329,6 +329,8 @@ class ViewSourceViewTests(RedirectBase):
 
         self.redirect.url = 'directemployers.org/#directemployers/'
         self.redirect.save()
+
+        redirect = Redirect.objects.get(pk=self.redirect.pk)
 
         response = self.client.get(
             reverse('home', args=[self.redirect_guid,

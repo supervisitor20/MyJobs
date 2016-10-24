@@ -11,9 +11,6 @@ from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
 from myjobs.forms import MyJobsAdminAuthenticationForm
 
-admin.autodiscover()
-admin.site.login_form = MyJobsAdminAuthenticationForm
-
 # API Resources
 v1_api = Api(api_name='v1')
 v1_api.register(UserResource())
@@ -30,7 +27,7 @@ urlpatterns = patterns(
     url(r'^saved-search/', include('mysearches.urls')),
     url(r'^api/', include(v1_api.urls)),
     url(r'^ajax_select/', include(ajax_select_urls)),
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', admin.site.urls),
     url(r'^authorize/', include('mysignon.urls')),
     url(r'^message/', include('mymessages.urls')),
     url(r'^prm/', include('mypartners.urls')),

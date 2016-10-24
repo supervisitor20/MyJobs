@@ -34,7 +34,7 @@ def home(request, guid, vsid=None, debug=None):
     guid = '{%s}' % uuid.UUID(guid)
 
     # Providing z=1 as a query parameter enables custom parameters
-    enable_custom_queries = request.REQUEST.get('z') == '1'
+    enable_custom_queries = request.GET.get('z') == '1' or request.POST.get('z') == '1'
     expired = False
     user_agent_vs = None
     redirect_url = None

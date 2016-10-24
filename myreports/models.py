@@ -3,7 +3,7 @@ import json
 from django.core.files.base import ContentFile
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
-from django.db.models.loading import get_model
+from django.apps import apps
 
 from myreports.helpers import serialize, determine_user_type
 from myreports.datasources import ds_json_drivers
@@ -66,7 +66,7 @@ class Report(models.Model):
 
     @property
     def queryset(self):
-        model = get_model(self.app, self.model)
+        model = apps.get_model(self.app, self.model)
         return model.objects.from_search(self.owner, self.filters)
 
     def __unicode__(self):

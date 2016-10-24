@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import re
 from seo.helpers import create_businessunit
 from seo.models import BusinessUnit
-from import_jobs import add_company, get_jobsfs_zipfile, get_jobs_from_zipfile,\
+from import_jobs.init import add_company, get_jobsfs_zipfile, get_jobs_from_zipfile,\
     filter_current_jobs, DATA_DIR, download_feed_file, FeedImportError
 from transform import hr_xml_to_json
 

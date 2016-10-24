@@ -4,14 +4,14 @@ import sys
 from django.core.management import call_command
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TransactionTestCase
+from django.test import TestCase
 from django.conf import settings
 
 import redirect_settings
 import secrets
 
 
-class RedirectBase(TransactionTestCase):
+class RedirectBase(TestCase):
     def setUp(self):
         super(RedirectBase, self).setUp()
         self._middleware_classes = settings.MIDDLEWARE_CLASSES
@@ -25,7 +25,7 @@ class RedirectBase(TransactionTestCase):
         settings.MIDDLEWARE_CLASSES = redirect_settings.MIDDLEWARE_CLASSES
         settings.TEMPLATE_CONTEXT_PROCESSORS = (
             redirect_settings.TEMPLATE_CONTEXT_PROCESSORS)
-        settings.SOLR = {'default': 'http://127.0.0.1:8983/solr/seo/'}
+        settings.SOLR = {'default': 'http://127.0.0.1:8983/solr/seo_test/'}
         settings.options = secrets.options
         settings.my_agent_auth = secrets.my_agent_auth
         clear_url_caches()

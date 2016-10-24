@@ -5,7 +5,7 @@ import shutil
 
 from seo_pysolr import Solr
 from xmlparse import DEv2JobFeed, guid_from_link
-from import_jobs import DATA_DIR, download_feed_file, update_solr
+from import_jobs.init import DATA_DIR, download_feed_file, update_solr
 from postajob.tests.factories import SitePackageFactory
 from seo.tests.factories import BusinessUnitFactory, CompanyFactory
 from setup import DirectSEOBase

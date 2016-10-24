@@ -213,7 +213,7 @@ def get_redirect_url(request, guid_redirect, vsid, guid, debug_content=None):
         manipulations = None
         # Check for a 'vs' request parameter. If it exists, this is an
         # apply click and vs should be used in place of vsid
-        apply_vs = request.REQUEST.get('vs')
+        apply_vs = request.GET.get('vs')
         skip_microsite = False
         vs_to_use = vsid
         if apply_vs:
@@ -268,7 +268,7 @@ def get_redirect_url(request, guid_redirect, vsid, guid, debug_content=None):
                                 guid,
                                 vs_to_use)
                 redirect_url = add_view_source_group(redirect_url, vs_to_use)
-                if request.REQUEST.get('z') == '1':
+                if request.GET.get('z') == '1':
                     # Enable adding vs and z to the query string; these
                     # will be passed to the microsite, which will pass
                     # them back to us on apply clicks
@@ -277,7 +277,7 @@ def get_redirect_url(request, guid_redirect, vsid, guid, debug_content=None):
                         exclusions=[])
                 return_dict['redirect_url'] = redirect_url
 
-            return_dict['enable_custom_queries'] = request.REQUEST.get('z') == '1'
+            return_dict['enable_custom_queries'] = request.GET.get('z') == '1'
             return_dict['qs'] = request.META['QUERY_STRING']
             do_manipulations(guid_redirect, manipulations,
                              return_dict, debug_content)
@@ -611,7 +611,7 @@ def get_syndication_redirect(request, redirect, guid, view_source,
     :response: HttpResponsePermanentRedirect object if this is a syndication
         hit, otherwise None
     """
-    new_site_id = request.REQUEST.get('my.jobs.site.id', None)
+    new_site_id = request.GET.get('my.jobs.site.id', None)
     response = None
     if new_site_id is not None:
         try:
@@ -626,13 +626,13 @@ def get_syndication_redirect(request, redirect, guid, view_source,
             redirect_url = 'http://{domain}/{id}/job/?vs={view_source}'.format(
                 domain=site.domain, id=guid, view_source=view_source)
 
-            enable_custom_queries = request.REQUEST.get('z') == '1'
+            enable_custom_queries = request.GET.get('z') == '1'
             if enable_custom_queries:
                 redirect_url = add_custom_queries(request, redirect_url,
                                                   debug_content)
 
             redirect_url = add_view_source_group(redirect_url, view_source)
-            if request.REQUEST.get('z') == '1':
+            if request.GET.get('z') == '1':
                 # Add all query parameters but my.jobs.site.id to redirect_url.
                 redirect_url = replace_or_add_query(
                     redirect_url, '&%s' % request.META.get('QUERY_STRING'),

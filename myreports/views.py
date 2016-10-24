@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 
 from django.core.files.base import ContentFile
-from django.db.models.loading import get_model
+from django.apps import apps
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
@@ -108,7 +108,7 @@ def view_records(request, app="mypartners", model="contactrecord"):
         values = request.POST.getlist("values")
         order_by = request.POST.get("order_by", None)
 
-        records = get_model(app, model).objects.from_search(
+        records = apps.get_model(app, model).objects.from_search(
             company, filters)
 
         if values:
@@ -220,7 +220,7 @@ class ReportView(View):
         name = request.POST.get('report_name', str(datetime.now()))
         filters = request.POST.get('filters', "{}")
 
-        records = get_model(app, model).objects.from_search(
+        records = apps.get_model(app, model).objects.from_search(
             company, filters)
 
         contents = serialize('json', records)
@@ -250,7 +250,7 @@ def regenerate(request):
     if request.method == 'GET':
         report_id = request.GET.get('id', 0)
         report = get_object_or_404(
-            get_model('myreports', 'report'), pk=report_id)
+            apps.get_model('myreports', 'report'), pk=report_id)
 
         report.regenerate()
 
@@ -277,7 +277,7 @@ def downloads(request):
     if request.is_ajax() and request.method == 'GET':
         report_id = request.GET.get('id', 0)
         report = get_object_or_404(
-            get_model('myreports', 'report'), pk=report_id)
+            apps.get_model('myreports', 'report'), pk=report_id)
 
         common_blacklist = ['pk', 'approval_status', 'archived_on']
         blacklist = {
@@ -342,7 +342,7 @@ def download_report(request):
     order_by = request.GET.get('order_by', None)
 
     report = get_object_or_404(
-        get_model('myreports', 'report'), pk=report_id)
+        apps.get_model('myreports', 'report'), pk=report_id)
 
     if order_by:
         report.order_by = order_by
