@@ -915,7 +915,7 @@ margin-bottom: 50px;
     margin-left: calc(-1 * ((100vw - 100%) / 10));
     width: 100vw !important;
     left: 41%;
-    top: -50px !important;
+    top: -50px;
 
     li {
       text-align: left;
@@ -929,11 +929,18 @@ margin-bottom: 50px;
       }
     }
   }
+
+  #mobile-messages {
+    &:nth-of-type(1) {
+       top: -9.2rem;
+    }
+  }
+
   .mob-nav-section .mob-nav-content:nth-of-type(2) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 2));
     width: 100vw !important;
     left: 49%;
-    top: -92px !important;
+    top: -92px;
 
     li {
       text-align: left;
@@ -947,6 +954,13 @@ margin-bottom: 50px;
       }
     }
   }
+
+  #mobile-profile {
+    &:last-of-type {
+       top: -21rem;
+    }
+  }
+
   #mobile-employer-apps {
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
