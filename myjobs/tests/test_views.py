@@ -25,8 +25,8 @@ from mymessages.tests.factories import MessageInfoFactory
 from mypartners.tests.factories import PartnerFactory
 from myprofile.models import Name, Education
 from myprofile.tests.factories import SecondaryEmailFactory
-from mysearches.models import PartnerSavedSearch
 from mysearches.models import SavedSearch, SavedSearchLog
+from mysearches.tests.factories import PartnerSavedSearchFactory
 from registration import signals as custom_signals
 from registration.models import ActivationProfile
 from secrets import options, my_agent_auth
@@ -798,9 +798,9 @@ class MyJobsViewsTests(MyJobsBase):
         # should not have any messages
         self.assertFalse(creator.message_set.all())
 
-        PartnerSavedSearch.objects.create(user=self.user, provider=company,
-                                          created_by=creator,
-                                          partner=partner)
+        PartnerSavedSearchFactory(user=self.user, provider=company,
+                                  created_by=creator,
+                                  partner=partner)
 
         # simulate a user opting out
         self.user.opt_in_myjobs = False
@@ -833,9 +833,9 @@ class MyJobsViewsTests(MyJobsBase):
         # should not have any messages
         self.assertFalse(creator.message_set.all())
 
-        PartnerSavedSearch.objects.create(user=self.user, provider=company,
-                                          created_by=creator,
-                                          partner=partner)
+        PartnerSavedSearchFactory(user=self.user, provider=company,
+                                  created_by=creator,
+                                  partner=partner)
 
         self.client.get(reverse('unsubscribe_all'))
 

@@ -61,3 +61,4 @@ django-impersonate==0.9.2  # 0.9.2 is the last version with Django 1.6 support
 pymongo==3.2.2
 html5lib==0.999 #Put in place because as of 2016-07-18 bleach depends on html5lib>=0.999 and the latest version of html5lib is screwed up.
 python-dateutil==2.4.2
+freezegun==0.3.7
