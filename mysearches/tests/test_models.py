@@ -29,6 +29,7 @@ from registration.models import ActivationProfile, Invitation
 from tasks import send_search_digests, requeue_missed_searches
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SavedSearchModelsTests(MyJobsBase):
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -408,6 +409,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class PartnerSavedSearchTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchTests, self).setUp()

@@ -1,9 +1,12 @@
 import json
 import urllib2
+
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
+
+from freezegun import freeze_time
 
 from myjobs.tests.setup import MyJobsBase
 from seo.tests.factories import CompanyFactory
@@ -16,6 +19,7 @@ from mysearches.tests.factories import (SavedSearchDigestFactory,
                                         PartnerSavedSearchFactory)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class MySearchViewTests(MyJobsBase):
     def setUp(self):
         super(MySearchViewTests, self).setUp()
