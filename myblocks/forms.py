@@ -22,100 +22,122 @@ class BlockForm(forms.ModelForm):
 class ApplyLinkBlockForm(BlockForm):
     class Meta:
         model = models.ApplyLinkBlock
+        exclude = []
 
 
 class BreadboxBlockForm(BlockForm):
     class Meta:
         model = models.BreadboxBlock
+        exclude = []
 
 
 class ColumnBlockForm(forms.ModelForm):
     class Meta:
         exclude = ('updated', 'template', )
         model = models.ColumnBlock
+        exclude = []
 
 
 class ContentBlockForm(BlockForm):
     class Meta:
         model = models.ContentBlock
+        exclude = []
 
 
 class FacetBlurbBlockForm(BlockForm):
     class Meta:
         model = models.FacetBlurbBlock
+        exclude = []
 
 
 class JobDetailBlockForm(BlockForm):
     class Meta:
         model = models.JobDetailBlock
+        exclude = []
 
 
 class JobDetailBreadboxBlockForm(BlockForm):
     class Meta:
         model = models.JobDetailBreadboxBlock
+        exclude = []
 
 
 class JobDetailHeaderBlockForm(BlockForm):
     class Meta:
         model = models.JobDetailHeaderBlock
+        exclude = []
 
 
 class LoginBlockForm(BlockForm):
     class Meta:
         model = models.LoginBlock
+        exclude = []
 
 
 class MoreButtonBlockForm(BlockForm):
     class Meta:
         model = models.MoreButtonBlock
+        exclude = []
 
 
 class RegistrationBlockForm(BlockForm):
     class Meta:
         model = models.RegistrationBlock
+        exclude = []
+
 
 class ToolsWidgetBlockForm(BlockForm):
     class Meta:
         model = models.ToolsWidgetBlock
+        exclude = []
+
 
 class SavedSearchWidgetBlockForm(BlockForm):
     class Meta:
         model = models.SavedSearchWidgetBlock
+        exclude = []
 
 
 class SavedSearchesListWidgetBlockForm(BlockForm):
     class Meta:
         model = models.SavedSearchesListWidgetBlock
+        exclude = []
 
 
 class SearchBoxBlockForm(BlockForm):
     class Meta:
         model = models.SearchBoxBlock
+        exclude = []
 
 
 class SearchFilterBlockForm(BlockForm):
     class Meta:
         model = models.SearchFilterBlock
+        exclude = []
 
 
 class SearchResultBlockForm(BlockForm):
     class Meta:
         model = models.SearchResultBlock
+        exclude = []
 
 
 class SearchResultHeaderBlockForm(BlockForm):
     class Meta:
         model = models.SearchResultBlock
+        exclude = []
 
 
 class ShareBlockForm(BlockForm):
     class Meta:
         model = models.ShareBlock
+        exclude = []
 
 
 class VeteranSearchBoxForm(BlockForm):
     class Meta:
         model = models.VeteranSearchBox
+        exclude = []
 
 
 class PageForm(forms.ModelForm):

@@ -23,7 +23,7 @@ from django.core.urlresolvers import reverse
 from BeautifulSoup import BeautifulSoup
 from lxml import etree
 
-from import_jobs import clear_solr, download_feed_file, update_solr
+from import_jobs.init import clear_solr, download_feed_file, update_solr
 from slugify import slugify
 from xmlparse import DEv2JobFeed
 from moc_coding import models as moc_models

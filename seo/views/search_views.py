@@ -38,7 +38,7 @@ from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
 from settings import DEFAULT_PAGE_SIZE
 from xmlparse import text_fields
-from import_jobs import add_jobs, delete_by_guid
+from import_jobs.init import add_jobs, delete_by_guid
 from transform import transform_for_postajob
 
 from myblocks.views import BlockView

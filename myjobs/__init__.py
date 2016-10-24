@@ -31,7 +31,7 @@ __version__ = get_version()
 def hide_production_solr_from_tests():
     """
     This code here to protect production/staging systems from errant
-    unit tests. Including this code as a PROJECT_APP __init__.py
+    unit tests. Including this code as a PROJECT_APP init.py
     based on information found here:
 
     http://stackoverflow.com/questions/6791911/execute-code-when-django-starts-once-only

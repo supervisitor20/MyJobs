@@ -72,17 +72,33 @@ STATICFILES_FINDERS = (
 
 ADMIN_MEDIA_PREFIX = '//d2e48ltfsb5exy.cloudfront.net/myjobs/admin/'
 
-TEMPLATE_DIRS = (
-    join(ROOT_PATH, 'templates')
-)
-
-TEMPLATE_LOADERS = (
-    ('django.template.loaders.cached.Loader', (
-        'django.template.loaders.filesystem.Loader',
-        'django.template.loaders.app_directories.Loader',
-        'django.template.loaders.eggs.Loader',
-    )),
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [join(ROOT_PATH, 'templates')],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.core.context_processors.debug',
+                'django.core.context_processors.i18n',
+                'django.core.context_processors.media',
+                'django.core.context_processors.static',
+                'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.request',
+                'myjobs.context_processors.current_site_info',
+                'myjobs.context_processors.absolute_url',
+                'myjobs.context_processors.activities',
+            ],
+            'loaders': [
+                ('django.template.loaders.cached.Loader', (
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                    'django.template.loaders.eggs.Loader',
+                )),
+            ]
+        }
+    }
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
@@ -263,19 +279,6 @@ CELERYBEAT_SCHEDULE = {
 }
 
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.request',
-    'myjobs.context_processors.current_site_info',
-    'myjobs.context_processors.absolute_url',
-    'myjobs.context_processors.activities',
-)
-
 INTERNAL_IPS = ('127.0.0.1', '216.136.63.6',)
 
 INSTALLED_APPS = (
@@ -293,11 +296,10 @@ INSTALLED_APPS = (
     'djcelery',
     'django_jenkins',
     'widget_tweaks',
-    'south',
     'django_nose',
     'tastypie',
     'captcha',
-    'endless_pagination',
+    'el_pagination',
     'storages',
     'django_extensions',
     'haystack',
@@ -361,7 +363,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'file': {
             'filename': '/var/log/directseo/dseo.log',

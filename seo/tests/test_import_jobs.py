@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from import_jobs import (DATA_DIR, add_company, remove_expired_jobs, update_solr, get_jobs_from_zipfile,
+from import_jobs.init import (DATA_DIR, add_company, remove_expired_jobs, update_solr, get_jobs_from_zipfile,
     filter_current_jobs, update_job_source)
 
 from seo.models import BusinessUnit, Company

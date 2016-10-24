@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.contrib.admin import site
 from django.core.urlresolvers import reverse
-from django.db.models import get_app, get_models
+from django.db.models import get_models
+from django.apps  import apps
 
 from myjobs.models import User
 from myjobs.tests.setup import MyJobsBase
@@ -25,7 +26,7 @@ def admin_test(self):
 
     models = []
     for app in settings.PROJECT_APPS:
-        models.extend(get_models(get_app(app)))
+        models.extend(apps.get_app_config(app).models)
     admins = []
     for model in models:
         try:

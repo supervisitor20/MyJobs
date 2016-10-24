@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import helpers
-from django.contrib.admin.util import unquote
+from django.contrib.admin.utils import unquote
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.models import Group
@@ -340,6 +340,7 @@ class GoogleAnalyticsForm(forms.ModelForm):
 
     class Meta:
         model = GoogleAnalytics
+        exclude = []
 
 
 class GoogleAnalyticsAdmin(admin.ModelAdmin):
@@ -420,7 +421,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
         return self.form
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def add_view(self, request, form_url='', extra_context=None):
         """The 'add' admin view for this model."""
         model = self.model
@@ -471,7 +472,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
                                        add=True)
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def change_view(self, request, object_id, extra_context=None):
         """The 'change' admin view for this model."""
         model = self.model
@@ -645,7 +646,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
     )
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def add_view(self, request, form_url='', extra_context=None):
         """The 'add' admin view for this model."""
         model = self.model
@@ -739,7 +740,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                                        add=True)
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def change_view(self, request, object_id, extra_context=None):
         """The 'change' admin view for this model."""
         model = self.model
@@ -924,7 +925,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
         return actions
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def add_view(self, request, form_url='', extra_context=None):
         """The 'add' admin view for this model."""
         model = self.model
@@ -1025,7 +1026,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                                        add=True)
 
     @csrf_protect_m
-    @transaction.commit_on_success
+    @transaction.atomic
     def change_view(self, request, object_id, extra_context=None):
         """The 'change' admin view for this model."""
         model = self.model

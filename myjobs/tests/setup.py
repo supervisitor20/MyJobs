@@ -124,9 +124,9 @@ class MyJobsBase(TestCase):
         self.ms_solr.delete(q='*:*')
 
         self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-        context_processors = self.base_context_processors + (
+        context_processors = self.base_context_processors + [
             'mymessages.context_processors.message_lists',
-        )
+        ]
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS', context_processors)
         setattr(settings, 'MEMOIZE', False)
 

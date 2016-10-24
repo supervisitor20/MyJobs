@@ -26,7 +26,7 @@ from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
 from django.utils.timezone import localtime, now
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django_remote_forms.forms import RemoteForm
@@ -1053,7 +1053,7 @@ def partner_get_records(request):
         else:
             meetingorevent_name = 'Meetings & Events'
 
-        data = SortedDict()
+        data = OrderedDict()
 
         data['email'] = {"count": email, "name": email_name,
                          'typename': 'email'}

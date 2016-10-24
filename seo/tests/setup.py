@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.template import context
 
-from import_jobs import DATA_DIR
+from import_jobs.init import DATA_DIR
 from saved_search.groupsearch import SolrGrpEngine, SolrGroupSearchBackend
 from seo.search_backend import DESolrSearchBackend, DESolrEngine
 from seo.tests.factories import BusinessUnitFactory, CompanyFactory
@@ -82,15 +82,15 @@ class DirectSEOBase(TestCase):
         setattr(settings, 'MIDDLEWARE_CLASSES', middleware_classes)
 
         self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-        context_processors = self.base_context_processors + (
+        context_processors = self.base_context_processors + [
             "social_links.context_processors.social_links_context",
             "seo.context_processors.site_config_context",
-        )
+        ]
         setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS', context_processors)
         context._standard_context_processors = None
 
-        self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        self.conn.delete(q="*:*")
+        # self.conn = Solr('http://127.0.0.1:8983/solr/seo')
+        # self.conn.delete(q="*:*")
         cache.clear()
         clear_url_caches()
 

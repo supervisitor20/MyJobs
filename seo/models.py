@@ -6,7 +6,7 @@ import Queue
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.flatpages.models import FlatPage
 from django.contrib.sites.models import Site
 from django.contrib.syndication.views import Feed
@@ -42,9 +42,6 @@ from universal.helpers import (get_domain, get_object_or_none,
 
 import decimal
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^seo\.models\.NonChainedForeignKey"])
-add_introspection_rules([], ["^seo\.models\.CommaSeparatedTextField"])
 
 
 class JobsByBuidManager(models.Manager):
@@ -603,7 +600,6 @@ class Company(models.Model):
     def __unicode__(self):
         return self.name
 
-    natural_key = __unicode__
 
 
     def save(self, *args, **kwargs):
@@ -677,7 +673,7 @@ class Company(models.Model):
                                           "company.")
     member = models.BooleanField('DirectEmployers Association Member',
                                  default=False)
-    social_links = generic.GenericRelation(social_models.SocialLink,
+    social_links = GenericRelation(social_models.SocialLink,
                                            object_id_field='id',
                                            content_type_field='content_type')
     digital_strategies_customer = models.BooleanField(
@@ -1358,7 +1354,7 @@ class BusinessUnit(models.Model):
     date_crawled = models.DateTimeField('Date Crawled')
     date_updated = models.DateTimeField('Date Updated')
     associated_jobs = models.IntegerField('Associated Jobs', default=0)
-    customcareers = generic.GenericRelation(moc_models.CustomCareer)
+    customcareers = GenericRelation(moc_models.CustomCareer)
     federal_contractor = models.BooleanField(default=False)
     ignore_includeinindex = models.BooleanField('Ignore "Include In Index"',
                                                 default=False)

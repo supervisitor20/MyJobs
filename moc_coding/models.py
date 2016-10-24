@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 
 
@@ -105,7 +105,7 @@ class CustomCareer(models.Model):
                               developed by the US Dept. of Labor.""")
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     class Meta:
         verbose_name = "Custom Military/Civilian Career Map"

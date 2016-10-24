@@ -1,6 +1,6 @@
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
-from django.db.models.loading import cache as model_cache
+from django.apps import apps as model_cache
 from django.views.generic import RedirectView
 
 from myjobs.urls import impersonate_patterns

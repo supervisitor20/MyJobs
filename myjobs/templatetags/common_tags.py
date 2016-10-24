@@ -11,7 +11,7 @@ from myjobs.helpers import get_completion, make_fake_gravatar
 from seo.models import Company
 from universal.helpers import get_company
 
-from django.db.models.loading import get_model
+from django.apps import apps
 
 register = template.Library()
 
@@ -51,7 +51,7 @@ def get_description(module):
     """
 
     try:
-        model = get_model("myprofile", module)
+        model = apps.get_model("myprofile", module)
         return model.module_description if model.module_description else ""
     except Exception:
         return ""

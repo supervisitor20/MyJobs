@@ -46,7 +46,7 @@ def activities(request):
 
     """
     company = get_company(request)
-    if not request.user.is_anonymous() and request.user.pk:
+    if hasattr(request, "user") and not request.user.is_anonymous() and request.user.pk:
         return {"activities": request.user.get_activities(company)}
     return {"activities": []}
 
