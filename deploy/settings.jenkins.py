@@ -67,7 +67,7 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-TEMPLATE_CONTEXT_PROCESSORS += (
+TEMPLATES[0]['OPTIONS']['context_processors'] += (
     'mymessages.context_processors.message_lists',
 )
 
@@ -101,3 +101,7 @@ SOLR = {
     # seo_test would be better...
     'seo_test': 'http://127.0.0.1:8983/solr/seo',
 }
+
+
+# Migrations
+MIGRATION_MODULES = {'analytics': None}
