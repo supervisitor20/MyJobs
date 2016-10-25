@@ -58,7 +58,7 @@ def saved_search_main(request):
     except (SavedSearchDigest.DoesNotExist,
             SavedSearchDigest.MultipleObjectsReturned):
         digest_obj = None
-    updated = request.REQUEST.get('d')
+    updated = request.GET.get('d', request.POST.get('d'))
     saved_searches = SavedSearch.objects.filter(
         user=request.user, partnersavedsearch__isnull=True)
     partner_saved_searches = PartnerSavedSearch.objects.filter(
