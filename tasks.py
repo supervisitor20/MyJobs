@@ -801,7 +801,10 @@ def requeue_failures():
 
 
     for task in failed_tasks:
-        task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        if task.name in ['tasks.etl_to_solr', 'tasks.priority_etl_to_solr']:
+            task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        elif task.name in ['tasks.task_update_solr']:
+            task_update_solr.delay(*ast.literal_eval(task.args))
         print "Requeuing task with args %s" % task.args
 
 
