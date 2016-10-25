@@ -52,7 +52,7 @@ class PasswordChangeRedirectMiddleware:
                 return http.HttpResponseRedirect(reverse('edit_account')
                                                  + '#as-password')
 
-        elif request.is_ajax() and bool(request.REQUEST.get('next')):
+        elif request.is_ajax() and bool(request.GET.get('next', request.POST.get('next'))):
             return http.HttpResponse(status=403)
 
 
@@ -138,7 +138,7 @@ class MultiHostMiddleware:
         """
         host = None
         if request.user.is_authenticated() and request.user.is_staff:
-            host = request.REQUEST.get('domain')
+            host = request.GET.get('domain', request.POST.get("domain"))
 
         if host is None:
             host = request.get_host()

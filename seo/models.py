@@ -45,8 +45,8 @@ import decimal
 
 
 class JobsByBuidManager(models.Manager):
-    def get_query_set(self):
-        queryset = super(JobsByBuidManager, self).get_query_set()
+    def get_queryset(self):
+        queryset = super(JobsByBuidManager, self).get_queryset()
         if settings.SITE_BUIDS:
             return queryset.filter(buid__in=settings.SITE_BUIDS)
         else:
@@ -54,14 +54,14 @@ class JobsByBuidManager(models.Manager):
 
 
 class ConfigBySiteManager(models.Manager):
-    def get_query_set(self):
-        return super(ConfigBySiteManager, self).get_query_set().filter(
+    def get_queryset(self):
+        return super(ConfigBySiteManager, self).get_queryset().filter(
             seosite__id=settings.SITE_ID)
 
 
 class GoogleAnalyticsBySiteManager(models.Manager):
-    def get_query_set(self):
-        return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
+    def get_queryset(self):
+        return super(GoogleAnalyticsBySiteManager, self).get_queryset().filter(
             seosite__id=settings.SITE_ID)
 
 
@@ -99,7 +99,7 @@ class CustomFacetManager(models.Manager):
     def __getattr__(self, attr, *args):
         if attr.startswith("__"):
             raise AttributeError
-        return getattr(self.get_query_set(), attr, *args)
+        return getattr(self.get_queryset(), attr, *args)
 
 
 class CustomFacet(BaseSavedSearch):

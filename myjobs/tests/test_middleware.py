@@ -50,7 +50,6 @@ class RedirectMiddlewareTests(MyJobsBase):
         new_request = request.GET.copy()
         new_request['next'] = reverse('home')
         request.GET = new_request
-        request.REQUEST.dicts = (new_request, request.POST)
         request.user = AnonymousUser()
         response = self.redirect_middleware.process_request(request)
         self.assertEqual(response.status_code, 403)

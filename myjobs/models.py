@@ -536,7 +536,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             color = get_completion(self.profile_completion)
 
             try:
-                text = self.profileunits_set.get(content_type__name="name",
+                text = self.profileunits_set.get(content_type__model="name",
                                                  name__primary=True).name
                 if not text.given_name and not text.family_name:
                     text = self.email[0]
@@ -675,7 +675,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         try:
             name_obj = self.profileunits_set.filter(
-                content_type__name="name").get(name__primary=True)
+                content_type__model="name").get(name__primary=True)
         except ObjectDoesNotExist:
             name_obj = None
 
@@ -1038,13 +1038,13 @@ class ActivityManager(models.Manager):
         super(ActivityManager, self).__init__()
         self._query_set = ActivityQuerySet
 
-    def get_query_set(self):
+    def get_queryset(self):
         qs = self._query_set(self.model, using=self._db)
         return qs
 
     @property
     def required_access(self):
-        return self.get_query_set().required_access
+        return self.get_queryset().required_access
 
 
 class Activity(models.Model):

@@ -104,7 +104,7 @@ class RedirectQuerySet(QuerySet, RedirectMixin):
 
 
 class RedirectManager(models.Manager, RedirectMixin):
-    def get_query_set(self):
+    def get_queryset(self):
         return RedirectQuerySet(self.model, using=self._db)
 
 
