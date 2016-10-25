@@ -39,7 +39,7 @@ class BaseQuerySet(QuerySet, BaseManagerMixin):
 
 
 class BaseManager(models.Manager, BaseManagerMixin):
-    def get_query_set(self):
+    def get_queryset(self):
         return BaseQuerySet(self.model, using=self._db)
 
 
@@ -412,7 +412,7 @@ class PackageQuerySet(QuerySet, PackageMixin):
 
 
 class PackageManager(models.Manager, PackageMixin):
-    def get_query_set(self):
+    def get_queryset(self):
         return PackageQuerySet(self.model, using=self._db)
 
 
@@ -485,7 +485,7 @@ class SitePackageQuerySet(QuerySet, SitePackageMixin):
 
 
 class SitePackageManager(models.Manager, SitePackageMixin):
-    def get_query_set(self):
+    def get_queryset(self):
         return SitePackageQuerySet(self.model, using=self._db)
 
 
@@ -989,7 +989,7 @@ class InvoiceQuerySet(QuerySet, InvoiceMixin):
 
 
 class InvoiceManager(models.Manager, InvoiceMixin):
-    def get_query_set(self):
+    def get_queryset(self):
         return InvoiceQuerySet(self.model, using=self._db)
 
 

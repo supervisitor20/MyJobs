@@ -1128,7 +1128,7 @@ def prm_export(request):
                 xml.text = contact_record_val_to_str(value)
         response = HttpResponse(etree.tostring(root, pretty_print=True,
                                                xml_declaration=True),
-                                mimetype='application/force-download')
+                                content_type='application/force-download')
     elif file_format == 'printer_friendly':
         ctx = {
             'company': company,
@@ -1806,7 +1806,7 @@ def api_get_nuo_records_list(request):
         'id': record.id,
     } for record in records]
 
-    return HttpResponse(json.dumps(json_res), mimetype='application/json')
+    return HttpResponse(json.dumps(json_res), content_type='application/json')
 
 
 @requires("read outreach record")
@@ -1837,7 +1837,7 @@ def api_get_individual_nuo_record(request, record_id=None):
     except OutreachRecord.DoesNotExist:
         json_obj = {}
 
-    return HttpResponse(json.dumps(json_obj), mimetype='application/json')
+    return HttpResponse(json.dumps(json_obj), content_type='application/json')
 
 
 def build_contact_forms(company, form_data):
@@ -1908,7 +1908,7 @@ def api_get_nuo_forms(request):
     contact_payload = merge_contact_forms(contact_forms, company)
     payload['contact'] = contact_payload
 
-    return HttpResponse(json.dumps(payload), mimetype='application/json')
+    return HttpResponse(json.dumps(payload), content_type='application/json')
 
 
 @csrf_exempt
@@ -2215,7 +2215,7 @@ def api_convert_outreach_record(request):
 
     if has_errors or validate_only:
         return HttpResponse(
-            json.dumps(payload), status=status, mimetype='application/json')
+            json.dumps(payload), status=status, content_type='application/json')
 
     created_tags = create_tags(new_tags, user_company, request.user)
 

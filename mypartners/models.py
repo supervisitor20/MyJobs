@@ -144,7 +144,7 @@ class SearchParameterManager(models.Manager):
         self._archived = archived
         self._query_set = SearchParameterQuerySet
 
-    def get_query_set(self):
+    def get_queryset(self):
         qs = self._query_set(self.model, using=self._db)
         # At the time of writing, this manager is used on models that don't
         # have the ability to be archived. This isn't a perfect solution
@@ -159,11 +159,11 @@ class SearchParameterManager(models.Manager):
         return qs
 
     def from_search(self, company=None, filters=None):
-        return self.get_query_set().from_search(
+        return self.get_queryset().from_search(
             company, filters)
 
     def sort_by(self, *fields):
-        return self.get_query_set().sort_by(*fields)
+        return self.get_queryset().sort_by(*fields)
 
 
 class ArchivedModel(models.Model):
@@ -632,7 +632,7 @@ class ContactRecordManager(SearchParameterManager):
         self._query_set = ContactRecordQuerySet
 
     def communication_activity(self):
-        return self.get_query_set().communication_activity
+        return self.get_queryset().communication_activity
 
 
 class ContactRecord(ArchivedModel):

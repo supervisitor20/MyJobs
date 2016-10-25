@@ -92,6 +92,9 @@ class TestClient(Client):
 
 
 class MyJobsBase(TestCase):
+
+    fixtures = ['deploy/initial_data.json']
+
     def setUp(self):
         settings.ROOT_URLCONF = "myjobs_urls"
         settings.PROJECT = "myjobs"

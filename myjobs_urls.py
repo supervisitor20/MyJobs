@@ -27,7 +27,7 @@ urlpatterns = patterns(
     url(r'^saved-search/', include('mysearches.urls')),
     url(r'^api/', include(v1_api.urls)),
     url(r'^ajax_select/', include(ajax_select_urls)),
-    #url(r'^admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls),
     url(r'^authorize/', include('mysignon.urls')),
     url(r'^message/', include('mymessages.urls')),
     url(r'^prm/', include('mypartners.urls')),

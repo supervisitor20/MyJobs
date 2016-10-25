@@ -330,7 +330,7 @@ def edit_account(request):
 
     if request.method == "POST":
         obj = User.objects.get(id=request.user.id)
-        if 'communication' in request.REQUEST:
+        if 'communication' in request.POST:
             form = EditCommunicationForm(user=request.user, instance=obj,
                                          data=request.POST)
             if form.is_valid():
@@ -348,7 +348,7 @@ def edit_account(request):
                 return render_to_response(template, ctx,
                                           RequestContext(request))
 
-        elif 'password' in request.REQUEST:
+        elif 'password' in request.POST:
             form = ChangePasswordForm(user=request.user, data=request.POST)
             if form.is_valid():
                 request.user.password_change = False
@@ -524,10 +524,10 @@ def cas(request):
 
 
 def topbar(request):
-    callback = request.REQUEST.get('callback')
-    use_v2 = request.REQUEST.get('v2', 0)
+    callback = request.GET.get('callback', request.POST.get("callback"))
+    use_v2 = request.GET.get('v2', request.POST.get('v2', 0))
     user = request.user
-    impersonating = request.REQUEST.get('impersonating')
+    impersonating = request.GET.get('impersonating', request.POST.get('impersonating'))
 
     if not user or user.is_anonymous():
         # Ensure that old myguid cookies can be handled correctly
@@ -544,10 +544,10 @@ def topbar(request):
 
     response = HttpResponse(content_type='text/javascript')
 
-    caller = request.REQUEST.get('site', '')
+    caller = request.GET.get('site', request.POST.get('site', ''))
     if caller:
         max_age = 30 * 24 * 60 * 60
-        last_name = request.REQUEST.get('site_name', caller)
+        last_name = request.GET.get('site_name', request.POST.get('site_name', caller))
         response.set_cookie(key='lastmicrosite',
                             value=caller,
                             max_age=max_age,
@@ -605,7 +605,7 @@ def api_get_activities(request):
             'name': unicode(activity),
             'description': activity.description})
 
-    return HttpResponse(json.dumps(activities), mimetype='application/json')
+    return HttpResponse(json.dumps(activities), content_type='application/json')
 
 
 # TODO: rename this to api_get_roles once the roles page is converted
@@ -632,7 +632,7 @@ def api_get_all_roles(request):
         for role in company.role_set.select_related('activities').all()
     }
 
-    return HttpResponse(json.dumps(ctx), mimetype='application/json')
+    return HttpResponse(json.dumps(ctx), content_type='application/json')
 
 
 @requires("read role")
@@ -723,7 +723,7 @@ def api_get_roles(request):
         roles_formatted.append(role_formatted)
 
     return HttpResponse(json.dumps(roles_formatted),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 @require_http_methods(['GET'])
@@ -815,7 +815,7 @@ def api_get_specific_role(request, role_id=0):
     )
 
     return HttpResponse(json.dumps(json_obj),
-                        mimetype='application/json')
+                        content_type='application/json')
 
 
 @requires('create role')
@@ -1147,7 +1147,7 @@ def api_add_user(request):
         ctx['errors'].append(
             "Each user must be assigned to at least one role.")
 
-    return HttpResponse(json.dumps(ctx), mimetype='application/json')
+    return HttpResponse(json.dumps(ctx), content_type='application/json')
 
 
 @require_http_methods(['DELETE'])
@@ -1173,7 +1173,7 @@ def api_remove_user(request, user_id=0):
     else:
         user.roles.remove(*user.roles.filter(company=company))
 
-    return HttpResponse(json.dumps(ctx), mimetype='application/json')
+    return HttpResponse(json.dumps(ctx), content_type='application/json')
 
 
 def request_company_access(request):

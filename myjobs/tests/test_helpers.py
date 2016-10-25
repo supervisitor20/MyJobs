@@ -30,7 +30,7 @@ class MyJobsHelpersTests(MyJobsBase):
         session = Session.objects.all()[0]
 
         session_dict = session.get_decoded()
-        user_id = session_dict['_auth_user_id']
+        user_id = int(session_dict['_auth_user_id'])
         self.assertEqual(user_id, self.user.id)
 
         # session.expire_date is tz aware; datetime.datetime.now is naive
@@ -55,7 +55,7 @@ class MyJobsHelpersTests(MyJobsBase):
         session = Session.objects.all()[0]
 
         session_dict = session.get_decoded()
-        user_id = session_dict['_auth_user_id']
+        user_id = int(session_dict['_auth_user_id'])
         self.assertEqual(user_id, self.user.id)
 
         weeks = (datetime.datetime.now() + datetime.timedelta(days=14))

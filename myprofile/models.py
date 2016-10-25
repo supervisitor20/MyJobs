@@ -212,7 +212,7 @@ def save_primary(sender, instance, created, **kwargs):
     user = instance.user
     if len(Name.objects.filter(user=user)) == 1 and created:
         try:
-            user.profileunits_set.get(content_type__name="name",
+            user.profileunits_set.get(content_type__model="name",
                                       name__primary=True)
         except ProfileUnits.DoesNotExist:
             instance.primary = True
@@ -657,7 +657,7 @@ class Summary(ProfileUnits):
     def save(self, *args, **kwargs):
         try:
             summary_model = self.user.profileunits_set.get(
-                content_type__name="summary")
+                content_type__model="summary")
         except ProfileUnits.DoesNotExist:
             summary_model = None
 
