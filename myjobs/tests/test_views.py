@@ -1174,9 +1174,10 @@ class RemoteAccessRequestViewTests(MyJobsBase):
         self.assertEqual(response.status_code, 302,
                          msg="Unauthenticated access did not redirect")
         self.assertEqual(response['Location'],
-                         'http://testserver/?next=%s' % self.impersonate_url,
+                         '/?next=%s' % self.impersonate_url,
                          msg=("Unauthenticated access didn't redirect to login"
-                              " or lost the redirect link"))
+                              " or lost the redirect link.  Instead went to %s" \
+                              % response['Location']))
 
     def test_authorized_remote_access(self):
         """
