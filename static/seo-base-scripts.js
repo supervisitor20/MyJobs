@@ -244,3 +244,14 @@ JAVASCRIPT FOR THE NEW REBRANDING HOMEPAGE FUNCTIONALITY
   }
 
   showHideHeaderScroll();
+
+(function(){
+  var siteName = $('.site-name').text();
+
+  if(siteName.length > 10){
+    var currentPosLeft = 0;
+    var newLength = siteName.length - 10;
+    var posLeft = newLength * 4;
+    $('.site-name').css('left', currentPosLeft - posLeft + '%');
+  }
+})();
