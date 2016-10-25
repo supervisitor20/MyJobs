@@ -629,7 +629,7 @@ def api_get_all_roles(request):
                 'description': activity.description
             } for activity in role.activities.all()]
         }
-        for role in company.role_set.select_related('activities').all()
+        for role in company.role_set.all()
     }
 
     return HttpResponse(json.dumps(ctx), content_type='application/json')
