@@ -481,9 +481,9 @@ class SecondaryEmail(ProfileUnits):
 
         primary = kwargs.pop('old_primary', None)
         if not self.pk and not self.verified and primary is None:
-            reg_signals.email_created.send(sender=self, user=self.user,
+            reg_signals.email_created.send(sender=self.__class__, user=self.user,
                                            email=self.email)
-            reg_signals.send_activation.send(sender=self, user=self.user,
+            reg_signals.send_activation.send(sender=self.__class__, user=self.user,
                                              email=self.email)
         super(SecondaryEmail, self).save(*args, **kwargs)
 
