@@ -964,7 +964,7 @@ margin-bottom: 50px;
   #mobile-employer-apps {
     margin-left: calc(-1 * ((100vw - 100%)));
     width: 100vw !important;
-    left: 86%;
+    left: 84%;
     top: -25.5rem;
 
     li {
@@ -975,6 +975,12 @@ margin-bottom: 50px;
       a {
         color: $primary-navy-blue;
       }
+    }
+
+    /* Rule for the "companies" list in Employers sub menu,
+      creates white background to hide gap when companies are in collapsed state. */
+    #mobile-parent-company-list {
+      height: 12.2rem;
     }
   }
 
