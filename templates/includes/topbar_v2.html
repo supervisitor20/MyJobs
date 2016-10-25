@@ -29,7 +29,7 @@
                 {% if user.is_authenticated and request.session.keys|length %}
                 <ul class="nav navbar-nav navbar-right right-nav desktop-right-nav">
                   {% for menu in menus %}
-                    <li {% if menu.submenus %}class=" dropdown"{% endif %}>
+                    <li {% if menu.submenus %}class="dropdown"{% endif %}>
                       <a id="{{ menu.id }}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% firstof menu.iconLabel menu.label %}{% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}<span class="caret"></span></a>
                       <ul class=" dropdown-menu" id="{{ menu.submenuId }}">
                         {% for submenu in menu.submenus %}
@@ -64,7 +64,7 @@
         <ul class="mob-nav-section">
             {% for menu in menus %}
                 <li class="col-xs-3 mob-nav-content mobile-trigger" {% if menu.submenus %}class=""{% endif %}>
-                  <a id="{{ menu.id }}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  <a id="{{ menu.id }}-mobile" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                       {% if menu.mobile_icon_v2 %}
                           <i class="{{ menu.mobile_icon_v2 }}"></i>
                       {% endif %}
@@ -76,23 +76,19 @@
                           <p>{% firstof menu.iconLabel menu.label %}</p>
                       {% endif %}
                   </a>
-
-                <!-- Sub-menu -->
-
-                    <ul class="mobile-submenu" id="{{ menu.submenuId }}">
+                    {% comment %} Sub-menus {% endcomment %}
+                    <ul class="mobile-submenu" id="{{ menu.mobile_submenuId }}">
                     {% for submenu in menu.submenus %}
-                      <li class="mobile-sub-nav" id="{{ submenu.id }}">
+                      <li class="mobile-sub-nav" id="{{ submenu.id }}-mobile">
                         <a href="{{ submenu.href }}">{{ submenu.label }}</a>
                       </li>
                     {% endfor %}
                     </ul>
-
                 </li>
             {% endfor %}
             {% is_a_group_member company user "Employer" as group_member %}
             {% get_company_name user as company_name %}
         </ul>
-
       {% else %}
         {% comment %} When logged out {% endcomment %}
         <ul class="mob-nav-section">

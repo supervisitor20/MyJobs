@@ -81,13 +81,13 @@
                         {% with site_heading|case_insensitive_cut:" Jobs" as site_heading_base2 %}
                           {%if site_heading_base2 == site_heading %}
                             <h1 class="logo-text noDotJobs">
-                              <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="" width="150" height="90">
+                              <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
                               {{site_heading}}
                             </h1>
                               {% else %}
                             <h1 class="logo-text">
                               <a class="location-logo-text"  href="/">
-                                <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="" width="150" height="90">
+                                <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
                                 {%if site_heading_base2 == "My"%}
                                   <span class="site-name">Network</span>
                                 {%else%}
@@ -100,7 +100,7 @@
                       {% else %}
                         <h1 class="logo-text">
                           <a class="location-logo-text"  href="/">
-                            <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="" width="150" height="90">
+                            <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
                             {{site_heading_base}}
                           </a>
                         </h1>
@@ -117,9 +117,9 @@
       <div class="col-xs-12 col-md-8">
         <div class="right-content">
             {% if site_config.browse_moc_show %}
-            {% include "search_box_vets.html" %}
+              {% include "v2/includes/search_box_vets_widget.html" %}
             {% else %}
-            {% include 'v2/includes/search_box_widget.html' %}
+              {% include 'v2/includes/search_box_widget.html' %}
             {% endif %}
             <div class="mobile-search-criteria">
               <a id="mobile_search" class="mobile-search-btn" href="#/">Filter Search Criteria</a>
@@ -170,11 +170,11 @@
 
 <script defer src="{{ STATIC_URL }}jquery-1.11.3.min.js"></script>
 <script defer src="{{ STATIC_URL }}seo-base-scripts.js"></script>
-{% compress js %}
-<script defer src="{% static "utils.js" %}"></script>
-<script defer src="{% static "secure-blocks/secure-block.js" %}"></script>
-<script defer src="{% static 'search.js' %}"></script>
-{% endcompress %}
+
+<script defer src="{% static "utils.181-20.js" %}"></script>
+<script defer src="{% static "secure-blocks/secure-block.181-20.js" %}"></script>
+<script defer src="{% static 'search.181-20.js' %}"></script>
+
 
 {% if site_config.use_secure_blocks %}
     <script defer>
