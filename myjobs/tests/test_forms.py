@@ -136,7 +136,7 @@ class CompanyAccessRequestFormTests(MyJobsBase):
             "company": self.company.pk,
             "verification_code": access_code
         }
-        admin_url = "%s%s/" % (
+        admin_url = "%s%s/change/" % (
             reverse("admin:myjobs_companyaccessrequest_changelist"),
             request.pk)
         self.client.post(path=admin_url, data=data)
