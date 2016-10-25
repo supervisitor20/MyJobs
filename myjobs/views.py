@@ -1038,7 +1038,7 @@ def api_get_users(request):
 
     """
     company = get_company_or_404(request)
-    users = User.objects.select_related('roles').filter(roles__company=company)
+    users = User.objects.filter(roles__company=company)
     ctx = {}
     for user in users:
         last_invitation = ""
