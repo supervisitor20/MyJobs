@@ -126,11 +126,8 @@ class MyJobsBase(TestCase):
         self.ms_solr = Solr(settings.SOLR['seo_test'])
         self.ms_solr.delete(q='*:*')
 
-        self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-        context_processors = self.base_context_processors + [
-            'mymessages.context_processors.message_lists',
-        ]
-        setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS', context_processors)
+        self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] += ['mymessages.context_processors.message_lists']
         setattr(settings, 'MEMOIZE', False)
 
         self.patcher = patch('urllib2.urlopen', return_file())
@@ -141,8 +138,7 @@ class MyJobsBase(TestCase):
 
     def tearDown(self):
         self.ms_solr.delete(q='*:*')
-        setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
-                self.base_context_processors)
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors
         try:
             self.patcher.stop()
         except RuntimeError:
