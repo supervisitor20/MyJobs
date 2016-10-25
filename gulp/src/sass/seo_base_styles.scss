@@ -171,7 +171,6 @@ legend{
 .site-name {
   color: #3a4135;
   position: relative;
-  left: 10%;
 }
 .direct_hiddenOption {display:none;}
 
@@ -315,21 +314,12 @@ a.direct_optionsLess {
 #brand_logo {
   .logo {
     position: relative;
-    width: 17rem;
-    height: 9rem;
+    display: block;
   }
   .logo-text {
     position: relative;
     color: $primary-navy-blue;
-    margin-bottom: 0;
-    bottom: 25px;
     font-weight: 800;
-    text-align: left;
-    left: 33%;
-  }
-  .location-logo-text{
-    position: relative;
-    right: 12%;
   }
   .header-logo-text {
     position: relative;
@@ -909,7 +899,7 @@ margin-bottom: 50px;
 /*==========  Mobile First Approach  ==========*/
 
 /* Custom, iPhone Retina */
-@media only screen and (min-width : 320px) and (max-width: 769px) {
+@media only screen and (min-width : 320px) {
 
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
@@ -1054,27 +1044,27 @@ margin-bottom: 50px;
     .right-nav {
       display: none;
     }
-    .location-logo {
-      text-align: center;
-    }
     .left-logo {
       float: none !important;
       text-align: center;
     }
   }
   #brand_logo {
-    .logo-text {
-      left: 14%;
+    .location-logo-text, .logo, .site-name {
+      display: block;
+      text-align: center;
+    }
+    .logo{
+      width: 100%;
+      height: 8rem;
     }
     .location-logo {
-      margin: 0 auto;
-      width: 50%;
+      margin-bottom: 20px;
     }
-    .site-name {
-      left: 6%;
-      color: $primary-navy-blue;
-      bottom: 15px;
+    .site-name{
+      font-size: 2.3rem;
     }
+
   }
   #mobile_direct-saved-search-box, #direct-saved-search-box {
     padding: 0 15px;
@@ -1236,21 +1226,22 @@ margin-bottom: 50px;
   }
 
   #brand_logo {
-
+    .logo{
+      width: 100%;
+      height: 8rem;
+    }
     .location-logo {
-      margin: 0 auto;
-      width: 32%;
+      margin-bottom: 20px;
     }
-    .site-name {
-      left: 10%;
-      bottom: 15px;
-      font-size: 2.8rem;
+    .site-name{
+      font-size: 2.6rem;
     }
+
   }
 }
 
 /* Small Devices, Tablets */
-@media only screen and (min-width : 769px) {
+@media only screen and (min-width : 768px) {
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
     margin-left: calc(-1 * ((100vw - 100%) / 10));
     left: 36%;
@@ -1276,10 +1267,17 @@ margin-bottom: 50px;
     width: 95%;
   }
   #brand_logo {
+    .logo{
+      width: 100%;
+      height: 8rem;
+    }
     .location-logo {
-       margin: 0 auto;
-       width: 17%;
-     }
+      margin-bottom: 30px;
+    }
+    .site-name{
+      font-size: 3rem;
+    }
+
   }
 
 }
@@ -1393,6 +1391,19 @@ margin-bottom: 50px;
       padding: 1rem;
     }
   }
+  #brand_logo {
+    .logo{
+      width: 100%;
+      height: 8rem;
+    }
+    .location-logo {
+      margin-bottom: 30px;
+    }
+    .site-name{
+      font-size: 3rem;
+    }
+
+  }
 
 }
 
@@ -1440,10 +1451,6 @@ margin-bottom: 50px;
     }
   }
   #main_nav {
-    .location-logo {
-       margin: 0 auto;
-       width: 100%;
-     }
      .right-nav {
        display: block;
      }
@@ -1451,16 +1458,6 @@ margin-bottom: 50px;
        float: left !important;
        padding-top: 7px;
      }
-  }
-  #brand_logo {
-    .location-logo {
-      margin: 0 auto;
-      width: 77%;
-    }
-    .logo-text {
-      left: 15%;
-      font-size: 28px;
-    }
   }
   #direct-saved-search-box {
     margin-bottom: -31px;
@@ -1536,6 +1533,20 @@ margin-bottom: 50px;
   #footer_mobile {
     display: none;
   }
+  #brand_logo {
+    .logo{
+      width: 100%;
+      height: 8rem;
+    }
+    .location-logo {
+      margin-bottom: 30px;
+    }
+    .site-name{
+      font-size: 2rem;
+      margin-left: calc(-1 * ((100vw - 100%) / 15));
+    }
+
+  }
 	#direct_listingDiv {
 		padding: 0;
 
@@ -1553,6 +1564,10 @@ margin-bottom: 50px;
       font-size: 34px;
       left: 9%;
       bottom: 20px;
+    }
+    .site-name {
+      font-size: 2.3rem;
+      margin-left: calc(-1 * ((100vw - 100%) / 55));
     }
   }
   #direct-saved-search-box {
@@ -1585,12 +1600,6 @@ margin-bottom: 50px;
 			width: 28%;
 		}
 	}
-  #brand_logo {
-    .location-logo {
-      margin: 0 auto;
-      width: 50%;
-    }
-  }
 }
 
 /* END NEW SASS STYLES FOR REBRANDING */
