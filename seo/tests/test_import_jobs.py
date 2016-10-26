@@ -181,7 +181,6 @@ class LoadETLTestCase(DirectSEOBase):
         add_company(self.businessunit)
 
         transformed_job = hr_xml_to_json(self.jobs[0], self.businessunit)
-        print "\nTRANSFORMED: %s\n" %  transformed_job['guid']
 
         expected = datetime.datetime.strptime("2016-07-02", "%Y-%m-%d").date()
         actual = transformed_job['salted_date'].date()

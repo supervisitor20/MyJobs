@@ -531,6 +531,7 @@ class SeoSite(Site):
     def save(self, *args, **kwargs):
         # always call clean if the parent_site entry exists to prevent invalid
         # relationships
+        if self.group: self.group.save()
         if self.parent_site: self.clean_fields()
         super(SeoSite, self).save(*args, **kwargs)
         self.clear_caches([self])
@@ -1005,6 +1006,7 @@ class Configuration(models.Model):
         # Increment the revision number so a new cache key will be used for urls
         # of the seosites linked to this configuration.
         self.revision += 1
+        if self.group: self.group.save()
         super(Configuration, self).save(*args, **kwargs)
         self.clear_caches([self])
 
