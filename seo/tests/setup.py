@@ -41,6 +41,9 @@ class TestSolrGrpEngine(SolrGrpEngine):
 
 
 class DirectSEOBase(TransactionTestCase):
+
+    fixtures = ['deploy/initial_data.json']
+
     def setUp(self):
         db_backend = settings.DATABASES['default']['ENGINE'].split('.')[-1]
 
@@ -81,12 +84,11 @@ class DirectSEOBase(TransactionTestCase):
             'middleware.RedirectOverrideMiddleware')
         setattr(settings, 'MIDDLEWARE_CLASSES', middleware_classes)
 
-        self.base_context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-        context_processors = self.base_context_processors + [
+        self.base_context_processors = settings.TEMPLATES[0]['OPTIONS']['context_processors']
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] += [
             "social_links.context_processors.social_links_context",
             "seo.context_processors.site_config_context",
         ]
-        setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS', context_processors)
         context._standard_context_processors = None
 
         # self.conn = Solr('http://127.0.0.1:8983/solr/seo')
@@ -107,8 +109,7 @@ class DirectSEOBase(TransactionTestCase):
         from django.conf import settings
         from django.template import context
 
-        setattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS',
-                self.base_context_processors)
+        settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors
         context._standard_context_processors = None
         setattr(settings, 'MIDDLEWARE_CLASSES',
                 self.base_middleware_classes)
