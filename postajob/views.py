@@ -354,15 +354,15 @@ def process_admin_request(request, pk, approve=True,
             request_objects = request_objects.filter(
                 pk__in=requests)
 
-            reason = request.REQUEST.get('block-reason', '')
+            reason = request.GET.get('block-reason', request.POST.get('block-reason', ''))
             requests.update(action_taken=True, deny_reason=reason)
             request_objects.update(is_approved=False)
         else:
             request_object.is_approved = approve
             request_object.save()
             if not approve:
-                request_made.deny_reason = request.REQUEST.get('deny-reason',
-                                                               '')
+                request_made.deny_reason = request.GET.get('deny-reason',
+                                                           request.POST.get('deny-reason', ''))
             request_made.action_taken = True
             request_made.save()
 
