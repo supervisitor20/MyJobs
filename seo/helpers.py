@@ -1142,7 +1142,7 @@ def determine_redirect(request, filters):
     query_loc = request.GET.get('location', None)
     filter_moc = filters.get('moc_slug', None)
     query_moc = request.GET.get('moc', None)
-    filter_company = filters.get('company_slug', '')
+    filter_company = filters.get('company_slug', None)
 
     if request.path.startswith('/search'):
         needs_redirect = True
@@ -1188,7 +1188,7 @@ def determine_redirect(request, filters):
         filters['location_slug'] = None
         needs_redirect = True
 
-    if any(x.isupper() for x in filter_company):
+    if filter_company and any(x.isupper() for x in filter_company):
         needs_redirect = True
         filters['company_slug'] = filter_company.lower()
 
