@@ -397,8 +397,8 @@ class PackageMixin(object):
         key = '{field}__owner_id'
         q_list = []
         for company in company_list:
-            [q_list.append(models.Q(**{key.format(field=attribute): company.id}))
-             for attribute in attributes]
+            for attribute in attributes:
+                q_list.append(models.Q(**{key.format(field=attribute): company.id}))
         result = self.filter(reduce(operator.or_, q_list))
         return result
 
@@ -456,10 +456,10 @@ class Package(models.Model):
         related_attrs = []
         subclasses = Package.__subclasses__()
         package_fields = ['name', 'content_type', 'id']
-        fields = Package._meta.init_name_map()
-        for key, value in fields.items():
-            if key not in package_fields and value[0].model in subclasses:
-                related_attrs.append(key)
+        fields = Package._meta.get_fields()
+        for field in fields:
+            if field.name not in package_fields and field.related_model in subclasses:
+                related_attrs.append(field.name)
         return related_attrs
 
 
