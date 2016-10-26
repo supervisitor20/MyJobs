@@ -1134,7 +1134,6 @@ def determine_redirect(request, filters):
     A response object to the redirect url if a redirect is required.
 
     """
-    # import ipdb; ipdb.set_trace()
     needs_redirect = False
     referer = request.META.get('HTTP_REFERER', None)
     query_dict = (request.GET.dict() if request.META.get('QUERY_STRING', None)
