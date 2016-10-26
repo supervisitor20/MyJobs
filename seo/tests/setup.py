@@ -91,8 +91,8 @@ class DirectSEOBase(TransactionTestCase):
         ]
         context._standard_context_processors = None
 
-        # self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        # self.conn.delete(q="*:*")
+        self.conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
+        self.conn.delete(q="*:*")
         cache.clear()
         clear_url_caches()
 
