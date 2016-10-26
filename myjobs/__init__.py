@@ -3,6 +3,7 @@ myjobs
 """
 
 import sys
+from django.conf import settings
 
 __version_info__ = {
     'major': 0,
@@ -36,11 +37,10 @@ def hide_production_solr_from_tests():
 
     http://stackoverflow.com/questions/6791911/execute-code-when-django-starts-once-only
     """
-    import settings
-    import default_settings
+
 
     settings.HAYSTACK_CONNECTIONS.clear()
-    settings.HAYSTACK_CONNECTIONS.update(default_settings.TEST_HAYSTACK_CONNECTIONS)
+    settings.HAYSTACK_CONNECTIONS.update(settings.TEST_HAYSTACK_CONNECTIONS)
 
 if "test" in ''.join(sys.argv) or "jenkins" in sys.argv:
     hide_production_solr_from_tests()
