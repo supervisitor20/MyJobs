@@ -445,8 +445,8 @@ def make_pixel_qs(request, job=None):
             pass
     else:
         qs['pc'] = 'results'
-        qs['sl'] = request.REQUEST.get('location', '')
-        qs['sq'] = request.REQUEST.get('q', '')
+        qs['sl'] = request.GET.get('location', request.POST.get('location', ''))
+        qs['sq'] = request.GET.get('q', request.POST.get('q', ''))
     qd.update(qs)
     safe_qs = mark_safe(qd.urlencode())
     return safe_qs

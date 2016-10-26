@@ -22,7 +22,7 @@ from myjobs.forms import MyJobsAdminAuthenticationForm
 # The Trac ticket linked above recommended including this bit of code, and also
 # included a comprehensive explanation. When/if this particular issue gets
 # resolved we can safely remove this conditional.
-if not model_cache.loaded:
+if not model_cache.ready:
     model_cache.get_models()
 
 from tastypie.api import Api
@@ -69,12 +69,12 @@ urlpatterns += patterns('seo.views.search_views',
 urlpatterns += patterns('',
     url(r'^ajax_select/', include(ajax_select_urls)),
     url(r'^admin/', include(admin.site.urls)),
-    url('', include('seo.urls.search_urls', app_name='seo')),
+    url('', include('seo.urls.search_urls')),
     url('settings/', include('seo.urls.settings_urls')),
-    url('^mocmaps/', include('moc_coding.urls', app_name='moc_coding')),
+    url('^mocmaps/', include('moc_coding.urls')),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'},
         name='auth_logout'),
-    url(r'^posting/', include('postajob.urls', app_name='postajob')),
+    url(r'^posting/', include('postajob.urls')),
 )
 
 

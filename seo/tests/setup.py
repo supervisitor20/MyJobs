@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.client import Client
 from django.template import context
 
@@ -40,7 +40,7 @@ class TestSolrGrpEngine(SolrGrpEngine):
     backend = TestSolrGrpSearchBackend
 
 
-class DirectSEOBase(TestCase):
+class DirectSEOBase(TransactionTestCase):
     def setUp(self):
         db_backend = settings.DATABASES['default']['ENGINE'].split('.')[-1]
 
