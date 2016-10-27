@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import clear_url_caches
 from django.db import connections
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from django.test.client import Client
 from django.template import context
 
@@ -40,6 +40,7 @@ class TestSolrGrpEngine(SolrGrpEngine):
     backend = TestSolrGrpSearchBackend
 
 
+@override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo")
 class DirectSEOBase(TransactionTestCase):
 
     fixtures = ['deploy/initial_data.json']
@@ -74,8 +75,6 @@ class DirectSEOBase(TransactionTestCase):
             cursor.execute("ALTER TABLE seo_custompage CONVERT TO "
                            "CHARACTER SET utf8 COLLATE utf8_general_ci")
 
-        setattr(settings, 'ROOT_URLCONF', 'dseo_urls')
-        setattr(settings, "PROJECT", 'dseo')
         clear_url_caches()
 
         self.base_middleware_classes = settings.MIDDLEWARE_CLASSES

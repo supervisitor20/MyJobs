@@ -20,8 +20,8 @@ class SeoCacheTestCase(DirectSEOBase):
         key1 = get_facet_count_key(filters1)
         key2 = get_facet_count_key(filters2)
         key3 = get_facet_count_key(filters3)
-        settings.SITE_ID = 10
-        key4 = get_facet_count_key(filters1)
+        with self.settings(SITE_ID=10):
+             key4 = get_facet_count_key(filters1)
 
         self.assertNotEqual(key2, key3)
         self.assertNotEqual(key2, key1)
