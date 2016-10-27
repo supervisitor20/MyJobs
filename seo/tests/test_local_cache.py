@@ -1,18 +1,12 @@
 import django.core.cache
 import django.utils.cache
-from django.test import override_settings
 
-from mock import patch, Mock
-
-import middleware
-from seo import cache, models
-from seo.tests.setup import DirectSEOTestCase, patch_settings
+from seo import models
+from seo.tests.setup import DirectSEOTestCase
 from seo.tests import factories
-from seo.templatetags import seo_extras
 from tasks import task_clear_bu_cache
 
 
-@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
 class LocalCacheTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
@@ -20,30 +14,7 @@ class LocalCacheTestCase(DirectSEOTestCase):
         super(LocalCacheTestCase, self).setUp()
         self.locmem_cache = django.core.cache.caches['default']
         self.locmem_cache.clear()
-        # All modules that imports cache needs to be patched
-        # to use our local memcache. Modules imported with different
-        # namespaces need multiple patches
-        self.cache_modules = [django.core.cache,
-                              models,
-                              cache,
-                              seo_extras,
-                              middleware]
-        self.cache_patches = []
-        for module in self.cache_modules:
-            self.cache_patches.append(patch.object(module, 'cache',
-                                                   self.locmem_cache))
-        for cache_patch in self.cache_patches:
-            cache_patch.start()
-        get_cache_patch = patch.object(django.core.cache, 'get_cache',
-                                       Mock(return_value=self.locmem_cache))
-        #        middleware_patch = patch.object(django.middleware.cache,
-        #                                        'get_cache',
-        #                                        Mock(return_value=self.locmem_cache))
 
-    def tearDown(self):
-        super(DirectSEOTestCase, self).tearDown()
-        for cache_patch in self.cache_patches:
-            cache_patch.stop()
 
     def test_clear_cache_on_bu_save(self):
         site = factories.SeoSiteFactory()
