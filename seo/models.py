@@ -169,6 +169,7 @@ class CustomFacet(BaseSavedSearch):
         self.save()
 
     def save(self, *args, **kwargs):
+        self.group.save()
         if self.querystring:
             sqs = DESearchQuerySet().using('default')
             fail_status = sqs.query.backend.silently_fail

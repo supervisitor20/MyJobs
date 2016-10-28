@@ -16,6 +16,7 @@ from django.contrib.flatpages.models import FlatPage
 from django.contrib.redirects.models import Redirect
 from django.template import Template, Context
 from django.template import RequestContext as TemplateContext
+from django.test import override_settings
 from django.test.client import RequestFactory
 from django.utils.http import urlquote
 from django.core.urlresolvers import reverse
@@ -1146,6 +1147,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         helpers.search_fields = base_search_fields
 
 
+@override_settings(SITE=None)
 class TemplateTestCase(DirectSEOTestCase):
     fixtures = ['seo_views_testdata.json']
 
@@ -1161,12 +1163,8 @@ class TemplateTestCase(DirectSEOTestCase):
         resp = template.render(context)
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
+    @override_settings(SITE_TITLE="Acme", SITE_DESCRIPTION="test", SITE_HEADING="test", SITE_TAGS = ["network"])
     def test_xss_job_listing(self):
-        settings.SITE_TITLE = "Acme"
-        settings.SITE_DESCRIPTION = "test"
-        settings.SITE_HEADING = "test"
-        settings.SITE_TAGS = ["network"]
-
         config = factories.ConfigurationFactory.build()
         request =RequestFactory().get('/job/')
         request.user = AnonymousUser()
@@ -1177,6 +1175,7 @@ class TemplateTestCase(DirectSEOTestCase):
         # Check string from view_all_jobs_label
         self.assertEqual(resp.find('"><img src=x onerror=alert(document.cookie)>'), -1)
 
+    @override_settings(SITE_TITLE = "Acme Ohio Jobs")
     def test_view_all_jobs_label(self):
         bu = BusinessUnit.objects.get(id=1)
         bu.title="Acme"
@@ -1184,7 +1183,6 @@ class TemplateTestCase(DirectSEOTestCase):
         self.site.business_units.add(bu)
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme Ohio Jobs"
         # test with view_all_jobs_detail = False (default)
         template = Template(
                 "{% load seo_extras %}"
@@ -1206,6 +1204,7 @@ class TemplateTestCase(DirectSEOTestCase):
         # Check string from view_all_jobs_label
         self.assertEqual(resp, "View All Ohio Jobs")
 
+    @override_settings(SITE_TITLE = "Acme Ohio Jobs")
     def test_view_all_jobs_label_bad_bu_title(self):
         """
         A regression test. We were getting 500 errors when business units
@@ -1218,7 +1217,6 @@ class TemplateTestCase(DirectSEOTestCase):
         self.site.business_units.add(bu)
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme Ohio Jobs"
         # test with view_all_jobs_detail = False (default)
         template = Template(
                 "{% load seo_extras %}"
@@ -1259,47 +1257,45 @@ class TemplateTestCase(DirectSEOTestCase):
         # Check string from view_all_jobs_label
         self.assertIn("View All Jobs", resp)
 
+    @override_settings(SITE_TITLE="Acme")
     def test_seo_base_template(self):
         """Renders seo_base.html"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme"
         template = Template(file("templates/seo_base.html", 'r').read())
         resp = template.render(TemplateContext(request, {}))
         # Check string from view_all_jobs_label
         self.assertIn("View All Jobs", resp)
 
+    @override_settings(SITE_TITLE="Acme", SITE_DESCRIPTION = "test", SITE_HEADING = "test",
+                       SITE_TAGS=["network"])
     def test_seo_no_sponsor_logo_network_site(self):
         """Check that the empty sponsor logo function is rendered on
         network sites with no sponsor set"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme"
-        settings.SITE_DESCRIPTION = "test"
-        settings.SITE_HEADING = "test"
-        settings.SITE_TAGS = ["network"]
         template = Template(
             file("templates/seo_billboard_homepage_base.html", 'r').read())
         resp = template.render(TemplateContext(request, {'widgets':'',
                                                          'site_tags':'["network"]'}))
         self.assertIn('BuildSponsorLogo("",""));', resp)
 
+    @override_settings(SITE_TITLE = "Acme")
     def test_seo_sponsor_logo_network_site(self):
         """Check that the sponsor logo function is rendered with data on
         network sites with a sponsor set"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
-        settings.SITE_TITLE = "Acme"
         bb = factories.BillboardImageFactory.build()
         bb.save()
-        settings.SITE.billboard_images.add(bb)
+        self.site.billboard_images.add(bb)
         template = Template(
             file("templates/seo_billboard_homepage_base.html", 'r').read())
         resp = template.render(
             TemplateContext(
                 request, {
                     'widgets': '',
-                    'billboard_images': settings.SITE.billboard_images.all(),
+                    'billboard_images': self.site.billboard_images.all(),
                     'site_tags': ['network'],
                     }
                 )
@@ -1313,30 +1309,28 @@ class TemplateTestCase(DirectSEOTestCase):
         request.user = AnonymousUser()
         config_obj = factories.ConfigurationFactory.build(id=1)
         config_obj.wide_header = "abcdefg"
-        site = factories.SeoSiteFactory("site.jobs" )
+        site = factories.SeoSiteFactory(domain="site.jobs")
         site.configurations.add(config_obj)
         site.save()
-        settings.SITE = site
-        settings.SITE_TITLE = "Acme"
-        settings.SITE_DESCRIPTION = "test"
-        settings.SITE_HEADING = "test"
-        settings.SITE_TAGS = ["network"]
-        settings.VIEW_SOURCE = None
-        bb = factories.BillboardImageFactory(logo_url="", sponsor_url="")
-        site.billboard_images.add(bb)
-        site.save()
-        template = Template(
-            file("templates/seo_billboard_homepage_base.html", 'r').read())
-        resp = template.render(
-            TemplateContext(
-                request, {
-                    'widgets': '',
-                    'billboard_images': settings.SITE.billboard_images.all(),
-                    'site_tags': ['company'],
-                }
+
+        with self.settings(SITE=site, SITE_TITLE="Acme", SITE_DESCRIPTION="test",
+                       SITE_HEADING="test",SITE_TAGS=["network"], VIEW_SOURCE=None):
+            bb = factories.BillboardImageFactory(logo_url="", sponsor_url="")
+            site.billboard_images.add(bb)
+            site.save()
+            template = Template(
+                file("templates/seo_billboard_homepage_base.html", 'r').read())
+            resp = template.render(
+                TemplateContext(
+                    request, {
+                        'widgets': '',
+                        'billboard_images': self.site.billboard_images.all(),
+                        'site_tags': ['company'],
+                    }
+                )
             )
-        )
-        self.assertNotIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
+            self.assertNotIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
+
 
     def test_seo_sponsor_logo_company_site(self):
         """Check that the sponsor logo function is rendered on
@@ -1348,23 +1342,22 @@ class TemplateTestCase(DirectSEOTestCase):
         site = factories.SeoSiteFactory()
         site.configurations.add(config_obj)
         site.save()
-        settings.SITE = site
-        settings.SITE_TITLE = "Acme"
-        bb = factories.BillboardImageFactory.build()
-        bb.save()
-        settings.SITE.billboard_images.add(bb)
-        template = Template(
-            file("templates/seo_billboard_homepage_base.html", 'r').read())
-        resp = template.render(
-            TemplateContext(
-                request, {
-                    'widgets': '',
-                    'billboard_images': settings.SITE.billboard_images.all(),
-                    'site_tags': ['company'],
-                }
+        with self.settings(SITE=site, SITE_TITLE="Acme"):
+            bb = factories.BillboardImageFactory.build()
+            bb.save()
+            site.billboard_images.add(bb)
+            template = Template(
+                file("templates/seo_billboard_homepage_base.html", 'r').read())
+            resp = template.render(
+                TemplateContext(
+                    request, {
+                        'widgets': '',
+                        'billboard_images': settings.SITE.billboard_images.all(),
+                        'site_tags': ['company'],
+                    }
+                )
             )
-        )
-        self.assertIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
+            self.assertIn('BuildSponsorLogo(billboard_list[0].logo_url,', resp)
 
     def test_smart_truncate(self):
         """Test that the smart truncate template tag properly reduces the the
@@ -2793,12 +2786,12 @@ class FlatpagesTestCase(DirectSEOBase):
                          u"but got %s instead." % fp.content)
 
 
+@override_settings(PROTECTED_SITES={1: [1, ]})
 class ProtectedSiteTestCase(DirectSEOBase):
     fixtures = ['seo_views_testdata.json']
 
     def setUp(self):
         super(ProtectedSiteTestCase, self).setUp()
-        settings.PROTECTED_SITES = {1: [1, ]}
         self.user_email = 'test@test.com'
         self.user_password = 'password'
         self.user, created = User.objects.create_user(email=self.user_email,
@@ -2849,8 +2842,8 @@ class ProtectedSiteTestCase(DirectSEOBase):
         Test that unprotected sites are not being treated as protected.
 
         """
-        settings.PROTECTED_SITES = {}
-        response = self.client.get('http://testserver.jobs/jobs/?q=none')
+        with self.settings(PROTECTED_SITES = {}):
+            response = self.client.get('http://testserver.jobs/jobs/?q=none')
         self.assertEqual(response.status_code, 200)
 
     def test_protected_site_bypass(self):
