@@ -4,6 +4,7 @@ from collections import namedtuple
 from mock import patch
 
 from django.conf import settings
+from django.test import override_settings
 
 from seo import helpers
 from seo.models import CustomFacet
@@ -17,6 +18,9 @@ class SeoHelpersTestCase(DirectSEOBase):
     unless CustomFacet.always_show = True.
 
     """
+
+    # Overriding these here allows us to assign to them in the TestCase
+    @override_settings(SITE=None, SITE_ID=None, STANDARD_FACET=None)
     def test_get_solr_facet_always_show(self):
         site_facet = factories.SeoSiteFacetFactory()
         site = site_facet.seosite
@@ -154,9 +158,11 @@ class SeoHelpersDjangoTestCase(DirectSEOBase):
         facet_ids = [factories.CustomFacetFactory(title=term).id
                      for term in terms]
         facets = CustomFacet.objects.filter(id__in=facet_ids).order_by('title')
-        [factories.SeoSiteFacetFactory(customfacet=facet) for facet in facets]
+        site = factories.SeoSiteFactory()
+        for facet in facets:
+            factories.SeoSiteFacetFactory(customfacet=facet, seosite=site)
 
-        site_facet = factories.SeoSiteFacetFactory()
+        site_facet = factories.SeoSiteFacetFactory(seosite=site)
         mock_active.return_value = site_facet
 
         for split in range(len(terms)):

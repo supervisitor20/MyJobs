@@ -372,8 +372,8 @@ class SeoSiteTestCase(DirectSEOTestCase):
 
     def test_update_email_domain(self):
         company = factories.CompanyFactory()
-        site = factories.SeoSiteFactory(canonical_company=company)
-        site2 = factories.SeoSiteFactory(canonical_company=company)
+        site = factories.SeoSiteFactory(canonical_company=company, domain="site.jobs")
+        site2 = factories.SeoSiteFactory(canonical_company=company, domain="site2.jobs")
 
         data = {
             str(site.pk): site.domain,
@@ -586,7 +586,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(solr_res, [])
 
     def test_limiting_jobs_by_package(self):
-        site = factories.SeoSiteFactory()
+        site = factories.SeoSiteFactory(domain="buckconsultants.jobs")
         resp = self.client.get('/jobs/',
                                HTTP_HOST='buckconsultants.jobs', follow=True)
         self.assertEqual(resp.status_code, 200)
@@ -1313,7 +1313,7 @@ class TemplateTestCase(DirectSEOTestCase):
         request.user = AnonymousUser()
         config_obj = factories.ConfigurationFactory.build(id=1)
         config_obj.wide_header = "abcdefg"
-        site = factories.SeoSiteFactory()
+        site = factories.SeoSiteFactory("site.jobs" )
         site.configurations.add(config_obj)
         site.save()
         settings.SITE = site
