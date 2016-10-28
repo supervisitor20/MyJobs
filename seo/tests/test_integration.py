@@ -6,7 +6,7 @@ from django.conf import settings
 from lxml import etree
 
 from seo_pysolr import Solr
-import import_jobs
+import import_jobs.init as import_jobs
 from seo.tests import factories
 from seo.models import SeoSite
 from seo.search_backend import DESearchQuerySet
