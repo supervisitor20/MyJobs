@@ -49,7 +49,7 @@ def protected_site(view_func):
     @wraps(view_func)
     def decorator(request, *args, **kwargs):
         if settings.SITE_ID in settings.PROTECTED_SITES:
-            if request.REQUEST.get('key') == settings.SEARCH_API_KEY:
+            if request.GET.get('key', request.POST.get('key')) == settings.SEARCH_API_KEY:
                     return view_func(request, *args, **kwargs)
             groups = settings.PROTECTED_SITES[settings.SITE_ID]
             if request.user.is_authenticated():
