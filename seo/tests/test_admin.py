@@ -120,7 +120,7 @@ class SeoAdminTestCase(DirectSEOBase):
 
 
 class DJCeleryAdminTestCase(DirectSEOBase):
-    fixtures= ["countries.json"]
+    fixtures= ['deploy/initial_data.json', "countries.json"]
 
     def setUp(self):
         super(type(self), self).setUp()
@@ -146,7 +146,7 @@ class DJCeleryAdminTestCase(DirectSEOBase):
     @override_settings(CELERY_ALWAYS_EAGER=True,
                        BROKER_BACKEND='memory')
     def test_requeue_etl_task(self):
-        url = "http://www.my.jobs/admin/djcelery/taskstate/"
+        url = "/admin/djcelery/taskstate/"
         data = {'action': 'resend_task',
                 '_selected_action': [unicode(self.etl_to_solr.pk)]}
 

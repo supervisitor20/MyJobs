@@ -28,7 +28,7 @@ from mysearches.models import (SavedSearch, SavedSearchDigest, SavedSearchLog,
                                DOM_CHOICES, DOW_CHOICES)
 from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
-import import_jobs
+import import_jobs.init as import_jobs
 from import_jobs.models import ImportRecord
 from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from postajob.models import Job
