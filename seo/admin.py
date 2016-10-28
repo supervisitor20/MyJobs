@@ -436,7 +436,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             if form.is_valid():
                 new_object = self.save_form(request, form, change=False)
                 form.save()
-                self.log_addition(request, new_object)
+                self.log_addition(request, new_object, "")
                 return self.response_add(request, new_object)
             else:
                 new_object = form
@@ -460,7 +460,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
         context = {
             'title': _('Add ') + force_unicode(opts.verbose_name),
             'adminform': adminForm,
-            'is_popup': request.REQUEST.has_key('_popup'),
+            'is_popup': '_popup' in request.GET or '_popup' in request.POST,
             'show_delete': False,
             'media': mark_safe(media),
             'inline_admin_formsets': [],
@@ -521,7 +521,7 @@ class RowPermissionsAdmin(admin.ModelAdmin):
             'adminform': adminForm,
             'object_id': object_id,
             'original': obj,
-            'is_popup': request.REQUEST.has_key('_popup'),
+            'is_popup': "_popup" in request.GET or "_popup" in request.POST,
             'media': mark_safe(media),
             'inline_admin_formsets': [],
             'errors': helpers.AdminErrorList(form, []),
@@ -667,7 +667,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 new_object = self.model()
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request), self.inline_instances):
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request), self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -683,7 +683,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 for formset in formsets:
                     self.save_formset(request, form, formset, change=False)
 
-                self.log_addition(request, new_object)
+                self.log_addition(request, new_object, "")
                 return self.response_add(request, new_object)
         else:
             # Prepare the dict of initial data from the request.
@@ -699,7 +699,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             form = self.form(user=request.user, initial=initial)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -728,7 +728,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
         context = {
             'title': _('Add ') + force_unicode(opts.verbose_name),
             'adminform': adminForm,
-            'is_popup': "_popup" in request.REQUEST,
+            'is_popup': "_popup" in request.GET or "_popup" in request.POST,
             'show_delete': False,
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
@@ -774,7 +774,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
                 new_object = obj
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, new_object),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request, new_object),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -800,7 +800,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, obj),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request, obj),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -831,7 +831,7 @@ class BillboardImageAdmin(RowPermissionsAdmin):
             'adminform': adminForm,
             'object_id': object_id,
             'original': obj,
-            'is_popup': "_popup" in request.REQUEST,
+            'is_popup': "_popup" in request.GET or "_popup" in request.POST,
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
             'errors': helpers.AdminErrorList(form, formsets),
@@ -946,7 +946,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 new_object = self.model()
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -963,7 +963,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 for formset in formsets:
                     self.save_formset(request, form, formset, change=False)
 
-                self.log_addition(request, new_object)
+                self.log_addition(request, new_object, "")
                 return self.response_add(request, new_object)
         else:
             # Prepare the dict of initial data from the request.
@@ -979,7 +979,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             form = self.form(user=request.user, initial=initial)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -1013,7 +1013,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
         context = {
             'title': _('Add ') + force_unicode(opts.verbose_name),
             'adminform': adminForm,
-            'is_popup': "_popup" in request.REQUEST,
+            'is_popup': "_popup" in request.GET or "_popup" in request.POST,
             'show_delete': False,
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
@@ -1060,7 +1060,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
                 new_object = obj
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, new_object),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request, new_object),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -1086,7 +1086,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             form = self.form(user=request.user, instance=obj)
             prefixes = {}
             self.inline_instances = check_inline_instance(self, request)
-            for FormSet, inline in zip(self.get_formsets(request, obj),
+            for FormSet, inline in zip(self.get_formsets_with_inlines(request, obj),
                                        self.inline_instances):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
@@ -1122,7 +1122,7 @@ class SeoSiteAdmin(ForeignKeyAutocompleteAdmin):
             'adminform': adminForm,
             'object_id': object_id,
             'original': obj,
-            'is_popup': "_popup" in request.REQUEST,
+            'is_popup': "_popup" in request.GET or "_popup" in request.POST,
             'media': mark_safe(media),
             'inline_admin_formsets': inline_admin_formsets,
             'errors': helpers.AdminErrorList(form, formsets),
