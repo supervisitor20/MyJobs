@@ -82,8 +82,8 @@ def get_site_config(request):
     # If the user is logged in/staff and specifying a different domain,
     # allow them to get the config for the requested domain, but don't
     # cache it.
-    if request.user.is_staff and 'domain' in request.REQUEST:
-        host = request.REQUEST.get('domain')
+    if request.user.is_staff and ('domain' in request.GET or 'domain' in request.POST):
+        host = request.GET.get('domain', request.POST.get('domain'))
         try:
             return Configuration.objects.get(status=2, seosite__domain=host)
         except Configuration.DoesNotExist:
@@ -152,10 +152,10 @@ def get_secure_blocks_site(request):
         Returns:
         - SeoSite object or None if we can't figure out the current site.
     """
-    if request.user.is_staff and 'domain' in request.REQUEST:
+    if request.user.is_staff and ('domain' in request.GET or 'domain' in request.POST):
+        host = request.GET.get('domain', request.POST.get('domain'))
         # filter() + first() will return None rather than raising an exception
-        site = SeoSite.objects.filter(
-            domain=request.REQUEST.get('domain')).first()
+        site = SeoSite.objects.filter(domain=host).first()
     else:
         # SITE might not be set on the settings object
         site = getattr(settings, 'SITE', None)

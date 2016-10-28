@@ -139,7 +139,7 @@ def ajax_geolocation_facet(request):
     filter_path = request.GET.get('filter_path', '/jobs/')
     filters = helpers.build_filter_dict(filter_path)
 
-    sort_order = request.REQUEST.get('sort', 'relevance')
+    sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
 
     num_items = int(request.GET.get('num_items', DEFAULT_PAGE_SIZE))
 
@@ -210,7 +210,7 @@ def ajax_get_facets(request, filter_path, facet_type):
     filters = helpers.build_filter_dict(filter_path)
 
     sqs = helpers.prepare_sqs_from_search_params(GET)
-    sort_order = request.REQUEST.get('sort', 'relevance')
+    sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
     offset = int(GET.get('offset', site_config.num_filter_items_to_show*2))
     num_items = int(GET.get('num_items', DEFAULT_PAGE_SIZE))
     if _type == 'facet':
@@ -299,7 +299,7 @@ def ajax_get_jobs(request, filter_path):
         num_items = DEFAULT_PAGE_SIZE
     custom_facets = settings.DEFAULT_FACET
     sqs = helpers.prepare_sqs_from_search_params(GET)
-    sort_order = request.REQUEST.get('sort', 'relevance')
+    sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
     default_jobs = helpers.get_jobs(default_sqs=sqs,
                                     custom_facets=custom_facets,
                                     exclude_facets=settings.FEATURED_FACET,
@@ -658,7 +658,7 @@ def job_listing_nav_redirect(request, home=None, cc3=None):
     path_part = request.path
     filters = helpers.build_filter_dict(path_part)
     url = 'location'
-    sort_order = request.REQUEST.get('sort', 'relevance')
+    sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
     jobs = helpers.get_jobs(custom_facets=settings.DEFAULT_FACET,
                             jsids=settings.SITE_BUIDS,
                             filters=filters, sort_order=sort_order)
@@ -904,7 +904,7 @@ def ajax_filter_carousel(request):
 
     site_config = get_site_config(request)
     num_jobs = int(site_config.num_job_items_to_show) * 2
-    sort_order = request.REQUEST.get('sort', 'relevance')
+    sort_order = request.GET.get('sort', request.POST.get('sort', 'relevance'))
     # Apply any parameters in the querystring to the solr search.
     sqs = (helpers.prepare_sqs_from_search_params(request.GET) if query_path
            else None)
@@ -1527,7 +1527,7 @@ def moc_index(request):
     # Matches on occupations code, military description, and civilian
     # description.
 
-    t = request.REQUEST['term']
+    t = request.GET.get('term', request.POST.get('term'))
 
     # provide capability for searching exact multi-word searches encased
     # in quotes
@@ -1876,8 +1876,7 @@ def urls_redirect(request, guid, vsid=None, debug=None):
 
 @csrf_exempt
 def post_a_job(request):
-    data = request.REQUEST
-    key = data.get('key')
+    key = request.GET.get('key', request.POST.get('key'))
 
     if settings.POSTAJOB_API_KEY != key:
         resp = {
@@ -1886,7 +1885,7 @@ def post_a_job(request):
         resp = json.dumps(resp)
         return HttpResponse(resp, content_type='application/json', status=401)
 
-    jobs_to_add = data.get('jobs')
+    jobs_to_add = request.GET.get('jobs', request.POST.get('jobs'))
     if jobs_to_add:
         jobs_to_add = json.loads(jobs_to_add)
         jobs_to_add = [transform_for_postajob(job) for job in jobs_to_add]
@@ -1899,8 +1898,7 @@ def post_a_job(request):
 
 @csrf_exempt
 def delete_a_job(request):
-    data = request.REQUEST
-    key = data.get('key')
+    key = request.GET.get('key', request.POST.get('key'))
     if settings.POSTAJOB_API_KEY != key:
         resp = {
             'error': 'Unauthorized',
@@ -1908,7 +1906,7 @@ def delete_a_job(request):
         resp = json.dumps(resp)
         return HttpResponse(resp, content_type='application/json', status=401)
 
-    guids_to_clear = data.get('guids')
+    guids_to_clear = request.GET.get('guids', request.POST.get('guids'))
     if guids_to_clear:
         guids_to_clear = guids_to_clear.split(',')
     jobs_deleted = delete_by_guid(guids_to_clear)
