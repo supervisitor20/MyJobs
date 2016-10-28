@@ -24,8 +24,6 @@ class SiteTestCase(DirectSEOBase):
 
     def setUp(self):
         super(SiteTestCase, self).setUp()
-        self.conn = Solr('http://127.0.0.1:8983/solr/seo')
-        self.conn.delete(q="*:*")
         self.businessunit = factories.BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
         self.filepath = os.path.join(import_jobs.DATA_DIR,
