@@ -40,7 +40,8 @@ class TestSolrGrpEngine(SolrGrpEngine):
     backend = TestSolrGrpSearchBackend
 
 
-@override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo")
+@override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo",
+                   HAYSTACK_CONNECTIONS=settings.TEST_HAYSTACK_CONNECTIONS)
 class DirectSEOBase(TransactionTestCase):
 
     fixtures = ['deploy/initial_data.json']

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 
 from seo.models import SeoSite
 from seo.tests import factories
@@ -8,6 +9,7 @@ from setup import DirectSEOTestCase
 from universal.helpers import build_url
 
 
+@override_settings(SOLR_QUERY_COUNTER=0)
 class QueryCountTests(DirectSEOTestCase):
     def setUp(self):
         super(QueryCountTests, self).setUp()
