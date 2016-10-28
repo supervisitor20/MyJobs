@@ -14,6 +14,7 @@ $black: #000000;
 $white: #ffffff;
 
 /* START OF NEW SASS STYLES FOR REBRANDING */
+
 *:focus {
   outline: 0;
 }
@@ -85,6 +86,38 @@ legend{
   border: 2px solid $blue;
   @include box-shadow(0px 0px 5px 0px rgba(194,194,194,1));
 }
+
+/** Autocomplete **/
+.ui-autocomplete {
+  min-height: 1.6rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  background: $white;
+  width: 29rem;
+  border: 1px solid #999;
+  font-size: 1.5rem;
+}
+
+.ui-menu-item {
+  padding: 0 .4rem;
+}
+
+.ui-menu-item-alternate {
+    background-color: #F2F2F2;
+}
+
+.ui-menu-item a, .ui-menu-item-alternate a {
+    cursor: pointer;
+    margin: 0;
+    display: block;
+}
+
+.ui-menu-item a:hover, .ui-menu-item-alternate a:hover {
+  background: $blue;
+  color: $white;
+}
+/** End Autocomplete **/
+
 .main-search-labels {
   text-align: left;
   font-size: 22px;
@@ -899,6 +932,20 @@ margin-bottom: 50px;
 /*==========  Mobile First Approach  ==========*/
 
 /* Custom, iPhone Retina */
+
+@media only screen and (min-width : 320px) and (max-width: 768px) {
+  /** Be default iOS devices hides scroll bar,
+  this makes all devices show scroll bar for nested sub menus **/
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 1.8rem;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 0.5rem;
+    background-color: rgba(0,0,0,.5);
+  }
+}
+
 @media only screen and (min-width : 320px) {
 
   .mob-nav-section .mob-nav-content:nth-of-type(1) .mobile-submenu {
@@ -978,17 +1025,6 @@ margin-bottom: 50px;
     max-height: 8.1rem;
     max-width: 34rem;
     overflow-y: scroll;
-  }
-
-  /** Be default iOS devices hides scroll bar, this makes all devices show scroll bar for nested sub menus **/
-  ::-webkit-scrollbar {
-    -webkit-appearance: none;
-    width: 2.7rem;
-  }
-  ::-webkit-scrollbar-thumb {
-    border-radius: 0.5rem;
-    background-color: rgba(0,0,0,.5);
-    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
   }
 
   .mob-nav-section .mob-nav-content:nth-of-type(4) .mobile-submenu {
@@ -1292,6 +1328,14 @@ margin-bottom: 50px;
   and (min-width: 769px)
   and (max-width: 991px) {
 
+  .ui-autocomplete {
+    width: 25rem;
+  }
+
+  .ui-menu-item a:hover, .ui-menu-item-alternate a:hover {
+    background: $blue;
+    color: $white;
+  }
 
   #direct_companyModule {
     display: none;
