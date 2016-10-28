@@ -161,7 +161,7 @@ class LoadETLTestCase(DirectSEOBase):
         super(LoadETLTestCase, self).tearDown()
 
 
-    @patch('import_jobs.get_jobsfs_zipfile')
+    @patch('import_jobs.init.get_jobsfs_zipfile')
     def test_update_job_source(self, mock_jobsfs):
         mock_jobsfs.return_value = open(self.zipfile, 'rb')
 

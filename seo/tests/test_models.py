@@ -25,7 +25,7 @@ class ModelsTestCase(DirectSEOBase):
         """
         site = factories.SeoSiteFactory()
         factories.SeoSiteRedirectFactory(seosite=site)
-        ssr2 = factories.SeoSiteRedirectFactory.build()
+        ssr2 = factories.SeoSiteRedirectFactory.build(seosite=site)
         self.assertRaises(IntegrityError, ssr2.save, ())
 
     def test_config_inc(self):
@@ -69,7 +69,7 @@ class ModelsTestCase(DirectSEOBase):
         """
         failed = False
         parent_site = factories.SeoSiteFactory()
-        child_sites = [factories.SeoSiteFactory() for x in range(0,9)]
+        child_sites = [factories.SeoSiteFactory(domain="childsite-%s.jobs" % x) for x in range(0,9)]
         for child in child_sites:
             child.parent_site = parent_site
             child.clean_fields()
@@ -83,8 +83,8 @@ class ModelsTestCase(DirectSEOBase):
             Uses SeoSite.parent_site as example field.
         """
         parent_site = factories.SeoSiteFactory()
-        child_site = factories.SeoSiteFactory()
-        grandchild_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory(domain="childsite.jobs")
+        grandchild_site = factories.SeoSiteFactory(domain="grandchildsite.jobs")
         child_site.parent_site = parent_site
         child_site.save()
         grandchild_site.parent_site = child_site
@@ -101,8 +101,8 @@ class ModelsTestCase(DirectSEOBase):
             Uses SeoSite.parent_site as example field.
         """
         initial_parent_site = factories.SeoSiteFactory()
-        child_site = factories.SeoSiteFactory()
-        super_parent_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory(domain="childsite.jobs")
+        super_parent_site = factories.SeoSiteFactory(domain="super_parent.jobs")
         child_site.parent_site = initial_parent_site
         child_site.save()
         initial_parent_site.parent_site = super_parent_site
@@ -207,13 +207,13 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
     def create_generic_sites(self):
         sites = []
         for x in range(1, 15):
-            factories.SeoSiteFactory()
+            factories.SeoSiteFactory(domain="genericsite-%s.jobs" % x)
         return sites
 
     def create_multiple_sites_for_company(self):
         sites = []
         for x in range(1, 15):
-            site = factories.SeoSiteFactory()
+            site = factories.SeoSiteFactory(domain="companysite-%s.jobs" % x)
             site.business_units.add(self.company_buid)
             site.save()
             sites.append(site)
@@ -224,7 +224,7 @@ class SeoSitePostAJobFiltersTestCase(DirectSEOBase):
 
         sites = []
         for x in range(1, 15):
-            site = factories.SeoSiteFactory()
+            site = factories.SeoSiteFactory(domain="networksite-%s.jobs" % x)
             site.site_tags.add(network_tag)
             site.save()
             sites.append(site)

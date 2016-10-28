@@ -50,7 +50,7 @@ class SiteTestCase(DirectSEOBase):
 
     def test_domain_switching_for_staff_context(self):
         self.setup_superuser()
-        another_site = factories.SeoSiteFactory(id=2)
+        another_site = factories.SeoSiteFactory(id=2, domain="adifferentsite.jobs")
         another_site.domain = 'thisisatest'
         another_site.save()
         # create and test config for status 1 (non staff fallback)
@@ -67,14 +67,14 @@ class SiteTestCase(DirectSEOBase):
         self.assertEqual(resp.context['site_config'],configuration_status_2)
 
     def test_parent_domain_context_variable(self):
-        parent_site = factories.SeoSiteFactory()
+        parent_site = factories.SeoSiteFactory(domain="parentsite.jobs")
         self.site.parent_site = parent_site
         self.site.save()
         resp = self.client.get("/")
         self.assertEqual(resp.context['secure_blocks_domain'], parent_site)
 
     def test_parent_domain_context_variable_visit_parent_site(self):
-        child_site = factories.SeoSiteFactory()
+        child_site = factories.SeoSiteFactory(domain="childsite.jobs")
         child_site.domain = "zz." + child_site.domain
         child_site.parent_site = self.site
         self.site.save()
@@ -84,8 +84,8 @@ class SiteTestCase(DirectSEOBase):
 
     def test_parent_domain_context_variable_with_domain_switching(self):
         self.setup_superuser()
-        parent_site = factories.SeoSiteFactory()
-        child_site = factories.SeoSiteFactory()
+        parent_site = factories.SeoSiteFactory(domain="parentsite.jobs")
+        child_site = factories.SeoSiteFactory(domain="childsite.jobs")
         child_site.parent_site = parent_site
         child_site.domain="parentchildtest"
         child_site.save()

@@ -40,7 +40,7 @@ class TestSolrGrpEngine(SolrGrpEngine):
     backend = TestSolrGrpSearchBackend
 
 
-@override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo",
+@override_settings(ROOT_URLCONF="dseo_urls", PROJECT="dseo", MEMOIZE=False,
                    HAYSTACK_CONNECTIONS=settings.TEST_HAYSTACK_CONNECTIONS)
 class DirectSEOBase(TransactionTestCase):
 
@@ -96,8 +96,6 @@ class DirectSEOBase(TransactionTestCase):
         cache.clear()
         clear_url_caches()
 
-        setattr(settings, 'MEMOIZE', False)
-
         # As we added tests that created more and more companies, we
         # approached the hardcoded companies in import_jobs_testdata.json.
         # When we hit those ids, we began to get IntegrityErrors during
@@ -106,7 +104,6 @@ class DirectSEOBase(TransactionTestCase):
         CompanyFactory.reset_sequence()
 
     def tearDown(self):
-        from django.conf import settings
         from django.template import context
 
         settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors

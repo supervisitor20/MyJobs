@@ -47,7 +47,7 @@ class SeoAdminTestCase(DirectSEOBase):
             Ensure a child SEO Site cannot be a parent via the admin form
         """
         parent_seo_site = factories.SeoSiteFactory()
-        child_seo_site = factories.SeoSiteFactory()
+        child_seo_site = factories.SeoSiteFactory(domain="childsite.jobs")
         child_seo_site.parent_site = parent_seo_site
         child_seo_site.save()
         group_for_new_site = factories.GroupFactory()
@@ -66,9 +66,9 @@ class SeoAdminTestCase(DirectSEOBase):
         """
             Ensure a child SEO Site cannot be a parent via the admin form
         """
-        super_parent_seo_site = factories.SeoSiteFactory()
-        parent_seo_site = factories.SeoSiteFactory()
-        child_seo_site = factories.SeoSiteFactory()
+        super_parent_seo_site = factories.SeoSiteFactory(domain="super_parents.jobs")
+        parent_seo_site = factories.SeoSiteFactory(domain="parent.jobs")
+        child_seo_site = factories.SeoSiteFactory(domain="childsite.jobs")
         child_seo_site.parent_site = parent_seo_site
         child_seo_site.save()
         resp = self.client.post(reverse('admin:seo_seosite_change',args=(parent_seo_site.pk,)),

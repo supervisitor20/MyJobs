@@ -40,7 +40,6 @@ class JobFeedTestCase(DirectSEOBase):
         self.company = CompanyFactory()
         self.company.job_source_ids.add(self.businessunit)
         self.company.save()
-        self.conn = Solr("http://127.0.0.1:8983/solr/seo")
         self.emptyfeed = os.path.join(self.testdir, "dseo_feed_0.no_jobs.xml")
         self.malformed_feed = os.path.join(self.testdir, 'dseo_malformed_feed_0.xml')
         self.invalid_feed = os.path.join(self.testdir, 'dseo_invalid_feed_0.xml')

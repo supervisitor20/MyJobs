@@ -270,7 +270,7 @@ class RedirectOverrideMiddleware(object):
         redirects = settings.SITE.queryredirect_set.filter(
             old_path__in=paths,
             **{param + '__isnull': param not in url_params
-               for param in param_names}).select_related('query_parameters')
+               for param in param_names})
         choice = None
         for r in redirects:
             # params will, over the following three lines, eventually hold all
