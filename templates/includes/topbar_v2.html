@@ -59,7 +59,6 @@
 {% get_menus as menus %}
 <nav id="mobile_footer" class="menu-container" role="menu">
   <div class="row">
-    <div>
       {% if user.is_authenticated and request.session.keys|length %}
         <ul class="mob-nav-section">
             {% for menu in menus %}
@@ -106,7 +105,7 @@
             </li>
         </ul>
       {% endif %}
-    </div>
+
   </div>
 </nav>
 
