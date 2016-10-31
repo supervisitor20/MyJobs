@@ -312,7 +312,7 @@ PROJECT_APPS = ('myjobs', 'myprofile', 'mysearches', 'registration',
                 'mysignon', 'mymessages', 'mypartners',
                 'postajob', 'moc_coding', 'seo', 'social_links',
                 'wildcard', 'myblocks', 'myemails', 'myreports', 'redirect',
-                'automation', 'universal', 'import_jobs')
+                'automation', 'universal', 'import_jobs', 'analytics',)
 
 INSTALLED_APPS += PROJECT_APPS
 

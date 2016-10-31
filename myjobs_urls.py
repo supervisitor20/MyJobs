@@ -37,6 +37,7 @@ urlpatterns = patterns(
     url(r'^posting/', include('postajob.urls')),
     url(r'^reports/', include('myreports.urls')),
     url(r'^emails/', include('myemails.urls')),
+    url(r'^analytics/', include('analytics.urls')),
 )
 
 urlpatterns += patterns(
