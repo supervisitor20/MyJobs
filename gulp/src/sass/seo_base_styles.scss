@@ -93,7 +93,6 @@ legend{
   max-height: 20rem;
   overflow-y: auto;
   background: $white;
-  width: 29rem;
   border: 1px solid #999;
   font-size: 1.5rem;
 }
@@ -1332,10 +1331,6 @@ margin-bottom: 50px;
 
   #main_content {
     margin-top: 0;
-  }
-
-  .ui-autocomplete {
-    width: 25rem;
   }
 
   .ui-menu-item a:hover, .ui-menu-item-alternate a:hover {
