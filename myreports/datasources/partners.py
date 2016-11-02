@@ -299,6 +299,6 @@ class PartnersFilter(DataSourceFilter):
                 })
 
             contact_qs.distinct()
-            qs = qs.filter(primary_contact=contact_qs)
+            qs = qs.filter(primary_contact__in=contact_qs)
 
         return qs
