@@ -37,7 +37,7 @@ def prm_worthy(request):
     if company is None:
         raise Http404("mypartners.helpers.prm_worthy: no company")
 
-    partner_id = get_int_or_none(request.REQUEST.get('partner'))
+    partner_id = get_int_or_none(request.GET.get('partner', request.POST.get('partner')))
     partner = get_object_or_404(company.partner_set, id=partner_id)
 
     return company, partner, request.user
@@ -226,14 +226,14 @@ def get_records_from_request(request):
     _, partner, _ = prm_worthy(request)
     # extract reelvant values from the request object
     contact, contact_type, admin, range_start, range_end, sort_by, desc = [
-        request.REQUEST.get(field) for field in [
+        request.GET.get(field, request.POST.get(field)) for field in [
             'contact', 'contact_type', 'admin', 'date_start', 'date_end',
             'sort_by', 'desc']]
 
     tags = [tag.strip()
-            for tag in request.REQUEST.get('tags', '').split(',') if tag]
-    keywords = [keyword.strip() for keyword in request.REQUEST.get(
-        'keywords', '').split(',') if keyword]
+            for tag in request.GET.get('tags', request.POST.get('targs', '')).split(',') if tag]
+    keywords = [keyword.strip() for keyword in request.GET.get(
+        'keywords', request.POST.get('keywords', '')).split(',') if keyword]
 
     if not sort_by and not desc:
         sort_by = 'date'
@@ -431,19 +431,19 @@ def filter_partners(request, partner_library=False):
     """
     company = get_company_or_404(request)
 
-    sort_order = "-" if request.REQUEST.get("desc", False) else ""
-    sort_by = sort_order + request.REQUEST.get('sort_by', 'name')
-    city = request.REQUEST.get('city', '').strip()
-    state = request.REQUEST.get('state', '').strip()
+    sort_order = "-" if request.GET.get("desc", request.POST.get("desc", False)) else ""
+    sort_by = sort_order + request.GET.get('sort_by', request.POST.get('sort_by', 'name'))
+    city = request.GET.get('city', request.POST.get('city', '')).strip()
+    state = request.GET.get('state', request.POST.get('state','')).strip()
     tags = [tag.strip()
-            for tag in request.REQUEST.get('tags', '').split(',') if tag]
-    keywords = [keyword.strip() for keyword in request.REQUEST.get(
-        'keywords', '').split(',') if keyword]
+            for tag in request.GET.get('tags', request.POST.get('tags', '')).split(',') if tag]
+    keywords = [keyword.strip() for keyword in request.GET.get(
+        'keywords', request.POST.get('keywords', '')).split(',') if keyword]
 
     if partner_library:
         special_interest = [
             si if si != "disability" else "disabled"
-            for si in request.REQUEST.getlist('special_interest')]
+            for si in request.GET.getlist('special_interest', request.POST.getlist('special_interest'))]
 
         library_ids = Partner.objects.filter(owner=company).exclude(
             library__isnull=True).values_list('library', flat=True)
@@ -468,8 +468,8 @@ def filter_partners(request, partner_library=False):
 
         query = Q(interests | unspecified)
     else:
-        start_date = request.REQUEST.get('start_date')
-        end_date = request.REQUEST.get('end_date')
+        start_date = request.GET.get('start_date', request.POST.get('start_date'))
+        end_date = request.GET.get('end_date', request.POST.get('end_date'))
 
         partners = Partner.objects.select_related('contact')
         contact_city = 'contact__locations__city'
@@ -569,7 +569,7 @@ def new_partner_from_library(request):
     company = get_company_or_404(request)
 
     try:
-        library_id = int(request.REQUEST.get('library_id') or 0)
+        library_id = int(request.GET.get('library_id', request.POST.get('library_id')) or 0)
     except ValueError:
         raise Http404("mypartners.helpers.new_partner_from_library: "
                       "id isn't an int")
