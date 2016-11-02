@@ -403,7 +403,7 @@ class CommRecordsFilter(DataSourceFilter):
 
             contact_qs = contact_qs.distinct()
 
-            qs = qs.filter(contact=contact_qs)
+            qs = qs.filter(contact__in=contact_qs)
 
         if self.partner or self.partner_tags:
             partner_qs = Partner.objects.all()
@@ -419,6 +419,6 @@ class CommRecordsFilter(DataSourceFilter):
 
             partner_qs = partner_qs.distinct()
 
-            qs = qs.filter(partner=partner_qs)
+            qs = qs.filter(partner__in=partner_qs)
 
         return qs
