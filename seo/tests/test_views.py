@@ -27,6 +27,7 @@ from lxml import etree
 from import_jobs.init import clear_solr, download_feed_file, update_solr
 from slugify import slugify
 from xmlparse import DEv2JobFeed
+from middleware import MultiHostMiddleware
 from moc_coding import models as moc_models
 from moc_coding.tests import factories as moc_factories
 from myblocks.models import BlockOrder, Page, RowOrder
@@ -1168,6 +1169,7 @@ class TemplateTestCase(DirectSEOTestCase):
         config = factories.ConfigurationFactory.build()
         request =RequestFactory().get('/job/')
         request.user = AnonymousUser()
+        MultiHostMiddleware().process_request(request)
         template = Template(file("templates/job_listing.html", 'r').read())
         resp = template.render(TemplateContext(request,
             {'location_term':'%27%22%3E%3Cimg+src%3Dflerg+onerror%3Dalert%28document.cookie%29%3E',
@@ -1262,6 +1264,7 @@ class TemplateTestCase(DirectSEOTestCase):
         """Renders seo_base.html"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
+        MultiHostMiddleware().process_request(request)
         template = Template(file("templates/seo_base.html", 'r').read())
         resp = template.render(TemplateContext(request, {}))
         # Check string from view_all_jobs_label
@@ -1274,6 +1277,7 @@ class TemplateTestCase(DirectSEOTestCase):
         network sites with no sponsor set"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
+        MultiHostMiddleware().process_request(request)
         template = Template(
             file("templates/seo_billboard_homepage_base.html", 'r').read())
         resp = template.render(TemplateContext(request, {'widgets':'',
@@ -1286,6 +1290,7 @@ class TemplateTestCase(DirectSEOTestCase):
         network sites with a sponsor set"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
+        MultiHostMiddleware().process_request(request)
         bb = factories.BillboardImageFactory.build()
         bb.save()
         self.site.billboard_images.add(bb)
@@ -1307,6 +1312,7 @@ class TemplateTestCase(DirectSEOTestCase):
         company sites with no sponsor set"""
         request = RequestFactory().get('/')
         request.user = AnonymousUser()
+        MultiHostMiddleware().process_request(request)
         config_obj = factories.ConfigurationFactory.build(id=1)
         config_obj.wide_header = "abcdefg"
         site = factories.SeoSiteFactory(domain="site.jobs")
@@ -1339,7 +1345,7 @@ class TemplateTestCase(DirectSEOTestCase):
         request.user = AnonymousUser()
         config_obj = factories.ConfigurationFactory.build(id=1)
         config_obj.wide_header = "abcdefg"
-        site = factories.SeoSiteFactory()
+        site = factories.SeoSiteFactory(domain="something.jobs")
         site.configurations.add(config_obj)
         site.save()
         with self.settings(SITE=site, SITE_TITLE="Acme"):

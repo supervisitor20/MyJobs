@@ -143,7 +143,7 @@ def create_partner_from_library(request):
     partner = new_partner_from_library(request)
 
     redirect = False
-    if request.REQUEST.get("redirect"):
+    if request.GET.get("redirect",request.POST.get("redirect")):
         redirect = True
     ctx = {
         'partner': partner.id,
@@ -194,9 +194,9 @@ def edit_item(request):
     """
     http404_view = 'mypartners.views.edit_item'
     try:
-        partner_id = int(request.REQUEST.get("partner") or 0)
-        item_id = int(request.REQUEST.get('id') or 0)
-        content_id = int(request.REQUEST.get('ct') or 0)
+        partner_id = int(request.GET.get("partner", request.POST.get("partner", 0)))
+        item_id = int(request.GET.get('id', request.POST.get("id", 0)))
+        content_id = int(request.GET.get('ct', request.POST.get('ct', 0)))
     except ValueError:
         raise Http404("{view}: partner, item, or content type "
                       "id is bad".format(view=http404_view))
@@ -266,12 +266,12 @@ def save_item(request):
     """
     http404_view = 'mypartners.views.save_item'
     company = get_company_or_404(request)
-    content_id = int(request.REQUEST.get('ct') or 0)
+    content_id = int(request.GET.get('ct', request.POST.get('ct', 0)))
 
     if content_id == ContentType.objects.get_for_model(Contact).id:
-        item_id = request.REQUEST.get('id') or None
+        item_id = request.GET.get('id', request.POST.get("id")) or None
         try:
-            partner_id = int(request.REQUEST.get('partner') or 0)
+            partner_id = int(request.GET.get("partner", request.POST.get("partner", 0)))
         except TypeError:
             raise Http404("{view}: Partner id is not an int".format(
                 view=http404_view))
@@ -301,7 +301,7 @@ def save_item(request):
 
     if content_id == ContentType.objects.get_for_model(Partner).id:
         try:
-            partner_id = int(request.REQUEST.get('partner'))
+            partner_id = int(request.GET.get("partner", request.POST.get("partner")))
         except TypeError:
             raise Http404("{view}: Partner id is not an int".format(
                 view=http404_view))
@@ -325,13 +325,13 @@ def delete_prm_item(request):
 
     """
     company = get_company_or_404(request)
-    partner_id = request.REQUEST.get('partner')
+    partner_id = request.GET.get("partner", request.POST.get("partner"))
     partner_id = get_int_or_none(partner_id)
 
-    item_id = request.REQUEST.get('id')
+    item_id = request.GET.get('id', request.POST.get("id"))
     contact_id = get_int_or_none(item_id)
 
-    content_id = request.REQUEST.get('ct')
+    content_id = request.GET.get('ct', request.POST.get('ct'))
     content_id = get_int_or_none(content_id)
 
     if content_id == ContentType.objects.get_for_model(Partner).id:
@@ -472,9 +472,9 @@ def edit_partner_tag(request):
 @requires('update contact')
 def edit_location(request):
     company, partner, _ = prm_worthy(request)
-    contact = get_object_or_none(Contact, id=request.REQUEST.get('id'))
+    contact = get_object_or_none(Contact, id=request.GET.get('id', request.POST.get("id")))
     location = get_object_or_none(
-        Location, id=request.REQUEST.get('location'))
+        Location, id=request.GET.get('location', request.POST.get('location')))
 
     if request.method == 'POST':
         if location:
@@ -514,9 +514,9 @@ def edit_location(request):
 @requires('update contact')
 def delete_location(request):
     company, partner, _ = prm_worthy(request)
-    contact = get_object_or_404(Contact, pk=request.REQUEST.get('id', 0))
+    contact = get_object_or_404(Contact, pk=request.GET.get('id', request.POST.get("id", 0)))
     location = get_object_or_404(
-        Location, pk=request.REQUEST.get('location', 0))
+        Location, pk=request.GET.get('location', request.POST.get('location', 0)))
 
     contact.update_last_action_time()
     contact.locations.remove(location)
@@ -576,8 +576,8 @@ def prm_saved_searches(request):
 @requires('create partner saved search')
 def prm_edit_saved_search(request):
     company, partner, user = prm_worthy(request)
-    item_id = request.REQUEST.get('id')
-    copy_id = request.REQUEST.get('copies')
+    item_id = request.GET.get('id', request.POST.get("id"))
+    copy_id = request.GET.get('copies', request.POST.get('copies'))
 
     if item_id:
         instance = get_object_or_404(PartnerSavedSearch, id=item_id)
@@ -629,11 +629,11 @@ def verify_contact(request):
     active as well.
 
     """
-    if request.REQUEST.get('action') != 'validate':
+    if request.GET.get('action', request.POST.get('action')) != 'validate':
         raise Http404("mypartners.views.verify_contact: "
                       "'action' is not 'validate'")
 
-    email = request.REQUEST.get('email')
+    email = request.GET.get('email', request.POST.get('email'))
     if email == 'None':
         data = {
             'status': 'None',
@@ -673,7 +673,7 @@ def partner_savedsearch_save(request):
 
     """
     company, partner, _ = prm_worthy(request)
-    item_id = request.REQUEST.get('id', None)
+    item_id = request.GET.get('id', request.POST.get("id", None))
 
     if item_id:
         item = get_object_or_404(PartnerSavedSearch, id=item_id,
@@ -714,7 +714,7 @@ def partner_view_full_feed(request):
 
     """
     company, partner, user = prm_worthy(request)
-    search_id = request.REQUEST.get('id')
+    search_id = request.GET.get('id', request.POST.get("id"))
     saved_search = get_object_or_404(PartnerSavedSearch, id=search_id)
 
     if company == saved_search.partnersavedsearch.provider:
@@ -778,7 +778,7 @@ def prm_records(request):
         'contact__name', 'contact__name').distinct().order_by('contact__name'))
 
     ctx.update({
-        'admin_id': request.REQUEST.get('admin'),
+        'admin_id': request.GET.get('admin', request.POST.get('admin')),
         'company': company,
         'contact_choices': contact_choices,
         'contact_type_choices': contact_type_choices,
@@ -935,8 +935,8 @@ def get_records(request):
     """
     company, partner, user = prm_worthy(request)
 
-    contact = request.REQUEST.get('contact')
-    contact_type = request.REQUEST.get('record_type')
+    contact = request.GET.get('contact', request.POST.get('contact'))
+    contact_type = request.GET.get('record_type', request.POST.get('record_type'))
 
     contact = None if contact in ['all', 'undefined'] else contact
     contact_type = None if contact_type in ['all', 'undefined'] else contact_type
@@ -1010,7 +1010,7 @@ def partner_main_reports(request):
     dt_range, date_str, records = get_records_from_request(request)
 
     ctx = {
-        'admin_id': request.REQUEST.get('admin'),
+        'admin_id': request.GET.get('admin', request.POST.get('admin')),
         'partner': partner,
         'company': company,
         'contacts': records.contacts,
@@ -1110,7 +1110,7 @@ def partner_get_referrals(request):
 def prm_export(request):
     # TODO: investigate using django's builtin serialization for XML
     company, partner, user = prm_worthy(request)
-    file_format = request.REQUEST.get('file_format', 'csv')
+    file_format = request.GET.get('file_format', request.POST.get('file_format', 'csv'))
     fields = retrieve_fields(ContactRecord)
     _, _, records = get_records_from_request(request)
 
@@ -1177,11 +1177,11 @@ def process_email(request):
                        "early.".format(method=request.method))
         return HttpResponse(status=200)
 
-    admin_email = request.REQUEST.get('from')
-    headers = request.REQUEST.get('headers')
-    key = request.REQUEST.get('key')
-    subject = request.REQUEST.get('subject')
-    email_text = request.REQUEST.get('text')
+    admin_email = request.GET.get('from', request.POST.get('from'))
+    headers = request.GET.get('headers', request.POST.get('headers'))
+    key = request.GET.get('key', request.POST.get('key'))
+    subject = request.GET.get('subject', request.POST.get('subject'))
+    email_text = request.GET.get('text', request.POST.get('text'))
     if key != settings.EMAIL_KEY:
         logger.warning("process_email: invalid email key provided, returning "
                        "early.")
@@ -1198,8 +1198,8 @@ def process_email(request):
     else:
         date_time = now()
 
-    to = request.REQUEST.get('to', '')
-    cc = request.REQUEST.get('cc', '')
+    to = request.GET.get('to', request.POST.get('to',''))
+    cc = request.GET.get('cc', request.POST.get('cc',''))
     recipient_emails_and_names = getaddresses(["%s, %s" % (to, cc)])
     bcc_addresses = []
     try:
